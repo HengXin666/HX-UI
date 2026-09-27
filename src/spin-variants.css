@@ -1,0 +1,115 @@
+/* ============================================================================
+ * Spin 的形态样式。单独一份文件, 由 src/styles.css 引入。
+ * ----------------------------------------------------------------------------
+ * LDRS 把每个 loader 的 CSS 单独放一个文件, 故意不自动加载 (package.json 里
+ * sideEffects 只声明了 *.css, 意思是由使用方决定引哪些)。所以必须显式引。
+ *
+ * 只引 Spin 组件白名单里的那些 —— 44 个全引也才 74KB (gzip 约 10KB), 但少引一半
+ * 就没必要多带。白名单在 src/primitives/spin.tsx, 加减形态时这里要同步。
+ * ==========================================================================*/
+@import "ldrs/react/Quantum.css";
+@import "ldrs/react/Waveform.css";
+@import "ldrs/react/DotPulse.css";
+@import "ldrs/react/Superballs.css";
+@import "ldrs/react/Helix.css";
+@import "ldrs/react/Miyagi.css";
+@import "ldrs/react/Trefoil.css";
+@import "ldrs/react/Trio.css";
+@import "ldrs/react/Bouncy.css";
+@import "ldrs/react/Spiral.css";
+@import "ldrs/react/Pulsar.css";
+@import "ldrs/react/Ring2.css";
+@import "ldrs/react/Ring.css";
+@import "ldrs/react/DotStream.css";
+@import "ldrs/react/Ripples.css";
+@import "ldrs/react/Hourglass.css";
+@import "ldrs/react/Infinity.css";
+@import "ldrs/react/Jelly.css";
+@import "ldrs/react/Ping.css";
+@import "ldrs/react/Pinwheel.css";
+@import "ldrs/react/Metronome.css";
+@import "ldrs/react/NewtonsCradle.css";
+@import "ldrs/react/Grid.css";
+@import "ldrs/react/TailChase.css";
+@import "ldrs/react/LineWobble.css";
+@import "ldrs/react/ChaoticOrbit.css";
+@import "ldrs/react/Cardio.css";
+@import "ldrs/react/Hatch.css";
+@import "ldrs/react/Leapfrog.css";
+@import "ldrs/react/LineSpinner.css";
+@import "ldrs/react/Momentum.css";
+@import "ldrs/react/Orbit.css";
+@import "ldrs/react/Square.css";
+@import "ldrs/react/Squircle.css";
+@import "ldrs/react/Reuleaux.css";
+@import "ldrs/react/Treadmill.css";
+@import "ldrs/react/Tailspin.css";
+@import "ldrs/react/Wobble.css";
+@import "ldrs/react/Zoomies.css";
+@import "ldrs/react/Mirage.css";
+@import "ldrs/react/JellyTriangle.css";
+/* ============================================================================
+ * 轮播时的交叉淡入。
+ * ----------------------------------------------------------------------------
+ * 两层都绝对定位是不行的 —— 那样根节点会塌成 0 尺寸。
+ * 所以: 淡入层参与布局 (撑出尺寸), 淡出层绝对定位铺在它上面。
+ * 两层共用同一个 grid cell 也可以, 但绝对定位更直白。
+ * ==========================================================================*/
+.hx-spin-root {
+  position: relative;
+}
+
+.hx-spin-fade-in {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+ * 淡入层。必须是 0 → 1 的渐变, 不能停在 1。
+ * 曾经它没有动画 —— 于是新形态瞬间全亮、只有旧的在淡出,
+ * 看起来是"新图形突然冒出来", 而不是过渡。
+ *
+ * 两层的曲线刻意不同:
+ *   淡入用 ease-out (快进慢停), 淡出用 ease-in (慢起快走)。
+ *   若都用 linear, 中间会有很长一段两者都在 50% 左右, 叠起来发灰。
+ *   一快一慢能让交接点快速越过那个"双方都半透明"的区间。
+ */
+.hx-spin-fade-in {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: hx-spin-fade-in 400ms cubic-bezier(0.2, 0, 0.4, 1) both;
+}
+
+@keyframes hx-spin-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/*
+ * 淡出层。位置与尺寸都由 inset: 0 铺满根节点, 因此不会把根节点撑大,
+ * 也不会因为新旧形态尺寸不同而让整体跳动。
+ */
+.hx-spin-fade-out {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  animation: hx-spin-fade-out 400ms cubic-bezier(0.5, 0, 0.8, 1) both;
+}
+
+@keyframes hx-spin-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ── 减少动态偏好 ──────────────────────────────────────────────────────────
+ * 停掉交叉淡入的时长 (改成瞬切), 但不影响形态自身的动画 ——
+ * LDRS 的动画是否停由使用方决定, 库不替它决定"减少动态时该显示什么"。
+ */
+@media (prefers-reduced-motion: reduce) {
+  .hx-spin-fade-out { animation-duration: 1ms; }
+}

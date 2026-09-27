@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/**
+ * 引库的**完整样式入口**, 而不是只引 tokens.css。
+ *
+ * 组件自带的 CSS (例如 Spin 的动画) 挂在库入口下 —— 只引 tokens 会静默漏掉它们,
+ * 表现是"组件渲染出来了但不动", 而且没有任何报错。
+ * 库入口已经含 tokens.css、@theme inline 桥接与基础层, 所以这里不重复定义它们。
+ */
+@import "../../src/styles.css";
+
+@plugin "@iconify/tailwind4";
+
+/* 扫库源码: 它的类名不在这个工程里, 不显式声明 Tailwind 就不会生成 */
+@source "../../src/**/*.{ts,tsx}";
+@source "./**/*.{ts,tsx}";
+
+/* 图标名在数据字符串里时 Tailwind 扫不到, 必须显式登记 —— 少了它图标是空位且不报错。 */
+@source inline("icon-[solar--settings-linear]");
+@source inline("icon-[solar--monitor-linear]");
+@source inline("icon-[solar--palette-linear]");
+@source inline("icon-[solar--user-circle-linear]");
+@source inline("icon-[solar--cpu-bolt-linear]");
+@source inline("icon-[solar--server-square-linear]");
+@source inline("icon-[solar--bell-linear]");
+@source inline("icon-[solar--archive-minimalistic-outline]");
+@source inline("icon-[solar--keyboard-linear]");
+@source inline("icon-[solar--code-square-linear]");
+@source inline("icon-[solar--book-linear]");
+@source inline("icon-[solar--magic-stick-2-linear]");
+@source inline("icon-[solar--alt-arrow-down-linear]");
+@source inline("icon-[solar--alt-arrow-left-linear]");
+@source inline("icon-[solar--folder-linear]");
+@source inline("icon-[solar--refresh-linear]");
+@source inline("icon-[solar--chat-round-line-linear]");
+@source inline("icon-[solar--widget-2-linear]");
+@source inline("icon-[solar--layers-linear]");
+@source inline("icon-[solar--magnifer-line-duotone]");
+
+/* 库源码里用到的 mdi 图标 (MotionSelect 的下拉箭头与对勾, CheckboxField 的对勾) */
+@source inline("icon-[mdi--chevron-down]");
+@source inline("icon-[mdi--check]");
+/* 文档站其余用到的 solar 图标 */
+@source inline("icon-[solar--sun-linear]");
+@source inline("icon-[solar--moon-linear]");
+@source inline("icon-[solar--check-circle-linear]");
+@source inline("icon-[solar--layers-linear]");
+@source inline("icon-[solar--settings-linear]");
+
+/* 导航图标表里的图标名在数据里, Tailwind 扫不到, 必须显式登记 */
+@source inline("icon-[solar--download-minimalistic-linear]");
+@source inline("icon-[solar--text-field-linear]");
+@source inline("icon-[solar--tuning-linear]");
+@source inline("icon-[solar--alt-arrow-down-linear]");
+@source inline("icon-[solar--window-frame-linear]");
+@source inline("icon-[solar--sidebar-code-linear]");
+@source inline("icon-[solar--hamburger-menu-linear]");
+@source inline("icon-[solar--chat-square-linear]");
+@source inline("icon-[solar--calendar-linear]");
+@source inline("icon-[solar--slider-vertical-linear]");
+@source inline("icon-[solar--card-linear]");
+@source inline("icon-[solar--tag-linear]");
+@source inline("icon-[solar--widget-add-linear]");
+@source inline("icon-[solar--list-check-linear]");
+@source inline("icon-[solar--layers-minimalistic-linear]");
+@source inline("icon-[solar--cursor-square-linear]");
+/* 新增文档页里写在 JSX 内的图标 (Tailwind 扫得到, 但同批登记以免遗漏) */
+@source inline("icon-[solar--clock-circle-linear]");
+/* 下面几个出现在代码示例字符串与 navIcons 数据里, Tailwind 扫不到 */
+@source inline("icon-[solar--info-circle-linear]");
+@source inline("icon-[solar--menu-dots-bold]");
