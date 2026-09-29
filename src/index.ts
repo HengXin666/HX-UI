@@ -39,6 +39,22 @@ export {
   Popover, PopoverAnchor, PopoverArrow, PopoverContent, PopoverDescription,
   PopoverHeader, PopoverTitle, PopoverTrigger,
 } from "./primitives/popover";
+export {
+  Tooltip, TooltipContent, TooltipHint, TooltipProvider, TooltipTrigger,
+} from "./primitives/tooltip";
+export { Tabs, TabsContent, TabsList, TabsTrigger, tabsListVariants, tabsTriggerVariants, type TabsVariant } from "./primitives/tabs";
+export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./primitives/accordion";
+export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./primitives/collapsible";
+export { ScrollArea, ScrollBar } from "./primitives/scroll-area";
+export { Progress, ProgressMeter } from "./primitives/progress";
+export { Skeleton, SkeletonText } from "./primitives/skeleton";
+export { Separator } from "./primitives/separator";
+export { Textarea } from "./primitives/textarea";
+export { TimePicker, type TimePickerProps } from "./primitives/time-picker";
+export {
+  ConfirmDialog, ConfirmDialogHost, confirmDialog, ConfirmContext, useConfirmPending,
+  type ConfirmDialogOptions, type ConfirmDialogProps,
+} from "./primitives/confirm-dialog";
 export { type ClassValue, cn } from "./primitives/utils";
 
 // ── 版式件 ──
@@ -84,6 +100,13 @@ export {
   Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter,
   cardVariants, type CardProps,
 } from "./layout/Card";
+export {
+  DataTable, TableShell, useTableSearch,
+  type DataTableProps, type DataTableColumn,
+} from "./layout/DataTable";
+export { StatCard, StatGrid, statValueVariants, type StatCardProps, type StatTone } from "./layout/StatCard";
+export { EmptyState, DataBoundary, type EmptyStateProps, type EmptyKind } from "./layout/EmptyState";
+export { PageHeader, type PageHeaderProps } from "./layout/PageHeader";
 export { Badge, badgeVariants, type BadgeProps } from "./layout/Badge";
 export {
   CodeBlock, CODE_THEME, ONE_DARK_PRO, type CodeBlockProps,
@@ -92,6 +115,10 @@ export {
   SidebarNavItemButton, SidebarNavIcon, SidebarNavBadgeView,
   type SidebarNavItem, type SidebarNavBadge, type SidebarNavItemButtonProps,
 } from "./layout/SidebarNav";
+export {
+  ProxyChain, ProxyLayerLegend, PROXY_LAYER_META,
+  type ProxyChainProps, type ProxyLayer,
+} from "./layout/ProxyChain";
 export {
   SettingsSidebarView,
   type SettingsSidebarViewProps,

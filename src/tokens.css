@@ -130,6 +130,66 @@ body {
 /* 换主题时的过渡只作用于颜色类属性, 不碰 transform / opacity。 */
 [data-mode].theme-transitioning,
 [data-mode].theme-transitioning * {
-  transition: background-color 180ms ease, color 180ms ease,
-              border-color 180ms ease, box-shadow 180ms ease !important;
+  transition: background-color var(--dur-base) ease, color var(--dur-base) ease,
+              border-color var(--dur-base) ease, box-shadow var(--dur-base) ease !important;
 }
+
+/* ============================================================================
+ * 排版 / 动效 / 层级刻度
+ * ----------------------------------------------------------------------------
+ * 补这一段的理由: 在此之前本库只有**颜色**是令牌化的, 字号与动效时长全部硬编在
+ * 组件类名里 (实测 53 处 text-[12px] 这类任意值, 外加 duration-100/150/200)。
+ * 后果是 README 那句"改 tokens.css 一个文件就能换肤"只对颜色成立 ——
+ * 想把整套界面字号调大一档, 得改 40 多个文件。
+ *
+ * 与上游同步件的关系 (这条决定了本次只立刻度、不批量改存量):
+ *   src/primitives 与大部分 src/layout 的类名整份取自 open-vetta, README 明确承诺
+ *   "视觉类名一个字没改", 那是"看起来一样"的唯一可靠来源。强改这些文件会同时
+ *   失去两样东西: 与上游的可对照性, 以及 10.5px / 11.5px 这类半像素档的精确度
+ *   (取整就是 0.5px 的真实视觉变化)。因此下面的刻度是给**新代码**的唯一来源,
+ *   存量迁移需要先单独决策"半像素要不要收进整数档"。
+ *
+ * 用法: 在 Tailwind 里写 text-(length:--fs-sm) 这类任意属性语法, 或直接
+ *       font-size: var(--fs-sm)。scale 段刻意覆盖现网每一档 (含半像素),
+ *       这样后续迁移可以逐档一对一替换, 不产生视觉漂移。
+ * ==========================================================================*/
+
+:root {
+  /* 字号: 与现网实际用到的每一档一一对齐, 含半像素档。
+     半像素不是笔误 —— 12.5px 与 12px 在密集表格里是肉眼可辨的, 因此不取整,
+     而是原样建令牌, 让后续迁移可以逐档一对一替换、不产生视觉漂移。 */
+  --fs-3xs: 9px;
+  --fs-2xs: 10px;
+  --fs-2xs-half: 10.5px;
+  --fs-xs: 11px;
+  --fs-xs-half: 11.5px;
+  --fs-sm: 12px;
+  --fs-sm-half: 12.5px;
+  --fs-base: 13px;
+  --fs-lg: 15px;
+  --fs-xl: 19px;
+  --fs-2xl: 20px;
+  --fs-3xl: 22px;
+  --fs-4xl: 26px;
+
+  /* 动效时长: 只三档 —— 反馈 / 常规 / 强调。
+     超过 300ms 的进入动画在工具型界面里会被感知成"卡"。 */
+  --dur-fast: 100ms;
+  --dur-base: 200ms;
+  --dur-slow: 300ms;
+
+  /* 缓动: ease-out 用于进入 (起步快收尾稳), ease-in 用于退出 ——
+     用户已经决定离开了, 拖长只会挡住下一步操作。 */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+  /* 层级: 写在各组件里的 z-50 没人知道全貌, 改一处就撞另一处 */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-panel: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+}
+

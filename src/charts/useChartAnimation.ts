@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { buildAnimationProps, shouldDisableAnimation, type ChartAnimationOptions } from "./animation";
 

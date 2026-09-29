@@ -23,6 +23,14 @@ export const DOCS: readonly DocEntry[] = [
   { id: "calendar", label: "Calendar / DatePicker", group: "基础件", desc: "日历与日期选择" },
   { id: "slider", label: "Slider", group: "基础件", desc: "滑块" },
   { id: "spin", label: "Spin", group: "基础件", desc: "加载指示" },
+  { id: "tooltip", label: "Tooltip", group: "基础件", desc: "悬浮提示, 含一行式 TooltipHint" },
+  { id: "textarea", label: "Textarea", group: "基础件", desc: "多行文本, 随内容长高" },
+  { id: "time-picker", label: "TimePicker", group: "基础件", desc: "时:分 输入, 受控但中间态不卡手" },
+  { id: "confirm-dialog", label: "ConfirmDialog", group: "基础件", desc: "确认框, 命令式 await 与声明式两用" },
+  { id: "tabs", label: "Tabs", group: "基础件", desc: "标签页, 下划线/药丸两种形态" },
+  { id: "accordion", label: "Accordion / Collapsible", group: "基础件", desc: "折叠组与单块折叠, 双向都有动画" },
+  { id: "scroll-area", label: "ScrollArea", group: "基础件", desc: "细滚动条容器, 不打断圆角" },
+  { id: "progress", label: "Progress / Skeleton", group: "基础件", desc: "进度条(含不定长)与骨架屏" },
 
   { id: "charts", label: "Charts", group: "版式件", desc: "折线/面积/柱状/饼/雷达 + 增量动画" },
   { id: "stepper", label: "Stepper / LogViewer", group: "版式件", desc: "步骤条 + 日志框, 含 HTTP/WS 联动示例" },
@@ -35,6 +43,11 @@ export const DOCS: readonly DocEntry[] = [
   { id: "collapse-panel", label: "CollapsePanel", group: "版式件", desc: "可折叠面板" },
   { id: "setting-chrome", label: "SettingSection / Row", group: "版式件", desc: "设置页版式: 一张卡里一行一个设置项" },
   { id: "app-frame", label: "AppFrame", group: "版式件", desc: "应用外壳: 外留白 + 两块圆角面板" },
+  { id: "proxy-chain", label: "ProxyChain", group: "版式件", desc: "代理服务链路: 入口 → 策略 → 实体, 杜绝概念混淆" },
+  { id: "data-table", label: "DataTable", group: "版式件", desc: "数据表: 粘性表头 / 空态 / 加载态 / 行点击" },
+  { id: "stat-card", label: "StatCard / StatGrid", group: "版式件", desc: "指标卡与栅格, 数字等宽不抖" },
+  { id: "empty-state", label: "EmptyState / DataBoundary", group: "版式件", desc: "空/错误/加载三态, 顺序固定" },
+  { id: "page-header", label: "PageHeader", group: "版式件", desc: "页头: 标题 + 说明 + 右侧操作位" },
 ];
 
 export const GROUPS: readonly string[] = ["基础", "示例", "基础件", "版式件"];

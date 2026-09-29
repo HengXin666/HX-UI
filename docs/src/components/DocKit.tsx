@@ -45,8 +45,8 @@ export function Preview({
 /**
  * 代码块 —— 直接用库的 CodeBlock (shiki + One Dark Pro)。
  *
- * 文档站自己展示代码, 用的就是被展示的那个组件; 这是最直接的自证。
- * 这里只做一件事: 去掉外层卡片的圆角与边框, 因为它已经嵌在 Preview 的卡片里了。
+ * 文档站展示代码用的就是被展示的那个组件, 这是最直接的自证。
+ * 这里只做一件事: 去掉外层卡片的圆角与边框, 因为它已经嵌在 Preview 卡片里了。
  */
 export function CodeBlock({ code, lang = "tsx" }: { code: string; lang?: string }): JSX.Element {
   return (
@@ -58,16 +58,79 @@ export function CodeBlock({ code, lang = "tsx" }: { code: string; lang?: string 
   );
 }
 
+/**
+ * 章节标题。
+ *
+ * id 由**标题文本自动推导** (中文原样保留, 只把空白与标点换成连字符)。
+ * 为什么不做成"必须手写 id": 全站 161 处 <H2>, 一个个补 id 是纯噪音, 而且新页面
+ * 一定会忘 —— 忘了就没有锚点、右侧目录就空着, 且不会报错。
+ * 想覆盖时传 id 即可。
+ */
 export function H2({ children, id }: { children: ReactNode; id?: string }): JSX.Element {
+  const slug = id ?? slugify(children);
   return (
-    <h2 id={id} className="mt-10 mb-3 scroll-mt-24 text-[19px] font-semibold text-foreground first:mt-0">
-      {children}
+    <h2
+      id={slug}
+      className="group mt-12 mb-3 scroll-mt-24 text-[19px] font-semibold tracking-[-0.01em] text-foreground first:mt-0"
+    >
+      <a
+        href={`#${slug}`}
+        className="no-underline text-inherit"
+        // 点标题即复制锚点链接, 这是文档站最常被用到的动作之一
+        onClick={(e) => {
+          e.preventDefault();
+          void navigator.clipboard?.writeText(`${location.origin}${location.pathname}#${slug}`);
+          history.replaceState(null, "", `#${slug}`);
+        }}
+      >
+        {children}
+        <span
+          aria-hidden
+          className="ml-1.5 text-muted-foreground/0 transition-colors group-hover:text-muted-foreground/50"
+        >
+          #
+        </span>
+      </a>
     </h2>
   );
 }
 
-export function H3({ children }: { children: ReactNode }): JSX.Element {
-  return <h3 className="mt-6 mb-2 text-[15px] font-semibold text-foreground">{children}</h3>;
+/**
+ * 把标题文本变成 URL 片段。
+ *
+ * 中文不做音译、不编码成 %XX —— 直接保留。原因是 hash 路由下 `#/page` 与
+ * `#anchor` 共存时, 可读的中文锚点比一串百分号编码有用得多 (可复制、可肉眼识别)。
+ * 只归一掉会破坏 CSS 选择器与 URL 语义的字符。
+ */
+export function H3({ children, id }: { children: ReactNode; id?: string }): JSX.Element {
+  const slug = id ?? slugify(children);
+  return (
+    <h3 id={slug} className="mt-7 mb-2 scroll-mt-24 text-[15px] font-semibold text-foreground">
+      {children}
+    </h3>
+  );
+}
+
+export function slugify(node: ReactNode): string {
+  const text = plainText(node);
+  const slug = text
+    .trim()
+    .replace(/[\s]+/g, "-")
+    .replace(/[「」『』【】（）()、,，.。:：;；!！?？"'“”‘’/\\]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return slug || "section";
+}
+
+/** 取出 React 节点里的纯文本 (标题都是纯文本或含 <Code>, 不做完整递归)。 */
+function plainText(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(plainText).join("");
+  if (node && typeof node === "object" && "props" in node) {
+    const props = (node as { props?: { children?: ReactNode } }).props;
+    if (props?.children !== undefined) return plainText(props.children);
+  }
+  return "";
 }
 
 /**

@@ -1,3 +1,5 @@
+"use client";
+
 import { useId, type JSX, type ReactNode } from "react";
 import { motion } from "motion/react";
 import { cn } from "../primitives/utils";

@@ -1,3 +1,5 @@
+"use client";
+
 import { createContext, useContext, useEffect, useMemo, useState, type JSX } from "react";
 import { AnimatePresence, motion, type TargetAndTransition } from "motion/react";
 import { cn } from "../primitives/utils";

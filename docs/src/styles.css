@@ -68,4 +68,28 @@
 @source inline("icon-[solar--clock-circle-linear]");
 /* 下面几个出现在代码示例字符串与 navIcons 数据里, Tailwind 扫不到 */
 @source inline("icon-[solar--info-circle-linear]");
+/* 2026-09-29 新增组件的图标。这些名字写在 navIcons.ts 的数据里与组件源码字符串里,
+   Tailwind 扫不到字面量, 不登记就是空位且不报错 (check-icons.mjs 只校验名字有效性,
+   校验不了"有没有被生成")。 */
+@source inline("icon-[solar--chat-round-dots-linear]");
+@source inline("icon-[solar--document-add-linear]");
+@source inline("icon-[solar--clock-circle-linear]");
+@source inline("icon-[solar--shield-warning-linear]");
+@source inline("icon-[solar--widget-4-linear]");
+@source inline("icon-[solar--box-minimalistic-linear]");
+@source inline("icon-[solar--refresh-circle-linear]");
+@source inline("icon-[solar--card-search-linear]");
+@source inline("icon-[solar--chart-square-linear]");
+@source inline("icon-[solar--inbox-linear]");
+@source inline("icon-[solar--align-left-linear]");
+@source inline("icon-[solar--danger-triangle-linear]");
+@source inline("icon-[solar--lock-keyhole-minimalistic-linear]");
+@source inline("icon-[solar--close-circle-linear]");
+@source inline("icon-[solar--check-circle-linear]");
+@source inline("icon-[solar--users-group-rounded-linear]");
+/* 2026-09-29 文档站现代化: 主题切换三档 + 搜索入口 */
+@source inline("icon-[solar--monitor-linear]");
+@source inline("icon-[solar--moon-linear]");
+@source inline("icon-[solar--sun-linear]");
+@source inline("icon-[solar--magnifier-linear]");
 @source inline("icon-[solar--menu-dots-bold]");

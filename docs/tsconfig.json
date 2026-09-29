@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": false,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowJs": true,
+    "verbatimModuleSyntax": false,
+    "types": [
+      "react"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@hx/ui": [
+        "../src/index.ts"
+      ],
+      "react": [
+        "../node_modules/@types/react"
+      ],
+      "react/*": [
+        "../node_modules/@types/react/*"
+      ],
+      "react-dom": [
+        "../node_modules/@types/react-dom"
+      ],
+      "react-dom/*": [
+        "../node_modules/@types/react-dom/*"
+      ]
+    }
+  },
+  "include": [
+    "src"
+  ]
+}

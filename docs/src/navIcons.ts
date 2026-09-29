@@ -34,6 +34,20 @@ export const NAV_ICONS: Record<string, string> = {
   "collapse-panel": "icon-[solar--archive-minimalistic-outline]",
   "setting-chrome": "icon-[solar--list-check-linear]",
   "app-frame": "icon-[solar--layers-minimalistic-linear]",
+  // 基础件 (2026-09-29 补)
+  tooltip: "icon-[solar--chat-round-dots-linear]",
+  textarea: "icon-[solar--document-add-linear]",
+  "time-picker": "icon-[solar--clock-circle-linear]",
+  "confirm-dialog": "icon-[solar--shield-warning-linear]",
+  tabs: "icon-[solar--widget-4-linear]",
+  accordion: "icon-[solar--alt-arrow-down-linear]",
+  "scroll-area": "icon-[solar--box-minimalistic-linear]",
+  progress: "icon-[solar--refresh-circle-linear]",
+  // 版式件 (2026-09-29 补)
+  "data-table": "icon-[solar--card-search-linear]",
+  "stat-card": "icon-[solar--chart-square-linear]",
+  "empty-state": "icon-[solar--inbox-linear]",
+  "page-header": "icon-[solar--align-left-linear]",
 };
 
 export const DEFAULT_NAV_ICON = "icon-[solar--widget-2-linear]";

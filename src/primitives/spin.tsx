@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState, type JSX, type ComponentProps } from "react";
 import * as LDRS from "ldrs/react";
 import { cn } from "./utils";

@@ -1,6 +1,34 @@
 <!doctype html>
-<html lang="zh-CN" data-mode="dark">
-  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HX UI · 组件文档</title></head>
-  <body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HX UI · 组件文档</title>
+    <!--
+      防主题闪烁 (FOUC)。
+
+      必须在 React 挂载**之前**同步执行 —— 放到 main.tsx 里就晚了: 页面已经以
+      :root 的默认色绘制了一帧, 选了亮色的用户会看到整屏闪一下。
+      这里不等任何模块加载, 也不依赖 React。
+
+      ⚠️ 存储键必须与 ThemeToggle.tsx 的 STORAGE_KEY 一致 (hx-ui-docs-theme)。
+    -->
+    <script>
+      (function () {
+        try {
+          var m = localStorage.getItem("hx-ui-docs-theme") || "system";
+          if (m === "system") {
+            m = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+          }
+          document.documentElement.setAttribute("data-mode", m);
+        } catch (e) {
+          document.documentElement.setAttribute("data-mode", "dark");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

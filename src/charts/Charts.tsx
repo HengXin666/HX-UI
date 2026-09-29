@@ -1,3 +1,5 @@
+"use client";
+
 import { type JSX, type ReactNode } from "react";
 import {
   Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart,

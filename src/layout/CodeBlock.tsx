@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
 import { codeToHtml } from "shiki";
 import { cn } from "../primitives/utils";

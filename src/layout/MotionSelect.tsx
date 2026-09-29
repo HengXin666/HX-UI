@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, type JSX, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Popover, PopoverContent, PopoverTrigger } from "../primitives/popover";

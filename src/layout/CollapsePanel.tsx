@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState, type JSX, type ReactNode } from "react";
 
 /**

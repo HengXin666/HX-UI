@@ -1,5 +1,14 @@
+"use client";
+
 import { type JSX, type ReactNode } from "react";
-import { CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from "recharts";
+import {
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  type TooltipContentProps,
+} from "recharts";
 import { cn } from "../primitives/utils";
 
 /**
@@ -46,7 +55,25 @@ export function seriesColor(index: number): string {
  * 布局是「一行一条 series」: 左侧圆点取该 series 的颜色, 右侧数值右对齐。
  * 多条 series 时数值能对齐成一列, 比一行一个标签更好扫读。
  */
-function ChartTooltip({ active, payload, label }: TooltipContentProps<number, string>): JSX.Element | null {
+/*
+ * 泛型为什么必须写出来, 而不是钉成 <number, string>:
+ *
+ * Recharts 3 把 \`content\` 的属性类型声明成 \`ContentType<ValueType, NameType>\`,
+ * 其中 ValueType 默认是 \`number | string | Array<number | string>\`。函数参数是**逆变**的 ——
+ * 钉死成 <number, string> 之后, 这个组件就不再是 ContentType 的合法子类型,
+ * 于是每一处 \`<Tooltip content={ChartTooltip} />\` 都报 TS2322 (实测 7 处)。
+ *
+ * 在本库自己的 tsconfig 下看不出来 (strict: false 让函数参数双变), 但任何
+ * 开启 strict 的消费者一 import 就会炸 —— gh-pool 面板的 build 正是因此在库里失败。
+ * 让泛型跟着 Recharts 走, 两边就一致了。
+ */
+function ChartTooltip({
+  active,
+  payload,
+  label,
+  // 参数类型写成"recharts 的默认泛型" —— 即不写类型参数, 直接用 TooltipContentProps
+  // 的 default。这样它与 <Tooltip content={...}> 期望的 ContentType 完全同型。
+}: TooltipContentProps): JSX.Element | null {
   if (!active || !payload?.length) return null;
   return (
     <div className="pointer-events-none rounded-lg border border-border/60 bg-popover/95 px-2.5 py-2 shadow-lg backdrop-blur-sm">

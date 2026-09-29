@@ -1,5 +1,7 @@
+"use client";
+
 import { motion } from "motion/react";
-import { useId, type JSX } from "react";
+import { useId, type JSX, type SetStateAction } from "react";
 
 function cn(...parts: Array<string | false | null | undefined>): string {
 	return parts.filter(Boolean).join(" ");
@@ -13,10 +15,27 @@ export interface SegmentedControlItem<T extends string> {
 	badge?: number;
 }
 
+/**
+ * 选项列表的类型。
+ *
+ * 这里**不能**用 `NoInfer`: 加上它之后, `items={[{key:"a"},{key:"b"}]} value="a"`
+ * 这种字面量写法会因为没有推断依据而把 T 推成 "a", 于是 "b" 报错。
+ * 实测这条路走不通 —— T 必须能从 items 的 key 推出来。
+ */
 export interface SegmentedControlProps<T extends string> {
+	/** 选项列表。T 由各项的 key 推导, 因此 items 也参与泛型推断。 */
 	items: SegmentedControlItem<T>[];
 	value: T;
-	onChange: (value: T) => void;
+	/**
+	 * 选中项变化的回调。
+	 *
+	 * 参数类型写成 `T | ((prev: T) => T)` 而不是 T, 是为了让 React 的
+	 * `setState` (Dispatch<SetStateAction<T>>) 能**直接传进来**:
+	 * `<SegmentedControl value={tab} onChange={setTab} />` 是最常见的写法,
+	 * 只声明 `(value: T) => void` 会逼调用方写一层无意义的包装。
+	 * 组件内部只按"传一个 T 进去"调用, 分发函数由 React 自己处理。
+	 */
+	onChange: (value: T | ((prev: T) => T)) => void;
 	className?: string;
 	/** 容器尺寸正在变化时设为 true，禁用指示器的 layout 动画，避免抖动 */
 	suppressLayoutAnimation?: boolean;

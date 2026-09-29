@@ -1,3 +1,5 @@
+"use client";
+
 import type { ComponentProps } from "react";
 import { useId, useState } from "react";
 import { Button } from "./button";

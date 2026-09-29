@@ -1,11 +1,24 @@
 @import "tailwindcss";
+/* 进场/退场动画的原子类 (animate-in / fade-in-0 / zoom-in-95 / slide-in-from-*)。
+   它们是**插件**提供的, 不是 Tailwind 内置 —— 漏了这一行的表现是所有弹层都没有
+   进场动画, 且类名静默失效 (产物里根本不生成这些规则)。 */
+@import "tw-animate-css";
 @import "./tokens.css";
 /* Spin 各形态的样式 (LDRS 的 CSS 不自动加载, 必须显式引) */
 @import "./spin-variants.css";
+/* 组件必需的关键帧 (折叠高度 / 不定长进度)。同样必须显式引, 漏了组件不动。 */
+@import "./motion.css";
 
 /* 暗色绑定在 data-mode 属性而不是 prefers-color-scheme:
    主题由界面控制, 不该跟着系统走。 */
 @custom-variant dark (&:is([data-mode="dark"] *));
+
+/* radix 把开合状态写在 data-state="open" / "closed" 上, 而 tw-animate-css 与上游
+   的组件类名用的是 data-open: / data-closed: 这套前缀。不声明这两行, 弹层里所有
+   "进场" 类名都指向一个不存在的变体 —— 产物里连 [data-open] 选择器都不会生成,
+   而写类名的地方不会有任何报错。 */
+@custom-variant data-open (&:is([data-state="open"]));
+@custom-variant data-closed (&:is([data-state="closed"]));
 
 @theme inline {
   --color-background: var(--background);

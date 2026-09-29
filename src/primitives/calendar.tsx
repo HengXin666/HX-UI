@@ -1,3 +1,5 @@
+"use client";
+
 import type { ComponentProps } from "react";
 import * as React from "react";
 import type { DayButton, Locale } from "react-day-picker";
