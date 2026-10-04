@@ -68,9 +68,12 @@ export function CommentLayer({
           )}
           style={{ left: c.x, top: c.y, width: c.w, height: c.h }}
         >
-          /* 分隔线用当前文字色的低透明版: border-current/20 不是标准
-             Tailwind 语法, 会静默失效 (产物里没有这条规则且不报错)。 */
-          <div className={cn("flex h-[22px] shrink-0 items-center gap-1 border-b border-bp-node-border px-2", COMMENT_TONE[c.tone ?? "default"].bar)}>
+          <div
+            className={cn(
+              "flex h-[22px] shrink-0 items-center gap-1 border-b border-bp-node-border px-2",
+              COMMENT_TONE[c.tone ?? "default"].bar
+            )}
+          >
             {editingId === c.id ? (
               <input
                 autoFocus

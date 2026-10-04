@@ -139,6 +139,45 @@ function checkButtonType(lines, file) {
 }
 
 const files = [];
+/**
+ * JSX 里写 `/* ... *\/` 会**渲染成页面文字**。
+ *
+ * JSX 的子节点位置只认 `{/* *\/}` 这种带花括号的写法; 直接写 `/* *\/`
+ * 它是纯文本, 会原样显示给用户 —— 而且不报错, 只有看页面才发现。
+ *
+ * 判据: 处于 JSX 子节点位置 (上一行以 `>` 结尾、或是 `return (` 之后),
+ * 且该行是裸的块注释 (不在 `{}` 里)。
+ */
+function checkJsxCommentLeak(lines, file) {
+  const out = [];
+  for (let i = 1; i < lines.length; i++) {
+    const t = lines[i].trim();
+    // 只看块注释, 且不是 {/* */} 那种正确写法
+    if (!/^\/\*/.test(t) || /^\{\/\*/.test(t)) continue;
+
+    /**
+     * 关键判据: **上一行**的有效内容必须以 `>` 结尾。
+     *
+     * 那才表示"一个 JSX 标签刚闭合, 接下来是它的子节点"; 此时写裸的
+     * `/* *\/` 就会被当成文本渲染出来。
+     *
+     * 反过来, 函数/常量上方的文档注释 (上一行是 `}` 或空行或别的声明)
+     * 不受影响 —— 之前用一个 inJsx 状态机, 遇到 `return (` 就一直算在
+     * JSX 里, 把那些正常文档注释全误报了。
+     */
+    const prev = lines[i - 1].replace(/\/\/.*$/, "").trimEnd();
+    if (!prev.endsWith(">")) continue;
+
+    out.push({
+      file,
+      line: i + 1,
+      rule: "jsx-comment-leak",
+      hint: "JSX 子节点位置的块注释会被渲染成文字。要写成 {/* ... */}。",
+      text: t.slice(0, 60),
+    });
+  }
+  return out;
+}
 (function walk(dir) {
   const abs = path.resolve(ROOT, dir);
   if (!fs.existsSync(abs)) return;
@@ -168,6 +207,7 @@ for (const file of files) {
     }
   });
   violations.push(...checkButtonType(lines, file));
+  if (file.endsWith(".tsx")) violations.push(...checkJsxCommentLeak(lines, file));
 }
 
 if (violations.length === 0) {
