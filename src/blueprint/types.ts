@@ -88,6 +88,23 @@ export interface EvalContext {
   readonly execOut?: string;
 }
 
+/**
+ * 节点实例自带的端口声明。
+ *
+ * 为什么需要它: 子图的进出端点 ("隧道") 是**每个子图都不一样**的,
+ * 而 NodeTypeDef 是注册中心里静态的、按 type 共享的 —— 用静态定义表达不了。
+ * 把端口声明下放一层到实例上, 隧道就变成一个普通节点:
+ * 校验 / 环检测 / 拓扑序 / 求值全都无需为子图写特例。
+ *
+ * 附带的好处: 使用方也能拿它做"动态端口"的节点 (参数决定端口数)。
+ */
+export interface NodePorts {
+  readonly inputs?: readonly PortDef[];
+  readonly outputs?: readonly PortDef[];
+  readonly execIn?: boolean;
+  readonly execOut?: readonly ExecOutDef[];
+}
+
 export interface NodeTypeDef {
   readonly type: string;
   readonly label: string;
@@ -158,6 +175,52 @@ export interface BlueprintNode {
   readonly title?: string;
   readonly params?: Readonly<Record<string, unknown>>;
   readonly collapsed?: boolean;
+  /** 实例级端口声明, 覆盖 NodeTypeDef 上的同名部分。子图隧道靠它。 */
+  readonly ports?: NodePorts;
+  /** 引用一张子图。有它时, 该节点对外的端口由子图定义决定。 */
+  readonly subgraph?: string;
+  /** 覆盖宽度。子图节点通常比普通节点宽。 */
+  readonly width?: number;
+}
+
+/**
+ * 子图定义 —— "把一片节点折成一个节点"之后, 里面那片东西存在这。
+ *
+ * 存在 graph.subgraphs 里而不是直接嵌在节点上, 是为了**可复用**:
+ * 一个定义可以有多个调用点 (UE5 的函数就是这么回事), 改一处全变。
+ */
+export interface SubGraphDef {
+  readonly id: string;
+  readonly label?: string;
+  /** 对外输入口。与内部隧道节点的输出一一对应。 */
+  readonly inputs?: readonly PortDef[];
+  /** 对外输出口。与内部隧道节点的输入一一对应。 */
+  readonly outputs?: readonly PortDef[];
+  readonly execIn?: boolean;
+  readonly execOut?: readonly ExecOutDef[];
+  readonly nodes: readonly BlueprintNode[];
+  readonly edges: readonly BlueprintEdge[];
+}
+
+/**
+ * 区间注释 (UE5 的 Comment, n8n 的 Sticky)。
+ *
+ * 它不是节点: 不连线、不参与求值、不影响校验。它只是画布上**一个带标题的矩形**,
+ * 拖动它时把完全落在里面的节点一起带走。
+ */
+export interface BlueprintComment {
+  readonly id: string;
+  readonly title?: string;
+  readonly body?: string;
+  readonly x: number;
+  readonly y: number;
+  readonly w: number;
+  readonly h: number;
+  /**
+   * 语义色。注释是给**人**看的分组标记, 所以它可以用语义色 ——
+   * 但只这几个, 不放开任意颜色, 否则换肤时又会失效。
+   */
+  readonly tone?: "default" | "primary" | "warning" | "success";
 }
 
 /** 端口引用。`node` + `port` 两端齐全, 不带索引 —— 索引会随增删漂移。 */
@@ -177,6 +240,10 @@ export interface BlueprintEdge {
 export interface BlueprintGraph {
   readonly nodes: readonly BlueprintNode[];
   readonly edges: readonly BlueprintEdge[];
+  /** 子图定义表。节点用 `subgraph` 引用这里的 id。 */
+  readonly subgraphs?: Readonly<Record<string, SubGraphDef>>;
+  /** 区间注释。 */
+  readonly comments?: readonly BlueprintComment[];
 }
 
 // ── 校验 ──────────────────────────────────────────────────────────────

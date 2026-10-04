@@ -8,7 +8,7 @@ import type {
   PortDef,
   ValidationIssue,
 } from "./types";
-import { EXEC_IN_PORT, execOutIds, resolvePort } from "./connect";
+import { EXEC_IN_PORT, execOutIds, resolvePort, nodeShape } from "./connect";
 
 /**
  * 图校验。
@@ -43,16 +43,13 @@ function indexIncoming(graph: BlueprintGraph): Map<string, BlueprintEdge[]> {
   return m;
 }
 
-function outPorts(reg: BlueprintRegistry, node: BlueprintNode): PortDef[] {
-  const def = reg.nodeTypes.get(node.type);
-  if (!def) return [];
-  return [...(def.outputs ?? [])];
+/** 端口形貌统一走 nodeShape —— 子图节点与实例 ports 才能被正确识别。 */
+function outPorts(reg: BlueprintRegistry, graph: BlueprintGraph, node: BlueprintNode): PortDef[] {
+  return [...nodeShape(reg, graph, node.id).outputs];
 }
 
-function inPorts(reg: BlueprintRegistry, node: BlueprintNode): PortDef[] {
-  const def = reg.nodeTypes.get(node.type);
-  if (!def) return [];
-  return [...(def.inputs ?? [])];
+function inPorts(reg: BlueprintRegistry, graph: BlueprintGraph, node: BlueprintNode): PortDef[] {
+  return [...nodeShape(reg, graph, node.id).inputs];
 }
 
 /**
@@ -65,8 +62,10 @@ function inPorts(reg: BlueprintRegistry, node: BlueprintNode): PortDef[] {
 export function validateGraph(
   reg: BlueprintRegistry,
   graph: BlueprintGraph,
-  opts: { readonly requireEntry?: boolean } = {}
+  opts: { readonly requireEntry?: boolean; readonly _visited?: Set<string> } = {}
 ): GraphValidation {
+  /** 已校验过的子图 id。递归时透传, 防止子图互相引用导致无限递归。 */
+  const visited = opts._visited ?? new Set<string>();
   const issues: ValidationIssue[] = [];
   const byNode = new Map<string, NodeValidation>();
   const byEdge = new Map<string, ValidationIssue[]>();
@@ -173,9 +172,11 @@ export function validateGraph(
   for (const node of graph.nodes) {
     if (!reg.nodeTypes.has(node.type)) continue;
     const portErrors: Record<string, ValidationIssue> = {};
-    for (const p of inPorts(reg, node)) {
+    for (const p of inPorts(reg, graph, node)) {
       const has = (incoming.get(`${node.id}:${p.id}`) ?? []).length > 0;
-      if (!has && p.default === undefined) {
+      // 子图输入隧道的值来自**外部调用点**, 内部没连不算错
+      const isTunnelIn = node.type === "subgraph.input";
+      if (!has && p.default === undefined && !isTunnelIn) {
         const issue: ValidationIssue = {
           code: "missing-input",
           level: "error",
@@ -209,9 +210,37 @@ export function validateGraph(
       const fn = def && validatorMap.get(node.type);
       if (!def || !fn) continue;
       const inDegree: Record<string, number> = {};
-      for (const p of inPorts(reg, node)) inDegree[p.id] = (incoming.get(`${node.id}:${p.id}`) ?? []).length;
+      for (const p of inPorts(reg, graph, node)) inDegree[p.id] = (incoming.get(`${node.id}:${p.id}`) ?? []).length;
       const out = fn({ node, def, params: node.params ?? {}, inDegree });
       for (const i of out) push({ ...i, nodeIds: i.nodeIds ?? [node.id] });
+    }
+  }
+
+  // ── 子图: 逐张递归校验 ──────────────────────────────────────────
+  // 子图内部的报错要带上"哪张子图"的前缀, 否则用户看到一条报错却不知道
+  // 该进哪一层去修 —— 那是最折磨人的一类诊断。
+  for (const [sgId, sg] of Object.entries(graph.subgraphs ?? {})) {
+    /**
+     * 递归必须带"已访问"集合。
+     *
+     * 第一版把整张 subgraphs 表原样传下去, 于是每张子图都会再校验一遍
+     * **全部**子图 (包括它自己) —— 一层嵌套就是无限递归, 直接爆栈。
+     * 子图之间的引用不是树而是任意图 (一个子图可以被多个子图调用),
+     * 所以这里必须按 id 去重, 而不是靠"深度递减"。
+     */
+    if (visited.has(sgId)) continue;
+    visited.add(sgId);
+    const inner = validateGraph(
+      reg,
+      { nodes: sg.nodes, edges: sg.edges, subgraphs: graph.subgraphs },
+      { ...opts, _visited: visited }
+    );
+    for (const i of inner.issues) {
+      push({
+        ...i,
+        message: `[${sg.label ?? sgId}] ${i.message}`,
+        nodeIds: i.nodeIds?.map((id) => `${sgId}/${id}`),
+      });
     }
   }
 
@@ -347,13 +376,20 @@ export function upstreamOf(graph: BlueprintGraph, nodeId: string): Set<string> {
   return out;
 }
 
-/** 输出端口引用汇总, 序列化与调试用。 */
-export function allPorts(reg: BlueprintRegistry, node: BlueprintNode): { inputs: PortDef[]; outputs: PortDef[]; execIn: boolean; execOuts: string[] } {
-  const def = reg.nodeTypes.get(node.type);
+/**
+ * 端口形貌汇总, 序列化与调试用。
+ * 需要传 graph —— 子图节点的外形由子图定义决定, 光有 node 算不出来。
+ */
+export function allPorts(
+  reg: BlueprintRegistry,
+  graph: BlueprintGraph,
+  node: BlueprintNode
+): { inputs: PortDef[]; outputs: PortDef[]; execIn: boolean; execOuts: string[] } {
+  const shape = nodeShape(reg, graph, node.id);
   return {
-    inputs: inPorts(reg, node),
-    outputs: outPorts(reg, node),
-    execIn: !!def?.execIn,
-    execOuts: execOutIds(def),
+    inputs: inPorts(reg, graph, node),
+    outputs: outPorts(reg, graph, node),
+    execIn: shape.execIn,
+    execOuts: execOutIds(shape),
   };
 }

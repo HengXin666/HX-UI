@@ -1,5 +1,5 @@
 import type {
-  BlueprintGraph,
+  BlueprintGraph, NodeTypeDef, SubGraphDef, NodePorts,
   BlueprintRegistry,
   PortDef,
   PortRef,
@@ -74,29 +74,87 @@ function findPort(ports: readonly PortDef[] | undefined, id: string): PortDef | 
 }
 
 /**
+ * 判定所需的最小图形状。
+ *
+ * 单独定义而不是直接吃 BlueprintGraph, 是为了让后端能只传两张表来校验 ——
+ * 它拿不到 (也不需要) 节点坐标、注释这些渲染侧的东西。
+ */
+export interface ConnectableGraph {
+  readonly nodes: readonly MinimalNode[];
+  readonly edges: readonly { readonly id: string; readonly from: PortRef; readonly to: PortRef }[];
+  readonly subgraphs?: Readonly<Record<string, SubGraphDef>>;
+}
+
+/** 判定只需要这三个字段。 */
+export interface MinimalNode {
+  readonly id: string;
+  readonly type: string;
+  readonly subgraph?: string;
+  readonly ports?: NodePorts;
+}
+
+/**
+ * 一个节点对外的端口形貌。
+ *
+ * 三 source 优先级: 子图定义 > 实例 ports > 类型定义。
+ *
+ * 子图优先是刻意的: 一个子图节点的外形必须**完全由子图决定**,
+ * 否则"改了子图里一个隧道, 外面这个节点的口没变"会成为最难查的那类 bug。
+ */
+export function nodeShape(
+  reg: BlueprintRegistry,
+  graph: ConnectableGraph,
+  nodeId: string
+): Required<Pick<NodeTypeDef, "inputs" | "outputs" | "execIn" | "execOut">> & { readonly isSubgraph: boolean } {
+  const node = graph.nodes.find((n) => n.id === nodeId);
+  const def = node ? reg.nodeTypes.get(node.type) : undefined;
+
+  if (node?.subgraph) {
+    const sg = graph.subgraphs?.[node.subgraph];
+    // 子图丢了也要返回一个空形貌而不是 undefined —— 否则"子图被删"会
+    // 让所有连到它的边变成 dangling, 报错信息指向边而不是根因
+    return {
+      inputs: sg?.inputs ?? [],
+      outputs: sg?.outputs ?? [],
+      execIn: sg?.execIn ?? false,
+      execOut: sg?.execOut ?? [],
+      isSubgraph: true,
+    };
+  }
+
+  return {
+    inputs: node?.ports?.inputs ?? def?.inputs ?? [],
+    outputs: node?.ports?.outputs ?? def?.outputs ?? [],
+    execIn: node?.ports?.execIn ?? def?.execIn ?? false,
+    execOut: node?.ports?.execOut ?? def?.execOut ?? [],
+    isSubgraph: false,
+  };
+}
+
+/**
  * 解析一个端口引用。
  * `dir` 是"我们要把这端当什么用" —— 同一条边的 from 端被当输出、to 端被当输入。
  */
 export function resolvePort(
   reg: BlueprintRegistry,
-  graph: Pick<BlueprintGraph, "nodes">,
+  graph: ConnectableGraph,
   ref: PortRef,
   dir: "in" | "out"
 ): ResolvedPort | undefined {
   const node = graph.nodes.find((n) => n.id === ref.node);
   if (!node) return undefined;
-  const def = reg.nodeTypes.get(node.type);
-  if (!def) return undefined;
 
-  // 执行端口: 入口只有一个, 出口按定义
-  if (dir === "in" && def.execIn && ref.port === EXEC_IN_PORT) {
+  const shape = nodeShape(reg, graph, ref.node);
+
+  // 执行端口: 入口只有一个, 出口按形貌
+  if (dir === "in" && shape.execIn && ref.port === EXEC_IN_PORT) {
     return { port: { id: EXEC_IN_PORT, type: EXEC }, isExec: true };
   }
-  if (dir === "out" && execOutIds(def).includes(ref.port)) {
+  if (dir === "out" && execOutIds(shape).includes(ref.port)) {
     return { port: { id: ref.port, type: EXEC }, isExec: true };
   }
 
-  const port = findPort(dir === "in" ? def.inputs : def.outputs, ref.port);
+  const port = findPort(dir === "in" ? shape.inputs : shape.outputs, ref.port);
   return port ? { port, isExec: false } : undefined;
 }
 
@@ -108,7 +166,7 @@ export function resolvePort(
  */
 export function canConnect(
   reg: BlueprintRegistry,
-  graph: Pick<BlueprintGraph, "nodes"> & { readonly edges: readonly { readonly id: string; readonly from: PortRef; readonly to: PortRef }[] },
+  graph: ConnectableGraph,
   from: PortRef,
   to: PortRef
 ): ConnectResult {

@@ -41,6 +41,10 @@ export function parseGraph(raw: unknown): BlueprintGraph | null {
         ...(typeof x.title === "string" ? { title: x.title } : {}),
         ...(typeof x.params === "object" && x.params !== null ? { params: x.params as Record<string, unknown> } : {}),
         ...(typeof x.collapsed === "boolean" ? { collapsed: x.collapsed } : {}),
+        // 实例级端口与子图引用: 丢了它们, 子图节点就退回成静态定义的形状
+        ...(typeof x.ports === "object" && x.ports !== null ? { ports: x.ports as never } : {}),
+        ...(typeof x.subgraph === "string" ? { subgraph: x.subgraph } : {}),
+        ...(typeof x.width === "number" ? { width: x.width } : {}),
       },
     ];
   });
@@ -66,7 +70,18 @@ export function parseGraph(raw: unknown): BlueprintGraph | null {
     ];
   });
 
-  return { nodes, edges };
+  // 子图与注释只做"形状确认", 深层合法性交给 validateGraph 递归校验 ——
+  // 读取侧不该因为一个字段类型不对就把整张图判死, 那样用户连修的机会都没有
+  const subgraphs =
+    typeof o.subgraphs === "object" && o.subgraphs !== null ? (o.subgraphs as Record<string, unknown>) : undefined;
+  const comments = Array.isArray(o.comments) ? (o.comments as unknown[]) : undefined;
+
+  return {
+    nodes,
+    edges,
+    ...(subgraphs ? { subgraphs: subgraphs as never } : {}),
+    ...(comments ? { comments: comments as never } : {}),
+  };
 }
 
 function num(v: unknown, d: number): number {

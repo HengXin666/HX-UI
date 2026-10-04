@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { BlueprintGraph, BlueprintNode, PortRef, BlueprintRegistry } from "./types";
 import { applyConnect, canConnect, type ConnectResult } from "./connect";
+import { collapseToSubgraph, expandSubgraph, writeSubgraph, subgraphRefCount } from "./subgraph";
+import { addComment, removeComment, updateComment, commentAround, moveCommentWithNodes, resizeComment } from "./comment";
 import { validateGraph } from "./validate";
 import type { GraphValidation } from "./types";
 
@@ -62,6 +64,24 @@ export interface BlueprintApi {
   /** 整体替换 (导入 / 撤销 / 清空)。 */
   replace(next: BlueprintGraph): void;
   clear(): void;
+
+  // ── 子图 ──
+  /** 把选中的节点折成一个子图节点。返回新节点 id, 失败返回 null。 */
+  collapse(ids: readonly string[], label?: string): string | null;
+  /** 展开子图节点。返回是否真的展开了。 */
+  expand(nodeId: string): boolean;
+  /** 写回子图内部。 */
+  writeSubgraph(sgId: string, inner: Pick<BlueprintGraph, "nodes" | "edges">): void;
+
+  // ── 区间注释 ──
+  addComment(box: { x: number; y: number; w?: number; h?: number }, title?: string): string;
+  /** 给一批节点套一个刚好包住它们的注释框。 */
+  commentAround(ids: readonly string[], title?: string): string;
+  updateComment(id: string, patch: Record<string, unknown>): void;
+  removeComment(id: string): void;
+  /** 拖注释: 里面被完全包住的节点跟着走。 */
+  moveComment(id: string, delta: { dx: number; dy: number }): void;
+  resizeComment(id: string, box: { x: number; y: number; w: number; h: number }): void;
 }
 
 const EMPTY: BlueprintGraph = { nodes: [], edges: [] };
@@ -194,12 +214,82 @@ export function useBlueprint(opts: UseBlueprintOptions): BlueprintApi {
   const replace = useCallback((next: BlueprintGraph) => commit(next), [commit]);
   const clear = useCallback(() => commit(EMPTY), [commit]);
 
+  const collapse: BlueprintApi["collapse"] = useCallback(
+    (ids, label) => {
+      const before = new Set(graph.nodes.map((n) => n.id));
+      const next = collapseToSubgraph(registry, graph, ids, { ...(label ? { label } : {}) });
+      if (next === graph) return null;
+      commit(next);
+      // 折叠后新出现的那个节点就是子图节点
+      const added = next.nodes.find((n) => !before.has(n.id));
+      return added?.id ?? null;
+    },
+    [registry, graph, commit]
+  );
+
+  const expand = useCallback(
+    (nodeId: string) => {
+      const node = graph.nodes.find((n) => n.id === nodeId);
+      if (!node?.subgraph) return false;
+      // 还有别的调用点就把定义留着, 否则连定义一起删 —— 不然子图表会无限长
+      const keep = subgraphRefCount(graph, node.subgraph) > 1;
+      commit(expandSubgraph(graph, nodeId, { keepSubgraphDef: keep }));
+      return true;
+    },
+    [graph, commit]
+  );
+
+  const writeSub = useCallback(
+    (sgId: string, inner: Pick<BlueprintGraph, "nodes" | "edges">) => commit(writeSubgraph(graph, sgId, inner)),
+    [graph, commit]
+  );
+
+  const addCmt: BlueprintApi["addComment"] = useCallback(
+    (box, title) => {
+      const r = addComment(graph, {
+        x: box.x, y: box.y, w: box.w ?? 240, h: box.h ?? 140,
+        ...(title ? { title } : {}),
+      });
+      commit(r.graph);
+      return r.id;
+    },
+    [graph, commit]
+  );
+
+  const commentAroundIds: BlueprintApi["commentAround"] = useCallback(
+    (ids, title) => {
+      const r = commentAround(registry, graph, ids, { ...(title ? { title } : {}) });
+      commit(r.graph);
+      return r.id;
+    },
+    [registry, graph, commit]
+  );
+
+  const updateCmt: BlueprintApi["updateComment"] = useCallback(
+    (id, patch) => commit(updateComment(graph, id, patch as never)),
+    [graph, commit]
+  );
+
+  const removeCmt = useCallback((id: string) => commit(removeComment(graph, id)), [graph, commit]);
+  const moveCmt = useCallback(
+    (id: string, delta: { dx: number; dy: number }) => commit(moveCommentWithNodes(registry, graph, id, delta)),
+    [registry, graph, commit]
+  );
+  const resizeCmt = useCallback(
+    (id: string, box: { x: number; y: number; w: number; h: number }) => commit(resizeComment(graph, id, box)),
+    [graph, commit]
+  );
+
   return {
     graph, validation,
     addNode, removeNode, moveNode, moveNodes, duplicateNode,
     setNodeTitle, setParam, setCollapsed,
     connect, check, disconnect, disconnectInput,
     replace, clear,
+    collapse, expand, writeSubgraph: writeSub,
+    addComment: addCmt, commentAround: commentAroundIds,
+    updateComment: updateCmt, removeComment: removeCmt,
+    moveComment: moveCmt, resizeComment: resizeCmt,
   };
 }
 

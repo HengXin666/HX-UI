@@ -37,6 +37,8 @@ export * from "../../src/blueprint/evaluate";
 export * from "../../src/blueprint/serialize";
 export * from "../../src/blueprint/demo";
 export * from "../../src/blueprint/geometry";
+export * from "../../src/blueprint/subgraph";
+export * from "../../src/blueprint/comment";
 `;
 
 const VITE_CFG = `import { defineConfig } from "vite";
@@ -79,6 +81,9 @@ import {
   topoSort, upstreamOf, evaluateGraph, parseGraph, serializeGraph,
   createDemoRegistry, demoGraph,
   portPos, hitPort, nodeWidth, nodeHeight,
+  collapseToSubgraph, expandSubgraph, subgraphAsGraph, subgraphRefCount,
+  boundaryPorts, registerTunnels, TUNNEL_IN, TUNNEL_OUT,
+  addComment, commentAround, moveCommentWithNodes, nodesInComment, commentContains,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -245,7 +250,93 @@ const G0 = {
   ok("命中测试能抓到第一个执行出口", hit2?.ref.port === outs[0] && hit2.dir === "out");
 }
 
-// ── 7. 序列化往返 ──
+// ── 7. 子图: 折叠 / 展开 ──
+{
+  registerTunnels(demo);
+
+  /**
+   * 构造一片可折叠的区域: n2/n3 (数值) -> n4 (比较)。
+   * 折叠后, 对外应该只剩 n4.out 一个输出口, 输入口为零 (数值节点在内部)。
+   */
+  const folded = collapseToSubgraph(demo, demoGraph, ["n2", "n3", "n4"], { label: "算比较" });
+  const sub = folded.nodes.find((n) => n.subgraph)!;
+  ok("折叠后产生一个子图节点", !!sub);
+  ok("外层节点数 = 5 (原 7 减 3 加 1)", folded.nodes.length === 5);
+  ok("子图定义被存下来", !!folded.subgraphs[sub.subgraph]);
+
+  const sg = folded.subgraphs[sub.subgraph];
+  ok("子图内部有 3 个原节点", sg.nodes.filter((n) => n.type !== TUNNEL_IN && n.type !== TUNNEL_OUT).length === 3);
+  ok("子图对外有一个输出口 (比较结果)", (sg.outputs ?? []).length === 1);
+  ok("子图对外没有输入口 (数值节点在内部)", (sg.inputs ?? []).length === 0);
+
+  // 外部那条"n4.out -> n5.cond"必须改接到子图节点上
+  ok("跨界边被改接到子图节点", folded.edges.some((e) => e.from.node === sub.id && e.to.node === "n5"));
+
+  // 折叠后仍要能连: 子图节点的外形来自子图定义
+  const rc = canConnect(demo, folded, { node: sub.id, port: sg.outputs[0].id }, { node: "n6", port: "msg" });
+  ok("子图输出能连到下游 (boolean -> any)", rc.ok === true);
+
+  // 折叠后校验仍通过 —— 子图内部被递归校验
+  const vf = validateGraph(demo, folded);
+  ok("折叠后整图校验通过", vf.ok);
+  if (!vf.ok) console.log("    折叠后报错:", JSON.stringify(vf.issues.slice(0, 6), null, 1));
+
+  // 展开要还原回等价的图
+  const unfolded = expandSubgraph(folded, sub.id);
+  ok("展开后节点数回到 7", unfolded.nodes.length === 7);
+  ok("展开后隧道节点不残留", !unfolded.nodes.some((n) => n.type === TUNNEL_IN || n.type === TUNNEL_OUT));
+  ok("展开后边数回到 6", unfolded.edges.length === 6);
+  ok("展开后校验通过", validateGraph(demo, unfolded).ok);
+  ok("展开后子图定义默认保留", !!unfolded.subgraphs[sub.subgraph]);
+
+  // 展开后求值结果必须和折叠前一致 —— 这是折叠语义正确性的硬判据
+  const before = await evaluateGraph(demo, demoGraph, { entry: "n1" });
+  const after = await evaluateGraph(demo, unfolded, { entry: "n1" });
+  ok("折叠-展开往返后求值结果不变", JSON.stringify(before.outputs.get("n4")) === JSON.stringify(after.outputs.get("n4")));
+
+  // 折叠态下求值: 必须能进子图把结果算出来
+  const foldedEval = await evaluateGraph(demo, folded, { entry: "n1" });
+  ok("折叠态下求值能进入子图", foldedEval.ok);
+  const subOut = foldedEval.outputs.get(sub.id);
+  ok("子图节点吐出了正确的值", subOut && Object.values(subOut)[0] === true);
+
+  // 引用计数: 决定展开时能不能安全删定义
+  ok("引用计数正确", subgraphRefCount(folded, sub.subgraph) === 1);
+  ok("取子图内部图为独立图", subgraphAsGraph(folded, sub.subgraph).nodes.length === sg.nodes.length);
+
+  // 边界计算: 只折叠 n4 时, 两个数值节点在外, 所以对外应有两个输入口
+  const b2 = boundaryPorts(demo, demoGraph, ["n4"]);
+  ok("边界计算: 折叠单个节点时对外两个输入口", b2.inputs.length === 2);
+  ok("边界计算: 对外一个输出口", b2.outputs.length === 1);
+}
+
+// ── 8. 区间注释 ──
+{
+  const r = commentAround(demo, demoGraph, ["n2", "n3", "n4"], { title: "算一个大数" });
+  const g = r.graph;
+  ok("注释被加进图", (g.comments ?? []).length === 1);
+
+  const c = g.comments[0];
+  const inside = nodesInComment(demo, g, c.id);
+  ok("注释包住了那三个节点", inside.length === 3);
+  ok("完全包含判定: 框外的节点不算", !inside.some((n) => n.id === "n5"));
+
+  // 拖动注释, 里面的节点跟着走
+  const moved = moveCommentWithNodes(demo, g, c.id, { dx: 100, dy: 50 });
+  const after = moved.comments[0];
+  ok("注释自己移动了", Math.abs(after.x - (c.x + 100)) < 0.001 && Math.abs(after.y - (c.y + 50)) < 0.001);
+  const n2 = moved.nodes.find((n) => n.id === "n2");
+  ok("框内节点跟着移动", Math.abs(n2.x - (demoGraph.nodes.find((n) => n.id === "n2").x + 100)) < 0.001);
+  const n5 = moved.nodes.find((n) => n.id === "n5");
+  ok("框外节点不动", Math.abs(n5.x - demoGraph.nodes.find((n) => n.id === "n5").x) < 0.001);
+
+  // 注释不影响校验与求值 —— 它不是节点
+  ok("加注释后校验仍通过", validateGraph(demo, g).ok);
+  ok("注释不会被当成节点算进拓扑序", topoSort(g).length === g.nodes.length);
+  ok("注释不产生端口", !hitPort(demo, g, { x: c.x + 1, y: c.y + 1 }, 9));
+}
+
+// ── 9. 序列化往返 (含子图与注释) ──
 {
   const back = parseGraph(JSON.parse(JSON.stringify(serializeGraph(demoGraph))));
   ok("往返节点数一致", back.nodes.length === demoGraph.nodes.length);

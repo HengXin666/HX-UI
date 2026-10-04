@@ -52,6 +52,14 @@ export interface BlueprintCanvasProps {
   readonly onAddNode?: (type: string, at: { x: number; y: number }) => void;
   readonly onRemoveNodes?: (ids: readonly string[]) => void;
   readonly onOpenMenu?: (at: { x: number; y: number }) => void;
+  /** 双击子图节点: 请求"进入"这一层。由外层决定是换一张图还是开抽屉。 */
+  readonly onEnterSubgraph?: (nodeId: string, sgId: string) => void;
+  /** 折叠选中的节点。 */
+  readonly onCollapse?: (ids: readonly string[]) => void;
+  /** 注释改动 (拖动 / 改尺寸 / 改文案)。 */
+  readonly onCommentChange?: (id: string, patch: { x?: number; y?: number; w?: number; h?: number; title?: string }) => void;
+  /** 命中的注释被拖动: 由外层算"带走哪些节点" —— 那是图操作, 画布不管。 */
+  readonly onCommentMove?: (id: string, delta: { dx: number; dy: number }) => void;
 
   readonly className?: string;
   readonly height?: number | string;
@@ -80,6 +88,7 @@ export function BlueprintCanvas({
   registry, graph, validation, selected,
   onNodesMove, onConnect, onDisconnect, onSelect, onNodeParamChange,
   onAddNode, onRemoveNodes, onOpenMenu,
+  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
 }: BlueprintCanvasProps): JSX.Element {
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -89,6 +98,12 @@ export function BlueprintCanvas({
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const [panning, setPanning] = useState<{ x: number; y: number; vx: number; vy: number } | null>(null);
   const [paletteAt, setPaletteAt] = useState<{ x: number; y: number } | null>(null);
+  const [commentDrag, setCommentDrag] = useState<{
+    readonly id: string;
+    readonly start: { x: number; y: number };
+    readonly origin: { x: number; y: number };
+  } | null>(null);
+  const [editingComment, setEditingComment] = useState<string | null>(null);
 
   const toGraph = useCallback(
     (clientX: number, clientY: number) => {
@@ -142,6 +157,16 @@ export function BlueprintCanvas({
         return;
       }
 
+      // 注释在节点**下面**, 所以先判节点。只有点在注释的标题条上才抓注释 ——
+      // 点在注释空白处应该穿透过去起框选, 否则注释会挡住整片区域的操作。
+      const cmt = hitCommentBar(graph.comments, p);
+      if (cmt) {
+        onSelect?.([]);
+        setCommentDrag({ id: cmt.id, start: p, origin: { x: cmt.x, y: cmt.y } });
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        return;
+      }
+
       const node = hitNode(registry, graph, p);
       if (node) {
         const ids = selected?.has(node.id) && selected.size > 1 ? [...selected] : [node.id];
@@ -180,6 +205,12 @@ export function BlueprintCanvas({
         }));
         return;
       }
+      if (commentDrag) {
+        const dx = p.x - commentDrag.start.x;
+        const dy = p.y - commentDrag.start.y;
+        onCommentMove?.(commentDrag.id, { dx, dy });
+        return;
+      }
       if (link) {
         const hover = hitPort(registry, graph, p, portTolerance / view.zoom);
         let verdict: LinkState["verdict"] = null;
@@ -198,13 +229,19 @@ export function BlueprintCanvas({
       }
       if (marquee) setMarquee({ ...marquee, x1: p.x, y1: p.y });
     },
-    [panning, drag, link, marquee, toGraph, graph, registry, view.zoom, onNodesMove, portTolerance]
+    [panning, drag, link, marquee, commentDrag, toGraph, graph, registry, view.zoom, onNodesMove, portTolerance, onCommentMove]
   );
 
   const onPointerUp = useCallback(
     (e: React.PointerEvent) => {
       const p = toGraph(e.clientX, e.clientY);
 
+      if (commentDrag) {
+        const dx = p.x - commentDrag.start.x;
+        const dy = p.y - commentDrag.start.y;
+        onCommentMove?.(commentDrag.id, { dx, dy });
+        return;
+      }
       if (link) {
         const hover = hitPort(registry, graph, p, portTolerance / view.zoom);
         if (hover && hover.dir !== link.dir) {
@@ -235,6 +272,7 @@ export function BlueprintCanvas({
       }
       setDrag(null);
       setPanning(null);
+      setCommentDrag(null);
     },
     [link, marquee, graph, registry, toGraph, view.zoom, onConnect, onAddNode, onSelect, portTolerance]
   );
@@ -336,6 +374,53 @@ export function BlueprintCanvas({
         />
       )}
 
+      {/* 注释层: 在网格之上、连线之下 —— 它是背景分组, 压住线会挡住拓扑关系 */}
+      <div
+        className="absolute left-0 top-0 origin-top-left"
+        style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`, width: 0, height: 0 }}
+      >
+        {(graph.comments ?? []).map((c) => (
+          <div
+            key={c.id}
+            className="absolute"
+            style={{ left: c.x, top: c.y, width: c.w, height: c.h }}
+          >
+            <div
+              className={cn(
+                "flex h-[22px] items-center gap-1 rounded-t-md border-b px-2",
+                COMMENT_TONE[c.tone ?? "default"]
+              )}
+            >
+              {editingComment === c.id ? (
+                <input
+                  autoFocus
+                  defaultValue={c.title ?? ""}
+                  className="min-w-0 flex-1 bg-transparent text-[11px] font-medium outline-none"
+                  onBlur={(e) => {
+                    onCommentChange?.(c.id, { title: e.target.value });
+                    setEditingComment(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+                    if (e.key === "Escape") setEditingComment(null);
+                  }}
+                />
+              ) : (
+                <span
+                  className="min-w-0 flex-1 truncate text-[11px] font-medium"
+                  onDoubleClick={() => setEditingComment(c.id)}
+                >
+                  {c.title || "注释"}
+                </span>
+              )}
+            </div>
+            {c.body ? (
+              <div className="px-2 py-1 text-[11px] leading-snug opacity-80">{c.body}</div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+
       <svg className="pointer-events-none absolute inset-0 h-full w-full">
         <g transform={`translate(${view.x} ${view.y}) scale(${view.zoom})`}>
           {edges.map((e) => {
@@ -390,7 +475,12 @@ export function BlueprintCanvas({
           const portErrors: Record<string, boolean> = {};
           for (const k of Object.keys(nv?.portErrors ?? {})) portErrors[k] = true;
           return (
-            <div key={n.id} className="absolute" style={{ left: n.x, top: n.y, width: nodeWidth(registry, n) }}>
+            <div
+              key={n.id}
+              className="absolute"
+              style={{ left: n.x, top: n.y, width: nodeWidth(registry, n) }}
+              onDoubleClick={() => { if (n.subgraph) onEnterSubgraph?.(n.id, n.subgraph); }}
+            >
               <BlueprintNodeCard
                 registry={registry}
                 node={n}
@@ -455,6 +545,32 @@ export function BlueprintCanvas({
     </div>
   );
 }
+
+/** 注释标题条的命中区域 (只上沿 22px)。 */
+function hitCommentBar(
+  comments: readonly { id: string; x: number; y: number; w: number; h: number }[] | undefined,
+  p: { x: number; y: number }
+): { id: string; x: number; y: number } | undefined {
+  if (!comments) return undefined;
+  // 倒序: 后加的在上面
+  for (let i = comments.length - 1; i >= 0; i--) {
+    const c = comments[i];
+    if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + COMMENT_BAR_H) {
+      return { id: c.id, x: c.x, y: c.y };
+    }
+  }
+  return undefined;
+}
+
+const COMMENT_BAR_H = 22;
+
+/** 注释的语义色。只允许这四种 —— 放开任意颜色换肤时又会失效。 */
+const COMMENT_TONE: Record<string, string> = {
+  default: "border-border/60 bg-muted/40 text-muted-foreground",
+  primary: "border-primary/40 bg-primary/10 text-primary",
+  warning: "border-amber-500/40 bg-amber-500/10 text-amber-400",
+  success: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
+};
 
 function CanvasButton({
   onClick, title, children,

@@ -1,10 +1,12 @@
-import { useState, type JSX } from "react";
+import { useMemo, useState, type JSX } from "react";
 import type { BlueprintGraph } from "@hx/ui";
 import {
   BlueprintEditor, BlueprintCanvas, BlueprintPalette,
   demoRegistry, createDemoRegistry, demoGraph,
   createRegistry, canConnect, evaluateGraph, validateGraph, findCycles, topoSort,
   serializeGraph, parseGraph,
+  collapseToSubgraph, expandSubgraph, subgraphRefCount, registerTunnels,
+  commentAround, moveCommentWithNodes, nodesInComment,
   Badge, Button, Card, CardContent, CardHeader, CardTitle, cn,
 } from "@hx/ui";
 import { H2, P, Preview, PropsTable, Callout, Code, CodeBlock as DocCode } from "../components/DocKit";
@@ -95,7 +97,7 @@ const v = validateGraph(reg, loaded);          // 语义校验另走这一步`;
 
 /** 完整编辑器: 用演示节点库跑起来。 */
 function EditorDemo(): JSX.Element {
-  const [graph, setGraph] = useState<BlueprintGraph>(demoGraph);
+  const [graph, setGraph] = useState<BlueprintGraph>(demoGraph as BlueprintGraph);
   const [lines, setLines] = useState<string[]>([]);
   const reg = demoRegistry;
   const v = validateGraph(reg, graph);
@@ -164,6 +166,114 @@ function EditorDemo(): JSX.Element {
         <Code>拖到空白处松手 = 弹面板加节点</Code>
         <Code>框选后 Delete 删除</Code>
         <Code>把「数值」改成 3 再运行 → 走另一条分支</Code>
+      </div>
+    </div>
+  );
+}
+
+/** 折叠为子图: 现场演示"把一片节点折成一个, 再展开回去"。 */
+function SubgraphDemo(): JSX.Element {
+  const reg = createDemoRegistry();
+  registerTunnels(reg);
+  const [step, setStep] = useState<"原图" | "已折叠" | "展开后">("原图");
+  const [folded, setFolded] = useState<BlueprintGraph | null>(null);
+
+  const doCollapse = () => {
+    const g = collapseToSubgraph(reg, demoGraph, ["n2", "n3", "n4"], { label: "算比较" });
+    setFolded(g);
+    setStep("已折叠");
+  };
+  const doExpand = () => {
+    if (!folded) return;
+    const sub = folded.nodes.find((n) => n.subgraph)!;
+    setFolded(expandSubgraph(folded, sub.id));
+    setStep("展开后");
+  };
+
+  const g: BlueprintGraph = folded ?? (demoGraph as BlueprintGraph);
+  const v = validateGraph(reg, g);
+  const sub = g.nodes.find((n) => n.subgraph);
+  const sg = sub?.subgraph ? g.subgraphs?.[sub.subgraph] : undefined;
+
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="sm" variant="outline" onClick={doCollapse} disabled={step !== "原图"}>
+          折叠 n2/n3/n4
+        </Button>
+        <Button size="sm" variant="outline" onClick={doExpand} disabled={step !== "已折叠"}>
+          展开
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => { setFolded(null); setStep("原图"); }}>
+          重置
+        </Button>
+        <Badge variant={v.ok ? "success" : "destructive"}>{v.ok ? "校验通过" : "有错"}</Badge>
+        <span className="ml-auto text-[11px] tabular-nums text-muted-foreground">
+          {g.nodes.length} 节点 / {g.edges.length} 连线
+        </span>
+      </div>
+
+      <BlueprintCanvas registry={reg} graph={g} height={300} />
+
+      <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-[11.5px] leading-relaxed text-muted-foreground">
+        {step === "原图" && "三个节点 (两个数值 + 一个比较) 在根图上。点「折叠」把它们收成一个子图节点。"}
+        {step === "已折叠" && sg && (
+          <>
+            外层少了三个节点, 多了一个「算比较」节点。它对外只有
+            <Code>{sg.outputs?.map((p) => p.id).join(", ") || "无"}</Code> 一个输出口,
+            输入口为零 —— 数值节点被关在里面了。原来那条「比较结果 → 分支条件」
+            的边自动改接到子图节点身上。双击它可以进入。
+          </>
+        )}
+        {step === "展开后" && (
+          <>
+            展开后节点数与边数回到原样, 且求值结果与折叠前一致 ——
+            这是折叠语义正确性的硬判据。子图定义<strong>默认保留</strong>:
+            一个子图可能有多个调用点, 展开其中一个就把定义删了, 别的调用点会立刻悬空。
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** 区间注释: 拖注释, 里面的节点跟着走。 */
+function CommentDemo(): JSX.Element {
+  const reg = createDemoRegistry();
+  const built = useMemo(() => commentAround(reg, demoGraph as BlueprintGraph, ["n2", "n3", "n4"], { title: "算出比较结果" }), [reg]);
+  const [g, setG] = useState<BlueprintGraph>(built.graph as BlueprintGraph);
+  const [moved, setMoved] = useState(0);
+
+  const nudge = () => {
+    const id = g.comments?.[0]?.id;
+    if (!id) return;
+    setG(moveCommentWithNodes(reg, g, id, { dx: 40, dy: 24 }));
+    setMoved((m) => m + 1);
+  };
+
+  const inside = g.comments?.[0] ? nodesInComment(reg, g, g.comments[0].id) : [];
+
+  return (
+    <div className="w-full space-y-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Button size="sm" variant="outline" onClick={nudge}>
+          把注释往右下拖一格
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => { setG(built.graph); setMoved(0); }}>
+          重置
+        </Button>
+        <span className="ml-auto text-[11px] text-muted-foreground">
+          框内 {inside.length} 个节点会跟着走 · 已移动 {moved} 次
+        </span>
+      </div>
+
+      <BlueprintCanvas registry={reg} graph={g} height={300} />
+
+      <div className="text-[11.5px] leading-relaxed text-muted-foreground">
+        判据是「<strong>完全落在框里</strong>」而不是「相交」。相交会让一次拖动带走半个图 ——
+        注释框通常画得比内容大一圈, 相交判定几乎必然命中相邻节点。
+        完全包含保守但可预测: 你能一眼看出哪些会被带走。
+        注释不是节点: 不连线、不参与求值、不影响校验。
       </div>
     </div>
   );
@@ -339,6 +449,44 @@ export function BlueprintPage(): JSX.Element {
         两条分支的下游都会被算到。
       </P>
       <DocCode code={REG_EXEC} />
+
+      <H2>折叠为子图 (进入 / 展开)</H2>
+      <P>
+        几十上百个节点的图靠缩放是找不完的 —— 折叠成子图是唯一能让它保持可读的手段。
+        框选一批节点 → 折叠，得到一个新的子图节点，<strong>双击进入</strong>里头那片，
+        面包屑可以退回外层。
+      </P>
+      <Preview align="stretch">
+        <SubgraphDemo />
+      </Preview>
+      <P>
+        关键设计：子图的进出端点做成<strong>真实节点</strong>（隧道）。
+        这样子图内部的连线就是普通的边，于是校验、环检测、拓扑序、求值
+        <strong>全都不需要为子图写任何特例</strong> —— 它们看到的就是一张普通的图。
+        代价是多一个要解释的概念，但比让每个下游函数都判一次「我是不是在子图里」好得多。
+      </P>
+      <Callout title="子图定义默认保留">
+        一个子图可以有多个调用点（改一处全变）。展开其中一个时，定义会留着 ——
+        否则别的调用点会立刻变成悬空引用。只有确认没有别的引用了才删。
+      </Callout>
+
+      <H2>区间注释</H2>
+      <P>
+        就是 UE5 的 Comment：画布上一个带标题的矩形，给一片节点加个说明框。
+        它<strong>不是节点</strong> —— 不连线、不参与求值、不影响校验。
+      </P>
+      <Preview align="stretch">
+        <CommentDemo />
+      </Preview>
+      <DocCode code={`// 框选一批节点 -> 得到刚好包住它们的注释框
+const r = commentAround(reg, graph, selectedIds, { title: "这一段负责鉴权" });
+
+// 拖动注释: 完全落在框里的节点跟着走, 框外的不动
+const next = moveCommentWithNodes(reg, graph, commentId, { dx: 40, dy: 24 });`} />
+      <P>
+        只有<strong>完全落在框里</strong>的节点才会被带走。点在注释空白处会穿透过去起框选 ——
+        否则注释会挡住整片区域的操作。
+      </P>
 
       <H2>连接判定</H2>
       <P>

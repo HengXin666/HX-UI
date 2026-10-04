@@ -96,6 +96,66 @@ export async function evaluateGraph(
       const params: Record<string, unknown> = {};
       for (const p of def.params ?? []) params[p.id] = paramValue(node, p.id, p.default);
 
+      /**
+       * 子图节点: 进去跑一遍里面的图, 把结果接回来。
+       *
+       * 入参怎么进来: 隧道输入节点读 `params.__value` —— 它的 evaluate 就是
+       * 把这值原样吐出。这样"外部 -> 隧道 -> 内部"是一条普通的边,
+       * 求值器不需要知道子图这回事。
+       */
+      if (node.subgraph) {
+        const sg = graph.subgraphs?.[node.subgraph];
+        if (!sg) {
+          errors.set(id, `子图不存在: ${node.subgraph}`);
+          return undefined;
+        }
+        const innerGraph: BlueprintGraph = { nodes: sg.nodes, edges: sg.edges, subgraphs: graph.subgraphs };
+        /**
+         * 给每个输入隧道灌值, 并从输出隧道收值。
+         *
+         * 隧道的"对外端口 id"与它的 `params.name` 是**两回事**:
+         * 前者是连线用的 (如 "a"/"out"), 后者是给人看的标签 (如 "结果")。
+         * 这里必须按**端口 id** 对齐 —— 用 label 对齐的话, 一旦两个端口
+         * 同名或用户改了标签, 值就会喂错地方, 而且不报错。
+         */
+        /**
+         * 隧道节点的端口固定叫 "value"; 它对应哪个**对外端口**由
+         * 子图定义里的隧道顺序决定 —— 第 i 个输入隧道对第 i 个 inputs[i],
+         * 输出同理。这个对应关系是折叠时按同一份数组建的, 两边同序即可。
+         */
+        const inTunnels = sg.nodes.filter((n) => n.type === "subgraph.input");
+        const outTunnels = sg.nodes.filter((n) => n.type === "subgraph.output");
+
+        const seeded = {
+          ...innerGraph,
+          nodes: innerGraph.nodes.map((n) => {
+            if (n.type !== "subgraph.input") return n;
+            const i = inTunnels.findIndex((t) => t.id === n.id);
+            const portId = (sg.inputs ?? [])[i]?.id;
+            return { ...n, params: { ...(n.params ?? {}), __value: inputs[portId ?? ""] } };
+          }),
+        };
+        /**
+         * 子图**不传 entry**。
+         *
+         * 子图里的执行流是它自己的事 (很多子图压根没有执行流, 纯是数据变换)。
+         * 外层沿 exec 走进来时, 要的是"把这片数据算出结果", 而不是
+         * "在子图里再找一条执行链" —— 后者会因为隧道节点没有 execIn 而
+         * 一个节点都走不到, 结果就是空输出且不报错。实测踩到过。
+         */
+        const r = await evaluateGraph(reg, seeded);
+        const out: Record<string, unknown> = {};
+        for (const [nid, vals] of r.outputs) {
+          const i = outTunnels.findIndex((t) => t.id === nid);
+          if (i < 0) continue;
+          const portId = (sg.outputs ?? [])[i]?.id;
+          if (portId) out[portId] = vals.value;
+        }
+        for (const [nid, msg] of r.errors) errors.set(`${id}/${nid}`, msg);
+        outputs.set(id, out);
+        return out;
+      }
+
       if (!def.evaluate) {
         // 没有求值函数: 当成"把输入原样透传到同名输出", 让图不至于断掉
         const passthrough: Record<string, unknown> = {};

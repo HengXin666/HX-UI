@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type JSX, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type JSX, type ReactNode } from "react";
 import { cn } from "../primitives/utils";
 import { Badge } from "../layout/Badge";
 import type { BlueprintGraph, BlueprintRegistry } from "./types";
@@ -8,7 +8,12 @@ import { useBlueprint, useSelection, type BlueprintApi } from "./useBlueprint";
 import { BlueprintCanvas } from "./BlueprintCanvas";
 import { BlueprintPalette } from "./BlueprintPalette";
 import { serializeGraph, toPseudoCode } from "./serialize";
+import { applyConnect } from "./connect";
+import { makeId } from "./useBlueprint";
+import { subgraphAsGraph } from "./subgraph";
+import { Button } from "../primitives/button";
 import { validateGraph } from "./validate";
+import { writeSubgraph } from "./subgraph";
 
 /**
  * 编辑器: 把上面的零件拼成一个能直接放进页面的东西。
@@ -48,6 +53,53 @@ export function BlueprintEditor({
   const api = useBlueprint({ registry, value, defaultValue, onChange });
   const sel = useSelection();
   const [showCode, setShowCode] = useState(false);
+  /**
+   * 当前所在的层级。null = 最外层。
+   *
+   * 进入子图时**不是换一张图**, 而是改这个路径 —— 编辑的始终是同一张根图,
+   * 子图内容写回 graph.subgraphs。这样"在子图里改动"对外层立即可见,
+   * 也无需维护两份状态和它们之间的同步。
+   */
+  const [path, setPath] = useState<string[]>([]);
+
+  /** 当前正在编辑的那张图。 */
+  const editing = useMemo(() => {
+    let g: BlueprintGraph = api.graph;
+    for (const sgId of path) {
+      const inner = subgraphAsGraph(g, sgId);
+      if (!inner) return g;
+      g = inner;
+    }
+    return g;
+  }, [api.graph, path]);
+
+  /** 把当前层级的改动写回根图。 */
+  const commitInner = useCallback(
+    (next: Pick<BlueprintGraph, "nodes" | "edges">) => {
+      if (path.length === 0) {
+        api.replace({ ...api.graph, nodes: next.nodes, edges: next.edges });
+        return;
+      }
+      // 从最内层往外逐层写回
+      let g: BlueprintGraph = { ...api.graph, nodes: next.nodes, edges: next.edges };
+      for (let i = path.length - 1; i >= 0; i--) {
+        const outer = i === 0 ? api.graph : subgraphAsGraph(api.graph, path[i - 1])!;
+        const g2: BlueprintGraph = { ...outer, nodes: g.nodes, edges: g.edges };
+        g = writeSubgraph(g, path[i], { nodes: g2.nodes, edges: g2.edges });
+        if (i > 0) g = { ...subgraphAsGraph(api.graph, path[i - 1])!, nodes: g.nodes, edges: g.edges };
+      }
+      api.replace(g);
+    },
+    [api, path]
+  );
+
+  const breadcrumb = useMemo(() => {
+    const out: Array<{ id: string | null; label: string }> = [{ id: null, label: "根图" }];
+    for (const sgId of path) {
+      out.push({ id: sgId, label: api.graph.subgraphs?.[sgId]?.label ?? sgId });
+    }
+    return out;
+  }, [path, api.graph]);
 
   // 用 ref 交出 api, 避免每次 render 都回调
   const handed = useMemo(() => ({ api }), [api]);
@@ -59,6 +111,64 @@ export function BlueprintEditor({
   return (
     <div className={cn("flex min-h-0 flex-col gap-2", className)}>
       {toolbar}
+
+      {/* 层级导航 + 结构操作。只在有子图或选中时才显示折叠按钮 —— 空白时它没意义 */}
+      <div className="flex flex-wrap items-center gap-1.5">
+        {breadcrumb.map((b, i) => (
+          <span key={b.id ?? "root"} className="flex items-center gap-1.5">
+            {i > 0 && <span className="text-[11px] text-muted-foreground">/</span>}
+            <button
+              type="button"
+              onClick={() => setPath((p) => p.slice(0, i))}
+              className={cn(
+                "rounded px-1.5 py-0.5 text-[11px] transition-colors",
+                i === breadcrumb.length - 1 ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {b.label}
+            </button>
+          </span>
+        ))}
+        <span className="mx-1 h-3 w-px bg-border" />
+        <Button
+          size="xs"
+          variant="outline"
+          disabled={sel.selected.size === 0}
+          onClick={() => {
+            const ids = [...sel.selected];
+            const id = api.collapse(ids, "子图");
+            if (id) sel.only(id);
+          }}
+          title="把选中的节点折成一个节点 (可双击进入)"
+        >
+          折叠为子图
+        </Button>
+        <Button
+          size="xs"
+          variant="outline"
+          disabled={sel.selected.size === 0}
+          onClick={() => api.commentAround([...sel.selected], "")}
+          title="给选中的节点加一个注释框"
+        >
+          加注释
+        </Button>
+        {path.length > 0 && (
+          <Button
+            size="xs"
+            variant="outline"
+            className="ml-auto"
+            onClick={() => {
+              // 展开当前所在的子图, 并退回上一层
+              const sgId = path[path.length - 1];
+              const caller = api.graph.nodes.find((n) => n.subgraph === sgId);
+              if (caller) api.expand(caller.id);
+              setPath((p) => p.slice(0, -1));
+            }}
+          >
+            展开并退出
+          </Button>
+        )}
+      </div>
 
       <div className="flex min-h-0 gap-2" style={{ height }}>
         <div
@@ -77,10 +187,13 @@ export function BlueprintEditor({
         <div className="min-w-0 flex-1">
           <BlueprintCanvas
             registry={registry}
-            graph={api.graph}
+            graph={editing}
             validation={api.validation}
             selected={sel.selected}
             height="100%"
+            onEnterSubgraph={(_nodeId, sgId) => setPath((p) => [...p, sgId])}
+            onCommentMove={(id, delta) => api.moveComment(id, delta)}
+            onCommentChange={(id, patch) => api.updateComment(id, patch)}
             onSelect={(ids) => {
               sel.clear();
               sel.add(ids);
@@ -88,21 +201,37 @@ export function BlueprintEditor({
             onNodesMove={(moves) => {
               // 一次提交。逐节点提交会让受控模式下只留下最后一个节点的移动
               const byId = new Map(moves.map((m) => [m.id, m]));
-              api.replace({
-                ...api.graph,
-                nodes: api.graph.nodes.map((n) => {
+              commitInner({
+                nodes: editing.nodes.map((n) => {
                   const m = byId.get(n.id);
                   return m ? { ...n, x: m.x, y: m.y } : n;
                 }),
+                edges: editing.edges,
               });
             }}
-            onConnect={(from, to) => api.connect(from, to)}
-            onDisconnect={(edgeId) => api.disconnect(edgeId)}
-            onNodeParamChange={(id, key, v) => api.setParam(id, key, v)}
-            onRemoveNodes={(ids) => ids.forEach((id) => api.removeNode(id))}
+            onConnect={(from, to) => {
+              const next = applyConnect(registry, editing, from, to, () => makeId("e"));
+              if (next) commitInner({ nodes: next.nodes, edges: next.edges });
+            }}
+            onDisconnect={(edgeId) => commitInner({ nodes: editing.nodes, edges: editing.edges.filter((e) => e.id !== edgeId) })}
+            onNodeParamChange={(id, key, v) =>
+              commitInner({ nodes: editing.nodes.map((n) => (n.id === id ? { ...n, params: { ...(n.params ?? {}), [key]: v } } : n)), edges: editing.edges })
+            }
+            onRemoveNodes={(ids) => {
+              const set = new Set(ids);
+              commitInner({
+                nodes: editing.nodes.filter((n) => !set.has(n.id)),
+                edges: editing.edges.filter((e) => !set.has(e.from.node) && !set.has(e.to.node)),
+              });
+              sel.clear();
+            }}
             onAddNode={(type, at) => {
-              const id = api.addNode(type, at);
-              if (id) sel.only(id);
+              const def = registry.nodeTypes.get(type);
+              const params: Record<string, unknown> = {};
+              for (const p of def?.params ?? []) params[p.id] = p.default;
+              const id = makeId();
+              commitInner({ nodes: [...editing.nodes, { id, type, x: at.x, y: at.y, params }], edges: editing.edges });
+              sel.only(id);
             }}
           />
         </div>

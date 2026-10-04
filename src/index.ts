@@ -103,6 +103,20 @@ export {
 export {
   demoRegistry, createDemoRegistry, demoGraph, DEMO_NODES,
 } from "./blueprint/demo";
+export {
+  collapseToSubgraph, expandSubgraph, subgraphAsGraph, writeSubgraph,
+  subgraphRefCount, boundaryPorts, registerTunnels, TUNNEL_IN, TUNNEL_OUT,
+} from "./blueprint/subgraph";
+export {
+  addComment, removeComment, updateComment, commentAround, moveCommentWithNodes,
+  resizeComment, nodesInComment, commentContains,
+} from "./blueprint/comment";
+export {
+  nodeShape, type ConnectableGraph, type MinimalNode,
+} from "./blueprint/connect";
+export type {
+  NodePorts, SubGraphDef, BlueprintComment,
+} from "./blueprint/types";
 export * from "./blueprint/geometry";
 
 // ── 版式件 ──
