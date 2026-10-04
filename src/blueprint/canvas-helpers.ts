@@ -164,3 +164,25 @@ export function makeExpandHref(o: {
     ? `${o.standalonePageHref}#src=demo&channel=${ch}&graph=${enc}`
     : `${o.standalonePageHref}#src=demo&channel=${ch}`;
 }
+
+/**
+ * 这次 pointerdown 是不是落在**浮层上的交互元素**里。
+ *
+ * ## 为什么必须判这个
+ *
+ * 画布在 pointerdown 里会 `setPointerCapture` —— 一旦捕获, 后续所有指针
+ * 事件都归画布, 目标元素**再也收不到 click**。而左上角工具条的"独立页面"
+ * 是个链接, 它就浮在画布上面: 真实鼠标点下去, 画布先捕获指针, 那个链接
+ * 永远不会收到 click —— 表现就是"点了没反应"。
+ *
+ * 实测踩到过: 用 `element.click()` 直接派发是绕过命中测试的, 所以那样写的
+ * e2e 会通过; 真实鼠标走完整链路必失败。**判据必须走真实输入**。
+ *
+ * @param target 事件目标。用 EventTarget 而不是 HTMLElement, 是为了让单测
+ *               能塞一个只有 closest 的假对象进来。
+ */
+export function isInteractiveTarget(target: EventTarget | null): boolean {
+  const el = target as { closest?: (s: string) => unknown } | null;
+  if (!el || typeof el.closest !== "function") return false;
+  return !!el.closest("a,button,input,select,textarea,[role='button']");
+}

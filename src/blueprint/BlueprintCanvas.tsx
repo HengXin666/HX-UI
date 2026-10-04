@@ -8,7 +8,7 @@ import { cn } from "../primitives/utils";
 import type { BlueprintComment, BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
 import { edgePath, detourPath, shouldDetour, wireStyle, arrowHead, arrowFillClass } from "./geometry";
-import { makeExpandHref } from "./canvas-helpers";
+import { makeExpandHref, isInteractiveTarget } from "./canvas-helpers";
 import { makeViewportCommands } from "./canvas-helpers";
 import { CanvasGrid } from "./CanvasGrid";
 import { LinkHint } from "./LinkHint";
@@ -201,22 +201,15 @@ export function BlueprintCanvas({
   /** 两者任一为真都算"展开了"。 */
   const expanded = fullscreen || maximized;
 
-  /**
-   * 全屏。
-   *
-   * 用 Fullscreen API 而不是自己加个 fixed 覆盖层:
-   * 后者遮得住视口, 但遮不住浏览器 UI / iframe 边界, 而且 Esc 退出的行为
-   * 要自己实现。Fullscreen API 是浏览器给的, 行为一致。
-   *
-   * 监听 fullscreenchange 而不是只在 toggle 时改 state —— 用户按 Esc 或 F11
-   * 退出时不会经过我们的按钮, 不同步的话按钮状态就卡在"已全屏"。
-   */
+  // 监听 fullscreenchange 而不是只在 toggle 时改 state —— 用户按 Esc 或 F11
+  // 退出时不会经过我们的按钮, 不同步的话按钮状态会卡在"已全屏"。
   useEffect(() => {
     const onChange = () => setFullscreen(document.fullscreenElement === hostRef.current);
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
+  // 独立整页画布的链接 (当前图编码进 hash)。理由见 canvas-helpers。
   const expandHref = useMemo(
     () => makeExpandHref({ standaloneHref, standalonePageHref, graph, syncChannel }),
     [standaloneHref, standalonePageHref, graph, syncChannel]
@@ -285,6 +278,20 @@ export function BlueprintCanvas({
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
+      /**
+       * ⚠️ 浮层上的交互元素**一律不接管指针**。
+       *
+       * 画布在这里会 setPointerCapture —— 一旦捕获, 后续所有指针事件都归它,
+       * 目标元素再也收不到 click。而左上角工具条的"独立页面"是个链接, 它就
+       * 浮在画布上面: 真实鼠标点下去, 画布先捕获指针, 那个链接**永远不会
+       * 收到 click** —— 表现就是"点了没反应"。
+       *
+       * 实测踩到: e2e 里用 element.click() 是**直接派发**事件、不走命中
+       * 测试, 所以它通过; 而真实鼠标点击走完整链路, 必失败。
+       * 这就是"测试绿但功能是假的" —— 判据必须走真实输入。
+       */
+      if (isInteractiveTarget(e.target)) return;
+
       if (e.button === 1) {
         e.preventDefault();
         setPanning({ x: e.clientX, y: e.clientY, vx: view.x, vy: view.y });
@@ -585,6 +592,17 @@ export function BlueprintCanvas({
         height: expanded ? "100dvh" : height,
         width: expanded ? "100vw" : undefined,
         touchAction: "none",
+        /**
+         * ⚠️ 禁掉文本选中 —— 缺它的时候手感和"反人类"。
+         *
+         * 浏览器默认在鼠标拖过一片区域时**选中文本**, 而画布上每次框选、
+         * 拖节点、拖连线都要划过一大片文字 —— 于是用户想拖节点, 结果拖出
+         * 一片蓝色选区, 节点没动。这不是体验瑕疵, 是**拖拽被选区行为劫持**。
+         * 所有图形编辑器 (UE5 / Figma / ComfyUI) 都禁它。
+         * 可编辑的输入框在蓝图侧单独恢复 (见 node-parts / NodeRename)。
+         */
+        userSelect: "none",
+        WebkitUserSelect: "none",
       }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}

@@ -58,7 +58,7 @@ export function NodeRenameInput({
         if (e.key === "Enter") { e.preventDefault(); commit(); }
         if (e.key === "Escape") { e.preventDefault(); onCancel(); }
       }}
-      className="min-w-0 flex-1 rounded border border-primary/60 bg-background px-1 text-[12px] font-semibold text-foreground outline-none"
+      className="min-w-0 flex-1 select-text rounded border border-primary/60 bg-background px-1 text-[12px] font-semibold text-foreground outline-none"
       aria-label="节点名称"
     />
   );

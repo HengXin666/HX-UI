@@ -84,7 +84,17 @@ export function ParamField({
   readonly onChange: (v: unknown) => void;
 }): JSX.Element {
   return (
-    <div className="flex items-center gap-2">
+    /**
+     * 参数区**必须恢复文本选中**。
+     *
+     * 画布为了拖节点时不选中文字, 整体设了 user-select: none。但这个输入框
+     * 就在画布里面 —— 继承下来之后, 用户没法用鼠标选/拖选里面的数值,
+     * 改参数变成只能靠键盘。所以这里显式恢复。
+     *
+     * 放在蓝图侧而不是改 primitives 的 Input: 那个组件全库共用,
+     * 不该为画布这一个场景背上 select-text。
+     */
+    <div className="flex select-text items-center gap-2">
       <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">{def.label ?? def.id}</span>
       <div className="w-[86px] shrink-0">
         {def.kind === "switch" ? (

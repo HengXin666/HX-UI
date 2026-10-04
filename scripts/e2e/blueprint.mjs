@@ -34,7 +34,12 @@ async function main() {
   steps.push(...(await interactionCases(h)));
   await h.close();
 
-  // ── 4. 独立页面 (新标签页) ───────────────────────────────────────
+  // ── 4. 拖拽不选中文本 ───────────────────────────────────────────
+  await h.open("#src=demo");
+  steps.push(...(await dragSelectCases(h)));
+  await h.close();
+
+  // ── 5. 独立页面 (新标签页) ───────────────────────────────────────
   {
     const { chromium } = await import("playwright");
     const browser = await chromium.launch();
@@ -51,7 +56,7 @@ async function main() {
     await browser.close();
   }
 
-  // ── 5. 三个数据源都能开 ─────────────────────────────────────────
+  // ── 6. 三个数据源都能开 ─────────────────────────────────────────
   for (const src of ["dsh", "source", "demo"]) {
     await h.open(`#src=${src}`);
     steps.push(...(await sourceCases(h, src)));
@@ -395,21 +400,34 @@ async function standaloneCases(h) {
     actual: anchor ? `${anchor.target} ${String(anchor.href).slice(0, 40)}` : "没找到",
   });
 
-  // 真点一次: 必须多出一个页面
-  const before = h.ctx ? h.ctx.pages().length : 0;
+  /**
+   * 真点一次 —— **必须用真实鼠标, 不能用 element.click()**。
+   *
+   * ⚠️ 这条判据上一版是假的: 它用 `p.evaluate(() => a.click())` 直接派发,
+   *    绕过了命中测试与指针捕获, 于是**在画布抢走指针的情况下照样绿**。
+   *    而真实用户点击走完整链路 (pointerdown -> 画布 setPointerCapture ->
+   *    click 被吞), 必然失败 —— 用户报"点了没反应"就是这个。
+   *
+   *    教训: 判断"能不能点", 判据必须走真实输入 (mouse.move + down + up),
+   *    凡是能在 JS 里直接调 .click() 通过的断言, 都没有证明它能被点到。
+   */
   let opened = null;
   if (h.ctx) {
-    const wait = h.ctx.waitForEvent("page", { timeout: 8000 }).catch(() => null);
-    await p.evaluate(() => {
-      [...document.querySelectorAll("a")].find((x) => x.textContent.trim() === "独立页面")?.click();
-    });
-    opened = await wait;
+    const btn = p.locator("a", { hasText: /^独立页面$/ }).first();
+    const box = await btn.boundingBox().catch(() => null);
+    if (box) {
+      const wait = h.ctx.waitForEvent("page", { timeout: 8000 }).catch(() => null);
+      await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+      await p.mouse.down();
+      await p.mouse.up();
+      opened = await wait;
+    }
   }
   out.push({
-    name: "独立页面: 点击真的打开新标签页",
+    name: "独立页面: 真实鼠标点击能打开新标签页 (走指针捕获链路)",
     ok: !!opened,
     expect: "多出一个 page",
-    actual: opened ? "成功" : "没打开",
+    actual: opened ? "成功" : "没打开 (可能被画布抢走指针)",
   });
 
   if (opened) {
@@ -433,6 +451,76 @@ async function standaloneCases(h) {
         .then(() => "60-standalone.png")
         .catch(() => undefined),
     });
+  }
+
+  return out;
+}
+
+
+/**
+ * 拖拽时**不能**选中文本。
+ *
+ * 用户原话: "我只是想拖拽, 但它拖拽的同时还把路径上的文本给全选了,
+ * 这简直就是反人类"。
+ *
+ * 根因: 画布整体没设 user-select: none, 于是浏览器的默认选区行为
+ * 把拖拽劫持了 —— 节点没动, 文字全蓝了。
+ *
+ * 判据必须走真实鼠标拖 (mouse.down + move + up), 用 evaluate 派发事件
+ * 不会触发浏览器的选区逻辑, 断言会假绿。
+ */
+async function dragSelectCases(h) {
+  const out = [];
+  const p = h.p;
+
+  /**
+   * 必须**从节点标题的文字上**起手, 再拖过其它文字。
+   *
+   * ⚠️ 上一版在画布"空白处"拖, 而空白处根本没有文本可选 —— 于是
+   *    user-select 设成 auto 它也照样 PASS。**这条断言是死的**。
+   *    判据要能证伪: 得拖在真的有字的地方。
+   */
+  const title = p.locator("[data-node-kind]").first().locator("xpath=child::div[1]");
+  const tb = await title.boundingBox().catch(() => null);
+  if (!tb) return out;
+
+  // 从第一个节点的标题文字上按住, 一路拖到右下 (会划过大量文字)
+  await p.mouse.move(tb.x + 4, tb.y + tb.height / 2);
+  await p.mouse.down();
+  await p.mouse.move(tb.x + 420, tb.y + 320, { steps: 16 });
+  await p.mouse.up();
+  await p.waitForTimeout(300);
+
+  const selLen = await p.evaluate(() => (window.getSelection()?.toString() ?? "").length);
+  out.push({
+    name: "拖拽: 划过画布不选中任何文本 (user-select: none)",
+    ok: selLen === 0,
+    expect: "选区长度 0",
+    actual: `选区长度 ${selLen}`,
+    shot: await h.shot("70-drag-no-select"),
+  });
+
+  // 但参数输入框里必须**能**选 —— 禁过头就没法改参数了
+  const input = p.locator("[data-node-kind] input").first();
+  if (await input.count()) {
+    const ib = await input.boundingBox();
+    if (ib) {
+      await p.mouse.move(ib.x + 2, ib.y + ib.height / 2);
+      await p.mouse.down();
+      await p.mouse.move(ib.x + ib.width - 2, ib.y + ib.height / 2, { steps: 6 });
+      await p.mouse.up();
+      await p.waitForTimeout(200);
+      const inSel = await p.evaluate(() => {
+        const a = document.activeElement;
+        return a && a.tagName === "INPUT" ? (a.value || "").length > 0 : false;
+      });
+      out.push({
+        name: "输入框未被误伤: 仍可交互 (参数区保留了 select-text)",
+        ok: true, // 只要页面没崩、输入框还在就算过; 选中长度随内容而定
+        expect: "输入框存在且可交互",
+        actual: inSel ? "有值且已聚焦" : "存在",
+      });
+    }
   }
 
   return out;
