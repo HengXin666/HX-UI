@@ -92,8 +92,8 @@ export function boundaryPorts(
   graph: BlueprintGraph,
   ids: readonly string[]
 ): {
-  readonly inputs: PortDef[];
-  readonly outputs: PortDef[];
+  inputs: PortDef[];
+  outputs: PortDef[];
   readonly execIn: boolean;
   readonly execOut: string[];
   /** 外部边 -> 折叠后该连到子图节点的哪个口。 */
@@ -169,6 +169,7 @@ export function collapseToSubgraph(
   const b = boundaryPorts(reg, graph, ids);
   const sgId = opts.id ?? makeId("sg");
 
+
   // 子图内部: 只留下完全在里面的边, 外加隧道连线
   const innerEdges = graph.edges
     .filter((e) => inside.has(e.from.node) && inside.has(e.to.node))
@@ -216,10 +217,20 @@ export function collapseToSubgraph(
     }
   }
 
+  /**
+   * 对外输入口一律 **multi**。
+   *
+   * 折叠一片区域时, 原本连到不同节点、不同端口的多条外部边, 会汇到新子图
+   * 节点的同一个输入口上。若沿用"独占"语义, 第二条边会把第一条顶掉 ——
+   * 折叠一次就丢一部分连线, 且不报错 (实测: 折叠后校验报 input-occupied,
+   * 或者更糟, 边被静默替换)。
+   *
+   * 折叠的语义是"把这片东西收起来", 不是"选一个来源", 所以汇合是对的。
+   */
   const subgraph: SubGraphDef = {
     id: sgId,
     ...(opts.label ? { label: opts.label } : {}),
-    inputs: b.inputs,
+    inputs: b.inputs.map((p) => ({ ...p, multi: true })),
     outputs: b.outputs,
     execIn: b.execIn,
     execOut: b.execOut,

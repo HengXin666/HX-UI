@@ -13,11 +13,29 @@ import { nodeHeight, nodeWidth } from "./geometry";
  */
 
 /** 注释的语义色。只允许这四种 —— 放开任意颜色换肤时又会失效。 */
+/**
+ * 注释的语义色。
+ *
+ * ⚠️ 必须同时给 **背景** 与 **边框** —— 之前每组只有 border-* 与 text-*,
+ * 没有任何 bg, 于是整个框体是**透明的**: 看起来就是"一个悬空的标题条 +
+ * 一片空白", 完全不像一个框。注释框的意义是把一片节点**圈出来**,
+ * 没有底色就圈不住任何东西。
+ *
+ * 用 /12 ~ /20 的低透明度: 要能透出下面的节点与连线, 又要有足够的色块
+ * 让人一眼看出"这一片属于这个注释"。
+ */
 export const COMMENT_TONE: Record<string, string> = {
-  default: "border-border/60 bg-muted/40 text-muted-foreground",
-  primary: "border-primary/40 bg-primary/10 text-primary",
-  warning: "border-amber-500/40 bg-amber-500/10 text-amber-400",
-  success: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
+  /**
+   * 透明度用 Tailwind 的标准档位 (10/20/25)。
+   *
+   * 别写 bg-primary/[0.14] 这种任意值 —— 实测它在本工程的 Tailwind 版本下
+   * **不生成规则**, 而类名静默失效 (不报错, 但背景就没了)。这正是"框体
+   * 看起来是空的"的另一种成因, 所以这里只用标准档。
+   */
+  default: "border-border bg-muted/25 text-muted-foreground",
+  primary: "border-primary/50 bg-primary/10 text-primary",
+  warning: "border-amber-500/50 bg-amber-500/10 text-amber-400",
+  success: "border-emerald-500/50 bg-emerald-500/10 text-emerald-400",
 };
 
 /** 一个小按钮。 */
@@ -70,13 +88,18 @@ export function CommentLayer({
       {(comments ?? []).map((c) => {
         const insideCount = countInside?.(c.id) ?? 0;
         return (
-        <div key={c.id} className="absolute" style={{ left: c.x, top: c.y, width: c.w, height: c.h }}>
-          <div
-            className={cn(
-              "flex h-[22px] items-center gap-1 rounded-t-md border-b px-2 cursor-grab active:cursor-grabbing",
-              COMMENT_TONE[c.tone ?? "default"]
-            )}
-          >
+        <div
+          key={c.id}
+          className={cn(
+            "absolute flex flex-col overflow-hidden rounded-md border backdrop-blur-[1px]",
+            "cursor-grab active:cursor-grabbing",
+            COMMENT_TONE[c.tone ?? "default"]
+          )}
+          style={{ left: c.x, top: c.y, width: c.w, height: c.h }}
+        >
+          /* 分隔线用当前文字色的低透明版: border-current/20 不是标准
+             Tailwind 语法, 会静默失效 (产物里没有这条规则且不报错)。 */
+          <div className="flex h-[22px] shrink-0 items-center gap-1 border-b border-current px-2 opacity-90">
             {editingId === c.id ? (
               <input
                 autoFocus
@@ -94,13 +117,19 @@ export function CommentLayer({
               </span>
             )}
           </div>
-          {c.body ? <div className="px-2 py-1 text-[11px] leading-snug opacity-80">{c.body}</div> : null}
+          {c.body ? (
+            <div className="min-h-0 flex-1 overflow-hidden px-2 py-1 text-[11px] leading-snug opacity-80">
+              {c.body}
+            </div>
+          ) : (
+            <div className="min-h-0 flex-1" />
+          )}
           {/*
             "框住了几个" —— 这条是注释与节点之间**看得见**的联系。
             没有它, 用户不知道拖动会带走什么, 于是要么不敢拖、要么拖错。
           */}
           {insideCount > 0 && (
-            <div className="absolute bottom-1 right-1.5 rounded bg-background/70 px-1 text-[10px] tabular-nums opacity-70">
+            <div className="absolute bottom-1 right-1.5 rounded bg-card/90 px-1 text-[10px] tabular-nums opacity-80">
               {insideCount} 个节点{c.moveWithNodes === false ? " (不跟随)" : ""}
             </div>
           )}

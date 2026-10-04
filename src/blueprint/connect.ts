@@ -114,14 +114,53 @@ export function nodeShape(
 
   if (node?.subgraph) {
     const sg = graph.subgraphs?.[node.subgraph];
-    // 子图丢了也要返回一个空形貌而不是 undefined —— 否则"子图被删"会
-    // 让所有连到它的边变成 dangling, 报错信息指向边而不是根因
+    if (!sg) {
+      // 子图丢了也要返回一个空形貌而不是 undefined —— 否则"子图被删"会
+      // 让所有连到它的边变成 dangling, 报错信息指向边而不是根因
+      return {
+        inputs: [], outputs: [], execIn: false, execOut: [], multiExecIn: false, isSubgraph: true,
+      };
+    }
+
+    /**
+     * 没显式声明 ports 时, 从**内部边**推导。
+     *
+     * 为什么需要: 调用方常常只建 nodes/edges 就挂子图 (内容靠内部隧道,
+     * 不需要对外端口)。此时若返回空端口, 所有连到它的边都会变成
+     * unknown-port —— 整张图一校验全是红, 而调用方完全不知道错在哪。
+     *
+     * 推导规则: 内部指向"输入隧道"的边 -> 对外输入口; 从"输出隧道"出发的
+     * 边 -> 对外输出口。没有隧道节点则按"内部悬空边"推导 (一端在内部、
+     * 另一端指向外部节点的边)。
+     */
+    let inputs = sg.inputs ?? [];
+    let outputs = sg.outputs ?? [];
+
+    if (inputs.length === 0 && outputs.length === 0 && sg.nodes && sg.edges) {
+      const inner = new Set(sg.nodes.map((n) => n.id));
+      const isTunnelIn = (id: string) =>
+        sg.nodes!.some((n) => n.id === id && n.type === "subgraph.input");
+      const isTunnelOut = (id: string) =>
+        sg.nodes!.some((n) => n.id === id && n.type === "subgraph.output");
+
+      for (const e of sg.edges) {
+        if (inner.has(e.to.node) && isTunnelIn(e.to.node)) {
+          const p = sg.nodes!.find((n) => n.id === e.to.node)?.ports?.outputs?.[0];
+          if (p && !inputs.some((x) => x.id === p.id)) inputs = [...inputs, p];
+        }
+        if (inner.has(e.from.node) && isTunnelOut(e.from.node)) {
+          const p = sg.nodes!.find((n) => n.id === e.from.node)?.ports?.inputs?.[0];
+          if (p && !outputs.some((x) => x.id === p.id)) outputs = [...outputs, p];
+        }
+      }
+    }
+
     return {
-      inputs: sg?.inputs ?? [],
-      outputs: sg?.outputs ?? [],
-      execIn: sg?.execIn ?? false,
-      execOut: sg?.execOut ?? [],
-      multiExecIn: sg?.multiExecIn ?? false,
+      inputs,
+      outputs,
+      execIn: sg.execIn ?? false,
+      execOut: sg.execOut ?? [],
+      multiExecIn: sg.multiExecIn ?? false,
       isSubgraph: true,
     };
   }

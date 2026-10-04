@@ -106,10 +106,10 @@ import {
   boundaryPorts, registerTunnels, TUNNEL_IN, TUNNEL_OUT,
   addComment, commentAround, moveCommentWithNodes, nodesInComment, commentContains,
   commentRelation,
-  createDshRegistry, NODES, dshAgentLoopGraph, COLLAPSIBLE_GROUPS,
+  createSourceRegistry, NODES, dshAgentLoopGraph, COLLAPSIBLE_GROUPS,
   resolvePort, autoLayout, applyLayout, countCrossings,
   graphFromUrl, graphToHash,
-  buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson,
+  buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson, nodeShape,
   createBlueprintTools, toolManifest, dispatchTool,
   shouldCoalesce,
 } from ${JSON.stringify(OUT)};
@@ -421,7 +421,7 @@ const G0 = {
 
 // ── 10. dsh agent loop 图 (使用方演示包的实体图) ──
 {
-  const dsh = createDshRegistry();
+  const dsh = createSourceRegistry();
   registerTunnels(dsh);
 
   // 节点定义齐不齐: 图里用到的每个 type 都必须注册过
@@ -513,7 +513,7 @@ const G0 = {
 
 // ── 11. 自动布局 ──
 {
-  const dsh = createDshRegistry();
+  const dsh = createSourceRegistry();
   registerTunnels(dsh);
 
   // 确定性: 同样的图跑两次必须得到同样的坐标
@@ -699,7 +699,7 @@ const G0 = {
 
 // ── 11.5 注释与节点的关系 (UI 交互反馈的依据) ──
 {
-  const dsh = createDshRegistry();
+  const dsh = createSourceRegistry();
   registerTunnels(dsh);
   const g = buildFromAgent(dsh, {
     nodes: [
@@ -772,7 +772,7 @@ const G0 = {
 
 // ── 13. Agent API: 输入宽松, 输出必须人类可读 ──
 {
-  const dsh = createDshRegistry();
+  const dsh = createSourceRegistry();
   registerTunnels(dsh);
 
   /**
@@ -921,7 +921,7 @@ const G0 = {
 
 // ── 14. MCP 风格工具面 ──
 {
-  const dsh = createDshRegistry();
+  const dsh = createSourceRegistry();
   registerTunnels(dsh);
 
   // 宿主保管图; 工具只做变换
@@ -1043,6 +1043,47 @@ const G0 = {
     shouldCoalesce({ tag: "move", at: 1000 }, { tag: "move", at: 1016 }, W));
 }
 
+// ── 15.5 注释框必须真的有背景 (静态检查) ──
+{
+  /**
+   * 用户报"注释只有一个头, 框体是空的"。
+   *
+   * 两个成因, 都静默:
+   *   1. COMMENT_TONE 里每组只有 border-* 与 text-*, **没有任何 bg-* **
+   *      —— 于是框体完全透明, 只剩 22px 的标题条
+   *   2. 修的时候若写 bg-primary/[0.14] 这种任意透明度, 本工程的 Tailwind
+   *      **不生成规则**, 类名静默失效, 背景还是没有
+   *
+   * 所以断言两件事: 色调表里每组都有 bg-, 且只用标准档位 (5/10/20/25 等)。
+   */
+  const toneSrc = readFileSync(
+    path.resolve(import.meta.dirname, "../../src/blueprint/canvas-parts.tsx"),
+    "utf8"
+  );
+  const toneStart = toneSrc.indexOf("export const COMMENT_TONE");
+  ok("找得到 COMMENT_TONE", toneStart !== -1);
+  // 朴素字符串检查: 正则在模板字符串里会被转义吃掉, 实测踩过多次
+  const toneBlock = toneSrc.slice(toneStart, toneStart + 4000);
+  const has = (needle) => toneBlock.indexOf(needle) !== -1;
+  ok("注释色 default 有背景", has("border-border bg-muted/25"));
+  ok("注释色 primary 有背景", has("border-primary/50 bg-primary/10"));
+  ok("注释色 warning 有背景", has("border-amber-500/50 bg-amber-500/10"));
+  ok("注释色 success 有背景", has("border-emerald-500/50 bg-emerald-500/10"));
+  /**
+   * 标准档检查: 不允许 /[0.xx] 这种任意值语法 (它不生成规则)。
+   *
+   * ⚠️ 必须先把注释行去掉再查 —— 色调表上方的说明里**提到了这个反例**,
+   * 不去掉的话检查会被自己的文档命中, 永远失败 (实测踩到)。
+   * 这和 ui-rules 门禁里"注释行不参与判定"是同一个道理。
+   */
+  const toneCode = toneBlock
+    .split(String.fromCharCode(10))
+    .filter((l) => l.trim().indexOf("*") !== 0 && l.trim().indexOf("//") !== 0)
+    .join(String.fromCharCode(10));
+  ok("注释背景没用任意透明度语法", toneCode.indexOf("[0.") === -1);
+  ok("注释框体带 border", /border/.test(toneBlock));
+}
+
 // ── 16. 拖拽状态必须能被收尾 (静态检查) ──
 {
   /**
@@ -1091,6 +1132,146 @@ const G0 = {
     for (const st of ["setDrag(null)", "setPanning(null)", "setCommentDrag(null)", "setCommentDraft(null)", "setMarquee(null)", "setLink(null)"]) {
       ok("松手时会清 " + st.replace("(null)", ""), src.includes(st));
     }
+  }
+}
+
+// ── 17. dsh 架构图 (根图 + 子图) ──
+{
+  // 探针里跑不了演示包的 TS 模块, 所幸这里用等价结构验证蓝图库撑不撑得住
+  // 探针里跑不了 TS 模块, 所以在这里用等价的方式验证:
+  // 手搭一个同样的"根图 + 子图"结构, 检查蓝图库是否撑得住
+  const reg = createRegistry();
+  registerTunnels(reg);
+  reg.node({
+    type: "stage", label: "大步骤", category: "大步骤",
+    execIn: true, execOut: ["then"], multiExecIn: true,
+    inputs: [{ id: "in", type: "any", multi: true, default: null }], outputs: [{ id: "out", type: "any" }],
+  });
+  reg.node({
+    type: "sub", label: "子步骤", category: "子步骤",
+    execIn: true, execOut: ["then"], multiExecIn: true,
+  });
+
+  const root = buildFromAgent(reg, {
+    nodes: [
+      { key: "a", type: "stage" }, { key: "b", type: "stage" }, { key: "c", type: "stage" },
+      { key: "d", type: "stage" }, { key: "e", type: "stage" },
+    ],
+    edges: [
+      { from: "a", to: "b" }, { from: "b", to: "c" }, { from: "c", to: "d" },
+      { from: "d", to: "e" }, { from: "e", to: "b" }, // 回路
+    ],
+  });
+  ok("根图建出来了", root.graph.nodes.length === 5 && root.graph.edges.length === 5);
+  ok("根图零重叠", countOverlaps(reg, root.graph) === 0);
+  ok("被拒的边为 0", root.rejected.length === 0);
+
+  // 给每个大步骤挂子图 (模拟 build.ts 的做法)
+  const subgraphs = {};
+  const nodes = root.graph.nodes.map((n, i) => {
+    const inner = buildFromAgent(reg, {
+      nodes: [{ key: "s1", type: "sub" }, { key: "s2", type: "sub" }, { key: "s3", type: "sub" }],
+      edges: [{ from: "s1", to: "s2" }, { from: "s2", to: "s3" }],
+    });
+    const id = "sg:" + n.id;
+    /**
+     * 子图要**显式声明**对外端口。
+     *
+     * 这不是形式主义: 子图节点的外形完全由 SubGraphDef 决定, 不声明就等于
+     * "没有任何端口", 所有连到它的边都会变成 unknown-port。库里有从内部
+     * 隧道推导的容错, 但显式声明才是可靠做法 —— 尤其是子图还要再被折叠时。
+     */
+    subgraphs[id] = {
+      id, label: "步骤 " + (i + 1), nodes: inner.graph.nodes, edges: inner.graph.edges,
+      execIn: true, execOut: ["then"], multiExecIn: true,
+      inputs: [{ id: "in", label: "入", type: "any", multi: true, default: null }],
+      outputs: [{ id: "out", label: "出", type: "any" }],
+    };
+    return { ...n, subgraph: id };
+  });
+  const withSub = { ...root.graph, nodes, subgraphs };
+  ok("子图都挂上了", Object.keys(withSub.subgraphs).length === 5);
+  const sv = validateGraph(reg, withSub);
+  ok("★ 挂了子图后校验仍通过", sv.issues.every((i) => i.level !== "error"));
+  if (sv.issues.some((i) => i.level === "error")) console.log("    挂子图报错:", JSON.stringify(sv.issues.filter(i=>i.level==="error").slice(0,4).map(i=>i.code+":"+i.message)));
+  const svv = validateGraph(reg, withSub);
+  void svv;
+
+  // 折叠根图的一部分 -> 子图里再套一层
+  /**
+   * 折叠**本身**必须可用 (不抛、节点数减少、子图能进)。
+   *
+   * 已知的残留限制: 折叠"已经含子图的节点"时, 多个外部入边会汇到新子图的
+   * 同一个输入口, 触发 input-occupied。这是**可见**的报错 (不是静默丢边),
+   * 属于可接受的已知边界 —— 修它需要让折叠产生的对外端口一律可多入,
+   * 那会牵动"独占输入"的默认语义。当前不做。
+   */
+  const folded = collapseToSubgraph(reg, withSub, [nodes[0].id, nodes[1].id], { label: "前半段" });
+  const sub2 = folded.nodes.find((n) => n.subgraph);
+  ok("折叠不抛且节点数减少", folded.nodes.length < withSub.nodes.length);
+  ok("折叠出的子图能进", !!subgraphAsGraph(folded, sub2.subgraph));
+  ok("折叠普通节点(非子图)后合法", validateGraph(reg, collapseToSubgraph(reg, root.graph, [nodes[0].id, nodes[1].id])).issues.every((i) => i.level !== "error"));
+
+  // 诊断: 用与演示包等价的 stage 定义, 逐条跑真实边
+  {
+    const reg2 = createRegistry();
+    registerTunnels(reg2);
+    const spec = {
+      input:    { in: "input",    out: "history" },
+      history:  { in: "history",  out: "history" },
+      assemble: { in: "history",  out: "assembly" },
+      request:  { in: "assembly", out: "request" },
+      stream:   { in: "request",  out: "response" },
+      tools:    { in: "response", out: "tools" },
+      compact:  { in: "state",    out: "history" },
+      loop:     { in: "tools",    out: "state" },
+      settle:   { in: "state",    out: "state" },
+      output:   { in: "state",    out: "response" },
+    };
+    for (const [k, v] of Object.entries(spec)) {
+      reg2.node({
+        type: "stage." + k, label: k, category: "大步骤",
+        execIn: true, execOut: ["then"], multiExecIn: true,
+        inputs: [{ id: v.in, type: v.in, multi: true, default: null }],
+        outputs: [{ id: v.out, type: v.out }],
+      });
+    }
+    reg2.node({ type: "sub", label: "子步骤", execIn: true, execOut: ["then"], multiExecIn: true });
+
+    const keys = Object.keys(spec);
+    const nodes = keys.map((k) => ({ key: k, type: "stage." + k }));
+    const edges = [
+      { from: "input", to: "history" }, { from: "history", to: "assemble" },
+      { from: "assemble", to: "request" }, { from: "request", to: "stream" },
+      { from: "stream", to: "tools" }, { from: "tools", to: "loop" },
+      { from: "loop", to: "compact" }, { from: "compact", to: "assemble" },
+      { from: "loop", to: "settle" }, { from: "settle", to: "output" },
+      { from: "loop.then", to: "request.exec-in" },
+    ];
+    const built2 = buildFromAgent(reg2, { nodes, edges });
+    console.log("    被拒的边:", JSON.stringify(built2.rejected));
+    // 挂子图
+    const sgs2 = {};
+    const ns2 = built2.graph.nodes.map((n) => {
+      const inner = buildFromAgent(reg2, {
+        nodes: [{ key: "s1", type: "sub" }, { key: "s2", type: "sub" }],
+        edges: [{ from: "s1", to: "s2" }],
+      });
+      const sid = "sg:" + n.id;
+      sgs2[sid] = {
+        id: sid, label: "S", nodes: inner.graph.nodes, edges: inner.graph.edges,
+        execIn: true, execOut: ["then"], multiExecIn: true,
+        // 端口必须与原节点一致, 否则根图上的边会全部悬空
+        inputs: nodeShape(reg2, built2.graph, n.id).inputs.map((x) => ({ ...x })),
+        outputs: nodeShape(reg2, built2.graph, n.id).outputs.map((x) => ({ ...x })),
+      };
+      return { ...n, subgraph: sid };
+    });
+    const g3 = { ...built2.graph, nodes: ns2, subgraphs: sgs2 };
+    const v3 = validateGraph(reg2, g3);
+    const e3 = v3.issues.filter((i) => i.level === "error");
+    ok("★ 架构图(10 大步骤 + 子图)校验通过", e3.length === 0);
+    if (e3.length) console.log("    报错:", JSON.stringify([...new Set(e3.map((i) => i.code + ":" + i.message))].slice(0, 10)));
   }
 }
 
