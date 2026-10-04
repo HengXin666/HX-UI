@@ -50,11 +50,19 @@ export interface BlueprintEditorProps {
    * 拦截器拦)。不传则退回 Fullscreen API。
    */
   readonly standaloneHref?: string;
+  /**
+   * 独立整页画布的 URL。给了它, 画布上的"独立页面"按钮会把**当前图**编码
+   * 进链接并在新标签页打开 —— 而不是去调那个在文档站里必然失败的
+   * Fullscreen API。
+   */
+  readonly standalonePageHref?: string;
+  /** 同步频道。新标签页靠它拿到同一张图。 */
+  readonly syncChannel?: string;
 }
 
 export function BlueprintEditor({
   registry, value, defaultValue, onChange, className, height = 520,
-  paletteWidth = 200, showIssues = true, toolbar, apiRef, standaloneHref,
+  paletteWidth = 200, showIssues = true, toolbar, apiRef, standaloneHref, standalonePageHref, syncChannel,
 }: BlueprintEditorProps): JSX.Element {
   const api = useBlueprint({ registry, value, defaultValue, onChange });
   const sel = useSelection();
@@ -238,6 +246,9 @@ export function BlueprintEditor({
             onViewportReady={(v) => { canvasViewportRef.current = v; }}
             pickerOpen={pickerOpen}
             setPickerOpen={setPickerOpen}
+            {...(standaloneHref ? { standaloneHref } : {})}
+            {...(standalonePageHref ? { standalonePageHref } : {})}
+            {...(syncChannel ? { syncChannel } : {})}
             renamingId={renamingId}
             onRenameCommit={(id, next) => {
               commitInnerWithHistory(

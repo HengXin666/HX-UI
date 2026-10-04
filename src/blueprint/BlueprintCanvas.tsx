@@ -8,6 +8,7 @@ import { cn } from "../primitives/utils";
 import type { BlueprintComment, BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
 import { edgePath, detourPath, shouldDetour, wireStyle, arrowHead, arrowFillClass } from "./geometry";
+import { makeExpandHref } from "./canvas-helpers";
 import { makeViewportCommands } from "./canvas-helpers";
 import { CanvasGrid } from "./CanvasGrid";
 import { LinkHint } from "./LinkHint";
@@ -120,6 +121,13 @@ export interface BlueprintCanvasProps {
   readonly pickerOpen?: boolean;
   readonly setPickerOpen?: (v: boolean) => void;
   /** F2 正在重命名的节点 id。 */
+  /**
+   * 独立整页画布的 URL (例如 "/blueprint.html")。
+   * 给了它, "全屏"按钮就变成"在新标签页里打开整页画布"。
+   */
+  readonly standalonePageHref?: string;
+  /** 同步频道名。新标签页靠它拿到同一张图。 */
+  readonly syncChannel?: string;
   readonly renamingId?: string | null;
   readonly onRenameCommit?: (id: string, next: string) => void;
   readonly onRenameCancel?: () => void;
@@ -166,7 +174,7 @@ export function BlueprintCanvas({
   onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onCommentResize, onCommentTone, onDropNode, onCreateComment,
   onViewportCenterReady, onViewportReady,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
-  pickerOpen = false, setPickerOpen,
+  pickerOpen = false, setPickerOpen, standalonePageHref, syncChannel,
   renamingId, onRenameCommit, onRenameCancel,
   allowFullscreen = true,
   standaloneHref,
@@ -209,18 +217,11 @@ export function BlueprintCanvas({
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
-  /**
-   * 全屏, 带**回退**。
-   *
-   * Fullscreen API 需要用户手势, 而且在某些环境里会被直接拒绝
-   * (实测 headless Chromium 报 "Permissions check failed"; 嵌在 iframe 里
-   *  没有 allow="fullscreen" 时同样被拒)。那时如果什么都不做, 按钮点了没反应 ——
-   * 最坏的一类失败。
-   *
-   * 所以失败时退回"最大化": 一个 fixed 覆盖层撑满视口。它遮不住浏览器 UI,
-   * 但至少能给到整屏的画布。两种模式共用同一个 `expanded` 状态,
-   * 下游 (尺寸自适应) 不用区分。
-   */
+  const expandHref = useMemo(
+    () => makeExpandHref({ standaloneHref, standalonePageHref, graph, syncChannel }),
+    [standaloneHref, standalonePageHref, graph, syncChannel]
+  );
+
   const toggleFullscreen = useCallback(() => {
     const el = hostRef.current;
     if (!el) return;
@@ -746,6 +747,7 @@ export function BlueprintCanvas({
         allowFullscreen={allowFullscreen}
         expanded={expanded}
         standaloneHref={standaloneHref}
+        expandHref={expandHref}
         onToggleFullscreen={toggleFullscreen}
       />
 

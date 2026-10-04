@@ -16,10 +16,17 @@
     <script>
       (function () {
         try {
-          var m = localStorage.getItem("hx-ui-docs-theme") || "system";
-          if (m === "system") {
-            m = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-          }
+          /**
+           * 蓝图页默认**暗色**, 与系统偏好无关。
+           *
+           * 为什么: UE5 的蓝图编辑器是暗色工具, 引脚配色 (青绿 int /
+           * 亮绿 float / 品红 string …) 是**为暗底设计**的高饱和色。
+           * 系统偏好亮色时若跟着走白底, 这些颜色要么刺眼、要么为了对比度
+           * 被压暗到认不出是哪个类型 —— 观感就是"差一点"。
+           *
+           * 用户仍然可以在页面里切亮色, 那时走亮色令牌那一套。
+           */
+          var m = localStorage.getItem("hx-ui-docs-theme") || "dark";
           document.documentElement.setAttribute("data-mode", m);
         } catch (e) {
           document.documentElement.setAttribute("data-mode", "dark");

@@ -94,8 +94,57 @@ export function CanvasButton({
 
 
 /** 左上角工具条。单独成组件: 画布文件冻结只许降行数, 这块是纯展示。 */
+
+/**
+ * "独立页面"链接。
+ *
+ * ## 为什么不只是 <a target="_blank">
+ *
+ * 上一版只有一个 `<a target="_blank">`, 实测在文档站里**点了没反应**:
+ * 文档站是 SPA, 而某些嵌入场景下 target=_blank 不生效, 于是用户点一下
+ * 什么都没发生 —— 最坏的一类失败。
+ *
+ * ## 为什么又不能只用 window.open
+ *
+ * 单独用 window.open 会被弹窗拦截器拦掉 (仓库注释里记着这次实测:
+ * "调了 window.open 但标签页数没变")。
+ *
+ * ## 所以两个都要, 各管一段
+ *
+ *   - `<a href target=_blank>`: 负责**语义** —— 中键、Ctrl+点、右键菜单里
+ *     的"在新标签页打开"都靠它, 那是浏览器原生行为, 最可靠。
+ *   - 左键点击时**同步**调 window.open: 它处在用户手势的调用栈里, 不会被拦。
+ *     (被拦的从来都是 setTimeout / await 之后脱离手势上下文的调用。)
+ *     开成功了就 preventDefault, 免得当前页也被导航带走。
+ */
+function StandaloneLink({ href }: { readonly href: string }): JSX.Element {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title="在新标签页里打开整页画布 (带上当前图, 改动实时同步)"
+      /**
+       * 不做 onClick、不调 window.open —— 全部交给原生 <a target="_blank">。
+       *
+       * 实测过一轮"两者都要": 在 onClick 里同步 window.open, 成功才
+       * preventDefault。结果在部分环境里 window.open 返回一个窗口对象
+       * (看着成功了), 于是 preventDefault 掐掉了原生导航, 而那个窗口
+       * 实际是被拦的空壳 —— 最后**两个都没开成**。
+       *
+       * 纯 <a target="_blank"> 反而全对: 左键开新标签、中键开背景标签、
+       * Ctrl+点、右键菜单"在新标签页打开"全都由浏览器保证, 且不会被
+       * 弹窗拦截器拦 (链接是导航意图, window.open 才是弹窗)。
+       */
+      className="inline-flex items-center rounded border border-border bg-card/80 px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+    >
+      独立页面
+    </a>
+  );
+}
+
 export function CanvasToolbar({
-  toolbar, zoom, onFit, onReset, allowFullscreen, expanded, standaloneHref, onToggleFullscreen,
+  toolbar, zoom, onFit, onReset, allowFullscreen, expanded, standaloneHref, expandHref, onToggleFullscreen,
 }: {
   readonly toolbar?: ReactNode;
   readonly zoom: number;
@@ -105,6 +154,8 @@ export function CanvasToolbar({
   readonly expanded: boolean;
   /** 独立页面的 URL。给了就渲染成链接 (不会被弹窗拦截器拦)。 */
   readonly standaloneHref?: string;
+  /** 由画布算出的"带当前图的整页链接"。优先于 standaloneHref。 */
+  readonly expandHref?: string | null;
   readonly onToggleFullscreen: () => void;
 }): JSX.Element {
   return (
@@ -115,13 +166,8 @@ export function CanvasToolbar({
           <CanvasButton onClick={onReset} title="重置视图">1:1</CanvasButton>
           <span className="px-1 text-[11px] tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
           {allowFullscreen && (
-            standaloneHref ? (
-              <CanvasButton
-                href={standaloneHref}
-                title="在一个独立的整页画布里打开 (可多开, 改动实时同步)"
-              >
-                独立页面
-              </CanvasButton>
+            standaloneHref || expandHref ? (
+              <StandaloneLink href={standaloneHref ?? expandHref ?? ""} />
             ) : (
               <CanvasButton onClick={onToggleFullscreen} title={expanded ? "退出全屏 (Esc)" : "全屏"}>
                 {expanded ? "退出全屏" : "全屏"}

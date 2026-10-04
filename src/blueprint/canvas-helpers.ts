@@ -6,6 +6,7 @@
  */
 import type { BlueprintGraph, BlueprintRegistry } from "./types";
 import { nodeHeight, nodeWidth } from "./geometry";
+import { graphToHash } from "./sync";
 
 /** 标题条高度 (图坐标) —— 只有它能拖动整块注释。 */
 export const COMMENT_BAR_H = 22;
@@ -139,4 +140,27 @@ export function nextSelection(
     return [...cur];
   }
   return selected.includes(id) && selected.length > 1 ? [...selected] : [id];
+}
+
+/**
+ * 算出"独立整页画布"的链接。
+ *
+ * 图编码进 hash, 新标签页打开就有内容, 不用等同步; 太大就只带频道名,
+ * 靠 BroadcastChannel 拿。
+ *
+ * 放回这里是因为 BlueprintCanvas.tsx 被行预算棘轮冻结 (只许降)。
+ */
+export function makeExpandHref(o: {
+  readonly standaloneHref?: string;
+  readonly standalonePageHref?: string;
+  readonly graph: BlueprintGraph;
+  readonly syncChannel?: string;
+}): string | null {
+  if (o.standaloneHref) return o.standaloneHref;
+  if (!o.standalonePageHref) return null;
+  const ch = encodeURIComponent(o.syncChannel ?? "hx-blueprint");
+  const enc = graphToHash(o.graph);
+  return enc
+    ? `${o.standalonePageHref}#src=demo&channel=${ch}&graph=${enc}`
+    : `${o.standalonePageHref}#src=demo&channel=${ch}`;
 }

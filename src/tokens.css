@@ -165,44 +165,55 @@
 }
 
 [data-mode="light"] {
-  /* 亮色下高饱和引脚色在白底上刺眼, 统一压暗并降饱和。
-     这是"必须有独立 token"的直接理由: 写死在组件里就没法这么调。 */
-  --bp-exec: #2a2a2a;
-  --bp-bool: #7a0f0f;
-  --bp-int: #0f7a5e;
-  --bp-float: #4a8a12;
-  --bp-number: #4a8a12;
-  --bp-string: #a3007d;
-  --bp-name: #7a3fb0;
-  --bp-text: #a34a68;
-  --bp-vector: #8a6a00;
-  --bp-rotator: #3f5aa8;
-  --bp-transform: #a34a00;
-  --bp-object: #006a9c;
-  --bp-class: #4a0f8c;
-  --bp-struct: #0f4a9c;
-  --bp-wildcard: #5a5a5a;
-  --bp-byte: #005a52;
-  --bp-delegate: #a31212;
-  --bp-interface: #6a7a20;
-  --bp-default: #7a5a3a;
+  /**
+   * 亮色下的引脚色。
+   *
+   * ⚠️ 第一版把 UE 的高饱和色**一味压暗**来换白底对比度, 结果是类型之间
+   *    糊成一片深色的团 —— 引脚色是"一眼分辨类型"的信息, 压没了信息就没了。
+   *
+   *    这一版的原则: **保色相、提明度、降饱和**。
+   *    让每个色仍然能说出"这是青绿 / 这是品红 / 这是橙", 只是不那么扎眼。
+   *    (暗色才是蓝图的本命主题; 亮色是给"必须白底"的场景的次选。)
+   */
+  --bp-exec: #1f1f28;
+  --bp-bool: #b3234a;        /* 栗 -> 玫红, 保住"红"的辨识 */
+  --bp-int: #0e8f7a;         /* 青绿 */
+  --bp-float: #5c8f16;       /* 亮绿压成橄榄, 仍是绿 */
+  --bp-number: #5c8f16;
+  --bp-string: #c2185b;      /* 品红 -> 玫紫 */
+  --bp-name: #7b3fb0;        /* 淡紫 */
+  --bp-text: #b04a68;        /* 肉粉 */
+  --bp-vector: #9a6a00;      /* 黄 -> 琥珀 */
+  --bp-rotator: #4059a8;     /* 长春花 -> 蓝紫 */
+  --bp-transform: #b35400;   /* 橙 */
+  --bp-object: #0b6fa8;      /* 蓝 */
+  --bp-class: #6a2fb0;       /* 紫 */
+  --bp-struct: #1f4fa8;      /* 深蓝 */
+  --bp-wildcard: #6a6a72;
+  --bp-byte: #0b6f66;
+  --bp-delegate: #c02a2a;
+  --bp-interface: #6f7a20;
+  --bp-default: #8a6a3a;
 
-  --bp-title-event: #c25a5a;
+  --bp-title-event: #d06060;
   --bp-title-function: #5a86c2;
-  --bp-title-pure: #5aa88a;
-  --bp-title-macro: #9a9aa4;
-  --bp-title-flow: #a086c8;
-  --bp-title-cast: #5aa8bc;
-  --bp-title-default: #d0d0d8;
-  --bp-title-foreground: #1a1c24;
+  --bp-title-pure: #4f9a76;
+  --bp-title-macro: #8a8a94;
+  --bp-title-flow: #9a7ac0;
+  --bp-title-cast: #4f9aae;
+  --bp-title-default: #b8bcc6;
+  --bp-title-foreground: #ffffff;
 
-  --bp-node-bg: #ffffff;
-  --bp-node-border: #c8ccd6;
-  --bp-node-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.12);
-  --bp-grid-line: rgba(0, 0, 0, 0.05);
-  --bp-grid-line-bold: rgba(0, 0, 0, 0.09);
-  --bp-selected: #b38600;
+  /* 亮色下节点体必须**有底色**: 纯白节点在白画布上等于没有边界,
+     只剩一条 1px 边框, 而 UE5 的节点是靠色块本身从画布上浮起来的。 */
+  --bp-node-bg: #f4f5f8;
+  --bp-node-border: #b8bcc6;
+  --bp-node-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.14);
+  --bp-grid-line: rgba(0, 0, 0, 0.06);
+  --bp-grid-line-bold: rgba(0, 0, 0, 0.11);
+  --bp-selected: #a87900;
 }
+
 
 * { box-sizing: border-box; }
 

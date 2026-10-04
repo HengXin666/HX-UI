@@ -215,6 +215,19 @@ export function BlueprintNodeCard({
           )}
         </div>
       )}
+
+      {/*
+        UE5 节点的底部有一条**略深于节点体**的横条 —— 它不承载信息,
+        只是给节点一个"收尾", 让卡片看起来是压在画布上的一块实体,
+        而不是一个开口的框。缺了它, 节点底部会显得散。
+      */}
+      {!isCollapsed && (
+        <div
+          aria-hidden
+          className="h-[3px] w-full bg-foreground/[0.07]"
+          style={{ backgroundColor: "color-mix(in srgb, var(--bp-node-border) 55%, transparent)" }}
+        />
+      )}
     </div>
   );
 }

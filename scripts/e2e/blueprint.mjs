@@ -34,7 +34,24 @@ async function main() {
   steps.push(...(await interactionCases(h)));
   await h.close();
 
-  // ── 4. 三个数据源都能开 ─────────────────────────────────────────
+  // ── 4. 独立页面 (新标签页) ───────────────────────────────────────
+  {
+    const { chromium } = await import("playwright");
+    const browser = await chromium.launch();
+    const ctx = await browser.newContext({ viewport: { width: 1400, height: 850 } });
+    await ctx.addInitScript(() => localStorage.setItem("hx-ui-docs-theme", "dark"));
+    const page = await ctx.newPage();
+    await page.goto("http://127.0.0.1:5600/#/blueprint", { waitUntil: "networkidle" });
+    await page.waitForTimeout(2200);
+    const h2 = new Harness();
+    h2.p_ = page;
+    h2.ctx = ctx;
+    Object.defineProperty(h2, "p", { get: () => page });
+    steps.push(...(await standaloneCases(h2)));
+    await browser.close();
+  }
+
+  // ── 5. 三个数据源都能开 ─────────────────────────────────────────
   for (const src of ["dsh", "source", "demo"]) {
     await h.open(`#src=${src}`);
     steps.push(...(await sourceCases(h, src)));
@@ -348,6 +365,73 @@ async function interactionCases(h) {
       expect: "两者 left 相同",
       actual: xs.join(" vs "),
       shot: await h.shot("44-align"),
+    });
+  }
+
+  return out;
+}
+
+
+/**
+ * "独立页面": 用户点名说这个功能失效了 —— 它当时走 Fullscreen API,
+ * 在文档站里必然被拒, 退回的 fixed 覆盖层又被滚动容器挡住, 于是
+ * "点了毫无反应"。现在改成开新标签页 (带上当前图 + 同步频道)。
+ *
+ * 判据: ①按钮渲染成 <a target=_blank>; ②点下去真的**多出一个页面**;
+ *       ③新页面是整页画布且拿到了图。
+ */
+async function standaloneCases(h) {
+  const out = [];
+  const p = h.p;
+
+  const anchor = await p.evaluate(() => {
+    const a = [...document.querySelectorAll("a")].find((x) => x.textContent.trim() === "独立页面");
+    return a ? { href: a.getAttribute("href"), target: a.getAttribute("target") } : null;
+  });
+  out.push({
+    name: "独立页面: 渲染成 <a target=_blank> (不会被弹窗拦截器拦)",
+    ok: !!anchor && anchor.target === "_blank" && !!anchor.href,
+    expect: "target=_blank 且有 href",
+    actual: anchor ? `${anchor.target} ${String(anchor.href).slice(0, 40)}` : "没找到",
+  });
+
+  // 真点一次: 必须多出一个页面
+  const before = h.ctx ? h.ctx.pages().length : 0;
+  let opened = null;
+  if (h.ctx) {
+    const wait = h.ctx.waitForEvent("page", { timeout: 8000 }).catch(() => null);
+    await p.evaluate(() => {
+      [...document.querySelectorAll("a")].find((x) => x.textContent.trim() === "独立页面")?.click();
+    });
+    opened = await wait;
+  }
+  out.push({
+    name: "独立页面: 点击真的打开新标签页",
+    ok: !!opened,
+    expect: "多出一个 page",
+    actual: opened ? "成功" : "没打开",
+  });
+
+  if (opened) {
+    await opened.waitForLoadState("domcontentloaded").catch(() => {});
+    await opened.waitForTimeout(2200);
+    const info = await opened.evaluate(() => {
+      const m = /(\d+) 节点 \/ (\d+) 连线/.exec(document.body.innerText);
+      return {
+        path: location.pathname,
+        nodes: m ? +m[1] : -1,
+        kinds: document.querySelectorAll("[data-node-kind]").length,
+      };
+    });
+    out.push({
+      name: "独立页面: 新标签是整页画布且带上了图",
+      ok: info.path.endsWith("blueprint.html") && info.nodes > 0 && info.kinds > 0,
+      expect: "路径是 blueprint.html 且节点 > 0",
+      actual: `${info.path} nodes=${info.nodes} kinds=${info.kinds}`,
+      shot: await opened
+        .screenshot({ path: new URL("./shots/60-standalone.png", import.meta.url).pathname })
+        .then(() => "60-standalone.png")
+        .catch(() => undefined),
     });
   }
 

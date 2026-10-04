@@ -56,6 +56,15 @@ export function PinShape({
     );
   }
 
+  /**
+   * 未连接时: **空心圆, 轮廓用类型色**。
+   *
+   * 为什么轮廓也要是类型色: 引脚色是"这个口是什么类型"的信息,
+   * 而**没连线的口才是最需要看类型的** —— 你正要往那儿连。
+   * 用中性灰描边等于把信息藏了起来, UE5 这里是类型色的空心圆。
+   */
+  const ring = color ? color.replace(/\bbg-/, "border-") : "border-foreground/50";
+
   return (
     <span
       data-pin="data"
@@ -64,10 +73,9 @@ export function PinShape({
         "block shrink-0 rounded-full border",
         invalid
           ? "border-destructive bg-destructive"
-          : // 未连接只描边、不填充 —— 与 exec 的"空心/实心"是同一条规则
-            filled
+          : filled
             ? cx("border-transparent", color ?? "bg-foreground")
-            : "border-foreground/50 bg-transparent"
+            : cx(ring, "bg-transparent")
       )}
       style={{ width: size, height: size }}
     />

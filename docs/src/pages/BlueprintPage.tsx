@@ -146,7 +146,7 @@ function EditorDemo(): JSX.Element {
         value={graph}
         onChange={setGraph}
         height={420}
-        showIssues={false}
+        showIssues={false} standalonePageHref="/blueprint.html" syncChannel="hx-blueprint-docs"
       />
 
       {lines.length > 0 && (
