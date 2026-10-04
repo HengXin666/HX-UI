@@ -4,7 +4,7 @@
  * ## 键位来源
  *
  * Epic 官方 Cheat Sheet (Blueprint Editor) 与 Graph Editor 文档, 加上社区
- * 对 UE5 变更的实测。有据可查的照抄, 查不到的 (对齐/整理) 用 UE4 社区
+ * UE5 的键位变化照抄官方与社区结论, 查不到的 (对齐/整理) 用社区沿用键位
  * 沿用键位并在 SHORTCUTS 表里标注 `official: false`。
  *
  * ## 三条边界 (不遵守会把编辑器做成没法用)
@@ -87,15 +87,9 @@ export function matchShortcut(e: {
   /**
    * 键名归一: **一律**小写。
    *
-   * ⚠️ 曾经写成 `e.key.length === 1 ? lower : e.key` —— 只给单字符键小写。
-   * 而 "Delete" / "Escape" / "Tab" / "Home" / "PageDown" 这些是**多字符**,
-   * 于是它们保持原样 "Delete", 与下面 `k === "delete"` 的大小写比对**永远
-   * 不成立** —— 结果是这几个键全部匹配失败:
-   *   Delete 删不掉节点、Esc 不取消、Tab 不开菜单、Home 不适应视图。
-   *
-   * 更隐蔽的是它**不报错**: 键位表写着支持, 单元测试里手造对象用的小写
-   * ("delete") 能过, 而真实 KeyboardEvent 给的是 "Delete" —— 只有真的
-   * 按下去才会发现。e2e 里那条"全选 + Delete 清空"就是这么抓到它的。
+   * 必须对所有键生效, 不能只处理单字符键 —— "Delete" / "Escape" / "Tab"
+   * 这些是多字符键, 若不做归一, 它们与下面小写常量的比对永远不成立,
+   * 那几个键会全部静默失效。
    */
   const k = e.key.toLowerCase();
 

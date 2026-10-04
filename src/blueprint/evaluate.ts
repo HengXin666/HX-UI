@@ -142,7 +142,7 @@ export async function evaluateGraph(
          * 子图里的执行流是它自己的事 (很多子图压根没有执行流, 纯是数据变换)。
          * 外层沿 exec 走进来时, 要的是"把这片数据算出结果", 而不是
          * "在子图里再找一条执行链" —— 后者会因为隧道节点没有 execIn 而
-         * 一个节点都走不到, 结果就是空输出且不报错。实测踩到过。
+         * 一个节点都走不到, 结果就是空输出且不报错。
          */
         const r = await evaluateGraph(reg, seeded);
         const out: Record<string, unknown> = {};

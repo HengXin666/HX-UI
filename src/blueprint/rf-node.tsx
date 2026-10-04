@@ -58,11 +58,9 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
       >
         {/* 执行入口: 楔形, 画在标题栏左边 */}
         {/*
-          执行入口。Handle 必须有**真实尺寸**才可被拖/被点 ——
-          曾经为了"隐形"把它设成 size-0, 结果它变得完全不可交互:
-          拖不出线、也连不上。实测 handle 的 boundingBox 是 0x0。
-          现在给 11px 的可命中区域, 视觉上是透明的, 真正长什么样由
-          里面的 PinShape 决定。
+          执行入口。Handle 必须有**真实尺寸**才可被拖、被点 ——
+          尺寸为 0 时它不可交互, 拖不出线也连不上。
+          这里给 11px 的命中区域并设为透明, 视觉由 PinShape 决定。
         */}
         <Handle
           type="target"
@@ -174,9 +172,8 @@ export function BpDataEdge({
 /**
  * 执行线箭头的 marker 定义。
  *
- * ⚠️ marker/defs/path 只能在 **<svg> 内部** —— 直接塞进 ReactFlow 的子节点
- *    会被当成 HTML 未知标签, React 报 "The tag <marker> is unrecognized"。
- *    实测踩到过, 表现是控制台刷警告且箭头不生效。
+ * ⚠️ marker/defs/path 只能在 **<svg> 内部** —— 放到别处会被当成 HTML
+ *    未知标签, 箭头不生效。所以这里渲染一个 0 尺寸的 svg 专门装 defs。
  *
  * 所以这里渲染一个自己的 <svg> (0 尺寸、绝对定位、不挡事), 只用来装 defs。
  */

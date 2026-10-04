@@ -7,7 +7,7 @@ import type { JSX } from "react";
  *
  * ## UE5 的实际规格
  *
- * 网格粒度是 `UEditorStyleSettings::GridSnapSize`, 社区实测默认 **16**。
+ * 网格粒度是 `UEditorStyleSettings::GridSnapSize`, 默认 **16**。
  * 细线每 16px 一条, 每 8 格 (128px) 一条更亮的主线 —— 缩得很远时靠主线
  * 判断大致位置, 拉近时靠细线对齐。
  *

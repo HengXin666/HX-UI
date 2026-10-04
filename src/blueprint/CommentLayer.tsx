@@ -151,7 +151,7 @@ export function CommentLayer({
                  *
                  * 为什么: 画布自己也在这棵树上监听 pointerdown (用于拖注释/框选),
                  * 并且对画布元素调 setPointerCapture —— 那会**抢走**指针,
-                 * 把手上的后续 pointermove 就再也收不到 (实测: 把手收到 0 个事件,
+                 * 把手上的后续 pointermove 就再也收不到 (
                  * 拖动完全没反应)。
                  *
                  * capture 阶段先于冒泡, 于是在画布之前拿到事件; 再 stopPropagation

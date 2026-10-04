@@ -24,9 +24,9 @@ import { cn } from "../primitives/utils";
  * 主题常量。改这一行就换全站代码块外观。
  *
  * 为什么可以放心依赖 shiki 的 one-dark-pro:
- *   已逐条实测比对 —— shiki 的 275 条 tokenColors 与官方 One Dark Pro 3.20.2
+ *   已逐条比对 —— shiki 的 275 条 tokenColors 与官方 One Dark Pro 3.20.2
  *   的 themes/OneDark-Pro.json **完全相同** (顺序、name、scope 形态一致)。
- *   实测渲染出的色值也吻合: keyword #C678DD / string #98C379 / number #D19A66 /
+ *   渲染出的色值也吻合: keyword #C678DD / string #98C379 / number #D19A66 /
  *   comment #7F848E + italic / function #61AFEF / variable #E06C75 / type #E5C07B。
  *
  * 两个流传较广的错误写法, 不要"修"成它们:

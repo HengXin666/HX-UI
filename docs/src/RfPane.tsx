@@ -18,8 +18,7 @@ import {
  * 因为"哪一步算一步"是应用语义 (拖动合并、连续输入参数合并)。
  *
  * 用 track(graph) 而不是手动 push: 受控模式下命令返回时 graph 还没更新,
- * 手动 push 的前后是同一份, 栈永远是空的 (这个坑在手写版踩过,
- * 表现是撤销按钮一直 disabled)。
+ * 手动 push 的前后是同一份, 历史栈会一直是空的。
  */
 export function RfPane({
   registry, graph, onChange,
@@ -39,11 +38,9 @@ export function RfPane({
   /**
    * 图一变就记一步。
    *
-   * ⚠️ 必须走 useEffect, 不能在 render 里手写 `if (ref !== graph)`:
-   *    撤销时我们主动把旧图塞回去, 那时 render 里的比较会把它当成
-   *    "又变了一次"而再记一步 —— 于是撤销被自己记录的步骤抵消,
-   *    表现为"按了 Ctrl+Z 数字纹丝不动"。实测踩到过。
-   *    effect 配合 history 内部的 seenRef 去重才是对的。
+   * 必须走 useEffect, 不能在 render 里比较: 撤销时我们会主动把旧图塞回去,
+   * 那时 render 里的比较会把它当成"又变了一次"而再记一步, 撤销于是被
+   * 自己记录的步骤抵消。effect 配合 history 内部的 seenRef 去重才对。
    */
   useEffect(() => {
     const t = pendingTag.current ?? undefined;
@@ -56,14 +53,10 @@ export function RfPane({
   /**
    * 提交一份新图, 并声明这一步在历史里怎么记。
    *
-   * ⚠️ tag 的默认值**不能**无条件覆盖已经设好的 pendingTag。
-   *
-   *   踩过: 移动时 React Flow 先回调 onMoveKind 设了 tag="move", 紧接着
-   *   onGraphChange 又调 commit(默认 tag=null) 把它覆盖成 null ——
-   *   而 shouldCoalesce 一见 null 就不合并, 于是拖一次被拆成十几步,
-   *   要按十几次 Ctrl+Z 才回得去。实测拖一下需 6 次撤销。
-   *
-   *   所以: 外层已经声明过 tag 时**保留**它, 只在没声明时才用默认值。
+   * tag 的默认值**不能**无条件覆盖已设好的 pendingTag: 移动时画布会先
+   * 声明 tag="move", 紧接着的变化回调若用默认 tag=null 覆盖掉,
+   * shouldCoalesce 就不会合并, 于是拖一次被拆成很多步撤销。
+   * 所以外层声明过 tag 时保留它, 只在没声明时才用默认值。
    */
   const commit = useCallback(
     (next: BlueprintGraph, tag: string | null = null, label?: string) => {

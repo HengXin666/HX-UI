@@ -14,10 +14,9 @@ import { hitComment, COMMENT_HANDLE } from "./canvas-helpers";
  *
  * ## 为什么 resize 的热区判据在**画布**里, 而不是给把手元素挂事件
  *
- * 试过给把手元素自己挂 onPointerDown: 把手在注释框内, 注释框在画布的
- * transform 层里, 又嵌在页面滚动容器中 —— 层级与裁剪会让点击命中不到它
- * (实测 elementFromPoint 命中的是页面容器, 事件数 0)。放进画布统一的
- * 命中测试就没有这类问题: 坐标是同一套图坐标, 不依赖 DOM 嵌套与层级。
+ * 把手元素不适合自己挂 onPointerDown: 它嵌在画布的 transform 层与页面
+ * 滚动容器里, DOM 层级与裁剪会让点击命中不到它。放进画布统一的命中测试
+ * 就没有这类问题 —— 坐标是同一套图坐标, 不依赖 DOM 嵌套与层级。
  * 那个 12px 的把手仍然画出来 —— 它是**给人看的提示**, 不是事件目标。
  */
 export interface CommentInteraction {

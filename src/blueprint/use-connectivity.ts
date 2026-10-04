@@ -43,12 +43,11 @@ export function useConnectivity(o: {
       const e = edgeFromRf(c, "__tmp__");
       if (!e) return;
       /**
-       * ⚠️ 必须走 **applyConnect**, 不能自己 `edges: [...edges, e]`。
+       * 必须走 **applyConnect**, 不能自己 `edges: [...edges, e]`。
        *
-       * 自己拼的下场 (实测): 独占输入口会被**双占** —— n4.b 已有 n3→n4.b,
-       * 再连 n2→n4.b 后连线数 6→7、错误数 0→2, 图直接变成非法的。
-       * 因为"能不能连"和"顶不顶掉"是两件事: isValidConnection 管前者,
-       * applyConnect 才处理 verdict.replaces。只接前一个就把顶替丢了。
+       * "能不能连" 与 "顶不顶掉" 是两件事: isValidConnection 管前者,
+       * applyConnect 才处理 verdict.replaces。只接前者、自己拼数组,
+       * 独占输入口就会被连上两条边, 产出非法图。
        */
       const next = applyConnect(registry, graph, e.from, e.to, () => makeId("e"));
       if (next) onGraphChange?.(next);

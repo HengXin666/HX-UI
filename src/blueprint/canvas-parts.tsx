@@ -31,10 +31,8 @@ export const COMMENT_HANDLE = 14;
 /**
  * 注释的语义色板。
  *
- * ⚠️ 这一版是**重写**的, 因为上一版在深色画布上根本看不见:
- *    default 用 `bg-muted/25`, 叠在深色画布上算出来几乎是
- *    透明 —— 用户原话"颜色感觉是全透明的, 根本就区分不了它和背景"。
- *    而注释的意义就是把一片节点**圈出来**, 没有可辨识的色块等于没画。
+ * 底色必须**可辨识**: 注释的意义是把一片节点圈出来, 用了等于透明的
+ * 低透明度语义色就圈不住任何东西。
  *
  * 现在每种 tone 都是**实色 token** (--bp-cmt-* / --bp-cmt-bar-*),
  * 深色下比节点体亮一档、亮色下比画布暗一档, 两种主题都分得清。
@@ -71,9 +69,8 @@ export type CommentToneId = (typeof COMMENT_TONES)[number];
  *
  * 给 `href` 时渲染成原生锚点 (target=_blank) 而不是按钮 + window.open。
  *
- * 为什么: window.open 会被弹窗拦截器拦掉 (实测: 调了 window.open 但标签页
- * 数没变 —— 用户点"独立页面"毫无反应)。而点击链接是浏览器的原生导航意图,
- * 不会被拦。这是"打开新页面"唯一可靠的做法。
+ * 为什么: window.open 会被弹窗拦截器拦掉。而点击链接是浏览器的原生导航
+ * 意图, 不会被拦。
  */
 export function CanvasButton({
   onClick, title, children, href, rel,
@@ -108,14 +105,11 @@ export function CanvasButton({
  *
  * ## 为什么不只是 <a target="_blank">
  *
- * 上一版只有一个 `<a target="_blank">`, 实测在文档站里**点了没反应**:
- * 文档站是 SPA, 而某些嵌入场景下 target=_blank 不生效, 于是用户点一下
- * 什么都没发生 —— 最坏的一类失败。
+ * 只放 `<a target="_blank">` 时, 某些嵌入场景下它不生效, 点击会毫无反应。
  *
  * ## 为什么又不能只用 window.open
  *
- * 单独用 window.open 会被弹窗拦截器拦掉 (仓库注释里记着这次实测:
- * "调了 window.open 但标签页数没变")。
+ * 单独用 window.open 会被弹窗拦截器拦掉。
  *
  * ## 所以两个都要, 各管一段
  *
@@ -135,10 +129,9 @@ function StandaloneLink({ href }: { readonly href: string }): JSX.Element {
       /**
        * 不做 onClick、不调 window.open —— 全部交给原生 <a target="_blank">。
        *
-       * 实测过一轮"两者都要": 在 onClick 里同步 window.open, 成功才
-       * preventDefault。结果在部分环境里 window.open 返回一个窗口对象
-       * (看着成功了), 于是 preventDefault 掐掉了原生导航, 而那个窗口
-       * 实际是被拦的空壳 —— 最后**两个都没开成**。
+       * 在 onClick 里同时调 window.open 并 preventDefault 是错的:
+       * 某些环境里 open 返回非空的空壳窗口, preventDefault 又掐掉了原生
+       * 导航, 结果两个都没开成。
        *
        * 纯 <a target="_blank"> 反而全对: 左键开新标签、中键开背景标签、
        * Ctrl+点、右键菜单"在新标签页打开"全都由浏览器保证, 且不会被

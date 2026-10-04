@@ -226,9 +226,8 @@ function tintOf(reg: BlueprintRegistry, g: BlueprintGraph, e: BlueprintEdge): st
  * 所以连不上)。拖动由 React Flow 处理, "带走里面的节点"由我们自己在
  * use-graph-changes 里补 —— 那是 UE5 的 DefaultCommentNodeMoveMode。
  *
- * ⚠️ 必须**带完整的 comment 对象**过去, 不能塞进通用 data:
- *    注释要有 title / body / tone, 而通用节点 data 里没有这些字段。
- *    上一版就是塞通用 data, 结果只画出一个空标题栏。
+ * ⚠️ 必须**带完整的 comment 对象**过去, 不能塞进通用 node data:
+ *    注释要渲染 title / body / tone, 而通用节点 data 里没有这些字段。
  */
 export function commentToNode(c: BlueprintComment): RfNode {
   return {

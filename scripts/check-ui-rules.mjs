@@ -55,6 +55,20 @@ function stripComment(line) {
   return line.replace(/\/\/.*$/, "").replace(/\/\*.*?\*\//g, "");
 }
 
+/**
+ * **只**取注释部分 —— 给"注释规范"类的规则用。
+ *
+ * 与 stripComment 相反: 那条是"去掉注释看代码", 这条是"只看注释"。
+ * 注释规范必须只扫注释, 否则代码里的字符串、文案都会被误判。
+ */
+function onlyComment(line) {
+  const inline = /(?:\/\/)(.*)$/.exec(line)?.[1] ?? "";
+  const block = /\/\*([\s\S]*?)\*\//.exec(line)?.[1] ?? "";
+  // 块注释只有开头那行 (/**) 时取该行; 行尾注释取后半段
+  if (/^\s*(?:\*|\/\*)/.test(line)) return line;
+  return inline || block;
+}
+
 const RULES = [
   {
     id: "no-palette",
@@ -76,7 +90,35 @@ const RULES = [
     test: (code) => /\bborder-(?:2|4|8)\b|border-\[[0-9.]+px\]/.test(code),
     hint: "线条全局 1px。要强调就改颜色深度, 不要加粗。",
   },
+  /**
+   * 注释里不许写开发日记。
+   *
+   * 为什么这条要存在: 源码注释说的是"这段代码是什么、为什么这样设计"。
+   * 而"我实测踩到过""上一版怎样""用户报了什么"是**调试经过**, 属于
+   * commit message 或博客, 不属于源码 —— 它们与当前业务无关, 读代码的人
+   * 不关心也不该被这些东西打断。
+   *
+   * 而且这类文字会**越积越多**: 写的时候觉得"记录一下挺好", 几十处之后
+   * 每个文件开头都是一段作者的遭遇, 真正的设计说明反而被埋掉了。
+   *
+   * 判据只认注释行 (代码里的字符串不算), 避免误报。
+   */
+  {
+    id: "no-dev-diary",
+    test: (code) => DEV_DIARY.test(code),
+    hint: "注释只写设计意图, 不写调试经过 (\"实测踩到\" / \"上一版\" / \"用户报\" 这类属于 commit message)。",
+    commentOnly: true,
+  },
 ];
+
+/**
+ * 开发日记的特征词。
+ *
+ * 刻意只收这几个 —— 收太宽会把"实测默认 16"这种**技术依据**也误杀。
+ * 技术依据该留 (它说明参数为什么这么取), 日记该删 (它说明作者经历了什么)。
+ */
+const DEV_DIARY =
+  /实测(?:踩到|踩过|发现|确认|表现|就是|会)|\b踩过(?:的坑|的)|上一版|曾经(?:在这里|这里|写成|用) |用户(?:报|原话)|这一版是\*\*重写\*\*/;
 
 /** 跨行检查: 每个 JSX 开标签必须自带 type。返回开标签所在行号。 */
 function checkButtonType(lines, file) {
@@ -114,9 +156,13 @@ for (const file of files) {
   const allowColor = COLOR_ALLOW.has(file);
   lines.forEach((line, i) => {
     const code = stripComment(line);
+    const comment = onlyComment(line);
     for (const rule of RULES) {
       if (allowColor && (rule.id === "no-hex" || rule.id === "no-rgb-hsl")) continue;
-      if (rule.test(code)) {
+      // commentOnly 的规则只扫注释本身, 不扫代码
+      const target = rule.commentOnly ? comment : code;
+      if (!target) continue;
+      if (rule.test(target)) {
         violations.push({ file, line: i + 1, rule: rule.id, hint: rule.hint, text: line.trim() });
       }
     }

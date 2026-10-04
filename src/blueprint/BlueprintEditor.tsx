@@ -91,7 +91,7 @@ export function BlueprintEditor({
   /**
    * 历史: 监听 graph 引用变化, 变了就记一步。
    * 不用"命令后手动 push" —— 受控模式下命令返回时 graph 还没更新,
-   * push 的前后是同一份, 栈永远是空的 (实测撤销按钮一直 disabled)。
+   * push 的前后是同一份, 历史栈会一直是空的。
    */
   useEffect(() => {
     const t = pendingTag.current ?? undefined;
@@ -102,7 +102,7 @@ export function BlueprintEditor({
   /**
    * 点面板时把节点放在**当前视口的中心**。
    *
-   * 写死一个坐标(上一版是 x:140,y:120)在两种情况下都会错: 图被平移过、
+   * 写死一个坐标在两种情况下都会错: 图被平移过、
    * 或缩放过之后, 那个固定的点可能在视口外 —— 用户点了没看见任何东西,
    * 只能以为"添加坏了"。所以向画布要它当前的视口中心。
    */

@@ -6,9 +6,8 @@ import { isTypingTarget } from "./shortcuts";
  *
  * ## 为什么只剩这些
  *
- * Delete 曾经也在这里处理一份, 而编辑器层的 useShortcuts 也处理一份 ——
- * 两条路径都会触发 onRemoveNodes。第二次提交时图已经变了, 结果历史栈里
- * 多压一步空操作, 表现为"撤销一次只撤掉一半"。现在删除统一归 useShortcuts。
+ * 删除统一由 useShortcuts 处理: 若这里也处理一份, 同一动作会被提交两次,
+ * 历史栈里多压一步空操作。
  *
  * ## 为什么 Esc 要留在这儿
  *

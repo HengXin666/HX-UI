@@ -72,7 +72,7 @@ function TooltipContent({
  * 最常见的那个场景: 一个图标按钮, 只差一句说明。
  * 少了它, 每个使用方都要手拼 Root / Trigger asChild / Portal 三层。
  *
- * 它**自带 Provider**。这一点是实测逼出来的: radix 的 Tooltip.Root 在 Provider 之外
+ * 它**自带 Provider**。radix 的 Tooltip.Root 在 Provider 之外
  * 会直接抛 \`Tooltip must be used within TooltipProvider\` 并把整棵子树打白 ——
  * 一个"只差一句说明"的便利组件不该让使用方去背这条约束。需要共享延迟策略时
  * 仍然可以自己在外面套 Provider (内层会读到外层的那一个)。

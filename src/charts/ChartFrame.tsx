@@ -61,7 +61,7 @@ export function seriesColor(index: number): string {
  * Recharts 3 把 \`content\` 的属性类型声明成 \`ContentType<ValueType, NameType>\`,
  * 其中 ValueType 默认是 \`number | string | Array<number | string>\`。函数参数是**逆变**的 ——
  * 钉死成 <number, string> 之后, 这个组件就不再是 ContentType 的合法子类型,
- * 于是每一处 \`<Tooltip content={ChartTooltip} />\` 都报 TS2322 (实测 7 处)。
+ * 于是每一处 \`<Tooltip content={ChartTooltip} />\` 都会报 TS2322。
  *
  * 在本库自己的 tsconfig 下看不出来 (strict: false 让函数参数双变), 但任何
  * 开启 strict 的消费者一 import 就会炸 —— gh-pool 面板的 build 正是因此在库里失败。

@@ -12,8 +12,8 @@ import { copySelection, pasteClip, isEmptyClip, alignNodes, type ClipboardPayloa
  * 这样两件事成为可能:
  *   1. 单测可以直接调 runShortcut, 不必挂载 React 或伪造 DOM 事件。
  *   2. "某个键位到底有没有实现"可以被**探测** —— 用探针上下文跑一次,
- *      看它有没有碰到任何状态。曾经这里返回 `defs: []` 是个假接口 (永远空),
- *      于是"帮助面板写了但按下去没反应"这类失效没有任何机制能发现。
+ *      看它有没有碰到任何状态。这个返回值必须真实反映实现 —— 若它恒为空,
+ *      "帮助面板写了但按下去没反应"这类失效就没有任何机制能发现。
  *
  * ## 为什么用 ref 拿最新状态
  *
@@ -249,11 +249,8 @@ export function useShortcuts(opts: UseShortcutsOptions): ShortcutsApi {
   /**
    * 剪贴板存在 hook 内部的 ref 里, 但**对外仍表现为 opts.clipboard**。
    *
-   * ⚠️ 踩过的坑: 曾经用 `Object.defineProperty({}, "clipboard", {...})` 造一个
-   *    带访问器的对象再展开进 opts。而 `ref.current = opts` 每次 render 都是
-   *    新对象, 展开**取值**而不是复制访问器 —— 于是剪贴板变成一次性的:
-   *    Ctrl+C 写进去, Ctrl+V 读得到; 再按一次 Ctrl+V 就读到 null。
-   *    实测表现: 第一次粘贴 +1, 第二次粘贴毫无反应。
+   * ⚠️ 访问器**不能**靠展开对象传递: `{...obj}` 会取值而不是复制访问器,
+   *    于是剪贴板变成一次性的 —— 第一次粘贴有效, 第二次读到 null。
    *
    * 现在: 存储归 ref (稳定), 对外包一层**每次 render 重建但访问器指向同一
    * 个 ref** 的对象。读写都落到 ref, 多次粘贴自然可用。

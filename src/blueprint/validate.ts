@@ -195,9 +195,8 @@ export function validateGraph(
   /**
    * 环检测只看**执行流边**。
    *
-   * 数据边不参与: 它是"取值"不是"控制流"。拿数据边去判环会误判 ——
-   * 实测踩到过: agent loop 里 `assemble → admitPrompt` 是一条横跨
-   * "轮次"与"步骤"两段的数据边, 而这两段之间又有执行流回路,
+   * 数据边不参与: 它是"取值"不是"控制流"。把数据边算进来会误判 ——
+   * 例如一条横跨两段的取值边, 而那两段之间又有执行流回路,
    * 于是那条数据边被圈进执行环, 整个环被判成"数据环"而报错。
    * 实际上数据在图上从来没有回环, 是控制流在回环。
    *
@@ -311,9 +310,7 @@ export function validateGraph(
  * 构成这个环的那些边。
  *
  * 判据是"首尾相接", 不是"两端都落在环节点集合里" —— 后者会把环上节点之间
- * 的**其它**边也圈进来。实测踩到过: agent loop 的图里 kick/turnStart/.../wake
- * 之间是执行流回路, 但 claim 与 preStep 之间还有一条数据边, 按集合匹配会把
- * 那条数据边算进环里, 于是纯执行回路被误判成数据环而报错。
+ * 的**其它**边也圈进来, 于是纯执行回路会被误判成数据环。
  */
 function cycleEdges(edges: readonly BlueprintEdge[], cycle: readonly string[]): BlueprintEdge[] {
   const out: BlueprintEdge[] = [];

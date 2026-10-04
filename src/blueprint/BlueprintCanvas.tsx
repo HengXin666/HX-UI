@@ -36,7 +36,7 @@ import { nodesInComment } from "./comment";
  *   判断全在 `canConnect` 与 `validateGraph` 里。理由见 connect.ts:
  *   判据只能有一份, 否则 UI 提示与落地结果会分叉。
  *
- * ## 三个踩过的坑, 写进实现里了
+ * ## 三条容易写错的地方
  *   1. 拖拽必须用 pointer events + setPointerCapture。用 mousemove 绑 window,
  *      鼠标移出 iframe 或松在元素外时会丢事件, 表现为"节点粘在手上"。
  *   2. 缩放要**以光标为锚点**。以原点缩放时每滚一下图就跑掉, 手感是坏的。
@@ -44,7 +44,7 @@ import { nodesInComment } from "./comment";
  *      "预览一个形状、落地变成另一个"。
  *   4. 滚轮**必须**用 addEventListener(..., { passive: false }), 不能走 React 的
  *      onWheel —— React 17+ 把它注册成 passive, 于是 preventDefault() 被浏览器
- *      忽略, 结果是"图缩放了、页面同时也滚了"。实测踩到过。
+ *      忽略, 结果是"图缩放了、页面同时也滚了"。
  */
 
 export interface Viewport {
@@ -77,7 +77,7 @@ export interface BlueprintCanvasProps {
    * 注释被拖动: 给**绝对坐标**, 不是增量。
    *
    * 传增量时接收方每帧在"当前位置"上再加一次累积位移 —— 指数级放大,
-   * 实测表现就是"一拖注释就飞出去"。绝对坐标天然幂等。
+   * 效果是位移被反复累加。绝对坐标天然幂等。
    */
   readonly onCommentMove?: (id: string, at: { x: number; y: number }) => void;
   /** 换注释底色 (UE5 的 Comment Color)。 */
@@ -145,7 +145,7 @@ export interface BlueprintCanvasProps {
    * 独立页面的 URL。给了就把"全屏"按钮换成**链接** (target=_blank)。
    *
    * 为什么是 URL 而不是回调: 回调就得用 window.open, 而它会被弹窗
-   * 拦截器拦掉 (实测: 调了但标签页数不变, 用户点了毫无反应)。
+   * 拦截器拦掉 (表现是标签页数不变)。
    * 链接是浏览器原生导航, 不会被拦。
    *
    * 不传就退回 Fullscreen API —— 但独立页面才是"整屏归蓝图"的正解。
@@ -245,7 +245,7 @@ export function BlueprintCanvas({
   /**
    * 缩放: 以光标为锚点。解 (cx - x') / z' == (cx - x) / z。
    *
-   * 这里用 **原生非被动监听** 而不是 React 的 onWheel —— 这是个坑, 实测踩到:
+   * 这里用 **原生非被动监听** 而不是 React 的 onWheel:
    * React 17+ 把 wheel/touchmove 注册成 **passive** 监听, 于是 handler 里的
    * `preventDefault()` 被浏览器直接忽略 (控制台还会警告 "Unable to preventDefault
    * inside passive event listener")。表现就是: 图缩放了, 页面**同时也滚了** ——
@@ -286,9 +286,8 @@ export function BlueprintCanvas({
        * 浮在画布上面: 真实鼠标点下去, 画布先捕获指针, 那个链接**永远不会
        * 收到 click** —— 表现就是"点了没反应"。
        *
-       * 实测踩到: e2e 里用 element.click() 是**直接派发**事件、不走命中
-       * 测试, 所以它通过; 而真实鼠标点击走完整链路, 必失败。
-       * 这就是"测试绿但功能是假的" —— 判据必须走真实输入。
+       * 注意: 用 element.click() 直接派发事件会绕过命中测试, 那样的判据
+       * 在功能失效时也会通过。判据必须走真实输入。
        */
       if (isInteractiveTarget(e.target)) return;
 
@@ -322,9 +321,8 @@ export function BlueprintCanvas({
       /**
        * ⚠️ **节点优先于注释**。
        *
-       * 踩过的坑 (用户报"框选的内容在内部不能再被移动"): 原来这里先判注释,
-       * 而注释覆盖整片区域 —— 于是框里**所有节点都抓不到**, 点上去只会拖动
-       * 整块注释。注释在视觉上确实在节点下面, 命中测试必须反映这个层级。
+       * 注释必须后于节点判定: 注释覆盖整片区域, 先判它会让框内所有节点
+       * 都抓不到。注释在视觉上位于节点之下, 命中测试要反映这个层级。
        *
        * 那怎么拖注释? 靠标题条 (UE5 也是这样: 拖标题条搬整块)。所以注释的
        * 命中判据是"标题条 + 右下角 resize 热区", 不是整个框 —— 整个框留给
@@ -401,7 +399,7 @@ export function BlueprintCanvas({
           const r = canConnect(registry, graph, from, to);
           // 用 "reason" in r 而不是 !r.ok 做判别: 本仓 tsconfig 的 strict 是关的,
           // 而判别式窄化在 strictNullChecks 关闭时不生效 —— 写成 !r.ok 时
-          // else 分支里 r 仍是联合, 取 .reason 会报 TS2339。实测踩到过一次。
+          // else 分支里 r 仍是联合, 取 .reason 会报 TS2339。
           // "reason" in r 不依赖 strict 开关, 这条判据在所有配置下都成立。
           verdict = "reason" in r ? { ok: false, reason: r.reason } : { ok: true, replaces: r.replaces };
         }
@@ -468,7 +466,7 @@ export function BlueprintCanvas({
      *
      * 漏了的话 handler 闭包里拿到的永远是首次渲染时的 null —— 松手时
      * 判定 `if (commentDraft)` 直接跳过, 于是"拖了框却没创建注释",
-     * 而且不报错 (实测就是这么静默失效的)。
+     * 而且不报错, 属于静默失效。
      */
     [link, marquee, commentDraft, graph, registry, toGraph, view.zoom, onConnect, onAddNode, onSelect, portTolerance, onCreateComment]
   );
@@ -558,11 +556,11 @@ export function BlueprintCanvas({
   /**
    * 关键: 依赖里**只能有 expanded**, 不能有 fit。
    *
-   * 踩过的坑 (表现为"一拖节点就乱飞"): fit 依赖 [graph, registry], 而拖拽时
+   * fit 依赖 [graph, registry], 而拖拽时
    * graph 每帧都变 -> fit 每帧重建身份 -> 这个 effect 每帧重跑 -> **每帧调
    * fit() 改 view**。于是 toGraph() 用新 view 算当前鼠标点, 而 drag.start
    * 是旧 view 下的值, 两者相减得到错误的位移, 且逐帧累积。
-   *   实测: 鼠标走 +20x/+10y (比例 0.5), 节点位移比例漂移到 0.94 ——
+   *   鼠标走 +20x/+10y (比例 0.5), 节点位移比例会漂移到 0.94 ——
    *   就是这么来的。
    *
    * 所以用 ref 拿最新的 fit, 依赖只留 expanded: 只在进出全屏时跑一次。
@@ -619,7 +617,7 @@ export function BlueprintCanvas({
        *   - dragover 里**必须** preventDefault(), 否则浏览器不认为这里是
        *     合法放置目标, drop 根本不会触发。这是 HTML5 拖放最容易踩的坑,
        *     表现是"拖过去没反应", 而代码看起来都对 (onDrop 写了、类型对了,
-       *     就是不掉)。实测确认过: 补上之后立刻生效。
+       *     就是不掉)。
        *   - drop 里把**鼠标位置**转成图坐标。注意是鼠标位置, 不是节点左上角:
        *     用户拖着的时候想的是"这个点放这里", 把他看到的那个点对准落点才自然。
        */

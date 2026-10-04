@@ -128,10 +128,9 @@ async function appearanceCases(h) {
   /**
    * 网格必须**真的画出来**, 不只是"有个 div"。
    *
-   * ⚠️ 上一版判 `[data-grid="1"]` 计数 === 1 —— 而 CanvasGrid 是无条件渲染
-   *    的 div, 这个断言**永远为真**。真正的判据是 computed background-image
-   *    里有没有 gradient: 类名/变量拼错时 Tailwind 不报错、只静默不生成规则,
-   *    那时 div 还在、但网格是空白的。
+   * 判据必须是 computed background-image 里有 gradient, 不能只数元素:
+   *    网格层是无条件渲染的 div, 数它永远为真。而类名/变量拼错时
+   *    Tailwind 不报错、只静默不生成规则 —— 那时元素还在, 网格却是空的。
    */
   const gridImg = await h.cssOf('[data-grid="1"]', "background-image");
   out.push({
@@ -210,9 +209,8 @@ async function editCases(h) {
   out.push(h.steps.pop());
 
   // 撤销: 必须**精确**回到删除前的数量。
-  // ⚠️ 这条的上一版写成 `a.nodes > 0 && a.nodes === b.nodes + 0 || a.nodes > 0`,
-  //    化简后就是 `a.nodes > 0` —— 只要还剩一个节点就 PASS, 完全无法证伪
-  //    "是否全回来了"。盲审抓出来的, 这里改成严格相等。
+  // 必须**精确**相等。若写成 `a.nodes > 0`, 只要还剩一个节点就会 PASS,
+  // 无法证伪"是否全回来了"。
   // 此时图已被清空 (b.nodes === 0), 撤销必须**精确**回到清空前的那个数。
   // 用闭包记住清空前的数量, 而不是拿 b (清空后) 去比 —— 那会退化成恒真。
   await h.check("撤销: 精确恢复被删除的全部节点", async () => { await p.keyboard.press("Control+z"); },
@@ -333,9 +331,8 @@ async function interactionCases(h) {
   /**
    * 等百分比**稳定**再读, 而不是睡固定 400ms。
    *
-   * 固定等待是 flaky 的来源: 本机实测这条用例偶发 FAIL (读到 79% 而不是
-   * 100%) —— 缩放有过渡动画, 400ms 有时够有时不够。用 waitForFunction
-   * 轮询到目标值, 慢一点但确定性。
+   * 必须等百分比**稳定**再读, 不能睡固定时长: 缩放有过渡动画, 固定等待
+   * 时够时不够, 是 flaky 的来源。用 waitForFunction 轮询到目标值。
    */
   await p.waitForFunction(() => /(\d+)%/.exec(document.body.innerText)?.[1] === "100", null, { timeout: 4000 }).catch(() => {});
   const zoomReset = await p.evaluate(() => {
@@ -403,13 +400,11 @@ async function standaloneCases(h) {
   /**
    * 真点一次 —— **必须用真实鼠标, 不能用 element.click()**。
    *
-   * ⚠️ 这条判据上一版是假的: 它用 `p.evaluate(() => a.click())` 直接派发,
-   *    绕过了命中测试与指针捕获, 于是**在画布抢走指针的情况下照样绿**。
-   *    而真实用户点击走完整链路 (pointerdown -> 画布 setPointerCapture ->
-   *    click 被吞), 必然失败 —— 用户报"点了没反应"就是这个。
+   * element.click() 直接派发事件, 绕过了命中测试与指针捕获, 在画布抢走
+   * 指针的情况下照样通过; 而真实用户点击走完整链路 (pointerdown ->
+   * setPointerCapture -> click 被吞) 会失败。
    *
-   *    教训: 判断"能不能点", 判据必须走真实输入 (mouse.move + down + up),
-   *    凡是能在 JS 里直接调 .click() 通过的断言, 都没有证明它能被点到。
+   * 所以判断"能不能点", 判据必须走真实输入 (mouse.move + down + up)。
    */
   let opened = null;
   if (h.ctx) {
@@ -476,9 +471,8 @@ async function dragSelectCases(h) {
   /**
    * 必须**从节点标题的文字上**起手, 再拖过其它文字。
    *
-   * ⚠️ 上一版在画布"空白处"拖, 而空白处根本没有文本可选 —— 于是
-   *    user-select 设成 auto 它也照样 PASS。**这条断言是死的**。
-   *    判据要能证伪: 得拖在真的有字的地方。
+   * 必须从**有文字的地方**起手再拖过其它文字。若在空白处拖, 那里没有
+   * 文本可选, 断言会是死的 —— 判据要能被证伪。
    */
   const title = p.locator("[data-node-kind]").first().locator("xpath=child::div[1]");
   const tb = await title.boundingBox().catch(() => null);

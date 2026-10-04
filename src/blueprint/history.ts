@@ -48,10 +48,8 @@ export interface HistoryApi {
   /**
    * 提交**改动之后**的新状态。
    *
-   * ⚠️ 参数是新状态, 不是旧状态 —— 内部会把"上一个状态"推进 past。
-   * 这条约定反过来看着也能跑 (不报错), 但撤销会一步不动 —— 实测踩到过:
-   * 调用方传了 before, 于是 currentRef 被设成旧图, past 里存的也是旧图,
-   * 按撤销时"恢复 past 顶"等于恢复成同一个旧图, 看起来毫无反应。
+   * ⚠️ 参数是**改动之后**的新状态, 不是旧状态 —— 内部会把"上一个状态"
+   * 推进 past。传反了不报错, 但撤销恢复的是同一份旧图, 看起来毫无反应。
    *
    * @param tag 同类连续改动的标识 (如 "move" / "param")。给 null 表示不合并。
    */
@@ -67,9 +65,8 @@ export interface HistoryApi {
    * 跟踪一张图: 它变了就记一步历史。
    *
    * 为什么提供这个而不是让调用方手动 push: 受控模式下, 调用方在"改图命令
-   * 之后"立刻读到的仍是**旧** graph (React 还没重渲染), 于是 push 进去的
-   * 前后是同一份, 历史栈永远是空的 —— 实测撤销按钮一直是 disabled,
-   * 而代码看起来毫无问题。
+   * 之后"立刻读到的仍是**旧** graph (React 还没重渲染), 手动 push 进去的
+   * 前后是同一份, 历史栈会一直是空的。
    *
    * 用 effect 监听 graph 引用, 则无论改动来自哪个入口 (面板点击 / 拖拽 /
    * 折叠 / 导入), 也无论时序如何, 都能可靠地记一步。
@@ -154,29 +151,17 @@ export function useHistory(opts: UseHistoryOptions = {}): HistoryApi {
   /**
    * 撤销。
    *
-   * ⚠️ 这里曾经有一个**不会报错**的致命 bug, 值得写下来:
-   *   原来 `restored` 是在 `setPast((p) => {...})` 的更新函数**内部**赋值的。
-   *   而 React 的 updater 是**延迟执行**的 (严格模式下甚至会执行两次),
-   *   所以函数体末尾 `return restored` 时它还是 null —— 于是 undo() 永远
-   *   返回 null, 调用方 `if (g) api.replace(g)` 直接跳过, 表现就是
-   *   "撤销按钮能点、tooltip 也对、按了却毫无反应"。
+   * ⚠️ 要返回的东西必须**同步**从 past 里取, 不能靠 setState 的 updater
+   *    赋值 —— updater 是延迟执行的, 函数体 return 时那个变量还是 null,
+   *    于是 undo() 永远返回 null。而返回类型允许 null, 所以不会报错。
    *
-   *   而且 tsc / 构建 / 冒烟全绿, 因为返回类型是 `BlueprintGraph | null`,
-   *   null 是合法值。这类"静默失效"只能靠断言真实行为抓到。
-   *
-   *   所以现在: 要读的东西**同步**从 past / future 数组里取, setState 只
-   *   负责写。读与写分开, 不依赖 updater 的执行时机。
+   *    这里 setState 只负责写, 读与写分开。
    */
   /**
    * "上一次见到的图" —— 只用于**去重**, 绝不用于判断"是不是第一次"。
    *
-   * 踩过的坑: 第一版用 seenRef 兼做"是否已初始化"的判断, 于是第一次
-   * track 把 seenRef 设好、但 push 内部的 currentRef 仍是 null;
-   * 到第二次真正改动时, push 把它当成"第一次提交"只记基线 ——
-   * 历史栈永远是空的, 撤销按钮一直 disabled, 而代码看着毫无问题。
-   *
-   * 教训: 两个 ref 表达同一个概念却没有同步机制, 必然出错。
-   * 现在去重交给 seenRef, "第一次"的判断完全交给 push 内部的 currentRef。
+   * 两个 ref 表达同一个概念却没有同步机制就会出错, 所以: 去重交给
+   * seenRef, "是否是第一次提交"完全交给 push 内部的 currentRef。
    */
   const seenRef = useRef<BlueprintGraph | null>(null);
 

@@ -126,9 +126,8 @@ export interface SyncOptions {
  * ```
  *
  * 两个关键行为:
- *   - **回声抑制**: 自己发的消息自己也会收到吗? BroadcastChannel 不会发给
- *     自己, 但 localStorage 的 storage 事件也不发给写入方 —— 两者都不会,
- *     但仍然按 origin id 过滤一遍, 免得将来换 transport 时踩到。
+ *   - **回声抑制**: 两种 transport 都不会把消息发回给写入方, 但仍然按
+ *     origin id 过滤一遍, 这样换 transport 时行为不依赖它的内部保证。
  *   - **后加入者拉全量**: 新开的页面不知道当前状态, 所以发一条 `request`,
  *     已有页面回一条 `graph`。谁先回算谁的 (不做仲裁 —— 同时有多个页面
  *     改同一张图本身就是用户该自己避免的用法)。
@@ -189,7 +188,7 @@ export class SyncChannel {
    * 发布本地改动。
    *
    * 节流是这里的关键: 拖一个节点每帧都会触发 onChange, 不节流的话
-   * 每帧一次 JSON 序列化 + 广播, 主线程直接被打满 (实测拖拽会明显掉帧)。
+   * 每帧一次 JSON 序列化 + 广播会把主线程打满。
    * 节流窗口内只保留**最后一次** —— 中间态没有意义, 用户要的是最终位置。
    */
   publish(graph: BlueprintGraph): void {
@@ -241,8 +240,7 @@ export function graphFromUrl(hash: string): BlueprintGraph | null {
    * 分隔符是 `&` **或** `#` 或 `?`。
    *
    * 只写 `(?:^|&)` 时 `#graph=...` 匹配不到 —— `#` 既不是行首也不是 `&`,
-   * 于是文档里声明支持的那种 URL 悄悄失效, 页面打开是空的, 且不报错。
-   * 实测踩到过 (断言造的正是 `#graph=` 这种)。
+   * 于是那种 URL 会悄悄失效, 页面打开是空的且不报错。
    */
   const m = /(?:^|[&#?])graph=([^&]+)/.exec(hash);
   if (!m) return null;
