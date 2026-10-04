@@ -125,6 +125,8 @@ export { downloadGraph, pickGraphFile, graphFromText, GRAPH_EXT } from "./bluepr
 export { ShortcutHelp } from "./blueprint/ShortcutHelp";
 export { BlueprintIssues } from "./blueprint/BlueprintIssues";
 export { CanvasGrid, GRID_SIZE } from "./blueprint/CanvasGrid";
+export { BlueprintFlow } from "./blueprint/BlueprintFlow";
+export { toReactFlow, edgeFromRf, computeConnected, handleId, portOfHandle } from "./blueprint/rf-adapter";
 export { PinShape } from "./blueprint/PinShape";
 export { nodeKindOf, titleStyle } from "./blueprint/node-style";
 export { PortRow, ParamField } from "./blueprint/node-parts";

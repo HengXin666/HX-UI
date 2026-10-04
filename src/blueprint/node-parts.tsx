@@ -30,11 +30,18 @@ import { PinShape } from "./PinShape";
 export const PORT_ROW_H = PORT_ROW;
 
 export function PortRow({
-  dir, port, registry, filled, invalid, portRef, hot,
+  dir, port, color, filled, invalid, portRef, hot,
 }: {
   readonly dir: "in" | "out";
   readonly port: Pick<PortDef, "id" | "label" | "type">;
-  readonly registry: BlueprintRegistry;
+  /**
+   * 引脚颜色类名 (bg-*)。
+   *
+   * 改成直接收颜色而不是收 registry: 节点组件拿不到 registry (它含函数,
+   * 塞进 React Flow 的 data 会让节点 data 不可序列化且每帧换引用)。
+   * 颜色在适配层预先算好带过来。
+   */
+  readonly color?: string;
   readonly filled?: boolean;
   readonly invalid?: boolean;
   readonly portRef?: (portId: string, dir: "in" | "out", el: HTMLElement | null) => void;
@@ -42,7 +49,6 @@ export function PortRow({
   readonly hot?: boolean;
 }): JSX.Element {
   const isExec = port.type === EXEC;
-  const color = registry.typeColor(port.type);
   return (
     <div
       className={cn("flex items-center gap-1.5", dir === "out" && "flex-row-reverse", hot && "bg-primary/10")}

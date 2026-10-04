@@ -9,7 +9,7 @@
 import { spawnSync } from "node:child_process";
 import { createServer } from "node:http";
 
-const SUITES = ["visual.mjs", "blueprint.mjs", "persist.mjs"];
+const SUITES = ["visual.mjs", "blueprint.mjs", "persist.mjs", "reactflow.mjs"];
 const PORT = 5600;
 
 async function alive() {

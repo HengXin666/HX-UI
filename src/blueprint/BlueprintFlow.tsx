@@ -1,0 +1,238 @@
+"use client";
+
+import { useCallback, useMemo, type JSX } from "react";
+import {
+  ReactFlow, Background, BackgroundVariant, Controls, MiniMap,
+  ReactFlowProvider, useReactFlow,
+  type Connection, type NodeChange, type EdgeChange, type OnSelectionChangeFunc,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import type { BlueprintGraph, BlueprintRegistry, ValidationIssue } from "./types";
+import { canConnect } from "./connect";
+import { makeId } from "./useBlueprint";
+import {
+  toReactFlow, edgeFromRf, computeConnected, commentToNode, isCommentNode, commentIdOf,
+  type RfNode, type RfEdge,
+} from "./rf-adapter";
+import { BpNode, BpExecEdge, BpDataEdge, ExecArrowMarker } from "./rf-node";
+
+/**
+ * 画布层 —— 交互全部交给 React Flow。
+ *
+ * ## 这一层为什么这么短
+ *
+ * 拖拽 / 缩放 / 平移 / 框选 / 连线 / 选中 / 吸附 / 小地图, 全由 React Flow
+ * 提供。手写那一版光这些就 800+ 行, 而且反复冒出指针捕获、忘记禁 user-select
+ * 这类坑。现在这些**一行都不用写**。
+ *
+ * ## 我们保留什么
+ *
+ *   1. **UE5 外观** —— 自定义节点与连线组件 (rf-node.tsx)。
+ *   2. **连线合法性** —— isValidConnection 接到我们自己的 canConnect,
+ *      类型 DAG / 协变 / 执行流与数据流分离 / 环检测 全都照旧。
+ *   3. **图是真相** —— BlueprintGraph 仍然是唯一数据模型, React Flow 的
+ *      nodes/edges 只是渲染态 (转换在 rf-adapter.ts)。
+ */
+
+export interface BlueprintFlowProps {
+  readonly registry: BlueprintRegistry;
+  readonly graph: BlueprintGraph;
+  readonly validation?: { readonly byNode: ReadonlyMap<string, { portErrors: Record<string, ValidationIssue> }> };
+  readonly selected?: readonly string[];
+  readonly onGraphChange?: (next: BlueprintGraph) => void;
+  readonly onSelect?: (ids: readonly string[]) => void;
+  readonly onParamChange?: (nodeId: string, key: string, value: unknown) => void;
+  readonly onEnterSubgraph?: (sgId: string) => void;
+  readonly onRemove?: (ids: readonly string[]) => void;
+  /** 拖线到空白松手时: 是否弹节点面板 (UE5 行为)。 */
+  readonly onConnectEndAtBlank?: (at: { x: number; y: number }) => void;
+  readonly className?: string;
+  readonly height?: number | string;
+}
+
+const NODE_TYPES = { bp: BpNode, bpComment: BpNode };
+const EDGE_TYPES = { bpExec: BpExecEdge, bpData: BpDataEdge };
+
+export function BlueprintFlow(props: BlueprintFlowProps): JSX.Element {
+  // ReactFlowProvider 必须包在外面: 内部要用 useReactFlow 拿视口命令
+  return (
+    <ReactFlowProvider>
+      <FlowInner {...props} />
+    </ReactFlowProvider>
+  );
+}
+
+function FlowInner({
+  registry, graph, validation, selected, onGraphChange, onSelect,
+  onParamChange, onEnterSubgraph, onRemove, onConnectEndAtBlank, className, height = 520,
+}: BlueprintFlowProps): JSX.Element {
+  const rf = useReactFlow();
+
+  /** 校验错误 -> 每个节点每个输入口的红点标记。 */
+  const errorsByNode = useMemo(() => {
+    const out: Record<string, Record<string, boolean>> = {};
+    for (const [id, nv] of validation?.byNode ?? []) {
+      const m: Record<string, boolean> = {};
+      for (const k of Object.keys(nv.portErrors ?? {})) m[k] = true;
+      if (Object.keys(m).length) out[id] = m;
+    }
+    return out;
+  }, [validation]);
+
+  const onParam = useCallback(
+    (nodeId: string, key: string, value: unknown) => {
+      onParamChange?.(nodeId, key, value);
+    },
+    [onParamChange]
+  );
+
+  const { nodes, edges } = useMemo(() => {
+    const r = toReactFlow(registry, graph, {
+      connectedByNode: computeConnected(graph),
+      errorsByNode,
+      onParamChange: onParam,
+    });
+    // 注释作为"在节点下面的自定义节点"参与渲染
+    return {
+      nodes: [...r.nodes, ...(graph.comments ?? []).map(commentToNode)],
+      edges: r.edges,
+    };
+  }, [registry, graph, errorsByNode, onParam]);
+
+  /** 选中集 -> 我们的节点 id (过滤掉注释伪节点)。 */
+  const selectedIds = useMemo(() => new Set(selected ?? []), [selected]);
+
+  const rfSelected = useMemo(
+    () => nodes.filter((n) => selectedIds.has(String(n.data.bpId))),
+    [nodes, selectedIds]
+  );
+
+  /**
+   * 连线合法性 —— **这是这套库的核心卖点, 必须走我们自己的判定**。
+   *
+   * React Flow 只提供"两个 handle 能不能连"的回调, 真正的规则
+   * (类型协变 / exec 与 data 不能互连 / 独占输入顶替 / 环检测)
+   * 全部在 connect.ts 里, 这里只是转发。
+   */
+  const isValidConnection = useCallback(
+    (c: Connection | RfEdge): boolean => {
+      const e = edgeFromRf(c, "__probe__");
+      if (!e) return false;
+      return canConnect(registry, graph, e.from, e.to).ok;
+    },
+    [registry, graph]
+  );
+
+  const onConnect = useCallback(
+    (c: Connection) => {
+      const e = edgeFromRf(c, makeId("e"));
+      if (!e) return;
+      const kind = isExecConnection(registry, graph, c) ? "exec" : "data";
+      onGraphChange?.({ ...graph, edges: [...graph.edges, { ...e, kind }] });
+    },
+    [registry, graph, onGraphChange]
+  );
+
+  /** 节点移动 / 删除等变化 -> 落到我们的图。 */
+  const onNodesChange = useCallback(
+    (changes: NodeChange<RfNode>[]) => {
+      let touched = false;
+      const next = { ...graph, nodes: graph.nodes.map((n) => ({ ...n })) };
+      const comments = (graph.comments ?? []).map((c) => ({ ...c }));
+
+      for (const ch of changes) {
+        if (ch.type === "position" && ch.position) {
+          if (isCommentNode(ch.id)) {
+            const c = comments.find((x) => commentIdOf(ch.id) === x.id);
+            if (c) { c.x = ch.position.x; c.y = ch.position.y; touched = true; }
+          } else {
+            const n = next.nodes.find((x) => x.id === ch.id);
+            if (n) { n.x = ch.position.x; n.y = ch.position.y; touched = true; }
+          }
+        }
+        if (ch.type === "remove" && !isCommentNode(ch.id)) {
+          const before = next.nodes.length;
+          next.nodes = next.nodes.filter((x) => x.id !== ch.id);
+          if (next.nodes.length !== before) {
+            next.edges = next.edges.filter((e) => e.from.node !== ch.id && e.to.node !== ch.id);
+            touched = true;
+          }
+        }
+      }
+      if (touched) onGraphChange?.({ ...next, ...(comments.length ? { comments } : {}) });
+    },
+    [graph, onGraphChange]
+  );
+
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange<RfEdge>[]) => {
+      const removed = new Set(
+        changes.filter((c) => c.type === "remove").map((c) => (c as { id: string }).id)
+      );
+      if (!removed.size) return;
+      onGraphChange?.({ ...graph, edges: graph.edges.filter((e) => !removed.has(e.id)) });
+    },
+    [graph, onGraphChange]
+  );
+
+  const onSelectionChange = useCallback<OnSelectionChangeFunc>(
+    ({ nodes: sel }) => {
+      const ids = sel.map((n) => String(n.data?.bpId ?? n.id)).filter(Boolean);
+      onSelect?.(ids);
+    },
+    [onSelect]
+  );
+
+  return (
+    <div className={className} style={{ height, width: "100%" }}>
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={NODE_TYPES}
+        edgeTypes={EDGE_TYPES}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onConnect={onConnect}
+        isValidConnection={isValidConnection}
+        onSelectionChange={onSelectionChange}
+        onNodeDoubleClick={(_, n) => {
+          const sg = n.data?.subgraph as string | undefined;
+          if (sg) onEnterSubgraph?.(sg);
+        }}
+        onNodesDelete={(deleted) => {
+          const ids = deleted.map((n) => String(n.data?.bpId ?? n.id));
+          onRemove?.(ids);
+        }}
+        /**
+         * 网格: React Flow 自带。UE5 是 16px 细线 + 每 8 格主线,
+         * 这里用它的双 Background 叠出来 (gap / size 两个层)。
+         */
+        fitView
+        minZoom={0.25}
+        maxZoom={2.5}
+        // 禁掉 React Flow 自己的文本选中干扰
+        proOptions={{ hideAttribution: false }}
+        style={{ background: "var(--background)" }}
+      >
+        <ExecArrowMarker />
+        <Background variant={BackgroundVariant.Dots} gap={16} size={1} className="bp-grid-minor" />
+        <Background variant={BackgroundVariant.Dots} gap={128} size={1.6} className="bp-grid-major" />
+        <Controls />
+        <MiniMap pannable zoomable />
+      </ReactFlow>
+    </div>
+  );
+}
+
+/** 这条连接是不是执行流。 */
+function isExecConnection(
+  reg: BlueprintRegistry,
+  g: BlueprintGraph,
+  c: { source: string; sourceHandle?: string | null }
+): boolean {
+  const port = (c.sourceHandle ?? "").replace(/^o:/, "");
+  const n = g.nodes.find((x) => x.id === c.source);
+  const def = n ? reg.nodeTypes.get(n.type) : undefined;
+  if (!def) return false;
+  return (def.execOut ?? []).some((o) => (typeof o === "string" ? o : o.id) === port);
+}

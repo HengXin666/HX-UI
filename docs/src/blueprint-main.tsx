@@ -13,6 +13,7 @@ import {
   cn, type BlueprintGraph,
 } from "@hx/ui";
 import { createDshRegistry, buildRootGraph, dshAgentLoopGraph, createSourceRegistry } from "@hx/blueprint-demo";
+import { RfPane } from "./RfPane";
 
 /**
  * 蓝图的**独立页面**。
@@ -107,6 +108,8 @@ function readChannel(): string {
 
 function BlueprintApp(): JSX.Element {
   const [source, setSource] = useState<Source>(() => readSource());
+  /** React Flow 版画布开关 (渐进替换)。 */
+  const useRF = useMemo(() => /[&#?]rf=1/.test(window.location.hash), []);
   const channel = useMemo(() => readChannel(), []);
   const registry = useMemo(() => REGISTRIES[source](), [source]);
 
@@ -226,13 +229,17 @@ function BlueprintApp(): JSX.Element {
       </header>
 
       <div className="min-h-0 flex-1 p-2">
-        <BlueprintEditor
-          registry={registry}
-          value={graph}
-          onChange={onGraphChange}
-          height="100%"
-          paletteWidth={190}
-        />
+        {useRF ? (
+          <RfPane registry={registry} graph={graph} validation={v} onChange={onGraphChange} />
+        ) : (
+          <BlueprintEditor
+            registry={registry}
+            value={graph}
+            onChange={onGraphChange}
+            height="100%"
+            paletteWidth={190}
+          />
+        )}
       </div>
     </div>
   );

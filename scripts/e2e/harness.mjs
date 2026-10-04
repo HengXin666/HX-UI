@@ -31,6 +31,8 @@ export const SHOTS = new URL("./shots/", import.meta.url).pathname;
 
 export class Harness {
   steps = [];
+  /** 收集到的运行时错误 (pageerror + console.error)。 */
+  errors = [];
   browser = null;
   page = null;
 
@@ -40,7 +42,15 @@ export class Harness {
     // 蓝图是给暗色设计的, 亮色下 UE 高饱和引脚色会被压暗版取代
     await this.page.addInitScript(() => localStorage.setItem("hx-ui-docs-theme", "dark"));
     this.page.on("pageerror", (e) => {
+      this.errors.push(e.message);
       this.steps.push({ name: "运行时异常", ok: false, actual: e.message });
+    });
+    this.page.on("console", (m) => {
+      if (m.type() !== "error") return;
+      const t = m.text();
+      // Vite 的 HMR 噪音不算; 只收集真实的运行时报错
+      if (/vite|hmr|\[vite\]/i.test(t)) return;
+      this.errors.push(t);
     });
     await this.page.goto(`${BASE}${hash}`, { waitUntil: "networkidle" });
     await this.page.waitForTimeout(1200);

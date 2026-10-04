@@ -166,7 +166,7 @@ export function BlueprintNodeCard({
                   key={p.id}
                   dir="in"
                   port={p}
-                  registry={registry}
+                  {...(registry.typeColor(p.type) ? { color: registry.typeColor(p.type) } : {})}
                   filled={connected?.[p.id]}
                   invalid={portErrors?.[p.id]}
                   portRef={portRef}
@@ -181,7 +181,6 @@ export function BlueprintNodeCard({
                   key={id}
                   dir="out"
                   port={{ id, label: execOutLabel(def, id), type: EXEC }}
-                  registry={registry}
                   filled
                   portRef={portRef}
                   hot={dropTarget?.[id]}
@@ -192,7 +191,7 @@ export function BlueprintNodeCard({
                   key={p.id}
                   dir="out"
                   port={p}
-                  registry={registry}
+                  {...(registry.typeColor(p.type) ? { color: registry.typeColor(p.type) } : {})}
                   filled
                   portRef={portRef}
                   hot={dropTarget?.[p.id]}
