@@ -57,6 +57,54 @@ export {
 } from "./primitives/confirm-dialog";
 export { type ClassValue, cn } from "./primitives/utils";
 
+// ── 蓝图 ──
+export {
+  createRegistry, defaultRegistry, BlueprintRegistryImpl,
+  type BlueprintRegistryImpl as BlueprintRegistryClass,
+} from "./blueprint/registry";
+export {
+  ANY, EXEC, BASE_TYPES,
+  type DataTypeId, type DataTypeDef, type PortDef, type PortRef,
+  type NodeTypeDef, type NodeValidator, type EvalContext, type ParamDef,
+  type BlueprintNode, type BlueprintEdge, type BlueprintGraph,
+  type IssueCode, type IssueLevel, type ValidationIssue,
+  type NodeValidation, type GraphValidation,
+} from "./blueprint/types";
+export {
+  canConnect, applyConnect, resolvePort, execOutIds, execOutLabel, EXEC_IN_PORT,
+  type ConnectResult, type ConnectFailReason,
+} from "./blueprint/connect";
+export {
+  validateGraph, findCycles, topoSort, upstreamOf, allPorts,
+} from "./blueprint/validate";
+export {
+  useBlueprint, useSelection, makeId,
+  type BlueprintApi, type UseBlueprintOptions,
+} from "./blueprint/useBlueprint";
+export {
+  evaluateGraph, findEntries, type EvalResult,
+} from "./blueprint/evaluate";
+export {
+  serializeGraph, parseGraph, toPseudoCode, FORMAT_VERSION, type SerializedGraph,
+} from "./blueprint/serialize";
+export {
+  BlueprintCanvas, type BlueprintCanvasProps, type Viewport,
+} from "./blueprint/BlueprintCanvas";
+export {
+  BlueprintNodeCard, type BlueprintNodeCardProps,
+} from "./blueprint/BlueprintNode";
+export {
+  BlueprintPalette, groupByCategory, fuzzyMatch, PortDot,
+  type BlueprintPaletteProps, type PaletteGroup,
+} from "./blueprint/BlueprintPalette";
+export {
+  BlueprintEditor, useGraphValid, type BlueprintEditorProps,
+} from "./blueprint/BlueprintEditor";
+export {
+  demoRegistry, createDemoRegistry, demoGraph, DEMO_NODES,
+} from "./blueprint/demo";
+export * from "./blueprint/geometry";
+
 // ── 版式件 ──
 export { AppFrame, type AppFrameProps } from "./layout/AppFrame";
 export {

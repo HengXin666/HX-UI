@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "type": "module",
   "description": "HX 自维护 UI 库: 视觉沿用 open-vetta 那套设计语言",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "files": [
     "src",
     "LICENSE",
@@ -28,8 +28,9 @@
     "check:smoke": "node scripts/check-smoke.mjs",
     "check:smoke:strict": "node scripts/check-smoke.mjs --strict",
     "check:shell": "node scripts/check-shell.mjs",
-    "build": "tsc --noEmit && node scripts/check-ui-rules.mjs src",
-    "verify": "npm run build && npm --prefix docs run build && npm run check:smoke && npm run check:shell"
+    "build": "tsc --noEmit && node scripts/check-ui-rules.mjs src && node scripts/check-blueprint.mjs",
+    "verify": "npm run build && npm --prefix docs run build && npm run check:smoke && npm run check:shell",
+    "check:blueprint": "node scripts/check-blueprint.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

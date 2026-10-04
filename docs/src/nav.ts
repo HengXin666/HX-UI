@@ -48,6 +48,7 @@ export const DOCS: readonly DocEntry[] = [
   { id: "stat-card", label: "StatCard / StatGrid", group: "版式件", desc: "指标卡与栅格, 数字等宽不抖" },
   { id: "empty-state", label: "EmptyState / DataBoundary", group: "版式件", desc: "空/错误/加载三态, 顺序固定" },
   { id: "page-header", label: "PageHeader", group: "版式件", desc: "页头: 标题 + 说明 + 右侧操作位" },
+  { id: "blueprint", label: "Blueprint", group: "蓝图", desc: "节点图编辑器: 自定义节点 / 连接合法性判定 / 执行流" },
 ];
 
-export const GROUPS: readonly string[] = ["基础", "示例", "基础件", "版式件"];
+export const GROUPS: readonly string[] = ["基础", "示例", "基础件", "版式件", "蓝图"];

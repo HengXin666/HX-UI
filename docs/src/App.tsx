@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import {
-  AppFrame, Badge, ConfirmDialogHost, SidebarNavItemButton, Toaster, type SidebarNavItem,
+  AppFrame, Badge, ConfirmDialogHost, SidebarNavIcon, Toaster,
 } from "@hx/ui";
 import { SearchDialog, useSearchHotkey } from "./components/SearchDialog";
 import { TableOfContents } from "./components/TableOfContents";
@@ -44,6 +44,7 @@ import { AccordionPage } from "./pages/AccordionPage";
 import { FeedbackPage } from "./pages/FeedbackPage";
 import { DataTablePage } from "./pages/DataTablePage";
 import { ChromePage } from "./pages/ChromePage";
+import { BlueprintPage } from "./pages/BlueprintPage";
 
 /**
  * 组件文档站。
@@ -92,6 +93,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "stat-card": return <DataTablePage />;
     case "empty-state":
     case "page-header": return <ChromePage />;
+    case "blueprint": return <BlueprintPage />;
     default: return <PlaceholderPage label={entry.label} desc={entry.desc} />;
   }
 }
@@ -104,6 +106,16 @@ export function App(): JSX.Element {
   // TOC 从渲染后的 DOM 里读标题, 所以需要内容容器的引用
   const contentRef = useRef<HTMLDivElement>(null);
   const [wide, setWide] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    if (!mobileNavOpen) return;
+    const onEscape = (event: KeyboardEvent): void => {
+      if (event.key === "Escape") setMobileNavOpen(false);
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [mobileNavOpen]);
 
   // 窄屏 (>1280px 才显示右栏) 时给内容多留一点宽度
   useEffect(() => {
@@ -117,6 +129,7 @@ export function App(): JSX.Element {
   // 切页后回到顶部。不做这件事时, 从长页面跳到短页面会停在半空的滚动位置。
   const go = useCallback((id: string) => {
     navigate(id);
+    setMobileNavOpen(false);
     contentRef.current?.scrollTo({ top: 0 });
   }, [navigate]);
 
@@ -125,15 +138,21 @@ export function App(): JSX.Element {
 
   return (
     <AppFrame>
-      <div className="relative z-10 flex min-h-0 flex-1 gap-2 p-2">
-        {/* 侧栏: 面板容器手写, 里面的导航项用库组件 */}
-        <aside className="flex w-60 shrink-0 flex-col overflow-hidden rounded-xl border border-border/40 bg-card/25">
+      <div className="relative z-10 flex min-h-0 min-w-0 w-full flex-1 gap-2 p-2">
+        {mobileNavOpen && (
+          <button type="button" aria-label="关闭导航" className="fixed inset-0 z-20 bg-black/40 md:hidden" onClick={() => setMobileNavOpen(false)} />
+        )}
+        {/* 侧栏: 链接保留原生新标签与复制地址行为 */}
+        <aside id="docs-navigation" className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-2 left-2 z-30 w-60 flex-col overflow-hidden rounded-xl border border-border/40 bg-card shadow-lg md:static md:flex md:bg-card/25 md:shadow-none`}>
           <div className="flex h-11 shrink-0 items-center gap-2 px-3">
             <span className="grid size-6 shrink-0 place-items-center rounded-md bg-primary/15 text-[11px] font-semibold text-primary">
               HX
             </span>
             <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">HX UI</span>
             <ThemeToggle />
+            <button type="button" aria-label="关闭导航" className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-accent md:hidden" onClick={() => setMobileNavOpen(false)}>
+              <span aria-hidden className="icon-[solar--close-circle-linear] size-4 bg-current" />
+            </button>
           </div>
 
           {/* 搜索入口: 点击或 ⌘K 都能唤起 */}
@@ -154,37 +173,22 @@ export function App(): JSX.Element {
               <div key={g}>
                 <div className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-muted-foreground/80">{g}</div>
                 <div className="flex flex-col gap-px">
-                  {DOCS.filter((d) => d.group === g).map((d) => {
-                    const item: SidebarNavItem = {
-                      id: d.id,
-                      label: d.label,
-                      icon: NAV_ICONS[d.id] ?? DEFAULT_NAV_ICON,
-                      active: d.id === active,
-                    };
-                    return (
-                      /*
-                       * 外面包一层 <a href="#/xxx">, 让每个导航项都是**真链接**:
-                       *   中键 / Ctrl+点击 → 新标签打开
-                       *   右键 → 复制链接地址
-                       *   悬停 → 状态栏显示真实 URL
-                       *   搜索引擎与无障碍工具能识别导航结构
-                       * SidebarNavItemButton 是上游的 <button>, 不支持 href;
-                       * 给它加 asChild 要改上游源码, 用外层 <a> 是更小的代价。
-                       * 点击仍走 navigate 做 SPA 切换, 不整页刷新。
-                       */
-                      <a
-                        key={d.id}
-                        href={`#/${d.id}`}
-                        onClick={(e) => { e.preventDefault(); navigate(d.id); }}
-                        className="contents"
-                      >
-                        <SidebarNavItemButton
-                          item={item}
-                          className={d.id === active ? "bg-primary/10 ring-1 ring-inset ring-primary/25" : undefined}
-                        />
-                      </a>
-                    );
-                  })}
+                  {DOCS.filter((d) => d.group === g).map((d) => (
+                    <a
+                      key={d.id}
+                      href={`#/${d.id}`}
+                      aria-current={d.id === active ? "page" : undefined}
+                      onClick={(e) => {
+                        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                        e.preventDefault();
+                        go(d.id);
+                      }}
+                      className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-primary ${d.id === active ? "bg-primary/10 font-semibold text-foreground ring-1 ring-inset ring-primary/25" : "text-foreground hover:bg-accent/50"}`}
+                    >
+                      <SidebarNavIcon icon={NAV_ICONS[d.id] ?? DEFAULT_NAV_ICON} />
+                      <span className="min-w-0 flex-1 truncate">{d.label}</span>
+                    </a>
+                  ))}
                 </div>
               </div>
             ))}
@@ -193,17 +197,24 @@ export function App(): JSX.Element {
 
         {/* 主区: 面板容器手写 (不加 bg-card, 它该是页面底色) */}
         <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border/40">
+          <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border/40 px-3 md:hidden">
+            <button type="button" aria-label="打开导航" aria-controls="docs-navigation" aria-expanded={mobileNavOpen} className="grid size-8 place-items-center rounded-md hover:bg-accent" onClick={() => setMobileNavOpen(true)}>
+              <span aria-hidden className="icon-[solar--hamburger-menu-linear] size-4 bg-current" />
+            </button>
+            <span className="truncate text-[13px] font-semibold">HX UI / {entry.label}</span>
+            <div className="ml-auto"><ThemeToggle /></div>
+          </div>
           <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
             <div
               className={
-                "mx-auto flex w-full gap-10 px-8 py-8 " +
+                "mx-auto flex w-full gap-10 px-4 py-6 md:px-8 md:py-8 " +
                 (entry.group === "示例" ? "max-w-[1720px]" : wide ? "max-w-[1100px]" : "max-w-[880px]")
               }
             >
-              <article className="min-w-0 flex-1">
+              <article className="w-full min-w-0 flex-1">
                 {/* 标题区: 组名做小标签 + 标题 + 说明。比原来光秃秃一个 h1 更容易定位 */}
                 <div className="mb-1 text-[11px] font-medium text-primary/80">{entry.group}</div>
-                <h1 className="text-[30px] font-bold leading-tight tracking-[-0.02em] text-foreground">
+                <h1 className="text-[26px] font-bold leading-tight tracking-[-0.02em] text-foreground md:text-[30px]">
                   {entry.label}
                 </h1>
                 <p className="mt-2 max-w-[62ch] text-[13.5px] leading-relaxed text-muted-foreground">

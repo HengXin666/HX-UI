@@ -11,7 +11,7 @@
 |---|---|---|
 | 令牌 | `src/tokens.css` —— 颜色 / 圆角 / 阴影 / 字体 / 图表色序 | **零** |
 | 桥接 | `src/styles.css` —— Tailwind 4 的 `@theme inline` 映射 | Tailwind v4 |
-| 组件 | `src/primitive/` `src/layout/` `src/charts/` | React 19 + radix-ui |
+| 组件 | `src/primitives/` `src/layout/` `src/charts/` | React 19 + radix-ui |
 
 `tokens.css` 不 import Tailwind，因此非 Tailwind 项目也能直接用。
 
@@ -50,18 +50,48 @@
 `HxLineChart` `HxAreaChart` `HxBarChart` `HxPieChart` `HxRadarChart` `HxRadialChart`
 外加 `ChartFrame` + `ChartChrome`，需要 Recharts 完整能力时自己拼。
 
-## 三个值得一说的地方
+**蓝图**（`src/blueprint/`）—— 节点图编辑器
+`BlueprintEditor` 默认形态（面板 + 画布 + 诊断）；`BlueprintCanvas` 只要画布；
+`canConnect` / `validateGraph` 是纯函数，没有 React 也能跑，后端可以拿同一份判据校验上传上来的图。
+
+自定义节点是**注册**进来的，不用改库源码：
+
+```ts
+const reg = createRegistry();
+reg.type({ id: "image", extends: "object" });        // 子类型能连父类型输入口
+reg.node({
+  type: "blur", label: "高斯模糊", category: "图像处理",
+  inputs: [{ id: "src", label: "源图", type: "image" }],
+  outputs: [{ id: "out", label: "结果", type: "image" }],
+  params: [{ id: "k", label: "半径", kind: "number", default: 3 }],
+  evaluate: ({ inputs, params }) => ({ out: blur(inputs.src, params.k) }),
+});
+```
+
+连接合法性只有一份判据 `canConnect`，拖拽反馈与落地都调它 —— 写成两处迟早出现
+“提示能连、连完报错”。独占输入被占时不报错而是顶掉旧线，并把被顶掉的边 id
+回传给你提示。校验分四层（结构 → 局部 → 环 → 业务钩子），环的报错挂在**边**上
+而不是节点上：删环上任意一条边都能解开，挂节点会让人以为要删节点。
+
+## 四个值得一说的地方
 
 **一、换肤只需改令牌。** 组件里不出现任何硬编色值。改 `tokens.css` 里的 CSS 变量，全站跟着变。
 `npm run build` 里的 `check-ui-rules.mjs` 会把这条约定变成退出码（硬编 hex / 非语义调色盘 /
 非 1px 边框 / 漏写 `type` 的原生 button 都会失败）。规则文档写在注释里不会失败，这个会。
 
-**二、图表的增量动画。** Recharts 默认按数组下标配对数据，数量变化时按比例拉伸 ——
+蓝图另有 `check-blueprint.mjs`：38 条断言跑真实源码（类型协变 / 连接判定 / 独占顶替 /
+环检测 / 分支求值 / 序列化往返）。判据写错时 tsc、构建、冒烟全绿，只有这层能抓到。
+
+**二、蓝图里执行流与数据流共存。** 有副作用的节点必须挂 `execIn`，求值沿 exec 边走，
+没走到的分支不求值 —— 这正是分支的语义。数据节点惰性求值，按拓扑序 + 缓存，
+菱形图上公共上游只算一次。
+
+**三、图表的增量动画。** Recharts 默认按数组下标配对数据，数量变化时按比例拉伸 ——
 5 个点变 15 个点时每个旧点"覆盖"约 3 个新点，整条线从头重排。
 这里区分「首次加载」与「后续增量」：首次播完整绘制动画，之后用 `matchAppend`
 （或 `matchByDataKey`）让已存在的点留在原位，只有新点淡入。
 
-**三、Spin 有 41 种形态，支持轮播。** 形态来自 [UI Ball LDRS](https://uiball.com/ldrs/)（MIT）。
+**四、Spin 有 41 种形态，支持轮播。** 形态来自 [UI Ball LDRS](https://uiball.com/ldrs/)（MIT）。
 `mode="rotate"` 会定时随机换一个形态并交叉淡入；`mode="fixed"`（默认）固定不动。
 
 ## 开发

@@ -1,0 +1,160 @@
+"use client";
+
+import { useMemo, useState, type JSX, type ReactNode } from "react";
+import { cn } from "../primitives/utils";
+import { Badge } from "../layout/Badge";
+import type { BlueprintGraph, BlueprintRegistry } from "./types";
+import { useBlueprint, useSelection, type BlueprintApi } from "./useBlueprint";
+import { BlueprintCanvas } from "./BlueprintCanvas";
+import { BlueprintPalette } from "./BlueprintPalette";
+import { serializeGraph, toPseudoCode } from "./serialize";
+import { validateGraph } from "./validate";
+
+/**
+ * 编辑器: 把上面的零件拼成一个能直接放进页面的东西。
+ *
+ * ## 为什么要它
+ *
+ * 单独用 Canvas 要自己接六七个回调、自己存图、自己算校验、自己摆面板。
+ * 那些代码在每个使用方里都会长成**不同的样子**, 于是"蓝图编辑器"变成
+ * 每个人各自的一坨。这里把标准布局固化下来: 左面板 / 中画布 / 下诊断。
+ *
+ * ## 什么时候别用它
+ *
+ * 要自定义布局 (画布嵌在向导里、面板是抽屉) 时直接用 Canvas + useBlueprint。
+ * 这个组件是"默认形态", 不是唯一形态。
+ */
+
+export interface BlueprintEditorProps {
+  readonly registry: BlueprintRegistry;
+  readonly value?: BlueprintGraph;
+  readonly defaultValue?: BlueprintGraph;
+  readonly onChange?: (graph: BlueprintGraph) => void;
+  readonly className?: string;
+  readonly height?: number | string;
+  readonly paletteWidth?: number;
+  /** 底部诊断区。关掉用于只读展示。 */
+  readonly showIssues?: boolean;
+  /** 顶部插槽。 */
+  readonly toolbar?: ReactNode;
+  /** 把 api 交出去 (父组件要"运行"按钮时用)。 */
+  readonly apiRef?: (api: BlueprintApi) => void;
+}
+
+export function BlueprintEditor({
+  registry, value, defaultValue, onChange, className, height = 520,
+  paletteWidth = 200, showIssues = true, toolbar, apiRef,
+}: BlueprintEditorProps): JSX.Element {
+  const api = useBlueprint({ registry, value, defaultValue, onChange });
+  const sel = useSelection();
+  const [showCode, setShowCode] = useState(false);
+
+  // 用 ref 交出 api, 避免每次 render 都回调
+  const handed = useMemo(() => ({ api }), [api]);
+  if (apiRef && handed.api !== api) apiRef(api);
+
+  const errors = useMemo(() => api.validation.issues.filter((i) => i.level === "error"), [api.validation]);
+  const warnings = useMemo(() => api.validation.issues.filter((i) => i.level === "warning"), [api.validation]);
+
+  return (
+    <div className={cn("flex min-h-0 flex-col gap-2", className)}>
+      {toolbar}
+
+      <div className="flex min-h-0 gap-2" style={{ height }}>
+        <div
+          className="min-h-0 shrink-0 overflow-hidden rounded-xl border border-border bg-card/40"
+          style={{ width: paletteWidth }}
+        >
+          <BlueprintPalette
+            registry={registry}
+            onPick={(type) => {
+              const id = api.addNode(type, { x: 140, y: 120 });
+              if (id) sel.only(id);
+            }}
+          />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <BlueprintCanvas
+            registry={registry}
+            graph={api.graph}
+            validation={api.validation}
+            selected={sel.selected}
+            height="100%"
+            onSelect={(ids) => {
+              sel.clear();
+              sel.add(ids);
+            }}
+            onNodesMove={(moves) => {
+              // 一次提交。逐节点提交会让受控模式下只留下最后一个节点的移动
+              const byId = new Map(moves.map((m) => [m.id, m]));
+              api.replace({
+                ...api.graph,
+                nodes: api.graph.nodes.map((n) => {
+                  const m = byId.get(n.id);
+                  return m ? { ...n, x: m.x, y: m.y } : n;
+                }),
+              });
+            }}
+            onConnect={(from, to) => api.connect(from, to)}
+            onDisconnect={(edgeId) => api.disconnect(edgeId)}
+            onNodeParamChange={(id, key, v) => api.setParam(id, key, v)}
+            onRemoveNodes={(ids) => ids.forEach((id) => api.removeNode(id))}
+            onAddNode={(type, at) => {
+              const id = api.addNode(type, at);
+              if (id) sel.only(id);
+            }}
+          />
+        </div>
+      </div>
+
+      {showIssues && (
+        <div className="rounded-xl border border-border bg-card/40">
+          <div className="flex items-center gap-2 border-b border-border px-3 py-1.5">
+            <span className="text-[12px] font-medium text-foreground">诊断</span>
+            <Badge variant={errors.length ? "destructive" : "success"}>
+              {errors.length ? `${errors.length} 个错误` : "通过"}
+            </Badge>
+            {warnings.length > 0 && <Badge variant="warning">{warnings.length} 个警告</Badge>}
+            <span className="ml-auto text-[11px] tabular-nums text-muted-foreground">
+              {api.graph.nodes.length} 节点 / {api.graph.edges.length} 连线
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowCode((v) => !v)}
+              className="rounded border border-border px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {showCode ? "隐藏生成物" : "查看生成物"}
+            </button>
+          </div>
+
+          {errors.length + warnings.length > 0 && (
+            <ul className="max-h-28 overflow-y-auto px-3 py-1.5">
+              {[...errors, ...warnings].map((i, idx) => (
+                <li key={idx} className="flex items-start gap-2 py-0.5 text-[11px]">
+                  <span className={cn("shrink-0", i.level === "error" ? "text-destructive" : "text-amber-400")}>
+                    {i.level === "error" ? "✕" : "!"}
+                  </span>
+                  <span className="text-foreground">{i.message}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {showCode && (
+            <pre className="max-h-48 overflow-auto border-t border-border px-3 py-2 font-mono text-[11px] text-muted-foreground">
+              {JSON.stringify(serializeGraph(api.graph), null, 2)}
+              {"\n\n// 伪代码\n"}
+              {toPseudoCode(registry, api.graph)}
+            </pre>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** 不渲染、只校验。想在提交按钮里挡一道时用。 */
+export function useGraphValid(registry: BlueprintRegistry, graph: BlueprintGraph): boolean {
+  return useMemo(() => validateGraph(registry, graph).ok, [registry, graph]);
+}
