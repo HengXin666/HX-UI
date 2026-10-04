@@ -167,7 +167,46 @@ async function handlePos(nodeId, hid) {
   });
 }
 
-// 9. 无运行时错误
+// 9. 快捷键 —— 换库不能把已锁住的判据换掉
+{
+  const n = () => p.evaluate(() => {
+    const m = /(\d+) 节点/.exec(document.body.innerText);
+    return m ? +m[1] : -1;
+  });
+  await p.locator(".react-flow__node").first().click();
+  await p.waitForTimeout(250);
+  const base = await n();
+  await p.keyboard.press("Control+d");
+  await p.waitForTimeout(450);
+  const afterDup = await n();
+  await p.keyboard.press("Control+z");
+  await p.waitForTimeout(450);
+  const afterUndo = await n();
+  steps.push({
+    name: "RF: Ctrl+D 复制 + Ctrl+Z 撤销 (快捷键已接入)",
+    ok: afterDup === base + 1 && afterUndo === base,
+    expect: `${base} -> ${base + 1} -> ${base}`,
+    actual: `${base} -> ${afterDup} -> ${afterUndo}`,
+  });
+
+  await p.keyboard.press("Control+a");
+  await p.waitForTimeout(350);
+  await p.keyboard.press("Delete");
+  await p.waitForTimeout(550);
+  const afterDel = await n();
+  await p.keyboard.press("Control+z");
+  await p.waitForTimeout(550);
+  const restored = await n();
+  steps.push({
+    name: "RF: Ctrl+A 全选 + Delete 清空 + 撤销恢复",
+    ok: afterDel === 0 && restored > 0,
+    expect: `清空到 0, 撤销回到 ${restored}`,
+    actual: `清空到 ${afterDel}, 撤销回到 ${restored}`,
+    shot: await h.shot("84-rf-shortcuts"),
+  });
+}
+
+// 10. 无运行时错误
 steps.push({
   name: "RF: 控制台无错误 (SVG marker 等未误用)",
   ok: h.errors.length === 0,

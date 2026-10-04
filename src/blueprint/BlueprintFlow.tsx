@@ -4,7 +4,7 @@ import { useCallback, useMemo, type JSX } from "react";
 import {
   ReactFlow, Background, BackgroundVariant, Controls, MiniMap,
   ReactFlowProvider, useReactFlow,
-  type Connection, type NodeChange, type EdgeChange, type OnSelectionChangeFunc,
+  type Connection, type OnSelectionChangeFunc,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { BlueprintGraph, BlueprintRegistry, ValidationIssue } from "./types";
@@ -15,6 +15,8 @@ import {
   type RfNode, type RfEdge,
 } from "./rf-adapter";
 import { BpNode, BpExecEdge, BpDataEdge, ExecArrowMarker } from "./rf-node";
+import { useFlowShortcuts } from "./flow-shortcuts";
+import { useGraphChanges } from "./use-graph-changes";
 
 /**
  * 画布层 —— 交互全部交给 React Flow。
@@ -44,6 +46,12 @@ export interface BlueprintFlowProps {
   readonly onParamChange?: (nodeId: string, key: string, value: unknown) => void;
   readonly onEnterSubgraph?: (sgId: string) => void;
   readonly onRemove?: (ids: readonly string[]) => void;
+  readonly onUndo?: () => void;
+  readonly onRedo?: () => void;
+  readonly onComment?: (ids: readonly string[]) => void;
+  readonly onTidy?: () => void;
+  readonly onSearch?: () => void;
+  readonly onRename?: (id: string) => void;
   /** 拖线到空白松手时: 是否弹节点面板 (UE5 行为)。 */
   readonly onConnectEndAtBlank?: (at: { x: number; y: number }) => void;
   readonly className?: string;
@@ -54,7 +62,7 @@ const NODE_TYPES = { bp: BpNode, bpComment: BpNode };
 const EDGE_TYPES = { bpExec: BpExecEdge, bpData: BpDataEdge };
 
 export function BlueprintFlow(props: BlueprintFlowProps): JSX.Element {
-  // ReactFlowProvider 必须包在外面: 内部要用 useReactFlow 拿视口命令
+  // ReactFlowProvider 必须包在外面: 内部要用 useReactFlow 拿视口命令与快捷键
   return (
     <ReactFlowProvider>
       <FlowInner {...props} />
@@ -65,8 +73,27 @@ export function BlueprintFlow(props: BlueprintFlowProps): JSX.Element {
 function FlowInner({
   registry, graph, validation, selected, onGraphChange, onSelect,
   onParamChange, onEnterSubgraph, onRemove, onConnectEndAtBlank, className, height = 520,
+  onUndo, onRedo, onComment, onTidy, onSearch, onRename,
 }: BlueprintFlowProps): JSX.Element {
   const rf = useReactFlow();
+
+  /**
+   * UE5 全套快捷键。复用 shortcuts.ts 的键位表与判据 ——
+   * 换库不能把已经锁住的"声明了就必须有实现"这条断言换掉。
+   */
+  useFlowShortcuts({
+    graph,
+    selected: selected ?? [],
+    onGraphChange: (next) => onGraphChange?.(next),
+    onSelect: (ids) => onSelect?.(ids),
+    undo: () => onUndo?.(),
+    redo: () => onRedo?.(),
+    ...(onComment ? { onComment } : {}),
+    ...(onTidy ? { onTidy } : {}),
+    ...(onSearch ? { onSearch } : {}),
+    ...(onRename ? { onRename } : {}),
+    ...(onEnterSubgraph ? {} : {}),
+  });
 
   /** 校验错误 -> 每个节点每个输入口的红点标记。 */
   const errorsByNode = useMemo(() => {
@@ -133,47 +160,7 @@ function FlowInner({
     [registry, graph, onGraphChange]
   );
 
-  /** 节点移动 / 删除等变化 -> 落到我们的图。 */
-  const onNodesChange = useCallback(
-    (changes: NodeChange<RfNode>[]) => {
-      let touched = false;
-      const next = { ...graph, nodes: graph.nodes.map((n) => ({ ...n })) };
-      const comments = (graph.comments ?? []).map((c) => ({ ...c }));
-
-      for (const ch of changes) {
-        if (ch.type === "position" && ch.position) {
-          if (isCommentNode(ch.id)) {
-            const c = comments.find((x) => commentIdOf(ch.id) === x.id);
-            if (c) { c.x = ch.position.x; c.y = ch.position.y; touched = true; }
-          } else {
-            const n = next.nodes.find((x) => x.id === ch.id);
-            if (n) { n.x = ch.position.x; n.y = ch.position.y; touched = true; }
-          }
-        }
-        if (ch.type === "remove" && !isCommentNode(ch.id)) {
-          const before = next.nodes.length;
-          next.nodes = next.nodes.filter((x) => x.id !== ch.id);
-          if (next.nodes.length !== before) {
-            next.edges = next.edges.filter((e) => e.from.node !== ch.id && e.to.node !== ch.id);
-            touched = true;
-          }
-        }
-      }
-      if (touched) onGraphChange?.({ ...next, ...(comments.length ? { comments } : {}) });
-    },
-    [graph, onGraphChange]
-  );
-
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange<RfEdge>[]) => {
-      const removed = new Set(
-        changes.filter((c) => c.type === "remove").map((c) => (c as { id: string }).id)
-      );
-      if (!removed.size) return;
-      onGraphChange?.({ ...graph, edges: graph.edges.filter((e) => !removed.has(e.id)) });
-    },
-    [graph, onGraphChange]
-  );
+  const { onNodesChange, onEdgesChange } = useGraphChanges({ graph, onGraphChange });
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ nodes: sel }) => {
@@ -210,6 +197,20 @@ function FlowInner({
         fitView
         minZoom={0.25}
         maxZoom={2.5}
+        /**
+         * 键位 —— UE5 语义。
+         *
+         * 这几个是 React Flow **原生**提供的, 值已经和 UE5 一致, 显式写出来
+         * 是为了不让"默认行为悄悄变了"这种事发生:
+         *   - deleteKeyCode: Delete / Backspace 删除选中 (UE5: Delete)
+         *   - multiSelectionKeyCode: Ctrl/Cmd + 点击 = 切换选中 (UE5: Ctrl+点击)
+         *   - selectionKeyCode: Shift + 拖 = 框选加选 (UE5: Shift+拖)
+         *   - panActivationKeyCode: 空格 + 拖 = 平移
+         */
+        deleteKeyCode={["Delete", "Backspace"]}
+        multiSelectionKeyCode={["Control", "Meta"]}
+        selectionKeyCode="Shift"
+        panActivationKeyCode="Space"
         // 禁掉 React Flow 自己的文本选中干扰
         proOptions={{ hideAttribution: false }}
         style={{ background: "var(--background)" }}
