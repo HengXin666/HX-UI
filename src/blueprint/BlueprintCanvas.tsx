@@ -336,14 +336,22 @@ export function BlueprintCanvas({
         }));
         return;
       }
+      /**
+       * ⚠️ 这里**不能 return**。
+       *
+       * 踩过的坑: 原来在处理完注释位移后就 `return`, 于是跳到了函数末尾
+       * 的 setCommentDrag(null) 之前 —— 拖拽状态永远清不掉。表现是
+       * "拿起注释就放不下去": 松手后它还粘着光标, 再移动鼠标继续跟着走。
+       *
+       * 通用纪律: onPointerUp 必须清**所有**拖拽状态, 一个分支都不能提前
+       * 返回 —— 它是"收尾"函数, 不是"择一执行"函数。
+       * (onPointerMove 相反: 它每次只处理一个分支, 那里 return 是对的。)
+       */
       if (commentDrag) {
-        const dx = p.x - commentDrag.start.x;
-        const dy = p.y - commentDrag.start.y;
         onCommentMove?.(commentDrag.id, {
           x: commentDrag.origin.x + (p.x - commentDrag.start.x),
           y: commentDrag.origin.y + (p.y - commentDrag.start.y),
         });
-        return;
       }
       if (link) {
         const hover = hitPort(registry, graph, p, portTolerance / view.zoom);
@@ -371,14 +379,22 @@ export function BlueprintCanvas({
     (e: React.PointerEvent) => {
       const p = toGraph(e.clientX, e.clientY);
 
+      /**
+       * ⚠️ 这里**不能 return**。
+       *
+       * 踩过的坑: 原来处理完注释位移就 `return`, 于是跳过了函数末尾的
+       * setCommentDrag(null) —— 拖拽状态永远清不掉。表现是"拿起注释就
+       * 放不下去": 松手后它还粘着光标, 再移动鼠标继续跟着走。
+       *
+       * 通用纪律: onPointerUp 是**收尾**函数, 必须清掉所有拖拽状态,
+       * 一个分支都不能提前返回。(onPointerMove 相反: 它每次只处理一个
+       * 分支, 那里的 return 是对的。)
+       */
       if (commentDrag) {
-        const dx = p.x - commentDrag.start.x;
-        const dy = p.y - commentDrag.start.y;
         onCommentMove?.(commentDrag.id, {
           x: commentDrag.origin.x + (p.x - commentDrag.start.x),
           y: commentDrag.origin.y + (p.y - commentDrag.start.y),
         });
-        return;
       }
       if (link) {
         const hover = hitPort(registry, graph, p, portTolerance / view.zoom);

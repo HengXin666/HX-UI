@@ -95,6 +95,8 @@ if (built.status !== 0 || !existsSync(OUT)) {
 // ── 断言 ────────────────────────────────────────────────────────────
 // 每条 ok() 对应一条"这套东西凭什么成立"的具体承诺。
 const CASES = `
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import {
   createRegistry, canConnect, applyConnect, validateGraph, findCycles,
   topoSort, upstreamOf, evaluateGraph, parseGraph, serializeGraph,
@@ -1039,6 +1041,57 @@ const G0 = {
    */
   ok("★ 连续拖动会被合并成一步 (撤销才退得动)",
     shouldCoalesce({ tag: "move", at: 1000 }, { tag: "move", at: 1016 }, W));
+}
+
+// ── 16. 拖拽状态必须能被收尾 (静态检查) ──
+{
+  /**
+   * 这条是**结构性**的回归防线, 不是行为断言。
+   *
+   * 背景: 用户报"拿起注释块就放不下去" —— 根因是 onPointerUp 里处理完
+   * 注释位移后写了提前 return, 跳过了函数末尾的 setCommentDrag(null),
+   * 于是拖拽状态永远清不掉, 注释粘着光标不放。
+   *
+   * 这类 bug 的恶劣之处在于: tsc 通过、构建通过、冒烟通过、行为断言
+   * 也通过 (因为断言测的是"移动后位置对不对", 而不是"松手后停不停")。
+   * 只有真的用鼠标拖一下才发现。所以补一条静态检查:
+   * **onPointerUp 的顶层分支里不许有 return**, 它必须清掉所有拖拽状态。
+   */
+  // cases.mts 跑在 docs/.bpprobe 下, 不能用 import.meta.dirname 推相对路径
+  const canvasPath = path.resolve(
+    import.meta.dirname, "../../src/blueprint/BlueprintCanvas.tsx"
+  );
+  const src = readFileSync(canvasPath, "utf8");
+  const start = src.indexOf("const onPointerUp = useCallback(");
+  const end = src.indexOf(String.fromCharCode(10) + "    },", src.indexOf("setCommentDrag(null);", start));
+  ok("找得到 onPointerUp", start !== -1 && end !== -1);
+  if (start !== -1 && end !== -1) {
+    const body = src.slice(start, end);
+    // 去掉注释再找 return —— 注释里提到 return 是正常的
+    // 不用正则: 反斜杠在模板字符串里会被吃掉, 实测踩过两次
+    const NL = String.fromCharCode(10);
+    const lines = body.split(NL);
+    let inBlockComment = false;
+    const bad = [];
+    for (const raw of lines) {
+      let l = raw.trim();
+      if (l.startsWith("/*")) inBlockComment = true;
+      if (inBlockComment) {
+        if (l.includes("*/")) inBlockComment = false;
+        continue;
+      }
+      if (l.startsWith("//")) continue;
+      // 顶层分支的 return: 缩进 >= 6 空格 且就是 return;
+      if (/^return\s*;/.test(l) && raw.length - raw.trimStart().length >= 6) bad.push(raw.trim());
+    }
+    ok("★ onPointerUp 顶层分支没有提前 return (拖拽状态必须能收尾)", bad.length === 0);
+    if (bad.length) console.log("    违规:", JSON.stringify(bad));
+
+    // 三个拖拽状态都要被清掉
+    for (const st of ["setDrag(null)", "setPanning(null)", "setCommentDrag(null)", "setCommentDraft(null)", "setMarquee(null)", "setLink(null)"]) {
+      ok("松手时会清 " + st.replace("(null)", ""), src.includes(st));
+    }
+  }
 }
 
 console.log("");
