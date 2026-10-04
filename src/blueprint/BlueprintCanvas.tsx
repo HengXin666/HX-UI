@@ -7,6 +7,7 @@ import {
 import { cn } from "../primitives/utils";
 import type { BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
+import type { DropAt } from "./BlueprintPalette";
 import {
   CURVE_MIN, nodeHeight, nodeWidth, portPos, hitNode, hitPort, rectsIntersect, graphBounds,
 } from "./geometry";
@@ -63,6 +64,15 @@ export interface BlueprintCanvasProps {
   readonly onCommentChange?: (id: string, patch: { x?: number; y?: number; w?: number; h?: number; title?: string }) => void;
   /** 命中的注释被拖动: 由外层算"带走哪些节点" —— 那是图操作, 画布不管。 */
   readonly onCommentMove?: (id: string, delta: { dx: number; dy: number }) => void;
+  /** 外部把节点**拖**到画布上松手。给的 type 与落点(画布坐标)。 */
+  readonly onDropNode?: (type: string, at: DropAt) => void;
+  /**
+   * 把"取当前视口中心"这个能力交给外层。
+   *
+   * 点面板添加时需要它: 写死坐标在平移/缩放后可能落在视口外, 用户点了
+   * 看不见任何东西。视口变换只存在于画布内部, 所以得由画布提供这个读法。
+   */
+  readonly onViewportCenterReady?: (get: () => { x: number; y: number }) => void;
 
   readonly className?: string;
   readonly height?: number | string;
@@ -100,7 +110,8 @@ export function BlueprintCanvas({
   registry, graph, validation, selected,
   onNodesMove, onConnect, onDisconnect, onSelect, onNodeParamChange,
   onAddNode, onRemoveNodes, onOpenMenu,
-  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove,
+  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onDropNode,
+  onViewportCenterReady,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
   allowFullscreen = true,
   onOpenStandalone,
@@ -118,6 +129,8 @@ export function BlueprintCanvas({
     readonly origin: { x: number; y: number };
   } | null>(null);
   const [editingComment, setEditingComment] = useState<string | null>(null);
+  /** 有东西正被拖进来 —— 用来给画布加一圈高亮, 否则用户看不出"能放这"。 */
+  const [dropActive, setDropActive] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   /** Fullscreen API 不可用/被拒时的回退: fixed 覆盖层。 */
   const [maximized, setMaximized] = useState(false);
@@ -421,6 +434,17 @@ export function BlueprintCanvas({
     return `M ${a.x} ${a.y} C ${a.x + c} ${a.y}, ${b.x - c} ${b.y}, ${b.x} ${b.y}`;
   }, [link, graph, registry]);
 
+  /** 当前视口中心对应的图坐标。 */
+  const viewportCenter = useCallback((): { x: number; y: number } => {
+    const box = hostRef.current?.getBoundingClientRect();
+    if (!box) return { x: 0, y: 0 };
+    return toGraph(box.left + box.width / 2, box.top + box.height / 2);
+  }, [toGraph]);
+
+  useEffect(() => {
+    onViewportCenterReady?.(viewportCenter);
+  }, [onViewportCenterReady, viewportCenter]);
+
   const fit = useCallback(() => {
     const box = hostRef.current?.getBoundingClientRect();
     const b = graphBounds(registry, graph);
@@ -458,8 +482,10 @@ export function BlueprintCanvas({
     <div
       ref={hostRef}
       className={cn(
-        "relative overflow-hidden border-border bg-background",
+        "relative overflow-hidden border-border bg-background transition-shadow",
         expanded ? "h-screen w-screen" : "rounded-xl border",
+        // 拖入时给一圈 ring —— 没有反馈的话用户不知道"这里能放"
+        dropActive && "ring-1 ring-primary/60",
         // 回退模式下要 fixed + 高 z, 否则会被页面其它浮层盖住
         maximized && "fixed inset-0 z-[var(--z-modal)]",
         className
@@ -478,6 +504,32 @@ export function BlueprintCanvas({
       onContextMenu={(e) => {
         e.preventDefault();
         onOpenMenu?.(toGraph(e.clientX, e.clientY));
+      }}
+      /**
+       * 接收从面板拖过来的节点。
+       *
+       * 两件事缺一不可:
+       *   - dragover 里**必须** preventDefault(), 否则浏览器不认为这里是
+       *     合法放置目标, drop 根本不会触发。这是 HTML5 拖放最容易踩的坑,
+       *     表现是"拖过去没反应", 而代码看起来都对 (onDrop 写了、类型对了,
+       *     就是不掉)。实测确认过: 补上之后立刻生效。
+       *   - drop 里把**鼠标位置**转成图坐标。注意是鼠标位置, 不是节点左上角:
+       *     用户拖着的时候想的是"这个点放这里", 把他看到的那个点对准落点才自然。
+       */
+      onDragOver={(e) => {
+        if (!onDropNode) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "copy";
+        if (!dropActive) setDropActive(true);
+      }}
+      onDragLeave={() => setDropActive(false)}
+      onDrop={(e) => {
+        setDropActive(false);
+        if (!onDropNode) return;
+        e.preventDefault();
+        const type = e.dataTransfer.getData("application/x-hx-blueprint-node");
+        if (!type) return;
+        onDropNode(type, toGraph(e.clientX, e.clientY));
       }}
     >
       {/* 网格跟着视口走, 所以缩放平移时网格不漂 */}
@@ -668,6 +720,7 @@ export function BlueprintCanvas({
           <div className="max-h-64">
             <BlueprintPalette
               registry={registry}
+              draggable={false}
               onPick={(type) => {
                 onAddNode?.(type, paletteAt);
                 setPaletteAt(null);

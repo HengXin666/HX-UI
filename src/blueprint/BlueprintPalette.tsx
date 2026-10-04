@@ -44,21 +44,46 @@ export function fuzzyMatch(text: string, query: string): boolean {
   return false;
 }
 
+/** 一项被拖到画布上时的落点。画布坐标。 */
+export interface DropAt {
+  readonly x: number;
+  readonly y: number;
+}
+
 export interface BlueprintPaletteProps {
   readonly registry: BlueprintRegistry;
-  /** 选中某项。给的是节点 type, 落点由调用方决定。 */
-  readonly onPick: (type: string) => void;
+  /**
+   * 某项被**拖到画布上**并松手。
+   *
+   * `at` 是画布坐标; 没有它表示"点了一下" —— 那种情况由调用方自己决定
+   * 落在哪 (通常是视口中心)。两种交互都保留: 拖拽是主要方式,
+   * 点击是键盘/无障碍用户的退路, 不能因为做了拖拽就把点击删掉。
+   */
+  readonly onPick: (type: string, at?: DropAt) => void;
   readonly className?: string;
   readonly placeholder?: string;
   /** 顶部插槽, 放"最近使用"之类。 */
   readonly header?: ReactNode;
+  /** 拖拽时用于传递数据的 MIME 前缀。同一页有多套面板时用它区分。 */
+  readonly dragMime?: string;
+  /**
+   * 关掉拖拽 (默认开)。
+   *
+   * 嵌在画布内部的浮层面板要关: 那个面板本身就是"拖线到空白处"弹出来的,
+   * 它的语义是"选一个类型连到这里", 再拖一次没有意义, 而且拖到画布上会
+   * 触发画布自己的 drop, 落点与预期不符。
+   */
+  readonly draggable?: boolean;
 }
 
 export function BlueprintPalette({
   registry, onPick, className, placeholder = "搜索节点…", header,
+  dragMime = "application/x-hx-blueprint-node",
+  draggable = true,
 }: BlueprintPaletteProps): JSX.Element {
   const [q, setQ] = useState("");
   const [closed, setClosed] = useState<Set<string>>(() => new Set());
+  const [dragging, setDragging] = useState<string | null>(null);
   const groups = useMemo(() => groupByCategory(registry), [registry]);
 
   const filtered = useMemo(() => {
@@ -74,6 +99,10 @@ export function BlueprintPalette({
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
       {header}
+      {/* 提示: 不写这句话, 没人知道要拖 —— 面板看起来只是个列表 */}
+      <div className="border-b border-border px-2.5 py-1 text-[10.5px] text-muted-foreground">
+        拖到画布上, 或点击添加
+      </div>
       <div className="border-b border-border px-2.5 py-2">
         <input
           type="text"
@@ -117,7 +146,29 @@ export function BlueprintPalette({
                       type="button"
                       onClick={() => onPick(d.type)}
                       title={d.description ?? d.label}
-                      className="flex w-full items-center gap-2 rounded px-1.5 py-1 text-left text-[12px] text-foreground transition-colors hover:bg-accent/50"
+                      /**
+                       * 原生 HTML5 拖放。
+                       *
+                       * 为什么不用 pointer events 自己做: 跨元素拖拽时
+                       * (从面板 -> 画布) 自己做要维护一套全局坐标与"拖影",
+                       * 而原生拖放自带拖影、自带 dragover/dragleave 语义、
+                       * 自带 Esc 取消。代价是 Safari 上 drag 预览样式不好控,
+                       * 但能少写一百行。
+                       */
+                      draggable={draggable}
+                      onDragStart={(e) => {
+                        if (!draggable) return;
+                        setDragging(d.type);
+                        e.dataTransfer.setData(dragMime, d.type);
+                        // 也塞一份纯文本, 拖到别的编辑器时不至于什么都没有
+                        e.dataTransfer.setData("text/plain", d.label ?? d.type);
+                        e.dataTransfer.effectAllowed = "copy";
+                      }}
+                      onDragEnd={() => setDragging(null)}
+                      className={cn(
+                        "flex w-full cursor-grab items-center gap-2 rounded px-1.5 py-1 text-left text-[12px] text-foreground transition-colors hover:bg-accent/50 active:cursor-grabbing",
+                        dragging === d.type && "opacity-50"
+                      )}
                     >
                       {d.icon ? <span className="shrink-0 opacity-70">{d.icon}</span> : null}
                       <span className="truncate">{d.label}</span>

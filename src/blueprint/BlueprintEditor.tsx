@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState, type JSX, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
 import { cn } from "../primitives/utils";
 import { Badge } from "../layout/Badge";
 import type { BlueprintGraph, BlueprintRegistry } from "./types";
@@ -96,6 +96,24 @@ export function BlueprintEditor({
       api.replace(g);
     },
     [api, path]
+  );
+
+  /**
+   * 点面板时把节点放在**当前视口的中心**。
+   *
+   * 写死一个坐标(上一版是 x:140,y:120)在两种情况下都会错: 图被平移过、
+   * 或缩放过之后, 那个固定的点可能在视口外 —— 用户点了没看见任何东西,
+   * 只能以为"添加坏了"。所以向画布要它当前的视口中心。
+   */
+  const canvasHostRef = useRef<HTMLDivElement | null>(null);
+  const viewportCenterRef = useRef<() => { x: number; y: number }>(() => ({ x: 140, y: 120 }));
+
+  const addAtViewportCenter = useCallback(
+    (type: string) => {
+      const at = viewportCenterRef.current();
+      return api.addNode(type, at);
+    },
+    [api]
   );
 
   const breadcrumb = useMemo(() => {
@@ -206,8 +224,9 @@ export function BlueprintEditor({
         >
           <BlueprintPalette
             registry={registry}
-            onPick={(type) => {
-              const id = api.addNode(type, { x: 140, y: 120 });
+            onPick={(type, at) => {
+              // 拖拽: 用落点。点击: 没落点, 交给画布算视口中心。
+              const id = at ? api.addNode(type, at) : addAtViewportCenter(type);
               if (id) sel.only(id);
             }}
           />
@@ -221,6 +240,11 @@ export function BlueprintEditor({
             selected={sel.selected}
             height="100%"
             onEnterSubgraph={(_nodeId, sgId) => setPath((p) => [...p, sgId])}
+            onDropNode={(type, at) => {
+              const id = api.addNode(type, at);
+              if (id) sel.only(id);
+            }}
+            onViewportCenterReady={(get) => { viewportCenterRef.current = get; }}
             {...(onOpenStandalone ? { onOpenStandalone } : {})}
             onCommentMove={(id, delta) => api.moveComment(id, delta)}
             onCommentChange={(id, patch) => api.updateComment(id, patch)}
