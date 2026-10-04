@@ -1,3 +1,6 @@
+/** 标题条高度 (图坐标) —— 只有它能拖动整块注释。 */
+export const COMMENT_BAR_H = 22;
+
 /** 右下角 resize 热区边长 (图坐标)。 */
 export const COMMENT_HANDLE = 14;
 
@@ -33,8 +36,18 @@ export function hitComment(
   if (!comments) return undefined;
   for (let i = comments.length - 1; i >= 0; i--) {
     const c = comments[i];
-    if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h) {
-      // 一并返回 w/h: 调用方要用它判断"是否按在右下角热区"
+    /**
+     * 命中范围 = **标题条 + 右下角 resize 热区**, 不是整个框。
+     *
+     * 为什么: 整个框命中会和框里的节点抢指针 —— 用户报"框选的内容在里面
+     * 不能再移动", 就是这么来的。框体区域留给节点, 注释只认自己那两个
+     * "把手"位置。UE5 也是这样: 拖标题条搬整块注释。
+     */
+    const inBar = p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + COMMENT_BAR_H;
+    const inHandle =
+      p.x >= c.x + c.w - COMMENT_HANDLE && p.x <= c.x + c.w &&
+      p.y >= c.y + c.h - COMMENT_HANDLE && p.y <= c.y + c.h;
+    if (inBar || inHandle) {
       return { id: c.id, x: c.x, y: c.y, w: c.w, h: c.h };
     }
   }
@@ -65,8 +78,6 @@ export function containedIds(
     })
     .map((n) => n.id);
 }
-
-const COMMENT_BAR_H = 22;
 
 /** 稳定哈希: 同一条边每次得到同一个绕行车道, 避免多条回边重叠成一条。 */
 export function hashId(id: string): number {

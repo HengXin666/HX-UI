@@ -227,6 +227,7 @@ export function BlueprintEditor({
               api.moveComment(id, at);
             }}
             onCommentChange={(id, patch) => api.updateComment(id, patch)}
+            onCommentTone={(id, tone) => { pendingTag.current = { tag: "param", label: "改注释底色" }; api.updateComment(id, { tone }); }}
             onCommentResize={(id, box) => {
               pendingTag.current = { tag: "move", label: "调整注释大小" }; api.resizeComment(id, box);
             }}

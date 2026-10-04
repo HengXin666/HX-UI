@@ -16,6 +16,7 @@ import {
 import { BlueprintNodeCard } from "./BlueprintNode";
 import { BlueprintPalette } from "./BlueprintPalette";
 import { useCommentInteraction } from "./use-comment-interaction";
+import { nodesInComment } from "./comment";
 
 /**
  * 画布。
@@ -73,6 +74,8 @@ export interface BlueprintCanvasProps {
    * 实测表现就是"一拖注释就飞出去"。绝对坐标天然幂等。
    */
   readonly onCommentMove?: (id: string, at: { x: number; y: number }) => void;
+  /** 换注释底色 (UE5 的 Comment Color)。 */
+  readonly onCommentTone?: (id: string, tone: string) => void;
   /** 注释改尺寸 (拖右下角)。给新的绝对矩形 —— UE5 的行为。 */
   readonly onCommentResize?: (id: string, box: { x: number; y: number; w: number; h: number }) => void;
   /** 外部把节点**拖**到画布上松手。给的 type 与落点(画布坐标)。 */
@@ -132,7 +135,7 @@ export function BlueprintCanvas({
   registry, graph, validation, selected,
   onNodesMove, onConnect, onDisconnect, onSelect, onNodeParamChange,
   onAddNode, onRemoveNodes, onOpenMenu,
-  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onCommentResize, onDropNode, onCreateComment,
+  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onCommentResize, onCommentTone, onDropNode, onCreateComment,
   onViewportCenterReady,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
   allowFullscreen = true,
@@ -279,17 +282,23 @@ export function BlueprintCanvas({
       }
 
       /**
-       * 注释在节点**下面**, 所以先判节点 —— 否则注释会挡住节点拖拽。
-       * 抓的范围是**整个框**: UE5 里拖注释任意位置都能带着内容走。
-       * 只认 22px 的标题条太窄, 而且用户直觉就是"拖这个色块"。
+       * ⚠️ **节点优先于注释**。
+       *
+       * 踩过的坑 (用户报"框选的内容在内部不能再被移动"): 原来这里先判注释,
+       * 而注释覆盖整片区域 —— 于是框里**所有节点都抓不到**, 点上去只会拖动
+       * 整块注释。注释在视觉上确实在节点下面, 命中测试必须反映这个层级。
+       *
+       * 那怎么拖注释? 靠标题条 (UE5 也是这样: 拖标题条搬整块)。所以注释的
+       * 命中判据是"标题条 + 右下角 resize 热区", 不是整个框 —— 整个框留给
+       * 里面的节点。
        */
-      if (cmt.hit(p)) {
+      const node = hitNode(registry, graph, p);
+      const hitCmt = cmt.hit(p);
+      if (hitCmt && !node) {
         onSelect?.([]);
         cmt.begin(p, () => (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId));
         return;
       }
-
-      const node = hitNode(registry, graph, p);
       if (node) {
         const ids = selected?.has(node.id) && selected.size > 1 ? [...selected] : [node.id];
         onSelect?.(ids);
@@ -616,6 +625,11 @@ export function BlueprintCanvas({
         editingId={editingComment}
         onEdit={setEditingComment}
         onChange={onCommentChange}
+        countInside={(id) => nodesInComment(registry, graph, id).length}
+        onResize={onCommentResize}
+        onChangeTone={onCommentTone}
+        draft={commentDraft ? normRect(commentDraft) : null}
+        draftCount={commentDraft ? containedIds(registry, graph, normRect(commentDraft)).length : 0}
       />
 
       <svg className="pointer-events-none absolute inset-0 h-full w-full">

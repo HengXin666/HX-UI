@@ -115,6 +115,7 @@ import {
   createBlueprintTools, toolManifest, dispatchTool,
   shouldCoalesce, detourPath, shouldDetour, edgePath,
   resizeComment, COMMENT_TONE, wireStyle, arrowHead, arrowFillClass,
+  hitComment, COMMENT_BAR_H,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -1101,6 +1102,31 @@ const G0 = {
   ok("同行的正向边不绕", !shouldDetour({ x: 100, y: 100 }, { x: 400, y: 130 }));
   ok("短距离的回拉不绕", !shouldDetour({ x: 400, y: 100 }, { x: 300, y: 105 }));
   ok("垂直跨度小的回拉不绕", !shouldDetour({ x: 900, y: 100 }, { x: 200, y: 110 }));
+}
+
+// ── 15.25 注释的命中范围 (不能挡住框内的节点) ──
+{
+  const cm = [{ id: "c1", x: 100, y: 100, w: 400, h: 300 }];
+
+  // 标题条: 命中 (拖它搬整块, UE5 的行为)
+  ok("注释标题条可命中", !!hitComment(cm, { x: 200, y: 110 }));
+  // 右下角把手: 命中 (改尺寸)
+  ok("注释右下角把手可命中", !!hitComment(cm, { x: 495, y: 395 }));
+
+  /**
+   * ★ 框体内部**不命中**。
+   *
+   * 用户报"框选的内容在内部不能再被移动" —— 根因就是命中范围是整个框,
+   * 于是框里的节点永远抓不到 (注释先被命中, 直接开始拖注释)。
+   * 注释在视觉上确实在节点下面, 命中测试必须反映这个层级:
+   * 框体留给节点, 注释只认标题条与把手。
+   */
+  ok("★ 注释框体内部不命中 (留给里面的节点)", !hitComment(cm, { x: 300, y: 250 }));
+  ok("★ 框体中心不命中", !hitComment(cm, { x: 300, y: 300 }));
+  // 框外当然不命中
+  ok("注释框外不命中", !hitComment(cm, { x: 50, y: 50 }));
+  // 边界: 标题条下沿之外就算框体内部
+  ok("标题条下方 1px 即不再命中", !hitComment(cm, { x: 200, y: 100 + 23 }));
 }
 
 // ── 15.3 UE5 风格连线 ──
