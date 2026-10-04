@@ -98,8 +98,9 @@ export {
   type BlueprintPaletteProps, type PaletteGroup,
 } from "./blueprint/BlueprintPalette";
 export {
-  BlueprintEditor, useGraphValid, type BlueprintEditorProps,
+  BlueprintEditor, type BlueprintEditorProps,
 } from "./blueprint/BlueprintEditor";
+export { useGraphValid } from "./blueprint/use-toolbar-props";
 export {
   demoRegistry, createDemoRegistry, demoGraph, DEMO_NODES,
 } from "./blueprint/demo";
@@ -118,11 +119,24 @@ export type {
   NodePorts, SubGraphDef, BlueprintComment,
 } from "./blueprint/types";
 export * from "./blueprint/geometry";
+export { SHORTCUTS, matchShortcut, shouldHandle, isTypingTarget, type ShortcutDef } from "./blueprint/shortcuts";
+export { copySelection, pasteClip, alignNodes, isEmptyClip, type ClipboardPayload } from "./blueprint/clipboard";
+export { downloadGraph, pickGraphFile, graphFromText, GRAPH_EXT } from "./blueprint/persist";
+export { ShortcutHelp } from "./blueprint/ShortcutHelp";
+export { BlueprintIssues } from "./blueprint/BlueprintIssues";
+export { CanvasGrid, GRID_SIZE } from "./blueprint/CanvasGrid";
+export { PinShape } from "./blueprint/PinShape";
+export { nodeKindOf, titleStyle } from "./blueprint/node-style";
+export { PortRow, ParamField } from "./blueprint/node-parts";
 export {
   buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson,
   type AgentNode, type AgentEdge, type AgentGraph, type AgentComment,
   type AgentBuildInput, type AgentBuildResult,
 } from "./blueprint/agent";
+export {
+  useHistory, shouldCoalesce,
+  type HistoryApi, type HistoryEntry, type UseHistoryOptions,
+} from "./blueprint/history";
 export {
   createBlueprintTools, toolManifest, dispatchTool,
   type ToolDef, type ToolResult, type ToolContext,

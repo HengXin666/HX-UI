@@ -12,7 +12,7 @@ import {
   Badge, Button, Card, CardContent, CardHeader, CardTitle,
   cn, type BlueprintGraph,
 } from "@hx/ui";
-import { createDshRegistry, dshAgentLoopGraph } from "@hx/blueprint-demo";
+import { createDshRegistry, buildRootGraph, dshAgentLoopGraph, createSourceRegistry } from "@hx/blueprint-demo";
 
 /**
  * 蓝图的**独立页面**。
@@ -33,26 +33,76 @@ import { createDshRegistry, dshAgentLoopGraph } from "@hx/blueprint-demo";
  * 那个跳变很难看, 而且会让用户以为"没打开成功"。
  */
 
-type Source = "dsh" | "demo";
+/**
+ * 三套数据源, 每套**必须**配与自己同源的注册表。
+ *
+ * ⚠️ 这里踩过一次实打实的坑, 值得写下来:
+ *   原来 `dsh` 这一档是 `createDshRegistry()` (架构层, 10 个大步骤)
+ *   配 `dshAgentLoopGraph` (源码层, 33 个节点, 类型名是 agentCreated / kick /
+ *   turnStart …)。两套东西**不是一套命名空间**: 架构层的注册表里根本没有
+ *   agentCreated 这个类型。
+ *
+ *   后果不是报错, 而是**静默降级**: 33 个节点全部渲染成"未知节点"红卡片,
+ *   页面顶部报 "85 个错误", 而 tsc / 构建 / 冒烟全绿 —— 因为"未注册"是
+ *   运行期的一条合法分支。用户看到的就是"这库一滩狗屎、功能全失效",
+ *   而代码看着毫无问题。
+ *
+ *   所以这里把三套各自配好, 并且**新增 src=source 这一档**让旧的源码层
+ *   图仍然可访问 (它有价值: 60 个节点对应真实控制流, 可逐条核对)。
+ */
+type Source = "dsh" | "source" | "demo";
 
 const REGISTRIES: Record<Source, () => ReturnType<typeof createRegistry>> = {
+  // 架构层: 根图 10 个大步骤 + 可进入的子图
   dsh: () => createDshRegistry() as ReturnType<typeof createRegistry>,
+  // 源码层: 33 个节点对应 dsh 源码控制流
+  source: () => createSourceRegistry() as ReturnType<typeof createRegistry>,
+  // 库自带的最小演示
   demo: () => demoRegistry as ReturnType<typeof createRegistry>,
 };
 
-const DEFAULT_GRAPHS: Record<Source, BlueprintGraph> = {
-  dsh: dshAgentLoopGraph,
-  demo: demoGraph as BlueprintGraph,
-};
+/**
+ * 从 hash 里读一个参数。
+ *
+ * ⚠️ 分隔符必须同时认 `#` / `&` / `?`, 不能只写 `(?:^|&)`:
+ *   `location.hash` 是 **带 `#` 的** (`"#src=demo"`), 而 `^` 匹配的是
+ *   `"src"` 那个位置之前的开头 —— 那里是 `#` 不是行首, 于是匹配不上。
+ *   实测三个 source 全都返回同一张图就是这个原因: src 从来没生效过,
+ *   页面一直用默认的 dsh。
+ *
+ *   同一个坑 sync.ts 的 graphFromUrl 里已经踩过并修了 (注释也在那儿),
+ *   这里漏修会造成"文档说支持 #src=, 实际不支持"这种静默失效。
+ */
+function readHashParam(key: string): string | null {
+  const m = new RegExp(`(?:^|[&#?])${key}=([^&]+)`).exec(window.location.hash);
+  return m ? decodeURIComponent(m[1]) : null;
+}
 
 function readSource(): Source {
-  const m = /(?:^|&)src=([^&]+)/.exec(window.location.hash);
-  return m && m[1] === "demo" ? "demo" : "dsh";
+  const v = readHashParam("src");
+  if (v === "demo") return "demo";
+  if (v === "source") return "source";
+  return "dsh";
+}
+
+/**
+ * 默认图按 source 现算, 不预先构造。
+ *
+ * 为什么: buildRootGraph() 每次返回**新的**节点 id 与对象。在模块顶层直接
+ * 求值的话, 三个 source 的图会在 import 时就全部构造一遍 (浪费), 而且
+ * dshAgentLoopGraph 那份是模块级常量、被多处共享, 一旦被编辑过就会带着
+ * 改动污染下一次打开 —— 表现是"我明明刷新了, 怎么还是改过的样子"。
+ */
+function defaultGraph(source: Source): BlueprintGraph {
+  switch (source) {
+    case "dsh": return buildRootGraph().graph as BlueprintGraph;
+    case "source": return dshAgentLoopGraph as BlueprintGraph;
+    default: return demoGraph as BlueprintGraph;
+  }
 }
 
 function readChannel(): string {
-  const m = /(?:^|&)channel=([^&]+)/.exec(window.location.hash);
-  return m ? decodeURIComponent(m[1]) : "hx-blueprint";
+  return readHashParam("channel") ?? "hx-blueprint";
 }
 
 function BlueprintApp(): JSX.Element {
@@ -61,7 +111,7 @@ function BlueprintApp(): JSX.Element {
   const registry = useMemo(() => REGISTRIES[source](), [source]);
 
   const [graph, setGraph] = useState<BlueprintGraph>(
-    () => graphFromUrl(window.location.hash) ?? DEFAULT_GRAPHS[source]
+    () => graphFromUrl(window.location.hash) ?? defaultGraph(source)
   );
   const [linkCopied, setLinkCopied] = useState(false);
   const [peerCount, setPeerCount] = useState(0);
@@ -129,20 +179,20 @@ function BlueprintApp(): JSX.Element {
         <span className="text-[13px] font-medium">蓝图</span>
 
         <div className="flex items-center gap-1">
-          {(["dsh", "demo"] as const).map((s) => (
+          {(["dsh", "source", "demo"] as const).map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => {
                 setSource(s);
-                setGraph(DEFAULT_GRAPHS[s]);
+                setGraph(defaultGraph(s));
               }}
               className={cn(
                 "rounded px-1.5 py-0.5 text-[11px] transition-colors",
                 source === s ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              {s === "dsh" ? "dsh agent loop" : "演示节点"}
+              {s === "dsh" ? "dsh agent loop" : s === "source" ? "源码层" : "演示节点"}
             </button>
           ))}
         </div>

@@ -1,20 +1,18 @@
-/** 标题条高度 (图坐标) —— 只有它能拖动整块注释。 */
-export const COMMENT_BAR_H = 22;
-
-/** 右下角 resize 热区边长 (图坐标)。 */
-export const COMMENT_HANDLE = 14;
-
-import type { BlueprintGraph, BlueprintRegistry } from "./types";
-import { nodeHeight, nodeWidth } from "./geometry";
-
 /**
  * 画布的小工具函数。
  *
  * 单独成文件: canvas-parts.tsx 超了 tsx 行上限 (250), 而这些是纯逻辑,
  * 与展示组件没有纠缠。
  */
+import type { BlueprintGraph, BlueprintRegistry } from "./types";
+import { nodeHeight, nodeWidth } from "./geometry";
 
-/** 命中注释的**整个框** (不只是标题条)。倒序: 后加的在上面。 */
+/** 标题条高度 (图坐标) —— 只有它能拖动整块注释。 */
+export const COMMENT_BAR_H = 22;
+
+/** 右下角 resize 热区边长 (图坐标)。 */
+export const COMMENT_HANDLE = 14;
+
 /** reason -> 人话。UI 靠 reason 而不是 message: message 是英文的。 */
 export function reasonText(reason?: string): string {
   switch (reason) {
@@ -84,4 +82,61 @@ export function hashId(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return h;
+}
+
+/**
+ * 把视口的三个命令打包交给外层。
+ *
+ * 视口 (平移/缩放) 是画布的私有状态, 外层复制一份必然漂移 —— 所以只传命令。
+ * 快捷键 (Ctrl+= 放大 / Ctrl+0 重置 / Home 适应) 靠它工作。
+ *
+ * 为什么放这儿而不是画布里: BlueprintCanvas.tsx 是**冻结文件** (棘轮只许降),
+ * 而这是一段独立的、与主流程无纠缠的小逻辑。
+ */
+export function makeViewportCommands(
+  setView: (fn: (v: { x: number; y: number; zoom: number }) => { x: number; y: number; zoom: number }) => void,
+  fitRef: { current: () => void }
+): {
+  readonly zoomBy: (delta: number) => void;
+  readonly resetView: () => void;
+  readonly fit: () => void;
+} {
+  return {
+    // 函数式更新: 不捕获外层 view, 连按多次也不会互相覆盖
+    zoomBy: (delta) => setView((v) => ({ ...v, zoom: Math.min(2.5, Math.max(0.25, v.zoom + delta)) })),
+    resetView: () => setView(() => ({ x: 0, y: 0, zoom: 1 })),
+    fit: () => fitRef.current(),
+  };
+}
+
+/**
+ * 点一个节点之后的选择集 —— UE5 的修饰键语义。
+ *
+ *   Ctrl/Cmd + 点击 = **切换** (已选则取消)
+ *   Shift    + 点击 = **加选**
+ *   无修饰           = 只选它 (若它已在多选里, 保持整个多选以便整组拖动)
+ *
+ * ⚠️ 曾经这里完全不认修饰键, 永远是单选。而"对齐"类快捷键要求选中两个以上
+ *    节点才可能生效 (`sel.length < 2` 直接返回) —— 于是 Shift+W/A/S/D 四个键
+ *    在真实交互里**根本用不出来**: 选不中两个, 按下就静默返回。
+ *    功能写了、键位表也写了, 但用户用不出来 —— 这类失效只能靠交互测试抓。
+ *
+ * 抽成纯函数是为了可断言: 它是最容易写漏分支的地方。
+ */
+export function nextSelection(
+  selected: readonly string[],
+  id: string,
+  e: { readonly ctrlKey?: boolean; readonly metaKey?: boolean; readonly shiftKey?: boolean }
+): string[] {
+  const cur = new Set(selected);
+  if (e.ctrlKey || e.metaKey) {
+    if (cur.has(id)) cur.delete(id);
+    else cur.add(id);
+    return [...cur];
+  }
+  if (e.shiftKey) {
+    cur.add(id);
+    return [...cur];
+  }
+  return selected.includes(id) && selected.length > 1 ? [...selected] : [id];
 }

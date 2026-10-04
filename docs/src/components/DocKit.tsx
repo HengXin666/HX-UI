@@ -26,10 +26,10 @@ export function Preview({
   className?: string;
 }): JSX.Element {
   return (
-    <Card variant="default" className={cn("overflow-hidden", className)}>
+    <Card variant="default" className={cn("max-w-full overflow-hidden", className)}>
       <div
         className={cn(
-          "flex min-h-[120px] flex-wrap gap-3 p-5",
+          "flex min-h-[120px] min-w-0 flex-wrap gap-3 p-4 md:p-5",
           align === "center" && "items-center justify-center",
           align === "start" && "items-start",
           align === "stretch" && "items-stretch",
@@ -168,7 +168,7 @@ export function PropsTable({
   rows: Array<{ name: string; type: string; default?: string; desc: string }>;
 }): JSX.Element {
   return (
-    <Card variant="solid" className="my-4 overflow-hidden">
+    <Card variant="solid" className="my-4 max-w-full overflow-x-auto">
       <table className="w-full border-collapse text-[12px]">
         <thead>
           <tr className="border-b border-border bg-muted/40 text-left">

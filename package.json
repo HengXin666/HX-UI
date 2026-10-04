@@ -28,9 +28,18 @@
     "check:smoke": "node scripts/check-smoke.mjs",
     "check:smoke:strict": "node scripts/check-smoke.mjs --strict",
     "check:shell": "node scripts/check-shell.mjs",
-    "build": "tsc --noEmit && node scripts/check-ui-rules.mjs src && node scripts/check-blueprint.mjs",
-    "verify": "npm run build && npm --prefix docs run build && npm run check:smoke && npm run check:shell",
-    "check:blueprint": "node scripts/check-blueprint.mjs"
+    "check:blueprint": "node scripts/check-blueprint.mjs",
+    "check:blueprint:strict": "node scripts/check-blueprint.mjs --strict",
+    "build": "node scripts/gates/run.mjs --group lib",
+    "verify": "node scripts/gates/run.mjs --checkpoint pre-push",
+    "gates": "node scripts/gates/run.mjs",
+    "gates:list": "node scripts/gates/run.mjs --list",
+    "gates:staged": "node scripts/gates/run.mjs --checkpoint pre-commit",
+    "gates:push": "node scripts/gates/run.mjs --checkpoint pre-push",
+    "gates:all": "node scripts/gates/run.mjs --all --strict",
+    "gates:probe": "node scripts/gates/run.mjs --group probe",
+    "gates:fingerprint": "node scripts/gates/shared/check-fingerprint.mjs --check",
+    "gates:install-hooks": "bash scripts/gates/hooks/install.sh"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -54,6 +63,7 @@
   "devDependencies": {
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "playwright": "^1.63.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "tailwindcss": "^4.3.3",

@@ -2,22 +2,34 @@
 
 import type { JSX } from "react";
 import { cn } from "../primitives/utils";
-import { Input } from "../primitives/input";
-import { Switch } from "../primitives/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../primitives/select";
-import type { BlueprintRegistry, BlueprintNode, ParamDef } from "./types";
+import type { BlueprintRegistry, BlueprintNode } from "./types";
+import { PortRow, ParamField } from "./node-parts";
+import { NodeRenameInput } from "./NodeRename";
 import { execOutIds, execOutLabel } from "./connect";
 import { EXEC } from "./types";
+import { NODE_WIDTH } from "./geometry";
+import { nodeKindOf, titleStyle } from "./node-style";
+import { PinShape } from "./PinShape";
 
 /**
- * 节点卡片。
+ * 节点卡片 —— 外观对齐 UE5。
  *
- * 三段: 标题条 / 端口区 / 参数区。
- * 端口一律竖排 (理由见 geometry.ts), 输入左、输出右, 行高固定 20px
- * —— 那个数值必须和 geometry.PORT_ROW 对齐, 否则连线端点会偏离圆点。
+ * ## 与 UE5 的对应关系 (只列有据可查的)
  *
- * 卡片本身**不处理拖拽**: 位置由画布用 transform 摆, 这里只负责画自己。
- * 这样同一份卡片在缩略图 / 导出图里也能复用。
+ *   - **标题栏按节点类别配色**: 事件红 / 函数蓝 / 纯函数绿 / 宏灰 / 流程紫 /
+ *     转换青。UE5 里这是节点语义的第一眼信息, 不是装饰。
+ *   - **引脚未连接 = 空心轮廓, 已连接 = 实心**。Epic 官方明文, exec 与 data
+ *     同规则。
+ *   - **执行引脚是楔形、尖端朝右**, 数据引脚是圆点。
+ *   - **选中态是一圈亮黄描边** —— 不用 primary (紫), 因为紫在蓝图里已经是
+ *     class 引脚的颜色, 会撞。
+ *   - **引脚行高 20px / 标题栏 28px**, 与 geometry.ts 的 PORT_ROW / HEADER_H
+ *     同源。差一行就是 20px, 线端点会明显偏离圆点。
+ *
+ * ## 一条硬约定
+ *
+ * 卡片**不处理拖拽**: 位置由画布用 transform 摆。这样同一份卡片在缩略图、
+ * 导出图里也能复用, 而不用重新实现一遍交互。
  */
 
 export interface BlueprintNodeCardProps {
@@ -34,11 +46,18 @@ export interface BlueprintNodeCardProps {
   readonly className?: string;
   /** 让外部拿到端口元素的锚点。 */
   readonly portRef?: (portId: string, dir: "in" | "out", el: HTMLElement | null) => void;
+  /** 拖线预览中: 这个端口是不是当前悬停的合法目标。 */
+  readonly dropTarget?: Readonly<Record<string, boolean>>;
+  /** F2 重命名中。给了就渲染成输入框。 */
+  readonly renaming?: boolean;
+  readonly onRenameCommit?: (next: string) => void;
+  readonly onRenameCancel?: () => void;
 }
 
 export function BlueprintNodeCard({
   registry, node, selected, connected, portErrors, collapsed,
-  onToggleCollapse, onParamChange, className, portRef,
+  onToggleCollapse, onParamChange, className, portRef, dropTarget,
+  renaming, onRenameCommit, onRenameCancel,
 }: BlueprintNodeCardProps): JSX.Element {
   const def = registry.nodeTypes.get(node.type);
   const isCollapsed = collapsed ?? node.collapsed ?? def?.collapsed ?? false;
@@ -46,35 +65,69 @@ export function BlueprintNodeCard({
   const title = node.title ?? def?.label ?? node.type;
   const hasError = !!portErrors && Object.keys(portErrors).length > 0;
 
+  // 未注册类型: 画一个明确的"未知"卡片, 而不是崩溃或留白
   if (!def) {
     return (
-      <div className={cn("rounded-lg border border-destructive/60 bg-card px-2.5 py-2", className)}>
+      <div
+        className={cn(
+          "rounded-md border border-destructive/60 bg-card px-2.5 py-2 shadow-sm",
+          className
+        )}
+      >
         <div className="text-[12px] font-medium text-destructive">未知节点</div>
         <div className="text-[11px] text-muted-foreground">{node.type}</div>
       </div>
     );
   }
 
+  const kind = nodeKindOf(def, node);
+  const tone = titleStyle(kind);
+  const width = node.width ?? def.width ?? NODE_WIDTH;
+
   return (
     <div
+      data-node-kind={kind}
       className={cn(
-        "rounded-lg border bg-card text-foreground transition-colors",
-        selected ? "border-primary/70" : hasError ? "border-destructive/50" : "border-border",
+        "overflow-hidden border text-foreground",
+        // UE5 的节点体是深色块 + 近黑描边 + 阴影; 圆角比卡片小 (6px)
+        "border-bp-node-border bg-bp-node-bg",
+        hasError && "border-destructive/70",
         className
       )}
+      style={{
+        borderRadius: "var(--bp-node-radius)",
+        boxShadow: selected ? "var(--bp-node-shadow), 0 0 0 2px var(--bp-selected)" : "var(--bp-node-shadow)",
+        width,
+      }}
     >
-      {/* 标题条。执行入口画在它左边 —— 与"被触发的那一端"的语义对齐。 */}
-      <div className="flex h-[30px] items-center gap-1.5 rounded-t-lg border-b border-border/60 bg-muted/40 px-2">
+      {/*
+        标题条。执行入口画在它左边 —— 与"被触发的那一端"的语义对齐。
+        高度取 UE5 源码常量 EstimatedExecutionPinHeight = 28。
+      */}
+      <div
+        className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
+        style={{ height: "var(--bp-title-h)" }}
+      >
         {def.execIn && (
           <span
             ref={(el) => portRef?.("exec-in", "in", el)}
             data-port="exec-in"
             data-dir="in"
-            className="block size-[9px] shrink-0 rounded-full border border-foreground bg-background"
-          />
+            className="flex shrink-0 items-center"
+          >
+            <PinShape kind="exec" filled color="text-bp-title-foreground" size={11} />
+          </span>
         )}
-        {def.icon ? <span className="shrink-0 opacity-70">{def.icon}</span> : null}
-        <span className="min-w-0 flex-1 truncate text-[12px] font-medium">{title}</span>
+        {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
+        {renaming ? (
+          <NodeRenameInput
+            value={title}
+            onCommit={(v) => onRenameCommit?.(v)}
+            onCancel={() => onRenameCancel?.()}
+          />
+        ) : (
+          <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
+        )}
 
         {/*
           折叠态没有端口区, 但执行出口必须有落点 —— 否则一折叠,
@@ -86,15 +139,17 @@ export function BlueprintNodeCard({
             ref={(el) => portRef?.(execOuts[execOuts.length - 1], "out", el)}
             data-port={execOuts[execOuts.length - 1]}
             data-dir="out"
-            className="block size-[9px] shrink-0 rounded-full border border-foreground bg-background"
-          />
+            className="flex shrink-0 items-center"
+          >
+            <PinShape kind="exec" filled color="text-bp-title-foreground" size={11} />
+          </span>
         )}
 
         {onToggleCollapse && (
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="shrink-0 rounded px-1 text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+            className="shrink-0 rounded px-1 text-[11px] opacity-70 transition-opacity hover:opacity-100"
             aria-label={isCollapsed ? "展开" : "折叠"}
           >
             {isCollapsed ? "+" : "−"}
@@ -115,6 +170,7 @@ export function BlueprintNodeCard({
                   filled={connected?.[p.id]}
                   invalid={portErrors?.[p.id]}
                   portRef={portRef}
+                  hot={dropTarget?.[p.id]}
                 />
               ))}
             </div>
@@ -128,10 +184,19 @@ export function BlueprintNodeCard({
                   registry={registry}
                   filled
                   portRef={portRef}
+                  hot={dropTarget?.[id]}
                 />
               ))}
               {(def.outputs ?? []).map((p) => (
-                <PortRow key={p.id} dir="out" port={p} registry={registry} filled portRef={portRef} />
+                <PortRow
+                  key={p.id}
+                  dir="out"
+                  port={p}
+                  registry={registry}
+                  filled
+                  portRef={portRef}
+                  hot={dropTarget?.[p.id]}
+                />
               ))}
             </div>
           </div>
@@ -150,80 +215,6 @@ export function BlueprintNodeCard({
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function PortRow({
-  dir, port, registry, filled, invalid, portRef,
-}: {
-  readonly dir: "in" | "out";
-  readonly port: { readonly id: string; readonly label?: string; readonly type: string };
-  readonly registry: BlueprintRegistry;
-  readonly filled?: boolean;
-  readonly invalid?: boolean;
-  readonly portRef?: BlueprintNodeCardProps["portRef"];
-}): JSX.Element {
-  const color = registry.typeColor(port.type);
-  return (
-    <div className={cn("flex h-5 items-center gap-1.5", dir === "out" && "flex-row-reverse")}>
-      <span
-        ref={(el) => portRef?.(port.id, dir, el)}
-        data-port={port.id}
-        data-dir={dir}
-        className={cn(
-          "block size-[9px] shrink-0 rounded-full border transition-colors",
-          invalid ? "border-destructive bg-destructive" : "border-foreground/40",
-          !invalid && (filled ? cn(color ?? "bg-foreground") : "bg-background")
-        )}
-      />
-      <span className={cn("min-w-0 truncate text-[11px] text-muted-foreground", dir === "out" && "text-right")}>
-        {port.label ?? port.id}
-      </span>
-    </div>
-  );
-}
-
-function ParamField({
-  def, value, onChange,
-}: {
-  readonly def: ParamDef;
-  readonly value: unknown;
-  readonly onChange: (v: unknown) => void;
-}): JSX.Element {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">{def.label ?? def.id}</span>
-      <div className="w-[86px] shrink-0">
-        {def.kind === "switch" ? (
-          <Switch checked={!!value} onCheckedChange={onChange} />
-        ) : def.kind === "select" ? (
-          <Select value={String(value ?? "")} onValueChange={onChange}>
-            <SelectTrigger className="h-6 text-[11px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {(def.options ?? []).map((o) => (
-                <SelectItem key={o.value} value={o.value} className="text-[11px]">
-                  {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : def.kind === "number" ? (
-          <Input
-            type="number"
-            className="h-6 text-[11px]"
-            value={String(value ?? def.default ?? 0)}
-            min={def.min}
-            max={def.max}
-            step={def.step}
-            onChange={(e) => onChange(Number(e.target.value))}
-          />
-        ) : (
-          <Input className="h-6 text-[11px]" value={String(value ?? "")} onChange={(e) => onChange(e.target.value)} />
-        )}
-      </div>
     </div>
   );
 }

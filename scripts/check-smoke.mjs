@@ -25,6 +25,8 @@
  *
  * 用法:
  *   node scripts/check-smoke.mjs [--strict] [--concurrency=4] [--page=button]
+ *
+ * 扫描根: CHECK_UI_ROOT (默认上一级目录) —— 负向探针靠它把夹具指到临时目录。
  */
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
@@ -32,7 +34,9 @@ import { existsSync, readFileSync, statSync, createReadStream } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = path.resolve(import.meta.dirname, "..");
+const ROOT = process.env.CHECK_UI_ROOT
+  ? path.resolve(process.env.CHECK_UI_ROOT)
+  : path.resolve(import.meta.dirname, "..");
 const DIST = path.join(ROOT, "docs", "dist");
 const NAV = path.join(ROOT, "docs", "src", "nav.ts");
 

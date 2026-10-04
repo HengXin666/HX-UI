@@ -90,6 +90,120 @@
   --segment-5: oklch(0.62 0.14 25);
 }
 
+/* ============================================================================
+ * 蓝图 (UE5) 专用令牌
+ * ----------------------------------------------------------------------------
+ * 为什么单开一组而不复用上面的语义色:
+ *   蓝图的引脚色是**按数据类型编码的信息**, 不是装饰。UE5 里看到青绿色圆点
+ *   就知道那是 int、看到亮绿就知道是 float —— 用户靠颜色分辨类型,
+ *   复用 primary / emerald 这类语义色会把二十来种类型压成三四种观感,
+ *   信息直接丢失。所以它们必须有自己的名字与取值。
+ *
+ * 取值来源: 引擎源码 GraphEditorSettings.cpp 的默认表 (线性 RGB),
+ *   换算 sRGB = linear^(1/2.2)。公开镜像逐字复制了那张表。
+ *   ⚠️ 是换算值, 不是官方十六进制 —— UE 实际渲染还受 tone mapping 影响。
+ *   真要像素级一致, 得拿真机截图取色再校准一轮。
+ *
+ * 为什么是 CSS 变量而不是组件里的类名:
+ *   本库第一条硬约定是"颜色只有这一个文件一个来源"。写进组件就等于把换肤
+ *   能力交出去 —— 亮色主题下这些高饱和色在白底上会刺眼, 必须能统一压暗。
+ * ==========================================================================*/
+
+:root, [data-mode="dark"] {
+  /* 引脚 / 连线 —— 按数据类型 */
+  --bp-exec: #ffffff;        /* 执行流: 白 */
+  --bp-bool: #940000;        /* maroon */
+  --bp-int: #24e2ae;         /* green-blue */
+  --bp-float: #a0ff47;       /* bright green */
+  --bp-number: #a0ff47;      /* 本库 number 语义上就是 float */
+  --bp-string: #ff00d3;      /* bright pink */
+  --bp-name: #cb81ff;        /* lilac */
+  --bp-text: #e67ba8;        /* salmon */
+  --bp-vector: #ffc927;      /* yellow */
+  --bp-rotator: #9fb2ff;     /* periwinkle */
+  --bp-transform: #ff7300;   /* orange */
+  --bp-object: #00a8f4;      /* sharp blue */
+  --bp-class: #5a00ba;       /* deep purple */
+  --bp-struct: #005aca;      /* deep blue */
+  --bp-wildcard: #807a7a;    /* dark gray */
+  --bp-byte: #006f65;        /* dark green */
+  --bp-delegate: #ff3b3b;    /* bright red */
+  --bp-interface: #f0ffa8;   /* pale green */
+  --bp-default: #e0caa8;     /* light brown: 未单列的类型走它 */
+
+  /* 节点标题栏 —— 按节点类别。
+     源码只给设置项名字不给数值, 这里取 UE4/UE5 沿用的语义色。
+     深色主题下它们是"压暗的纯色 + 亮字"。 */
+  --bp-title-event: #8c1f1f;      /* 事件: 红 */
+  --bp-title-function: #1f4f8c;   /* 函数: 蓝 */
+  --bp-title-pure: #1f7a5c;       /* 纯函数: 绿 */
+  --bp-title-macro: #4a4a52;      /* 宏 / 折叠子图: 灰 */
+  --bp-title-flow: #6a4a8c;       /* 流程控制 (Branch/Sequence): 紫 */
+  --bp-title-cast: #1f7a8c;       /* 类型转换: 青 */
+  --bp-title-default: #33333c;    /* 兜底 */
+  --bp-title-foreground: #f0f2f8; /* 标题栏上的文字: 一律亮色 */
+
+  /* 节点本体 */
+  --bp-node-bg: #1e2028;
+  --bp-node-border: #0d0e13;
+  --bp-node-shadow: 0 2px 6px 0 hsl(0 0% 0% / 0.35);
+  --bp-node-radius: 6px;
+  /* ⚠️ 这两个数值必须与 geometry.ts 的 HEADER_H / PORT_ROW **逐字相等**。
+     组件画节点用 CSS 变量, 而连线端点用 geometry.portPos 算 —— 两边差 2px
+     的表现是"每根线都偏出圆点", 是本模块最难查的一类错位。
+     曾经这里写 28 而 geometry 是 30, 实测连线端点系统性偏 2px。
+     scripts/check-blueprint.mjs 里有一条断言守着这个相等关系。 */
+  --bp-title-h: 30px;
+  --bp-pin-row: 20px;
+  --bp-grid: 16px;      /* UEditorStyleSettings::GridSnapSize, 社区实测默认 16 */
+  --bp-grid-line: rgba(255, 255, 255, 0.05);
+  --bp-grid-line-bold: rgba(255, 255, 255, 0.09);
+
+  /* 选中态: UE5 是一圈亮黄描边, 不用 primary (紫) ——
+     紫在蓝图里已经是 class 引脚的颜色, 会撞。 */
+  --bp-selected: #ffd400;
+}
+
+[data-mode="light"] {
+  /* 亮色下高饱和引脚色在白底上刺眼, 统一压暗并降饱和。
+     这是"必须有独立 token"的直接理由: 写死在组件里就没法这么调。 */
+  --bp-exec: #2a2a2a;
+  --bp-bool: #7a0f0f;
+  --bp-int: #0f7a5e;
+  --bp-float: #4a8a12;
+  --bp-number: #4a8a12;
+  --bp-string: #a3007d;
+  --bp-name: #7a3fb0;
+  --bp-text: #a34a68;
+  --bp-vector: #8a6a00;
+  --bp-rotator: #3f5aa8;
+  --bp-transform: #a34a00;
+  --bp-object: #006a9c;
+  --bp-class: #4a0f8c;
+  --bp-struct: #0f4a9c;
+  --bp-wildcard: #5a5a5a;
+  --bp-byte: #005a52;
+  --bp-delegate: #a31212;
+  --bp-interface: #6a7a20;
+  --bp-default: #7a5a3a;
+
+  --bp-title-event: #c25a5a;
+  --bp-title-function: #5a86c2;
+  --bp-title-pure: #5aa88a;
+  --bp-title-macro: #9a9aa4;
+  --bp-title-flow: #a086c8;
+  --bp-title-cast: #5aa8bc;
+  --bp-title-default: #d0d0d8;
+  --bp-title-foreground: #1a1c24;
+
+  --bp-node-bg: #ffffff;
+  --bp-node-border: #c8ccd6;
+  --bp-node-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.12);
+  --bp-grid-line: rgba(0, 0, 0, 0.05);
+  --bp-grid-line-bold: rgba(0, 0, 0, 0.09);
+  --bp-selected: #b38600;
+}
+
 * { box-sizing: border-box; }
 
 body {

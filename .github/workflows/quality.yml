@@ -1,0 +1,56 @@
+name: quality
+
+# 远程检查点 —— 与本地钩子跑**同一个入口** (scripts/gates/run.mjs)。
+#
+# ## 为什么这么薄
+#
+# 判据定义只有一份 (scripts/gates/registry.mjs), 这个文件只负责"什么时候跑、跑哪些分组"。
+# 把命令抄进 CI 的后果是实测过的: 别的仓里 pre-commit 硬编了 6 条、CI 只跑 1 条,
+# 差别不会报错, 只会让某几条门禁**从来没有在 CI 上跑过**而谁都没发现。
+# 这里只写一行总线调用, 增删门禁不用碰这个文件, 分支保护要求的检查项也不会变。
+#
+# ## 它比本地多跑什么
+#
+#   负向探针 (--group probe): 要起几十个子进程, 进提交/推送路径会被 --no-verify 绕过,
+#   所以它只在 CI 与手动命令里跑。
+#   --strict: 缺依赖时不再静默跳过。本地"没装 node_modules 就先跳过"是有意的降级,
+#   在 CI 里它等于"这次什么都没验证", 两者必须区分。
+#
+# ## 可选加固 (信任之后再开)
+#   - 把本 job 设为 branch protection 的 required; 否则它只是建议, 不是门禁
+#   - 把 scripts/gates 固定到标签再跑, 而不是读被检查的那个提交自己 (当前是"被检查者自带判据")
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # check-blueprint 会把 HX-Blueprint-Demo 的节点定义一起打包断言 (跨组件的契约),
+      # 所以兄弟目录必须存在; 它是主仓里的普通目录, 单独 clone 本仓时拿不到。
+      - name: Fetch the sibling component that check-blueprint packs
+        run: |
+          git clone --depth 1 --filter=blob:none --sparse https://github.com/HengXin666/HXLoLi.git _parent
+          cd _parent && git sparse-checkout set components/HX-Blueprint-Demo
+          mkdir -p .. && cp -r components/HX-Blueprint-Demo ../HX-Blueprint-Demo
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # docs 的构建与冒烟需要 vite; 组件库自己需要 tsc。
+      - name: Install (library + docs)
+        run: |
+          npm ci
+          npm --prefix docs ci
+
+      - name: 门禁 (全部分组 + 负向探针 + 接线指纹)
+        run: node scripts/gates/run.mjs --all --strict

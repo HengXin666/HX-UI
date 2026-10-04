@@ -151,36 +151,22 @@ export function useHistory(opts: UseHistoryOptions = {}): HistoryApi {
     [limit, coalesceMs]
   );
 
-  const undo = useCallback((): BlueprintGraph | null => {
-    let restored: BlueprintGraph | null = null;
-    setPast((p) => {
-      if (p.length === 0) return p;
-      const last = p[p.length - 1];
-      restored = last.graph;
-      const cur = currentRef.current;
-      if (cur !== null) setFuture((f) => [{ graph: cur, ...(last.label ? { label: last.label } : {}), at: Date.now() }, ...f].slice(0, limit));
-      currentRef.current = last.graph;
-      lastRef.current = null; // 断开合并链, 免得撤销后又拖一下被合并掉
-      return p.slice(0, -1);
-    });
-    return restored;
-  }, [limit]);
-
-  const redo = useCallback((): BlueprintGraph | null => {
-    let restored: BlueprintGraph | null = null;
-    setFuture((f) => {
-      if (f.length === 0) return f;
-      const first = f[0];
-      restored = first.graph;
-      const cur = currentRef.current;
-      if (cur !== null) setPast((p) => [...p, { graph: cur, ...(first.label ? { label: first.label } : {}), at: Date.now() }].slice(-limit));
-      currentRef.current = first.graph;
-      lastRef.current = null;
-      return f.slice(1);
-    });
-    return restored;
-  }, [limit]);
-
+  /**
+   * 撤销。
+   *
+   * ⚠️ 这里曾经有一个**不会报错**的致命 bug, 值得写下来:
+   *   原来 `restored` 是在 `setPast((p) => {...})` 的更新函数**内部**赋值的。
+   *   而 React 的 updater 是**延迟执行**的 (严格模式下甚至会执行两次),
+   *   所以函数体末尾 `return restored` 时它还是 null —— 于是 undo() 永远
+   *   返回 null, 调用方 `if (g) api.replace(g)` 直接跳过, 表现就是
+   *   "撤销按钮能点、tooltip 也对、按了却毫无反应"。
+   *
+   *   而且 tsc / 构建 / 冒烟全绿, 因为返回类型是 `BlueprintGraph | null`,
+   *   null 是合法值。这类"静默失效"只能靠断言真实行为抓到。
+   *
+   *   所以现在: 要读的东西**同步**从 past / future 数组里取, setState 只
+   *   负责写。读与写分开, 不依赖 updater 的执行时机。
+   */
   /**
    * "上一次见到的图" —— 只用于**去重**, 绝不用于判断"是不是第一次"。
    *
@@ -193,6 +179,39 @@ export function useHistory(opts: UseHistoryOptions = {}): HistoryApi {
    * 现在去重交给 seenRef, "第一次"的判断完全交给 push 内部的 currentRef。
    */
   const seenRef = useRef<BlueprintGraph | null>(null);
+
+  const undo = useCallback((): BlueprintGraph | null => {
+    if (past.length === 0) return null;
+    const last = past[past.length - 1];
+    const cur = currentRef.current;
+
+    setPast((p) => p.slice(0, -1));
+    if (cur !== null) {
+      setFuture((f) => [{ graph: cur, ...(last.label ? { label: last.label } : {}), at: Date.now() }, ...f].slice(0, limit));
+    }
+    currentRef.current = last.graph;
+    seenRef.current = last.graph; // 标记已见, 免得 track 把它又记成一步新改动
+    lastRef.current = null;       // 断开合并链
+
+    return last.graph;
+  }, [past, limit]);
+
+  const redo = useCallback((): BlueprintGraph | null => {
+    if (future.length === 0) return null;
+    const first = future[0];
+    const cur = currentRef.current;
+
+    setFuture((f) => f.slice(1));
+    if (cur !== null) {
+      setPast((p) => [...p, { graph: cur, ...(first.label ? { label: first.label } : {}), at: Date.now() }].slice(-limit));
+    }
+    currentRef.current = first.graph;
+    seenRef.current = first.graph;
+    lastRef.current = null;
+
+    return first.graph;
+  }, [future, limit]);
+
 
   const track = useCallback(
     (graph: BlueprintGraph, o?: { readonly tag?: string | null; readonly label?: string }) => {

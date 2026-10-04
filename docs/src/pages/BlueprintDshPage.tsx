@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { Badge } from "@hx/ui";
-import { DshDemo, OtherDomainDemo, AgentApiDemo, NODES, dshAgentLoopGraph } from "@hx/blueprint-demo";
+import { DshArchitectureDemo, DshDemo, OtherDomainDemo, AgentApiDemo, NODES, dshAgentLoopGraph } from "@hx/blueprint-demo";
 import { H2, P, Preview, Callout, Code, CodeBlock } from "../components/DocKit";
 
 /**
@@ -52,7 +52,40 @@ export function BlueprintDshPage(): JSX.Element {
         放在库里会忍不住摸到内部，而那证明不了拓展点开得对不对。
       </P>
 
-      <H2>全貌</H2>
+      <H2>全貌 (架构层)</H2>
+      <P>
+        <strong>根图是 10 个大步骤</strong>, 每个大步骤是一个<strong>子图</strong> ——
+        双击进入看它"怎么做"。粒度到"照着能 1:1 复现"为止, 不再往下拆到代码分支。
+      </P>
+      <Preview align="stretch">
+        <DshArchitectureDemo />
+      </Preview>
+      <P>
+        这三层是理解 dsh 的关键:
+      </P>
+      <P>
+        <strong>进 (输入 → 请求)。</strong>输入进收件箱后被原子领取, 从持久日志派生出
+        本次要发的消息序列, 再由权威 waterfall 定出提示词与可见工具, 最后定路由、绑适配器、
+        记请求头、冻结请求。注意<strong>请求头只在必要时重写</strong> —— 否则 KV 前缀缓存
+        会从第一个变化的 token 起全部失效。
+      </P>
+      <P>
+        <strong>出 (响应 → 结果)。</strong>流式接收, 每块先查取消, 结算成一条持久助手消息;
+        有工具调用就按策略派发(独占构成屏障 / 并行走有界池), 结果与上下文按模型顺序入日志,
+        成为下一步的派生依据。
+      </P>
+      <P>
+        <strong>循环与压缩。</strong>步骤给出结束原因后决定: 继续本轮下一步、开新一轮、
+        还是先压缩再继续。压缩会改写历史, 所以压完必须<strong>重新组装提示词</strong> ——
+        这就是图上压缩回到组装的那条边。
+      </P>
+
+      <H2>源码层 (逐条核对用)</H2>
+      <P>
+        另有一张<strong>对应源码控制流</strong>的图: 60 个节点, 每个带{" "}
+        <Code>source</Code> 字段标了 <Code>dsh-agent-loop</Code> 里的行号。
+        那是代码流程图, 不是架构图 —— 用来逐条核对, 不是用来看结构。
+      </P>
       <Preview align="stretch">
         <DshDemo />
       </Preview>

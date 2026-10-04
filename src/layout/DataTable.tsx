@@ -75,6 +75,12 @@ export interface DataTableProps<T> {
 
 const ALIGN = { left: "text-left", right: "text-right", center: "text-center" } as const;
 
+function isInteractiveTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(
+    'a, button, input, select, textarea, summary, [role="button"], [role="link"], [contenteditable="true"]',
+  ) !== null;
+}
+
 export function DataTable<T>({
   columns,
   rows,
@@ -128,11 +134,14 @@ export function DataTable<T>({
       {rows.map((row, i) => (
         <tr
           key={rowKey ? rowKey(row, i) : ((row as { id?: string | number }).id ?? i)}
-          onClick={onRowClick ? () => onRowClick(row) : undefined}
+          onClick={onRowClick ? (e) => {
+            if (!isInteractiveTarget(e.target)) onRowClick(row);
+          } : undefined}
           tabIndex={onRowClick ? 0 : undefined}
           onKeyDown={
             onRowClick
               ? (e) => {
+                  if (e.target !== e.currentTarget) return;
                   if (e.key === "Enter" || e.key === " ") {
                     e.preventDefault();
                     onRowClick(row);

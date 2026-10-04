@@ -7,11 +7,16 @@
  * "Cannot find ..." 提醒。这个脚本把它变成会失败的门禁。
  *
  * 用法: node scripts/check-icons.mjs     退出码 1 表示有无效名字。
+ *
+ * 扫描根: CHECK_UI_ROOT 指向**仓库根** (默认按脚本位置推断), docs 目录由它推出 ——
+ * 负向探针靠它把夹具指到临时目录。
  */
 import fs from "node:fs";
 import path from "node:path";
 
-const ROOT = path.resolve(import.meta.dirname, "..");
+const ROOT = process.env.CHECK_UI_ROOT
+  ? path.join(path.resolve(process.env.CHECK_UI_ROOT), "docs")
+  : path.resolve(import.meta.dirname, "..");
 const SCAN = ["src", "../src"];
 const SETS = { solar: "@iconify-json/solar", mdi: "@iconify-json/mdi" };
 

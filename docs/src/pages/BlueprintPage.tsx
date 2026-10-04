@@ -247,7 +247,8 @@ function CommentDemo(): JSX.Element {
   const nudge = () => {
     const id = g.comments?.[0]?.id;
     if (!id) return;
-    setG(moveCommentWithNodes(reg, g, id, { dx: 40, dy: 24 }));
+    const c0 = g.comments?.find((x) => x.id === id);
+    if (c0) setG(moveCommentWithNodes(reg, g, id, { x: c0.x + 40, y: c0.y + 24 }));
     setMoved((m) => m + 1);
   };
 

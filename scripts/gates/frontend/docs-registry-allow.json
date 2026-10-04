@@ -1,0 +1,13 @@
+{
+  "_why": "文档注册表对账 (check-docs-registry.mjs) 的豁免清单。条目必须**成对存在**: 目标消失后仍留在名单里 → FAIL (stale-allowance)。所以这份名单只该缩小。",
+  "_keys": {
+    "navWithoutIcon": "页面 id 没有对应图标键。缺图标会导致导航该项留白 —— 只在确实不需要图标时登记。",
+    "navWithoutCase": "页面 id 在 App.tsx 的 renderPage 里没有分支 (会落进 default 渲染成占位页)。**这是最该避免的一条** —— check-smoke 抓不到它。",
+    "unexportedModules": "src/{primitives,layout,charts,blueprint}/ 下不从 src/index.ts 导出的模块 (内部实现)。"
+  },
+  "allow": {
+    "navWithoutIcon": [],
+    "navWithoutCase": [],
+    "unexportedModules": []
+  }
+}

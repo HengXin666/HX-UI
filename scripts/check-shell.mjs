@@ -26,7 +26,9 @@ import { spawn } from "node:child_process";
 import { existsSync, readFileSync, statSync, writeFileSync, unlinkSync, createReadStream } from "node:fs";
 import path from "node:path";
 
-const ROOT = path.resolve(import.meta.dirname, "..");
+const ROOT = process.env.CHECK_UI_ROOT
+  ? path.resolve(process.env.CHECK_UI_ROOT)
+  : path.resolve(import.meta.dirname, "..");
 const DIST = path.join(ROOT, "docs", "dist");
 const STRICT = process.argv.includes("--strict");
 
@@ -99,7 +101,29 @@ const PROBE = `window.addEventListener("load", function () {
         setTimeout(function () {
           out.tocAnchors = document.querySelectorAll('nav[aria-label="本页目录"] a[href^="#"]').length;
           out.headingIds = document.querySelectorAll("h2[id], h3[id]").length;
-          document.title = "SHELLRESULT " + JSON.stringify(out);
+          if (innerWidth < 768) {
+            out.mobileWidth = document.querySelector("main").getBoundingClientRect().width;
+            out.mobileViewport = innerWidth;
+            document.querySelector('button[aria-label="打开导航"]').click();
+            setTimeout(function () {
+              out.mobileNav = document.querySelector('button[aria-label="打开导航"]').getAttribute("aria-expanded") === "true";
+              document.title = "SHELLRESULT " + JSON.stringify(out);
+            }, 200);
+            return;
+          }
+          var link = document.querySelector("tbody tr a");
+          if (link) {
+            link.addEventListener("click", function (e) { e.preventDefault(); }, { once: true });
+            link.click();
+          }
+          setTimeout(function () {
+            out.linkKeptRow = document.body.textContent.includes("点过的行: (没点过行)");
+            document.querySelector("tbody tr td:nth-child(3)")?.click();
+            setTimeout(function () {
+              out.rowClicked = document.body.textContent.includes("点过的行: deepstack0914");
+              document.title = "SHELLRESULT " + JSON.stringify(out);
+            }, 200);
+          }, 200);
         }, 200);
       }, 300);
     }, 400);
@@ -109,9 +133,9 @@ const PROBE = `window.addEventListener("load", function () {
 
 writeFileSync(path.join(DIST, "__shell_probe.html"), readFileSync(path.join(DIST, "index.html"), "utf8").replace("</head>", "<script>" + PROBE + "</script></head>"));
 
-function run(url) {
+function run(url, width = 1400) {
   return new Promise((resolve) => {
-    const child = spawn(chromium, ["--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=15000", "--window-size=1400,900", "--dump-dom", url], { stdio: ["ignore", "pipe", "ignore"] });
+    const child = spawn(chromium, ["--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=15000", `--window-size=${width},900`, "--dump-dom", url], { stdio: ["ignore", "pipe", "ignore"] });
     let out = "";
     child.stdout.on("data", (d) => (out += d));
     child.on("close", () => resolve(out));
@@ -119,7 +143,8 @@ function run(url) {
   });
 }
 
-const dom = await run(`http://127.0.0.1:${port}/__shell_probe.html#/data-table`);
+const url = `http://127.0.0.1:${port}/__shell_probe.html#/data-table`;
+const [dom, mobileDom] = await Promise.all([run(url), run(url, 500)]);
 server.close();
 // 探针页面是注入到 dist 里的临时文件, 用完立刻删 —— 留在产物里会被当成真的静态页
 try { unlinkSync(path.join(DIST, "__shell_probe.html")); } catch { /* 已经不在 */ }
@@ -130,6 +155,8 @@ if (!m) {
   process.exit(1);
 }
 const r = JSON.parse(m[1]);
+const mobileMatch = mobileDom.match(/SHELLRESULT (\{[^<]*\})/);
+const mobile = mobileMatch ? JSON.parse(mobileMatch[1]) : null;
 
 const failures = [];
 // 主题必须是 system -> light -> dark -> system, 且标签与 data-mode 同步
@@ -141,9 +168,13 @@ if (!r.search) failures.push("⌘K 没有打开搜索面板");
 else if (!(r.hits > 0)) failures.push(`搜索 'table' 返回 0 条 (应 >=1)`);
 if (!(r.tocAnchors >= 2)) failures.push(`页内目录锚点不足 (${r.tocAnchors} 个, 应 >=2)`);
 if (!(r.headingIds >= 2)) failures.push(`标题没有生成 id (${r.headingIds} 个), 目录会点不动`);
+if (!r.linkKeptRow || !r.rowClicked) failures.push("表格链接与行点击的事件边界异常");
+if (!mobile || !mobile.mobileNav || mobile.mobileWidth < mobile.mobileViewport - 40 || mobile.mobileWidth > mobile.mobileViewport) {
+  failures.push(`窄屏主区或导航异常: ${JSON.stringify(mobile?.mobileWidth ?? null)} / ${JSON.stringify(mobile?.mobileViewport ?? null)}`);
+}
 
 if (failures.length === 0) {
-  console.log(`check-shell: 通过 (主题三态 / ⌘K 搜索 ${r.hits} 条 / 目录锚点 ${r.tocAnchors} 个 / 标题 id ${r.headingIds} 个)`);
+  console.log(`check-shell: 通过 (主题三态 / ⌘K 搜索 ${r.hits} 条 / 目录锚点 ${r.tocAnchors} 个 / 标题 id ${r.headingIds} 个 / 表格行点击 / 窄屏导航)`);
   process.exit(0);
 }
 console.error("check-shell: " + failures.length + " 项失败\n");

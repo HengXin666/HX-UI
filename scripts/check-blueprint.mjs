@@ -50,6 +50,10 @@ export * from "../../src/blueprint/sync";
 export * from "../../src/blueprint/agent";
 export * from "../../src/blueprint/tools";
 export * from "../../src/blueprint/canvas-helpers";
+export * from "../../src/blueprint/shortcuts";
+export * from "../../src/blueprint/use-shortcuts";
+export * from "../../src/blueprint/clipboard";
+export * from "../../src/blueprint/node-style";
 export { COMMENT_TONE, COMMENT_TONES } from "../../src/blueprint/canvas-parts";
 export * from "../../src/blueprint/history";
 export * from "../../src/blueprint/subgraph";
@@ -115,7 +119,10 @@ import {
   createBlueprintTools, toolManifest, dispatchTool,
   shouldCoalesce, detourPath, shouldDetour, edgePath,
   resizeComment, COMMENT_TONE, wireStyle, arrowHead, arrowFillClass,
-  hitComment, COMMENT_BAR_H,
+  hitComment, COMMENT_BAR_H, nextSelection, makeViewportCommands, nodeKindOf,
+  SHORTCUTS, matchShortcut, shouldHandle, isTypingTarget, runShortcut, probeImplements,
+  copySelection, pasteClip, alignNodes, isEmptyClip,
+  titleStyle,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -1427,6 +1434,140 @@ const G0 = {
       })));
     }
   }
+}
+
+
+// ── 快捷键: 声明的每一项都必须**真的有行为** ────────────────────────
+// 表里写了但分派里没有 = 按下会 preventDefault 然后什么都不发生,
+// 比"没做"更糟: 它把浏览器原生的那个键位废掉了。
+//
+// 判据不用手写清单 (清单与 switch 是两份真相, 照样会漂), 而是**问实现本身**:
+// 用探针上下文跑一次, 落到 default 分支的什么都不碰。
+{
+  for (const sc of SHORTCUTS) {
+    ok("快捷键已实现: " + sc.id + " (" + sc.keys + ")", probeImplements(sc.id));
+  }
+}
+
+// 键名归一: 真实 KeyboardEvent 给的是 "Delete"(大写), 不是 "delete"
+ok("Delete(大写) -> delete", matchShortcut({ key: "Delete" }) === "delete");
+ok("Escape(大写) -> escape", matchShortcut({ key: "Escape" }) === "escape");
+ok("Tab(大写) -> search", matchShortcut({ key: "Tab" }) === "search");
+ok("Home(大写) -> fit", matchShortcut({ key: "Home" }) === "fit");
+ok("F2(大写) -> rename", matchShortcut({ key: "F2" }) === "rename");
+ok("PageDown(大写) -> enterSubgraph", matchShortcut({ key: "PageDown" }) === "enterSubgraph");
+ok("Backspace(大写) -> delete", matchShortcut({ key: "Backspace" }) === "delete");
+ok("没选中时不吞 Ctrl+D", shouldHandle("duplicate", { hasSelection: false }) === false);
+ok("选中时可删", shouldHandle("delete", { hasSelection: true }) === true);
+ok("输入框里不拦", isTypingTarget({ tagName: "INPUT" }) === true);
+
+// ── 多选修饰键 (UE5 语义) ──────────────────────────────────────────
+// 不认修饰键就永远选不中两个节点, 于是 Shift+W/A/S/D 对齐那四个键
+// 在真实交互里根本用不出来 (sel.length < 2 直接返回)。
+{
+  const J = (a) => JSON.stringify(a);
+  ok("Ctrl+点击未选项 -> 加入", J(nextSelection(["a"], "b", { ctrlKey: true })) === J(["a", "b"]));
+  ok("Ctrl+点击已选项 -> 取消", J(nextSelection(["a", "b"], "b", { ctrlKey: true })) === J(["a"]));
+  ok("Shift+点击 -> 加选", J(nextSelection(["a"], "b", { shiftKey: true })) === J(["a", "b"]));
+  ok("无修饰 -> 单选", J(nextSelection(["a", "b"], "c", {})) === J(["c"]));
+  ok("无修饰点已选项(多选) -> 保持整组", J(nextSelection(["a", "b"], "a", {})) === J(["a", "b"]));
+}
+
+// ── 剪贴板: 只复制两端都在选区内的边 ────────────────────────────────
+{
+  const reg = createRegistry();
+  reg.node({ type: "a", label: "A", outputs: [{ id: "o", type: "number" }] });
+  reg.node({ type: "b", label: "B", inputs: [{ id: "i", type: "number" }] });
+  const g = {
+    nodes: [{ id: "n1", type: "a", x: 0, y: 0 }, { id: "n2", type: "b", x: 100, y: 0 }, { id: "n3", type: "b", x: 200, y: 0 }],
+    edges: [
+      { id: "e1", from: { node: "n1", port: "o" }, to: { node: "n2", port: "i" } },
+      { id: "e2", from: { node: "n1", port: "o" }, to: { node: "n3", port: "i" } },
+    ],
+  };
+  const clip = copySelection(g, ["n1", "n2"]);
+  ok("只复制两端都在选区内的边", clip.edges.length === 1 && clip.edges[0].id === "e1");
+  const pasted = pasteClip(g, clip);
+  ok("粘贴后节点数 +2", pasted.graph.nodes.length === 5);
+  ok("粘贴生成新 id (不与原节点同 id)", !pasted.ids.includes("n1"));
+  ok("粘贴的边指向存在的节点", pasted.graph.edges.every((e) => pasted.graph.nodes.some((n) => n.id === e.from.node)));
+  ok("空剪贴板被识别", isEmptyClip(null) && isEmptyClip({ nodes: [], edges: [] }));
+  const al = alignNodes(g, ["n1", "n3"], "left");
+  const xs = al.nodes.filter((n) => n.id === "n1" || n.id === "n3").map((n) => n.x);
+  ok("左对齐后 x 一致", xs[0] === xs[1]);
+}
+
+// ── 节点类别: 标题栏配色必须有定义 ──────────────────────────────────
+{
+  const reg = createRegistry();
+  reg.node({ type: "ev", label: "事件", execIn: true });
+  reg.node({ type: "pure", label: "纯", outputs: [{ id: "o", type: "number" }] });
+  reg.node({ type: "branch", label: "分支", execIn: true, execOut: ["true", "false"] });
+  ok("有执行入口 -> function", nodeKindOf(reg.nodeTypes.get("ev")) === "function");
+  ok("无执行入口有输出 -> pure", nodeKindOf(reg.nodeTypes.get("pure")) === "pure");
+  ok("多执行出口 -> flow", nodeKindOf(reg.nodeTypes.get("branch")) === "flow");
+  for (const k of ["event", "function", "pure", "macro", "flow", "cast", "default"]) {
+    const t = titleStyle(k);
+    ok("类别有标题栏配色: " + k, !!t && !!t.bg && !!t.fg);
+  }
+}
+
+
+// ── 几何不变式: CSS 变量必须与 geometry.ts 常量**逐字相等** ──────────
+/**
+ * 为什么要这条: 节点由 CSS 变量画 (BlueprintNode 用 var(--bp-title-h)),
+ * 而连线端点由 geometry.portPos 按 HEADER_H 算。两者一旦不等, 表现是
+ * "每根线都偏出圆点" —— 不报错、tsc 全绿、页面看起来基本正常, 是本模块
+ * 最难查的一类失效。
+ *
+ * 实测踩过: --bp-title-h 曾写 28 而 HEADER_H = 30, 每个端口都偏 2px。
+ * 所以这里**直接读两个源文件**比对, 而不是断言"某个数等于 30" ——
+ * 后者在两边一起改成 31 时照样绿, 那就等于没守。
+ */
+{
+  const here = import.meta.dirname; // docs/.bpprobe
+  const cssPath = path.resolve(here, "../../src/tokens.css");
+  const geoPath = path.resolve(here, "../../src/blueprint/geometry.ts");
+  const css = readFileSync(cssPath, "utf8");
+  const geo = readFileSync(geoPath, "utf8");
+
+  /**
+   * 正则在**模板字符串**里会被转义吃掉 (本文件实测踩过多次), 所以这里
+   * 一律用 indexOf + 手工切片, 不用 RegExp。
+   */
+  const cssNum = (name) => {
+    const key = "--" + name + ":";
+    const at = css.indexOf(key);
+    if (at === -1) return null;
+    const tail = css.slice(at + key.length).trim();
+    const m = /^([0-9.]+)px/.exec(tail);
+    return m ? Number(m[1]) : null;
+  };
+  const geoNum = (name) => {
+    const key = "export const " + name + " = ";
+    const at = geo.indexOf(key);
+    if (at === -1) return null;
+    const tail = geo.slice(at + key.length).trim();
+    const m = /^([0-9.]+)/.exec(tail);
+    return m ? Number(m[1]) : null;
+  };
+
+  const cssTitle = cssNum("bp-title-h");
+  const cssRow = cssNum("bp-pin-row");
+  const geoHeader = geoNum("HEADER_H");
+  const geoRow = geoNum("PORT_ROW");
+
+  ok("tokens.css 里能读到 --bp-title-h", cssTitle !== null);
+  ok("tokens.css 里能读到 --bp-pin-row", cssRow !== null);
+  ok("geometry.ts 里能读到 HEADER_H", geoHeader !== null);
+  ok("geometry.ts 里能读到 PORT_ROW", geoRow !== null);
+  ok("标题栏高度: CSS == geometry (连线端点不偏)", cssTitle !== null && geoHeader !== null && cssTitle === geoHeader);
+  ok("引脚行高: CSS == geometry (连线端点不偏)", cssRow !== null && geoRow !== null && cssRow === geoRow);
+
+  // 行高也不许在别处重新声明一份字面量
+  const partsPath = path.resolve(here, "../../src/blueprint/node-parts.tsx");
+  const parts = readFileSync(partsPath, "utf8");
+  ok("node-parts 不再硬编码行高 (改为从 geometry 导入)", parts.indexOf("export const PORT_ROW_H = PORT_ROW") !== -1);
 }
 
 console.log("");

@@ -1,0 +1,21 @@
+{
+  "note": "",
+  "limits": {
+    "ts": 450,
+    "tsx": 250
+  },
+  "frozen": {
+    "src/blueprint/BlueprintCanvas.tsx": 802,
+    "docs/src/pages/BlueprintPage.tsx": 587,
+    "src/blueprint/agent.ts": 534,
+    "docs/src/pages/StepperPage.tsx": 353,
+    "src/charts/Charts.tsx": 347,
+    "src/blueprint/BlueprintEditor.tsx": 344,
+    "src/layout/Toast.tsx": 288,
+    "src/layout/Stepper.tsx": 282,
+    "docs/src/pages/CalendarPage.tsx": 276,
+    "docs/src/App.tsx": 273,
+    "docs/src/pages/SettingsPageDemo.tsx": 260,
+    "src/layout/CodeBlock.tsx": 251
+  }
+}

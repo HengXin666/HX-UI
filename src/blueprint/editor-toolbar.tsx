@@ -20,6 +20,7 @@ export interface Crumb {
 export function EditorToolbar({
   breadcrumb, onNavigate, selectedIds, onCollapse, onCommentAround,
   onTidy, onTidyRest, history, onUndo, onRedo, pathLength, onExitSubgraph,
+  onSave, onLoad, onSaveAs, onToggleHelp, helpOpen,
 }: {
   readonly breadcrumb: readonly Crumb[];
   readonly onNavigate: (depth: number) => void;
@@ -33,6 +34,14 @@ export function EditorToolbar({
   readonly onRedo: () => void;
   readonly pathLength: number;
   readonly onExitSubgraph: () => void;
+  /** 导出成 .bp.json 文件 (下载)。 */
+  readonly onSave?: () => void;
+  /** 从 .bp.json 文件导入。 */
+  readonly onLoad?: () => void;
+  /** 另存到… (File System Access, 可反复写回同一个文件)。 */
+  readonly onSaveAs?: () => void;
+  readonly onToggleHelp?: () => void;
+  readonly helpOpen?: boolean;
 }): JSX.Element {
   const hasSel = selectedIds.length > 0;
 
@@ -114,6 +123,40 @@ export function EditorToolbar({
       >
         ↷ 重做{history.depth.future ? ` ${history.depth.future}` : ""}
       </Button>
+
+      {/* 保存 / 加载。刻意在撤销之后 —— 它们是"整张图"的操作,
+          与上面的"选中项"操作不是一类。 */}
+      {onSave && (
+        <Button size="xs" variant="outline" onClick={onSave} title="导出成 .bp.json (就是一个 JSON, 可进 git diff)">
+          导出
+        </Button>
+      )}
+      {onLoad && (
+        <Button size="xs" variant="outline" onClick={onLoad} title="从 .bp.json 导入">
+          导入
+        </Button>
+      )}
+      {onSaveAs && (
+        <Button
+          size="xs"
+          variant="outline"
+          onClick={onSaveAs}
+          title="存到指定文件 (授权一次后可反复写回同一个文件; 不支持的浏览器退回下载)"
+        >
+          另存到…
+        </Button>
+      )}
+      {onToggleHelp && (
+        <Button
+          size="xs"
+          variant="outline"
+          onClick={onToggleHelp}
+          title="快捷键一览"
+          className={cn(helpOpen && "border-primary/60 text-foreground")}
+        >
+          快捷键
+        </Button>
+      )}
 
       {pathLength > 0 && (
         <Button size="xs" variant="outline" className="ml-auto" onClick={onExitSubgraph}>

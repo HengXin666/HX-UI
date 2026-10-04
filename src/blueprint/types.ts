@@ -25,14 +25,20 @@ export const ANY = "any";
 /** 执行流。它不是数据, 是"下一步做这个"。UE5 的白线。 */
 export const EXEC = "exec";
 
-/** 内置数据类型。只是默认值, 不是全集。 */
+/**
+ * 内置数据类型。只是默认值, 不是全集。
+ *
+ * 颜色取自 UE5 引擎源码 GraphEditorSettings.cpp 的默认表 (经 tokens.css 令牌化)。
+ * 用 **bg-bp-*** 而不是语义色: 引脚色是按类型编码的信息, 压成三四种语义色
+ * 会让用户分不清 int 与 float。
+ */
 export const BASE_TYPES: Record<string, DataTypeDef> = {
   [ANY]: { id: ANY, label: "任意" },
-  [EXEC]: { id: EXEC, label: "执行", colorClass: "bg-foreground" },
-  number: { id: "number", label: "数值", colorClass: "bg-emerald-400", extends: ANY },
-  string: { id: "string", label: "文本", colorClass: "bg-primary", extends: ANY },
-  boolean: { id: "boolean", label: "布尔", colorClass: "bg-amber-400", extends: ANY },
-  object: { id: "object", label: "对象", colorClass: "bg-muted-foreground", extends: ANY },
+  [EXEC]: { id: EXEC, label: "执行", colorClass: "bg-bp-exec", strokeClass: "stroke-bp-exec" },
+  number: { id: "number", label: "数值", colorClass: "bg-bp-float", strokeClass: "stroke-bp-float", extends: ANY },
+  string: { id: "string", label: "文本", colorClass: "bg-bp-string", strokeClass: "stroke-bp-string", extends: ANY },
+  boolean: { id: "boolean", label: "布尔", colorClass: "bg-bp-bool", strokeClass: "stroke-bp-bool", extends: ANY },
+  object: { id: "object", label: "对象", colorClass: "bg-bp-object", strokeClass: "stroke-bp-object", extends: ANY },
 };
 
 export interface DataTypeDef {
@@ -122,11 +128,54 @@ export interface NodePorts {
   readonly multiExecIn?: boolean;
 }
 
+/**
+ * 节点类别 —— 决定标题栏的颜色。
+ *
+ * UE5 里标题栏颜色不是装饰, 是**节点语义的第一眼信息**: 红色 = 事件起点、
+ * 蓝色 = 函数调用、绿色 = 纯函数 (无副作用)、灰色 = 宏/折叠子图、紫色 = 流程
+ * 控制、青色 = 类型转换。用户扫一眼标题栏就知道"这个节点会不会改状态"。
+ *
+ * 刻意做成开放 string: 使用方要加自己的类别 (例如 "io" / "llm") 只需在
+ * NODE_KIND_TITLE 里补一条, 不必回来改类型。
+ */
+export type NodeKind =
+  | "event"
+  | "function"
+  | "pure"
+  | "macro"
+  | "flow"
+  | "cast"
+  | "default"
+  | (string & {});
+
+/**
+ * 类别 -> 标题栏配色类名。
+ *
+ * 只给 bg / text 两组: 标题栏是"压暗的纯色 + 亮字", 没有边框
+ * (UE5 的标题栏靠色块本身与节点体区分, 再描一道边反而显脏)。
+ */
+export const NODE_KIND_TITLE: Record<string, { readonly bg: string; readonly fg: string }> = {
+  event: { bg: "bg-bp-title-event", fg: "text-bp-title-foreground" },
+  function: { bg: "bg-bp-title-function", fg: "text-bp-title-foreground" },
+  pure: { bg: "bg-bp-title-pure", fg: "text-bp-title-foreground" },
+  macro: { bg: "bg-bp-title-macro", fg: "text-bp-title-foreground" },
+  flow: { bg: "bg-bp-title-flow", fg: "text-bp-title-foreground" },
+  cast: { bg: "bg-bp-title-cast", fg: "text-bp-title-foreground" },
+  default: { bg: "bg-bp-title-default", fg: "text-bp-title-foreground" },
+};
+
 export interface NodeTypeDef {
   readonly type: string;
   readonly label: string;
   /** 右键菜单里的分组。 */
   readonly category?: string;
+  /**
+   * 节点类别, 决定标题栏配色。不给时按结构推导 (见 nodeKindOf)。
+   *
+   * 推导规则与 UE5 一致: 有执行入口的是事件/函数调用, 纯函数 (无执行入口但
+   * 有输出) 走绿色 —— 这正是 UE5 区分 "纯/非纯" 的判据。
+   */
+  readonly kind?: NodeKind;
   readonly description?: string;
   readonly icon?: ReactNode;
   /** 卡片宽度提示 (px)。不写用默认值。 */

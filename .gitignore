@@ -3,3 +3,10 @@ dist/
 .vite/
 *.log
 .DS_Store
+
+# check-blueprint 的打包中间产物 (正常跑完会自己删; 跑挂时留在这里)
+docs/.bpprobe/
+
+# e2e 截图: 每次跑都会重新生成, 且文件名含中文与空格 ——
+# git 会给它们加引号, 而引号路径会被 lanes 门禁切成 "scripts 这种伪顶层条目。
+scripts/e2e/shots/

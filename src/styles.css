@@ -57,6 +57,50 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
+
+  /* 蓝图 (UE5) 令牌桥接。
+     桥接之后组件里能写 bg-bp-int / stroke-bp-float / border-bp-node 这类类名,
+     而颜色仍然只存在于 tokens.css 一个文件里 —— 换肤时这里一行不动。
+     命名刻意带 bp- 前缀: 它们是"按数据类型编码"的专用色, 与业务的语义色
+     (primary / emerald / destructive) 不是一套东西, 混用会丢信息。 */
+  --color-bp-exec: var(--bp-exec);
+  --color-bp-bool: var(--bp-bool);
+  --color-bp-int: var(--bp-int);
+  --color-bp-float: var(--bp-float);
+  --color-bp-number: var(--bp-number);
+  --color-bp-string: var(--bp-string);
+  --color-bp-name: var(--bp-name);
+  --color-bp-text: var(--bp-text);
+  --color-bp-vector: var(--bp-vector);
+  --color-bp-rotator: var(--bp-rotator);
+  --color-bp-transform: var(--bp-transform);
+  --color-bp-object: var(--bp-object);
+  --color-bp-class: var(--bp-class);
+  --color-bp-struct: var(--bp-struct);
+  --color-bp-wildcard: var(--bp-wildcard);
+  --color-bp-byte: var(--bp-byte);
+  --color-bp-delegate: var(--bp-delegate);
+  --color-bp-interface: var(--bp-interface);
+  --color-bp-default: var(--bp-default);
+
+  --color-bp-title-event: var(--bp-title-event);
+  --color-bp-title-function: var(--bp-title-function);
+  --color-bp-title-pure: var(--bp-title-pure);
+  --color-bp-title-macro: var(--bp-title-macro);
+  --color-bp-title-flow: var(--bp-title-flow);
+  --color-bp-title-cast: var(--bp-title-cast);
+  --color-bp-title-default: var(--bp-title-default);
+  --color-bp-title-foreground: var(--bp-title-foreground);
+
+  --color-bp-node-bg: var(--bp-node-bg);
+  --color-bp-node-border: var(--bp-node-border);
+  --color-bp-selected: var(--bp-selected);
+
+  /* 尺寸也走令牌: 引脚行高、标题栏高度与 geometry.ts 的常量必须同源,
+     否则线端点会偏离圆点 —— 那是最难查的一类错位。 */
+  --spacing-bp-title-h: var(--bp-title-h);
+  --spacing-bp-pin-row: var(--bp-pin-row);
+  --spacing-bp-grid: var(--bp-grid);
 }
 
 @layer base {

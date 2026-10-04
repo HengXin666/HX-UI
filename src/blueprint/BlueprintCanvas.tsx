@@ -8,6 +8,12 @@ import { cn } from "../primitives/utils";
 import type { BlueprintComment, BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
 import { edgePath, detourPath, shouldDetour, wireStyle, arrowHead, arrowFillClass } from "./geometry";
+import { makeViewportCommands } from "./canvas-helpers";
+import { CanvasGrid } from "./CanvasGrid";
+import { LinkHint } from "./LinkHint";
+import { NodePicker } from "./NodePicker";
+import { useCanvasEscape } from "./use-canvas-escape";
+import { nextSelection } from "./canvas-helpers";
 import { CommentLayer, CanvasToolbar, normRect, containedIds, hashId } from "./canvas-parts";
 import type { DropAt } from "./BlueprintPalette";
 import {
@@ -58,7 +64,6 @@ export interface BlueprintCanvasProps {
   readonly onSelect?: (ids: readonly string[]) => void;
   readonly onNodeParamChange?: (nodeId: string, key: string, value: unknown) => void;
   readonly onAddNode?: (type: string, at: { x: number; y: number }) => void;
-  readonly onRemoveNodes?: (ids: readonly string[]) => void;
   readonly onOpenMenu?: (at: { x: number; y: number }) => void;
   /** 双击子图节点: 请求"进入"这一层。由外层决定是换一张图还是开抽屉。 */
   readonly onEnterSubgraph?: (nodeId: string, sgId: string) => void;
@@ -87,6 +92,16 @@ export interface BlueprintCanvasProps {
    * 看不见任何东西。视口变换只存在于画布内部, 所以得由画布提供这个读法。
    */
   readonly onViewportCenterReady?: (get: () => { x: number; y: number }) => void;
+  /**
+   * 把缩放 / 重置 / 适应三个命令交给外层 (快捷键要用)。
+   *
+   * 视口是画布的私有状态, 外层复制一份必然漂移, 所以只传命令不传状态。
+   */
+  readonly onViewportReady?: (api: {
+    readonly zoomBy: (delta: number) => void;
+    readonly resetView: () => void;
+    readonly fit: () => void;
+  }) => void;
 
   readonly className?: string;
   readonly height?: number | string;
@@ -95,6 +110,19 @@ export interface BlueprintCanvasProps {
   readonly portTolerance?: number;
   /** 左上角浮层。 */
   readonly toolbar?: ReactNode;
+  /**
+   * Tab 打开的节点搜索菜单。由外层控制 (快捷键在编辑器层)。
+   *
+   * 为什么是受控的: 菜单要在视口中心落点, 而"中心"只有画布知道;
+   * 但"该不该开"由快捷键决定, 而快捷键在编辑器层。所以外层只给一个布尔,
+   * 落点由画布自己算 —— 各管各知道的那部分。
+   */
+  readonly pickerOpen?: boolean;
+  readonly setPickerOpen?: (v: boolean) => void;
+  /** F2 正在重命名的节点 id。 */
+  readonly renamingId?: string | null;
+  readonly onRenameCommit?: (id: string, next: string) => void;
+  readonly onRenameCancel?: () => void;
   /** 显示"在独立页面打开"按钮。默认 true。 */
   readonly allowFullscreen?: boolean;
   /**
@@ -134,10 +162,12 @@ interface LinkState {
 export function BlueprintCanvas({
   registry, graph, validation, selected,
   onNodesMove, onConnect, onDisconnect, onSelect, onNodeParamChange,
-  onAddNode, onRemoveNodes, onOpenMenu,
+  onAddNode, onOpenMenu,
   onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onCommentResize, onCommentTone, onDropNode, onCreateComment,
-  onViewportCenterReady,
+  onViewportCenterReady, onViewportReady,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
+  pickerOpen = false, setPickerOpen,
+  renamingId, onRenameCommit, onRenameCancel,
   allowFullscreen = true,
   standaloneHref,
 }: BlueprintCanvasProps): JSX.Element {
@@ -300,7 +330,7 @@ export function BlueprintCanvas({
         return;
       }
       if (node) {
-        const ids = selected?.has(node.id) && selected.size > 1 ? [...selected] : [node.id];
+        const ids = nextSelection(selected ? [...selected] : [], node.id, e);
         onSelect?.(ids);
         const origin = new Map<string, { x: number; y: number }>();
         for (const id of ids) {
@@ -435,27 +465,8 @@ export function BlueprintCanvas({
     [link, marquee, commentDraft, graph, registry, toGraph, view.zoom, onConnect, onAddNode, onSelect, portTolerance, onCreateComment]
   );
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
-      if (e.key === "Delete" || e.key === "Backspace") {
-        if (selected && selected.size > 0) {
-          e.preventDefault();
-          onRemoveNodes?.([...selected]);
-        }
-      }
-      if (e.key === "Escape") {
-        setLink(null);
-        setMarquee(null);
-        setPaletteAt(null);
-        // 真全屏时浏览器自己处理 Esc; 回退的 fixed 覆盖层得自己退
-        if (maximized) setMaximized(false);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [selected, onRemoveNodes, maximized]);
+  /** Esc 只清画布私有状态。抽走是因为本文件被棘轮冻结 (只许降)。 */
+  useCanvasEscape({ setLink, setMarquee, setPaletteAt, setMaximized, maximized, setPickerOpen });
 
   const edges = useMemo(
     () =>
@@ -503,7 +514,10 @@ export function BlueprintCanvas({
 
   useEffect(() => {
     onViewportCenterReady?.(viewportCenter);
-  }, [onViewportCenterReady, viewportCenter]);
+    // 视口命令一并交给外层 (快捷键 Ctrl+= / Ctrl+0 / Home 要用)。
+    // 只传命令不传状态 —— 外层复制一份 view 必然漂移。
+    onViewportReady?.(makeViewportCommands(setView, fitRef));
+  }, [onViewportCenterReady, viewportCenter, onViewportReady]);
 
   const fit = useCallback(() => {
     const box = hostRef.current?.getBoundingClientRect();
@@ -607,17 +621,7 @@ export function BlueprintCanvas({
       }}
     >
       {/* 网格跟着视口走, 所以缩放平移时网格不漂 */}
-      {showGrid && (
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, color-mix(in srgb, var(--border) 60%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in srgb, var(--border) 60%, transparent) 1px, transparent 1px)",
-            backgroundSize: `${24 * view.zoom}px ${24 * view.zoom}px`,
-            backgroundPosition: `${view.x}px ${view.y}px`,
-          }}
-        />
-      )}
+      {showGrid && <CanvasGrid view={view} />}
 
       <CommentLayer
         comments={graph.comments}
@@ -716,6 +720,13 @@ export function BlueprintCanvas({
                 connected={connectedInputs[n.id]}
                 portErrors={portErrors}
                 onParamChange={(k, v) => onNodeParamChange?.(n.id, k, v)}
+                {...(renamingId === n.id
+                  ? {
+                      renaming: true,
+                      onRenameCommit: (next: string) => onRenameCommit?.(n.id, next),
+                      onRenameCancel: () => onRenameCancel?.(),
+                    }
+                  : {})}
               />
               {nv && !nv.ok && (
                 <div className="mt-1 rounded border border-destructive/40 bg-destructive/10 px-1.5 py-0.5 text-[11px] text-destructive">
@@ -738,39 +749,20 @@ export function BlueprintCanvas({
         onToggleFullscreen={toggleFullscreen}
       />
 
-      {link?.verdict?.ok && link.verdict.replaces && (
-        <div className="pointer-events-none absolute bottom-2 left-2 rounded border border-border bg-card px-2 py-1 text-[11px] text-muted-foreground">
-          松手将替换原有连线
-        </div>
-      )}
+      <LinkHint verdict={link?.verdict} />
 
-      {link?.verdict && !link.verdict.ok && (
-        <div className="pointer-events-none absolute bottom-2 left-2 rounded border border-destructive/40 bg-card px-2 py-1 text-[11px] text-destructive">
-          {reasonText(link.verdict.reason)}
-        </div>
-      )}
-
-      {paletteAt && (
-        <div className="absolute right-2 top-2 z-[var(--z-panel)] w-56 overflow-hidden rounded-lg border border-border bg-card shadow-md">
-          <div className="border-b border-border px-2.5 py-1.5 text-[11px] text-muted-foreground">连到新节点</div>
-          <div className="max-h-64">
-            <BlueprintPalette
-              registry={registry}
-              draggable={false}
-              onPick={(type) => {
-                onAddNode?.(type, paletteAt);
-                setPaletteAt(null);
-              }}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={() => setPaletteAt(null)}
-            className="w-full border-t border-border px-2.5 py-1.5 text-left text-[11px] text-muted-foreground transition-colors hover:text-foreground"
-          >
-            取消
-          </button>
-        </div>
+      {(paletteAt || pickerOpen) && (
+        <NodePicker
+          registry={registry}
+          mode={pickerOpen ? "add" : "connect"}
+          onPick={(type) => {
+            const at = pickerOpen ? viewportCenter() : paletteAt;
+            if (at) onAddNode?.(type, at);
+            setPaletteAt(null);
+            setPickerOpen?.(false);
+          }}
+          onClose={() => { setPaletteAt(null); setPickerOpen?.(false); }}
+        />
       )}
     </div>
   );
@@ -778,17 +770,6 @@ export function BlueprintCanvas({
 
 /** 注释标题条的命中区域 (只上沿 22px)。 */
 /** reason -> 人话。UI 靠 reason 而不是 message: message 是英文的。 */
-function reasonText(reason?: string): string {
-  switch (reason) {
-    case "type-mismatch": return "类型不匹配";
-    case "self-loop": return "不能连回自己";
-    case "duplicate": return "已经连过了";
-    case "occupied": return "该输入口已占用";
-    case "direction": return "执行流与数据流不能互连";
-    case "missing-port": return "端口不存在";
-    default: return "不能这样连";
-  }
-}
 
 function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));

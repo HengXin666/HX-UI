@@ -99,8 +99,9 @@ reg.node({
 ```bash
 # 组件库本身
 npm install
-npm run build             # tsc + 设计规约门禁 (硬编色/非1px边框/漏 type 的 button)
-npm run verify            # build + 文档站构建 + 逐页浏览器冒烟
+npm run gates:install-hooks   # 装一次: 把 pre-commit / pre-push 链到 .git/hooks
+npm run build             # = gates --group lib (tsc + 设计规约 + 蓝图断言)
+npm run verify            # = gates:push (完整矩阵, 见下)
 ```
 
 **关于 `npm run verify` 里那步浏览器冒烟**：本次补组件时有两个文档页渲染成全白
@@ -108,6 +109,28 @@ npm run verify            # build + 文档站构建 + 逐页浏览器冒烟
 设计规约门禁、图标门禁**全部通过**。唯一能抓到它的是真的在浏览器里打开一次看 DOM。
 脚本在 `scripts/check-smoke.mjs`，页面清单从 `docs/src/nav.ts` 自动提取；
 没装 chromium 时默认跳过（CI 用 `--strict` 让它变成失败）。
+
+### 门禁
+
+所有检查的**唯一注册表**在 `scripts/gates/registry.mjs`，唯一入口是 `scripts/gates/run.mjs`。
+本地钩子与 CI 调的是同一行命令，所以"某个检查点悄悄少跑几条"这件事不会发生。
+
+```bash
+npm run gates:list        # 有哪些检查、各自拦什么、依赖什么产物
+npm run gates:staged      # 提交档 (lib + docs + shape, 实测约 5s)
+npm run gates:push        # 推送档 (+ 浏览器矩阵 + 守卫)
+npm run gates:all         # 全部分组 + --strict (CI 档)
+npm run gates:probe       # 17 条负向/接线探针 (证明门禁真的会红)
+npm run gates:fingerprint # 严格度与接线指纹 (防静默放松)
+```
+
+三条容易踩的坑，已由机器兜住：`check-docs-registry.mjs` 对账
+`nav.ts ↔ App.tsx 分支 ↔ 页面文件 ↔ 图标表 ↔ 库导出`（`nav` 有页面而 `App` 没有 case 时
+会渲染成占位页，而冒烟抓不到它 —— 有负向探针钉着）；`check-line-budget.mjs` 管单文件行数
+（tsx ≤ 250 / ts ≤ 450，存量 12 个文件逐个冻结、只降不升）；`check-lanes.mjs` 保证
+每个顶层目录都被某条 lane 认领（否则改它一条门禁都不跑）。
+
+当前有效检查、缺口与不装项见 `docs/code-quality-landscape.md`。
 
 ```bash
 # 文档站

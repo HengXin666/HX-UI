@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# pre-commit —— 提交前跑"与本轮相关的秒级门禁"。
+#
+# 为什么薄: 判据定义只有一份 (scripts/gates/registry.mjs), 这个钩子只负责
+# "什么时候跑、跑哪些分组"。任何把命令抄进钩子的做法都会让两份定义慢慢分叉 ——
+# 分叉不会报错, 只会让某个检查点悄悄少跑几条。
+#
+# 为什么用 --checkpoint 而不是按暂存文件选 lane: 本仓的门禁大多是**全仓分析器**
+# (tsc -p / 逐页冒烟), 它们没有"只看这几个文件"的模式; 按文件猜分组会在
+# 共享文件被改动时判错, 而判错的表现是"一条都不跑"。所以提交路径跑一个
+# **固定且廉价**的分组集合 (lib+docs+shape 实测约 5s), 由 CHECKPOINTS 表声明。
+#
+# 想跳过: git commit --no-verify。用了它, CI 还是会跑 —— 那是故意的。
+set -uo pipefail
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+  echo "pre-commit: 不在 git 仓库里, 跳过" >&2
+  exit 0
+}
+cd "$repo_root"
+
+# 门禁总线不在 (例如旧克隆) 时给出可操作的提示, 而不是静默放行
+if [ ! -f "scripts/gates/run.mjs" ]; then
+  echo "pre-commit: 找不到 scripts/gates/run.mjs —— 门禁总线未安装, 本次提交未经验证" >&2
+  echo "            CI 会跑同一套检查; 本地要恢复请确认脚本已检出。" >&2
+  exit 0
+fi
+
+exec node scripts/gates/run.mjs --checkpoint pre-commit

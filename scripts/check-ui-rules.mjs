@@ -11,6 +11,9 @@
  *   node scripts/check-ui-rules.mjs [目录, 默认 src]
  * 退出码 1 = 有违规。
  *
+ * 扫描根: 环境变量 CHECK_UI_ROOT 可覆盖 (默认本脚本的上一级)。
+ * 负向探针靠它把夹具指到临时目录 —— 扫描根不可覆盖, 就做不出"证明它会红"这一步。
+ *
  * ## 三条实现上的取舍 (都是踩过才这么写的)
  *
  *   1. **JSX 开标签整段扫描, 不逐行**。\`<button\` 与 \`type="button"\` 常常不在同一行,
@@ -23,7 +26,9 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const ROOT = path.resolve(import.meta.dirname, "..");
+const ROOT = process.env.CHECK_UI_ROOT
+  ? path.resolve(process.env.CHECK_UI_ROOT)
+  : path.resolve(import.meta.dirname, "..");
 const TARGET = process.argv[2] ?? "src";
 
 /**
