@@ -30,6 +30,9 @@ import { BlueprintPalette } from "./BlueprintPalette";
  *   2. 缩放要**以光标为锚点**。以原点缩放时每滚一下图就跑掉, 手感是坏的。
  *   3. 连线预览与已落地的边走同一个 path 公式。两处各画一遍会出现
  *      "预览一个形状、落地变成另一个"。
+ *   4. 滚轮**必须**用 addEventListener(..., { passive: false }), 不能走 React 的
+ *      onWheel —— React 17+ 把它注册成 passive, 于是 preventDefault() 被浏览器
+ *      忽略, 结果是"图缩放了、页面同时也滚了"。实测踩到过。
  */
 
 export interface Viewport {
@@ -68,6 +71,8 @@ export interface BlueprintCanvasProps {
   readonly portTolerance?: number;
   /** 左上角浮层。 */
   readonly toolbar?: ReactNode;
+  /** 显示全屏按钮。默认 true。 */
+  readonly allowFullscreen?: boolean;
 }
 
 interface DragState {
@@ -90,6 +95,7 @@ export function BlueprintCanvas({
   onAddNode, onRemoveNodes, onOpenMenu,
   onEnterSubgraph, onCollapse, onCommentChange, onCommentMove,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
+  allowFullscreen = true,
 }: BlueprintCanvasProps): JSX.Element {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [view, setView] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
@@ -104,6 +110,57 @@ export function BlueprintCanvas({
     readonly origin: { x: number; y: number };
   } | null>(null);
   const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  /** Fullscreen API 不可用/被拒时的回退: fixed 覆盖层。 */
+  const [maximized, setMaximized] = useState(false);
+  /** 两者任一为真都算"展开了"。 */
+  const expanded = fullscreen || maximized;
+
+  /**
+   * 全屏。
+   *
+   * 用 Fullscreen API 而不是自己加个 fixed 覆盖层:
+   * 后者遮得住视口, 但遮不住浏览器 UI / iframe 边界, 而且 Esc 退出的行为
+   * 要自己实现。Fullscreen API 是浏览器给的, 行为一致。
+   *
+   * 监听 fullscreenchange 而不是只在 toggle 时改 state —— 用户按 Esc 或 F11
+   * 退出时不会经过我们的按钮, 不同步的话按钮状态就卡在"已全屏"。
+   */
+  useEffect(() => {
+    const onChange = () => setFullscreen(document.fullscreenElement === hostRef.current);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  /**
+   * 全屏, 带**回退**。
+   *
+   * Fullscreen API 需要用户手势, 而且在某些环境里会被直接拒绝
+   * (实测 headless Chromium 报 "Permissions check failed"; 嵌在 iframe 里
+   *  没有 allow="fullscreen" 时同样被拒)。那时如果什么都不做, 按钮点了没反应 ——
+   * 最坏的一类失败。
+   *
+   * 所以失败时退回"最大化": 一个 fixed 覆盖层撑满视口。它遮不住浏览器 UI,
+   * 但至少能给到整屏的画布。两种模式共用同一个 `expanded` 状态,
+   * 下游 (尺寸自适应) 不用区分。
+   */
+  const toggleFullscreen = useCallback(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    if (expanded) {
+      if (document.fullscreenElement === el) {
+        void document.exitFullscreen().catch(() => undefined);
+      }
+      setMaximized(false);
+      return;
+    }
+    const req = el.requestFullscreen?.() as Promise<void> | undefined;
+    if (req && typeof req.then === "function") {
+      req.then(() => setMaximized(false)).catch(() => setMaximized(true));
+    } else {
+      setMaximized(true);
+    }
+  }, [expanded]);
 
   const toGraph = useCallback(
     (clientX: number, clientY: number) => {
@@ -114,18 +171,38 @@ export function BlueprintCanvas({
     [view]
   );
 
-  /** 缩放: 以光标为锚点。解 (cx - x') / z' == (cx - x) / z。 */
-  const onWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
-    const rect = hostRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cx = e.clientX - rect.left;
-    const cy = e.clientY - rect.top;
-    setView((v) => {
-      const zoom = clamp(v.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.25, 2.5);
-      const k = zoom / v.zoom;
-      return { zoom, x: cx - (cx - v.x) * k, y: cy - (cy - v.y) * k };
-    });
+  /**
+   * 缩放: 以光标为锚点。解 (cx - x') / z' == (cx - x) / z。
+   *
+   * 这里用 **原生非被动监听** 而不是 React 的 onWheel —— 这是个坑, 实测踩到:
+   * React 17+ 把 wheel/touchmove 注册成 **passive** 监听, 于是 handler 里的
+   * `preventDefault()` 被浏览器直接忽略 (控制台还会警告 "Unable to preventDefault
+   * inside passive event listener")。表现就是: 图缩放了, 页面**同时也滚了** ——
+   * 滚到图外面继续滚整页, 手感非常坏。
+   *
+   * 只有 addEventListener(..., { passive: false }) 才能真正拦住默认行为。
+   * 代价是要自己管注册与清理, 以及 handler 里读不到最新的闭包变量 ——
+   * 所以下面靠 ref 拿 view, 靠真正在变的东西触发重注册。
+   */
+  const viewRef = useRef(view);
+  viewRef.current = view;
+
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      setView((v) => {
+        const zoom = clamp(v.zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1), 0.25, 2.5);
+        const k = zoom / v.zoom;
+        return { zoom, x: cx - (cx - v.x) * k, y: cy - (cy - v.y) * k };
+      });
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
   }, []);
 
   const onPointerDown = useCallback(
@@ -291,11 +368,13 @@ export function BlueprintCanvas({
         setLink(null);
         setMarquee(null);
         setPaletteAt(null);
+        // 真全屏时浏览器自己处理 Esc; 回退的 fixed 覆盖层得自己退
+        if (maximized) setMaximized(false);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selected, onRemoveNodes]);
+  }, [selected, onRemoveNodes, maximized]);
 
   const edges = useMemo(
     () =>
@@ -346,12 +425,35 @@ export function BlueprintCanvas({
     fit();
   }, [fit, graph.nodes.length]);
 
+  /**
+   * 进出全屏后重新适应。
+   *
+   * 不做这件事的话, 全屏后画布从 620px 变成 1080px, 但视口 transform 还是
+   * 按旧尺寸算的 —— 图会挤在左上角一小块, 大片空白, 看起来像"全屏没生效"。
+   * 退出时同理。等一帧再 fit, 让浏览器先完成尺寸变更。
+   */
+  useEffect(() => {
+    const id = requestAnimationFrame(() => fit());
+    return () => cancelAnimationFrame(id);
+  }, [expanded, fit]);
+
   return (
     <div
       ref={hostRef}
-      className={cn("relative overflow-hidden rounded-xl border border-border bg-background", className)}
-      style={{ height, touchAction: "none" }}
-      onWheel={onWheel}
+      className={cn(
+        "relative overflow-hidden border-border bg-background",
+        expanded ? "h-screen w-screen" : "rounded-xl border",
+        // 回退模式下要 fixed + 高 z, 否则会被页面其它浮层盖住
+        maximized && "fixed inset-0 z-[var(--z-modal)]",
+        className
+      )}
+      // 全屏时用 100dvh/100vw: 100% 在 fixed 容器里解析不到视口高度,
+      // 会塌成 0; dvh 还能正确处理移动端地址栏伸缩。
+      style={{
+        height: expanded ? "100dvh" : height,
+        width: expanded ? "100vw" : undefined,
+        touchAction: "none",
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -505,6 +607,14 @@ export function BlueprintCanvas({
             <CanvasButton onClick={fit} title="缩放到适应">适应</CanvasButton>
             <CanvasButton onClick={() => setView({ x: 0, y: 0, zoom: 1 })} title="重置视图">1:1</CanvasButton>
             <span className="px-1 text-[11px] tabular-nums text-muted-foreground">{Math.round(view.zoom * 100)}%</span>
+            {allowFullscreen && (
+              <CanvasButton
+                onClick={toggleFullscreen}
+                title={expanded ? "退出全屏 (Esc)" : "全屏"}
+              >
+                {expanded ? "退出全屏" : "全屏"}
+              </CanvasButton>
+            )}
           </>
         )}
       </div>
