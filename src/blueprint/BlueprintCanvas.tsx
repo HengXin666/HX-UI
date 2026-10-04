@@ -100,12 +100,15 @@ export interface BlueprintCanvasProps {
     readonly nodes: readonly string[];
   }) => void;
   /**
-   * 点"独立页面"时。
+   * 独立页面的 URL。给了就把"全屏"按钮换成**链接** (target=_blank)。
    *
-   * 不传就退回 Fullscreen API —— 但**推荐传**: 内嵌全屏做到头也只是
-   * "画布变大", 侧栏顶栏都还在; 独立页面才是"整屏归蓝图"。
+   * 为什么是 URL 而不是回调: 回调就得用 window.open, 而它会被弹窗
+   * 拦截器拦掉 (实测: 调了但标签页数不变, 用户点了毫无反应)。
+   * 链接是浏览器原生导航, 不会被拦。
+   *
+   * 不传就退回 Fullscreen API —— 但独立页面才是"整屏归蓝图"的正解。
    */
-  readonly onOpenStandalone?: () => void;
+  readonly standaloneHref?: string;
 }
 
 interface DragState {
@@ -130,7 +133,7 @@ export function BlueprintCanvas({
   onViewportCenterReady,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
   allowFullscreen = true,
-  onOpenStandalone,
+  standaloneHref,
 }: BlueprintCanvasProps): JSX.Element {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [view, setView] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
@@ -732,7 +735,7 @@ export function BlueprintCanvas({
         onReset={() => setView({ x: 0, y: 0, zoom: 1 })}
         allowFullscreen={allowFullscreen}
         expanded={expanded}
-        onOpenStandalone={onOpenStandalone}
+        standaloneHref={standaloneHref}
         onToggleFullscreen={toggleFullscreen}
       />
 

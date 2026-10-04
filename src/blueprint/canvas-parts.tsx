@@ -1,8 +1,8 @@
 import type { JSX, ReactNode } from "react";
 import { cn } from "../primitives/utils";
-import type { BlueprintComment, BlueprintGraph, BlueprintRegistry } from "./types";
+import type { BlueprintComment } from "./types";
 import type { Viewport } from "./BlueprintCanvas";
-import { nodeHeight, nodeWidth } from "./geometry";
+export * from "./canvas-helpers";
 
 /**
  * 画布的两块纯展示件。
@@ -38,17 +38,35 @@ export const COMMENT_TONE: Record<string, string> = {
   success: "border-emerald-500/50 bg-emerald-500/10 text-emerald-400",
 };
 
-/** 一个小按钮。 */
+/**
+ * 一个小按钮。
+ *
+ * 给 `href` 时渲染成原生锚点 (target=_blank) 而不是按钮 + window.open。
+ *
+ * 为什么: window.open 会被弹窗拦截器拦掉 (实测: 调了 window.open 但标签页
+ * 数没变 —— 用户点"独立页面"毫无反应)。而点击链接是浏览器的原生导航意图,
+ * 不会被拦。这是"打开新页面"唯一可靠的做法。
+ */
 export function CanvasButton({
-  onClick, title, children,
-}: { readonly onClick: () => void; readonly title?: string; readonly children: ReactNode }): JSX.Element {
+  onClick, title, children, href, rel,
+}: {
+  readonly onClick?: () => void;
+  readonly title?: string;
+  readonly children: ReactNode;
+  readonly href?: string;
+  readonly rel?: string;
+}): JSX.Element {
+  const cls =
+    "inline-flex items-center rounded border border-border bg-card/80 px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground";
+  if (href) {
+    return (
+      <a href={href} target="_blank" rel={rel ?? "noopener noreferrer"} title={title} className={cls}>
+        {children}
+      </a>
+    );
+  }
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      className="rounded border border-border bg-card/80 px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-    >
+    <button type="button" onClick={onClick} title={title} className={cls}>
       {children}
     </button>
   );
@@ -143,7 +161,7 @@ export function CommentLayer({
 
 /** 左上角工具条。单独成组件: 画布文件冻结只许降行数, 这块是纯展示。 */
 export function CanvasToolbar({
-  toolbar, zoom, onFit, onReset, allowFullscreen, expanded, onOpenStandalone, onToggleFullscreen,
+  toolbar, zoom, onFit, onReset, allowFullscreen, expanded, standaloneHref, onToggleFullscreen,
 }: {
   readonly toolbar?: ReactNode;
   readonly zoom: number;
@@ -151,7 +169,8 @@ export function CanvasToolbar({
   readonly onReset: () => void;
   readonly allowFullscreen: boolean;
   readonly expanded: boolean;
-  readonly onOpenStandalone?: () => void;
+  /** 独立页面的 URL。给了就渲染成链接 (不会被弹窗拦截器拦)。 */
+  readonly standaloneHref?: string;
   readonly onToggleFullscreen: () => void;
 }): JSX.Element {
   return (
@@ -162,8 +181,11 @@ export function CanvasToolbar({
           <CanvasButton onClick={onReset} title="重置视图">1:1</CanvasButton>
           <span className="px-1 text-[11px] tabular-nums text-muted-foreground">{Math.round(zoom * 100)}%</span>
           {allowFullscreen && (
-            onOpenStandalone ? (
-              <CanvasButton onClick={onOpenStandalone} title="在一个独立的整页画布里打开 (可多开, 改动实时同步)">
+            standaloneHref ? (
+              <CanvasButton
+                href={standaloneHref}
+                title="在一个独立的整页画布里打开 (可多开, 改动实时同步)"
+              >
                 独立页面
               </CanvasButton>
             ) : (
@@ -184,66 +206,3 @@ export function CanvasToolbar({
  * 单独成文件是因为 BlueprintCanvas.tsx 已被行预算冻结且只许降 ——
  * 这些是独立的小函数, 与主流程没有纠缠。
  */
-
-/** 命中注释的**整个框** (不只是标题条)。倒序: 后加的在上面。 */
-/** reason -> 人话。UI 靠 reason 而不是 message: message 是英文的。 */
-export function reasonText(reason?: string): string {
-  switch (reason) {
-    case "type-mismatch": return "类型不匹配";
-    case "self-loop": return "不能连回自己";
-    case "duplicate": return "已经连过了";
-    case "occupied": return "该输入口已占用";
-    case "direction": return "执行流与数据流不能互连";
-    case "missing-port": return "端口不存在";
-    default: return "不能这样连";
-  }
-}
-
-/** 命中注释的**整个框**。倒序: 后加的在上面。 */
-export function hitComment(
-  comments: readonly { id: string; x: number; y: number; w: number; h: number }[] | undefined,
-  p: { x: number; y: number }
-): { id: string; x: number; y: number } | undefined {
-  if (!comments) return undefined;
-  for (let i = comments.length - 1; i >= 0; i--) {
-    const c = comments[i];
-    if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h) {
-      return { id: c.id, x: c.x, y: c.y };
-    }
-  }
-  return undefined;
-}
-
-/** 把拖拽的两点归一成矩形。 */
-export function normRect(r: { x0: number; y0: number; x1: number; y1: number }) {
-  return {
-    x: Math.min(r.x0, r.x1),
-    y: Math.min(r.y0, r.y1),
-    w: Math.abs(r.x1 - r.x0),
-    h: Math.abs(r.y1 - r.y0),
-  };
-}
-
-/** 完全落在矩形里的节点 —— 与"拖动会带走哪些"同一判据。 */
-export function containedIds(
-  reg: BlueprintRegistry,
-  graph: Pick<BlueprintGraph, "nodes">,
-  box: { x: number; y: number; w: number; h: number }
-): string[] {
-  return graph.nodes
-    .filter((n) => {
-      const w = nodeWidth(reg, n);
-      const h = nodeHeight(reg, n);
-      return n.x >= box.x && n.y >= box.y && n.x + w <= box.x + box.w && n.y + h <= box.y + box.h;
-    })
-    .map((n) => n.id);
-}
-
-const COMMENT_BAR_H = 22;
-
-/** 稳定哈希: 同一条边每次得到同一个绕行车道, 避免多条回边重叠成一条。 */
-export function hashId(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return h;
-}

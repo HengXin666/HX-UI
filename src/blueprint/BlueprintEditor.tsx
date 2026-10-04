@@ -48,15 +48,15 @@ export interface BlueprintEditorProps {
   /** 把 api 交出去 (父组件要"运行"按钮时用)。 */
   readonly apiRef?: (api: BlueprintApi) => void;
   /**
-   * 点"独立页面"时。不传则由画布退回 Fullscreen API。
-   * 传了才是真正的整页画布 —— 推荐传。
+   * 独立整页画布的 URL。传了就把画布的"全屏"按钮换成链接 (不会被弹窗
+   * 拦截器拦)。不传则退回 Fullscreen API。
    */
-  readonly onOpenStandalone?: () => void;
+  readonly standaloneHref?: string;
 }
 
 export function BlueprintEditor({
   registry, value, defaultValue, onChange, className, height = 520,
-  paletteWidth = 200, showIssues = true, toolbar, apiRef, onOpenStandalone,
+  paletteWidth = 200, showIssues = true, toolbar, apiRef, standaloneHref,
 }: BlueprintEditorProps): JSX.Element {
   const api = useBlueprint({ registry, value, defaultValue, onChange });
   const sel = useSelection();
@@ -221,7 +221,7 @@ export function BlueprintEditor({
               if (id) sel.only(id);
             }}
             onViewportCenterReady={(get) => { viewportCenterRef.current = get; }}
-            {...(onOpenStandalone ? { onOpenStandalone } : {})}
+            {...(standaloneHref ? { standaloneHref } : {})}
             onCommentMove={(id, at) => {
               pendingTag.current = { tag: "move", label: "移动注释" };
               api.moveComment(id, at);
