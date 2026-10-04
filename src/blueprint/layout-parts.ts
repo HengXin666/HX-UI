@@ -230,3 +230,50 @@ export function resolveOverlaps(
     placed.push({ x: nx, y: n.y, w: n.w, h: n.h });
   }
 }
+
+/**
+ * 折行代价里的"回边惩罚": 模拟按 rowW 折行, 返回**最长**回边的水平距离。
+ *
+ * 惩罚最长而不是总和: 用户抱怨的是"有一条线横穿整幅图", 不是"回边加起来
+ * 有点长"。两条 -300 与一条 -600 的总和相同, 但后者明显更难看。
+ */
+export function worstBackPull(
+  colWidths: readonly number[],
+  colsPerRow: number,
+  rankKeys: readonly number[],
+  ranks: Map<number, string[]>,
+  succ: Map<string, string[]>,
+  gapX: number
+): number {
+  const rowW = colWidths.slice(0, colsPerRow).reduce((a, b) => a + b + gapX, 0);
+  const stair = Math.round((colWidths[0] ?? 176) * 1.5);
+  const colX: number[] = [];
+  let cursor = 0;
+  let row = 0;
+  for (let i = 0; i < rankKeys.length; i++) {
+    const w = colWidths[i];
+    if (cursor > 0 && cursor + w > rowW) {
+      row += 1;
+      cursor = row * stair;
+    }
+    colX[i] = cursor;
+    cursor += w + gapX;
+  }
+  // succ 的 key 是节点 id, 不是 rank —— 先建 "节点 id -> 列索引"
+  const nodeCol = new Map<string, number>();
+  for (let i = 0; i < rankKeys.length; i++) {
+    for (const id of ranks.get(rankKeys[i])!) nodeCol.set(id, i);
+  }
+  let worst = 0;
+  for (const [fromId, tos] of succ) {
+    const fi = nodeCol.get(fromId);
+    if (fi === undefined) continue;
+    for (const toId of tos) {
+      const ti = nodeCol.get(toId);
+      if (ti === undefined) continue;
+      const dx = colX[ti] - colX[fi];
+      if (dx < 0 && -dx > worst) worst = -dx;
+    }
+  }
+  return worst;
+}

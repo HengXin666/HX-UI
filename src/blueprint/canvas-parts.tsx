@@ -241,4 +241,9 @@ export function containedIds(
 
 const COMMENT_BAR_H = 22;
 
-
+/** 稳定哈希: 同一条边每次得到同一个绕行车道, 避免多条回边重叠成一条。 */
+export function hashId(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return h;
+}

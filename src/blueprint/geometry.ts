@@ -94,6 +94,50 @@ export function edgePath(a: Point, b: Point): string {
   return `M ${a.x} ${a.y} C ${a.x + c} ${a.y}, ${b.x - c} ${b.y}, ${b.x} ${b.y}`;
 }
 
+/**
+ * 回边的**绕行**路径。
+ *
+ * 为什么需要: 分层布局折行之后, "上一行末尾 -> 下一行开头"这类边在几何上
+ * 必然往左回拉。用普通贝塞尔画, 它会**斜穿过中间所有节点** —— 就是用户说的
+ * "从左边深入右边又拉回去", 极难看。
+ *
+ * 绕行: 从起点向右出一小段, 向下绕到两行之间的空白, 向左走到目标列, 再向下
+ * 进入目标端口。整条线走在节点之间的空隙里, 不与任何节点相交。
+ * 这也是 UE5 / n8n 画回边的方式。
+ */
+export function detourPath(a: Point, b: Point, opts?: { readonly lane?: number }): string {
+  const lane = opts?.lane ?? 0;
+  const out = Math.max(CURVE_MIN, 24);
+  const midY = (a.y + b.y) / 2 + lane;
+  return [
+    `M ${a.x} ${a.y}`,
+    // 出端口先向右出一小段 (沿数据流方向离开节点)
+    `C ${a.x + out} ${a.y}, ${a.x + out} ${midY}, ${a.x + out} ${midY}`,
+    // 横向走到目标列左边
+    `L ${b.x - out} ${midY}`,
+    // 拐进目标端口
+    `C ${b.x - out} ${midY}, ${b.x - out} ${b.y}, ${b.x} ${b.y}`,
+  ].join(" ");
+}
+
+/**
+ * 是否该走绕行。
+ *
+ * 三个条件**同时**成立才绕:
+ *   1. 明显往左回拉 (dx 为负且幅度可观)
+ *   2. 垂直跨度也大 —— 说明它跨了行。同一行内的回勾走普通曲线就够了,
+ *      绕行反而画蛇添足
+ *   3. 水平跨度足够大 —— 短距离的回拉用贝塞尔已经很自然
+ *
+ * 第一版只看条件 1, 结果 70 条边里 50 条都在绕 —— 短边也被画成绕来绕去,
+ * 比原来更难看。收紧之后只有真正跨行长回边才绕。
+ */
+export function shouldDetour(a: Point, b: Point): boolean {
+  const dx = b.x - a.x;
+  const dy = Math.abs(b.y - a.y);
+  return dx < -CURVE_MIN * 4 && dy > 60 && Math.abs(dx) > 200;
+}
+
 export function edgePathFrom(a: Point, b: Point): string {
   return edgePath(a, b);
 }

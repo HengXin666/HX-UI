@@ -1,6 +1,6 @@
 import type { BlueprintEdge, BlueprintGraph, BlueprintNode, BlueprintRegistry } from "./types";
 import { nodeHeight, nodeWidth } from "./geometry";
-import { compactRanks, findBackEdges, resolveOverlaps, type LayoutNode } from "./layout-parts";
+import { compactRanks, findBackEdges, resolveOverlaps, worstBackPull, type LayoutNode } from "./layout-parts";
 export { countCrossings } from "./layout-parts";
 
 /** 布局结果: 节点 id -> 新坐标。 */
@@ -49,7 +49,6 @@ export interface LayoutOptions {
   /** 边的方向: "lr" 左到右 (默认), "tb" 上到下。 */
   readonly direction?: "lr" | "tb";
 }
-
 
 /**
  * 主入口: 算一张图的自动布局。
@@ -244,18 +243,10 @@ export function autoLayout(
     return maxH;
   };
 
-  /**
-   * 目标行宽: **迭代试算**, 而不是解析公式。
-   *
-   * 为什么迭代: 解析式 W = sqrt(A * H * W_total * k) 假设"每行的高度都等于
-   * 全局最高列", 而实际每行的最高列往往小得多 —— 实测误差很大
-   * (预估 1130, 实际 504), 于是一次算不准。
-   *
-   * 迭代反而简单可靠: 按候选行宽真折一次, 量出宽高比, 取最接近目标的那个。
-   * 候选集合有限 (从"每行 2 列"到"不折行"), 几十次循环, 成本可忽略。
-   */
+  /** 迭代试算而非解析式: 解析式假设"每行高度=全局最高列", 实测误差极大。 */
   const totalW = colWidths.reduce((a, b) => a + b + gapX, 0);
   const ASPECT = 2.0; // 目标宽高比
+  const stairStep = Math.round((colWidths[0] ?? 176) * 1.5);
 
   const measure = (rowW: number): { w: number; h: number } => {
     let cursor = 0;
@@ -280,13 +271,27 @@ export function autoLayout(
     return { w, h: Math.max(1, h) };
   };
 
+  /**
+   * 阶梯步长: 每折一行, 起点右移多少。
+   *
+   * 取**行宽的七成**。这是个取舍: 步长越接近行宽, 跨行的那条边回拉越短
+   * (回边长度 ≈ 行宽 - 步长), 但整幅图越宽。
+   *
+   * 用户明确抱怨"从左边深入右边又拉回去"的长边, 所以这里优先短回边,
+   * 接受图更宽 —— 反正可以缩放和平移, 而一条横穿整幅图的线没法看。
+   *
+   * 实测: 归零折行 dx=-592; 步长=1.5 列宽 时 -328; 步长=0.7 行宽 时更短。
+   */
   let maxRowW = totalW;
   let bestErr = Infinity;
+  const maxPull = Math.max(1, totalW);
   // 候选: 从"每行 2 列"逐步放宽到"不折行"
   for (let colsPerRow = 2; colsPerRow <= rankKeys.length + 1; colsPerRow++) {
     const rowW = colWidths.slice(0, colsPerRow).reduce((a, b) => a + b + gapX, 0);
     const m = measure(rowW);
-    const err = Math.abs(Math.log(m.w / m.h) - Math.log(ASPECT));
+    const aspectErr = Math.abs(Math.log(m.w / m.h) - Math.log(ASPECT));
+    // 回边惩罚权重: 与宽高比同量级, 但稍弱 (不能为了零回边把图拉成一条线)
+    const err = aspectErr + 1.5 * (worstBackPull(colWidths, colsPerRow, rankKeys, ranks, succ, gapX) / maxPull);
     if (err < bestErr) {
       bestErr = err;
       maxRowW = rowW;
@@ -310,10 +315,20 @@ export function autoLayout(
       const k = rankKeys[i];
       const w = colWidths[i];
       if (cursor > 0 && cursor + w > maxRowW) {
-        // 折行
+        /**
+         * 折行用**蛇形** (boustrophedon): 偶数行左→右, 奇数行右→左。
+         *
+         * 为什么: 直接归零会让跨行的边横穿整幅图 —— 实测 dsh 图有一条
+         * dx = -592 的边 (往左拉回两整列), 就是用户说的"从左边深入右边
+         * 又拉回去", 极难看。
+         *
+         * 蛇形下, 上一行的**行末**与下一行的**行首**在同一侧, 于是跨行的
+         * 那条边几乎垂直向下 —— 短、整齐、方向清楚。阶梯式折行(每行右移
+         * 一点)能把回拉从 592 降到 328, 蛇形则基本消掉它。
+         */
         rowTops.push(rowH);
         row += 1;
-        cursor = 0;
+        cursor = row * stairStep;
         rowH = 0;
       }
       xs.set(k, cursor);

@@ -7,7 +7,8 @@ import {
 import { cn } from "../primitives/utils";
 import type { BlueprintComment, BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
-import { CommentLayer, CanvasToolbar, hitComment, normRect, containedIds } from "./canvas-parts";
+import { edgePath, detourPath, shouldDetour } from "./geometry";
+import { CommentLayer, CanvasToolbar, hitComment, normRect, containedIds, hashId } from "./canvas-parts";
 import type { DropAt } from "./BlueprintPalette";
 import {
   CURVE_MIN, nodeHeight, nodeWidth, portPos, hitNode, hitPort, rectsIntersect, graphBounds,
@@ -380,15 +381,9 @@ export function BlueprintCanvas({
       const p = toGraph(e.clientX, e.clientY);
 
       /**
-       * ⚠️ 这里**不能 return**。
-       *
-       * 踩过的坑: 原来处理完注释位移就 `return`, 于是跳过了函数末尾的
-       * setCommentDrag(null) —— 拖拽状态永远清不掉。表现是"拿起注释就
-       * 放不下去": 松手后它还粘着光标, 再移动鼠标继续跟着走。
-       *
-       * 通用纪律: onPointerUp 是**收尾**函数, 必须清掉所有拖拽状态,
-       * 一个分支都不能提前返回。(onPointerMove 相反: 它每次只处理一个
-       * 分支, 那里的 return 是对的。)
+       * ⚠️ 不能 return: 原来处理完注释位移就返回, 跳过了末尾的
+       * setCommentDrag(null), 拖拽状态永远清不掉 = "拿起注释放不下去"。
+       * 纪律: onPointerUp 是收尾函数, 必须清所有拖拽状态, 不许提前返回。
        */
       if (commentDrag) {
         onCommentMove?.(commentDrag.id, {
@@ -644,11 +639,14 @@ export function BlueprintCanvas({
       <svg className="pointer-events-none absolute inset-0 h-full w-full">
         <g transform={`translate(${view.x} ${view.y}) scale(${view.zoom})`}>
           {edges.map((e) => {
-            const c = Math.max(CURVE_MIN, Math.abs(e.b.x - e.a.x) * 0.5);
+            // 回边走绕行: 否则会斜穿中间所有节点 (见 geometry.detourPath)
+            const d = shouldDetour(e.a, e.b)
+              ? detourPath(e.a, e.b, { lane: (hashId(e.id) % 3) * 8 - 8 })
+              : edgePath(e.a, e.b);
             return (
               <path
                 key={e.id}
-                d={`M ${e.a.x} ${e.a.y} C ${e.a.x + c} ${e.a.y}, ${e.b.x - c} ${e.b.y}, ${e.b.x} ${e.b.y}`}
+                d={d}
                 fill="none"
                 // 有类型色的线略粗, 让"数据"与"控制流"一眼可分
                 strokeWidth={e.exec ? 1.5 : e.tint ? 1.6 : 1.25}
@@ -793,7 +791,6 @@ function reasonText(reason?: string): string {
 function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));
 }
-
 
 /** 拖拽中的矩形 (两点, 未归一)。 */
 interface DraftRect {

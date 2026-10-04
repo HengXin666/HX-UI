@@ -111,7 +111,7 @@ import {
   graphFromUrl, graphToHash,
   buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson, nodeShape,
   createBlueprintTools, toolManifest, dispatchTool,
-  shouldCoalesce,
+  shouldCoalesce, detourPath, shouldDetour, edgePath,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -1043,6 +1043,26 @@ const G0 = {
     shouldCoalesce({ tag: "move", at: 1000 }, { tag: "move", at: 1016 }, W));
 }
 
+// ── 15.2 回边绕行 ──
+{
+  /**
+   * 折行之后, "上一行末尾 -> 下一行开头"这类边在几何上必然往左回拉。
+   * 普通贝塞尔会让它**斜穿过中间所有节点** —— 就是"从左边深入右边又拉
+   * 回去"的那条。绕行让它在两行之间的空白车道里走。
+   */
+  const a = { x: 1000, y: 300 };
+  const b = { x: 300, y: 600 };
+  ok("明显的回边走绕行", shouldDetour(a, b));
+  const p = detourPath(a, b);
+  ok("绕行路径含横向段", p.indexOf(" L ") !== -1);
+  ok("绕行从起点出发、到终点结束", p.startsWith("M " + a.x + " " + a.y) && p.indexOf(String(b.x) + " " + String(b.y)) !== -1);
+
+  // 不该绕的不能绕 —— 否则短边也会被画成绕来绕去, 比原来更难看
+  ok("同行的正向边不绕", !shouldDetour({ x: 100, y: 100 }, { x: 400, y: 130 }));
+  ok("短距离的回拉不绕", !shouldDetour({ x: 400, y: 100 }, { x: 300, y: 105 }));
+  ok("垂直跨度小的回拉不绕", !shouldDetour({ x: 900, y: 100 }, { x: 200, y: 110 }));
+}
+
 // ── 15.5 注释框必须真的有背景 (静态检查) ──
 {
   /**
@@ -1162,6 +1182,19 @@ const G0 = {
       { from: "d", to: "e" }, { from: "e", to: "b" }, // 回路
     ],
   });
+  {
+    // 测量布线: 每条边的水平跨度, 找出"拉回去"的长边
+    const pos = new Map(root.graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
+    const spans = root.graph.edges.map((e) => {
+      const a = pos.get(e.from.node), b = pos.get(e.to.node);
+      return { dx: Math.round(b.x - a.x), dy: Math.round(b.y - a.y) };
+    });
+    const back = spans.filter((s) => s.dx < 0);
+    console.log("    边跨度:", JSON.stringify(spans));
+    console.log("    回边数:", back.length, " 最长回拉:", back.length ? Math.max(...back.map((s) => -s.dx)) : 0);
+    const xs = [...pos.values()].map((p) => p.x), ys = [...pos.values()].map((p) => p.y);
+    console.log("    宽高:", Math.round(Math.max(...xs) - Math.min(...xs)), "x", Math.round(Math.max(...ys) - Math.min(...ys)));
+  }
   ok("根图建出来了", root.graph.nodes.length === 5 && root.graph.edges.length === 5);
   ok("根图零重叠", countOverlaps(reg, root.graph) === 0);
   ok("被拒的边为 0", root.rejected.length === 0);
@@ -1272,6 +1305,16 @@ const G0 = {
     const e3 = v3.issues.filter((i) => i.level === "error");
     ok("★ 架构图(10 大步骤 + 子图)校验通过", e3.length === 0);
     if (e3.length) console.log("    报错:", JSON.stringify([...new Set(e3.map((i) => i.code + ":" + i.message))].slice(0, 10)));
+    {
+      const pos3 = new Map(built2.graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
+      const xs3 = [...pos3.values()].map((p) => p.x), ys3 = [...pos3.values()].map((p) => p.y);
+      const W3 = Math.round(Math.max(...xs3) - Math.min(...xs3)), H3 = Math.round(Math.max(...ys3) - Math.min(...ys3));
+      console.log("    dsh架构图 宽x高:", W3, "x", H3, " 宽高比", (W3 / Math.max(1, H3)).toFixed(2));
+      console.log("    dsh架构图 边跨度:", JSON.stringify(built2.graph.edges.map((e) => {
+        const a = pos3.get(e.from.node), b = pos3.get(e.to.node);
+        return (b.x - a.x) + "," + (b.y - a.y);
+      })));
+    }
   }
 }
 
