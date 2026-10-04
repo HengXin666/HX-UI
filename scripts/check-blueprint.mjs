@@ -49,6 +49,8 @@ export * from "../../src/blueprint/layout";
 export * from "../../src/blueprint/sync";
 export * from "../../src/blueprint/agent";
 export * from "../../src/blueprint/tools";
+export * from "../../src/blueprint/canvas-helpers";
+export { COMMENT_TONE, COMMENT_TONES } from "../../src/blueprint/canvas-parts";
 export * from "../../src/blueprint/history";
 export * from "../../src/blueprint/subgraph";
 export * from "../../src/blueprint/comment";
@@ -112,6 +114,7 @@ import {
   buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson, nodeShape,
   createBlueprintTools, toolManifest, dispatchTool,
   shouldCoalesce, detourPath, shouldDetour, edgePath,
+  resizeComment, COMMENT_TONE,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -1043,6 +1046,43 @@ const G0 = {
     shouldCoalesce({ tag: "move", at: 1000 }, { tag: "move", at: 1016 }, W));
 }
 
+// ── 15.1 resize 与色板 (UE5 的注释行为) ──
+{
+  const reg = createRegistry();
+  const g = {
+    nodes: [{ id: "n1", type: "number", x: 0, y: 0 }],
+    edges: [],
+    comments: [{ id: "c1", title: "t", x: 100, y: 200, w: 300, h: 150 }],
+  };
+
+  // resize: 给新的绝对矩形, 位置不变、尺寸变
+  const bigger = resizeComment(g, "c1", { x: 100, y: 200, w: 400, h: 260 });
+  const c1 = (bigger.comments ?? [])[0];
+  ok("resize 改变了尺寸", c1.w === 400 && c1.h === 260);
+  ok("resize 不动位置", c1.x === 100 && c1.y === 200);
+
+  // 最小尺寸: 拖到负值会被夹住, 否则注释会消失
+  const tiny = resizeComment(g, "c1", { x: 100, y: 200, w: -50, h: -20 });
+  const c2 = (tiny.comments ?? [])[0];
+  ok("resize 有最小尺寸 (不会缩成负数)", c2.w >= 60 && c2.h >= 40);
+
+  // resize 是幂等的: 同样的目标矩形两次, 结果一致
+  const r1 = resizeComment(g, "c1", { x: 100, y: 200, w: 400, h: 260 });
+  const r2 = resizeComment(r1, "c1", { x: 100, y: 200, w: 400, h: 260 });
+  ok("resize 幂等", JSON.stringify(r1.comments) === JSON.stringify(r2.comments));
+
+  // 色板: 每档都要有定义, 且都在允许的语义色里
+  const tones = ["default", "neutral", "primary", "success", "warning", "danger"];
+  for (const t of tones) {
+    ok("注释色板有 " + t, !!COMMENT_TONE[t]);
+    ok("注释色 " + t + " 有背景", (COMMENT_TONE[t] ?? "").indexOf("bg-") !== -1);
+  }
+
+  // 拖动仍要带走完全框住的节点 (这个行为不能被 resize 破坏)
+  const moved = moveCommentWithNodes(reg, g, "c1", { x: 150, y: 250 });
+  ok("移动注释不影响 resize 能力", (moved.comments ?? [])[0].x === 150);
+}
+
 // ── 15.2 回边绕行 ──
 {
   /**
@@ -1149,7 +1189,9 @@ const G0 = {
     if (bad.length) console.log("    违规:", JSON.stringify(bad));
 
     // 三个拖拽状态都要被清掉
-    for (const st of ["setDrag(null)", "setPanning(null)", "setCommentDrag(null)", "setCommentDraft(null)", "setMarquee(null)", "setLink(null)"]) {
+    // 注释的状态清理搬进了 use-comment-interaction (cmt.end()), 所以这里
+    // 既认 setXxx(null) 也认 cmt.end()
+    for (const st of ["setDrag(null)", "setPanning(null)", "cmt.end()", "setCommentDraft(null)", "setMarquee(null)", "setLink(null)"]) {
       ok("松手时会清 " + st.replace("(null)", ""), src.includes(st));
     }
   }

@@ -1,3 +1,6 @@
+/** 右下角 resize 热区边长 (图坐标)。 */
+export const COMMENT_HANDLE = 14;
+
 import type { BlueprintGraph, BlueprintRegistry } from "./types";
 import { nodeHeight, nodeWidth } from "./geometry";
 
@@ -26,12 +29,13 @@ export function reasonText(reason?: string): string {
 export function hitComment(
   comments: readonly { id: string; x: number; y: number; w: number; h: number }[] | undefined,
   p: { x: number; y: number }
-): { id: string; x: number; y: number } | undefined {
+): { id: string; x: number; y: number; w: number; h: number } | undefined {
   if (!comments) return undefined;
   for (let i = comments.length - 1; i >= 0; i--) {
     const c = comments[i];
     if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + c.h) {
-      return { id: c.id, x: c.x, y: c.y };
+      // 一并返回 w/h: 调用方要用它判断"是否按在右下角热区"
+      return { id: c.id, x: c.x, y: c.y, w: c.w, h: c.h };
     }
   }
   return undefined;

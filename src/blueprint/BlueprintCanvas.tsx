@@ -8,13 +8,14 @@ import { cn } from "../primitives/utils";
 import type { BlueprintComment, BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
 import { edgePath, detourPath, shouldDetour } from "./geometry";
-import { CommentLayer, CanvasToolbar, hitComment, normRect, containedIds, hashId } from "./canvas-parts";
+import { CommentLayer, CanvasToolbar, normRect, containedIds, hashId } from "./canvas-parts";
 import type { DropAt } from "./BlueprintPalette";
 import {
   CURVE_MIN, nodeHeight, nodeWidth, portPos, hitNode, hitPort, rectsIntersect, graphBounds,
 } from "./geometry";
 import { BlueprintNodeCard } from "./BlueprintNode";
 import { BlueprintPalette } from "./BlueprintPalette";
+import { useCommentInteraction } from "./use-comment-interaction";
 
 /**
  * 画布。
@@ -72,6 +73,8 @@ export interface BlueprintCanvasProps {
    * 实测表现就是"一拖注释就飞出去"。绝对坐标天然幂等。
    */
   readonly onCommentMove?: (id: string, at: { x: number; y: number }) => void;
+  /** 注释改尺寸 (拖右下角)。给新的绝对矩形 —— UE5 的行为。 */
+  readonly onCommentResize?: (id: string, box: { x: number; y: number; w: number; h: number }) => void;
   /** 外部把节点**拖**到画布上松手。给的 type 与落点(画布坐标)。 */
   readonly onDropNode?: (type: string, at: DropAt) => void;
   /**
@@ -129,7 +132,7 @@ export function BlueprintCanvas({
   registry, graph, validation, selected,
   onNodesMove, onConnect, onDisconnect, onSelect, onNodeParamChange,
   onAddNode, onRemoveNodes, onOpenMenu,
-  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onDropNode, onCreateComment,
+  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onCommentResize, onDropNode, onCreateComment,
   onViewportCenterReady,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
   allowFullscreen = true,
@@ -142,15 +145,14 @@ export function BlueprintCanvas({
   const [marquee, setMarquee] = useState<{ x0: number; y0: number; x1: number; y1: number } | null>(null);
   const [panning, setPanning] = useState<{ x: number; y: number; vx: number; vy: number } | null>(null);
   const [paletteAt, setPaletteAt] = useState<{ x: number; y: number } | null>(null);
-  const [commentDrag, setCommentDrag] = useState<{
-    readonly id: string;
-    readonly start: { x: number; y: number };
-    readonly origin: { x: number; y: number };
-  } | null>(null);
+
   const [editingComment, setEditingComment] = useState<string | null>(null);
   /** 有东西正被拖进来 —— 用来给画布加一圈高亮, 否则用户看不出"能放这"。 */
   const [dropActive, setDropActive] = useState(false);
   /** 正在拖出来的注释框 (修饰键 + 拖空白)。 */
+  /** 注释交互: 命中分发 / 拖动 / 右下角改尺寸 (抽到单独 hook 以控行数)。 */
+  const cmt = useCommentInteraction({ registry, graph, view, onMove: onCommentMove, onResize: onCommentResize });
+
   const [commentDraft, setCommentDraft] = useState<DraftRect | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   /** Fullscreen API 不可用/被拒时的回退: fixed 覆盖层。 */
@@ -281,11 +283,9 @@ export function BlueprintCanvas({
        * 抓的范围是**整个框**: UE5 里拖注释任意位置都能带着内容走。
        * 只认 22px 的标题条太窄, 而且用户直觉就是"拖这个色块"。
        */
-      const cmt = hitComment(graph.comments, p);
-      if (cmt) {
+      if (cmt.hit(p)) {
         onSelect?.([]);
-        setCommentDrag({ id: cmt.id, start: p, origin: { x: cmt.x, y: cmt.y } });
-        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        cmt.begin(p, () => (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId));
         return;
       }
 
@@ -341,22 +341,10 @@ export function BlueprintCanvas({
         return;
       }
       /**
-       * ⚠️ 这里**不能 return**。
-       *
-       * 踩过的坑: 原来在处理完注释位移后就 `return`, 于是跳到了函数末尾
-       * 的 setCommentDrag(null) 之前 —— 拖拽状态永远清不掉。表现是
-       * "拿起注释就放不下去": 松手后它还粘着光标, 再移动鼠标继续跟着走。
-       *
-       * 通用纪律: onPointerUp 必须清**所有**拖拽状态, 一个分支都不能提前
-       * 返回 —— 它是"收尾"函数, 不是"择一执行"函数。
-       * (onPointerMove 相反: 它每次只处理一个分支, 那里 return 是对的。)
+       * ⚠️ 不能 return: 提前返回会跳过末尾的状态清理, 拖拽状态永远清不掉
+       * ("拿起注释放不下去")。onPointerUp 是收尾函数, 必须清所有状态。
        */
-      if (commentDrag) {
-        onCommentMove?.(commentDrag.id, {
-          x: commentDrag.origin.x + (p.x - commentDrag.start.x),
-          y: commentDrag.origin.y + (p.y - commentDrag.start.y),
-        });
-      }
+      cmt.move(p);
       if (link) {
         const hover = hitPort(registry, graph, p, portTolerance / view.zoom);
         let verdict: LinkState["verdict"] = null;
@@ -376,24 +364,15 @@ export function BlueprintCanvas({
       if (commentDraft) setCommentDraft({ ...commentDraft, x1: p.x, y1: p.y });
       if (marquee) setMarquee({ ...marquee, x1: p.x, y1: p.y });
     },
-    [panning, drag, link, marquee, commentDraft, commentDrag, toGraph, graph, registry, view.zoom, onNodesMove, portTolerance, onCommentMove]
+    [panning, drag, link, marquee, commentDraft, cmt, toGraph, graph, registry, view.zoom, onNodesMove, portTolerance]
   );
 
   const onPointerUp = useCallback(
     (e: React.PointerEvent) => {
       const p = toGraph(e.clientX, e.clientY);
 
-      /**
-       * ⚠️ 不能 return: 原来处理完注释位移就返回, 跳过了末尾的
-       * setCommentDrag(null), 拖拽状态永远清不掉 = "拿起注释放不下去"。
-       * 纪律: onPointerUp 是收尾函数, 必须清所有拖拽状态, 不许提前返回。
-       */
-      if (commentDrag) {
-        onCommentMove?.(commentDrag.id, {
-          x: commentDrag.origin.x + (p.x - commentDrag.start.x),
-          y: commentDrag.origin.y + (p.y - commentDrag.start.y),
-        });
-      }
+      /** ⚠️ 不能 return: 提前返回会跳过末尾的状态清理 (见 use-comment-interaction)。 */
+      cmt.move(p);
       if (link) {
         const hover = hitPort(registry, graph, p, portTolerance / view.zoom);
         if (hover && hover.dir !== link.dir) {
@@ -435,7 +414,7 @@ export function BlueprintCanvas({
       }
       setDrag(null);
       setPanning(null);
-      setCommentDrag(null);
+      cmt.end();
     },
     /**
      * 依赖必须带 commentDraft 与 onCreateComment。

@@ -3,6 +3,7 @@ import { cn } from "../primitives/utils";
 import type { BlueprintComment } from "./types";
 import type { Viewport } from "./BlueprintCanvas";
 export * from "./canvas-helpers";
+export { CommentLayer } from "./CommentLayer";
 
 /**
  * 画布的两块纯展示件。
@@ -24,6 +25,9 @@ export * from "./canvas-helpers";
  * 用 /12 ~ /20 的低透明度: 要能透出下面的节点与连线, 又要有足够的色块
  * 让人一眼看出"这一片属于这个注释"。
  */
+/** 右下角 resize 热区边长 (图坐标)。 */
+export const COMMENT_HANDLE = 14;
+
 export const COMMENT_TONE: Record<string, string> = {
   /**
    * 透明度用 Tailwind 的标准档位 (10/20/25)。
@@ -33,10 +37,26 @@ export const COMMENT_TONE: Record<string, string> = {
    * 看起来是空的"的另一种成因, 所以这里只用标准档。
    */
   default: "border-border bg-muted/25 text-muted-foreground",
+  neutral: "border-border bg-muted/40 text-foreground/80",
   primary: "border-primary/50 bg-primary/10 text-primary",
-  warning: "border-amber-500/50 bg-amber-500/10 text-amber-400",
   success: "border-emerald-500/50 bg-emerald-500/10 text-emerald-400",
+  warning: "border-amber-500/50 bg-amber-500/10 text-amber-400",
+  danger: "border-red-500/50 bg-red-500/10 text-red-400",
 };
+
+/**
+ * 可选的注释底色。
+ *
+ * UE5 的 Comment Color 是任意 RGB + Alpha, 这里刻意只给**语义色板** ——
+ * 任意值会让换肤失效 (本库第一条硬约定: 颜色只有 tokens.css 一个来源),
+ * 而且注释是给人看的分组标记, 语义色比自由调色更清楚地表达"这块是什么"。
+ *
+ * 色板刻意只有六档, 且全部落在本库允许的三条语义原色 (emerald/amber/red)
+ * 与两个 token 上 —— 门禁 check-ui-rules 会拦住任何调色盘色 (sky/violet/...),
+ * 那是换肤失效的根源。
+ */
+export const COMMENT_TONES = ["default", "neutral", "primary", "success", "warning", "danger"] as const;
+export type CommentToneId = (typeof COMMENT_TONES)[number];
 
 /**
  * 一个小按钮。
@@ -69,92 +89,6 @@ export function CanvasButton({
     <button type="button" onClick={onClick} title={title} className={cls}>
       {children}
     </button>
-  );
-}
-
-
-/** 区间注释层。 */
-export function CommentLayer({
-  comments, view, editingId, onEdit, onChange, countInside, draft, draftCount = 0,
-}: {
-  readonly comments: readonly BlueprintComment[] | undefined;
-  readonly view: Viewport;
-  readonly editingId: string | null;
-  readonly onEdit: (id: string | null) => void;
-  readonly onChange?: (id: string, patch: { title?: string }) => void;
-  /** 算某个注释完全框住了几个节点。由外层提供 (需要 registry)。 */
-  readonly countInside?: (commentId: string) => number;
-  /** 正在拖出来的框 (有值就画虚线预览 + 底部提示)。 */
-  readonly draft?: { x: number; y: number; w: number; h: number } | null;
-  readonly draftCount?: number;
-}): JSX.Element {
-  return (
-    <div
-      className="absolute left-0 top-0 origin-top-left"
-      style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`, width: 0, height: 0 }}
-    >
-      {draft && (
-        <div
-          className="absolute rounded-md border border-dashed border-primary/70 bg-primary/5"
-          style={{ left: draft.x, top: draft.y, width: draft.w, height: draft.h }}
-        >
-          <div className="absolute -top-5 left-0 whitespace-nowrap rounded bg-card px-1.5 py-0.5 text-[10px] text-muted-foreground">
-            新注释{draftCount > 0 ? ` · 框住 ${draftCount} 个节点` : ""}
-          </div>
-        </div>
-      )}
-      {(comments ?? []).map((c) => {
-        const insideCount = countInside?.(c.id) ?? 0;
-        return (
-        <div
-          key={c.id}
-          className={cn(
-            "absolute flex flex-col overflow-hidden rounded-md border backdrop-blur-[1px]",
-            "cursor-grab active:cursor-grabbing",
-            COMMENT_TONE[c.tone ?? "default"]
-          )}
-          style={{ left: c.x, top: c.y, width: c.w, height: c.h }}
-        >
-          /* 分隔线用当前文字色的低透明版: border-current/20 不是标准
-             Tailwind 语法, 会静默失效 (产物里没有这条规则且不报错)。 */
-          <div className="flex h-[22px] shrink-0 items-center gap-1 border-b border-current px-2 opacity-90">
-            {editingId === c.id ? (
-              <input
-                autoFocus
-                defaultValue={c.title ?? ""}
-                className="min-w-0 flex-1 bg-transparent text-[11px] font-medium outline-none"
-                onBlur={(e) => { onChange?.(c.id, { title: e.target.value }); onEdit(null); }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                  if (e.key === "Escape") onEdit(null);
-                }}
-              />
-            ) : (
-              <span className="min-w-0 flex-1 truncate text-[11px] font-medium" onDoubleClick={() => onEdit(c.id)}>
-                {c.title || "注释"}
-              </span>
-            )}
-          </div>
-          {c.body ? (
-            <div className="min-h-0 flex-1 overflow-hidden px-2 py-1 text-[11px] leading-snug opacity-80">
-              {c.body}
-            </div>
-          ) : (
-            <div className="min-h-0 flex-1" />
-          )}
-          {/*
-            "框住了几个" —— 这条是注释与节点之间**看得见**的联系。
-            没有它, 用户不知道拖动会带走什么, 于是要么不敢拖、要么拖错。
-          */}
-          {insideCount > 0 && (
-            <div className="absolute bottom-1 right-1.5 rounded bg-card/90 px-1 text-[10px] tabular-nums opacity-80">
-              {insideCount} 个节点{c.moveWithNodes === false ? " (不跟随)" : ""}
-            </div>
-          )}
-        </div>
-        );
-      })}
-    </div>
   );
 }
 

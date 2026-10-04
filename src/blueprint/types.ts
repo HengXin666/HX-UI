@@ -253,7 +253,7 @@ export interface BlueprintComment {
    * 语义色。注释是给**人**看的分组标记, 所以它可以用语义色 ——
    * 但只这几个, 不放开任意颜色, 否则换肤时又会失效。
    */
-  readonly tone?: "default" | "primary" | "warning" | "success";
+  readonly tone?: "default" | "primary" | "warning" | "success" | "info" | "danger" | "neutral";
   /**
    * 是否"锁定内容": true 时拖动注释**不带走**里面的节点。
    *

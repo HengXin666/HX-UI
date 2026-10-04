@@ -227,6 +227,9 @@ export function BlueprintEditor({
               api.moveComment(id, at);
             }}
             onCommentChange={(id, patch) => api.updateComment(id, patch)}
+            onCommentResize={(id, box) => {
+              pendingTag.current = { tag: "move", label: "调整注释大小" }; api.resizeComment(id, box);
+            }}
             onSelect={(ids) => {
               sel.clear();
               sel.add(ids);
