@@ -254,6 +254,14 @@ export interface BlueprintComment {
    * 但只这几个, 不放开任意颜色, 否则换肤时又会失效。
    */
   readonly tone?: "default" | "primary" | "warning" | "success";
+  /**
+   * 是否"锁定内容": true 时拖动注释**不带走**里面的节点。
+   *
+   * UE5 的注释有两种行为, 而用户会明确地想要其中一种 —— 有时你想挪整个
+   * 分组, 有时你只想挪那张说明便签。做成字段而不是全局开关, 因为同一张
+   * 图里两种需求会同时出现。
+   */
+  readonly moveWithNodes?: boolean;
 }
 
 /** 端口引用。`node` + `port` 两端齐全, 不带索引 —— 索引会随增删漂移。 */

@@ -49,6 +49,7 @@ export * from "../../src/blueprint/layout";
 export * from "../../src/blueprint/sync";
 export * from "../../src/blueprint/agent";
 export * from "../../src/blueprint/tools";
+export * from "../../src/blueprint/history";
 export * from "../../src/blueprint/subgraph";
 export * from "../../src/blueprint/comment";
 export * from "../../../HX-Blueprint-Demo/src/dsh/nodes";
@@ -102,11 +103,13 @@ import {
   collapseToSubgraph, expandSubgraph, subgraphAsGraph, subgraphRefCount,
   boundaryPorts, registerTunnels, TUNNEL_IN, TUNNEL_OUT,
   addComment, commentAround, moveCommentWithNodes, nodesInComment, commentContains,
+  commentRelation,
   createDshRegistry, NODES, dshAgentLoopGraph, COLLAPSIBLE_GROUPS,
   resolvePort, autoLayout, applyLayout, countCrossings,
   graphFromUrl, graphToHash,
   buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson,
   createBlueprintTools, toolManifest, dispatchTool,
+  shouldCoalesce,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -374,13 +377,23 @@ const G0 = {
   ok("完全包含判定: 框外的节点不算", !inside.some((n) => n.id === "n5"));
 
   // 拖动注释, 里面的节点跟着走
-  const moved = moveCommentWithNodes(demo, g, c.id, { dx: 100, dy: 50 });
+  // 语义是"走到哪"(绝对坐标), 不是"加多少"(增量)
+  const moved = moveCommentWithNodes(demo, g, c.id, { x: c.x + 100, y: c.y + 50 });
   const after = moved.comments[0];
-  ok("注释自己移动了", Math.abs(after.x - (c.x + 100)) < 0.001 && Math.abs(after.y - (c.y + 50)) < 0.001);
+  ok("注释走到了目标位置", Math.abs(after.x - (c.x + 100)) < 0.001 && Math.abs(after.y - (c.y + 50)) < 0.001);
   const n2 = moved.nodes.find((n) => n.id === "n2");
   ok("框内节点跟着移动", Math.abs(n2.x - (demoGraph.nodes.find((n) => n.id === "n2").x + 100)) < 0.001);
   const n5 = moved.nodes.find((n) => n.id === "n5");
   ok("框外节点不动", Math.abs(n5.x - demoGraph.nodes.find((n) => n.id === "n5").x) < 0.001);
+
+  /**
+   * 幂等性 —— "拖拽乱飞"的直接防线。
+   * 旧的增量语义下, 同样的调用会不断累加位移 (实测注释一拖就飞出去)。
+   * 绝对坐标天然幂等: 无论调多少次, 结果只取决于最后那个目标位置。
+   */
+  const again = moveCommentWithNodes(demo, moved, c.id, { x: c.x + 100, y: c.y + 50 });
+  ok("★ 传同样的目标位置两次, 位置不变 (幂等)", Math.abs(again.comments[0].x - after.x) < 0.001);
+  ok("★ 节点也不会被二次位移", Math.abs(again.nodes.find((n) => n.id === "n2").x - n2.x) < 0.001);
 
   // 注释不影响校验与求值 —— 它不是节点
   ok("加注释后校验仍通过", validateGraph(demo, g).ok);
@@ -682,6 +695,54 @@ const G0 = {
   ok("单节点也能布局", autoLayout(demo, { nodes: [{ id: "s", type: "number", x: 5, y: 5 }], edges: [] }).size === 1);
 }
 
+// ── 11.5 注释与节点的关系 (UI 交互反馈的依据) ──
+{
+  const dsh = createDshRegistry();
+  registerTunnels(dsh);
+  const g = buildFromAgent(dsh, {
+    nodes: [
+      { key: "a", type: "agentCreated" }, { key: "b", type: "kick" }, { key: "c", type: "turnStart" },
+    ],
+    edges: [{ from: "a", to: "b" }, { from: "b", to: "c" }],
+  }).graph;
+
+  // 包住两个
+  const r1 = buildFromAgent(dsh, {
+    nodes: [
+      { key: "a", type: "agentCreated" }, { key: "b", type: "kick" }, { key: "c", type: "turnStart" },
+    ],
+    edges: [{ from: "a", to: "b" }, { from: "b", to: "c" }],
+    comments: [{ title: "启动", nodes: ["a", "b"] }],
+  }).graph;
+  const rel = commentRelation(dsh, r1, (r1.comments ?? [])[0].id);
+  ok("注释关系: 框内的算 inside", rel.inside.length === 2);
+
+  // 只包住一个 -> inside=1, 另一个既不算 inside 也不算 partial (不相交)
+  const r2 = buildFromAgent(dsh, {
+    nodes: [
+      { key: "a", type: "agentCreated" }, { key: "b", type: "kick" }, { key: "c", type: "turnStart" },
+    ],
+    edges: [{ from: "a", to: "b" }, { from: "b", to: "c" }],
+    comments: [{ title: "只包 a", nodes: ["a"] }],
+  }).graph;
+  const rel2 = commentRelation(dsh, r2, (r2.comments ?? [])[0].id);
+  ok("注释关系: 只包声明的那些", rel2.inside.length === 1);
+
+  /**
+   * inside 与"拖动会带走哪些"必须是**同一判据**。
+   * 两条规则不一致的话, UI 显示的"框住 3 个"和实际带走的 4 个对不上,
+   * 用户会按显示的预期操作然后带错 —— 这正是"注释和节点要有交互"的意思。
+   */
+  const cm = (r1.comments ?? [])[0];
+  const moved = moveCommentWithNodes(dsh, r1, cm.id, { x: cm.x + 50, y: cm.y + 50 });
+  const movedIds = new Set();
+  for (const n of r1.nodes) {
+    const after = moved.nodes.find((x) => x.id === n.id)!;
+    if (after.x !== n.x || after.y !== n.y) movedIds.add(n.id);
+  }
+  ok("★ 显示框住的数量 == 实际被带走的数量", movedIds.size === rel.inside.length);
+}
+
 // ── 12. 多页面同步: URL 编解码 ──
 {
   // 中文标签要能完整往返 —— 直接 atob 处理不了多字节, 必须走 TextDecoder
@@ -945,6 +1006,39 @@ const G0 = {
   const bare = createBlueprintTools({ registry: dsh });
   const noGraph = await dispatchTool(bare, "inspect_graph");
   ok("没有图时返回友好提示", !noGraph.ok && noGraph.text.includes("没有"));
+}
+
+// ── 15. 撤销/重做: 合并判定 ──
+{
+  const W = 400;
+
+  // 同 tag、在窗口内 -> 合并
+  ok("同 tag 且在窗口内 -> 合并",
+    shouldCoalesce({ tag: "move", at: 0 }, { tag: "move", at: 100 }, W));
+  // 同 tag、超出窗口 -> 不合并 (松手后过了一会儿再拖, 该是两步)
+  ok("同 tag 但超出窗口 -> 不合并",
+    !shouldCoalesce({ tag: "move", at: 0 }, { tag: "move", at: 500 }, W));
+  // 不同 tag -> 不合并
+  ok("不同 tag -> 不合并",
+    !shouldCoalesce({ tag: "move", at: 0 }, { tag: "param", at: 10 }, W));
+  // tag 为 null -> 必须独立可撤
+  ok("tag 为 null -> 不合并 (这一步要独立可撤)",
+    !shouldCoalesce({ tag: "move", at: 0 }, { tag: null, at: 10 }, W));
+  // 上一步是 null -> 不合并
+  ok("上一步无 tag -> 不合并",
+    !shouldCoalesce({ tag: null, at: 0 }, { tag: "move", at: 10 }, W));
+  // 没有上一步 -> 不合并
+  ok("没有上一步 -> 不合并", !shouldCoalesce(null, { tag: "move", at: 0 }, W));
+  // 边界: 正好等于窗口 -> 不合并 (< 是严格小于)
+  ok("间隔正好等于窗口 -> 不合并",
+    !shouldCoalesce({ tag: "move", at: 0 }, { tag: "move", at: W }, W));
+
+  /**
+   * 为什么必须合并: 拖一个节点每帧都产生一次提交, 不合并的话
+   * 撤销一次只退 1px —— 等于没有撤销。这是"撤销能用"的前提。
+   */
+  ok("★ 连续拖动会被合并成一步 (撤销才退得动)",
+    shouldCoalesce({ tag: "move", at: 1000 }, { tag: "move", at: 1016 }, W));
 }
 
 console.log("");

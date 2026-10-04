@@ -85,8 +85,8 @@ export interface BlueprintApi {
   commentAround(ids: readonly string[], title?: string): string;
   updateComment(id: string, patch: Record<string, unknown>): void;
   removeComment(id: string): void;
-  /** 拖注释: 里面被完全包住的节点跟着走。 */
-  moveComment(id: string, delta: { dx: number; dy: number }): void;
+  /** 移动注释到绝对位置: 里面被完全包住的节点跟着走同样的位移。 */
+  moveComment(id: string, at: { x: number; y: number }): void;
   resizeComment(id: string, box: { x: number; y: number; w: number; h: number }): void;
 }
 
@@ -290,7 +290,7 @@ export function useBlueprint(opts: UseBlueprintOptions): BlueprintApi {
 
   const removeCmt = useCallback((id: string) => commit(removeComment(graph, id)), [graph, commit]);
   const moveCmt = useCallback(
-    (id: string, delta: { dx: number; dy: number }) => commit(moveCommentWithNodes(registry, graph, id, delta)),
+    (id: string, at: { x: number; y: number }) => commit(moveCommentWithNodes(registry, graph, id, at)),
     [registry, graph, commit]
   );
   const resizeCmt = useCallback(

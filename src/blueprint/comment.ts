@@ -28,6 +28,43 @@ export function commentContains(
   return node.x >= c.x && node.y >= c.y && node.x + w <= c.x + c.w && node.y + h <= c.y + c.h;
 }
 
+/**
+ * 注释与节点的关系 —— 供 UI 做交互反馈。
+ *
+ * 为什么需要: "框住了没有"必须**看得见**。UE5 里注释框住的节点会有明确的
+ * 视觉关联; 没有反馈的话用户不知道拖动会带走哪些, 于是要么不敢拖,
+ * 要么拖完发现带错了。
+ */
+export interface CommentRelation {
+  /** 完全落在框里 (拖动会带走)。 */
+  readonly inside: readonly string[];
+  /** 与框相交但没被完全包住 (拖动**不会**带走)。 */
+  readonly partial: readonly string[];
+}
+
+export function commentRelation(
+  reg: BlueprintRegistry,
+  graph: BlueprintGraph,
+  commentId: string
+): CommentRelation {
+  const c = graph.comments?.find((x) => x.id === commentId);
+  if (!c) return { inside: [], partial: [] };
+  const inside: string[] = [];
+  const partial: string[] = [];
+  for (const n of graph.nodes) {
+    if (commentContains(reg, n, c)) {
+      inside.push(n.id);
+      continue;
+    }
+    const w = nodeWidth(reg, n);
+    const h = nodeHeight(reg, n);
+    const hit =
+      n.x < c.x + c.w && n.x + w > c.x && n.y < c.y + c.h && n.y + h > c.y;
+    if (hit) partial.push(n.id);
+  }
+  return { inside, partial };
+}
+
 /** 落在注释里的节点。 */
 export function nodesInComment(
   reg: BlueprintRegistry,
@@ -40,23 +77,33 @@ export function nodesInComment(
 }
 
 /**
- * 拖动注释: 注释自己移动, 里面被完全包住的节点跟着移动。
+ * 移动注释: 注释自己走到目标位置, 里面被完全包住的节点跟着走同样的位移。
  *
- * 返回新图。一次提交 —— 逐个节点提交会让受控模式下只留下最后一个的位移。
+ * 参数是**绝对目标坐标**, 不是增量。
+ *
+ * 为什么改成绝对量: 原来接受 { dx, dy } 增量, 调用方在拖拽过程中每帧
+ * 调用, 而每一帧都在"当前位置"上再加一次**累积**位移 —— 指数级放大,
+ * 实测表现就是"一拖注释就飞出去"。接受绝对坐标后, 无论调用多少次,
+ * 结果都只取决于最后一次的目标位置, 天然幂等。
  */
 export function moveCommentWithNodes(
   reg: BlueprintRegistry,
   graph: BlueprintGraph,
   commentId: string,
-  delta: { readonly dx: number; readonly dy: number }
+  at: { readonly x: number; readonly y: number }
 ): BlueprintGraph {
+  const target = graph.comments?.find((c) => c.id === commentId);
+  if (!target) return graph;
+  const dx = at.x - target.x;
+  const dy = at.y - target.y;
+  if (dx === 0 && dy === 0) return graph;
+
+  // 先按"移动前"的位置判定谁在框里 —— 判定必须基于拖动开始时的包含关系
   const carried = new Set(nodesInComment(reg, graph, commentId).map((n) => n.id));
   return {
     ...graph,
-    nodes: graph.nodes.map((n) => (carried.has(n.id) ? { ...n, x: n.x + delta.dx, y: n.y + delta.dy } : n)),
-    comments: (graph.comments ?? []).map((c) =>
-      c.id === commentId ? { ...c, x: c.x + delta.dx, y: c.y + delta.dy } : c
-    ),
+    nodes: graph.nodes.map((n) => (carried.has(n.id) ? { ...n, x: n.x + dx, y: n.y + dy } : n)),
+    comments: (graph.comments ?? []).map((c) => (c.id === commentId ? { ...c, x: at.x, y: at.y } : c)),
   };
 }
 

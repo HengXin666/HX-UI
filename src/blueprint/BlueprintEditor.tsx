@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
 import { cn } from "../primitives/utils";
 import { Badge } from "../layout/Badge";
 import type { BlueprintGraph, BlueprintRegistry } from "./types";
@@ -13,7 +13,10 @@ import { makeId } from "./useBlueprint";
 import { subgraphAsGraph } from "./subgraph";
 import { Button } from "../primitives/button";
 import { validateGraph } from "./validate";
+import { useHistory } from "./history";
+import { EditorToolbar } from "./editor-toolbar";
 import { writeSubgraph } from "./subgraph";
+import { useSubgraphEditing } from "./use-subgraph-editing";
 
 /**
  * 编辑器: 把上面的零件拼成一个能直接放进页面的东西。
@@ -57,8 +60,7 @@ export function BlueprintEditor({
 }: BlueprintEditorProps): JSX.Element {
   const api = useBlueprint({ registry, value, defaultValue, onChange });
   const sel = useSelection();
-  const [showCode, setShowCode] = useState(false);
-  /**
+  const [showCode, setShowCode] = useState(false);  /**
    * 当前所在的层级。null = 最外层。
    *
    * 进入子图时**不是换一张图**, 而是改这个路径 —— 编辑的始终是同一张根图,
@@ -67,36 +69,29 @@ export function BlueprintEditor({
    */
   const [path, setPath] = useState<string[]>([]);
 
-  /** 当前正在编辑的那张图。 */
-  const editing = useMemo(() => {
-    let g: BlueprintGraph = api.graph;
-    for (const sgId of path) {
-      const inner = subgraphAsGraph(g, sgId);
-      if (!inner) return g;
-      g = inner;
-    }
-    return g;
-  }, [api.graph, path]);
+  /** 存快照而非操作: 二十来个操作逐个写逆操作迟早漏, 漏了就是静默损坏。 */
+  const history = useHistory();
+  const historyRef = useRef(history);
+  historyRef.current = history;
+  /** 下一步改动的标签; track 消费它。 */
+  const pendingTag = useRef<{ tag: string | null; label?: string } | null>(null);
 
-  /** 把当前层级的改动写回根图。 */
-  const commitInner = useCallback(
-    (next: Pick<BlueprintGraph, "nodes" | "edges">) => {
-      if (path.length === 0) {
-        api.replace({ ...api.graph, nodes: next.nodes, edges: next.edges });
-        return;
-      }
-      // 从最内层往外逐层写回
-      let g: BlueprintGraph = { ...api.graph, nodes: next.nodes, edges: next.edges };
-      for (let i = path.length - 1; i >= 0; i--) {
-        const outer = i === 0 ? api.graph : subgraphAsGraph(api.graph, path[i - 1])!;
-        const g2: BlueprintGraph = { ...outer, nodes: g.nodes, edges: g.edges };
-        g = writeSubgraph(g, path[i], { nodes: g2.nodes, edges: g2.edges });
-        if (i > 0) g = { ...subgraphAsGraph(api.graph, path[i - 1])!, nodes: g.nodes, edges: g.edges };
-      }
-      api.replace(g);
-    },
-    [api, path]
-  );
+  /**
+   * 把当前层级的改动写回根图, 并记一步历史。
+   *
+   * @param tag 同类连续改动的标识。拖动传 "move", 参数连续输入传 "param",
+   *            结构改动传 null (每一步都单独可撤)。
+   */
+  /**
+   * 历史: 监听 graph 引用变化, 变了就记一步。
+   * 不用"命令后手动 push" —— 受控模式下命令返回时 graph 还没更新,
+   * push 的前后是同一份, 栈永远是空的 (实测撤销按钮一直 disabled)。
+   */
+  useEffect(() => {
+    const t = pendingTag.current ?? undefined;
+    pendingTag.current = null;
+    historyRef.current.track(api.graph, t);
+  }, [api.graph]);
 
   /**
    * 点面板时把节点放在**当前视口的中心**。
@@ -115,6 +110,45 @@ export function BlueprintEditor({
     },
     [api]
   );
+
+  /** 层级导航: 当前编辑的图 + 写回。抽成 hook 是为了行预算。 */
+  const { editing, commitInner } = useSubgraphEditing(api, path);
+
+  /** 改动当前层级并声明标签; 历史由 track effect 统一记 (见上)。 */
+  const commitInnerWithHistory = useCallback(
+    (next: Pick<BlueprintGraph, "nodes" | "edges">, tag: string | null, label?: string) => {
+      pendingTag.current = { tag, ...(label ? { label } : {}) };
+      commitInner(next);
+    },
+    [commitInner]
+  );
+
+  /**
+   * 键盘快捷键: ⌘Z 撤销 / ⌘⇧Z (或 Ctrl+Y) 重做。
+   *
+   * 输入框里不拦 —— 否则在注释标题里按 ⌘Z 会把图撤一步, 而用户想撤的是
+   * 刚打的字。这是所有编辑器都遵守的边界。
+   */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+      const mod = e.metaKey || e.ctrlKey;
+      if (!mod) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        const g = historyRef.current.undo();
+        if (g) api.replace(g);
+      } else if ((key === "z" && e.shiftKey) || key === "y") {
+        e.preventDefault();
+        const g = historyRef.current.redo();
+        if (g) api.replace(g);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [api]);
 
   const breadcrumb = useMemo(() => {
     const out: Array<{ id: string | null; label: string }> = [{ id: null, label: "根图" }];
@@ -135,87 +169,25 @@ export function BlueprintEditor({
     <div className={cn("flex min-h-0 flex-col gap-2", className)}>
       {toolbar}
 
-      {/* 层级导航 + 结构操作。只在有子图或选中时才显示折叠按钮 —— 空白时它没意义 */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        {breadcrumb.map((b, i) => (
-          <span key={b.id ?? "root"} className="flex items-center gap-1.5">
-            {i > 0 && <span className="text-[11px] text-muted-foreground">/</span>}
-            <button
-              type="button"
-              onClick={() => setPath((p) => p.slice(0, i))}
-              className={cn(
-                "rounded px-1.5 py-0.5 text-[11px] transition-colors",
-                i === breadcrumb.length - 1 ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {b.label}
-            </button>
-          </span>
-        ))}
-        <span className="mx-1 h-3 w-px bg-border" />
-        <Button
-          size="xs"
-          variant="outline"
-          disabled={sel.selected.size === 0}
-          onClick={() => {
-            const ids = [...sel.selected];
-            const id = api.collapse(ids, "子图");
-            if (id) sel.only(id);
-          }}
-          title="把选中的节点折成一个节点 (可双击进入)"
-        >
-          折叠为子图
-        </Button>
-        <Button
-          size="xs"
-          variant="outline"
-          disabled={sel.selected.size === 0}
-          onClick={() => api.commentAround([...sel.selected], "")}
-          title="给选中的节点加一个注释框"
-        >
-          加注释
-        </Button>
-
-        {/*
-          自动布局: 分层布局 (简化 Sugiyama)。
-          两个按钮的差别是"保不保留选中节点的原位置" ——
-          整理整图 vs 只把没摆过的节点排好, 别拆掉用户辛苦摆的部分。
-        */}
-        <Button
-          size="xs"
-          variant="outline"
-          onClick={() => api.autoLayout()}
-          title="按流向分层重排全部节点 (确定性: 同样的图永远得到同样的结果)"
-        >
-          整理布局
-        </Button>
-        <Button
-          size="xs"
-          variant="outline"
-          disabled={sel.selected.size === 0}
-          onClick={() => api.tidy({ preserve: [...sel.selected] })}
-          title="重排其余节点, 选中的保持原位"
-        >
-          整理其余
-        </Button>
-
-        {path.length > 0 && (
-          <Button
-            size="xs"
-            variant="outline"
-            className="ml-auto"
-            onClick={() => {
-              // 展开当前所在的子图, 并退回上一层
-              const sgId = path[path.length - 1];
-              const caller = api.graph.nodes.find((n) => n.subgraph === sgId);
-              if (caller) api.expand(caller.id);
-              setPath((p) => p.slice(0, -1));
-            }}
-          >
-            展开并退出
-          </Button>
-        )}
-      </div>
+      <EditorToolbar
+        breadcrumb={breadcrumb}
+        onNavigate={(n) => setPath((p) => p.slice(0, n))}
+        selectedIds={[...sel.selected]}
+        onCollapse={(ids, label) => { const id = api.collapse(ids, label); if (id) sel.only(id); }}
+        onCommentAround={(ids) => api.commentAround(ids, "")}
+        onTidy={() => api.autoLayout()}
+        onTidyRest={(ids) => api.tidy({ preserve: ids })}
+        history={history}
+        onUndo={() => { const g = history.undo(); if (g) api.replace(g); }}
+        onRedo={() => { const g = history.redo(); if (g) api.replace(g); }}
+        pathLength={path.length}
+        onExitSubgraph={() => {
+          const sgId = path[path.length - 1];
+          const caller = api.graph.nodes.find((n) => n.subgraph === sgId);
+          if (caller) api.expand(caller.id);
+          setPath((p) => p.slice(0, -1));
+        }}
+      />
 
       <div className="flex min-h-0 gap-2" style={{ height }}>
         <div
@@ -240,13 +212,20 @@ export function BlueprintEditor({
             selected={sel.selected}
             height="100%"
             onEnterSubgraph={(_nodeId, sgId) => setPath((p) => [...p, sgId])}
+            onCreateComment={(box) => {
+              pendingTag.current = { tag: null, label: "加注释" };
+              api.addComment({ x: box.x, y: box.y, w: box.w, h: box.h });
+            }}
             onDropNode={(type, at) => {
               const id = api.addNode(type, at);
               if (id) sel.only(id);
             }}
             onViewportCenterReady={(get) => { viewportCenterRef.current = get; }}
             {...(onOpenStandalone ? { onOpenStandalone } : {})}
-            onCommentMove={(id, delta) => api.moveComment(id, delta)}
+            onCommentMove={(id, at) => {
+              pendingTag.current = { tag: "move", label: "移动注释" };
+              api.moveComment(id, at);
+            }}
             onCommentChange={(id, patch) => api.updateComment(id, patch)}
             onSelect={(ids) => {
               sel.clear();
@@ -255,28 +234,42 @@ export function BlueprintEditor({
             onNodesMove={(moves) => {
               // 一次提交。逐节点提交会让受控模式下只留下最后一个节点的移动
               const byId = new Map(moves.map((m) => [m.id, m]));
-              commitInner({
-                nodes: editing.nodes.map((n) => {
-                  const m = byId.get(n.id);
-                  return m ? { ...n, x: m.x, y: m.y } : n;
-                }),
-                edges: editing.edges,
-              });
+              commitInnerWithHistory(
+                {
+                  nodes: editing.nodes.map((n) => {
+                    const m = byId.get(n.id);
+                    return m ? { ...n, x: m.x, y: m.y } : n;
+                  }),
+                  edges: editing.edges,
+                },
+                "move",
+                "移动节点"
+              );
             }}
             onConnect={(from, to) => {
               const next = applyConnect(registry, editing, from, to, () => makeId("e"));
-              if (next) commitInner({ nodes: next.nodes, edges: next.edges });
+              if (next) commitInnerWithHistory({ nodes: next.nodes, edges: next.edges }, null, "连线");
             }}
-            onDisconnect={(edgeId) => commitInner({ nodes: editing.nodes, edges: editing.edges.filter((e) => e.id !== edgeId) })}
+            onDisconnect={(edgeId) =>
+              commitInnerWithHistory({ nodes: editing.nodes, edges: editing.edges.filter((e) => e.id !== edgeId) }, null, "断开连线")
+            }
             onNodeParamChange={(id, key, v) =>
-              commitInner({ nodes: editing.nodes.map((n) => (n.id === id ? { ...n, params: { ...(n.params ?? {}), [key]: v } } : n)), edges: editing.edges })
+              commitInnerWithHistory(
+                { nodes: editing.nodes.map((n) => (n.id === id ? { ...n, params: { ...(n.params ?? {}), [key]: v } } : n)), edges: editing.edges },
+                "param",
+                "改参数"
+              )
             }
             onRemoveNodes={(ids) => {
               const set = new Set(ids);
-              commitInner({
-                nodes: editing.nodes.filter((n) => !set.has(n.id)),
-                edges: editing.edges.filter((e) => !set.has(e.from.node) && !set.has(e.to.node)),
-              });
+              commitInnerWithHistory(
+                {
+                  nodes: editing.nodes.filter((n) => !set.has(n.id)),
+                  edges: editing.edges.filter((e) => !set.has(e.from.node) && !set.has(e.to.node)),
+                },
+                null,
+                "删除节点"
+              );
               sel.clear();
             }}
             onAddNode={(type, at) => {
@@ -284,7 +277,11 @@ export function BlueprintEditor({
               const params: Record<string, unknown> = {};
               for (const p of def?.params ?? []) params[p.id] = p.default;
               const id = makeId();
-              commitInner({ nodes: [...editing.nodes, { id, type, x: at.x, y: at.y, params }], edges: editing.edges });
+              commitInnerWithHistory(
+                { nodes: [...editing.nodes, { id, type, x: at.x, y: at.y, params }], edges: editing.edges },
+                null,
+                "添加节点"
+              );
               sel.only(id);
             }}
           />
@@ -341,3 +338,4 @@ export function BlueprintEditor({
 export function useGraphValid(registry: BlueprintRegistry, graph: BlueprintGraph): boolean {
   return useMemo(() => validateGraph(registry, graph).ok, [registry, graph]);
 }
+

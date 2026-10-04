@@ -7,7 +7,7 @@ import {
 import { cn } from "../primitives/utils";
 import type { BlueprintComment, BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
-import { CommentLayer, CanvasToolbar } from "./canvas-parts";
+import { CommentLayer, CanvasToolbar, hitComment, normRect, containedIds } from "./canvas-parts";
 import type { DropAt } from "./BlueprintPalette";
 import {
   CURVE_MIN, nodeHeight, nodeWidth, portPos, hitNode, hitPort, rectsIntersect, graphBounds,
@@ -64,7 +64,13 @@ export interface BlueprintCanvasProps {
   /** 注释改动 (拖动 / 改尺寸 / 改文案)。 */
   readonly onCommentChange?: (id: string, patch: { x?: number; y?: number; w?: number; h?: number; title?: string }) => void;
   /** 命中的注释被拖动: 由外层算"带走哪些节点" —— 那是图操作, 画布不管。 */
-  readonly onCommentMove?: (id: string, delta: { dx: number; dy: number }) => void;
+  /**
+   * 注释被拖动: 给**绝对坐标**, 不是增量。
+   *
+   * 传增量时接收方每帧在"当前位置"上再加一次累积位移 —— 指数级放大,
+   * 实测表现就是"一拖注释就飞出去"。绝对坐标天然幂等。
+   */
+  readonly onCommentMove?: (id: string, at: { x: number; y: number }) => void;
   /** 外部把节点**拖**到画布上松手。给的 type 与落点(画布坐标)。 */
   readonly onDropNode?: (type: string, at: DropAt) => void;
   /**
@@ -84,6 +90,14 @@ export interface BlueprintCanvasProps {
   readonly toolbar?: ReactNode;
   /** 显示"在独立页面打开"按钮。默认 true。 */
   readonly allowFullscreen?: boolean;
+  /**
+   * 拖出了一个注释框 (修饰键 + 拖空白)。
+   * `nodes` 是完全落在框里的节点 —— 与"拖动会带走哪些"同一判据。
+   */
+  readonly onCreateComment?: (box: {
+    readonly x: number; readonly y: number; readonly w: number; readonly h: number;
+    readonly nodes: readonly string[];
+  }) => void;
   /**
    * 点"独立页面"时。
    *
@@ -111,7 +125,7 @@ export function BlueprintCanvas({
   registry, graph, validation, selected,
   onNodesMove, onConnect, onDisconnect, onSelect, onNodeParamChange,
   onAddNode, onRemoveNodes, onOpenMenu,
-  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onDropNode,
+  onEnterSubgraph, onCollapse, onCommentChange, onCommentMove, onDropNode, onCreateComment,
   onViewportCenterReady,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
   allowFullscreen = true,
@@ -132,6 +146,8 @@ export function BlueprintCanvas({
   const [editingComment, setEditingComment] = useState<string | null>(null);
   /** 有东西正被拖进来 —— 用来给画布加一圈高亮, 否则用户看不出"能放这"。 */
   const [dropActive, setDropActive] = useState(false);
+  /** 正在拖出来的注释框 (修饰键 + 拖空白)。 */
+  const [commentDraft, setCommentDraft] = useState<DraftRect | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   /** Fullscreen API 不可用/被拒时的回退: fixed 覆盖层。 */
   const [maximized, setMaximized] = useState(false);
@@ -256,9 +272,12 @@ export function BlueprintCanvas({
         return;
       }
 
-      // 注释在节点**下面**, 所以先判节点。只有点在注释的标题条上才抓注释 ——
-      // 点在注释空白处应该穿透过去起框选, 否则注释会挡住整片区域的操作。
-      const cmt = hitCommentBar(graph.comments, p);
+      /**
+       * 注释在节点**下面**, 所以先判节点 —— 否则注释会挡住节点拖拽。
+       * 抓的范围是**整个框**: UE5 里拖注释任意位置都能带着内容走。
+       * 只认 22px 的标题条太窄, 而且用户直觉就是"拖这个色块"。
+       */
+      const cmt = hitComment(graph.comments, p);
       if (cmt) {
         onSelect?.([]);
         setCommentDrag({ id: cmt.id, start: p, origin: { x: cmt.x, y: cmt.y } });
@@ -276,6 +295,19 @@ export function BlueprintCanvas({
           if (n) origin.set(id, { x: n.x, y: n.y });
         }
         setDrag({ ids, start: p, origin });
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+        return;
+      }
+
+      /**
+       * 空白处按下: 按住 Alt/Cmd/Ctrl -> **拖出一个注释框**; 否则框选。
+       *
+       * 用修饰键而不是"先点按钮再拖": 加注释是高频动作, 还要先去工具条
+       * 点一下再回来拖, 路径太长。而且拖出来的框**就是**注释的范围 ——
+       * 你看到什么就得到什么, 不用"选节点再让系统算包围盒"这种间接方式。
+       */
+      if (e.altKey || e.metaKey || e.ctrlKey) {
+        setCommentDraft({ x0: p.x, y0: p.y, x1: p.x, y1: p.y });
         (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
         return;
       }
@@ -307,7 +339,10 @@ export function BlueprintCanvas({
       if (commentDrag) {
         const dx = p.x - commentDrag.start.x;
         const dy = p.y - commentDrag.start.y;
-        onCommentMove?.(commentDrag.id, { dx, dy });
+        onCommentMove?.(commentDrag.id, {
+          x: commentDrag.origin.x + (p.x - commentDrag.start.x),
+          y: commentDrag.origin.y + (p.y - commentDrag.start.y),
+        });
         return;
       }
       if (link) {
@@ -326,9 +361,10 @@ export function BlueprintCanvas({
         setLink({ ...link, cursor: p, verdict });
         return;
       }
+      if (commentDraft) setCommentDraft({ ...commentDraft, x1: p.x, y1: p.y });
       if (marquee) setMarquee({ ...marquee, x1: p.x, y1: p.y });
     },
-    [panning, drag, link, marquee, commentDrag, toGraph, graph, registry, view.zoom, onNodesMove, portTolerance, onCommentMove]
+    [panning, drag, link, marquee, commentDraft, commentDrag, toGraph, graph, registry, view.zoom, onNodesMove, portTolerance, onCommentMove]
   );
 
   const onPointerUp = useCallback(
@@ -338,7 +374,10 @@ export function BlueprintCanvas({
       if (commentDrag) {
         const dx = p.x - commentDrag.start.x;
         const dy = p.y - commentDrag.start.y;
-        onCommentMove?.(commentDrag.id, { dx, dy });
+        onCommentMove?.(commentDrag.id, {
+          x: commentDrag.origin.x + (p.x - commentDrag.start.x),
+          y: commentDrag.origin.y + (p.y - commentDrag.start.y),
+        });
         return;
       }
       if (link) {
@@ -369,11 +408,29 @@ export function BlueprintCanvas({
         }
         setMarquee(null);
       }
+      if (commentDraft) {
+        const box = normRect(commentDraft);
+        // 太小的框当误触丢弃 —— 否则误按一下就多一个空注释
+        if (box.w > 40 && box.h > 30) {
+          onCreateComment?.({
+            x: box.x, y: box.y, w: box.w, h: box.h,
+            nodes: containedIds(registry, graph, box),
+          });
+        }
+        setCommentDraft(null);
+      }
       setDrag(null);
       setPanning(null);
       setCommentDrag(null);
     },
-    [link, marquee, graph, registry, toGraph, view.zoom, onConnect, onAddNode, onSelect, portTolerance]
+    /**
+     * 依赖必须带 commentDraft 与 onCreateComment。
+     *
+     * 漏了的话 handler 闭包里拿到的永远是首次渲染时的 null —— 松手时
+     * 判定 `if (commentDraft)` 直接跳过, 于是"拖了框却没创建注释",
+     * 而且不报错 (实测就是这么静默失效的)。
+     */
+    [link, marquee, commentDraft, graph, registry, toGraph, view.zoom, onConnect, onAddNode, onSelect, portTolerance, onCreateComment]
   );
 
   useEffect(() => {
@@ -704,32 +761,6 @@ export function BlueprintCanvas({
 }
 
 /** 注释标题条的命中区域 (只上沿 22px)。 */
-function hitCommentBar(
-  comments: readonly { id: string; x: number; y: number; w: number; h: number }[] | undefined,
-  p: { x: number; y: number }
-): { id: string; x: number; y: number } | undefined {
-  if (!comments) return undefined;
-  // 倒序: 后加的在上面
-  for (let i = comments.length - 1; i >= 0; i--) {
-    const c = comments[i];
-    if (p.x >= c.x && p.x <= c.x + c.w && p.y >= c.y && p.y <= c.y + COMMENT_BAR_H) {
-      return { id: c.id, x: c.x, y: c.y };
-    }
-  }
-  return undefined;
-}
-
-const COMMENT_BAR_H = 22;
-
-/** 注释的语义色。只允许这四种 —— 放开任意颜色换肤时又会失效。 */
-const COMMENT_TONE: Record<string, string> = {
-  default: "border-border/60 bg-muted/40 text-muted-foreground",
-  primary: "border-primary/40 bg-primary/10 text-primary",
-  warning: "border-amber-500/40 bg-amber-500/10 text-amber-400",
-  success: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
-};
-
-
 /** reason -> 人话。UI 靠 reason 而不是 message: message 是英文的。 */
 function reasonText(reason?: string): string {
   switch (reason) {
@@ -747,5 +778,10 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));
 }
 
+
+/** 拖拽中的矩形 (两点, 未归一)。 */
+interface DraftRect {
+  readonly x0: number; readonly y0: number; readonly x1: number; readonly y1: number;
+}
 
 export { EXEC_IN_PORT };
