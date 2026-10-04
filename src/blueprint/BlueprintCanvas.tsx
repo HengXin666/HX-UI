@@ -7,7 +7,7 @@ import {
 import { cn } from "../primitives/utils";
 import type { BlueprintComment, BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
-import { edgePath, detourPath, shouldDetour } from "./geometry";
+import { edgePath, detourPath, shouldDetour, wireStyle, arrowHead, arrowFillClass } from "./geometry";
 import { CommentLayer, CanvasToolbar, normRect, containedIds, hashId } from "./canvas-parts";
 import type { DropAt } from "./BlueprintPalette";
 import {
@@ -464,7 +464,7 @@ export function BlueprintCanvas({
          */
         const srcPort = resolvePort(registry, graph, e.from, "out");
         const tint = srcPort && !srcPort.isExec ? registry.typeStroke(srcPort.port.type) : undefined;
-        return [{ id: e.id, a, b, bad, exec: e.kind === "exec", tint }];
+        return [{ id: e.id, a, b, bad, exec: e.kind === "exec", tint, from: e.from.node, to: e.to.node }];
       }),
     [graph, registry, validation]
   );
@@ -625,24 +625,30 @@ export function BlueprintCanvas({
             const d = shouldDetour(e.a, e.b)
               ? detourPath(e.a, e.b, { lane: (hashId(e.id) % 3) * 8 - 8 })
               : edgePath(e.a, e.b);
+            /**
+             * UE5 的连线规范: 执行线是**白色粗线 + 箭头**, 数据线是细的有色线。
+             * 依据官方文档 "Exec wires are displayed as white arrows...
+             * the direction of the arrow indicates the flow of execution."
+             *
+             * 选中节点时高亮与它相连的线、淡化其余的 —— 这是"图大了还能看"
+             * 的关键: 不这么做, 一片线里找不到某个节点的上下游。
+             */
+            const linked = selected && selected.size > 0;
+            const touches = linked && (selected.has(e.from) || selected.has(e.to));
+            const w = wireStyle({
+              bad: e.bad,
+              exec: e.exec,
+              ...(e.tint ? { tint: e.tint } : {}),
+              active: !!touches,
+              dimmed: !!linked && !touches,
+            });
             return (
-              <path
-                key={e.id}
-                d={d}
-                fill="none"
-                // 有类型色的线略粗, 让"数据"与"控制流"一眼可分
-                strokeWidth={e.exec ? 1.5 : e.tint ? 1.6 : 1.25}
-                className={cn(
-                  // 顺序: 错误 > 类型色 > 执行流 > 默认灰
-                  e.bad
-                    ? "stroke-destructive"
-                    : e.tint
-                      ? e.tint
-                      : e.exec
-                        ? "stroke-foreground/70"
-                        : "stroke-muted-foreground/70"
+              <g key={e.id}>
+                <path d={d} fill="none" strokeWidth={w.width} className={w.className} />
+                {w.arrow && (
+                  <polygon points={arrowHead(e.a, e.b)} className={arrowFillClass(w)} />
                 )}
-              />
+              </g>
             );
           })}
           {previewPath && (

@@ -114,7 +114,7 @@ import {
   buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson, nodeShape,
   createBlueprintTools, toolManifest, dispatchTool,
   shouldCoalesce, detourPath, shouldDetour, edgePath,
-  resizeComment, COMMENT_TONE,
+  resizeComment, COMMENT_TONE, wireStyle, arrowHead, arrowFillClass,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -1101,6 +1101,49 @@ const G0 = {
   ok("同行的正向边不绕", !shouldDetour({ x: 100, y: 100 }, { x: 400, y: 130 }));
   ok("短距离的回拉不绕", !shouldDetour({ x: 400, y: 100 }, { x: 300, y: 105 }));
   ok("垂直跨度小的回拉不绕", !shouldDetour({ x: 900, y: 100 }, { x: 200, y: 110 }));
+}
+
+// ── 15.3 UE5 风格连线 ──
+{
+  /**
+   * 依据 UE 官方文档 (Nodes in Unreal Engine):
+   *   "Exec wires are displayed as white arrows... the direction of the arrow
+   *    indicates the flow of execution."
+   * 执行线 = 白 + 粗 + 箭头; 数据线 = 细 + 有色, 不带箭头。
+   */
+  const exec = wireStyle({ bad: false, exec: true });
+  const data = wireStyle({ bad: false, exec: false, tint: "stroke-emerald-400" });
+
+  ok("★ 执行线画箭头 (UE5 的标志)", exec.arrow === true);
+  ok("数据线不画箭头", data.arrow === false);
+  ok("★ 执行线比数据线粗", exec.width > data.width);
+  ok("执行线用前景色 (白)", exec.className.indexOf("stroke-foreground") !== -1);
+  ok("数据线用类型色", data.className === "stroke-emerald-400");
+
+  // 错误线优先: 再粗一点并标红, 且不再当执行线画
+  const bad = wireStyle({ bad: true, exec: true });
+  ok("错误线标红", bad.className.indexOf("destructive") !== -1);
+
+  // 高亮 / 淡化 (选中节点时)
+  const active = wireStyle({ bad: false, exec: true, active: true });
+  const dimmed = wireStyle({ bad: false, exec: true, dimmed: true });
+  ok("高亮的线更粗", active.width > exec.width);
+  ok("淡化的线去掉箭头 (免得干扰焦点)", dimmed.arrow === false);
+  ok("淡化的线更浅", dimmed.className.indexOf("/25") !== -1 || dimmed.className.indexOf("/20") !== -1);
+
+  // 箭头几何: 指向终点
+  const head = arrowHead({ x: 0, y: 0 }, { x: 100, y: 0 }, 6);
+  const pts = head.split(" ").map((p) => p.split(",").map(Number));
+  ok("箭头是三角形 (三个点)", pts.length === 3);
+  ok("★ 箭头尖端靠近终点", Math.abs(pts[0][0] - 100) < 3 && Math.abs(pts[0][1]) < 1);
+  ok("箭头底边在尖端之后", pts[1][0] < pts[0][0] && pts[2][0] < pts[0][0]);
+  // 垂直方向的线也要能算对
+  const head2 = arrowHead({ x: 50, y: 0 }, { x: 50, y: 80 }, 6);
+  const pts2 = head2.split(" ").map((p) => p.split(",").map(Number));
+  ok("竖直线上箭头也指向终点", Math.abs(pts2[0][1] - 80) < 3);
+
+  // 箭头颜色跟随线色
+  ok("箭头填充跟随线色", arrowFillClass(exec).indexOf("fill-foreground") !== -1);
 }
 
 // ── 15.5 注释框必须真的有背景 (静态检查) ──

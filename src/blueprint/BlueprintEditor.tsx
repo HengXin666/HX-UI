@@ -230,10 +230,7 @@ export function BlueprintEditor({
             onCommentResize={(id, box) => {
               pendingTag.current = { tag: "move", label: "调整注释大小" }; api.resizeComment(id, box);
             }}
-            onSelect={(ids) => {
-              sel.clear();
-              sel.add(ids);
-            }}
+            onSelect={(ids) => sel.setSelected(new Set(ids))}
             onNodesMove={(moves) => {
               // 一次提交。逐节点提交会让受控模式下只留下最后一个节点的移动
               const byId = new Map(moves.map((m) => [m.id, m]));

@@ -213,3 +213,90 @@ export function graphBounds(reg: BlueprintRegistry, graph: BlueprintGraph) {
   }
   return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
 }
+
+// ── UE5 风格连线 ──────────────────────────────────────────────────────
+
+/**
+ * 连线的视觉分类。
+ *
+ * 依据 UE 官方文档 (Nodes in Unreal Engine):
+ *   "Exec wires are displayed as **white arrows** spanning from an output exec
+ *    pin to an input exec pin. **The direction of the arrow indicates the flow
+ *    of execution.**"
+ *
+ * 所以执行线靠**白色 + 粗 + 箭头**三件事一起表达; 数据线是细的有色线,
+ * 不带箭头 —— 数据的方向由"左进右出"的版式表达, 再加箭头反而吵。
+ *
+ * 加箭头是个关键差异: 之前的执行线只是"粗一点的灰线", 与数据线区分度不够,
+ * 扫一眼看不出控制流走向。UE 那套之所以看得舒服, 很大一部分来自这个箭头。
+ */
+export interface WireStyle {
+  readonly width: number;
+  readonly className: string;
+  /** 执行线画箭头。 */
+  readonly arrow: boolean;
+}
+
+export function wireStyle(opts: {
+  readonly bad: boolean;
+  readonly exec: boolean;
+  readonly tint?: string;
+  /** 是否处于高亮 (选中节点的连线)。 */
+  readonly active?: boolean;
+  /** 是否被淡化 (有选中但没连到它)。 */
+  readonly dimmed?: boolean;
+}): WireStyle {
+  const { bad, exec, tint, active, dimmed } = opts;
+
+  if (bad) return { width: 1.6, className: "stroke-destructive", arrow: exec };
+
+  if (exec) {
+    // 执行线: 白 (前景色) + 粗 + 箭头。淡化时降到 25% 并去掉箭头
+    return {
+      width: active ? 3 : 2.2,
+      className: dimmed ? "stroke-foreground/25" : active ? "stroke-foreground" : "stroke-foreground/75",
+      arrow: !dimmed,
+    };
+  }
+
+  // 数据线: 细, 有类型色就用它
+  const base = tint ?? "stroke-muted-foreground/70";
+  return {
+    width: active ? 2.2 : 1.4,
+    className: dimmed ? "stroke-muted-foreground/20" : base,
+    arrow: false,
+  };
+}
+
+/**
+ * 箭头顶点 (三角形三点坐标)。
+ *
+ * 锚在**终点端口**处, 方向取终点处的切线 —— 否则折行/绕行的边上箭头会
+ * 歪向一边, 反而误导方向。
+ */
+export function arrowHead(a: Point, b: Point, size = 6): string {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1;
+  // 单位方向 + 法线
+  const ux = dx / len;
+  const uy = dy / len;
+  const nx = -uy;
+  const ny = ux;
+  // 尖端略往回缩, 免得盖住端口圆点
+  const tipX = b.x - ux * 1.5;
+  const tipY = b.y - uy * 1.5;
+  const baseX = tipX - ux * size;
+  const baseY = tipY - uy * size;
+  const half = size * 0.52;
+  return [
+    `${tipX},${tipY}`,
+    `${baseX + nx * half},${baseY + ny * half}`,
+    `${baseX - nx * half},${baseY - ny * half}`,
+  ].join(" ");
+}
+
+/** 箭头颜色取线的颜色 —— 用 fill 类名而不是 stroke。 */
+export function arrowFillClass(w: WireStyle): string {
+  return w.className.replace(/stroke-/g, "fill-");
+}
