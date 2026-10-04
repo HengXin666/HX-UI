@@ -118,6 +118,15 @@ export type {
   NodePorts, SubGraphDef, BlueprintComment,
 } from "./blueprint/types";
 export * from "./blueprint/geometry";
+export {
+  SyncChannel, createBroadcastTransport, createStorageTransport,
+  graphFromUrl, graphToHash,
+  type SyncMessage, type SyncTransport, type SyncOptions,
+} from "./blueprint/sync";
+export {
+  autoLayout, applyLayout, countCrossings,
+  type LayoutOptions, type LayoutResult,
+} from "./blueprint/layout";
 
 // ── 版式件 ──
 export { AppFrame, type AppFrameProps } from "./layout/AppFrame";

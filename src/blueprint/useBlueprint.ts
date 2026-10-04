@@ -3,6 +3,7 @@ import type { BlueprintGraph, BlueprintNode, PortRef, BlueprintRegistry } from "
 import { applyConnect, canConnect, type ConnectResult } from "./connect";
 import { collapseToSubgraph, expandSubgraph, writeSubgraph, subgraphRefCount } from "./subgraph";
 import { addComment, removeComment, updateComment, commentAround, moveCommentWithNodes, resizeComment } from "./comment";
+import { autoLayout, applyLayout, type LayoutOptions } from "./layout";
 import { validateGraph } from "./validate";
 import type { GraphValidation } from "./types";
 
@@ -60,6 +61,11 @@ export interface BlueprintApi {
   disconnect(edgeId: string): void;
   /** 断开某输入口上的所有线。 */
   disconnectInput(nodeId: string, portId: string): void;
+
+  /** 自动布局。返回是否改动了坐标。 */
+  autoLayout(opts?: LayoutOptions): boolean;
+  /** 整理时保留这些节点的原坐标。 */
+  tidy(opts?: LayoutOptions & { readonly preserve?: readonly string[] }): boolean;
 
   /** 整体替换 (导入 / 撤销 / 清空)。 */
   replace(next: BlueprintGraph): void;
@@ -211,6 +217,18 @@ export function useBlueprint(opts: UseBlueprintOptions): BlueprintApi {
     [graph, commit]
   );
 
+  /** 自动布局。纯函数算坐标, 再整体替换 —— 一次提交, 不留中间态。 */
+  const doLayout: BlueprintApi["autoLayout"] = useCallback(
+    (o) => {
+      const layout = autoLayout(registry, graph, o ?? {});
+      const next = applyLayout(graph, layout, { preserve: o?.preserve });
+      const changed = next.nodes.some((n, i) => n.x !== graph.nodes[i].x || n.y !== graph.nodes[i].y);
+      if (changed) commit(next);
+      return changed;
+    },
+    [registry, graph, commit]
+  );
+
   const replace = useCallback((next: BlueprintGraph) => commit(next), [commit]);
   const clear = useCallback(() => commit(EMPTY), [commit]);
 
@@ -285,7 +303,7 @@ export function useBlueprint(opts: UseBlueprintOptions): BlueprintApi {
     addNode, removeNode, moveNode, moveNodes, duplicateNode,
     setNodeTitle, setParam, setCollapsed,
     connect, check, disconnect, disconnectInput,
-    replace, clear,
+    replace, clear, autoLayout: doLayout, tidy: doLayout,
     collapse, expand, writeSubgraph: writeSub,
     addComment: addCmt, commentAround: commentAroundIds,
     updateComment: updateCmt, removeComment: removeCmt,

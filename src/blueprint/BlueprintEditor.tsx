@@ -44,11 +44,16 @@ export interface BlueprintEditorProps {
   readonly toolbar?: ReactNode;
   /** 把 api 交出去 (父组件要"运行"按钮时用)。 */
   readonly apiRef?: (api: BlueprintApi) => void;
+  /**
+   * 点"独立页面"时。不传则由画布退回 Fullscreen API。
+   * 传了才是真正的整页画布 —— 推荐传。
+   */
+  readonly onOpenStandalone?: () => void;
 }
 
 export function BlueprintEditor({
   registry, value, defaultValue, onChange, className, height = 520,
-  paletteWidth = 200, showIssues = true, toolbar, apiRef,
+  paletteWidth = 200, showIssues = true, toolbar, apiRef, onOpenStandalone,
 }: BlueprintEditorProps): JSX.Element {
   const api = useBlueprint({ registry, value, defaultValue, onChange });
   const sel = useSelection();
@@ -152,6 +157,30 @@ export function BlueprintEditor({
         >
           加注释
         </Button>
+
+        {/*
+          自动布局: 分层布局 (简化 Sugiyama)。
+          两个按钮的差别是"保不保留选中节点的原位置" ——
+          整理整图 vs 只把没摆过的节点排好, 别拆掉用户辛苦摆的部分。
+        */}
+        <Button
+          size="xs"
+          variant="outline"
+          onClick={() => api.autoLayout()}
+          title="按流向分层重排全部节点 (确定性: 同样的图永远得到同样的结果)"
+        >
+          整理布局
+        </Button>
+        <Button
+          size="xs"
+          variant="outline"
+          disabled={sel.selected.size === 0}
+          onClick={() => api.tidy({ preserve: [...sel.selected] })}
+          title="重排其余节点, 选中的保持原位"
+        >
+          整理其余
+        </Button>
+
         {path.length > 0 && (
           <Button
             size="xs"
@@ -192,6 +221,7 @@ export function BlueprintEditor({
             selected={sel.selected}
             height="100%"
             onEnterSubgraph={(_nodeId, sgId) => setPath((p) => [...p, sgId])}
+            {...(onOpenStandalone ? { onOpenStandalone } : {})}
             onCommentMove={(id, delta) => api.moveComment(id, delta)}
             onCommentChange={(id, patch) => api.updateComment(id, patch)}
             onSelect={(ids) => {

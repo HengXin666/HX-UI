@@ -38,8 +38,23 @@ export const BASE_TYPES: Record<string, DataTypeDef> = {
 export interface DataTypeDef {
   readonly id: DataTypeId;
   readonly label?: string;
-  /** 端口圆点的颜色类名。不写就用默认描边色。 */
+  /**
+   * 端口圆点的颜色类名 (bg-*)。不写就用默认描边色。
+   *
+   * 只写 bg-* 是不够的 —— 连线要按类型着色, 而线是 stroke, 不是 background。
+   * 所以另给一个 strokeClass; 不写时从 colorClass 推导 (把 bg- 换成 stroke-),
+   * 这样绝大多数情况只需写一处。
+   */
   readonly colorClass?: string;
+
+  /**
+   * 连线的颜色类名 (stroke-*)。不写时由 colorClass 推导。
+   *
+   * 为什么要分开: Tailwind 的 bg-emerald-400 与 stroke-emerald-400 是两条
+   * 独立的规则, 前者不能用来描线。推导能覆盖九成情况, 但想让"圆点"和"线"
+   * 用不同深浅时 (例如圆点实心、线半透明) 就得显式写。
+   */
+  readonly strokeClass?: string;
   /**
    * 父类型。子类型的值可以连进父类型的输入口 (协变), 反过来不行。
    * 例如 `image extends tensor`: image 输出端能喂 tensor 输入端, 反之不能。
@@ -175,6 +190,9 @@ export interface BlueprintRegistry {
 
   /** 数据类型的端口圆点颜色类名。未注册的类型返回 undefined。 */
   typeColor(type: DataTypeId): string | undefined;
+
+  /** 连线的颜色类名 (stroke-*)。由 colorClass 推导, 或取显式写的 strokeClass。 */
+  typeStroke(type: DataTypeId): string | undefined;
 }
 
 // ── 图 ────────────────────────────────────────────────────────────────

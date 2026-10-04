@@ -23,5 +23,22 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
   },
   server: { host: "127.0.0.1", port: 5600 },
-  build: { outDir: "dist", emptyOutDir: true },
+  /**
+   * 多入口: 蓝图是一个**真正独立的 HTML 页面**, 不是文档站的一个路由。
+   *
+   * 为什么: 全屏要的是"整屏都归蓝图"。嵌在文档站里时, 侧栏、顶栏、
+   * 内容区滚动容器都在, 再怎么做全屏也只是"画布变大", 而用户真正想要的是
+   * 一个干净的、只有图的页面。独立入口还能直接用浏览器原生的窗口管理
+   * (新标签页 / 独立窗口 / 分屏), 比自己实现一套覆盖层强。
+   */
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        main: path.resolve(import.meta.dirname, "index.html"),
+        blueprint: path.resolve(import.meta.dirname, "blueprint.html"),
+      },
+    },
+  },
 });

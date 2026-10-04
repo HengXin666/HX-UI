@@ -37,6 +37,8 @@ export * from "../../src/blueprint/evaluate";
 export * from "../../src/blueprint/serialize";
 export * from "../../src/blueprint/demo";
 export * from "../../src/blueprint/geometry";
+export * from "../../src/blueprint/layout";
+export * from "../../src/blueprint/sync";
 export * from "../../src/blueprint/subgraph";
 export * from "../../src/blueprint/comment";
 export * from "../../../HX-Blueprint-Demo/src/dsh/nodes";
@@ -87,7 +89,8 @@ import {
   boundaryPorts, registerTunnels, TUNNEL_IN, TUNNEL_OUT,
   addComment, commentAround, moveCommentWithNodes, nodesInComment, commentContains,
   createDshRegistry, NODES, dshAgentLoopGraph, COLLAPSIBLE_GROUPS,
-  resolvePort,
+  resolvePort, autoLayout, applyLayout, countCrossings,
+  graphFromUrl, graphToHash,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -475,6 +478,185 @@ const G0 = {
   ok("三层全折叠后仍校验通过", validateGraph(dsh, all).issues.every((i) => i.level !== "error"));
   ok("三层全折叠后节点数大幅下降", all.nodes.length <= dshAgentLoopGraph.nodes.length - 15);
   console.log("    (dsh 图: " + dshAgentLoopGraph.nodes.length + " 节点 -> 全折叠后 " + all.nodes.length + " 节点)");
+}
+
+// ── 11. 自动布局 ──
+{
+  const dsh = createDshRegistry();
+  registerTunnels(dsh);
+
+  // 确定性: 同样的图跑两次必须得到同样的坐标
+  const l1 = autoLayout(dsh, dshAgentLoopGraph);
+  const l2 = autoLayout(dsh, dshAgentLoopGraph);
+  const same = [...l1.keys()].every((k) => {
+    const a = l1.get(k); const b = l2.get(k);
+    return a && b && a.x === b.x && a.y === b.y;
+  });
+  ok("布局是确定性的 (跑两次结果一致)", same);
+
+  // 每个节点都要有坐标
+  ok("每个节点都得到了坐标", dshAgentLoopGraph.nodes.every((n) => l1.has(n.id)));
+
+  // 分层: 每条边的起点必须在终点左边 (分层布局的核心承诺)
+  const rankOf = new Map<string, number>();
+  let maxRank = 0;
+  for (const n of dshAgentLoopGraph.nodes) {
+    const p = l1.get(n.id)!;
+    rankOf.set(n.id, p.x);
+    maxRank = Math.max(maxRank, p.x);
+  }
+  const forward = dshAgentLoopGraph.edges.filter(
+    (e) => e.kind === "exec" && rankOf.get(e.from.node)! < rankOf.get(e.to.node)!
+  );
+  const backward = dshAgentLoopGraph.edges.filter(
+    (e) => e.kind === "exec" && rankOf.get(e.from.node)! >= rankOf.get(e.to.node)!
+  );
+  // 回路边(回到 kick / stepStart)必然是"往左"的, 那是对的; 但绝大多数该往右
+  ok("绝大多数执行边是从左往右", forward.length > backward.length * 2);
+  console.log("    (执行边: 顺流 " + forward.length + " / 回路 " + backward.length + ")");
+
+  // 不重叠: 同一竖列(x 相同)上的节点不能互相压住
+  const byCol = new Map<number, Array<{ id: string; y: number; h: number }>>();
+  for (const n of dshAgentLoopGraph.nodes) {
+    const p = l1.get(n.id)!;
+    const col = Math.round(p.x);
+    const list = byCol.get(col) ?? [];
+    list.push({ id: n.id, y: p.y, h: nodeHeight(dsh, { ...n, x: p.x, y: p.y }) });
+    byCol.set(col, list);
+  }
+  let overlaps = 0;
+  for (const list of byCol.values()) {
+    list.sort((a, b) => a.y - b.y);
+    for (let i = 1; i < list.length; i++) {
+      if (list[i].y < list[i - 1].y + list[i - 1].h) overlaps += 1;
+    }
+  }
+  ok("同列节点不重叠", overlaps === 0);
+  if (overlaps) console.log("    重叠:", overlaps);
+
+  // 坐标非负 —— 负坐标会让"缩放到适应"算出奇怪偏移
+  ok("坐标非负", [...l1.values()].every((p) => p.x >= 0 && p.y >= 0));
+
+  // 交叉数: 布局后不应比随机摆放更差。这里只做"能算出来"的下限判据,
+  // 因为交叉数没有绝对好坏, 只有相对。
+  const cx = countCrossings(dsh, dshAgentLoopGraph);
+  ok("交叉数可计算且有限", Number.isFinite(cx) && cx >= 0);
+  console.log("    (交叉数: " + cx + ")");
+  // 交叉数为 0 要么是真的摆得好, 要么是统计逻辑太宽松。用一张必然交叉的图验一下。
+  // 结构: 0->3, 1->2 (两列之间交叉)
+  const mustCross = {
+    nodes: [
+      { id: "p0", type: "number", x: 0, y: 0 }, { id: "p1", type: "number", x: 0, y: 100 },
+      { id: "q0", type: "math", x: 300, y: 0 }, { id: "q1", type: "math", x: 300, y: 100 },
+    ],
+    edges: [
+      { id: "c1", from: { node: "p0", port: "value" }, to: { node: "q1", port: "a" }, kind: "data" as const },
+      { id: "c2", from: { node: "p1", port: "value" }, to: { node: "q0", port: "a" }, kind: "data" as const },
+    ],
+  };
+  // countCrossings 内部会先 autoLayout, 所以布局已经把交叉修掉了 —— 这里测不到。
+  // 直接验证: 用"已经摆成交叉"的坐标 + 不重叠的 x 列, 看统计能否报出来。
+  const crossed = {
+    nodes: [
+      { id: "p0", type: "number", x: 0, y: 0 }, { id: "p1", type: "number", x: 0, y: 100 },
+      { id: "q0", type: "math", x: 300, y: 0 }, { id: "q1", type: "math", x: 300, y: 100 },
+    ],
+    edges: [
+      { id: "c1", from: { node: "p0", port: "value" }, to: { node: "q1", port: "a" }, kind: "data" as const },
+    ],
+  };
+  // 自检: 手工摆成交叉, 统计必须报出来; 摆成平行, 必须报 0
+  const crossedPos = new Map([
+    ["p0", { x: 0, y: 0 }], ["p1", { x: 0, y: 100 }],
+    ["q0", { x: 300, y: 0 }], ["q1", { x: 300, y: 100 }],
+  ]);
+  const crossedEdges = {
+    nodes: crossed.nodes,
+    edges: [
+      { id: "c1", from: { node: "p0", port: "value" }, to: { node: "q1", port: "a" }, kind: "data" as const },
+      { id: "c2", from: { node: "p1", port: "value" }, to: { node: "q0", port: "a" }, kind: "data" as const },
+    ],
+  };
+  const nCross = countCrossings(demo, crossedEdges, crossedPos);
+  ok("交叉统计能报出手工摆出来的交叉", nCross === 1);
+  const parallelEdges = {
+    nodes: crossed.nodes,
+    edges: [
+      { id: "c1", from: { node: "p0", port: "value" }, to: { node: "q0", port: "a" }, kind: "data" as const },
+      { id: "c2", from: { node: "p1", port: "value" }, to: { node: "q1", port: "a" }, kind: "data" as const },
+    ],
+  };
+  ok("平行的边不报交叉", countCrossings(demo, parallelEdges, crossedPos) === 0);
+  // 布局之后, 原来交叉的那张图应该被摆成不交叉
+  ok("布局把交叉修掉了", countCrossings(demo, crossedEdges) === 0);
+  const cxCross = countCrossings(demo, mustCross);
+  const cxLayout = autoLayout(demo, mustCross);
+  console.log("    (必然交叉的图: 交叉数 " + cxCross + ", 布局后 y: " +
+    JSON.stringify(["p0","p1","q0","q1"].map((id) => id + "=" + Math.round(cxLayout.get(id)!.y))));
+
+  // preserve: 指定保留的节点必须真的不动
+  const keep = ["created", "kick"];
+  const l3 = autoLayout(dsh, dshAgentLoopGraph, { preserve: keep });
+  const kept = keep.every((id) => {
+    const orig = dshAgentLoopGraph.nodes.find((n) => n.id === id)!;
+    const p = l3.get(id);
+    return p && p.x === orig.x && p.y === orig.y;
+  });
+  ok("preserve 的节点保持原坐标", kept);
+
+  // applyLayout 应用后仍是一张合法图
+  const applied = applyLayout(dshAgentLoopGraph, l1);
+  ok("应用布局后校验仍通过", validateGraph(dsh, applied).issues.every((i) => i.level !== "error"));
+  ok("应用布局后节点数不变", applied.nodes.length === dshAgentLoopGraph.nodes.length);
+
+  // 有环的图不能死循环 —— 分层要求偏序, 有环必须能拆
+  const cyclic = {
+    nodes: [
+      { id: "a", type: "number", x: 0, y: 0 },
+      { id: "b", type: "math", x: 100, y: 0 },
+      { id: "c", type: "math", x: 200, y: 0 },
+    ],
+    edges: [
+      { id: "e1", from: { node: "a", port: "value" }, to: { node: "b", port: "a" }, kind: "data" as const },
+      { id: "e2", from: { node: "b", port: "out" }, to: { node: "c", port: "a" }, kind: "data" as const },
+      { id: "e3", from: { node: "c", port: "out" }, to: { node: "b", port: "b" }, kind: "data" as const },
+    ],
+  };
+  let cyclicOk = true;
+  try {
+    const lc = autoLayout(demo, cyclic);
+    cyclicOk = lc.size === 3 && [...lc.values()].every((p) => Number.isFinite(p.x) && Number.isFinite(p.y));
+  } catch { cyclicOk = false; }
+  ok("有环的图能算出布局 (不死循环)", cyclicOk);
+
+  // 空图 / 单节点
+  ok("空图返回空布局", autoLayout(demo, { nodes: [], edges: [] }).size === 0);
+  ok("单节点也能布局", autoLayout(demo, { nodes: [{ id: "s", type: "number", x: 5, y: 5 }], edges: [] }).size === 1);
+}
+
+// ── 12. 多页面同步: URL 编解码 ──
+{
+  // 中文标签要能完整往返 —— 直接 atob 处理不了多字节, 必须走 TextDecoder
+  const withChinese = {
+    nodes: [{ id: "n1", type: "text", x: 10, y: 20, params: { v: "中文内容「引号」" } }],
+    edges: [],
+  };
+  const enc = graphToHash(withChinese);
+  ok("图能编码进 URL", typeof enc === "string" && enc.length > 0);
+  const back = graphFromUrl("#graph=" + enc);
+  ok("URL 往返后中文不丢", back?.nodes[0]?.params?.v === "中文内容「引号」");
+  ok("URL 往返后坐标不变", back?.nodes[0]?.x === 10 && back?.nodes[0]?.y === 20);
+
+  // 大图不该硬塞进 URL —— 撑爆 URL 比"不同步"更糟
+  const huge = {
+    nodes: Array.from({ length: 400 }, (_, i) => ({ id: "n" + i, type: "text", x: i, y: i })),
+    edges: [],
+  };
+  ok("大图不塞进 URL (返回 null)", graphToHash(huge, 2000) === null);
+
+  // 坏输入不能抛
+  ok("非法 URL 参数返回 null", graphFromUrl("#graph=!!!notbase64!!!") === null);
+  ok("没有 graph 参数返回 null", graphFromUrl("#src=dsh") === null);
 }
 
 console.log("");

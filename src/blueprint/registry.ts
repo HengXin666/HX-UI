@@ -92,9 +92,25 @@ export class BlueprintRegistryImpl implements BlueprintRegistry {
     return false;
   }
 
-  /** 数据流类型的显示色。未注册的类型走默认描边。 */
+  /** 数据流类型的显示色 (bg-*)。未注册的类型走默认描边。 */
   typeColor(type: DataTypeId): string | undefined {
     return this.dataTypes.get(type)?.colorClass;
+  }
+
+  /**
+   * 连线的颜色 (stroke-*)。
+   *
+   * 没写 strokeClass 时从 colorClass 把 `bg-` 换成 `stroke-` 推导 ——
+   * 这样注册一个类型只需写一处颜色, 圆点与连线自动一致。
+   * 显式写了 strokeClass 就以它为准。
+   */
+  typeStroke(type: DataTypeId): string | undefined {
+    const def = this.dataTypes.get(type);
+    if (!def) return undefined;
+    if (def.strokeClass) return def.strokeClass;
+    if (!def.colorClass) return undefined;
+    const m = /(^|\s)bg-([a-z0-9-]+(?:\/[0-9]+)?)/.exec(def.colorClass);
+    return m ? `stroke-${m[2]}` : undefined;
   }
 }
 

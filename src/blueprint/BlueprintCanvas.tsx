@@ -6,7 +6,7 @@ import {
 } from "react";
 import { cn } from "../primitives/utils";
 import type { BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
-import { EXEC_IN_PORT, canConnect } from "./connect";
+import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
 import {
   CURVE_MIN, nodeHeight, nodeWidth, portPos, hitNode, hitPort, rectsIntersect, graphBounds,
 } from "./geometry";
@@ -71,8 +71,15 @@ export interface BlueprintCanvasProps {
   readonly portTolerance?: number;
   /** 左上角浮层。 */
   readonly toolbar?: ReactNode;
-  /** 显示全屏按钮。默认 true。 */
+  /** 显示"在独立页面打开"按钮。默认 true。 */
   readonly allowFullscreen?: boolean;
+  /**
+   * 点"独立页面"时。
+   *
+   * 不传就退回 Fullscreen API —— 但**推荐传**: 内嵌全屏做到头也只是
+   * "画布变大", 侧栏顶栏都还在; 独立页面才是"整屏归蓝图"。
+   */
+  readonly onOpenStandalone?: () => void;
 }
 
 interface DragState {
@@ -96,6 +103,7 @@ export function BlueprintCanvas({
   onEnterSubgraph, onCollapse, onCommentChange, onCommentMove,
   className, height = 520, showGrid = true, portTolerance = 10, toolbar,
   allowFullscreen = true,
+  onOpenStandalone,
 }: BlueprintCanvasProps): JSX.Element {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const [view, setView] = useState<Viewport>({ x: 0, y: 0, zoom: 1 });
@@ -383,7 +391,16 @@ export function BlueprintCanvas({
         const b = portPos(registry, graph, e.to, "in");
         if (!a || !b) return [];
         const bad = (validation?.byEdge.get(e.id) ?? []).some((i) => i.level === "error");
-        return [{ id: e.id, a, b, bad, exec: e.kind === "exec" }];
+        /**
+         * 线的颜色取**起点端口**的数据类型色。
+         *
+         * 为什么是起点: 一条线传的是什么值, 由源头决定。终点类型可能与它
+         * 不同 (子类型喂给父类型输入口), 取终点会把 image → object 画成
+         * object 的颜色, 而实际流动的是 image。
+         */
+        const srcPort = resolvePort(registry, graph, e.from, "out");
+        const tint = srcPort && !srcPort.isExec ? registry.typeStroke(srcPort.port.type) : undefined;
+        return [{ id: e.id, a, b, bad, exec: e.kind === "exec", tint }];
       }),
     [graph, registry, validation]
   );
@@ -532,9 +549,17 @@ export function BlueprintCanvas({
                 key={e.id}
                 d={`M ${e.a.x} ${e.a.y} C ${e.a.x + c} ${e.a.y}, ${e.b.x - c} ${e.b.y}, ${e.b.x} ${e.b.y}`}
                 fill="none"
-                strokeWidth={e.exec ? 1.5 : 1.25}
+                // 有类型色的线略粗, 让"数据"与"控制流"一眼可分
+                strokeWidth={e.exec ? 1.5 : e.tint ? 1.6 : 1.25}
                 className={cn(
-                  e.bad ? "stroke-destructive" : e.exec ? "stroke-foreground/70" : "stroke-muted-foreground/70"
+                  // 顺序: 错误 > 类型色 > 执行流 > 默认灰
+                  e.bad
+                    ? "stroke-destructive"
+                    : e.tint
+                      ? e.tint
+                      : e.exec
+                        ? "stroke-foreground/70"
+                        : "stroke-muted-foreground/70"
                 )}
               />
             );
@@ -608,12 +633,18 @@ export function BlueprintCanvas({
             <CanvasButton onClick={() => setView({ x: 0, y: 0, zoom: 1 })} title="重置视图">1:1</CanvasButton>
             <span className="px-1 text-[11px] tabular-nums text-muted-foreground">{Math.round(view.zoom * 100)}%</span>
             {allowFullscreen && (
-              <CanvasButton
-                onClick={toggleFullscreen}
-                title={expanded ? "退出全屏 (Esc)" : "全屏"}
-              >
-                {expanded ? "退出全屏" : "全屏"}
-              </CanvasButton>
+              onOpenStandalone ? (
+                <CanvasButton
+                  onClick={onOpenStandalone}
+                  title="在一个独立的整页画布里打开 (可多开, 改动实时同步)"
+                >
+                  独立页面
+                </CanvasButton>
+              ) : (
+                <CanvasButton onClick={toggleFullscreen} title={expanded ? "退出全屏 (Esc)" : "全屏"}>
+                  {expanded ? "退出全屏" : "全屏"}
+                </CanvasButton>
+              )
             )}
           </>
         )}
