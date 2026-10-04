@@ -218,28 +218,27 @@ function tintOf(reg: BlueprintRegistry, g: BlueprintGraph, e: BlueprintEdge): st
  * (没有 Handle, 所以连不上)。拖动时由我们自己把里面的节点一起带走 ——
  * 那是 UE5 的 DefaultCommentNodeMoveMode 行为。
  */
+/**
+ * 注释 -> React Flow 节点。
+ *
+ * React Flow 没有"注释"概念, 用**自定义节点 + 低 z-index** 模拟:
+ * 它在节点之前渲染, 视觉上位于节点之下, 但不参与连线 (没有 Handle,
+ * 所以连不上)。拖动由 React Flow 处理, "带走里面的节点"由我们自己在
+ * use-graph-changes 里补 —— 那是 UE5 的 DefaultCommentNodeMoveMode。
+ *
+ * ⚠️ 必须**带完整的 comment 对象**过去, 不能塞进通用 data:
+ *    注释要有 title / body / tone, 而通用节点 data 里没有这些字段。
+ *    上一版就是塞通用 data, 结果只画出一个空标题栏。
+ */
 export function commentToNode(c: BlueprintComment): RfNode {
   return {
     id: `cmt:${c.id}`,
     type: "bpComment",
     position: { x: c.x, y: c.y },
-    // 不参与连线: React Flow 会尝试给所有节点建 handle, 但没 Handle 组件就连不上
     selectable: true,
     draggable: true,
     connectable: false,
-    data: {
-      bpId: c.id,
-      type: "comment",
-      title: c.title ?? "",
-      kind: "comment",
-      inputs: [],
-      outputs: [],
-      params: [],
-      values: {},
-      collapsed: false,
-      filled: {},
-      portErrors: {},
-    },
+    data: { comment: c } as unknown as RfNodeData,
     style: { width: c.w, height: c.h, zIndex: 0 },
   };
 }

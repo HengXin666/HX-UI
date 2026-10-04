@@ -162,6 +162,29 @@
   /* 选中态: UE5 是一圈亮黄描边, 不用 primary (紫) ——
      紫在蓝图里已经是 class 引脚的颜色, 会撞。 */
   --bp-selected: #ffd400;
+
+  /* 注释框的色板。
+     ⚠️ 之前注释复用 bg-muted/25 —— 在 rgb(20,22,30) 的画布上叠出来几乎
+        等于没有, 用户原话"根本就区分不了它和背景"。
+        注释的意义是把一片节点**圈出来**, 没有可辨识的色块就圈不住任何东西。
+     取值原则: 注释要**看得见**但不能糊住里面的节点, 所以是中等明度的
+     低饱和色 —— 深色主题下比节点体亮一档, 亮色主题下比画布暗一档。 */
+  --bp-cmt-default: #3a3f4d;
+  --bp-cmt-neutral: #454b5c;
+  --bp-cmt-primary: #3b3f7a;
+  --bp-cmt-success: #1f4a3c;
+  --bp-cmt-warning: #4a3a1c;
+  --bp-cmt-danger: #4a2027;
+  --bp-cmt-info: #1f3a4a;
+
+  /* 注释标题栏: 比框体再亮一档, 让"标题 / 正文"分得开 */
+  --bp-cmt-bar-default: #4a5162;
+  --bp-cmt-bar-neutral: #565d70;
+  --bp-cmt-bar-primary: #4a4f96;
+  --bp-cmt-bar-success: #2a6150;
+  --bp-cmt-bar-warning: #5e4a24;
+  --bp-cmt-bar-danger: #5e2a33;
+  --bp-cmt-bar-info: #2a4a5e;
 }
 
 [data-mode="light"] {
@@ -212,6 +235,23 @@
   --bp-grid-line: rgba(0, 0, 0, 0.06);
   --bp-grid-line-bold: rgba(0, 0, 0, 0.11);
   --bp-selected: #a87900;
+
+  /* 亮色下注释要比画布**深**一档才看得见 */
+  --bp-cmt-default: #dcdfe6;
+  --bp-cmt-neutral: #d2d6de;
+  --bp-cmt-primary: #c9cdea;
+  --bp-cmt-success: #c6e0d4;
+  --bp-cmt-warning: #ecd9b4;
+  --bp-cmt-danger: #eccbd0;
+  --bp-cmt-info: #c6dcea;
+
+  --bp-cmt-bar-default: #c2c7d2;
+  --bp-cmt-bar-neutral: #b8bcc8;
+  --bp-cmt-bar-primary: #afb5dd;
+  --bp-cmt-bar-success: #a8cdbb;
+  --bp-cmt-bar-warning: #dcbf90;
+  --bp-cmt-bar-danger: #dcadb3;
+  --bp-cmt-bar-info: #a8c9dc;
 }
 
 

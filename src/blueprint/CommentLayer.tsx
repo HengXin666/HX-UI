@@ -63,13 +63,14 @@ export function CommentLayer({
           className={cn(
             "absolute flex flex-col overflow-hidden rounded-md border backdrop-blur-[1px]",
             "cursor-grab active:cursor-grabbing",
-            COMMENT_TONE[c.tone ?? "default"]
+            COMMENT_TONE[c.tone ?? "default"].bg,
+            COMMENT_TONE[c.tone ?? "default"].fg
           )}
           style={{ left: c.x, top: c.y, width: c.w, height: c.h }}
         >
           /* 分隔线用当前文字色的低透明版: border-current/20 不是标准
              Tailwind 语法, 会静默失效 (产物里没有这条规则且不报错)。 */
-          <div className="flex h-[22px] shrink-0 items-center gap-1 border-b border-current px-2 opacity-90">
+          <div className={cn("flex h-[22px] shrink-0 items-center gap-1 border-b border-bp-node-border px-2", COMMENT_TONE[c.tone ?? "default"].bar)}>
             {editingId === c.id ? (
               <input
                 autoFocus
@@ -118,7 +119,7 @@ export function CommentLayer({
                   aria-label={t}
                   className={cn(
                     "size-3.5 rounded-sm border transition-transform hover:scale-110",
-                    COMMENT_TONE[t],
+                    COMMENT_TONE[t].bg,
                     (c.tone ?? "default") === t && "ring-1 ring-current"
                   )}
                 />

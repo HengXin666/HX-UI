@@ -14,6 +14,7 @@ import {
   type RfNode, type RfEdge,
 } from "./rf-adapter";
 import { BpNode, BpExecEdge, BpDataEdge, ExecArrowMarker } from "./rf-node";
+import { BpCommentNode } from "./rf-comment";
 import { useFlowShortcuts } from "./flow-shortcuts";
 import { useGraphChanges } from "./use-graph-changes";
 import { useConnectivity } from "./use-connectivity";
@@ -60,7 +61,7 @@ export interface BlueprintFlowProps {
   readonly height?: number | string;
 }
 
-const NODE_TYPES = { bp: BpNode, bpComment: BpNode };
+const NODE_TYPES = { bp: BpNode, bpComment: BpCommentNode };
 const EDGE_TYPES = { bpExec: BpExecEdge, bpData: BpDataEdge };
 
 export function BlueprintFlow(props: BlueprintFlowProps): JSX.Element {

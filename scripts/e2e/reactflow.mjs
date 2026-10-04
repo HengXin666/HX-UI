@@ -262,7 +262,59 @@ async function handlePos(nodeId, hid) {
   });
 }
 
-// 12. 无运行时错误
+// 12. 注释框必须**看得见** —— 有底色、有层次、与画布能分开
+{
+  // 注释只在 dsh 图里有, 换一个 harness 打开 (close 后原 page 引用会失效)
+  const h2 = new Harness();
+  await h2.open("#src=dsh&rf=1");
+  const p2 = h2.p;
+  const info = await p2.evaluate(() => {
+    const c = document.querySelector('[data-id^="cmt:"]');
+    if (!c) return null;
+    const box = c.firstElementChild;
+    const bar = box.children[0];
+    const parse = (s) => (s.match(/[\d.]+/g) ?? []).map(Number);
+    return {
+      canvas: parse(getComputedStyle(document.body).backgroundColor),
+      boxBg: parse(getComputedStyle(box).backgroundColor),
+      barBg: parse(getComputedStyle(bar).backgroundColor),
+      barText: bar.innerText.trim().slice(0, 12),
+      bodyText: (box.children[1]?.innerText ?? "").trim().slice(0, 12),
+    };
+  });
+  const lum = (c) => 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2];
+  const okVisible =
+    !!info &&
+    Math.abs(lum(info.boxBg) - lum(info.canvas)) > 20 &&
+    lum(info.barBg) > lum(info.boxBg) &&
+    info.barText.length > 0;
+  steps.push({
+    name: "RF: 注释框有可见底色 + 标题栏更亮 + 正文渲染 (不是全透明)",
+    ok: okVisible,
+    expect: "框体与画布亮度差 > 20, 标题栏比框体亮, 有标题与正文",
+    actual: info
+      ? `画布 ${info.canvas.slice(0, 3)} / 框 ${info.boxBg.slice(0, 3)} / 栏 ${info.barBg.slice(0, 3)}; 标题"${info.barText}" 正文"${info.bodyText}"`
+      : "没找到注释",
+    shot: await h2.shot("87-rf-comment"),
+  });
+
+  // 各 tone 必须是不同的颜色, 否则"换底色"这个能力等于假的
+  const tones = await p2.evaluate(() => {
+    const names = ["default", "neutral", "primary", "success", "warning", "danger", "info"];
+    return names.map((n) =>
+      getComputedStyle(document.documentElement).getPropertyValue("--bp-cmt-" + n).trim()
+    );
+  });
+  await h2.close();
+  steps.push({
+    name: "RF: 注释七种 tone 各不同色",
+    ok: tones.every((t) => t.length > 0) && new Set(tones).size === tones.length,
+    expect: "7 个不同的色值",
+    actual: `${new Set(tones).size} 种: ${tones.slice(0, 3).join(",")}…`,
+  });
+}
+
+// 13. 无运行时错误
 steps.push({
   name: "RF: 控制台无错误 (SVG marker 等未误用)",
   ok: h.errors.length === 0,

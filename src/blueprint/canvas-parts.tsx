@@ -28,20 +28,28 @@ export { CommentLayer } from "./CommentLayer";
 /** 右下角 resize 热区边长 (图坐标)。 */
 export const COMMENT_HANDLE = 14;
 
-export const COMMENT_TONE: Record<string, string> = {
-  /**
-   * 透明度用 Tailwind 的标准档位 (10/20/25)。
-   *
-   * 别写 bg-primary/[0.14] 这种任意值 —— 实测它在本工程的 Tailwind 版本下
-   * **不生成规则**, 而类名静默失效 (不报错, 但背景就没了)。这正是"框体
-   * 看起来是空的"的另一种成因, 所以这里只用标准档。
-   */
-  default: "border-border bg-muted/25 text-muted-foreground",
-  neutral: "border-border bg-muted/40 text-foreground/80",
-  primary: "border-primary/50 bg-primary/10 text-primary",
-  success: "border-emerald-500/50 bg-emerald-500/10 text-emerald-400",
-  warning: "border-amber-500/50 bg-amber-500/10 text-amber-400",
-  danger: "border-red-500/50 bg-red-500/10 text-red-400",
+/**
+ * 注释的语义色板。
+ *
+ * ⚠️ 这一版是**重写**的, 因为上一版在深色画布上根本看不见:
+ *    default 用 `bg-muted/25`, 叠在深色画布上算出来几乎是
+ *    透明 —— 用户原话"颜色感觉是全透明的, 根本就区分不了它和背景"。
+ *    而注释的意义就是把一片节点**圈出来**, 没有可辨识的色块等于没画。
+ *
+ * 现在每种 tone 都是**实色 token** (--bp-cmt-* / --bp-cmt-bar-*),
+ * 深色下比节点体亮一档、亮色下比画布暗一档, 两种主题都分得清。
+ *
+ * 每个 tone 给两组: bg 是框体, bar 是标题栏 (比框体再亮一档,
+ * 让"标题 / 正文"分得开 —— UE5 就是这样)。
+ */
+export const COMMENT_TONE: Record<string, { readonly bg: string; readonly bar: string; readonly fg: string }> = {
+  default: { bg: "bg-bp-cmt-default", bar: "bg-bp-cmt-bar-default", fg: "text-foreground" },
+  neutral: { bg: "bg-bp-cmt-neutral", bar: "bg-bp-cmt-bar-neutral", fg: "text-foreground" },
+  primary: { bg: "bg-bp-cmt-primary", bar: "bg-bp-cmt-bar-primary", fg: "text-foreground" },
+  success: { bg: "bg-bp-cmt-success", bar: "bg-bp-cmt-bar-success", fg: "text-foreground" },
+  warning: { bg: "bg-bp-cmt-warning", bar: "bg-bp-cmt-bar-warning", fg: "text-foreground" },
+  danger: { bg: "bg-bp-cmt-danger", bar: "bg-bp-cmt-bar-danger", fg: "text-foreground" },
+  info: { bg: "bg-bp-cmt-info", bar: "bg-bp-cmt-bar-info", fg: "text-foreground" },
 };
 
 /**

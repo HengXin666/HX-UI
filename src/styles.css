@@ -96,6 +96,23 @@
   --color-bp-node-border: var(--bp-node-border);
   --color-bp-selected: var(--bp-selected);
 
+  /* 注释色板: 框体 + 标题栏 */
+  --color-bp-cmt-default: var(--bp-cmt-default);
+  --color-bp-cmt-neutral: var(--bp-cmt-neutral);
+  --color-bp-cmt-primary: var(--bp-cmt-primary);
+  --color-bp-cmt-success: var(--bp-cmt-success);
+  --color-bp-cmt-warning: var(--bp-cmt-warning);
+  --color-bp-cmt-danger: var(--bp-cmt-danger);
+  --color-bp-cmt-info: var(--bp-cmt-info);
+
+  --color-bp-cmt-bar-default: var(--bp-cmt-bar-default);
+  --color-bp-cmt-bar-neutral: var(--bp-cmt-bar-neutral);
+  --color-bp-cmt-bar-primary: var(--bp-cmt-bar-primary);
+  --color-bp-cmt-bar-success: var(--bp-cmt-bar-success);
+  --color-bp-cmt-bar-warning: var(--bp-cmt-bar-warning);
+  --color-bp-cmt-bar-danger: var(--bp-cmt-bar-danger);
+  --color-bp-cmt-bar-info: var(--bp-cmt-bar-info);
+
   /* 尺寸也走令牌: 引脚行高、标题栏高度与 geometry.ts 的常量必须同源,
      否则线端点会偏离圆点 —— 那是最难查的一类错位。 */
   --spacing-bp-title-h: var(--bp-title-h);

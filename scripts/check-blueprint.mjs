@@ -1079,11 +1079,20 @@ const G0 = {
   const r2 = resizeComment(r1, "c1", { x: 100, y: 200, w: 400, h: 260 });
   ok("resize 幂等", JSON.stringify(r1.comments) === JSON.stringify(r2.comments));
 
-  // 色板: 每档都要有定义, 且都在允许的语义色里
-  const tones = ["default", "neutral", "primary", "success", "warning", "danger"];
+  /**
+   * 色板: 每档都要有**框体色 + 标题栏色**。
+   *
+   * COMMENT_TONE 已从字符串改成 { bg, bar, fg } —— 旧断言把色板当字符串取 indexOf
+   * 会直接崩。顺带把断言改得更有意义: 不只"有背景", 还要"标题栏与框体
+   * 不是同一个色" —— 那正是"标题 / 正文分得开"的前提。
+   */
+  const tones = ["default", "neutral", "primary", "success", "warning", "danger", "info"];
   for (const t of tones) {
-    ok("注释色板有 " + t, !!COMMENT_TONE[t]);
-    ok("注释色 " + t + " 有背景", (COMMENT_TONE[t] ?? "").indexOf("bg-") !== -1);
+    const c = COMMENT_TONE[t];
+    ok("注释色板有 " + t, !!c);
+    ok("注释 " + t + " 有框体色", !!c && c.bg.indexOf("bg-") !== -1);
+    ok("注释 " + t + " 有标题栏色", !!c && c.bar.indexOf("bg-") !== -1);
+    ok("注释 " + t + " 标题栏与框体不同色", !!c && c.bg !== c.bar);
   }
 
   // 拖动仍要带走完全框住的节点 (这个行为不能被 resize 破坏)
@@ -1201,10 +1210,16 @@ const G0 = {
   // 朴素字符串检查: 正则在模板字符串里会被转义吃掉, 实测踩过多次
   const toneBlock = toneSrc.slice(toneStart, toneStart + 4000);
   const has = (needle) => toneBlock.indexOf(needle) !== -1;
-  ok("注释色 default 有背景", has("border-border bg-muted/25"));
-  ok("注释色 primary 有背景", has("border-primary/50 bg-primary/10"));
-  ok("注释色 warning 有背景", has("border-amber-500/50 bg-amber-500/10"));
-  ok("注释色 success 有背景", has("border-emerald-500/50 bg-emerald-500/10"));
+  /**
+   * 源文件层再查一遍: 色板必须引用 **token**, 不能写回语义色。
+   *
+   * 为什么还要查源文件: 上面那条读的是打包产物, 只能证明"色板存在"。
+   * 而真正的失效方式是"色板用了 bg-muted/25 这种在深色画布上等于透明
+   * 的值" —— 它存在、也不报错, 只是看不见。所以断言色板必须走 --bp-cmt-*
+   * 这组专用 token。
+   */
+  ok("注释色板走专用 token (不是 bg-muted 这类等于透明的)", has("--bp-cmt-") || toneBlock.indexOf("bg-bp-cmt-") !== -1);
+  ok("注释色板不再用 bg-muted", toneBlock.indexOf("bg-muted/") === -1);
   /**
    * 标准档检查: 不允许 /[0.xx] 这种任意值语法 (它不生成规则)。
    *
