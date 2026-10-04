@@ -227,7 +227,7 @@ export function createBlueprintTools(ctx: ToolContext): ToolDef[] {
         ctx.setGraph?.(next);
         const text =
           `已重排 ${next.nodes.length} 个节点。重叠 ${countOverlaps(registry, next)} 处, ` +
-          `交叉 ${countCrossings(registry, next)} 处。`;
+          `交叉 ${countCrossings(registry, next, posOf_(next))} / 重叠 ${countOverlaps(registry, next)} 处。`;
         return { ok: true, text, data: { graph: next } };
       },
     },
@@ -275,7 +275,7 @@ export function createBlueprintTools(ctx: ToolContext): ToolDef[] {
           `执行入口: ${entries.length ? entries.join(", ") : "无"}`,
           `拓扑序: ${order ? order.join(" → ") : "有环, 无法确定"}`,
           `执行流回路: ${cycles.length} 个${cycles.length ? " (循环是刻意的, 不算错误)" : ""}`,
-          `交叉 ${countCrossings(registry, g.graph)} / 重叠 ${countOverlaps(registry, g.graph)}`,
+          `交叉 ${countCrossings(registry, g.graph, posOf_(g.graph))} / 重叠 ${countOverlaps(registry, g.graph)}`,
         ].join("\n");
         return { ok: true, text, data: { cycles, order, entries } };
       },
@@ -357,6 +357,11 @@ export async function dispatchTool(
   } catch (e) {
     return { ok: false, text: `工具 ${name} 出错: ${e instanceof Error ? e.message : String(e)}` };
   }
+}
+
+/** countCrossings 需要显式坐标 —— 从图里取。 */
+function posOf_(g: BlueprintGraph): ReadonlyMap<string, { x: number; y: number }> {
+  return new Map(g.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
 }
 
 function numOr(v: unknown, d: number | undefined): number | undefined {

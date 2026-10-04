@@ -5,8 +5,9 @@ import {
   type JSX, type ReactNode,
 } from "react";
 import { cn } from "../primitives/utils";
-import type { BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
+import type { BlueprintComment, BlueprintGraph, BlueprintRegistry, GraphValidation, PortRef } from "./types";
 import { EXEC_IN_PORT, canConnect, resolvePort } from "./connect";
+import { CommentLayer, CanvasToolbar } from "./canvas-parts";
 import type { DropAt } from "./BlueprintPalette";
 import {
   CURVE_MIN, nodeHeight, nodeWidth, portPos, hitNode, hitPort, rectsIntersect, graphBounds,
@@ -473,10 +474,24 @@ export function BlueprintCanvas({
    * 按旧尺寸算的 —— 图会挤在左上角一小块, 大片空白, 看起来像"全屏没生效"。
    * 退出时同理。等一帧再 fit, 让浏览器先完成尺寸变更。
    */
+  /**
+   * 关键: 依赖里**只能有 expanded**, 不能有 fit。
+   *
+   * 踩过的坑 (表现为"一拖节点就乱飞"): fit 依赖 [graph, registry], 而拖拽时
+   * graph 每帧都变 -> fit 每帧重建身份 -> 这个 effect 每帧重跑 -> **每帧调
+   * fit() 改 view**。于是 toGraph() 用新 view 算当前鼠标点, 而 drag.start
+   * 是旧 view 下的值, 两者相减得到错误的位移, 且逐帧累积。
+   *   实测: 鼠标走 +20x/+10y (比例 0.5), 节点位移比例漂移到 0.94 ——
+   *   就是这么来的。
+   *
+   * 所以用 ref 拿最新的 fit, 依赖只留 expanded: 只在进出全屏时跑一次。
+   */
+  const fitRef = useRef(fit);
+  fitRef.current = fit;
   useEffect(() => {
-    const id = requestAnimationFrame(() => fit());
+    const id = requestAnimationFrame(() => fitRef.current());
     return () => cancelAnimationFrame(id);
-  }, [expanded, fit]);
+  }, [expanded]);
 
   return (
     <div
@@ -545,52 +560,13 @@ export function BlueprintCanvas({
         />
       )}
 
-      {/* 注释层: 在网格之上、连线之下 —— 它是背景分组, 压住线会挡住拓扑关系 */}
-      <div
-        className="absolute left-0 top-0 origin-top-left"
-        style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`, width: 0, height: 0 }}
-      >
-        {(graph.comments ?? []).map((c) => (
-          <div
-            key={c.id}
-            className="absolute"
-            style={{ left: c.x, top: c.y, width: c.w, height: c.h }}
-          >
-            <div
-              className={cn(
-                "flex h-[22px] items-center gap-1 rounded-t-md border-b px-2",
-                COMMENT_TONE[c.tone ?? "default"]
-              )}
-            >
-              {editingComment === c.id ? (
-                <input
-                  autoFocus
-                  defaultValue={c.title ?? ""}
-                  className="min-w-0 flex-1 bg-transparent text-[11px] font-medium outline-none"
-                  onBlur={(e) => {
-                    onCommentChange?.(c.id, { title: e.target.value });
-                    setEditingComment(null);
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-                    if (e.key === "Escape") setEditingComment(null);
-                  }}
-                />
-              ) : (
-                <span
-                  className="min-w-0 flex-1 truncate text-[11px] font-medium"
-                  onDoubleClick={() => setEditingComment(c.id)}
-                >
-                  {c.title || "注释"}
-                </span>
-              )}
-            </div>
-            {c.body ? (
-              <div className="px-2 py-1 text-[11px] leading-snug opacity-80">{c.body}</div>
-            ) : null}
-          </div>
-        ))}
-      </div>
+      <CommentLayer
+        comments={graph.comments}
+        view={view}
+        editingId={editingComment}
+        onEdit={setEditingComment}
+        onChange={onCommentChange}
+      />
 
       <svg className="pointer-events-none absolute inset-0 h-full w-full">
         <g transform={`translate(${view.x} ${view.y}) scale(${view.zoom})`}>
@@ -678,29 +654,16 @@ export function BlueprintCanvas({
         })}
       </div>
 
-      <div className="absolute left-2 top-2 flex items-center gap-1">
-        {toolbar ?? (
-          <>
-            <CanvasButton onClick={fit} title="缩放到适应">适应</CanvasButton>
-            <CanvasButton onClick={() => setView({ x: 0, y: 0, zoom: 1 })} title="重置视图">1:1</CanvasButton>
-            <span className="px-1 text-[11px] tabular-nums text-muted-foreground">{Math.round(view.zoom * 100)}%</span>
-            {allowFullscreen && (
-              onOpenStandalone ? (
-                <CanvasButton
-                  onClick={onOpenStandalone}
-                  title="在一个独立的整页画布里打开 (可多开, 改动实时同步)"
-                >
-                  独立页面
-                </CanvasButton>
-              ) : (
-                <CanvasButton onClick={toggleFullscreen} title={expanded ? "退出全屏 (Esc)" : "全屏"}>
-                  {expanded ? "退出全屏" : "全屏"}
-                </CanvasButton>
-              )
-            )}
-          </>
-        )}
-      </div>
+      <CanvasToolbar
+        toolbar={toolbar}
+        zoom={view.zoom}
+        onFit={fit}
+        onReset={() => setView({ x: 0, y: 0, zoom: 1 })}
+        allowFullscreen={allowFullscreen}
+        expanded={expanded}
+        onOpenStandalone={onOpenStandalone}
+        onToggleFullscreen={toggleFullscreen}
+      />
 
       {link?.verdict?.ok && link.verdict.replaces && (
         <div className="pointer-events-none absolute bottom-2 left-2 rounded border border-border bg-card px-2 py-1 text-[11px] text-muted-foreground">
@@ -766,20 +729,6 @@ const COMMENT_TONE: Record<string, string> = {
   success: "border-emerald-500/40 bg-emerald-500/10 text-emerald-400",
 };
 
-function CanvasButton({
-  onClick, title, children,
-}: { readonly onClick: () => void; readonly title?: string; readonly children: ReactNode }): JSX.Element {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      className="rounded border border-border bg-card/80 px-1.5 py-0.5 text-[11px] text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-    >
-      {children}
-    </button>
-  );
-}
 
 /** reason -> 人话。UI 靠 reason 而不是 message: message 是英文的。 */
 function reasonText(reason?: string): string {
@@ -797,5 +746,6 @@ function reasonText(reason?: string): string {
 function clamp(v: number, lo: number, hi: number): number {
   return Math.min(hi, Math.max(lo, v));
 }
+
 
 export { EXEC_IN_PORT };

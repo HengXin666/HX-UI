@@ -1,5 +1,10 @@
 import type { BlueprintEdge, BlueprintGraph, BlueprintNode, BlueprintRegistry } from "./types";
 import { nodeHeight, nodeWidth } from "./geometry";
+import { compactRanks, findBackEdges, resolveOverlaps, type LayoutNode } from "./layout-parts";
+export { countCrossings } from "./layout-parts";
+
+/** 布局结果: 节点 id -> 新坐标。 */
+export type LayoutResult = ReadonlyMap<string, { x: number; y: number }>;
 
 /**
  * 自动布局。
@@ -45,17 +50,6 @@ export interface LayoutOptions {
   readonly direction?: "lr" | "tb";
 }
 
-/** 布局结果: 节点 id -> 新坐标。 */
-export type LayoutResult = ReadonlyMap<string, { x: number; y: number }>;
-
-interface LayoutNode {
-  readonly id: string;
-  readonly node: BlueprintNode;
-  w: number;
-  h: number;
-  rank: number;
-  y: number;
-}
 
 /**
  * 主入口: 算一张图的自动布局。
@@ -136,6 +130,17 @@ export function autoLayout(
   // 有孤立节点(或环没拆干净)时兜底: 剩下的按 id 稳定追加
   for (const n of nodes.values()) if (!order.includes(n.id)) order.push(n.id);
 
+  /**
+   * 分层: **尽量靠左**, 而不是最长路径。
+   *
+   * 最长路径分层把链上每个节点都推到新的一列 —— 实测 dsh 图摆出 28 列、
+   * 宽高比 39.6 (8000 x 202), 一条细长带子, 缩放到适应后节点小得看不清。
+   * 这就是"整理得难看"的根源。
+   *
+   * 改成: 只要所有前驱都已经定层, 就放在 (前驱最大层 + 1), 但因为我们是
+   * 按拓扑序推进的, 这个值与最长路径相同。真正的修正在下面 ——
+   * 用**列容量**把节点压进更少的列。
+   */
   for (const id of order) {
     const n = nodes.get(id)!;
     let rank = 0;
@@ -145,6 +150,14 @@ export function autoLayout(
     n.rank = rank;
   }
 
+  /**
+   * 列的紧凑化: 把过长的链折叠进更少的列。
+   *
+   * 目标: 列数接近 sqrt(节点数) 的若干倍, 让宽高比落在 1~3 —— 那是人眼
+   * 看着舒服的形状。做法: 若列数超过上限, 就按"每列的累计高度"把相邻列
+   * 合并, 优先合并节点少的列 (合并代价小)。
+   */
+
   // ── 按层分组 ──────────────────────────────────────────────────────
   const ranks = new Map<number, string[]>();
   for (const n of nodes.values()) {
@@ -152,6 +165,13 @@ export function autoLayout(
     if (l) l.push(n.id);
     else ranks.set(n.rank, [n.id]);
   }
+  void pred; void succ;
+  /**
+   * 列紧凑化必须在 ranks 建好之后、定序之前。
+   * 放在定序之后会打乱已经算好的层内顺序。
+   */
+  compactRanks(nodes, ranks, succ);
+
   const rankKeys = [...ranks.keys()].sort((a, b) => a - b);
   for (const k of rankKeys) {
     // 稳定排序 + id 兜底, 保证确定性
@@ -203,17 +223,121 @@ export function autoLayout(
   }
 
   // ── 3. 定坐标 ─────────────────────────────────────────────────────
-  // x: 按层的累计宽度; y: 层内按高度累加
-  const xs: number[] = [];
-  let cursor = 0;
-  for (const k of rankKeys) {
-    xs[k] = cursor;
-    cursor += Math.max(...ranks.get(k)!.map((id) => nodes.get(id)!.w)) + gapX;
+  /**
+   * x: 按层累计宽度, **超过阈值就折行**。
+   *
+   * 为什么必须折行: 一条 28 层的链, 每层 296px (节点宽 176 + 间距 120),
+   * 摊开是 8000 x 202 的一条细带 —— 宽高比 39.6, 缩放到适应后每个节点
+   * 都小得看不清。这就是"整理完更难看"的实测数据。
+   *
+   * 折行让宽高比回到 1~3。折行处 y 拉开一个"行距", 视觉上是一个明显的
+   * 断点, 不会误读成同一行。
+   */
+  const colWidths = rankKeys.map((k) => Math.max(...ranks.get(k)!.map((id) => nodes.get(id)!.w)));
+  const rowHeightOf = (keys: number[]): number => {
+    let maxH = 0;
+    for (const k of keys) {
+      const layer = ranks.get(k)!;
+      const h = layer.reduce((acc, id) => acc + nodes.get(id)!.h + gapY, 0);
+      maxH = Math.max(maxH, h);
+    }
+    return maxH;
+  };
+
+  /**
+   * 目标行宽: **迭代试算**, 而不是解析公式。
+   *
+   * 为什么迭代: 解析式 W = sqrt(A * H * W_total * k) 假设"每行的高度都等于
+   * 全局最高列", 而实际每行的最高列往往小得多 —— 实测误差很大
+   * (预估 1130, 实际 504), 于是一次算不准。
+   *
+   * 迭代反而简单可靠: 按候选行宽真折一次, 量出宽高比, 取最接近目标的那个。
+   * 候选集合有限 (从"每行 2 列"到"不折行"), 几十次循环, 成本可忽略。
+   */
+  const totalW = colWidths.reduce((a, b) => a + b + gapX, 0);
+  const ASPECT = 2.0; // 目标宽高比
+
+  const measure = (rowW: number): { w: number; h: number } => {
+    let cursor = 0;
+    let rows = 1;
+    let rowMaxH = 0;
+    let h = 0;
+    for (let i = 0; i < rankKeys.length; i++) {
+      const w = colWidths[i];
+      const colH = ranks.get(rankKeys[i])!.reduce((acc, id) => acc + nodes.get(id)!.h + gapY, 0);
+      if (cursor > 0 && cursor + w > rowW) {
+        h += rowMaxH + gapY * 2.5;
+        rows += 1;
+        cursor = 0;
+        rowMaxH = 0;
+      }
+      cursor += w + gapX;
+      rowMaxH = Math.max(rowMaxH, colH);
+    }
+    h += rowMaxH;
+    const w = Math.min(rowW, totalW);
+    void rows;
+    return { w, h: Math.max(1, h) };
+  };
+
+  let maxRowW = totalW;
+  let bestErr = Infinity;
+  // 候选: 从"每行 2 列"逐步放宽到"不折行"
+  for (let colsPerRow = 2; colsPerRow <= rankKeys.length + 1; colsPerRow++) {
+    const rowW = colWidths.slice(0, colsPerRow).reduce((a, b) => a + b + gapX, 0);
+    const m = measure(rowW);
+    const err = Math.abs(Math.log(m.w / m.h) - Math.log(ASPECT));
+    if (err < bestErr) {
+      bestErr = err;
+      maxRowW = rowW;
+    }
+  }
+  // 也考虑完全不折行 (宽高比可能本来就合适)
+  {
+    const m = measure(totalW);
+    const err = Math.abs(Math.log(m.w / m.h) - Math.log(ASPECT));
+    if (err < bestErr) maxRowW = totalW;
+  }
+
+  const xs = new Map<number, number>();
+  const rowOf = new Map<number, number>();
+  const rowTops: number[] = [];
+  {
+    let cursor = 0;
+    let row = 0;
+    let rowH = 0;
+    for (let i = 0; i < rankKeys.length; i++) {
+      const k = rankKeys[i];
+      const w = colWidths[i];
+      if (cursor > 0 && cursor + w > maxRowW) {
+        // 折行
+        rowTops.push(rowH);
+        row += 1;
+        cursor = 0;
+        rowH = 0;
+      }
+      xs.set(k, cursor);
+      rowOf.set(k, row);
+      cursor += w + gapX;
+      rowH = Math.max(rowH, ranks.get(k)!.reduce((acc, id) => acc + nodes.get(id)!.h + gapY, 0));
+    }
+    rowTops.push(rowH);
+  }
+
+  // 每行的起始 y
+  const rowBase: number[] = [];
+  {
+    let y = 0;
+    for (let i = 0; i < rowTops.length; i++) {
+      rowBase.push(y);
+      y += rowTops[i] + gapY * 2.5; // 行距比节点间距大, 让折行处一眼可辨
+    }
   }
 
   for (const k of rankKeys) {
     const layer = ranks.get(k)!;
-    let y = 0;
+    const base = rowBase[rowOf.get(k)!] ?? 0;
+    let y = base;
     for (const id of layer) {
       const n = nodes.get(id)!;
       n.y = y;
@@ -222,19 +346,15 @@ export function autoLayout(
   }
 
   /**
-   * 把每层垂直居中对齐到"整图的中线"。
-   * 不做这一步的话各层都从 y=0 开始, 短层会贴在顶上, 整体是歪的。
+   * 每层在本行内垂直居中。
+   * 不做的话短层会贴在行顶, 整行看起来是歪的。
    */
-  const layerHeights = rankKeys.map((k) => {
-    const layer = ranks.get(k)!;
-    const last = layer[layer.length - 1];
-    return nodes.get(last)!.y + nodes.get(last)!.h;
-  });
-  const maxH = Math.max(...layerHeights);
   for (let i = 0; i < rankKeys.length; i++) {
     const k = rankKeys[i];
-    const shift = (maxH - layerHeights[i]) / 2;
-    for (const id of ranks.get(k)!) nodes.get(id)!.y += shift;
+    const layer = ranks.get(k)!;
+    const h = layer.reduce((acc, id) => acc + nodes.get(id)!.h + gapY, 0);
+    const shift = ((rowTops[rowOf.get(k)!] ?? h) - h) / 2;
+    for (const id of layer) nodes.get(id)!.y += shift;
   }
 
   // ── 4. 拉直: 把父节点吸到子节点重心 ────────────────────────────────
@@ -267,6 +387,8 @@ export function autoLayout(
     }
   }
 
+  resolveOverlaps(nodes, xs, gapY);
+
   // ── 输出 ──────────────────────────────────────────────────────────
   const out = new Map<string, { x: number; y: number }>();
   for (const n of nodes.values()) {
@@ -274,7 +396,7 @@ export function autoLayout(
       out.set(n.id, { x: n.node.x, y: n.node.y });
       continue;
     }
-    out.set(n.id, dir === "lr" ? { x: xs[n.rank], y: n.y } : { x: n.y, y: xs[n.rank] });
+    out.set(n.id, dir === "lr" ? { x: xs.get(n.rank) ?? 0, y: n.y } : { x: n.y, y: xs.get(n.rank) ?? 0 });
   }
 
   /** 归一化到非负 —— 负坐标会让"缩放到适应"算出奇怪的偏移。 */
@@ -289,49 +411,6 @@ export function autoLayout(
   }
 
   return out;
-}
-
-/**
- * 找出回边 (DFS 里指向灰色节点的边)。
- *
- * 这些边构成环, 分层时必须临时反转, 否则最长路径算法会在环上死循环
- * (或退化成"环上节点全是同一层")。
- */
-function findBackEdges(ids: readonly string[], edges: readonly BlueprintEdge[]): BlueprintEdge[] {
-  const adj = new Map<string, string[]>();
-  for (const e of edges) {
-    if (e.from.node === e.to.node) continue;
-    const l = adj.get(e.from.node);
-    if (l) l.push(e.to.node);
-    else adj.set(e.from.node, [e.to.node]);
-  }
-
-  const WHITE = 0;
-  const GRAY = 1;
-  const BLACK = 2;
-  const color = new Map<string, number>();
-  for (const id of ids) color.set(id, WHITE);
-
-  const back: BlueprintEdge[] = [];
-  const byPair = new Map<string, BlueprintEdge>();
-  for (const e of edges) byPair.set(`${e.from.node}>${e.to.node}`, e);
-
-  const visit = (u: string) => {
-    color.set(u, GRAY);
-    for (const v of adj.get(u) ?? []) {
-      const c = color.get(v) ?? WHITE;
-      if (c === GRAY) {
-        const e = byPair.get(`${u}>${v}`);
-        if (e) back.push(e);
-      } else if (c === WHITE) {
-        visit(v);
-      }
-    }
-    color.set(u, BLACK);
-  };
-
-  for (const id of ids) if ((color.get(id) ?? WHITE) === WHITE) visit(id);
-  return back;
 }
 
 /** 把布局结果应用到图上, 返回新图。 */
@@ -351,72 +430,3 @@ export function applyLayout(
   };
 }
 
-/**
- * 数交叉数。用于评估布局质量与写测试。
- *
- * 接受**显式的坐标来源**, 而不是内部跑一次 autoLayout ——
- * 后者让这个函数永远只能测"布局后的交叉数", 于是它自己有没有算对
- * 根本无法验证 (实测踩到过: 造一张必然交叉的图, 它报 0, 因为布局已经把
- * 交叉修掉了, 看上去像是"算法完美", 实际是测量工具失效)。
- *
- * 不传坐标时才走 autoLayout。
- */
-export function countCrossings(
-  reg: BlueprintRegistry,
-  graph: BlueprintGraph,
-  positions?: ReadonlyMap<string, { x: number; y: number }>
-): number {
-  const layout = positions ?? autoLayout(reg, graph);
-  const byX = new Map<number, string[]>();
-  const rankOf = new Map<string, number>();
-  for (const n of graph.nodes) {
-    const p = layout.get(n.id);
-    if (!p) continue;
-    const k = Math.round(p.x);
-    rankOf.set(n.id, k);
-    const l = byX.get(k);
-    if (l) l.push(n.id);
-    else byX.set(k, [n.id]);
-  }
-  const keys = [...byX.keys()].sort((a, b) => a - b);
-  for (const k of keys) {
-    byX.get(k)!.sort((a, b) => (layout.get(a)?.y ?? 0) - (layout.get(b)?.y ?? 0));
-  }
-  const idx = new Map<string, number>();
-  for (const k of keys) byX.get(k)!.forEach((id, i) => idx.set(id, i));
-
-  let crossings = 0;
-  const es = graph.edges.filter((e) => e.from.node !== e.to.node && rankOf.has(e.from.node) && rankOf.has(e.to.node));
-  for (let i = 0; i < es.length; i++) {
-    for (let j = i + 1; j < es.length; j++) {
-      const a = es[i];
-      const b = es[j];
-      /**
-       * 判据: 两条边的两端顺序相反即交叉 —— 与"两端是否同列"无关。
-       *
-       * 踩过的两个坑, 都是让统计静默失效:
-       *   1. 原本要求"终点同层"才算, 于是跨列的交叉统计不到 (dsh 图报 0
-       *      而实际一堆交叉, 看上去像算法完美, 实际是尺子坏了)。
-       *   2. 去掉那个条件后又写了 `if (ax === bx) continue`, 于是**起点同列**
-       *      的一对边被跳过 —— 而"一个节点扇形展开两条输出"恰恰是最常见
-       *      的交叉场景。手工摆的交叉图就是这么漏掉的。
-       *
-       * 现在不做任何列相等的过滤: 用有向边端点的层内序号比较即可。
-       * 起点/终点同列时序号是按 y 排的, 比较依然有意义。
-       */
-      const a1 = idx.get(a.from.node)!;
-      const a2 = idx.get(a.to.node)!;
-      const b1 = idx.get(b.from.node)!;
-      const b2 = idx.get(b.to.node)!;
-      // 各自"从上到下"的方向, 再比两条边是否相反
-      const dirA = Math.sign(a2 - a1);
-      const dirB = Math.sign(b2 - b1);
-      // 只有起点列的相对顺序与终点列的相对顺序都确定时才能判
-      const order1 = Math.sign(a1 - b1);
-      const order2 = Math.sign(a2 - b2);
-      if (order1 !== 0 && order2 !== 0 && order1 !== order2) crossings += 1;
-      void dirA; void dirB;
-    }
-  }
-  return crossings;
-}

@@ -32,7 +32,6 @@ import { makeId } from "./useBlueprint";
  *
  * 这条是硬要求, 不是优化项 —— 一张叠在一起的图对人类等于没有。
  */
-
 // ── 输入形状 ──────────────────────────────────────────────────────────
 
 /**
@@ -362,7 +361,9 @@ export function buildFromAgent(
     }
   }
 
-  const crossings = countCrossings(reg, graph);
+  // 用刚算好的坐标评估 —— countCrossings 需要显式坐标
+  const posForCross = new Map(graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
+  const crossings = countCrossings(reg, graph, posForCross);
 
   // ── 4. 注释 ──────────────────────────────────────────────────────
   const comments: BlueprintComment[] = (input.comments ?? []).map((c): BlueprintComment => {

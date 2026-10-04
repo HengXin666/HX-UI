@@ -19,15 +19,23 @@
  * 代价是多一步构建 (~20ms), 换来的是断言**真实源码**而不是复制品。
  *
  * 用法: node scripts/check-blueprint.mjs [--strict]
+ *
+ * 扫描根: CHECK_UI_ROOT 可覆盖 (默认上一级目录)。
+ * --strict: 打包依赖 (docs/node_modules/vite) 缺失时不再静默 exit 0 ——
+ *   在本地它是有意的降级 (没装依赖不该卡住开发), 在 CI 里它就是"这次什么都没验证",
+ *   两者必须区分, 否则这条门禁可以靠删 node_modules 永久变绿。
  */
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
-const ROOT = path.resolve(import.meta.dirname, "..");
+const ROOT = process.env.CHECK_UI_ROOT
+  ? path.resolve(process.env.CHECK_UI_ROOT)
+  : path.resolve(import.meta.dirname, "..");
 const DOCS = path.join(ROOT, "docs");
 const PROBE = path.join(DOCS, ".bpprobe");
 const OUT = path.join(PROBE, "out", "bp.js");
+const STRICT = process.argv.includes("--strict");
 
 /** 只打包纯逻辑层。渲染层要 react/jsx, 不进这里。 */
 const ENTRY = `export * from "../../src/blueprint/registry";
@@ -63,7 +71,11 @@ function fail(msg) {
 }
 
 if (!existsSync(path.join(DOCS, "node_modules", "vite"))) {
-  console.log("check-blueprint: docs/node_modules 里没有 vite, 跳过 (先 cd docs && npm i)");
+  const msg = "check-blueprint: docs/node_modules 里没有 vite, 跳过 (先 cd docs && npm i)";
+  if (STRICT) {
+    fail(msg + "\n  (--strict 下视为失败: 这条门禁这次没有验证任何东西, 而它平常是绿的)");
+  }
+  console.log(msg);
   process.exit(0);
 }
 
@@ -501,41 +513,51 @@ const G0 = {
   // 每个节点都要有坐标
   ok("每个节点都得到了坐标", dshAgentLoopGraph.nodes.every((n) => l1.has(n.id)));
 
-  // 分层: 每条边的起点必须在终点左边 (分层布局的核心承诺)
-  const rankOf = new Map<string, number>();
-  let maxRank = 0;
-  for (const n of dshAgentLoopGraph.nodes) {
-    const p = l1.get(n.id)!;
-    rankOf.set(n.id, p.x);
-    maxRank = Math.max(maxRank, p.x);
-  }
-  const forward = dshAgentLoopGraph.edges.filter(
-    (e) => e.kind === "exec" && rankOf.get(e.from.node)! < rankOf.get(e.to.node)!
-  );
-  const backward = dshAgentLoopGraph.edges.filter(
-    (e) => e.kind === "exec" && rankOf.get(e.from.node)! >= rankOf.get(e.to.node)!
-  );
-  // 回路边(回到 kick / stepStart)必然是"往左"的, 那是对的; 但绝大多数该往右
-  ok("绝大多数执行边是从左往右", forward.length > backward.length * 2);
-  console.log("    (执行边: 顺流 " + forward.length + " / 回路 " + backward.length + ")");
+  /**
+   * 方向性判据必须**分行的**看。
+   *
+   * 折行之后, 下一行从 x=0 重新开始 —— 于是"跨行"的边在 x 上一定是
+   * "从右往左", 但那是折行的正常结果, 不是布局失败。
+   * 只看 x 会把这些误判成逆流 (实测就这么失败过)。
+   *
+   * 所以: 先按 y 分行 (y 差超过一个阈值算换行), 只在同一行内比 x。
+   */
+  const posOf = new Map<string, { x: number; y: number }>();
+  for (const n of dshAgentLoopGraph.nodes) posOf.set(n.id, l1.get(n.id)!);
+  const ys = [...posOf.values()].map((p) => p.y).sort((a, b) => a - b);
+  // 行边界: y 的跳跃处
+  const rowBreaks = [];
+  for (let i = 1; i < ys.length; i++) if (ys[i] - ys[i - 1] > 120) rowBreaks.push((ys[i] + ys[i - 1]) / 2);
+  const rowOf = (y) => rowBreaks.filter((b) => y > b).length;
 
-  // 不重叠: 同一竖列(x 相同)上的节点不能互相压住
-  const byCol = new Map<number, Array<{ id: string; y: number; h: number }>>();
-  for (const n of dshAgentLoopGraph.nodes) {
-    const p = l1.get(n.id)!;
-    const col = Math.round(p.x);
-    const list = byCol.get(col) ?? [];
-    list.push({ id: n.id, y: p.y, h: nodeHeight(dsh, { ...n, x: p.x, y: p.y }) });
-    byCol.set(col, list);
+  let sameRowFwd = 0, sameRowBack = 0, crossRow = 0;
+  for (const e of dshAgentLoopGraph.edges) {
+    if (e.kind !== "exec") continue;
+    const a = posOf.get(e.from.node)!, b = posOf.get(e.to.node)!;
+    if (rowOf(a.y) !== rowOf(b.y)) { crossRow += 1; continue; }
+    if (a.x < b.x) sameRowFwd += 1; else sameRowBack += 1;
   }
+  ok("★ 同行内的执行边绝大多数从左往右", sameRowFwd > sameRowBack * 2);
+  console.log("    (执行边: 同行顺流 " + sameRowFwd + " / 同行逆流 " + sameRowBack + " / 跨行 " + crossRow + ")");
+
+  // 不重叠: 直接两两比包围盒。
+  // 不能按 x 分组 —— 折行后不同行的节点会有相同的 x, 被误判成"同列"。
   let overlaps = 0;
-  for (const list of byCol.values()) {
-    list.sort((a, b) => a.y - b.y);
-    for (let i = 1; i < list.length; i++) {
-      if (list[i].y < list[i - 1].y + list[i - 1].h) overlaps += 1;
+  {
+    const boxes = dshAgentLoopGraph.nodes.map((n) => {
+      const p = l1.get(n.id)!;
+      const def = dsh.nodeTypes.get(n.type);
+      const h = 30 + 8 + Math.max((def?.inputs ?? []).length, (def?.outputs ?? []).length) * 20 + ((def?.params ?? []).length ? 6 : 0) + 8 + (def?.params ?? []).length * 24;
+      return { x: p.x, y: p.y, w: def?.width ?? 176, h };
+    });
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i], b = boxes[j];
+        if (a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y) overlaps += 1;
+      }
     }
   }
-  ok("同列节点不重叠", overlaps === 0);
+  ok("★ 任意两节点都不重叠", overlaps === 0);
   if (overlaps) console.log("    重叠:", overlaps);
 
   // 坐标非负 —— 负坐标会让"缩放到适应"算出奇怪偏移
@@ -543,9 +565,31 @@ const G0 = {
 
   // 交叉数: 布局后不应比随机摆放更差。这里只做"能算出来"的下限判据,
   // 因为交叉数没有绝对好坏, 只有相对。
-  const cx = countCrossings(dsh, dshAgentLoopGraph);
+  const cx = countCrossings(dsh, dshAgentLoopGraph, l1);
   ok("交叉数可计算且有限", Number.isFinite(cx) && cx >= 0);
   console.log("    (交叉数: " + cx + ")");
+  /**
+   * 布局质量的硬判据 (这三条是"整理完不难看"的量化定义):
+   *   1. 零重叠 —— 叠在一起的图对人类等于没有
+   *   2. 宽高比落在 0.5~6 —— 太瘦长(实测过 39.6)或太方都难看
+   *   3. 有层次 —— 同行内执行流从左往右
+   */
+  {
+    const L = autoLayout(dsh, dshAgentLoopGraph);
+    const applied = applyLayout(dshAgentLoopGraph, L);
+    const ov = countOverlaps(dsh, applied);
+    ok("★ 布局零重叠", ov === 0);
+    if (ov) console.log("    重叠:", ov);
+
+    const xs = [...L.values()].map((p) => p.x);
+    const ys = [...L.values()].map((p) => p.y);
+    const W = Math.max(...xs) - Math.min(...xs);
+    const H = Math.max(...ys) - Math.min(...ys);
+    const aspect = W / Math.max(1, H);
+    ok("★ 宽高比在可看区间 (0.5~6)", aspect > 0.5 && aspect < 6);
+    console.log("    (宽高比 " + aspect.toFixed(2) + ", " + Math.round(W) + " x " + Math.round(H) + ")");
+  }
+
   // 交叉数为 0 要么是真的摆得好, 要么是统计逻辑太宽松。用一张必然交叉的图验一下。
   // 结构: 0->3, 1->2 (两列之间交叉)
   const mustCross = {
@@ -592,8 +636,8 @@ const G0 = {
   };
   ok("平行的边不报交叉", countCrossings(demo, parallelEdges, crossedPos) === 0);
   // 布局之后, 原来交叉的那张图应该被摆成不交叉
-  ok("布局把交叉修掉了", countCrossings(demo, crossedEdges) === 0);
-  const cxCross = countCrossings(demo, mustCross);
+  ok("布局把交叉修掉了", countCrossings(demo, crossedEdges, autoLayout(demo, crossedEdges)) === 0);
+  const cxCross = countCrossings(demo, mustCross, autoLayout(demo, mustCross));
   const cxLayout = autoLayout(demo, mustCross);
   console.log("    (必然交叉的图: 交叉数 " + cxCross + ", 布局后 y: " +
     JSON.stringify(["p0","p1","q0","q1"].map((id) => id + "=" + Math.round(cxLayout.get(id)!.y))));
@@ -711,14 +755,21 @@ const G0 = {
     " / 交叉 " + built.layoutReport.crossings +
     " / 重试 " + built.layoutReport.retries + ")");
 
-  // 分层: 绝大多数执行边从左往右
-  const posOf = new Map(built.graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
-  const keyToId = built.ids;
-  const fw = built.graph.edges.filter((e) => {
-    const a = posOf.get(e.from.node)!; const b = posOf.get(e.to.node)!;
-    return a.x < b.x;
-  });
-  ok("★ 执行流整体是从左往右 (有层次, 不是一坨)", fw.length >= built.graph.edges.length - 1);
+  // 方向性: 同样要分行看 (折行后跨行的边在 x 上必然"往左", 那是正常的)
+  {
+    const posOf = new Map(built.graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
+    const ys = [...posOf.values()].map((p) => p.y).sort((a, b) => a - b);
+    const breaks = [];
+    for (let i = 1; i < ys.length; i++) if (ys[i] - ys[i - 1] > 120) breaks.push((ys[i] + ys[i - 1]) / 2);
+    const rowOf = (y) => breaks.filter((b) => y > b).length;
+    let fwd = 0, back = 0;
+    for (const e of built.graph.edges) {
+      const a = posOf.get(e.from.node)!, b = posOf.get(e.to.node)!;
+      if (rowOf(a.y) !== rowOf(b.y)) continue;
+      if (a.x < b.x) fwd += 1; else back += 1;
+    }
+    ok("★ 同行内执行流从左往右 (有层次)", fwd >= back * 2 && fwd > 0);
+  }
 
   // 校验通过
   ok("Agent 建的图校验通过", validateGraph(dsh, built.graph).issues.every((i) => i.level !== "error"));
