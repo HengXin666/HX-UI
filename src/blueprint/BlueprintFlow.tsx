@@ -8,7 +8,6 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { BlueprintGraph, BlueprintRegistry, ValidationIssue } from "./types";
-import { canConnect } from "./connect";
 import { makeId } from "./useBlueprint";
 import {
   toReactFlow, edgeFromRf, computeConnected, commentToNode, isCommentNode, commentIdOf,
@@ -17,6 +16,7 @@ import {
 import { BpNode, BpExecEdge, BpDataEdge, ExecArrowMarker } from "./rf-node";
 import { useFlowShortcuts } from "./flow-shortcuts";
 import { useGraphChanges } from "./use-graph-changes";
+import { useConnectivity } from "./use-connectivity";
 
 /**
  * 画布层 —— 交互全部交给 React Flow。
@@ -52,6 +52,8 @@ export interface BlueprintFlowProps {
   readonly onTidy?: () => void;
   readonly onSearch?: () => void;
   readonly onRename?: (id: string) => void;
+  /** 这批 change 属于哪一类 (用于给历史打 tag 以便合并)。 */
+  readonly onMoveKind?: (kind: "move" | "remove" | "other") => void;
   /** 拖线到空白松手时: 是否弹节点面板 (UE5 行为)。 */
   readonly onConnectEndAtBlank?: (at: { x: number; y: number }) => void;
   readonly className?: string;
@@ -73,7 +75,7 @@ export function BlueprintFlow(props: BlueprintFlowProps): JSX.Element {
 function FlowInner({
   registry, graph, validation, selected, onGraphChange, onSelect,
   onParamChange, onEnterSubgraph, onRemove, onConnectEndAtBlank, className, height = 520,
-  onUndo, onRedo, onComment, onTidy, onSearch, onRename,
+  onUndo, onRedo, onComment, onTidy, onSearch, onRename, onMoveKind,
 }: BlueprintFlowProps): JSX.Element {
   const rf = useReactFlow();
 
@@ -92,7 +94,6 @@ function FlowInner({
     ...(onTidy ? { onTidy } : {}),
     ...(onSearch ? { onSearch } : {}),
     ...(onRename ? { onRename } : {}),
-    ...(onEnterSubgraph ? {} : {}),
   });
 
   /** 校验错误 -> 每个节点每个输入口的红点标记。 */
@@ -134,33 +135,15 @@ function FlowInner({
     [nodes, selectedIds]
   );
 
-  /**
-   * 连线合法性 —— **这是这套库的核心卖点, 必须走我们自己的判定**。
-   *
-   * React Flow 只提供"两个 handle 能不能连"的回调, 真正的规则
-   * (类型协变 / exec 与 data 不能互连 / 独占输入顶替 / 环检测)
-   * 全部在 connect.ts 里, 这里只是转发。
-   */
-  const isValidConnection = useCallback(
-    (c: Connection | RfEdge): boolean => {
-      const e = edgeFromRf(c, "__probe__");
-      if (!e) return false;
-      return canConnect(registry, graph, e.from, e.to).ok;
-    },
-    [registry, graph]
-  );
+  const { isValidConnection, onConnect } = useConnectivity({
+    registry, graph, onGraphChange,
+  });
 
-  const onConnect = useCallback(
-    (c: Connection) => {
-      const e = edgeFromRf(c, makeId("e"));
-      if (!e) return;
-      const kind = isExecConnection(registry, graph, c) ? "exec" : "data";
-      onGraphChange?.({ ...graph, edges: [...graph.edges, { ...e, kind }] });
-    },
-    [registry, graph, onGraphChange]
-  );
-
-  const { onNodesChange, onEdgesChange } = useGraphChanges({ graph, onGraphChange });
+  const { onNodesChange, onEdgesChange } = useGraphChanges({
+    graph,
+    onGraphChange,
+    ...(onMoveKind ? { onKind: (kind) => onMoveKind(kind) } : {}),
+  });
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ nodes: sel }) => {

@@ -110,7 +110,7 @@ steps.push({
   });
 }
 
-// 7. 合法连线能连上
+// 7. 合法连线能连上 (连到**空闲**的输入口才算新增)
 async function handlePos(nodeId, hid) {
   return p.evaluate(
     ([n, id]) => {
@@ -124,8 +124,10 @@ async function handlePos(nodeId, hid) {
 }
 {
   const before = await count(".react-flow__edge");
+  // n4.a / n4.b 都已被占用 —— 连它们会走"顶替", 总数不变 (见第 10 条)。
+  // 这里要测的是"新增", 所以连到 n6 空闲的 msg 输入 (类型 any, 任何值都能进)。
   const src = await handlePos("n2", "o:value");
-  const dst = await handlePos("n4", "i:b");
+  const dst = await handlePos("n6", "i:msg");
   if (src && dst) {
     await p.mouse.move(src.x, src.y);
     await p.mouse.down();
@@ -136,7 +138,7 @@ async function handlePos(nodeId, hid) {
   }
   const after = await count(".react-flow__edge");
   steps.push({
-    name: "RF: 合法连线能连上 (+1)",
+    name: "RF: 合法连线能连上 (连到空闲输入口, +1)",
     ok: after === before + 1,
     expect: `${before} -> ${before + 1}`,
     actual: `${after}`,
@@ -206,7 +208,61 @@ async function handlePos(nodeId, hid) {
   });
 }
 
-// 10. 无运行时错误
+// 10. 独占输入必须顶替, 不能双占 (这条写错了会产出非法图)
+{
+  const stat = () => p.evaluate(() => {
+    const t = document.body.innerText;
+    const e = /(\d+) 节点 \/ (\d+) 连线/.exec(t);
+    const er = /(\d+) 个错误/.exec(t);
+    return { edges: e ? +e[2] : -1, errors: er ? +er[1] : 0 };
+  });
+  await p.reload();
+  await p.waitForTimeout(2500);
+  const before = await stat();
+  const src = await handlePos("n2", "o:value");
+  const dst = await handlePos("n4", "i:b"); // n4.b 已被 n3 占用
+  if (src && dst) {
+    await p.mouse.move(src.x, src.y);
+    await p.mouse.down();
+    await p.mouse.move(dst.x, dst.y, { steps: 20 });
+    await p.waitForTimeout(150);
+    await p.mouse.up();
+    await p.waitForTimeout(700);
+  }
+  const after = await stat();
+  steps.push({
+    name: "RF: 独占输入被顶替而非双占 (走 applyConnect)",
+    ok: after.edges === before.edges && after.errors === 0,
+    expect: `连线数 ${before.edges} 不变、错误 0`,
+    actual: `连线 ${before.edges}->${after.edges}, 错误 ${after.errors}`,
+    shot: await h.shot("85-rf-replaces"),
+  });
+}
+
+// 11. 拖动必须合并成一步撤销
+{
+  const n0 = p.locator(".react-flow__node").first();
+  const before = await n0.evaluate((e) => e.style.transform);
+  const box = await n0.boundingBox();
+  await p.mouse.move(box.x + box.width / 2, box.y + 10);
+  await p.mouse.down();
+  await p.mouse.move(box.x + box.width / 2 + 110, box.y + 85, { steps: 25 });
+  await p.mouse.up();
+  await p.waitForTimeout(600);
+  const moved = await n0.evaluate((e) => e.style.transform);
+  await p.keyboard.press("Control+z");
+  await p.waitForTimeout(700);
+  const after = await n0.evaluate((e) => e.style.transform);
+  steps.push({
+    name: "RF: 拖动合并成一步 (一次 Ctrl+Z 回原位)",
+    ok: moved !== before && after === before,
+    expect: `${before} -> 移动 -> 一次撤销回到 ${before}`,
+    actual: `${before} -> ${moved} -> ${after}`,
+    shot: await h.shot("86-rf-move-coalesce"),
+  });
+}
+
+// 12. 无运行时错误
 steps.push({
   name: "RF: 控制台无错误 (SVG marker 等未误用)",
   ok: h.errors.length === 0,

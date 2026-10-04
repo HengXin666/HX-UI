@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import {
-  BlueprintFlow, useHistory, validateGraph, createRegistry, type BlueprintGraph,
+  BlueprintFlow, useHistory, validateGraph, createRegistry, autoLayout, applyLayout,
+  addComment, type BlueprintGraph,
 } from "@hx/ui";
 
 /**
@@ -29,6 +30,7 @@ export function RfPane({
   readonly onChange: (g: BlueprintGraph) => void;
 }): JSX.Element {
   const [selected, setSelected] = useState<readonly string[]>([]);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
   const history = useHistory();
   const historyRef = useRef(history);
   historyRef.current = history;
@@ -51,12 +53,38 @@ export function RfPane({
 
   const v = useMemo(() => validateGraph(registry, graph), [registry, graph]);
 
+  /**
+   * 提交一份新图, 并声明这一步在历史里怎么记。
+   *
+   * ⚠️ tag 的默认值**不能**无条件覆盖已经设好的 pendingTag。
+   *
+   *   踩过: 移动时 React Flow 先回调 onMoveKind 设了 tag="move", 紧接着
+   *   onGraphChange 又调 commit(默认 tag=null) 把它覆盖成 null ——
+   *   而 shouldCoalesce 一见 null 就不合并, 于是拖一次被拆成十几步,
+   *   要按十几次 Ctrl+Z 才回得去。实测拖一下需 6 次撤销。
+   *
+   *   所以: 外层已经声明过 tag 时**保留**它, 只在没声明时才用默认值。
+   */
   const commit = useCallback(
     (next: BlueprintGraph, tag: string | null = null, label?: string) => {
-      pendingTag.current = { tag, ...(label ? { label } : {}) };
+      if (!pendingTag.current) pendingTag.current = { tag, ...(label ? { label } : {}) };
       onChange(next);
     },
     [onChange]
+  );
+
+  /** 改参数。合并成一步 (连续输入不该每敲一个字记一步)。 */
+  const onParamChange = useCallback(
+    (nodeId: string, key: string, value: unknown) => {
+      pendingTag.current = { tag: "param", label: "改参数" };
+      onChange({
+        ...graph,
+        nodes: graph.nodes.map((n) =>
+          n.id === nodeId ? { ...n, params: { ...(n.params ?? {}), [key]: value } } : n
+        ),
+      });
+    },
+    [graph, onChange]
   );
 
   const undo = useCallback(() => {
@@ -78,10 +106,41 @@ export function RfPane({
         selected={selected}
         onSelect={setSelected}
         onGraphChange={(g) => commit(g)}
+        onMoveKind={(kind) => { pendingTag.current = { tag: kind === "move" ? "move" : null }; }}
+        onParamChange={onParamChange}
         onUndo={undo}
         onRedo={redo}
+        /** 注释: 给选中的节点套一个框 (快捷键 C)。 */
+        onComment={(ids) => {
+          const box = boundsOf(graph, ids);
+          if (box) commit(addComment(graph, box).graph, null, "加注释");
+        }}
+        onTidy={() => {
+          const layout = autoLayout(registry, graph);
+          commit(applyLayout(graph, layout), null, "整理布局");
+        }}
+        onRename={(id) => setRenamingId(id)}
         height="100%"
       />
     </div>
   );
+}
+
+/** 选中节点的包围盒 (给注释框用)。 */
+function boundsOf(
+  graph: BlueprintGraph,
+  ids: readonly string[]
+): { x: number; y: number; w: number; h: number } | null {
+  const set = new Set(ids);
+  const picked = graph.nodes.filter((n) => set.has(n.id));
+  if (!picked.length) return null;
+  const xs = picked.map((n) => n.x);
+  const ys = picked.map((n) => n.y);
+  const pad = 28;
+  return {
+    x: Math.min(...xs) - pad,
+    y: Math.min(...ys) - pad,
+    w: Math.max(...xs) - Math.min(...xs) + 220,
+    h: Math.max(...ys) - Math.min(...ys) + 120,
+  };
 }

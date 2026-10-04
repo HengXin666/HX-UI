@@ -19,8 +19,16 @@ import { isCommentNode, commentIdOf, type RfNode, type RfEdge } from "./rf-adapt
 export function useGraphChanges(o: {
   readonly graph: BlueprintGraph;
   readonly onGraphChange?: (next: BlueprintGraph) => void;
+  /**
+   * 告诉外层"这批 change 属于哪一类", 好让它给历史打 tag。
+   *
+   * 为什么需要: 拖动时 React Flow 每移动几像素就发一次 position change,
+   * 如果每次都当独立的一步, 拖一下要按十几次撤销才回得去 ——
+   * 那等于没有撤销。所以移动必须打同一个 tag 让历史合并。
+   */
+  readonly onKind?: (kind: "move" | "remove" | "other", label: string) => void;
 }) {
-  const { graph, onGraphChange } = o;
+  const { graph, onGraphChange, onKind } = o;
 
   const onNodesChange = useCallback(
     (changes: NodeChange<RfNode>[]) => {
@@ -48,9 +56,13 @@ export function useGraphChanges(o: {
           }
         }
       }
-      if (touched) onGraphChange?.({ ...next, ...(comments.length ? { comments } : {}) });
+      if (touched) {
+        const isMove = changes.every((c) => c.type === "position");
+        onKind?.(isMove ? "move" : "remove", isMove ? "移动节点" : "删除节点");
+        onGraphChange?.({ ...next, ...(comments.length ? { comments } : {}) });
+      }
     },
-    [graph, onGraphChange]
+    [graph, onGraphChange, onKind]
   );
 
   const onEdgesChange = useCallback(
