@@ -119,6 +119,15 @@ export type {
 } from "./blueprint/types";
 export * from "./blueprint/geometry";
 export {
+  buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson,
+  type AgentNode, type AgentEdge, type AgentGraph, type AgentComment,
+  type AgentBuildInput, type AgentBuildResult,
+} from "./blueprint/agent";
+export {
+  createBlueprintTools, toolManifest, dispatchTool,
+  type ToolDef, type ToolResult, type ToolContext,
+} from "./blueprint/tools";
+export {
   SyncChannel, createBroadcastTransport, createStorageTransport,
   graphFromUrl, graphToHash,
   type SyncMessage, type SyncTransport, type SyncOptions,

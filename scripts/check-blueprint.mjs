@@ -39,6 +39,8 @@ export * from "../../src/blueprint/demo";
 export * from "../../src/blueprint/geometry";
 export * from "../../src/blueprint/layout";
 export * from "../../src/blueprint/sync";
+export * from "../../src/blueprint/agent";
+export * from "../../src/blueprint/tools";
 export * from "../../src/blueprint/subgraph";
 export * from "../../src/blueprint/comment";
 export * from "../../../HX-Blueprint-Demo/src/dsh/nodes";
@@ -91,6 +93,8 @@ import {
   createDshRegistry, NODES, dshAgentLoopGraph, COLLAPSIBLE_GROUPS,
   resolvePort, autoLayout, applyLayout, countCrossings,
   graphFromUrl, graphToHash,
+  buildFromAgent, countOverlaps, describeGraph, describeRegistry, graphFromJson,
+  createBlueprintTools, toolManifest, dispatchTool,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -657,6 +661,239 @@ const G0 = {
   // 坏输入不能抛
   ok("非法 URL 参数返回 null", graphFromUrl("#graph=!!!notbase64!!!") === null);
   ok("没有 graph 参数返回 null", graphFromUrl("#src=dsh") === null);
+}
+
+// ── 13. Agent API: 输入宽松, 输出必须人类可读 ──
+{
+  const dsh = createDshRegistry();
+  registerTunnels(dsh);
+
+  /**
+   * 最典型的 Agent 输入: 只说有什么节点、怎么连, **一个坐标都不给**。
+   * 这正是之前"叠成一坨"的用法 —— 现在必须摆得好看。
+   */
+  const built = buildFromAgent(dsh, {
+    nodes: [
+      { key: "start", type: "agentCreated" },
+      { key: "kick", type: "kick" },
+      { key: "turn", type: "turnStart" },
+      { key: "claim", type: "claim" },
+      { key: "pre", type: "preStep" },
+      { key: "step", type: "stepStart" },
+      { key: "prep", type: "prepareRequest" },
+      { key: "stream", type: "stream" },
+      { key: "finish", type: "checkFinish" },
+      { key: "asst", type: "appendAssistant" },
+      { key: "tools", type: "checkToolCalls" },
+    ],
+    edges: [
+      { from: "start", to: "kick" },
+      { from: "kick", to: "turn" },
+      { from: "turn", to: "claim" },
+      { from: "claim", to: "pre" },
+      { from: "pre", to: "step" },
+      { from: "step", to: "prep" },
+      { from: "prep", to: "stream" },
+      { from: "stream", to: "finish" },
+      { from: "finish", to: "asst" },
+      { from: "asst", to: "tools" },
+    ],
+  });
+
+  ok("Agent 不写坐标也能建图", built.graph.nodes.length === 11);
+  ok("全部连线都被接受", built.rejected.length === 0);
+  if (built.rejected.length) console.log("    被拒:", JSON.stringify(built.rejected.slice(0, 3)));
+
+  // ★ 核心判据: 不重叠。叠在一起的图对人类等于没有。
+  ok("★ Agent 建的图无重叠 (布局质量)", built.layoutReport.overlaps === 0);
+  ok("跑了自动布局", built.layoutReport.auto === true);
+  console.log("    (Agent 图: 重叠 " + built.layoutReport.overlaps +
+    " / 交叉 " + built.layoutReport.crossings +
+    " / 重试 " + built.layoutReport.retries + ")");
+
+  // 分层: 绝大多数执行边从左往右
+  const posOf = new Map(built.graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
+  const keyToId = built.ids;
+  const fw = built.graph.edges.filter((e) => {
+    const a = posOf.get(e.from.node)!; const b = posOf.get(e.to.node)!;
+    return a.x < b.x;
+  });
+  ok("★ 执行流整体是从左往右 (有层次, 不是一坨)", fw.length >= built.graph.edges.length - 1);
+
+  // 校验通过
+  ok("Agent 建的图校验通过", validateGraph(dsh, built.graph).issues.every((i) => i.level !== "error"));
+
+  // key -> id 映射可用: Agent 下一轮要能精确改
+  ok("返回了 key -> id 映射", built.ids.size === 11 && [...built.ids.keys()].includes("kick"));
+
+  /**
+   * 非法连线: 要被拒, 且说清为什么。
+   *
+   * 用 demo registry 造一条**类型不匹配**的边: number 的 number 输出
+   * 连进 compare 的 boolean 型输入不存在, 所以换成 text(string) -> math(number),
+   * string 与 number 不相容, 必然被拒。
+   */
+  const bad = buildFromAgent(demo, {
+    nodes: [{ key: "t", type: "text" }, { key: "m", type: "math" }],
+    edges: [{ from: "t.value", to: "m.a" }], // string -> number, 类型不合
+  });
+  ok("非法连线被拒绝", bad.rejected.length >= 1);
+  ok("拒绝时给了原因", (bad.rejected[0]?.reason ?? "").length > 0);
+  ok("★ 即使有非法边, 仍然返回能画的图", bad.graph.nodes.length === 2);
+  ok("被拒的边不会进图", bad.graph.edges.length === 0);
+  if (bad.rejected[0]) console.log("    拒绝原因:", bad.rejected[0].reason, "/", bad.rejected[0].message);
+
+  // ── 找不到节点 ──
+  const ghost = buildFromAgent(dsh, {
+    nodes: [{ key: "a", type: "agentCreated" }],
+    edges: [{ from: "a", to: "不存在的节点" }],
+  });
+  ok("连到不存在的 key 会被拒并列出可用 key", ghost.rejected.length === 1 && ghost.rejected[0].message.includes("可用"));
+
+  // ── 重复 key ──
+  const dup = buildFromAgent(dsh, {
+    nodes: [{ key: "x", type: "agentCreated" }, { key: "x", type: "kick" }],
+  });
+  ok("重复 key 自动改名而不是抛错", dup.graph.nodes.length === 2 && dup.warnings.some((w) => w.includes("重复")));
+
+  // ── 未知类型: 警告但仍建出来 ──
+  const unk = buildFromAgent(dsh, { nodes: [{ key: "u", type: "完全不存在的类型" }] });
+  ok("未知类型给警告而不是抛错", unk.graph.nodes.length === 1 && unk.warnings.length > 0);
+
+  // ── 显式坐标被尊重 ──
+  const manual = buildFromAgent(dsh, {
+    nodes: [
+      { key: "a", type: "agentCreated", x: 0, y: 0 },
+      { key: "b", type: "kick", x: 400, y: 0 },
+    ],
+    edges: [{ from: "a", to: "b" }],
+  });
+  ok("给了坐标就不重排", manual.layoutReport.auto === false &&
+    manual.graph.nodes.find((n) => n.x === 0).x === 0);
+
+  // ── 重叠的显式坐标会被指出 ──
+  const overlapManual = buildFromAgent(dsh, {
+    nodes: [
+      { key: "a", type: "agentCreated", x: 0, y: 0 },
+      { key: "b", type: "kick", x: 10, y: 10 },
+    ],
+  });
+  ok("显式坐标重叠会被提示", overlapManual.warnings.some((w) => w.includes("重叠")));
+
+  // ── 注释: 按节点算包围盒 ──
+  const withComment = buildFromAgent(dsh, {
+    nodes: [
+      { key: "a", type: "agentCreated" }, { key: "b", type: "kick" }, { key: "c", type: "turnStart" },
+    ],
+    edges: [{ from: "a", to: "b" }, { from: "b", to: "c" }],
+    comments: [{ title: "启动流程", nodes: ["a", "b"] }],
+  });
+  ok("注释被建出来", (withComment.graph.comments ?? []).length === 1);
+  const cm = withComment.graph.comments?.[0];
+  const inC = cm ? nodesInComment(dsh, withComment.graph, cm.id) : [];
+  ok("★ 注释确实包住了它声明的节点", inC.length === 2);
+  if (inC.length !== 2) console.log("    注释包住:", inC.length, JSON.stringify(cm));
+
+  // ── 给 Agent 读的摘要 ──
+  const desc = describeGraph(dsh, built.graph);
+  ok("图摘要包含节点标签", desc.length > 0 && desc.includes("kick"));
+  const regDesc = describeRegistry(dsh);
+  ok("注册表摘要包含类型与端口", regDesc.includes("kick") && regDesc.includes("入") || regDesc.includes("出"));
+
+  // ── 从 JSON 读 ──
+  ok("能从 JSON 读图", graphFromJson({ nodes: [{ id: "a", type: "kick", x: 0, y: 0 }], edges: [] }) !== null);
+  ok("坏 JSON 返回 null", graphFromJson("nope") === null);
+}
+
+// ── 14. MCP 风格工具面 ──
+{
+  const dsh = createDshRegistry();
+  registerTunnels(dsh);
+
+  // 宿主保管图; 工具只做变换
+  let current = { nodes: [], edges: [] };
+  const tools = createBlueprintTools({
+    registry: dsh,
+    getGraph: () => current,
+    setGraph: (g) => { current = g; },
+  });
+
+  ok("工具集建立", tools.length >= 8);
+  const names = tools.map((t) => t.name);
+  ok("每个工具都有名字与 schema", tools.every((t) => t.name && t.inputSchema));
+  ok("清单能被列出来 (给 MCP 客户端)", toolManifest(tools).length === tools.length);
+
+  // 1) Agent 先问"我能用什么节点"
+  const listed = await dispatchTool(tools, "list_node_types");
+  ok("list_node_types 列出了类型", listed.ok && listed.text.includes("kick"));
+
+  // 2) 建图 —— 不给坐标
+  const built = await dispatchTool(tools, "build_graph", {
+    nodes: [
+      { key: "start", type: "agentCreated" },
+      { key: "kick", type: "kick" },
+      { key: "turn", type: "turnStart" },
+      { key: "claim", type: "claim" },
+      { key: "pre", type: "preStep" },
+      { key: "step", type: "stepStart" },
+      { key: "stream", type: "stream" },
+    ],
+    edges: [
+      { from: "start", to: "kick" }, { from: "kick", to: "turn" },
+      { from: "turn", to: "claim" }, { from: "claim", to: "pre" },
+      { from: "pre", to: "step" }, { from: "step", to: "stream" },
+    ],
+  });
+  ok("★ build_graph 成功", built.ok);
+  ok("★ 建出的图无重叠 (布局质量硬要求)", countOverlaps(dsh, current) === 0);
+  ok("节点数与边数正确", current.nodes.length === 7 && current.edges.length === 6);
+
+  // 3) 查看
+  const seen = await dispatchTool(tools, "inspect_graph");
+  ok("inspect_graph 能读回图", seen.ok && seen.text.includes("kick"));
+
+  // 4) 校验
+  // 这条链故意少了一环 (step -> stream, 跳过了 freeze), 所以 stream 的
+  // request 会缺。判据是: 校验工具如实报出来, 而不是静默放过。
+  const vres = await dispatchTool(tools, "validate_graph");
+  ok("validate_graph 如实报出缺失", !vres.ok && vres.text.includes("缺少输入"));
+  ok("★ 缺失被翻译成 key, 便于 Agent 补边", String(built.text).includes("必填输入"));
+
+  // 5) 整理布局: 打乱坐标后重排, 必须回到无重叠
+  current = { ...current, nodes: current.nodes.map((n) => ({ ...n, x: 5, y: 5 })) };
+  ok("打乱后确实重叠", countOverlaps(dsh, current) > 0);
+  const tidied = await dispatchTool(tools, "tidy_layout");
+  ok("★ tidy_layout 把重叠消掉了", tidied.ok && countOverlaps(dsh, current) === 0);
+
+  // 6) 分析
+  const ana = await dispatchTool(tools, "analyze_graph");
+  ok("analyze_graph 给出结构结论", ana.ok && ana.text.includes("节点"));
+
+  // 7) 导出 / 导入往返
+  const exported = await dispatchTool(tools, "export_graph", { format: "json" });
+  ok("export_graph 出 JSON", exported.ok && typeof exported.text === "string");
+  const imported = await dispatchTool(tools, "import_graph", { json: exported.text });
+  ok("★ 导出再导入后节点数不变", imported.ok && current.nodes.length === 7);
+
+  // 8) 伪代码
+  const pseudo = await dispatchTool(tools, "export_graph", { format: "pseudo" });
+  ok("能导出伪代码", pseudo.ok && pseudo.text.length > 0);
+
+  // 9) 运行
+  const run = await dispatchTool(tools, "run_graph");
+  ok("run_graph 不抛 (有错也返回结果)", typeof run.ok === "boolean" && typeof run.text === "string");
+
+  // 10) 错误处理: 未知工具 / 坏输入
+  const unknown = await dispatchTool(tools, "不存在的工具");
+  ok("未知工具返回失败而不是抛", !unknown.ok && unknown.text.includes("可用"));
+  const badJson = await dispatchTool(tools, "import_graph", { json: "{坏数据" });
+  ok("坏 JSON 返回失败而不是抛", !badJson.ok);
+  ok("坏 JSON 不会弄坏当前图", current.nodes.length === 7);
+
+  // 11) 没有打开图时也要优雅
+  const bare = createBlueprintTools({ registry: dsh });
+  const noGraph = await dispatchTool(bare, "inspect_graph");
+  ok("没有图时返回友好提示", !noGraph.ok && noGraph.text.includes("没有"));
 }
 
 console.log("");

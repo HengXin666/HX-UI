@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { Badge } from "@hx/ui";
-import { DshDemo, OtherDomainDemo, NODES, dshAgentLoopGraph } from "@hx/blueprint-demo";
+import { DshDemo, OtherDomainDemo, AgentApiDemo, NODES, dshAgentLoopGraph } from "@hx/blueprint-demo";
 import { H2, P, Preview, Callout, Code, CodeBlock } from "../components/DocKit";
 
 /**
@@ -106,6 +106,67 @@ export function BlueprintDshPage(): JSX.Element {
         9 种自定义数据类型，全部写在一个文件里，没有改蓝图库一行代码。
         要加一个"子 Agent 调度"节点，就是再加一条 <Code>registry.node(...)</Code> 然后连上去。
       </P>
+
+      <H2>给 Agent 用的 API</H2>
+      <P>
+        自定义节点的 API 是给<strong>人</strong>写节点用的。Agent 需要的是另一回事:
+        它不该操心坐标, 也不该因为连错一条线就拿不到整张图。
+      </P>
+      <P>
+        所以另有一层 <Code>buildFromAgent()</Code>: <strong>输入极宽松, 输出极严格</strong>。
+        不用坐标、可以用自己顺手的 key、连线只写节点名 (端口由两端能力推断)。
+        输出则保证: 坐标算好、id 稳定、非法边被拒且<strong>说清为什么</strong>。
+      </P>
+      <Preview align="stretch">
+        <AgentApiDemo />
+      </Preview>
+      <P>
+        三条关键的取舍:
+      </P>
+      <P>
+        <strong>一、即使有错也返回能画的图。</strong>Agent 是迭代式的 —— 它先写一版,
+        看报错再修。非法就返回 null 会让它凭空重试; 返回一张"尽力修复过"的图 +
+        一份问题清单, 它下一轮就能精确改那一条。
+      </P>
+      <P>
+        <strong>二、布局质量是硬要求, 不是优化项。</strong>叠在一起的图对人类等于没有。
+        所以只要没显式给坐标就跑分层布局, 并且<strong>自检</strong>: 有重叠就加大间距重排,
+        最多重试三次。上面那个「重叠 N 处」的徽标就是这条的判据。
+      </P>
+      <P>
+        <strong>三、错误翻译成 Agent 能用的语言。</strong>校验层报的错挂在节点 id 上
+        (<Code>n1b2c3</Code> 这种), Agent 看到也不知道是哪个 key。所以另做一层翻译,
+        报成「节点 "stream" 有必填输入没有连上」, 它下一轮就知道该补哪条边。
+      </P>
+
+      <H2>MCP 风格的工具面</H2>
+      <P>
+        再往上一层是<strong>自描述的工具</strong>: 每个工具有名字、有 JSON Schema、
+        有说明文字。Agent 读一遍清单就知道能干什么, 不需要看源码。
+      </P>
+      <CodeBlock code={`const tools = createBlueprintTools({
+  registry,
+  getGraph: () => graph,
+  setGraph: setGraph,
+});
+
+// 清单直接给 MCP 客户端
+toolManifest(tools);
+
+// 派发: 失败不抛, 返回 ok:false 加原因
+const r = await dispatchTool(tools, "build_graph", { nodes: [...], edges: [...] });`} />
+      <P>
+        九个工具: <Code>list_node_types</Code> <Code>build_graph</Code>{" "}
+        <Code>inspect_graph</Code> <Code>validate_graph</Code> <Code>tidy_layout</Code>{" "}
+        <Code>run_graph</Code> <Code>analyze_graph</Code> <Code>export_graph</Code>{" "}
+        <Code>import_graph</Code>。上面演示页里的按钮就是它们, 点了能看到
+        Agent 视角拿到的文本。
+      </P>
+      <Callout title="工具是纯函数">
+        不持有状态 —— 图由调用方保管, 工具只做变换。所以它能在后端、在 worker、
+        在浏览器里跑, 也能并发。这也是为什么 <Code>setGraph</Code> 是可选的:
+        只读场景传个 registry 就能用。
+      </Callout>
 
       <H2>换个领域</H2>
       <P>
