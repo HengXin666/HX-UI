@@ -238,6 +238,7 @@ export function collapseToSubgraph(
   };
 
   const outerEdges: BlueprintEdge[] = [];
+  const seenOuter = new Set<string>();
   for (const e of graph.edges) {
     const fromIn = inside.has(e.from.node);
     const toIn = inside.has(e.to.node);
@@ -249,9 +250,22 @@ export function collapseToSubgraph(
 
     const m = b.remap.get(e.id);
     if (!m) continue;
+    /**
+     * 去重键必须包含**两端**。
+     *
+     * 第一版只判了 "in" 分支的重复, 而且键里没有 from —— 实测踩到:
+     * 一个节点有两个执行出口都连到外面时 (例如 mode 的 parallel 出口
+     * 同时连到并行池和 skip), 折叠后两条边映到子图节点的同一个出口上,
+     * 若对端节点也相同就产出完全重复的边, 而校验报的是
+     * `duplicate-edge @undefined` —— 连是哪个节点都说不出。
+     */
+    const key = m.dir === "in"
+      ? `${e.from.node}.${e.from.port}>${subNode.id}.${m.port}`
+      : `${subNode.id}.${m.port}>${e.to.node}.${e.to.port}`;
+    if (seenOuter.has(key)) continue;
+    seenOuter.add(key);
     if (m.dir === "in") {
-      const dup = outerEdges.some((x) => x.to.node === subNode.id && x.to.port === m.port && x.from.node === e.from.node && x.from.port === e.from.port);
-      if (!dup) outerEdges.push({ id: makeId("e"), from: e.from, to: { node: subNode.id, port: m.port }, kind: e.kind });
+      outerEdges.push({ id: makeId("e"), from: e.from, to: { node: subNode.id, port: m.port }, kind: e.kind });
     } else {
       outerEdges.push({ id: makeId("e"), from: { node: subNode.id, port: m.port }, to: e.to, kind: e.kind });
     }

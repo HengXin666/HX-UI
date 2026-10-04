@@ -39,6 +39,8 @@ export * from "../../src/blueprint/demo";
 export * from "../../src/blueprint/geometry";
 export * from "../../src/blueprint/subgraph";
 export * from "../../src/blueprint/comment";
+export * from "../../../HX-Blueprint-Demo/src/dsh/nodes";
+export * from "../../../HX-Blueprint-Demo/src/dsh/graph";
 `;
 
 const VITE_CFG = `import { defineConfig } from "vite";
@@ -84,6 +86,8 @@ import {
   collapseToSubgraph, expandSubgraph, subgraphAsGraph, subgraphRefCount,
   boundaryPorts, registerTunnels, TUNNEL_IN, TUNNEL_OUT,
   addComment, commentAround, moveCommentWithNodes, nodesInComment, commentContains,
+  createDshRegistry, NODES, dshAgentLoopGraph, COLLAPSIBLE_GROUPS,
+  resolvePort,
 } from ${JSON.stringify(OUT)};
 
 let pass = 0, fail = 0;
@@ -193,8 +197,37 @@ const G0 = {
   ok("检出环", findCycles(cyc).length === 1);
   ok("有环时 topoSort 返回 null", topoSort(cyc) === null);
   const vc = validateGraph(demo, cyc);
-  // 环是"一组边"的属性, 不是某个节点的属性 —— 挂在边上才指得对要删什么
-  ok("环的报错挂在边上", vc.issues.some((i) => i.code === "cycle" && (i.edgeIds ?? []).length === 2));
+  /**
+   * 静态校验不再报数据环 —— 环检测只看执行流边。
+   *
+   * 为什么: 拿数据边判环会误判。agent loop 里一条横跨两段的数据边
+   * (assemble -> admitPrompt) 会被圈进执行回路里, 于是纯控制流循环
+   * 被判成"数据依赖环"而报错。数据在图上并没有回环, 回环的是控制流。
+   *
+   * 数据依赖的环由**求值器**负责 (evaluating 集合 + "求值过程中出现循环依赖"),
+   * 它落在具体节点上, 比静态报更准。下面这条断言就是那条路径。
+   */
+  ok("静态校验不因数据环报错", vc.issues.every((i) => i.level !== "error" || i.code !== "cycle"));
+  const cycEval = await evaluateGraph(demo, cyc);
+  ok("数据环由求值器报出 (落在具体节点)", !cycEval.ok && [...cycEval.errors.values()].some((m) => m.includes("循环依赖")));
+  if (![...cycEval.errors.values()].some((m) => m.includes("循环依赖"))) console.log("    求值器 errors:", JSON.stringify([...cycEval.errors]), "outputs:", JSON.stringify([...cycEval.outputs.keys()]));
+
+  // 执行流回路是刻意的, 只给 warning, 不算错误
+  // 两个 log 节点互连: 都有 execIn/execOut, 回路两端都是真实端口
+  const execLoop = {
+    nodes: [
+      { id: "la", type: "log", x: 0, y: 0 },
+      { id: "lb", type: "log", x: 200, y: 0 },
+    ],
+    edges: [
+      { id: "e1", from: { node: "la", port: "then" }, to: { node: "lb", port: "exec-in" }, kind: "exec" },
+      { id: "e2", from: { node: "lb", port: "then" }, to: { node: "la", port: "exec-in" }, kind: "exec" },
+    ],
+  };
+  ok("执行流回路被检出", findCycles(execLoop, execLoop.edges.filter((e) => e.kind === "exec")).length === 1);
+  const vl = validateGraph(demo, execLoop);
+  ok("执行流回路只给 warning, 不算错误", vl.issues.some((i) => i.code === "cycle" && i.level === "warning") && vl.issues.every((i) => i.level !== "error"));
+  console.log("    执行回路的 issues:", JSON.stringify(vl.issues.map((i) => i.level + ":" + i.code)));
 
   const up = upstreamOf(demoGraph, "n6");
   ok("上游递归正确", up.has("n5") && up.has("n4") && up.has("n2"));
@@ -350,6 +383,98 @@ const G0 = {
   });
   ok("悬空边被丢弃", dirty.edges.length === 0);
   ok("垃圾输入返回 null", parseGraph("nonsense") === null);
+}
+
+// ── 10. dsh agent loop 图 (使用方演示包的实体图) ──
+{
+  const dsh = createDshRegistry();
+  registerTunnels(dsh);
+
+  // 节点定义齐不齐: 图里用到的每个 type 都必须注册过
+  const usedTypes = new Set(dshAgentLoopGraph.nodes.map((n) => n.type));
+  const missing = [...usedTypes].filter((t) => !dsh.nodeTypes.has(t));
+  ok("图里用到的节点类型都已注册", missing.length === 0);
+  if (missing.length) console.log("    缺失:", missing);
+
+  // 自定义数据类型生效: context/messages 等必须能连
+  ok("自定义数据类型已注册", dsh.assignable("messages", "any") && dsh.assignable("decision", "any"));
+  ok("不同类型之间不通", !dsh.assignable("messages", "decision"));
+
+  // 整图校验
+  const vd = validateGraph(dsh, dshAgentLoopGraph);
+  ok("dsh 图校验通过", vd.ok);
+  if (!vd.ok) console.log("    dsh 图报错:", JSON.stringify(vd.issues.filter((i)=>i.level==="error").map((i) => i.code + " @" + (i.nodeIds ?? []).join(",")), null, 1));
+  console.log("    回路(warning):", vd.issues.filter((i)=>i.level==="warning").length, "条");
+
+  // 每条边都要能被解析成真实端口 —— 这是"图连对了"的最低判据
+  const dangling = dshAgentLoopGraph.edges.filter(
+    (e) => !resolvePort(dsh, dshAgentLoopGraph, e.from, "out") || !resolvePort(dsh, dshAgentLoopGraph, e.to, "in")
+  );
+  ok("没有悬空边 (每条线两端都是真实端口)", dangling.length === 0);
+  if (dangling.length) console.log("    悬空边:", JSON.stringify(dangling.slice(0, 5)));
+
+  // 执行流不能连到数据口
+  const mixed = dshAgentLoopGraph.edges.filter((e) => {
+    const a = resolvePort(dsh, dshAgentLoopGraph, e.from, "out");
+    const b = resolvePort(dsh, dshAgentLoopGraph, e.to, "in");
+    return a && b && a.isExec !== b.isExec;
+  });
+  ok("没有执行流/数据流混连", mixed.length === 0);
+
+  // 每个节点都可达 (从入口出发)。孤儿节点说明漏连了。
+  const reachable = new Set();
+  const stack = ["created"];
+  const adj = new Map();
+  for (const e of dshAgentLoopGraph.edges) {
+    if (!adj.has(e.from.node)) adj.set(e.from.node, []);
+    adj.get(e.from.node).push(e.to.node);
+  }
+  while (stack.length) {
+    const u = stack.pop();
+    if (reachable.has(u)) continue;
+    reachable.add(u);
+    for (const w of adj.get(u) ?? []) stack.push(w);
+  }
+  const orphans = dshAgentLoopGraph.nodes.filter((n) => !reachable.has(n.id)).map((n) => n.id);
+  ok("没有孤儿节点 (全部从 agent 创建可达)", orphans.length === 0);
+  if (orphans.length) console.log("    孤儿:", orphans);
+
+  // 源码里的关键控制流必须体现在图上
+  const hasEdge = (f, fp, t) => dshAgentLoopGraph.edges.some((e) => e.from.node === f && e.from.port === fp && e.to.node === t);
+  ok("重试回到 prepareRequest (复用已渲染组装)", hasEdge("requestError", "retry", "prepare"));
+  ok("被拒绝时不进步骤, 直接 turnEnd", hasEdge("checkReject", "reject", "turnEnd"));
+  ok("首步输入为空时直接 turnEnd", hasEdge("checkEmpty", "empty", "turnEnd"));
+  ok("还有待处理时回到 kick 再来一轮", hasEdge("wake", "again", "kick"));
+  ok("本轮内继续走下一步", hasEdge("checkContinue", "continue", "stepStart"));
+  ok("独占模式走屏障", hasEdge("mode", "exclusive", "exclusive"));
+  ok("并行模式走有界池", hasEdge("mode", "parallel", "parallel"));
+
+  // 区间注释: 每个注释都要真的包住点东西, 否则是画错了位置
+  for (const c of dshAgentLoopGraph.comments ?? []) {
+    const inside = nodesInComment(dsh, dshAgentLoopGraph, c.id);
+    ok("注释「" + c.title + "」包住了节点", inside.length > 0);
+  }
+
+  // 可折叠分组: 折叠后必须仍是一张合法的图, 且节点数减少
+  for (const [label, ids] of Object.entries(COLLAPSIBLE_GROUPS)) {
+    const g = collapseToSubgraph(dsh, dshAgentLoopGraph, ids, { label });
+    ok("折叠「" + label + "」后节点数减少", g.nodes.length < dshAgentLoopGraph.nodes.length);
+    ok("折叠「" + label + "」后校验通过", validateGraph(dsh, g).issues.every((i) => i.level !== "error"));
+    const vg = validateGraph(dsh, g);
+    const verr = vg.issues.filter((i) => i.level === "error");
+    if (verr.length) console.log("    折叠「" + label + "」报错:", JSON.stringify(verr.slice(0, 4).map((i)=>i.code+" @"+i.nodeIds), null, 1));
+    const sub = g.nodes.find((n) => n.subgraph);
+    ok("折叠「" + label + "」后能进子图", !!subgraphAsGraph(g, sub.subgraph));
+  }
+
+  // 三个分组全部折叠: 图应该塌成很小但依然合法 —— 这是"分层能压住复杂度"的证据
+  let all = dshAgentLoopGraph;
+  for (const [label, ids] of Object.entries(COLLAPSIBLE_GROUPS)) {
+    all = collapseToSubgraph(dsh, all, ids, { label });
+  }
+  ok("三层全折叠后仍校验通过", validateGraph(dsh, all).issues.every((i) => i.level !== "error"));
+  ok("三层全折叠后节点数大幅下降", all.nodes.length <= dshAgentLoopGraph.nodes.length - 15);
+  console.log("    (dsh 图: " + dshAgentLoopGraph.nodes.length + " 节点 -> 全折叠后 " + all.nodes.length + " 节点)");
 }
 
 console.log("");

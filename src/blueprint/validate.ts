@@ -192,14 +192,51 @@ export function validateGraph(
   }
 
   // ── L3 全局: 环 ──────────────────────────────────────────────────
-  for (const cycle of findCycles(graph, liveEdges)) {
-    push({
-      code: "cycle",
-      level: "error",
-      message: `存在循环: ${cycle.join(" → ")}`,
-      edgeIds: cycleEdges(liveEdges, cycle).map((e) => e.id),
-      nodeIds: cycle,
-    });
+  /**
+   * 环检测只看**执行流边**。
+   *
+   * 数据边不参与: 它是"取值"不是"控制流"。拿数据边去判环会误判 ——
+   * 实测踩到过: agent loop 里 `assemble → admitPrompt` 是一条横跨
+   * "轮次"与"步骤"两段的数据边, 而这两段之间又有执行流回路,
+   * 于是那条数据边被圈进执行环, 整个环被判成"数据环"而报错。
+   * 实际上数据在图上从来没有回环, 是控制流在回环。
+   *
+   * 那数据依赖的环就不管了吗? 管 —— 求值器里有独立的环保护
+   * (`evaluating` 集合), 它报的是"求值过程中出现循环依赖", 且落在具体节点上,
+   * 比在这里静态报更准。这里的职责是"图能不能连", 不是"值能不能算出来"。
+   */
+  const execEdges = liveEdges.filter((e) => e.kind === "exec");
+
+  /**
+   * 只有**数据流**上的环才是错误。
+   *
+   * 执行流上的回路是 agent loop 这类东西的正常形态 —— "做完再来一轮"
+   * 就是一条回到起点的边。把执行回路报成错误, 会让所有带循环的图
+   * 永远红着, 于是人们只能关掉这条规则, 那时真正的数据环也没人管了。
+   *
+   * 所以判据是: 环里只要有一条**数据边**就报错; 纯执行回路放行。
+   * 数据环是真错误, 因为求值无法确定顺序 —— 上游依赖下游的值。
+   */
+  for (const cycle of findCycles(graph, execEdges)) {
+    const edgesOnCycle = cycleEdges(execEdges, cycle);
+    const hasData = edgesOnCycle.some((e) => e.kind !== "exec");
+    if (hasData) {
+      push({
+        code: "cycle",
+        level: "error",
+        message: `数据依赖存在循环: ${cycle.join(" → ")}`,
+        edgeIds: edgesOnCycle.map((e) => e.id),
+        nodeIds: cycle,
+      });
+    } else {
+      push({
+        code: "cycle",
+        level: "warning",
+        message: `执行流回路: ${cycle.join(" → ")} (循环是刻意的, 不是错误)`,
+        edgeIds: edgesOnCycle.map((e) => e.id),
+        nodeIds: cycle,
+      });
+    }
   }
 
   // ── L4 业务钩子 ──────────────────────────────────────────────────
@@ -270,9 +307,24 @@ export function validateGraph(
 }
 
 /** 环上那些边 (用于把红线画在边上)。 */
+/**
+ * 构成这个环的那些边。
+ *
+ * 判据是"首尾相接", 不是"两端都落在环节点集合里" —— 后者会把环上节点之间
+ * 的**其它**边也圈进来。实测踩到过: agent loop 的图里 kick/turnStart/.../wake
+ * 之间是执行流回路, 但 claim 与 preStep 之间还有一条数据边, 按集合匹配会把
+ * 那条数据边算进环里, 于是纯执行回路被误判成数据环而报错。
+ */
 function cycleEdges(edges: readonly BlueprintEdge[], cycle: readonly string[]): BlueprintEdge[] {
-  const set = new Set(cycle);
-  return edges.filter((e) => set.has(e.from.node) && set.has(e.to.node));
+  const out: BlueprintEdge[] = [];
+  for (let i = 0; i < cycle.length; i++) {
+    const from = cycle[i];
+    const to = cycle[(i + 1) % cycle.length];
+    for (const e of edges) {
+      if (e.from.node === from && e.to.node === to) out.push(e);
+    }
+  }
+  return out;
 }
 
 /**

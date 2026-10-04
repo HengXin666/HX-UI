@@ -45,6 +45,7 @@ import { FeedbackPage } from "./pages/FeedbackPage";
 import { DataTablePage } from "./pages/DataTablePage";
 import { ChromePage } from "./pages/ChromePage";
 import { BlueprintPage } from "./pages/BlueprintPage";
+import { BlueprintDshPage } from "./pages/BlueprintDshPage";
 
 /**
  * 组件文档站。
@@ -94,6 +95,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "empty-state":
     case "page-header": return <ChromePage />;
     case "blueprint": return <BlueprintPage />;
+    case "blueprint-dsh": return <BlueprintDshPage />;
     default: return <PlaceholderPage label={entry.label} desc={entry.desc} />;
   }
 }

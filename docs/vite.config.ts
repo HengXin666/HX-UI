@@ -9,6 +9,7 @@ export default defineConfig({
     alias: {
       // 直接指向源码, 改库能立即在文档里看到, 不必先 pack
       "@hx/ui": path.resolve(import.meta.dirname, "../src/index.ts"),
+      "@hx/blueprint-demo": path.resolve(import.meta.dirname, "../../HX-Blueprint-Demo/src/index.ts"),
     },
     /**
      * 关键: 强制单一 React 实例。

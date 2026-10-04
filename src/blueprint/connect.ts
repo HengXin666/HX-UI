@@ -105,7 +105,10 @@ export function nodeShape(
   reg: BlueprintRegistry,
   graph: ConnectableGraph,
   nodeId: string
-): Required<Pick<NodeTypeDef, "inputs" | "outputs" | "execIn" | "execOut">> & { readonly isSubgraph: boolean } {
+): Required<Pick<NodeTypeDef, "inputs" | "outputs" | "execIn" | "execOut">> & {
+  readonly isSubgraph: boolean;
+  readonly multiExecIn: boolean;
+} {
   const node = graph.nodes.find((n) => n.id === nodeId);
   const def = node ? reg.nodeTypes.get(node.type) : undefined;
 
@@ -118,6 +121,7 @@ export function nodeShape(
       outputs: sg?.outputs ?? [],
       execIn: sg?.execIn ?? false,
       execOut: sg?.execOut ?? [],
+      multiExecIn: sg?.multiExecIn ?? false,
       isSubgraph: true,
     };
   }
@@ -127,6 +131,7 @@ export function nodeShape(
     outputs: node?.ports?.outputs ?? def?.outputs ?? [],
     execIn: node?.ports?.execIn ?? def?.execIn ?? false,
     execOut: node?.ports?.execOut ?? def?.execOut ?? [],
+    multiExecIn: node?.ports?.multiExecIn ?? def?.multiExecIn ?? false,
     isSubgraph: false,
   };
 }
@@ -148,7 +153,7 @@ export function resolvePort(
 
   // 执行端口: 入口只有一个, 出口按形貌
   if (dir === "in" && shape.execIn && ref.port === EXEC_IN_PORT) {
-    return { port: { id: EXEC_IN_PORT, type: EXEC }, isExec: true };
+    return { port: { id: EXEC_IN_PORT, type: EXEC, multi: shape.multiExecIn }, isExec: true };
   }
   if (dir === "out" && execOutIds(shape).includes(ref.port)) {
     return { port: { id: ref.port, type: EXEC }, isExec: true };
@@ -156,6 +161,22 @@ export function resolvePort(
 
   const port = findPort(dir === "in" ? shape.inputs : shape.outputs, ref.port);
   return port ? { port, isExec: false } : undefined;
+}
+
+/**
+ * 找到这条新边会顶掉的那条已有边。
+ *
+ * 判据只认端口的 `multi`: 数据输入口的独占由 PortDef.multi 决定,
+ * 执行入口的独占由 NodeTypeDef.multiExecIn 决定 (经 resolvePort 落到 port.multi)。
+ * 两者共用这一处逻辑 —— 否则"数据口会顶替、执行口却报错"这种不一致迟早出现。
+ */
+function findReplaceable(
+  graph: ConnectableGraph,
+  to: PortRef,
+  multi: boolean | undefined
+): string | undefined {
+  if (multi) return undefined;
+  return graph.edges.find((e) => e.to.node === to.node && e.to.port === to.port)?.id;
 }
 
 /**
@@ -198,11 +219,7 @@ export function canConnect(
    * UE5 与 ComfyUI 都是直接顶掉。所以这里放行, 但回传被顶掉的边 id:
    * UI 可以提示"将替换原有连线", 而 applyConnect 真的把它换掉。
    */
-  let replaces: string | undefined;
-  if (!dst.port.multi) {
-    const old = graph.edges.find((e) => e.to.node === to.node && e.to.port === to.port);
-    replaces = old?.id;
-  }
+  const replaces = findReplaceable(graph, to, dst.port.multi);
 
   if (!reg.assignable(src.port.type, dst.port.type)) {
     return { ok: false, reason: "type-mismatch", message: `类型不匹配: ${src.port.type} → ${dst.port.type}` };

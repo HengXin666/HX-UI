@@ -103,6 +103,8 @@ export interface NodePorts {
   readonly outputs?: readonly PortDef[];
   readonly execIn?: boolean;
   readonly execOut?: readonly ExecOutDef[];
+  /** 见 NodeTypeDef.multiExecIn。子图与实例覆盖时也要能表达。 */
+  readonly multiExecIn?: boolean;
 }
 
 export interface NodeTypeDef {
@@ -127,6 +129,17 @@ export interface NodeTypeDef {
 
   /** 节点内参数 (可编辑字段)。声明式, UI 照它渲染控件。 */
   readonly params?: readonly ParamDef[];
+
+  /**
+   * 执行入口是否允许接多条线 (默认 false = 独占)。
+   *
+   * 独占是绝大多数节点想要的: 新连一根会顶掉旧的, 语义是"我要这个来源"。
+   * 但**回路汇合点**必须放开 —— 例如"循环回到起点"与"启动进入"两条边
+   * 同时存在, 独占会把其中一条顶掉, 而那两条都是真的。
+   *
+   * 这条只影响执行入口; 数据输入口的独占与否仍由 PortDef.multi 决定。
+   */
+  readonly multiExecIn?: boolean;
 
   /** 求值。返回 输出端口 id -> 值。不提供 = 该节点只参与静态校验。 */
   readonly evaluate?: (ctx: EvalContext) => Record<string, unknown> | Promise<Record<string, unknown>>;
@@ -198,6 +211,8 @@ export interface SubGraphDef {
   readonly outputs?: readonly PortDef[];
   readonly execIn?: boolean;
   readonly execOut?: readonly ExecOutDef[];
+  /** 见 NodeTypeDef.multiExecIn。折叠时按被折叠区域是否含回路汇合点推导。 */
+  readonly multiExecIn?: boolean;
   readonly nodes: readonly BlueprintNode[];
   readonly edges: readonly BlueprintEdge[];
 }

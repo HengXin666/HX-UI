@@ -70,7 +70,8 @@ export async function evaluateGraph(
   const evalData = async (id: string): Promise<Record<string, unknown> | undefined> => {
     if (outputs.has(id)) return outputs.get(id);
     if (computing.has(id)) {
-      errors.set(id, "求值过程中出现循环依赖");
+      const chain = [...computing, id].join(" → ");
+      errors.set(id, `求值过程中出现循环依赖: ${chain}`);
       return undefined;
     }
     const node = nodeById.get(id);
@@ -198,7 +199,16 @@ export async function evaluateGraph(
   // ── 无执行入口: 按拓扑序求值全部 ────────────────────────────────
   const order = topoSort(graph);
   if (!order) {
-    errors.set("*", "图中存在循环, 无法确定求值顺序");
+    /**
+     * 拓扑序失败时**仍然逐节点求值**, 而不是直接报错退出。
+     *
+     * 直接退出只能报一句"图中存在循环", 指不出是哪些节点 —— 用户拿到这条
+     * 报错还得自己去找环。而逐节点求值时 `evaluating` 集合会在真正回环的
+     * 那一步命中, 报出**具体是哪几个节点**互相等着对方。
+     * 差别是"图里有环"和"a 和 b 互相依赖", 后者才能动手修。
+     */
+    for (const n of graph.nodes) await evalData(n.id);
+    if (errors.size === 0) errors.set("*", "图中存在循环, 无法确定求值顺序");
     return { outputs, errors, ok: false };
   }
   for (const id of order) await evalData(id);
