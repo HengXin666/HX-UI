@@ -460,7 +460,50 @@ async function handlePos(nodeId, hid) {
   await h3.close();
 }
 
-// 14. 画布上没有 UE5 里不存在的杂物
+// 14. 注释必须垫在节点**下面**, 但自己仍可见
+{
+  await h.close();
+  const hz = new Harness();
+  await hz.open("#src=dsh");
+  const pz = hz.p;
+  const r = await pz.evaluate(() => {
+    const nodes = [...document.querySelectorAll(".react-flow__node")].filter(
+      (n) => !n.getAttribute("data-id").startsWith("cmt:")
+    );
+    let covered = 0;
+    for (const n of nodes) {
+      const b = n.getBoundingClientRect();
+      const top = document.elementsFromPoint(b.x + b.width / 2, b.y + 15)[0];
+      const owner = top?.closest?.(".react-flow__node");
+      if (owner && owner.getAttribute("data-id").startsWith("cmt:")) covered += 1;
+    }
+    // 注释自己还得看得见: 取它中心点, 顶层应是注释本身(或其子节点)
+    const cmt = document.querySelector('[data-id^="cmt:"]');
+    let cmtVisible = false;
+    if (cmt) {
+      const cb = cmt.getBoundingClientRect();
+      const t = document.elementsFromPoint(cb.x + 8, cb.y + cb.height - 8)[0];
+      cmtVisible = !!t?.closest?.('[data-id^="cmt:"]');
+    }
+    return { covered, total: nodes.length, cmtVisible };
+  });
+  steps.push({
+    name: "RF: 注释垫在节点下面 (不糊住节点内容)",
+    ok: r.covered === 0 && r.total > 0,
+    expect: "0 个节点被注释覆盖",
+    actual: `${r.covered}/${r.total} 被覆盖`,
+    shot: await hz.shot("92-rf-comment-below"),
+  });
+  steps.push({
+    name: "RF: 注释自身仍可见 (没沉到画布下面)",
+    ok: r.cmtVisible,
+    expect: "注释中心点命中注释本身",
+    actual: `${r.cmtVisible}`,
+  });
+  await hz.close();
+}
+
+// 15. 画布上没有 UE5 里不存在的杂物
 {
   await h.close();
   const h4 = new Harness();
@@ -480,7 +523,7 @@ async function handlePos(nodeId, hid) {
   await h4.close();
 }
 
-// 15. 无运行时错误
+// 16. 无运行时错误
 steps.push({
   name: "RF: 控制台无错误 (SVG marker 等未误用)",
   ok: h.errors.length === 0,

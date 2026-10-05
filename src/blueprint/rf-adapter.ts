@@ -238,7 +238,16 @@ export function commentToNode(c: BlueprintComment): RfNode {
     draggable: true,
     connectable: false,
     data: { comment: c } as unknown as RfNodeData,
-    style: { width: c.w, height: c.h, zIndex: 0 },
+    /**
+     * 注释必须在节点**下面**。
+     *
+     * ⚠️ 这里曾经是 zIndex: 0, 与节点同级 —— 而注释是 append 在节点之后的,
+     *    同级时 DOM 靠后的盖在上面。注释一旦有了实心底色 (之前是空壳没暴露),
+     *    就会把整片节点糊住, 表现就是"打开页面节点内容全没了"。
+     *
+     * UE5 里注释是垫在节点下面的分组底色, 所以用负值沉下去。
+     */
+    style: { width: c.w, height: c.h, zIndex: -1 },
   };
 }
 
