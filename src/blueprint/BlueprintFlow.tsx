@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, type JSX } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { cn } from "../primitives/utils";
 import {
   ReactFlow, Background, BackgroundVariant,
@@ -19,8 +19,8 @@ import { BpCommentNode } from "./rf-comment";
 import type { BlueprintFlowProps } from "./flow-types";
 import { useFlowShortcuts } from "./flow-shortcuts";
 import { BlueprintContextMenu } from "./ContextMenu";
-import { useGraphChanges } from "./use-graph-changes";
 import { useConnectivity } from "./use-connectivity";
+import { useRenderState } from "./use-render-state";
 import { useContextMenu } from "./use-context-menu";
 
 /**
@@ -79,64 +79,26 @@ function FlowInner({
     ...(onRename ? { onRename } : {}),
   });
 
-  /** 校验错误 -> 每个节点每个输入口的红点标记。 */
-  const errorsByNode = useMemo(() => {
-    const out: Record<string, Record<string, boolean>> = {};
-    for (const [id, nv] of validation?.byNode ?? []) {
-      const m: Record<string, boolean> = {};
-      for (const k of Object.keys(nv.portErrors ?? {})) m[k] = true;
-      if (Object.keys(m).length) out[id] = m;
-    }
-    return out;
-  }, [validation]);
+  /**
+   * 渲染态由 React Flow 自己持有 —— **不要每次渲染重建 nodes**。
+   *
+   * 之前是 `useMemo` 从 graph 全量换算 nodes, 而依赖链里有 onParamChange /
+   * validation, 它们随 graph 每次变化 (拖拽每帧都变)。于是每帧重建整个
+   * nodes 数组 -> 所有节点重新挂载 -> **闪屏**, 且拖拽越久越卡。
+   *
+   * 官方推荐: 用 useNodesState / useEdgesState, 让库维护渲染态;
+   * 外部只在**语义变化**时单向同步进去 (见下面的 effect)。
+   */
 
-  const onParam = useCallback(
-    (nodeId: string, key: string, value: unknown) => {
-      onParamChange?.(nodeId, key, value);
-    },
-    [onParamChange]
-  );
-
-  const { nodes, edges } = useMemo(() => {
-    const r = toReactFlow(registry, graph, {
-      connectedByNode: computeConnected(graph),
-      errorsByNode,
-      onParamChange: onParam,
-    });
-    /**
-     * 选中态必须写到 node 对象上。
-     *
-     * React Flow 在受控模式下认的是 `node.selected` 字段, 不是外部 prop。
-     * 只把 selected 当 prop 传进去的话节点**不会显示选中**, 而点击回调
-     * 照样触发 —— 表现是"能选中 (后续删除/复制有效) 但看不出选中了谁"。
-     */
-    const sel = new Set(selected ?? []);
-    return {
-      nodes: [
-        ...r.nodes.map((n) => ({ ...n, selected: sel.has(String(n.data.bpId)) })),
-        ...(graph.comments ?? []).map(commentToNode),
-      ],
-      edges: r.edges,
-    };
-  }, [registry, graph, errorsByNode, onParam, selected]);
-
-  /** 选中集 -> 我们的节点 id (过滤掉注释伪节点)。 */
-  const selectedIds = useMemo(() => new Set(selected ?? []), [selected]);
-
-  const rfSelected = useMemo(
-    () => nodes.filter((n) => selectedIds.has(String(n.data.bpId))),
-    [nodes, selectedIds]
-  );
+  const {
+    rfNodes, rfEdges, handleNodesChange, handleEdgesChange,
+    onNodeDragStart, onNodeDragStop,
+  } = useRenderState({
+    registry, graph, validation, selected, onGraphChange, onSelect, onMoveKind, onParamChange,
+  });
 
   const { isValidConnection, onConnect } = useConnectivity({
     registry, graph, onGraphChange,
-  });
-
-  const { onNodesChange, onEdgesChange } = useGraphChanges({
-    graph,
-    onGraphChange,
-    onSelect,
-    ...(onMoveKind ? { onKind: (kind) => onMoveKind(kind) } : {}),
   });
 
   /**
@@ -159,12 +121,14 @@ function FlowInner({
   return (
     <div ref={rfHostRef} className={cn("relative", className)} style={{ height, width: "100%" }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={rfNodes}
+        edges={rfEdges}
         nodeTypes={NODE_TYPES}
         edgeTypes={EDGE_TYPES}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        onNodeDragStart={onNodeDragStart}
+        onNodeDragStop={onNodeDragStop}
+        onNodesChange={handleNodesChange}
+        onEdgesChange={handleEdgesChange}
         onConnect={onConnect}
         isValidConnection={isValidConnection}
         onSelectionChange={onSelectionChange}

@@ -523,7 +523,63 @@ async function handlePos(nodeId, hid) {
   await h4.close();
 }
 
-// 16. 无运行时错误
+// 16. 拖拽不能重建节点 DOM —— 重建就是闪屏
+{
+  await h.close();
+  const hf = new Harness();
+  await hf.open("#src=dsh");
+  const pf = hf.p;
+  // 给节点打标记; 若 React 重新挂载了它, 标记会丢失
+  const n0 = await pf.evaluate(() => {
+    const el = document.querySelector(".react-flow__node");
+    el.dataset.probe = "1";
+    return el.getAttribute("data-id");
+  });
+  const box = await pf.locator(".react-flow__node").first().boundingBox();
+  await pf.mouse.move(box.x + box.width / 2, box.y + 10);
+  await pf.mouse.down();
+  await pf.mouse.move(box.x + box.width / 2 + 120, box.y + 90, { steps: 20 });
+  await pf.mouse.up();
+  await pf.waitForTimeout(800);
+  const survived = await pf.evaluate(() => {
+    const el = document.querySelector(".react-flow__node");
+    return { probe: el?.dataset.probe ?? "gone", id: el?.getAttribute("data-id") };
+  });
+  steps.push({
+    name: "RF: 拖拽不重建节点 DOM (无闪屏)",
+    ok: survived.probe === "1",
+    expect: "标记保留 (DOM 未被重新挂载)",
+    actual: `probe=${survived.probe} id=${survived.id}`,
+    shot: await hf.shot("93-rf-no-remount"),
+  });
+
+  // 位置必须落回我们的图: 撤销要能回到原位
+  await hf.close();
+  const hp = new Harness();
+  await hp.open("#src=demo");
+  const pp = hp.p;
+  const pos = () => pp.evaluate(() => document.querySelector(".react-flow__node").style.transform);
+  const p0 = await pos();
+  const bb = await pp.locator(".react-flow__node").first().boundingBox();
+  await pp.mouse.move(bb.x + bb.width / 2, bb.y + 10);
+  await pp.mouse.down();
+  await pp.mouse.move(bb.x + bb.width / 2 + 100, bb.y + 70, { steps: 12 });
+  await pp.mouse.up();
+  await pp.waitForTimeout(800);
+  const p1 = await pos();
+  await pp.keyboard.press("Control+z");
+  await pp.waitForTimeout(800);
+  const p2 = await pos();
+  steps.push({
+    name: "RF: 拖动位置落回我们的图 (撤销能回原位)",
+    ok: p1 !== p0 && p2 === p0,
+    expect: `${p0} -> 移动 -> ${p0}`,
+    actual: `${p0} -> ${p1} -> ${p2}`,
+  });
+  await hp.close();
+}
+
+// 17. 无运行时错误
 steps.push({
   name: "RF: 控制台无错误 (SVG marker 等未误用)",
   ok: h.errors.length === 0,
