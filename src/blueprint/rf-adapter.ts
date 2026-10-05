@@ -268,3 +268,21 @@ function toRfPort(reg: BlueprintRegistry, p: PortDef): RfPort {
     ...(reg.typeColor(p.type) ? { color: reg.typeColor(p.type) } : {}),
   };
 }
+
+/**
+ * 这张图的节点类型是否**都**被注册中心认识。
+ *
+ * 用于同步时的兼容性校验: 频道只是一个名字, 同名频道的另一端可能是另一套
+ * 节点命名空间的图 (例如源码层 33 节点的图)。无条件接受会让整张图变成
+ * "未注册" —— 架构层注册表不认识源码层的类型名, 实测一拖就 85 个错误。
+ *
+ * 判据刻意宽松: 只查节点类型, 不查端口/连线 —— 端口可能随版本演进变化,
+ * 卡太死会让正常的同步全部失败。
+ */
+export function graphMatchesRegistry(
+  reg: { readonly nodeTypes: ReadonlyMap<string, unknown> },
+  graph: BlueprintGraph
+): boolean {
+  if (!graph.nodes.length) return false;
+  return graph.nodes.every((n) => reg.nodeTypes.has(n.type));
+}

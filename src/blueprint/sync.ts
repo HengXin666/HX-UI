@@ -111,6 +111,17 @@ export interface SyncOptions {
   readonly persist?: boolean;
   /** 收到远端图时。 */
   readonly onRemote: (graph: BlueprintGraph) => void;
+  /**
+   * 收到远端图时的**兼容性校验**。
+   *
+   * 为什么必须要有: 同步频道只是一个名字, 谁都可以用同一个名字开页面。
+   * 若一端是源码层图 (33 节点)、另一端是架构层图 (10 节点), 无条件接受
+   * 对方推来的图就会让**所有节点变成"未注册"** —— 架构层注册表不认识
+   * 源码层的类型名。实测: 拖一下触发广播, 对面立刻 85 个错误。
+   *
+   * 返回 false 表示"这张图我不认", 该消息被丢弃 (本地图保持不动)。
+   */
+  readonly accept?: (graph: BlueprintGraph) => boolean;
   /** 有页面问"现在是什么状态"时。返回当前图, 返回 null 表示"我不知道"。 */
   readonly onRequest?: () => BlueprintGraph | null;
 }
@@ -179,6 +190,8 @@ export class SyncChannel {
     if (msg.kind === "graph") {
       // 只接受更新的版本, 免得两个页面互相把对方拉回旧状态
       if (msg.rev < this.rev) return;
+      // 兼容性优先于版本: 不认识的图再新也不能收, 否则整张图会变非法
+      if (this.opts.accept && !this.opts.accept(msg.graph)) return;
       this.rev = msg.rev;
       this.opts.onRemote(msg.graph);
     }

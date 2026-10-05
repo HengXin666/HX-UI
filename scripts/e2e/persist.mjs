@@ -152,4 +152,48 @@ steps.push({
 });
 
 await browser.close();
+
+/**
+ * 同步必须**拒绝不兼容的图**。
+ *
+ * 频道只是一个名字: 同名频道的另一端可能是另一套节点命名空间的图
+ * (例如源码层 33 节点)。无条件接受会让对面所有节点变成"未注册" ——
+ * 实测一拖就 85 个错误。所以收到图要先校验节点类型是否被注册表认识。
+ */
+{
+  const br = await chromium.launch();
+  const cx = await br.newContext({ viewport: { width: 1400, height: 850 } });
+  const pa = await cx.newPage();
+  await pa.goto("http://127.0.0.1:5600/blueprint.html#src=dsh&channel=cross-e2e", { waitUntil: "networkidle" });
+  await pa.waitForTimeout(3000);
+  const pb = await cx.newPage();
+  await pb.goto("http://127.0.0.1:5600/blueprint.html#src=source&channel=cross-e2e", { waitUntil: "networkidle" });
+  await pb.waitForTimeout(3500);
+
+  const st = (pg) => pg.evaluate(() => {
+    const t = document.body.innerText;
+    const e = /(\d+) 节点/.exec(t);
+    const er = /(\d+) 个错误/.exec(t);
+    return { n: e ? +e[1] : -1, errors: er ? +er[1] : 0 };
+  });
+  const a0 = await st(pa);
+  // B 拖一下 -> 广播它的 33 节点源码层图
+  const n0 = pb.locator(".react-flow__node").first();
+  const bx = await n0.boundingBox();
+  await pb.mouse.move(bx.x + bx.width / 2, bx.y + 10);
+  await pb.mouse.down();
+  await pb.mouse.move(bx.x + bx.width / 2 + 70, bx.y + 50, { steps: 10 });
+  await pb.mouse.up();
+  await pb.waitForTimeout(2500);
+  const a1 = await st(pa);
+
+  steps.push({
+    name: "同步: 拒绝不兼容的图 (同名频道不同节点命名空间)",
+    ok: a0.n === a1.n && a1.errors === 0,
+    expect: `${a0.n} 节点、0 错误 保持不变`,
+    actual: `${a0.n} -> ${a1.n} 节点, 错误 ${a1.errors}`,
+  });
+  await br.close();
+}
+
 process.exit(report(steps));

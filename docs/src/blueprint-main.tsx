@@ -14,6 +14,7 @@ import {
 } from "@hx/ui";
 import { createDshRegistry, buildRootGraph, dshAgentLoopGraph, createSourceRegistry } from "@hx/blueprint-demo";
 import { RfPane } from "./RfPane";
+import { graphMatchesRegistry } from "@hx/ui";
 
 /**
  * 蓝图的**独立页面**。
@@ -35,21 +36,8 @@ import { RfPane } from "./RfPane";
  */
 
 /**
- * 三套数据源, 每套**必须**配与自己同源的注册表。
- *
- * ⚠️ 这里踩过一次实打实的坑, 值得写下来:
- *   原来 `dsh` 这一档是 `createDshRegistry()` (架构层, 10 个大步骤)
- *   配 `dshAgentLoopGraph` (源码层, 33 个节点, 类型名是 agentCreated / kick /
- *   turnStart …)。两套东西**不是一套命名空间**: 架构层的注册表里根本没有
- *   agentCreated 这个类型。
- *
- *   后果不是报错, 而是**静默降级**: 33 个节点全部渲染成"未知节点"红卡片,
- *   页面顶部报 "85 个错误", 而 tsc / 构建 / 冒烟全绿 —— 因为"未注册"是
- *   运行期的一条合法分支。用户看到的就是"这库一滩狗屎、功能全失效",
- *   而代码看着毫无问题。
- *
- *   所以这里把三套各自配好, 并且**新增 src=source 这一档**让旧的源码层
- *   图仍然可访问 (它有价值: 60 个节点对应真实控制流, 可逐条核对)。
+ * 三套数据源, 每套**必须**配与自己同源的注册表: 注册表与图用的是两套
+ * 不同的节点命名空间, 配错会让所有节点变成"未注册", 且不报错。
  */
 type Source = "dsh" | "source" | "demo";
 
@@ -138,6 +126,15 @@ function BlueprintApp(): JSX.Element {
       channel,
       onRemote: (g) => setGraph(g),
       onRequest: () => graphRef.current,
+      /**
+       * 只接受"当前注册表认识的类型"的图。
+       *
+       * 频道只是一个名字 —— 谁都可以用同名频道开一个**别的源**的页面
+       * (例如源码层 33 节点的图)。无条件接受就会让整张图变成"未注册":
+       * 架构层注册表不认识源码层的类型名, 实测一拖就 85 个错误。
+       * 所以收到先校验, 不认识的丢弃 (本地图保持不动)。
+       */
+      accept: (g) => graphMatchesRegistry(registry, g),
     });
     syncRef.current = sync;
     return () => {
