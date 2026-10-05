@@ -16,7 +16,7 @@ const steps = [];
 const h = new Harness();
 
 // ── 1. 导出 ────────────────────────────────────────────────────────
-await h.open("#src=demo");
+await h.open("#src=demo&rf=0");
 const before = await h.stat();
 
 const downloaded = await h.p.evaluate(async () => {

@@ -76,22 +76,31 @@ steps.push({
   });
 }
 
-// 5. 缩放
+// 5. 缩放 —— 走快捷键 (UE5 没有缩放按钮条, 靠 Ctrl+= / Ctrl+0 / Home)
 {
-  await p.locator(".react-flow__controls-zoomin").click();
-  await p.waitForTimeout(500);
-  const zoom = await p.evaluate(() => {
+  const zoomNow = () => p.evaluate(() => {
     const t = document.querySelector(".react-flow__viewport")?.style.transform || "";
     return /scale\(([\d.]+)\)/.exec(t)?.[1] ?? null;
   });
+  const z0 = await zoomNow();
+  await p.keyboard.press("Control+=");
+  await p.waitForTimeout(500);
+  const z1 = await zoomNow();
   steps.push({
-    name: "RF: 缩放控件生效",
-    ok: zoom !== null && +zoom > 1,
-    expect: "scale > 1",
-    actual: `${zoom}`,
+    name: "RF: Ctrl+= 放大生效 (缩放不依赖按钮条)",
+    ok: z1 !== null && z0 !== null && +z1 > +z0,
+    expect: `${z0} -> 更大`,
+    actual: `${z0} -> ${z1}`,
   });
-  await p.locator(".react-flow__controls-fitview").click();
-  await p.waitForTimeout(400);
+  await p.keyboard.press("Control+0");
+  await p.waitForTimeout(500);
+  const z2 = await zoomNow();
+  steps.push({
+    name: "RF: Ctrl+0 重置为 1:1",
+    ok: z2 !== null && Math.abs(+z2 - 1) < 0.01,
+    expect: "1",
+    actual: `${z2}`,
+  });
 }
 
 // 6. handle 必须有命中区域 (曾经 size-0 导致完全连不上)
@@ -110,6 +119,19 @@ steps.push({
   });
 }
 
+/** 取某个 handle 的屏幕坐标 (可指定页面)。 */
+async function handlePos2(page, nodeId, hid) {
+  return page.evaluate(
+    ([n, id]) => {
+      const el = document.querySelector(`[data-id="${n}"] [data-handleid="${id}"]`);
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+    },
+    [nodeId, hid]
+  );
+}
+
 // 7. 合法连线能连上 (连到**空闲**的输入口才算新增)
 async function handlePos(nodeId, hid) {
   return p.evaluate(
@@ -123,67 +145,115 @@ async function handlePos(nodeId, hid) {
   );
 }
 {
-  const before = await count(".react-flow__edge");
+  /**
+   * 独立 harness + 重载: 前面的缩放/拖拽会挪动节点, 硬编码"等 6 条边"
+   * 在图被改过时会等到超时 —— 那是判据脆弱, 不是功能坏。
+   * 这里只等"边渲染出来", 数量由断言自己动态取。
+   */
+  await h.close();
+  const hc = new Harness();
+  await hc.open("#src=demo");
+  const pc = hc.p;
+  await pc.waitForFunction(
+    () => document.querySelectorAll(".react-flow__edge").length > 0,
+    null,
+    { timeout: 8000 }
+  );
+  await pc.waitForTimeout(400);
+  const before = await pc.locator(".react-flow__edge").count();
   // n4.a / n4.b 都已被占用 —— 连它们会走"顶替", 总数不变 (见第 10 条)。
   // 这里要测的是"新增", 所以连到 n6 空闲的 msg 输入 (类型 any, 任何值都能进)。
-  const src = await handlePos("n2", "o:value");
-  const dst = await handlePos("n6", "i:msg");
+  const src = await handlePos2(pc, "n2", "o:value");
+  const dst = await handlePos2(pc, "n6", "i:msg");
   if (src && dst) {
-    await p.mouse.move(src.x, src.y);
-    await p.mouse.down();
-    await p.mouse.move(dst.x, dst.y, { steps: 20 });
-    await p.waitForTimeout(150);
-    await p.mouse.up();
-    await p.waitForTimeout(700);
+    await pc.mouse.move(src.x, src.y);
+    await pc.mouse.down();
+    await pc.mouse.move(dst.x, dst.y, { steps: 20 });
+    await pc.waitForTimeout(150);
+    await pc.mouse.up();
+    await pc.waitForTimeout(700);
   }
-  const after = await count(".react-flow__edge");
+  const after = await pc.locator(".react-flow__edge").count();
   steps.push({
     name: "RF: 合法连线能连上 (连到空闲输入口, +1)",
     ok: after === before + 1,
     expect: `${before} -> ${before + 1}`,
     actual: `${after}`,
-    shot: await h.shot("82-rf-connect-ok"),
+    shot: await hc.shot("82-rf-connect-ok"),
   });
-}
 
-// 8. 非法连线被拒 —— 这条最关键: 证明我们的语义层真的接上去了
-{
-  const before = await count(".react-flow__edge");
-  const src = await handlePos("n2", "o:value");
-  const dst = await handlePos("n5", "i:exec-in");
-  if (src && dst) {
-    await p.mouse.move(src.x, src.y);
-    await p.mouse.down();
-    await p.mouse.move(dst.x, dst.y, { steps: 20 });
-    await p.waitForTimeout(150);
-    await p.mouse.up();
-    await p.waitForTimeout(700);
+  // 8. 非法连线被拒 —— 这条最关键: 证明语义层真的接上去了
+  //    (与第 7 条共用 harness: 它依赖"刚连过一条"之后的图)
+  {
+    const b0 = await pc.locator(".react-flow__edge").count();
+    const s2 = await handlePos2(pc, "n2", "o:value");
+    const d2 = await handlePos2(pc, "n5", "i:exec-in");
+    if (s2 && d2) {
+      await pc.mouse.move(s2.x, s2.y);
+      await pc.mouse.down();
+      await pc.mouse.move(d2.x, d2.y, { steps: 20 });
+      await pc.waitForTimeout(150);
+      await pc.mouse.up();
+      await pc.waitForTimeout(700);
+    }
+    const a0 = await pc.locator(".react-flow__edge").count();
+    steps.push({
+      name: "RF: 类型不匹配的连线被 canConnect 拒绝 (语义层已接入)",
+      ok: a0 === b0,
+      expect: `${b0} 不变`,
+      actual: `${a0}`,
+      shot: await hc.shot("83-rf-connect-reject"),
+    });
   }
-  const after = await count(".react-flow__edge");
-  steps.push({
-    name: "RF: 类型不匹配的连线被 canConnect 拒绝 (语义层已接入)",
-    ok: after === before,
-    expect: `${before} 不变`,
-    actual: `${after}`,
-    shot: await h.shot("83-rf-connect-reject"),
-  });
+  await hc.close();
 }
 
 // 9. 快捷键 —— 换库不能把已锁住的判据换掉
 {
-  const n = () => p.evaluate(() => {
+  /**
+   * 用**独立的 harness**: 前面的连线/拖拽用例会挪动节点并改变选择,
+   * 后续点击"第一个节点"可能落到空白处, 于是 Ctrl+D 静默无效 ——
+   * 那是判据互相污染造成的假失败, 不是功能坏了。
+   */
+  await h.close();
+  const hk = new Harness();
+  await hk.open("#src=demo");
+  const pk = hk.p;
+  // 画布要等 React Flow 完成 fitView 与首次布局, 否则点击会落在旧坐标上
+  await pk.waitForTimeout(1500);
+  const nk = () => pk.evaluate(() => {
     const m = /(\d+) 节点/.exec(document.body.innerText);
     return m ? +m[1] : -1;
   });
-  await p.locator(".react-flow__node").first().click();
-  await p.waitForTimeout(250);
-  const base = await n();
-  await p.keyboard.press("Control+d");
-  await p.waitForTimeout(450);
-  const afterDup = await n();
-  await p.keyboard.press("Control+z");
-  await p.waitForTimeout(450);
-  const afterUndo = await n();
+  await pk.locator(".react-flow__node").first().click();
+  /**
+   * 必须**等选择真正建立**再按快捷键, 不能睡固定时长。
+   *
+   * 点击到 selected state 生效之间有一帧以上的间隔; 固定等待时够时不够,
+   * 于是 Ctrl+D 偶发无效 (选中为空时它会静默返回)。
+   */
+  /**
+   * 等选择**真正建立**: 判据是节点出现 UE5 那圈黄色选中描边。
+   *
+   * 不能用 .selected 类 —— React Flow 12 不在 DOM 上加这个类, 选中态是
+   * 通过 props 传给自定义节点的。也不能睡固定时长, 那会偶发失败。
+   */
+  await pk.waitForFunction(
+    () => {
+      const el = document.querySelector(".react-flow__node")?.firstElementChild;
+      if (!el) return false;
+      return getComputedStyle(el).boxShadow.includes("255, 212, 0");
+    },
+    null,
+    { timeout: 5000 }
+  );
+  const base = await nk();
+  await pk.keyboard.press("Control+d");
+  await pk.waitForTimeout(450);
+  const afterDup = await nk();
+  await pk.keyboard.press("Control+z");
+  await pk.waitForTimeout(450);
+  const afterUndo = await nk();
   steps.push({
     name: "RF: Ctrl+D 复制 + Ctrl+Z 撤销 (快捷键已接入)",
     ok: afterDup === base + 1 && afterUndo === base,
@@ -191,43 +261,46 @@ async function handlePos(nodeId, hid) {
     actual: `${base} -> ${afterDup} -> ${afterUndo}`,
   });
 
-  await p.keyboard.press("Control+a");
-  await p.waitForTimeout(350);
-  await p.keyboard.press("Delete");
-  await p.waitForTimeout(550);
-  const afterDel = await n();
-  await p.keyboard.press("Control+z");
-  await p.waitForTimeout(550);
-  const restored = await n();
+  await pk.keyboard.press("Control+a");
+  await pk.waitForTimeout(350);
+  await pk.keyboard.press("Delete");
+  await pk.waitForTimeout(550);
+  const afterDel = await nk();
+  await pk.keyboard.press("Control+z");
+  await pk.waitForTimeout(550);
+  const restored = await nk();
   steps.push({
     name: "RF: Ctrl+A 全选 + Delete 清空 + 撤销恢复",
     ok: afterDel === 0 && restored > 0,
     expect: `清空到 0, 撤销回到 ${restored}`,
     actual: `清空到 ${afterDel}, 撤销回到 ${restored}`,
-    shot: await h.shot("84-rf-shortcuts"),
+    shot: await hk.shot("84-rf-shortcuts"),
   });
+  await hk.close();
 }
 
 // 10. 独占输入必须顶替, 不能双占 (这条写错了会产出非法图)
 {
-  const stat = () => p.evaluate(() => {
+  await h.close();
+  const hb = new Harness();
+  await hb.open("#src=demo");
+  const pb = hb.p;
+  const stat = () => pb.evaluate(() => {
     const t = document.body.innerText;
     const e = /(\d+) 节点 \/ (\d+) 连线/.exec(t);
     const er = /(\d+) 个错误/.exec(t);
     return { edges: e ? +e[2] : -1, errors: er ? +er[1] : 0 };
   });
-  await p.reload();
-  await p.waitForTimeout(2500);
   const before = await stat();
-  const src = await handlePos("n2", "o:value");
-  const dst = await handlePos("n4", "i:b"); // n4.b 已被 n3 占用
+  const src = await handlePos2(pb, "n2", "o:value");
+  const dst = await handlePos2(pb, "n4", "i:b"); // n4.b 已被 n3 占用
   if (src && dst) {
-    await p.mouse.move(src.x, src.y);
-    await p.mouse.down();
-    await p.mouse.move(dst.x, dst.y, { steps: 20 });
-    await p.waitForTimeout(150);
-    await p.mouse.up();
-    await p.waitForTimeout(700);
+    await pb.mouse.move(src.x, src.y);
+    await pb.mouse.down();
+    await pb.mouse.move(dst.x, dst.y, { steps: 20 });
+    await pb.waitForTimeout(150);
+    await pb.mouse.up();
+    await pb.waitForTimeout(700);
   }
   const after = await stat();
   steps.push({
@@ -235,31 +308,36 @@ async function handlePos(nodeId, hid) {
     ok: after.edges === before.edges && after.errors === 0,
     expect: `连线数 ${before.edges} 不变、错误 0`,
     actual: `连线 ${before.edges}->${after.edges}, 错误 ${after.errors}`,
-    shot: await h.shot("85-rf-replaces"),
+    shot: await hb.shot("85-rf-replaces"),
   });
+  await hb.close();
 }
 
 // 11. 拖动必须合并成一步撤销
 {
-  const n0 = p.locator(".react-flow__node").first();
+  await h.close();
+  const hm = new Harness();
+  await hm.open("#src=demo");
+  const n0 = hm.p.locator(".react-flow__node").first();
   const before = await n0.evaluate((e) => e.style.transform);
   const box = await n0.boundingBox();
-  await p.mouse.move(box.x + box.width / 2, box.y + 10);
-  await p.mouse.down();
-  await p.mouse.move(box.x + box.width / 2 + 110, box.y + 85, { steps: 25 });
-  await p.mouse.up();
-  await p.waitForTimeout(600);
+  await hm.p.mouse.move(box.x + box.width / 2, box.y + 10);
+  await hm.p.mouse.down();
+  await hm.p.mouse.move(box.x + box.width / 2 + 110, box.y + 85, { steps: 25 });
+  await hm.p.mouse.up();
+  await hm.p.waitForTimeout(600);
   const moved = await n0.evaluate((e) => e.style.transform);
-  await p.keyboard.press("Control+z");
-  await p.waitForTimeout(700);
+  await hm.p.keyboard.press("Control+z");
+  await hm.p.waitForTimeout(700);
   const after = await n0.evaluate((e) => e.style.transform);
   steps.push({
     name: "RF: 拖动合并成一步 (一次 Ctrl+Z 回原位)",
     ok: moved !== before && after === before,
     expect: `${before} -> 移动 -> 一次撤销回到 ${before}`,
     actual: `${before} -> ${moved} -> ${after}`,
-    shot: await h.shot("86-rf-move-coalesce"),
+    shot: await hm.shot("86-rf-move-coalesce"),
   });
+  await hm.close();
 }
 
 // 12. 注释框必须**看得见** —— 有底色、有层次、与画布能分开
@@ -314,7 +392,95 @@ async function handlePos(nodeId, hid) {
   });
 }
 
-// 13. 无运行时错误
+// 13. 右键菜单: 空白 / 节点 / 连线 三类内容各不相同
+{
+  await h.close();
+  const h3 = new Harness();
+  await h3.open("#src=demo");
+  const p3 = h3.p;
+  const items = () => p3.evaluate(() => {
+    const m = document.querySelector("[data-context-menu]");
+    return m ? [...m.querySelectorAll("button")].map((b) => b.textContent.trim()) : null;
+  });
+
+  // 空白
+  await p3.mouse.click(1000, 700, { button: "right" });
+  await p3.waitForTimeout(400);
+  const pane = await items();
+  steps.push({
+    name: "RF: 右键空白 -> 图菜单 (加注释/粘贴/全选/整理/适应)",
+    ok: !!pane && pane.length >= 4 && pane.some((t) => t.includes("加注释")),
+    expect: "含'加注释'等多项",
+    actual: JSON.stringify(pane),
+    shot: await h3.shot("88-rf-menu-pane"),
+  });
+
+  // Esc 关闭
+  await p3.keyboard.press("Escape");
+  await p3.waitForTimeout(300);
+  steps.push({ name: "RF: Esc 关闭右键菜单", ok: (await items()) === null, expect: "null", actual: `${await items()}` });
+
+  // 节点
+  const nb = await p3.locator(".react-flow__node").first().boundingBox();
+  await p3.mouse.click(nb.x + nb.width / 2, nb.y + 8, { button: "right" });
+  await p3.waitForTimeout(400);
+  const node = await items();
+  steps.push({
+    name: "RF: 右键节点 -> 节点菜单 (重命名/副本/复制/断线/删除)",
+    ok: !!node && node.some((t) => t.includes("重命名")) && node.some((t) => t.includes("删除")),
+    expect: "含'重命名'与'删除'",
+    actual: JSON.stringify(node),
+    shot: await h3.shot("89-rf-menu-node"),
+  });
+
+  // 节点菜单真的能删
+  const n0 = await p3.evaluate(() => +/(\d+) 节点/.exec(document.body.innerText)[1]);
+  await p3.locator("[data-context-menu] button", { hasText: "删除" }).click();
+  await p3.waitForTimeout(600);
+  const n1 = await p3.evaluate(() => +/(\d+) 节点/.exec(document.body.innerText)[1]);
+  steps.push({ name: "RF: 节点菜单的删除真的生效", ok: n1 === n0 - 1, expect: `${n0} -> ${n0 - 1}`, actual: `${n1}` });
+
+  // 连线
+  const eb = await p3.locator(".react-flow__edge").first().boundingBox();
+  const e0 = await p3.evaluate(() => document.querySelectorAll(".react-flow__edge").length);
+  await p3.mouse.click(eb.x + eb.width / 2, eb.y + eb.height / 2, { button: "right" });
+  await p3.waitForTimeout(400);
+  const edge = await items();
+  await p3.locator("[data-context-menu] button", { hasText: "删除这条连线" }).click();
+  await p3.waitForTimeout(600);
+  const e1 = await p3.evaluate(() => document.querySelectorAll(".react-flow__edge").length);
+  steps.push({
+    name: "RF: 右键连线 -> 删除这条连线 (真的 -1)",
+    ok: !!edge && edge.some((t) => t.includes("删除这条连线")) && e1 === e0 - 1,
+    expect: `边 ${e0} -> ${e0 - 1}`,
+    actual: `菜单 ${JSON.stringify(edge)} 边 ${e1}`,
+    shot: await h3.shot("90-rf-menu-edge"),
+  });
+
+  await h3.close();
+}
+
+// 14. 画布上没有 UE5 里不存在的杂物
+{
+  await h.close();
+  const h4 = new Harness();
+  await h4.open("#src=demo");
+  const junk = await h4.p.evaluate(() => ({
+    minimap: !!document.querySelector(".react-flow__minimap"),
+    controls: !!document.querySelector(".react-flow__controls"),
+    attribution: !!document.querySelector(".react-flow__attribution"),
+  }));
+  steps.push({
+    name: "RF: 无小地图/缩放按钮/水印 (UE5 没有这些)",
+    ok: !junk.minimap && !junk.controls && !junk.attribution,
+    expect: "三者都不存在",
+    actual: JSON.stringify(junk),
+    shot: await h4.shot("91-rf-clean"),
+  });
+  await h4.close();
+}
+
+// 15. 无运行时错误
 steps.push({
   name: "RF: 控制台无错误 (SVG marker 等未误用)",
   ok: h.errors.length === 0,

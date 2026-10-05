@@ -39,7 +39,12 @@ export interface FlowShortcutsProps {
 /** 键位表暴露出去, 帮助面板照它渲染 —— 与手写画布同一份。 */
 export const FLOW_SHORTCUTS: readonly ShortcutDef[] = SHORTCUTS;
 
-export function useFlowShortcuts(o: FlowShortcutsProps): void {
+export function useFlowShortcuts(o: FlowShortcutsProps): {
+  /** 手动触发一个快捷键 (右键菜单复用同一套行为)。 */
+  readonly runShortcut: (id: string) => void;
+  /** 剪贴板里有没有东西 (决定"粘贴"是否可用)。 */
+  readonly hasClip: () => boolean;
+} {
   const rf = useReactFlow();
   const ref = useRef(o);
   ref.current = o;
@@ -120,6 +125,8 @@ export function useFlowShortcuts(o: FlowShortcutsProps): void {
     }
   }, [rf]);
 
+  const hasClip = useCallback(() => !!clipRef.current && clipRef.current.nodes.length > 0, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (isTypingTarget(e.target as HTMLElement | null)) return;
@@ -133,4 +140,6 @@ export function useFlowShortcuts(o: FlowShortcutsProps): void {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [run]);
+
+  return { runShortcut: run, hasClip };
 }

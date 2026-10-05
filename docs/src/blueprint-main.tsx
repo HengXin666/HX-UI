@@ -108,8 +108,12 @@ function readChannel(): string {
 
 function BlueprintApp(): JSX.Element {
   const [source, setSource] = useState<Source>(() => readSource());
-  /** React Flow 版画布开关 (渐进替换)。 */
-  const useRF = useMemo(() => /[&#?]rf=1/.test(window.location.hash), []);
+  /**
+   * 默认走 React Flow 版画布。
+   *
+   * 手写版已下线, 但保留 `&rf=0` 以便对照回归 —— 并行期结束后删掉。
+   */
+  const useRF = useMemo(() => !/[&#?]rf=0/.test(window.location.hash), []);
   const channel = useMemo(() => readChannel(), []);
   const registry = useMemo(() => REGISTRIES[source](), [source]);
 
@@ -232,13 +236,8 @@ function BlueprintApp(): JSX.Element {
         {useRF ? (
           <RfPane registry={registry} graph={graph} validation={v} onChange={onGraphChange} />
         ) : (
-          <BlueprintEditor
-            registry={registry}
-            value={graph}
-            onChange={onGraphChange}
-            height="100%"
-            paletteWidth={190}
-          />
+          // 手写版仅作对照 (&rf=0), 并行期结束后随 BlueprintEditor 一起删
+          <BlueprintEditor registry={registry} value={graph} onChange={onGraphChange} height="100%" paletteWidth={190} />
         )}
       </div>
     </div>

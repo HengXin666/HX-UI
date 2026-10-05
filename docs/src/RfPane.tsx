@@ -113,6 +113,9 @@ export function RfPane({
           commit(applyLayout(graph, layout), null, "整理布局");
         }}
         onRename={(id) => setRenamingId(id)}
+        onCommentHere={(at) => {
+          commit(addComment(graph, { x: at.x, y: at.y, w: 260, h: 160, title: "注释" }).graph, null, "加注释");
+        }}
         height="100%"
       />
     </div>

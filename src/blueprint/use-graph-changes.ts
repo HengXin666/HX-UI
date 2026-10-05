@@ -20,6 +20,14 @@ export function useGraphChanges(o: {
   readonly graph: BlueprintGraph;
   readonly onGraphChange?: (next: BlueprintGraph) => void;
   /**
+   * 选中变化。
+   *
+   * 走 NodeChange 里的 `select` 项, 而不是 React Flow 的 onSelectionChange:
+   * 后者在受控模式下依赖内部 selection state, 实测点击后**不回调**,
+   * 于是外部 selected 一直是空 —— 表现是"能操作但看不出选中了谁"。
+   */
+  readonly onSelect?: (ids: readonly string[]) => void;
+  /**
    * 告诉外层"这批 change 属于哪一类", 好让它给历史打 tag。
    *
    * 为什么需要: 拖动时 React Flow 每移动几像素就发一次 position change,
@@ -28,15 +36,17 @@ export function useGraphChanges(o: {
    */
   readonly onKind?: (kind: "move" | "remove" | "other", label: string) => void;
 }) {
-  const { graph, onGraphChange, onKind } = o;
+  const { graph, onGraphChange, onKind, onSelect } = o;
 
   const onNodesChange = useCallback(
     (changes: NodeChange<RfNode>[]) => {
       let touched = false;
+      let selectTouched = false;
       const next = { ...graph, nodes: graph.nodes.map((n) => ({ ...n })) };
       const comments = (graph.comments ?? []).map((c) => ({ ...c }));
 
       for (const ch of changes) {
+        if (ch.type === "select") { selectTouched = true; }
         if (ch.type === "position" && ch.position) {
           if (isCommentNode(ch.id)) {
             const c = comments.find((x) => commentIdOf(ch.id) === x.id);
@@ -56,13 +66,18 @@ export function useGraphChanges(o: {
           }
         }
       }
+      // 选中变化与图变化分开上报: 选中不改图, 不该进历史
+      if (selectTouched) {
+        const sel = new Set(changes.filter((c) => c.type === "select" && c.selected).map((c) => (c as { id: string }).id));
+        onSelect?.([...sel]);
+      }
       if (touched) {
         const isMove = changes.every((c) => c.type === "position");
         onKind?.(isMove ? "move" : "remove", isMove ? "移动节点" : "删除节点");
         onGraphChange?.({ ...next, ...(comments.length ? { comments } : {}) });
       }
     },
-    [graph, onGraphChange, onKind]
+    [graph, onGraphChange, onKind, onSelect]
   );
 
   const onEdgesChange = useCallback(

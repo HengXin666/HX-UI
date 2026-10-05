@@ -26,7 +26,7 @@ const UE = {
 
 const steps = [];
 const h = new Harness();
-await h.open("#src=demo");
+await h.open("#src=demo&rf=0");
 
 // 1. token 层: CSS 变量真的定义了吗
 for (const [name, expect] of Object.entries(UE)) {

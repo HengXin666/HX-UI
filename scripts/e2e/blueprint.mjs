@@ -20,22 +20,22 @@ async function main() {
   const h = new Harness();
 
   // ── 1. 外观: 节点真渲染出来了, 且不是"未知节点" ──────────────────
-  await h.open("#src=demo");
+  await h.open("#src=demo&rf=0");
   steps.push(...(await appearanceCases(h)));
   await h.close();
 
   // ── 2. 增删改查 + 撤销重做 ──────────────────────────────────────
-  await h.open("#src=demo");
+  await h.open("#src=demo&rf=0");
   steps.push(...(await editCases(h)));
   await h.close();
 
   // ── 3. 交互: 拖拽 / F2 / Tab / Esc / 缩放 / 对齐 ─────────────────
-  await h.open("#src=demo");
+  await h.open("#src=demo&rf=0");
   steps.push(...(await interactionCases(h)));
   await h.close();
 
   // ── 4. 拖拽不选中文本 ───────────────────────────────────────────
-  await h.open("#src=demo");
+  await h.open("#src=demo&rf=0");
   steps.push(...(await dragSelectCases(h)));
   await h.close();
 
@@ -146,7 +146,7 @@ async function appearanceCases(h) {
 
 async function editCases(h) {
   const out = [];
-  await h.open("#src=demo");
+  await h.open("#src=demo&rf=0");
   const p = h.p;
 
   await selectNode(h, 0);

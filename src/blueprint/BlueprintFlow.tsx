@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useMemo, type JSX } from "react";
+import { useCallback, useMemo, useRef, type JSX } from "react";
+import { cn } from "../primitives/utils";
 import {
-  ReactFlow, Background, BackgroundVariant, Controls, MiniMap,
+  ReactFlow, Background, BackgroundVariant,
   ReactFlowProvider, useReactFlow,
   type Connection, type OnSelectionChangeFunc,
 } from "@xyflow/react";
@@ -15,9 +16,12 @@ import {
 } from "./rf-adapter";
 import { BpNode, BpExecEdge, BpDataEdge, ExecArrowMarker } from "./rf-node";
 import { BpCommentNode } from "./rf-comment";
+import type { BlueprintFlowProps } from "./flow-types";
 import { useFlowShortcuts } from "./flow-shortcuts";
+import { BlueprintContextMenu } from "./ContextMenu";
 import { useGraphChanges } from "./use-graph-changes";
 import { useConnectivity } from "./use-connectivity";
+import { useContextMenu } from "./use-context-menu";
 
 /**
  * 画布层 —— 交互全部交给 React Flow。
@@ -37,30 +41,6 @@ import { useConnectivity } from "./use-connectivity";
  *      nodes/edges 只是渲染态 (转换在 rf-adapter.ts)。
  */
 
-export interface BlueprintFlowProps {
-  readonly registry: BlueprintRegistry;
-  readonly graph: BlueprintGraph;
-  readonly validation?: { readonly byNode: ReadonlyMap<string, { portErrors: Record<string, ValidationIssue> }> };
-  readonly selected?: readonly string[];
-  readonly onGraphChange?: (next: BlueprintGraph) => void;
-  readonly onSelect?: (ids: readonly string[]) => void;
-  readonly onParamChange?: (nodeId: string, key: string, value: unknown) => void;
-  readonly onEnterSubgraph?: (sgId: string) => void;
-  readonly onRemove?: (ids: readonly string[]) => void;
-  readonly onUndo?: () => void;
-  readonly onRedo?: () => void;
-  readonly onComment?: (ids: readonly string[]) => void;
-  readonly onTidy?: () => void;
-  readonly onSearch?: () => void;
-  readonly onRename?: (id: string) => void;
-  /** 这批 change 属于哪一类 (用于给历史打 tag 以便合并)。 */
-  readonly onMoveKind?: (kind: "move" | "remove" | "other") => void;
-  /** 拖线到空白松手时: 是否弹节点面板 (UE5 行为)。 */
-  readonly onConnectEndAtBlank?: (at: { x: number; y: number }) => void;
-  readonly className?: string;
-  readonly height?: number | string;
-}
-
 const NODE_TYPES = { bp: BpNode, bpComment: BpCommentNode };
 const EDGE_TYPES = { bpExec: BpExecEdge, bpData: BpDataEdge };
 
@@ -76,15 +56,17 @@ export function BlueprintFlow(props: BlueprintFlowProps): JSX.Element {
 function FlowInner({
   registry, graph, validation, selected, onGraphChange, onSelect,
   onParamChange, onEnterSubgraph, onRemove, onConnectEndAtBlank, className, height = 520,
-  onUndo, onRedo, onComment, onTidy, onSearch, onRename, onMoveKind,
+  onUndo, onRedo, onComment, onTidy, onSearch, onRename, onMoveKind, onCommentHere,
 }: BlueprintFlowProps): JSX.Element {
   const rf = useReactFlow();
+  /** 画布宿主, 用于把客户端坐标换算成菜单的画布内坐标。 */
+  const rfHostRef = useRef<HTMLDivElement | null>(null);
 
   /**
    * UE5 全套快捷键。复用 shortcuts.ts 的键位表与判据 ——
    * 换库不能把已经锁住的"声明了就必须有实现"这条断言换掉。
    */
-  useFlowShortcuts({
+  const { runShortcut: runShortcutWith, hasClip } = useFlowShortcuts({
     graph,
     selected: selected ?? [],
     onGraphChange: (next) => onGraphChange?.(next),
@@ -121,12 +103,22 @@ function FlowInner({
       errorsByNode,
       onParamChange: onParam,
     });
-    // 注释作为"在节点下面的自定义节点"参与渲染
+    /**
+     * 选中态必须写到 node 对象上。
+     *
+     * React Flow 在受控模式下认的是 `node.selected` 字段, 不是外部 prop。
+     * 只把 selected 当 prop 传进去的话节点**不会显示选中**, 而点击回调
+     * 照样触发 —— 表现是"能选中 (后续删除/复制有效) 但看不出选中了谁"。
+     */
+    const sel = new Set(selected ?? []);
     return {
-      nodes: [...r.nodes, ...(graph.comments ?? []).map(commentToNode)],
+      nodes: [
+        ...r.nodes.map((n) => ({ ...n, selected: sel.has(String(n.data.bpId)) })),
+        ...(graph.comments ?? []).map(commentToNode),
+      ],
       edges: r.edges,
     };
-  }, [registry, graph, errorsByNode, onParam]);
+  }, [registry, graph, errorsByNode, onParam, selected]);
 
   /** 选中集 -> 我们的节点 id (过滤掉注释伪节点)。 */
   const selectedIds = useMemo(() => new Set(selected ?? []), [selected]);
@@ -143,8 +135,18 @@ function FlowInner({
   const { onNodesChange, onEdgesChange } = useGraphChanges({
     graph,
     onGraphChange,
+    onSelect,
     ...(onMoveKind ? { onKind: (kind) => onMoveKind(kind) } : {}),
   });
+
+  /**
+   * 右键菜单 (UE5 的三类: 空白 / 节点 / 连线)。
+   * 实现在 use-context-menu.ts —— 抽走是因为本文件有 250 行上限。
+   */
+  const {
+    menu, setMenu, contextEdgeId, openMenuAt,
+    onPaneContextMenu, onNodeContextMenu, onEdgeContextMenu, onMenuPick,
+  } = useContextMenu({ rfHostRef, graph, selected, onSelect, onGraphChange, onEnterSubgraph, onCommentHere, runShortcut: runShortcutWith, hasClip });
 
   const onSelectionChange = useCallback<OnSelectionChangeFunc>(
     ({ nodes: sel }) => {
@@ -155,7 +157,7 @@ function FlowInner({
   );
 
   return (
-    <div className={className} style={{ height, width: "100%" }}>
+    <div ref={rfHostRef} className={cn("relative", className)} style={{ height, width: "100%" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -166,6 +168,9 @@ function FlowInner({
         onConnect={onConnect}
         isValidConnection={isValidConnection}
         onSelectionChange={onSelectionChange}
+        onPaneContextMenu={onPaneContextMenu}
+        onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
         onNodeDoubleClick={(_, n) => {
           const sg = n.data?.subgraph as string | undefined;
           if (sg) onEnterSubgraph?.(sg);
@@ -196,15 +201,17 @@ function FlowInner({
         selectionKeyCode="Shift"
         panActivationKeyCode="Space"
         // 禁掉 React Flow 自己的文本选中干扰
-        proOptions={{ hideAttribution: false }}
+        // UE5 蓝图编辑器没有水印/缩放按钮/小地图 —— 缩放靠滚轮, 平移靠右键拖。
+        // 那些控件是"演示用"的杂物, 留在画布上就是在干扰。
+        proOptions={{ hideAttribution: true }}
         style={{ background: "var(--background)" }}
       >
         <ExecArrowMarker />
         <Background variant={BackgroundVariant.Dots} gap={16} size={1} className="bp-grid-minor" />
         <Background variant={BackgroundVariant.Dots} gap={128} size={1.6} className="bp-grid-major" />
-        <Controls />
-        <MiniMap pannable zoomable />
       </ReactFlow>
+
+      {menu && <BlueprintContextMenu menu={menu} onPick={onMenuPick} onClose={() => setMenu(null)} />}
     </div>
   );
 }
