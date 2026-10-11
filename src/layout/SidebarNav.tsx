@@ -1,13 +1,24 @@
 import { forwardRef, type ComponentPropsWithoutRef, type JSX, type ReactNode } from "react";
 import { cn } from "../primitives/utils";
+import { IconSlot, type IconSource } from "./Icon";
 
 /**
  * 侧栏导航件。
  *
  * 源码取自 open-vetta `theme-ui/src/sidebar/` 的 `SidebarNavItemButton` 与
- * `SidebarNavIcon` —— **视觉类串一个字没改**。
+ * `SidebarNavIcon`  **视觉类串一个字没改**。
  * 唯一改动: 上游的 item 类型来自 `@vetta-org/theme-sdk/sidebar`, 这里换成等价的本地定义,
  * 因为那套主题运行时不在本库里 (观感不需要它)。
+ *
+ * ## 最小可用示例
+ *
+ * ```tsx
+ * import { FolderIcon } from "lucide-react";
+ * import { SidebarNavItemButton } from "@hx/ui";
+ *
+ * <SidebarNavItemButton item={{ id: "files", label: "文件", icon: FolderIcon }} />
+ * <SidebarNavItemButton item={{ id: "about", label: "关于" }} />   // 无图标, 不占位
+ * ```
  */
 
 /** 导航角标。数字或短文本, 主色小胶囊。 */
@@ -21,7 +32,15 @@ export interface SidebarNavItem {
   readonly id: string;
   readonly label?: string;
   readonly title?: string;
-  readonly icon: string;
+  /**
+   * 图标来源: 图标组件 / Iconify 类串 / 任意节点。
+   *
+   * 可选。导航项本来就允许"只有文字" (分组标题、纯文本入口), 强制传图标会
+   * 逼调用方编一个占位值, 而占位值渲染出来就是一块空白  缺图标必须表达成
+   * "没有图标", 不是"一个空的图标"。
+   */
+  readonly icon?: IconSource;
+  /** 图片图标。与 `icon` 二选一, 同时给出时 `iconUrl` 优先。 */
   readonly iconUrl?: string;
   readonly active?: boolean;
   readonly badge?: SidebarNavBadge;
@@ -30,18 +49,21 @@ export interface SidebarNavItem {
 /**
  * 导航图标。
  *
- * 类串图标用 `mask-image` 渲染 (配 Iconify 的类串, 形如 solar 前缀加图标名) ——
- * 好处是它跟随 `currentColor`, 选中态改个 text 色就能整体变色, 不用换图。
+ * 渲染规则全部委托 {@link IconSlot}  判据只保留一处。此前本文件与图标槽各有一份
+ * "类串怎么画"的逻辑, 两份规则在"空值要不要占位"这类边界上必然分叉。
+ *
+ * `iconUrl` 仍然在这里处理, 因为它不属于 `IconSource` 的三种形态:
+ * 它是一个**图片地址**, 需要 `<img>` 的加载语义 (draggable / object-contain)。
  */
 export function SidebarNavIcon({ icon, iconUrl, className }: {
-  icon: string;
+  icon?: IconSource;
   iconUrl?: string;
   className?: string;
-}): JSX.Element {
+}): JSX.Element | null {
   if (iconUrl) {
     return <img src={iconUrl} alt="" className={cn("size-4 shrink-0 object-contain", className)} draggable={false} />;
   }
-  return <span aria-hidden className={cn(icon, "size-4 shrink-0 bg-current", className)} />;
+  return <IconSlot source={icon} className={className} />;
 }
 
 /** 导航角标视图。 */
@@ -76,7 +98,7 @@ export interface SidebarNavItemButtonProps extends Omit<ComponentPropsWithoutRef
 }
 
 /**
- * 侧栏导航项。选中态只改字重与文字色, 背景靠外层的高亮块给出 ——
+ * 侧栏导航项。选中态只改字重与文字色, 背景靠外层的高亮块给出 
  * 这是上游的做法, 好处是移动高亮块时按钮本身不用重绘。
  */
 export const SidebarNavItemButton = forwardRef<HTMLButtonElement, SidebarNavItemButtonProps>(
