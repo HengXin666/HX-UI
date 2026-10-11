@@ -5,6 +5,7 @@ import { cn } from "../primitives/utils";
 import { INDENT_VARS, TreeRow, flattenTree, type FlatNode, type TreeNode } from "./tree-parts";
 
 export type { TreeNode, FlatNode } from "./tree-parts";
+export type { SessionStatus } from "./SessionStatusDot";
 
 /**
  * 通用树导航 (文件树 / 目录树 / 组织树共用)。
@@ -23,6 +24,12 @@ export type { TreeNode, FlatNode } from "./tree-parts";
  *
  * // 非受控: 展开状态由树自己记
  * <TreeNav nodes={nodes} defaultExpanded={["src"]} onSelect={(n) => open(n.id)} />
+ *
+ * // 行首状态 + 行尾附加: [状态点] [图标] 标签 … [trailing]
+ * const running: TreeNode[] = [
+ *   { id: "build", label: "构建", icon: HammerIcon, status: "running" },
+ *   { id: "lint",  label: "静态检查", status: "unread", trailing: "2 分钟前" },
+ * ];
  *
  * // 受控: 展开状态由调用方持有 (需要持久化, 或与外部筛选联动时)
  * <TreeNav

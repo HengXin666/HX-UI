@@ -5,6 +5,7 @@ import { ChevronRightIcon } from "lucide-react";
 import { cn } from "../primitives/utils";
 import { IconSlot, type IconSource } from "./Icon";
 import { SidebarNavBadgeView, type SidebarNavBadge } from "./SidebarNav";
+import { SessionStatusDot, type SessionStatus } from "./SessionStatusDot";
 
 /**
  * 树的**行渲染件**  与 {@link ./TreeNav} 的键盘/状态逻辑分开。
@@ -17,12 +18,26 @@ import { SidebarNavBadgeView, type SidebarNavBadge } from "./SidebarNav";
 export interface TreeNode {
   readonly id: string;
   readonly label: string;
+  /**
+   * 行首状态指示。省略与 `"idle"` 等价  这一格不渲染, 也不占位。
+   * 四态取值与视觉见 {@link ./SessionStatusDot}。
+   */
+  readonly status?: SessionStatus;
   /** 行首图标。省略即不占位。 */
   readonly icon?: IconSource;
   /** 复用侧栏角标 (计数 / 短文本)。 */
   readonly badge?: SidebarNavBadge;
   /** 右侧附加信息 (计数、大小、状态文字)。 */
   readonly meta?: ReactNode;
+  /**
+   * 行尾附加节点。排在 `meta` 与 `badge` **之后**, 是整行的最后一格。
+   *
+   * 与 `meta` 的分工: `meta` 是"同一类事实的纯文本" (大小、数量), 由本行统一
+   * 字号与颜色; `trailing` 是调用方自备的节点 (相对时间、操作按钮、组合片段),
+   * 本行不替它决定长什么样。两者都给, 是为了让"右端还有东西"既可以用最省事的
+   * 文本, 也可以用任意组件, 而不必为了塞一个按钮去改 `meta` 的类型。
+   */
+  readonly trailing?: ReactNode;
   readonly children?: readonly TreeNode[];
   /** 置灰且不可选中。仍可展开  展开是浏览行为, 选中才是动作。 */
   readonly disabled?: boolean;
@@ -145,9 +160,11 @@ export function TreeRow({ entry, selected, expanded, focusable, onActivate, onTo
         /* 无子节点时保留箭头列宽, 让同一层的图标纵向对齐。 */
         <span aria-hidden className="block size-4 shrink-0" />
       )}
+      <SessionStatusDot status={node.status ?? "idle"} />
       <IconSlot source={node.icon} />
       <span className="min-w-0 flex-1 truncate text-left">{node.label}</span>
       {node.meta ? <span className="shrink-0 text-[length:var(--fs-2xs)] text-muted-foreground">{node.meta}</span> : null}
+      {node.trailing ? <span className="shrink-0">{node.trailing}</span> : null}
       {node.badge ? <SidebarNavBadgeView badge={node.badge} /> : null}
     </div>
   );

@@ -62,6 +62,16 @@ export type IconSource = string | ComponentType<{ className?: string }> | ReactN
 
 **三者都不含业务概念** —— 组件里没有"任务""工作区""项目"这类词, 只有交互范式本身的举例。
 
+### 三、后续扩展
+
+`TreeNode` 随后增加了 `status` (行首状态指示) 与 `trailing` (行尾附加节点) 两个可选
+字段, 行渲染顺序固定为 **状态点 → 箭头 → 图标 → 标签 → `meta` → `trailing` → 角标**。
+四态视觉与这两个字段的分工由另一篇决策记录给出, 本文不重复:
+`.agents/notes/implemented/feature/2026-10-12-session-status-indicator.md`
+
+`TreeNav` 自身只多了一行类型再导出, 键盘导航、展开集与 ARIA 的判定一行未动 ——
+状态指示是**行**的属性, 与"哪些行可见"无关。
+
 ## Alternatives considered
 
 **什么都不做 (让各使用方自己传 Iconify 类串)**: 最强的理由是零改动, 而且 Iconify 类串

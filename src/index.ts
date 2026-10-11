@@ -227,6 +227,13 @@ export {
 } from "./layout/tree-parts";
 export { InlineRename, type InlineRenameProps } from "./layout/InlineRename";
 export { StateDot, type StateTone, type StateDotProps } from "./layout/StateDot";
+/**
+ * 行首状态指示 (执行中 / 待查看 / 等待输入) 与树的行尾附加位。
+ * .agents/notes/implemented/feature/2026-10-12-session-status-indicator.md
+ */
+export {
+  SessionStatusDot, type SessionStatus, type SessionStatusDotProps,
+} from "./layout/SessionStatusDot";
 export {
   ProxyChain, ProxyLayerLegend, PROXY_LAYER_META,
   type ProxyChainProps, type ProxyLayer,
