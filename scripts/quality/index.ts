@@ -52,7 +52,6 @@ function parse(command: string, args: string[]): Flags {
 
 /** pre-push: every pushed ref gets its exact range; an unprovable base scans everything. */
 function push(root: string, flags: Flags): number {
-    const remote = one(flags, "remote", "origin")!;
     let status = EXIT_OK;
     for (const row of readFileSync(0, UTF8).split(NEWLINE).filter(Boolean)) {
         const [, local, , remoteSha] = row.split(SPACE);
@@ -61,11 +60,7 @@ function push(root: string, flags: Flags): number {
         }
         let base = remoteSha;
         if (ZERO.test(base)) {
-            try {
-                base = git(root, ["merge-base", local, "refs/remotes/" + remote + "/HEAD"]).trim();
-            } catch {
-                base = EMPTY;
-            }
+            base = EMPTY;
         }
         const range = { mode: [MODE_RANGE], base: [base], head: [local] };
         status = Math.max(status, check(root, range));
