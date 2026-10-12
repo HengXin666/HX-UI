@@ -22,6 +22,11 @@ const COLLAB_FILES = [
 const CODEOWNERS = CODEOWNERS_FILE;
 /** Owners confirmed through the GitHub API as the repository owner, see docs/reference/quality/inventory.md. */
 const VERIFIED_OWNERS = ["@HengXin666"];
+/** Stable project-rule catalog; unlike coverage, this must not disappear with a rule deletion. */
+const PROJECT_RULE_IDS = new Set([
+    "PROJECT-UI-PALETTE", "PROJECT-UI-HEX", "PROJECT-UI-RGB", "PROJECT-UI-LINE-1PX", "PROJECT-UI-BW",
+    "PROJECT-UI-TRANSITION-ALL", "PROJECT-UI-BUTTON-TYPE", "PROJECT-UI-ICON-DECLARED", "PROJECT-CONST-DUP", "PROJECT-NO-ABS-PATH",
+]);
 const HOOKS: Record<string, string> = { "pre-commit": MODE_STAGED, "pre-push": CMD_PUSH };
 const RUNNER = VENDOR_SKILL + "/scripts/ci.ts";
 
@@ -76,6 +81,9 @@ const meta: Rule = {
         const ids = new Set(RULES.map((rule) => rule.id));
         for (const id of [...implemented].filter((item) => !ids.has(item))) {
             out.add(COVERAGE_FILE, 1, id + " 登记为 implemented 但注册表没有对应 checker", id, "unregistered:" + id);
+        }
+        for (const id of [...PROJECT_RULE_IDS].filter((item) => !ids.has(item))) {
+            out.add(COVERAGE_FILE, 1, id + " 项目规则已从注册表删除", id, "missing:" + id);
         }
         for (const [hook, word] of Object.entries(HOOKS)) {
             const text = snapshot.files.get(HOOK_DIR + hook) ?? "";
