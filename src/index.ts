@@ -245,6 +245,18 @@ export {
 export {
   NavTabs, type NavTabItem, type NavTabsProps,
 } from "./layout/NavTabs";
+/**
+ * 树的行级动作: 右键菜单 + 拖放。
+ *
+ * .agents/notes/implemented/feature/2026-10-12-tree-context-menu.md
+ * .agents/notes/implemented/feature/2026-10-12-tree-drag-and-drop.md
+ */
+export {
+  ContextMenu, type ContextMenuProps, type MenuAction,
+} from "./layout/ContextMenu";
+export {
+  DragDrop, type DragBindings, type DragDropProps, type DragDropState,
+} from "./layout/DragDrop";
 export {
   ProxyChain, ProxyLayerLegend, PROXY_LAYER_META,
   type ProxyChainProps, type ProxyLayer,
