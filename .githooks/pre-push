@@ -1,0 +1,8 @@
+# HX-UI quality gate: static scan and affected tests for every pushed ref range read from stdin.
+# An existing hook in the Git hooks directory still runs first with the same input.
+input="$(cat)"
+previous="$(git rev-parse --git-common-dir)/hooks/pre-push"
+if [ -x "$previous" ]; then
+    printf '%s\n' "$input" | "$previous" "$@" || exit $?
+fi
+printf '%s\n' "$input" | exec node scripts/quality/index.ts push --remote "${1:-origin}"
