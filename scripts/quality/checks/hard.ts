@@ -17,7 +17,7 @@ const STRING = STRING_TYPE;
  * The left guard keeps URL paths such as example.com/home out of the match.
  */
 const ABSOLUTE = new RegExp([
-    String.raw`(?<![\w.~:/#-])/(?:home|Users|usr|tmp|var|etc|opt|root|mnt|workspace|private|bin|sbin|lib|srv|data|proc|dev|Volumes|run|snap|nix)(?=/|[\s"'\x60]|$)`,
+    String.raw`(?<![\w.~:#/-])/(?!/)(?=[\w.~/-])(?:[\w.~+-]+/)*[\w.~+-]+(?=[/\s"'\x60]|$)`,
     String.raw`(?<![\w])[A-Za-z]:\\(?=[\w.-])`,
     String.raw`(?<![\w])[A-Za-z]:/(?=[\w.-]+/)`,
     String.raw`(?<![\w/~])~[/]`,
