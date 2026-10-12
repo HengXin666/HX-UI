@@ -126,7 +126,9 @@ export function graph(root: string, flags: Flags): number {
 export function tests(root: string, flags: Flags, scope?: Scope): number {
     const event = one(flags, "event", "local")!;
     const config = parseConfig(JSON.parse(readFileSync(join(root, CI_FILE), UTF8)));
-    const snapshot = snapshotFrom(root, scope ? { mode: [MODE_ALL] } : flags);
+    const snapshot = scope
+        ? loadSnapshot(root, MODE_RANGE, scope.base, scope.head)
+        : snapshotFrom(root, flags);
     const plan = selectTests(scope ?? {
         mode: snapshot.mode, base: snapshot.base ?? "", head: snapshot.source,
         changes: [...(snapshot.scope ?? snapshot.paths)].map((path) => ({ status: "M", path })),
