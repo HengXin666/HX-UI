@@ -3,3 +3,6 @@ dist/
 .vite/
 *.log
 .DS_Store
+# >>> hx-agent-code quality state >>>
+scripts/.hx_code_quality/
+# <<< hx-agent-code quality state <<<
