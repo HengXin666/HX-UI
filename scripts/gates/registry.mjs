@@ -36,9 +36,9 @@ export const GATES = [
   {
     id: "ui-rules",
     group: "lib",
-    label: "设计规约 (硬编色 / 非语义调色盘 / 非 1px 边框 / 漏写 type 的 button)",
+    label: "设计规约与注释规约 (scripts/quality 的 PROJECT-UI-* 规则, 与 npm run check:ui 同一条命令, 历史项走 baseline)",
     cwd: ".",
-    args: ["node", "scripts/check-ui-rules.mjs", "src"],
+    args: ["npm", "run", "--silent", "check:ui"],
   },
   {
     id: "blueprint",
@@ -61,7 +61,7 @@ export const GATES = [
     group: "docs",
     label: "图标名 (Iconify 类串是字符串, TS 与 Tailwind 都管不到, 写错只会静默留白)",
     cwd: "docs",
-    args: ["node", "scripts/check-icons.mjs"],
+    args: ["node", "scripts/check-icons.ts"],
   },
   {
     id: "registry",
@@ -90,8 +90,8 @@ export const GATES = [
     group: "browser",
     label: "逐页浏览器冒烟 (渲染出来但是空的 / 页面崩了但 tsc 全绿)",
     cwd: ".",
-    args: ["node", "scripts/check-smoke.mjs"],
-    strictArgs: ["node", "scripts/check-smoke.mjs", "--strict"],
+    args: ["node", "scripts/check-smoke.ts"],
+    strictArgs: ["node", "scripts/check-smoke.ts", "--strict"],
     requires: "dist",
   },
   {
@@ -99,8 +99,8 @@ export const GATES = [
     group: "browser",
     label: "文档站外壳交互 (主题三态 / ⌘K 搜索 / 目录锚点 / 表格行点击 / 窄屏导航)",
     cwd: ".",
-    args: ["node", "scripts/check-shell.mjs"],
-    strictArgs: ["node", "scripts/check-shell.mjs", "--strict"],
+    args: ["node", "scripts/check-shell.ts"],
+    strictArgs: ["node", "scripts/check-shell.ts", "--strict"],
     requires: "dist",
   },
   {
