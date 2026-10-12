@@ -1,0 +1,7 @@
+# HX-UI quality gate keeps no format cache yet (formatter pending approval), so nothing is cleared here.
+# An existing hook in the Git hooks directory still runs.
+previous="$(git rev-parse --git-common-dir)/hooks/post-commit"
+if [ -x "$previous" ]; then
+    "$previous" "$@"
+fi
+exit 0
