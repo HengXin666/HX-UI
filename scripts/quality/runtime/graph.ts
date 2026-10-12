@@ -157,12 +157,13 @@ export function impactGraph(snapshot: Snapshot): Graph {
         inputs[path] = targets;
     }
     const smoke = ["docs:smoke", "docs:shell"];
+    const requiredLayers = ["layer:frontend", "layer:perf"];
     return {
         complete: graph.unresolved.length === 0,
         inputs,
         modules: {
-            lib: { paths: ["src"], tests: smoke, dependsOn: [], contracts: [] },
-            docs: { paths: ["docs/src", "docs/scripts"], tests: ["docs:icons", ...smoke], dependsOn: ["lib"], contracts: [] },
+            lib: { paths: ["src"], tests: [...smoke, ...requiredLayers], dependsOn: [], contracts: [] },
+            docs: { paths: ["docs/src", "docs/scripts"], tests: ["docs:icons", ...smoke, ...requiredLayers], dependsOn: ["lib"], contracts: [] },
             e2e: { paths: ["scripts/check-smoke.ts", "scripts/check-shell.ts"], tests: smoke, dependsOn: [], contracts: [] },
             quality: {
                 paths: ["scripts/quality", "scripts/constants", VENDOR_SKILL, ".githooks"], tests: ["quality:probes"],

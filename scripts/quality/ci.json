@@ -31,6 +31,8 @@
         { "id": "quality:probes", "command": ["node", "scripts/quality/checks/probes.ts"], "format": "exit" },
         { "id": "docs:icons", "command": ["node", "docs/scripts/check-icons.ts"], "format": "exit" },
         { "id": "docs:smoke", "command": ["node", "scripts/check-smoke.ts", "--strict"], "format": "exit" },
-        { "id": "docs:shell", "command": ["node", "scripts/check-shell.ts", "--strict"], "format": "exit" }
+        { "id": "docs:shell", "command": ["node", "scripts/check-shell.ts", "--strict"], "format": "exit" },
+        { "id": "layer:frontend", "command": ["node", "scripts/quality/index.ts", "layer", "--name", "frontend"], "format": "exit" },
+        { "id": "layer:perf", "command": ["node", "scripts/quality/index.ts", "layer", "--name", "perf"], "format": "exit" }
     ]
 }
