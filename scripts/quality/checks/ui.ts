@@ -43,7 +43,7 @@ export const UI_PATTERNS: Pattern[] = [
     },
     {
         id: "PROJECT-UI-TRANSITION-ALL", summary: "禁止 transition-all 与 transition: all, 必须列出具体属性",
-        pattern: new RegExp(LEFT + String.raw`transition-all` + RIGHT + String.raw`|transition(?:Property)?\s*:\s*["'\x60]all\b`, REGEX_GLOBAL),
+        pattern: new RegExp(LEFT + String.raw`transition-all` + RIGHT + String.raw`|transition(?:Property)?\s*:\s*["'\x60]?all\b`, REGEX_GLOBAL),
         hint: "写 transition-colors / transition-[opacity,transform] 等具体属性",
     },
 ];
@@ -110,7 +110,8 @@ const iconDeclared: Rule = {
             if (!path.startsWith(UI_ROOT)) {
                 continue;
             }
-            for (const match of text.matchAll(ICON_CLASS)) {
+            const code = withoutComments(parse(path, text));
+            for (const match of code.matchAll(ICON_CLASS)) {
                 const pkg = ICON_PACKAGE_PREFIX + match[1];
                 if (!declared.has(pkg)) {
                     out.add(path, lineOf(text, match.index), pkg + " 未在根 package.json 的 "
