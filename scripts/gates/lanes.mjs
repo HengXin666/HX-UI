@@ -36,7 +36,7 @@ export const LANES = [
   {
     name: "gates",
     title: "门禁脚本与工程配置",
-    prefixes: ["scripts/", ".github/"],
+    prefixes: ["scripts/", ".github/", ".githooks/", ".agents/", "AGENTS.md", "CONTRIBUTING.md"],
     groups: ["guard"],
   },
   {
