@@ -234,6 +234,17 @@ export { StateDot, type StateTone, type StateDotProps } from "./layout/StateDot"
 export {
   SessionStatusDot, type SessionStatus, type SessionStatusDotProps,
 } from "./layout/SessionStatusDot";
+/**
+ * 可收起侧栏与顶栏导航。
+ *
+ * .agents/notes/implemented/feature/2026-10-12-collapsible-rail.md
+ */
+export {
+  CollapsibleRail, type CollapsibleRailProps,
+} from "./layout/CollapsibleRail";
+export {
+  NavTabs, type NavTabItem, type NavTabsProps,
+} from "./layout/NavTabs";
 export {
   ProxyChain, ProxyLayerLegend, PROXY_LAYER_META,
   type ProxyChainProps, type ProxyLayer,
