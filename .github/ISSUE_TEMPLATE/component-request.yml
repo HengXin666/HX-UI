@@ -1,0 +1,42 @@
+name: 组件需求
+description: 下游项目需要 HX-UI 尚未提供的通用 UI 时提交, 不要在下游手搓通用控件
+title: "[组件需求] "
+labels: [component-request]
+body:
+    - type: markdown
+      attributes:
+          value: 提交前请先在文档站和 src/ 中确认 HX-UI 没有现成组件或组合方式可用.
+    - type: input
+      id: downstream
+      attributes:
+          label: 下游项目
+          description: 需要这个组件的仓库或项目名
+      validations:
+          required: true
+    - type: textarea
+      id: scenario
+      attributes:
+          label: 使用场景
+          description: 在什么页面, 什么数据和交互流程里用到
+      validations:
+          required: true
+    - type: textarea
+      id: api
+      attributes:
+          label: 期望的 API 或交互
+          description: props, 受控/非受控, 键盘与焦点行为, 状态 (加载/空/错误)
+      validations:
+          required: true
+    - type: textarea
+      id: references
+      attributes:
+          label: 参考截图或链接
+      validations:
+          required: false
+    - type: input
+      id: current-code
+      attributes:
+          label: 目前的手搓代码位置
+          description: 下游仓库中临时实现的文件路径或链接, 没有则写无
+      validations:
+          required: true
