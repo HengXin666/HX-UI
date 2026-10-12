@@ -1,0 +1,521 @@
+[
+    {
+        "id": "APR-dependency-formatter-lint",
+        "kind": "dependency",
+        "subject": "@biomejs/biome@^2.5.15",
+        "need": "HC-FORMAT 与 HC-LINT 需要成熟 formatter/lint; 仓库没有任何格式化或 lint 配置 (无 .prettierrc/.eslintrc/biome.json)",
+        "reuse": {
+            "project": "无现有 formatter/lint 配置",
+            "stdlib": "Node 与 tsc 不提供格式化; tsc 只覆盖部分未用变量诊断",
+            "existing": "package.json 已有依赖中无 formatter/lint"
+        },
+        "candidates": [
+            {
+                "name": "@biomejs/biome",
+                "version": "2.5.15",
+                "license": "MIT OR Apache-2.0",
+                "lastRelease": "2026-09-30",
+                "activity": "npm latest 发布于 2026-09-30",
+                "size": "unpackedSize 782006 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "单包同时提供 format+lint, 支持 TSX, indentWidth/lineWidth 可配 4/120",
+                "source": "https://registry.npmjs.org/@biomejs/biome",
+                "checkedAt": "2026-10-11"
+            },
+            {
+                "name": "prettier",
+                "version": "3.9.10",
+                "license": "MIT",
+                "lastRelease": "2026-10-10",
+                "activity": "npm latest 发布于 2026-10-10",
+                "size": "unpackedSize 9959033 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "仅格式化, 需另配 eslint 10.12.0 + typescript-eslint 8.71.1 才覆盖 HC-LINT",
+                "source": "https://registry.npmjs.org/prettier",
+                "checkedAt": "2026-10-11"
+            }
+        ],
+        "choice": {
+            "pick": "@biomejs/biome",
+            "reason": "一个依赖覆盖两条规则, 配置文件少; 但规则要求 4 空格而现有代码为 2 空格, 落地意味着全仓重排 (不改视觉类名与行为), 需要用户决定是否接受这次大 diff 或保留 2 空格并登记例外",
+            "rollback": "删除 biome.json 与依赖, 恢复格式化前提交"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "biome.json",
+                "src/",
+                "docs/src/",
+                "scripts/"
+            ],
+            "steps": [
+                "npm i -D -E @biomejs/biome",
+                "新增 biome.json (indentWidth 4 或保留 2, lineWidth 120)",
+                "在 scripts/quality 注册 HC-FORMAT/HC-LINT checker 与 fixture"
+            ],
+            "tests": [
+                "quality:probes"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": ""
+    },
+    {
+        "id": "APR-dependency-types-node",
+        "kind": "dependency",
+        "subject": "@types/node@^22",
+        "need": "scripts/ 下 TS 脚本依赖 node: 模块, 没有 Node 类型定义 tsc 无法检查 scripts, HC-TYPE 目前只覆盖 src 与 docs/src",
+        "reuse": {
+            "project": "node_modules/@types 中只有 react/d3 等, 无 node",
+            "stdlib": "Node 原生运行 TS 只擦除类型, 不做检查",
+            "existing": "无"
+        },
+        "candidates": [
+            {
+                "name": "@types/node",
+                "version": "26.6.5",
+                "license": "MIT",
+                "lastRelease": "2026-10-09",
+                "activity": "npm latest 发布于 2026-10-09",
+                "size": "unpackedSize 2546175 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "需选与 CI Node 22 对应的 ^22 主版本, 最新 latest 为 26.x",
+                "source": "https://registry.npmjs.org/@types/node",
+                "checkedAt": "2026-10-11"
+            }
+        ],
+        "choice": {
+            "pick": "@types/node@^22",
+            "reason": "只有这一个可行来源; 版本对齐 CI 使用的 Node 22",
+            "rollback": "移除依赖与 scripts/tsconfig.json"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "scripts/tsconfig.json",
+                "scripts/constants/quality.ts"
+            ],
+            "steps": [
+                "npm i -D @types/node@^22",
+                "新增 scripts/tsconfig.json (nodenext, allowImportingTsExtensions, noEmit)",
+                "TSCONFIGS 加入 scripts/tsconfig.json"
+            ],
+            "tests": [
+                "quality:probes"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": ""
+    },
+    {
+        "id": "APR-dependency-ui-test-runner",
+        "kind": "dependency",
+        "subject": "vitest@^5 + @testing-library/react@^16 + jsdom@^30",
+        "need": "HC-TEST 要求按层组织的 frontend/ui 测试; 现在只有浏览器冒烟与外壳交互检查, 没有组件单元/交互测试",
+        "reuse": {
+            "project": "scripts/check-smoke.ts 与 check-shell.ts 只验证文档站渲染与外壳行为",
+            "stdlib": "node:test 无 DOM",
+            "existing": "无测试框架"
+        },
+        "candidates": [
+            {
+                "name": "vitest",
+                "version": "5.0.3",
+                "license": "MIT",
+                "lastRelease": "2026-09-30",
+                "activity": "npm latest 发布于 2026-09-30",
+                "size": "unpackedSize 2759444 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "复用 docs 已有的 vite 8 配置",
+                "source": "https://registry.npmjs.org/vitest",
+                "checkedAt": "2026-10-11"
+            },
+            {
+                "name": "@testing-library/react",
+                "version": "16.3.3",
+                "license": "MIT",
+                "lastRelease": "2026-08-27",
+                "activity": "npm latest 发布于 2026-08-27",
+                "size": "unpackedSize 339581 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "React 19",
+                "source": "https://registry.npmjs.org/@testing-library/react",
+                "checkedAt": "2026-10-11"
+            },
+            {
+                "name": "jsdom",
+                "version": "30.1.2",
+                "license": "MIT",
+                "lastRelease": "2026-10-04",
+                "activity": "npm latest 发布于 2026-10-04",
+                "size": "unpackedSize 5533799 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "DOM 环境",
+                "source": "https://registry.npmjs.org/jsdom",
+                "checkedAt": "2026-10-11"
+            }
+        ],
+        "choice": {
+            "pick": "vitest + @testing-library/react + jsdom",
+            "reason": "与现有 vite 工具链一致; 只有引入后才能建立 tests/<module>/frontend/ui 层",
+            "rollback": "移除依赖与 tests/ 目录"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "tests/",
+                "scripts/quality/ci.json"
+            ],
+            "steps": [
+                "npm i -D vitest @testing-library/react jsdom",
+                "建立 tests/primitives/frontend/ui 等目录",
+                "在 ci.json 与 impact graph 注册测试 ID"
+            ],
+            "tests": [
+                "primitives:frontend-ui",
+                "layout:frontend-ui",
+                "charts:frontend-ui"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": ""
+    },
+    {
+        "id": "APR-dependency-perf-runner",
+        "kind": "dependency",
+        "subject": "@playwright/test@^1.64.0",
+        "need": "HC-PERF 要求文档站每个路由 (docs/src/nav.ts 中 38 页) 有 LCP/CLS/ready 预算与 e2e/perf 用例",
+        "reuse": {
+            "project": "check-smoke.ts 用 chromium --dump-dom, 拿不到 PerformanceObserver 指标",
+            "stdlib": "无",
+            "existing": "无"
+        },
+        "candidates": [
+            {
+                "name": "@playwright/test",
+                "version": "1.64.0",
+                "license": "Apache-2.0",
+                "lastRelease": "2026-10-07",
+                "activity": "npm latest 发布于 2026-10-07",
+                "size": "unpackedSize 28542 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "固定浏览器版本, 可注入 PerformanceObserver",
+                "source": "https://registry.npmjs.org/@playwright/test",
+                "checkedAt": "2026-10-11"
+            }
+        ],
+        "choice": {
+            "pick": "@playwright/test",
+            "reason": "规则测量方法直接指定 Playwright; 无其他候选",
+            "rollback": "移除依赖与 tests/*/e2e/perf"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "scripts/quality/perf.json",
+                "tests/docs/e2e/perf/"
+            ],
+            "steps": [
+                "npm i -D @playwright/test",
+                "生成 perf.json 38 条预算",
+                "CI 安装浏览器"
+            ],
+            "tests": [
+                "docs:perf"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": ""
+    },
+    {
+        "id": "APR-dependency-iconify-peer",
+        "kind": "dependency",
+        "subject": "@iconify-json/solar@^1.2.13, @iconify-json/mdi@^1.2.3 (peerDependencies)",
+        "need": "PROJECT-UI-ICON-DECLARED: src 中 24 处 icon-[solar--]/icon-[mdi--] 只在 docs/package.json 声明, 下游安装 @hx/ui 后图标为空",
+        "reuse": {
+            "project": "docs/package.json devDependencies 已有两个图标集",
+            "stdlib": "不适用",
+            "existing": "版本沿用 docs 已用范围"
+        },
+        "candidates": [
+            {
+                "name": "@iconify-json/solar",
+                "version": "1.2.13",
+                "license": "CC-BY-4.0",
+                "lastRelease": "2026-09-26",
+                "activity": "npm latest 发布于 2026-09-26",
+                "size": "unpackedSize 11955043 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "peerDependencies 由下游安装; 注意 CC-BY-4.0 署名要求",
+                "source": "https://registry.npmjs.org/@iconify-json/solar",
+                "checkedAt": "2026-10-11"
+            },
+            {
+                "name": "@iconify-json/mdi",
+                "version": "1.2.3",
+                "license": "Apache-2.0",
+                "lastRelease": "2025-01-20",
+                "activity": "npm latest 发布于 2025-01-20",
+                "size": "unpackedSize 3472864 bytes (registry 数据, 未实测安装体积)",
+                "advisories": "未逐项查询 GitHub Advisory, 安装后需 npm audit",
+                "compat": "同上",
+                "source": "https://registry.npmjs.org/@iconify-json/mdi",
+                "checkedAt": "2026-10-11"
+            }
+        ],
+        "choice": {
+            "pick": "加入根 package.json peerDependencies (可选 peerDependenciesMeta), 或改为 dependencies",
+            "reason": "组件库不打包图标数据, peer 让下游与其 Tailwind iconify 插件共用一份; 也可能需要同时声明 @iconify/tailwind4",
+            "rollback": "删除声明, baseline 中 24 条恢复为历史项"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json"
+            ],
+            "steps": [
+                "在 peerDependencies 加两个图标集",
+                "从 baseline 删除 PROJECT-UI-ICON-DECLARED 条目"
+            ],
+            "tests": [
+                "docs:icons"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": ""
+    },
+    {
+        "id": "APR-dependency-agent-notes",
+        "kind": "dependency",
+        "subject": "vendor hx-agent-notes (HXLoLis b7a5c91) + uv + tree-sitter parser 依赖",
+        "need": "HC-NOTES 委托 hx-agent-notes 的 AST 双链检查; 目标仓库没有安装, 需要 uv 与 Python tree-sitter 依赖",
+        "reuse": {
+            "project": "无 .agents/notes",
+            "stdlib": "不适用",
+            "existing": "hx-agent-code 已 vendor 在 .agents/skills/hx-agent-code"
+        },
+        "candidates": [
+            {
+                "name": "hx-agent-notes v2.3 (vendor)",
+                "license": "MIT",
+                "compat": "需 uv 运行 install.py 并引入 Python 依赖, CI 需 setup-uv",
+                "source": "https://github.com/HengXin666/HXLoLis/tree/main/.agents/skills/hx-agent-notes",
+                "checkedAt": "2026-10-11"
+            }
+        ],
+        "choice": {
+            "pick": "vendor hx-agent-notes 并运行其安装器 (--guarded src --redline-dir scripts/redlines --github)",
+            "reason": "规则要求委托, 不能自行复制实现",
+            "rollback": "删除 vendor 目录与 scripts/redlines"
+        },
+        "impact": {
+            "files": [
+                ".agents/skills/hx-agent-notes/",
+                "scripts/redlines/",
+                "AGENTS.md",
+                ".github/workflows/"
+            ],
+            "steps": [
+                "vendor",
+                "uv run install.py",
+                "为 src 每个目录建立 note 与锚点"
+            ],
+            "tests": [
+                "quality:probes"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": ""
+    },
+    {
+        "id": "APR-architecture-module-public-api",
+        "kind": "architecture",
+        "subject": "src/primitives, src/layout, src/charts 的公共接口边界",
+        "need": "HC-BOUNDARY 要求跨业务模块只经公共接口访问; 现在 layout/charts 直接 import primitives 内部文件, 也没有模块级 index",
+        "reuse": {
+            "project": "src/index.ts 是唯一公开出口",
+            "stdlib": "不适用",
+            "existing": "不适用"
+        },
+        "candidates": [
+            {
+                "name": "保留现状",
+                "coupling": "layout -> primitives/<file> 直连",
+                "migration": "无",
+                "constraint": "HC-BOUNDARY 无法机械裁决, 保持 blocked"
+            },
+            {
+                "name": "局部调整: 每个模块加 index.ts 公共接口, 跨模块只从 index 导入",
+                "coupling": "单向 layout/charts -> primitives",
+                "migration": "新增 3 个 index.ts, 改 import 路径, 不改组件代码",
+                "constraint": "不改变视觉与行为"
+            },
+            {
+                "name": "整体迁移为 monorepo 包",
+                "coupling": "包边界",
+                "migration": "成本高",
+                "constraint": "超出本次范围"
+            }
+        ],
+        "choice": {
+            "pick": "局部调整",
+            "reason": "成本最低且能让 HC-BOUNDARY 用 AST 机械检查; 属于组件文件 import 改动, 本次任务禁止触碰组件, 留给后续",
+            "rollback": "恢复直连 import"
+        },
+        "impact": {
+            "files": [
+                "src/primitives/index.ts",
+                "src/layout/",
+                "src/charts/"
+            ],
+            "steps": [
+                "新增模块 index",
+                "改 import",
+                "注册 HC-BOUNDARY checker"
+            ],
+            "tests": [
+                "docs:smoke"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": ""
+    },
+    {
+        "id": "APR-stack-pnpm",
+        "kind": "stack",
+        "subject": "npm -> pnpm",
+        "need": "HC-STACK 推荐新前端用 pnpm; 现有仓库与 docs 都使用 npm + package-lock.json",
+        "reuse": {
+            "project": "package-lock.json, docs/package-lock.json",
+            "stdlib": "不适用",
+            "existing": "npm 10"
+        },
+        "candidates": [
+            {
+                "name": "保留 npm",
+                "coupling": "无",
+                "migration": "无",
+                "constraint": "HC-STACK 登记为既有栈事实"
+            },
+            {
+                "name": "迁移 pnpm",
+                "coupling": "docs 使用 file:.. 依赖, 需 workspace",
+                "migration": "替换锁文件与 CI setup",
+                "constraint": "技术栈迁移需授权"
+            }
+        ],
+        "choice": {
+            "pick": "保留 npm",
+            "reason": "既有栈, 迁移收益小且需授权; HC-STACK 已登记 npm 为事实并阻止未经裁决的其他锁文件",
+            "rollback": "不适用"
+        },
+        "impact": {
+            "files": [],
+            "steps": [],
+            "tests": []
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": ""
+    },
+    {
+        "id": "APR-dependency-xyflow-react",
+        "kind": "dependency",
+        "subject": "@xyflow/react@^12.12.0",
+        "need": "src/blueprint 的画布层 (拖拽 / 缩放 / 平移 / 框选 / 连线 / 小地图) 交给成熟库, 语义层保留在本仓",
+        "reuse": {
+            "project": "main 上由仓库所有者直接引入, 门禁迁移时补登记",
+            "stdlib": "不适用",
+            "existing": "引入前无同类依赖"
+        },
+        "candidates": [
+            {
+                "name": "@xyflow/react",
+                "version": "12.12.0",
+                "license": "MIT",
+                "lastRelease": "未查询",
+                "activity": "未查询",
+                "size": "未实测",
+                "advisories": "未逐项查询 GitHub Advisory, 需 npm audit",
+                "compat": "React 19, 以 dependencies 发布给下游",
+                "source": "node_modules/@xyflow/react/package.json (npm ci 安装的锁定版本)",
+                "checkedAt": "2026-10-13"
+            }
+        ],
+        "choice": {
+            "pick": "@xyflow/react",
+            "reason": "提交 48448b9 记录: 用户拍板替换手写画布, 交互交给 @xyflow/react 12",
+            "rollback": "回退引入它的提交 48448b9"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "src/blueprint/"
+            ],
+            "steps": [
+                "已在 main 安装, 无需额外步骤"
+            ],
+            "tests": [
+                "docs:smoke",
+                "blueprint (scripts/gates, 需要兄弟目录 HX-Blueprint-Demo)"
+            ]
+        },
+        "status": "approved",
+        "approvedBy": "HengXin666",
+        "authorization": "仓库所有者在 main 提交 48448b9 中引入, 门禁迁移到 65f8e76 时按既成事实登记"
+    },
+    {
+        "id": "APR-dependency-playwright",
+        "kind": "dependency",
+        "subject": "playwright@^1.63.0 (devDependencies, 根与 docs)",
+        "need": "scripts/e2e 的蓝图真实浏览器 e2e (gates 的 bp-e2e 门禁) 需要可编程浏览器",
+        "reuse": {
+            "project": "main 上由仓库所有者直接引入, 门禁迁移时补登记",
+            "stdlib": "不适用",
+            "existing": "引入前无同类依赖"
+        },
+        "candidates": [
+            {
+                "name": "playwright",
+                "version": "1.63.0",
+                "license": "Apache-2.0",
+                "lastRelease": "未查询",
+                "activity": "未查询",
+                "size": "未实测 (浏览器二进制另行下载)",
+                "advisories": "未逐项查询 GitHub Advisory, 需 npm audit",
+                "compat": "只用于开发期 e2e, 不进入发布物",
+                "source": "node_modules/playwright/package.json (npm ci 安装的锁定版本)",
+                "checkedAt": "2026-10-13"
+            }
+        ],
+        "choice": {
+            "pick": "playwright",
+            "reason": "提交 1f23399 为蓝图 e2e 引入; 与 APR-dependency-perf-runner 提议的 @playwright/test 同源, perf 预算接入时优先复用它",
+            "rollback": "回退引入它的提交 1f23399"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "docs/package.json",
+                "scripts/e2e/"
+            ],
+            "steps": [
+                "已在 main 安装, 无需额外步骤"
+            ],
+            "tests": [
+                "bp-e2e (scripts/gates)"
+            ]
+        },
+        "status": "approved",
+        "approvedBy": "HengXin666",
+        "authorization": "仓库所有者在 main 提交 1f23399 中引入, 门禁迁移到 65f8e76 时按既成事实登记"
+    }
+]
