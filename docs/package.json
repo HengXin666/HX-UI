@@ -8,9 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "check:icons": "node scripts/check-icons.mjs",
-    "check:smoke": "node ../scripts/check-smoke.mjs",
-    "check:shell": "node ../scripts/check-shell.mjs",
+    "check:icons": "node scripts/check-icons.ts",
+    "check:smoke": "node ../scripts/check-smoke.ts",
+    "check:shell": "node ../scripts/check-shell.ts",
     "verify": "npm run typecheck && npm run check:icons && npm run build && npm run check:smoke && npm run check:shell"
   },
   "dependencies": {
