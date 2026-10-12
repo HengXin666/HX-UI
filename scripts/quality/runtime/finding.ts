@@ -15,13 +15,11 @@ export type Rule = {
 };
 
 /**
- * Builds findings whose fingerprint is rule + path + violation key + its k-th occurrence in the file.
- * Line numbers stay out of the identity, so edits elsewhere keep historical entries matched
- * while every extra occurrence of a known violation becomes a new identity.
+ * Builds findings from the rule, path, violation key and a location anchor.
+ * The anchor prevents an inserted violation from inheriting an approval for a later one.
  */
 export class Collector {
     readonly findings: Finding[] = [];
-    private readonly seen = new Map<string, number>();
     private readonly rule: Rule | Pick<Rule, "id" | "severity">;
 
     constructor(rule: Pick<Rule, "id" | "severity">) {
@@ -29,13 +27,11 @@ export class Collector {
     }
 
     add(path: string, line: number, message: string, evidence: string, key: string): void {
-        const identity = JSON.stringify([path, key]);
-        const count = (this.seen.get(identity) ?? 0) + 1;
-        this.seen.set(identity, count);
+        const identity = JSON.stringify([path, key, line]);
         this.findings.push({
             ruleId: this.rule.id, severity: this.rule.severity, path, line: Math.max(1, line), message,
             evidence: evidence.trim().slice(0, EVIDENCE_LIMIT) || key,
-            fingerprint: fingerprint(this.rule.id, path, key, String(count)),
+            fingerprint: fingerprint(this.rule.id, path, key, identity),
         });
     }
 
