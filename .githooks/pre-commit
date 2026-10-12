@@ -1,0 +1,7 @@
+# HX-UI quality gate: checks exactly the staged index, never the working tree.
+# Installed by `npm run hooks:install`; an existing hook in the Git hooks directory still runs first.
+previous="$(git rev-parse --git-common-dir)/hooks/pre-commit"
+if [ -x "$previous" ]; then
+    "$previous" "$@" || exit $?
+fi
+exec node scripts/quality/index.ts check --mode staged
