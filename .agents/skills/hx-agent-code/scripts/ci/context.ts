@@ -27,7 +27,17 @@ export function eventScope(root: string, eventName: string, event: unknown): { s
         head = sha(data.after);
         base = sha(data.before);
         if (/^0+$/.test(base)) {
-            base = "EMPTY";
+            const repository = record(data.repository);
+            const branch = string(repository.default_branch);
+            try {
+                base = git(root, "merge-base", "origin/" + branch, head);
+            } catch {
+                try {
+                    base = git(root, "merge-base", "refs/remotes/origin/" + branch, head);
+                } catch {
+                    base = "EMPTY";
+                }
+            }
         }
     } else if (eventName === "pull_request") {
         const pull = record(data.pull_request);
