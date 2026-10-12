@@ -1,0 +1,475 @@
+{
+    "_comment": "Positive/negative inputs for every implemented rule; scripts/quality/checks/probes.ts writes each into a temporary Git repository. Contains intentional violations, exempted from PROJECT-NO-ABS-PATH and HC-TEXT by exact path.",
+    "rules": {
+        "PROJECT-UI-PALETTE": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/a.tsx": "export const A = () => <div className=\"bg-primary text-muted-foreground\" />;\n"
+            },
+            "negative": {
+                "src/a.tsx": "export const A = () => <div className=\"bg-slate-500\" />;\n"
+            }
+        },
+        "PROJECT-UI-HEX": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/a.tsx": "export const A = () => <div className=\"text-primary\" />;\n"
+            },
+            "negative": {
+                "src/a.tsx": "export const A = () => <div className=\"text-[#ff0000]\" />;\n"
+            }
+        },
+        "PROJECT-UI-RGB": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/a.tsx": "export const A = () => <div className=\"shadow-sm\" />;\n"
+            },
+            "negative": {
+                "src/a.tsx": "export const A = () => <div className=\"shadow-[0_1px_2px_rgba(0,0,0,0.1)]\" />;\n"
+            }
+        },
+        "PROJECT-UI-LINE-1PX": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/a.tsx": "export const A = () => <div className=\"border ring-1 border-b\" />;\n"
+            },
+            "negative": {
+                "src/a.tsx": "export const A = () => <div className=\"ring-[0.5px] border-b-2\" />;\n"
+            }
+        },
+        "PROJECT-UI-BW": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/a.tsx": "export const A = () => <div className=\"bg-background text-foreground\" />;\n"
+            },
+            "negative": {
+                "src/a.tsx": "export const A = () => <div className=\"bg-black/20 text-white\" />;\n"
+            }
+        },
+        "PROJECT-UI-TRANSITION-ALL": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/a.tsx": "export const A = () => <div className=\"transition-colors\" />;\n"
+            },
+            "negative": {
+                "src/a.tsx": "export const A = () => <div className=\"transition-all\" />;\n"
+            }
+        },
+        "PROJECT-UI-BUTTON-TYPE": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/a.tsx": "export const B = (x: () => void) => <button type=\"button\" onClick={() => x()}>ok</button>;\n"
+            },
+            "negative": {
+                "src/a.tsx": "export const B = (x: () => void) => (\n    <button\n        onClick={() => x()}\n    >\n        ok\n    </button>\n);\n"
+            }
+        },
+        "PROJECT-UI-ICON-DECLARED": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "package.json": "{\"name\": \"p\", \"peerDependencies\": {\"@iconify-json/mdi\": \"^1.2.3\"}}\n",
+                "src/i.tsx": "export const I = () => <span className=\"icon-[mdi--home]\" />;\n"
+            },
+            "negative": {
+                "package.json": "{\"name\": \"p\", \"devDependencies\": {\"@iconify-json/mdi\": \"^1.2.3\"}}\n",
+                "src/i.tsx": "export const I = () => <span className=\"icon-[mdi--home]\" />;\n"
+            }
+        },
+        "PROJECT-CONST-DUP": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/constants/index.ts": "export const SAME = \"same-literal\";\n",
+                "src/c.ts": "import { SAME } from \"./constants/index.ts\";\nexport const list = [SAME, SAME, SAME];\n"
+            },
+            "negative": {
+                "src/c.ts": "export const list = [\"same-literal\", \"same-literal\", \"same-literal\"];\n"
+            }
+        },
+        "PROJECT-NO-ABS-PATH": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/p.ts": "import path from \"node:path\";\nexport const P = path.join(import.meta.dirname, \"x\");\n"
+            },
+            "negative": {
+                "src/p.ts": "import path from \"node:path\";\nexport const P = \"/home/user/x\";\nexport const Q = path.join(\"/srv\", P);\n"
+            }
+        },
+        "HC-EXT": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "scripts/a.ts": "export {};\n"
+            },
+            "negative": {
+                "scripts/a.mjs": "export {};\n"
+            }
+        },
+        "HC-SIZE": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/big.ts": {
+                    "repeat": "export {};\n",
+                    "times": 300
+                }
+            },
+            "negative": {
+                "src/big.ts": {
+                    "repeat": "export {};\n",
+                    "times": 301
+                }
+            }
+        },
+        "HC-DIR": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/d/f0.ts": "export {};\n",
+                "src/d/f1.ts": "export {};\n",
+                "src/d/f2.ts": "export {};\n",
+                "src/d/f3.ts": "export {};\n",
+                "src/d/f4.ts": "export {};\n",
+                "src/d/f5.ts": "export {};\n"
+            },
+            "negative": {
+                "src/d/f0.ts": "export {};\n",
+                "src/d/f1.ts": "export {};\n",
+                "src/d/f2.ts": "export {};\n",
+                "src/d/f3.ts": "export {};\n",
+                "src/d/f4.ts": "export {};\n",
+                "src/d/f5.ts": "export {};\n",
+                "src/d/f6.ts": "export {};\n"
+            }
+        },
+        "HC-COMMENT": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/h.ts": {
+                    "repeat": "// header line\n",
+                    "times": 10,
+                    "suffix": "export {};\n"
+                }
+            },
+            "negative": {
+                "src/h.ts": {
+                    "repeat": "// header line\n",
+                    "times": 11,
+                    "suffix": "export {};\n"
+                }
+            }
+        },
+        "HC-COMMENT-SPACE": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/s.ts": "// ok\nconst a = 1;  // first\nconst bb = 2; // second\nexport { a, bb };\n"
+            },
+            "negative": {
+                "src/s.ts": "//bad\nconst a = 1; // first\nconst bb = 2;  // second\nexport { a, bb };\n"
+            }
+        },
+        "HC-TEXT": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "docs/reference/a.md": "# 标题\n\n中文正文, 使用 ASCII 标点. `代码，里不查`\n"
+            },
+            "negative": {
+                "docs/reference/a.md": "# 标题\n\n中文正文，使用全角标点。🚀\n"
+            }
+        },
+        "HC-DOCSIG": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/f.ts": "/**\n * Sum\n * @param a first\n * @param b second\n */\nexport function f(a: number, b: number) {\n    return a + b;\n}\n"
+            },
+            "negative": {
+                "src/f.ts": "/**\n * Sum\n * @param a first\n * @param gone removed\n */\nexport function f(a: number, b: number) {\n    return a + b;\n}\n"
+            }
+        },
+        "HC-DOCSYNC": {
+            "mode": "worktree",
+            "base": {
+                "src/f.ts": "/**\n * Adds one\n */\nexport function f(a: number) {\n    return a + 1;\n}\n"
+            },
+            "positive": {
+                "src/f.ts": "/**\n * Adds two\n */\nexport function f(a: number) {\n    return a + 2;\n}\n"
+            },
+            "negative": {
+                "src/f.ts": "/**\n * Adds one\n */\nexport function f(a: number) {\n    return a + 2;\n}\n"
+            }
+        },
+        "HC-WHY": {
+            "mode": "worktree",
+            "base": {
+                "src/w.ts": "export const a = 1;\n"
+            },
+            "positive": {
+                "src/w.ts": "export const a = 1;\nexport const b = 2;\n"
+            },
+            "negative": {
+                "src/w.ts": "export const a = 1;\n// set b to two\nexport const b = 2;\n"
+            }
+        },
+        "HC-DOC-REVIEW": {
+            "mode": "worktree",
+            "base": {
+                "src/w.ts": "export const a = 1;\n",
+                "docs/reference/a.md": "# A\n"
+            },
+            "positive": {
+                "src/w.ts": "export const a = 2;\n"
+            },
+            "negative": {
+                "docs/reference/a.md": "# A\n\nchanged\n"
+            }
+        },
+        "HC-DOCNAME": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "docs/reference/local-setup.md": "# a\n",
+                "docs/decisions/2026-10-11-quality-gate.md": "# b\n"
+            },
+            "negative": {
+                "docs/reference/Setup_Guide.md": "# a\n",
+                "docs/reference/api-v2.md": "# b\n",
+                "docs/reference/2026-10-01-notes.md": "# c\n"
+            }
+        },
+        "HC-DOCS": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "docs/reference/a.md": "# a\n"
+            },
+            "negative": {
+                "docs/notes.md": "# a\n"
+            }
+        },
+        "HC-DOCSIZE": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "docs/reference/a.md": {
+                    "repeat": "line\n",
+                    "times": 1500
+                }
+            },
+            "negative": {
+                "docs/reference/a.md": {
+                    "repeat": "line\n",
+                    "times": 1501
+                }
+            }
+        },
+        "HC-CONTEXT": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "README.md": "# p\n\nAgent 入口见 AGENTS.md\n",
+                "AGENTS.md": "# agents\n\n项目说明见 README.md\n"
+            },
+            "negative": {
+                "README.md": "# p\n"
+            }
+        },
+        "HC-BUDGET": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "AGENTS.md": {
+                    "repeat": "x",
+                    "times": 30000
+                },
+                "a/AGENTS.md": {
+                    "repeat": "y",
+                    "times": 30000
+                },
+                "a/x.ts": "export {};\n"
+            },
+            "negative": {
+                "AGENTS.md": {
+                    "repeat": "x",
+                    "times": 40000
+                },
+                "a/AGENTS.md": {
+                    "repeat": "y",
+                    "times": 30000
+                },
+                "a/x.ts": "export {};\n"
+            }
+        },
+        "HC-STACK": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "package-lock.json": "{}\n"
+            },
+            "negative": {
+                "pnpm-lock.yaml": "lockfileVersion: 9\n"
+            }
+        },
+        "HC-DEPS": {
+            "mode": "worktree",
+            "base": {
+                "package.json": "{\"name\": \"p\", \"dependencies\": {\"clsx\": \"^2.1.1\"}}\n",
+                "README.md": "# o\n"
+            },
+            "positive": {
+                "package.json": "{\"name\": \"p\", \"dependencies\": {\"clsx\": \"^2.1.1\"}}\n",
+                "README.md": "# p\n"
+            },
+            "negative": {
+                "package.json": "{\"name\": \"p\", \"dependencies\": {\"clsx\": \"^2.1.1\", \"left-pad\": \"^1.3.0\"}}\n"
+            }
+        },
+        "HC-REUSE": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "docs/reference/quality/inventory.md": "# inventory\n\n## 架构推荐\n\n保留现状\n\n## 依赖推荐\n\n不新增\n"
+            },
+            "negative": {
+                "docs/reference/quality/inventory.md": "# inventory\n"
+            }
+        },
+        "HC-CYCLE": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "src/a.ts": "import { b } from \"./b.ts\";\nexport const a = b;\n",
+                "src/b.ts": "export const b = 1;\n"
+            },
+            "negative": {
+                "src/a.ts": "import { b } from \"./b.ts\";\nexport const a = b;\n",
+                "src/b.ts": "import { a } from \"./a.ts\";\nexport const b = () => a;\n"
+            }
+        },
+        "HC-TYPE": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "tsconfig.json": "{\"compilerOptions\": {\"strict\": true, \"noEmit\": true, \"types\": [], \"allowImportingTsExtensions\": true}, \"include\": [\"src\"]}\n",
+                "src/t.ts": "export const n: number = 1;\n"
+            },
+            "negative": {
+                "tsconfig.json": "{\"compilerOptions\": {\"strict\": true, \"noEmit\": true, \"types\": [], \"allowImportingTsExtensions\": true}, \"include\": [\"src\"]}\n",
+                "src/t.ts": "export const n: number = \"x\";\n"
+            }
+        },
+        "HC-CI": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                ".github/workflows/quality-code.yml": {
+                    "copy": ".github/workflows/quality-code.yml"
+                },
+                ".github/workflows/quality-docs.yml": {
+                    "copy": ".github/workflows/quality-docs.yml"
+                },
+                ".github/workflows/quality-build.yml": {
+                    "copy": ".github/workflows/quality-build.yml"
+                },
+                ".github/workflows/quality-tests.yml": {
+                    "copy": ".github/workflows/quality-tests.yml"
+                },
+                "scripts/quality/ci.json": {
+                    "copy": "scripts/quality/ci.json"
+                }
+            },
+            "negative": {
+                "scripts/quality/ci.json": {
+                    "copy": "scripts/quality/ci.json"
+                }
+            }
+        },
+        "HC-COLLAB": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                ".github/ISSUE_TEMPLATE/bug.yml": {
+                    "copy": ".github/ISSUE_TEMPLATE/bug.yml"
+                },
+                ".github/ISSUE_TEMPLATE/feature.yml": {
+                    "copy": ".github/ISSUE_TEMPLATE/feature.yml"
+                },
+                ".github/ISSUE_TEMPLATE/component-request.yml": {
+                    "copy": ".github/ISSUE_TEMPLATE/component-request.yml"
+                },
+                ".github/PULL_REQUEST_TEMPLATE.md": {
+                    "copy": ".github/PULL_REQUEST_TEMPLATE.md"
+                },
+                ".github/CODEOWNERS": {
+                    "copy": ".github/CODEOWNERS"
+                },
+                "CONTRIBUTING.md": {
+                    "copy": "CONTRIBUTING.md"
+                }
+            },
+            "negative": {
+                ".github/ISSUE_TEMPLATE/bug.yml": {
+                    "copy": ".github/ISSUE_TEMPLATE/bug.yml"
+                },
+                ".github/ISSUE_TEMPLATE/feature.yml": {
+                    "copy": ".github/ISSUE_TEMPLATE/feature.yml"
+                },
+                ".github/ISSUE_TEMPLATE/component-request.yml": {
+                    "copy": ".github/ISSUE_TEMPLATE/component-request.yml"
+                },
+                ".github/PULL_REQUEST_TEMPLATE.md": {
+                    "copy": ".github/PULL_REQUEST_TEMPLATE.md"
+                },
+                ".github/CODEOWNERS": "* @someone-unverified\n",
+                "CONTRIBUTING.md": {
+                    "copy": "CONTRIBUTING.md"
+                }
+            }
+        },
+        "HC-META": {
+            "mode": "all",
+            "base": {},
+            "positive": {
+                "scripts/quality/coverage.json": {
+                    "copy": "scripts/quality/coverage.json"
+                },
+                ".githooks/pre-commit": {
+                    "copy": ".githooks/pre-commit"
+                },
+                ".githooks/pre-push": {
+                    "copy": ".githooks/pre-push"
+                },
+                "package.json": {
+                    "copy": "package.json"
+                }
+            },
+            "negative": {
+                "scripts/quality/coverage.json": {
+                    "copy": "scripts/quality/coverage.json",
+                    "dropRule": "HC-TEXT"
+                },
+                ".githooks/pre-commit": {
+                    "copy": ".githooks/pre-commit"
+                },
+                ".githooks/pre-push": {
+                    "copy": ".githooks/pre-push"
+                },
+                "package.json": {
+                    "copy": "package.json"
+                }
+            }
+        }
+    }
+}
