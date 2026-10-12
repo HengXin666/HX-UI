@@ -1,0 +1,826 @@
+[
+    {
+        "id": "PROJECT-UI-PALETTE",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-UI-PALETTE"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-PALETTE.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-PALETTE.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); src 只用语义 token, 非语义调色盘 (slate/blue/...) 一律报错, 只放行 emerald/amber/red"
+    },
+    {
+        "id": "PROJECT-UI-HEX",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-UI-HEX"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-HEX.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-HEX.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); src 组件内禁止 hex 色值, 颜色只来自 tokens.css"
+    },
+    {
+        "id": "PROJECT-UI-RGB",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-UI-RGB"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-RGB.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-RGB.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); src 组件内禁止 rgb/rgba/hsl/hsla/oklch/oklab/hwb 函数色值, 包括 Tailwind 任意值里的 _rgba("
+    },
+    {
+        "id": "PROJECT-UI-LINE-1PX",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-UI-LINE-1PX"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-LINE-1PX.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-LINE-1PX.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); border/ring/outline/divide 线宽只允许 1px, 禁止 -2/-4/-8 与 [0.5px] 等任意值"
+    },
+    {
+        "id": "PROJECT-UI-BW",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-UI-BW"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-BW.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-BW.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 禁止 black/white 原色类 (bg-black/50, bg-white, text-white 等), 改用语义 token"
+    },
+    {
+        "id": "PROJECT-UI-TRANSITION-ALL",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-UI-TRANSITION-ALL"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-TRANSITION-ALL.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-TRANSITION-ALL.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 禁止 transition-all 与 transition: all, 必须列出具体属性"
+    },
+    {
+        "id": "PROJECT-UI-BUTTON-TYPE",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-UI-BUTTON-TYPE"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-BUTTON-TYPE.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-BUTTON-TYPE.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 原生 <button> 必须显式写 type, AST 判定, 不受换行与箭头函数影响"
+    },
+    {
+        "id": "PROJECT-UI-ICON-DECLARED",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-UI-ICON-DECLARED"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-ICON-DECLARED.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-ICON-DECLARED.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); src 中的 icon-[<set>--<name>] 图标类, 其 @iconify-json/<set> 必须在根 package.json 的 dependencies 或 peerDependencies 声明"
+    },
+    {
+        "id": "PROJECT-CONST-DUP",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-CONST-DUP"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-CONST-DUP.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-CONST-DUP.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 同一字符串或数字字面量在同一代码池 (库与文档站 / scripts 工具) 出现 >= 3 次必须提取为常量, 分别放到 src/constants/ 与 scripts/constants/"
+    },
+    {
+        "id": "PROJECT-NO-ABS-PATH",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "PROJECT-NO-ABS-PATH"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.PROJECT-NO-ABS-PATH.positive",
+            "negative": "scripts/quality/fixtures.json#rules.PROJECT-NO-ABS-PATH.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 禁止任何文件系统绝对路径写法 (POSIX 系统根目录, Windows 盘符与 UNC, 家目录, file URL, shebang) 及以根路径开头的路径拼接"
+    },
+    {
+        "id": "HC-EXT",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-EXT"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-EXT.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-EXT.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 仓库内禁止手写 .js/.mjs/.cjs, 脚本统一 .ts"
+    },
+    {
+        "id": "HC-SIZE",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-SIZE"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-SIZE.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-SIZE.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 逻辑文件 .ts 不超过 300 行, UI 文件 .tsx 不超过 500 行"
+    },
+    {
+        "id": "HC-DIR",
+        "status": "implemented",
+        "severity": "warning",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-DIR"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-DIR.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-DIR.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 单目录直接文件数大于 6 时待 review"
+    },
+    {
+        "id": "HC-COMMENT",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-COMMENT"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-COMMENT.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-COMMENT.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 文件头连续注释不超过 10 行"
+    },
+    {
+        "id": "HC-COMMENT-SPACE",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-COMMENT-SPACE"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-COMMENT-SPACE.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-COMMENT-SPACE.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 注释标记后恰好一个空格, 连续尾随单行注释起始列对齐"
+    },
+    {
+        "id": "HC-TEXT",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-TEXT"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-docs"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-TEXT.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-TEXT.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 注释与文档不用 emoji 或非 ASCII 标点, 中文正文允许, 代码字符串与代码块不检查"
+    },
+    {
+        "id": "HC-DOCSIG",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-DOCSIG"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-DOCSIG.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-DOCSIG.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 已写 @param 的函数文档必须与参数名逐一对应"
+    },
+    {
+        "id": "HC-DOCNAME",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-DOCNAME"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-docs"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-DOCNAME.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-DOCNAME.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); docs 文档树目录与文件名小写 kebab, 扩展名 md/mdx/yaml, 禁止 v2/final/copy 等副本词, 日期前缀只在 decisions"
+    },
+    {
+        "id": "HC-DOCS",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-DOCS"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-docs"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-DOCS.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-DOCS.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); docs 文档只放在 tutorials/reference/architecture/decisions/archive 之下, 同目录不得出现去掉副本词后同名的文档"
+    },
+    {
+        "id": "HC-DOCSIZE",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-DOCSIZE"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-docs"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-DOCSIZE.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-DOCSIZE.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 单个文档不超过 1500 行"
+    },
+    {
+        "id": "HC-CONTEXT",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-CONTEXT"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-docs"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-CONTEXT.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-CONTEXT.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 每个含 README.md 或 AGENTS.md 的目录两者都存在并互相引用, AGENTS 少于 150 行且少于 16384 bytes"
+    },
+    {
+        "id": "HC-BUDGET",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-BUDGET"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-docs"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-BUDGET.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-BUDGET.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 每个文件的祖先 AGENTS.md 与 skill 注入上界合计不超过 65536 bytes"
+    },
+    {
+        "id": "HC-STACK",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-STACK"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-STACK.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-STACK.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 登记栈为 React + TS + npm, 新增其他前端框架或其他包管理器锁文件需先裁决"
+    },
+    {
+        "id": "HC-DEPS",
+        "status": "implemented",
+        "severity": "warning",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-DEPS"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-DEPS.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-DEPS.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 依赖变化进 review: 新直接依赖与跨大版本需批准记录, 否则 unapproved; 补丁/小版本 review-only"
+    },
+    {
+        "id": "HC-REUSE",
+        "status": "implemented",
+        "severity": "warning",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-REUSE"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-REUSE.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-REUSE.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); inventory 必须含架构推荐与依赖推荐, 依赖变化时需同步更新 inventory"
+    },
+    {
+        "id": "HC-CYCLE",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-CYCLE"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-CYCLE.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-CYCLE.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); src 与 docs/src 的 AST 导入图无环, 无法解析的相对导入或动态导入显式报错"
+    },
+    {
+        "id": "HC-TYPE",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-TYPE"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-TYPE.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-TYPE.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 对检查快照运行 tsc --noEmit (tsconfig.json 与 docs/tsconfig.json), 全量解析项目引用"
+    },
+    {
+        "id": "HC-DOCSYNC",
+        "status": "implemented",
+        "severity": "warning",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-DOCSYNC"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-DOCSYNC.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-DOCSYNC.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 函数实现与其 JSDoc 只有一侧在 diff 中变化时, 提醒核对另一侧语义"
+    },
+    {
+        "id": "HC-WHY",
+        "status": "implemented",
+        "severity": "warning",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-WHY"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-WHY.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-WHY.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); diff 中新增或修改的注释待 review: 只写意图/原因/约束, 不复述代码"
+    },
+    {
+        "id": "HC-DOC-REVIEW",
+        "status": "implemented",
+        "severity": "warning",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-DOC-REVIEW"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-docs"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-DOC-REVIEW.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-DOC-REVIEW.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); diff 中变化的文档待 review: 单一主题, 不与上下层重复, 内容仍成立"
+    },
+    {
+        "id": "HC-CI",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-CI"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-CI.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-CI.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 三个 push/PR 入口与可复用测试流程存在并调用 vendored runner, ci.json 通过 runner 配置校验"
+    },
+    {
+        "id": "HC-COLLAB",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-COLLAB"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-COLLAB.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-COLLAB.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); Bug/Feature/组件需求 Issue 模板, PR 模板, CODEOWNERS 与 CONTRIBUTING 存在且归属为已验证身份"
+    },
+    {
+        "id": "HC-META",
+        "status": "implemented",
+        "severity": "error",
+        "checker": [
+            "node",
+            "scripts/quality/index.ts",
+            "check",
+            "--rule",
+            "HC-META"
+        ],
+        "checkpoints": [
+            "task-complete",
+            "pre-commit",
+            "pre-push",
+            "ci-code"
+        ],
+        "probes": {
+            "positive": "scripts/quality/fixtures.json#rules.HC-META.positive",
+            "negative": "scripts/quality/fixtures.json#rules.HC-META.negative"
+        },
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 注册表与 coverage.json 一一对应, hook 与 package 脚本接到单一入口"
+    },
+    {
+        "id": "HC-DATA",
+        "status": "not-applicable",
+        "reason": "组件库不访问数据, 没有 API 层或数据库",
+        "evidence": "git ls-files: 无服务端入口, src 与 docs/src 中无 fetch/axios/数据库 SDK 导入"
+    },
+    {
+        "id": "HC-PAIR",
+        "status": "not-applicable",
+        "reason": "没有前端请求层与后端路由",
+        "evidence": "src 只导出 React 组件, docs 为静态 hash 路由文档站"
+    },
+    {
+        "id": "HC-CONTRACT",
+        "status": "not-applicable",
+        "reason": "没有 API, 因此没有 docs/reference/api YAML 契约",
+        "evidence": "仓库无 HTTP 端点; test:contract 输出 not-applicable"
+    },
+    {
+        "id": "HC-PY-IMPORT",
+        "status": "not-applicable",
+        "reason": "仓库没有 Python 源码",
+        "evidence": "git ls-files 中无 .py 文件 (vendored skill 不属于项目代码)"
+    },
+    {
+        "id": "HC-PY-CONST",
+        "status": "not-applicable",
+        "reason": "仓库没有 Python 源码",
+        "evidence": "git ls-files 中无 .py 文件"
+    },
+    {
+        "id": "HC-BOUNDARY",
+        "status": "blocked",
+        "reason": "src 各模块没有公共接口文件, 跨模块直连内部文件; 需先决定模块公共接口 (approvals.json APR-architecture-module-public-api), 且该改动触及组件 import, 本次任务不改组件"
+    },
+    {
+        "id": "HC-DIR-MIX",
+        "status": "blocked",
+        "reason": "没有已声明的模块职责与允许成员集合, 无机械证据; HC-DIR 已以 Warning 报告超 6 文件目录, 待与模块公共接口方案一起声明"
+    },
+    {
+        "id": "HC-FORMAT",
+        "status": "blocked",
+        "reason": "仓库无 formatter, 新增依赖未授权 (APR-dependency-formatter-lint); 规则要求 4 空格而现有代码为 2 空格, 需用户决定"
+    },
+    {
+        "id": "HC-LINT",
+        "status": "blocked",
+        "reason": "仓库无 lint 工具, 新增依赖未授权 (APR-dependency-formatter-lint)"
+    },
+    {
+        "id": "HC-NOTES",
+        "status": "blocked",
+        "reason": "hx-agent-notes 未 vendor 进目标仓库, 需要 uv 与 tree-sitter 依赖 (APR-dependency-agent-notes)"
+    },
+    {
+        "id": "HC-TEST",
+        "status": "blocked",
+        "reason": "没有组件单元/交互测试层, 测试框架未授权 (APR-dependency-ui-test-runner); 现有 e2e 冒烟与外壳检查已接入 tests 注册表"
+    },
+    {
+        "id": "HC-PERF",
+        "status": "blocked",
+        "reason": "文档站 38 个路由需要 Playwright 测首屏 LCP/CLS/ready, 依赖未授权 (APR-dependency-perf-runner)"
+    }
+]
