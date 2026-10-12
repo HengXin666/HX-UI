@@ -83,6 +83,25 @@ function thresholdsOf(script) {
   return out.length > 0 ? out.join("\n") : "(无大写常量声明 —— 抽取器没读到任何严格度字段)";
 }
 
+/**
+ * 设计规约在 scripts/quality/checks/ui.ts: 判据写在规则对象数组里, 不是行首大写常量,
+ * thresholdsOf 抽不全, 所以对去掉注释与空白后的整份代码求哈希 (宁可多抽).
+ * 共享阈值与例外 (UI_ROOT / UI_COLOR_EXEMPT 等) 在 scripts/constants/quality.ts, 一并纳入.
+ */
+const UI_RULE_SOURCES = ["scripts/quality/checks/ui.ts", "scripts/constants/quality.ts"];
+const BROWSER_CONSTANTS = "scripts/constants/browser.ts";
+
+function codeOf(files) {
+  return files
+    .map((file) => {
+      const src = read(path.join(ROOT, file));
+      if (src === null) return `(缺文件 ${file})`;
+      const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+      return `${file}:\n${code.replace(/\s+/g, " ").trim()}`;
+    })
+    .join("\n");
+}
+
 /** 白名单条目集: 去注释与空行后排序 (顺序变化不该改指纹, 条目增删必须改)。 */
 function entriesOf(file) {
   const src = read(path.join(ROOT, file));
@@ -184,9 +203,9 @@ function wiringOf() {
 
 /** 指纹来源清单 —— 每条都是"决定严格度或接线"的东西, 删掉某条来源本身也会触发 FAIL。 */
 const SOURCES = [
-  { name: "thresholds:check-ui-rules", group: "strictness", extract: () => thresholdsOf("scripts/check-ui-rules.mjs") },
-  { name: "thresholds:check-smoke", group: "strictness", extract: () => thresholdsOf("scripts/check-smoke.mjs") },
-  { name: "thresholds:check-shell", group: "strictness", extract: () => thresholdsOf("scripts/check-shell.mjs") },
+  { name: "thresholds:check-ui-rules", group: "strictness", extract: () => codeOf(UI_RULE_SOURCES) },
+  { name: "thresholds:check-smoke", group: "strictness", extract: () => thresholdsOf("scripts/check-smoke.ts") + "\n" + codeOf([BROWSER_CONSTANTS]) },
+  { name: "thresholds:check-shell", group: "strictness", extract: () => thresholdsOf("scripts/check-shell.ts") + "\n" + codeOf([BROWSER_CONSTANTS]) },
   { name: "thresholds:check-blueprint", group: "strictness", extract: () => thresholdsOf("scripts/check-blueprint.mjs") },
   { name: "thresholds:check-docs-registry", group: "strictness", extract: () => thresholdsOf("scripts/gates/frontend/check-docs-registry.mjs") },
   { name: "whitelists:docs-registry-allow", group: "strictness", extract: () => entriesOf("scripts/gates/frontend/docs-registry-allow.json") },
