@@ -21,7 +21,7 @@
 | `npm run quality:all` | 全仓扫描, 历史违规按 baseline 标为 historical |
 | `npm run test:affected` | 只跑受影响测试 |
 | `npm test` | 全部注册测试 (与 PR CI 相同) |
-| `npm run test:e2e` | 构建文档站并跑浏览器冒烟与外壳交互检查 |
+| `npm run test:e2e` | 构建文档站并跑浏览器冒烟与外壳交互检查, 需要本机 Chromium (或设 `CHROMIUM_PATH`), 找不到时按 `--strict` 失败而不是跳过 |
 | `npm run quality:probes` | 门禁自测: 每条规则的正反例与集成探针 |
 | `npm run quality:audit` | 核对规则目录逐项裁决, 存在 blocked 项时失败 |
 | `npm run build` / `npm run verify` | 类型检查 + 设计规约门禁 / 再加文档站构建与冒烟 |
