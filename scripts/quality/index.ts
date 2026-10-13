@@ -88,7 +88,11 @@ function hooks(root: string): number {
     for (const name of readdirSync(join(root, HOOKS_PATH))) {
         chmodSync(join(root, HOOKS_PATH, name), EXECUTABLE);
     }
-    spawnSync(GIT, [GIT_DIR_OPTION, root, GIT_CONFIG, "core.hooksPath", HOOKS_PATH], { stdio: "inherit" });
+    const result = spawnSync(GIT, [GIT_DIR_OPTION, root, GIT_CONFIG, "core.hooksPath", HOOKS_PATH], { stdio: "inherit" });
+    if (result.error || result.status !== EXIT_OK) {
+        console.error("Git hooks 安装失败: " + (result.error?.message ?? "git config 退出 " + result.status));
+        return EXIT_TOOL;
+    }
     console.log("Git hooks 已指向 " + HOOKS_PATH + " (pre-commit / pre-push / post-commit), 原 .git/hooks 下的同名 hook 会被继续调用");
     return EXIT_OK;
 }
