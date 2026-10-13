@@ -136,7 +136,7 @@ export function tests(root: string, flags: Flags, scope?: Scope): number {
     const snapshot = snapshotFrom(root, scope ? { mode: [MODE_ALL] } : flags);
     const plan = selectTests(scope ?? {
         mode: snapshot.mode, base: snapshot.base ?? "", head: snapshot.source,
-        changes: [...(snapshot.scope ?? snapshot.paths)].map((path) => ({ status: "M", path })),
+        changes: snapshot.changes ?? [...(snapshot.scope ?? snapshot.paths)].map((path) => ({ status: "M", path })),
     }, impactGraph(snapshot), event === "full" ? "pr" : event);
     const reports = join(root, REPORT_DIR);
     write(join(reports, "test-plan.json"), plan);

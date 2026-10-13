@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
 import { collectScope } from "../../../.agents/skills/hx-agent-code/scripts/core/scope.ts";
 import { parseScope } from "../../../.agents/skills/hx-agent-code/scripts/core/model.ts";
-import type { Scope } from "../../../.agents/skills/hx-agent-code/scripts/core/model.ts";
+import type { Change, Scope } from "../../../.agents/skills/hx-agent-code/scripts/core/model.ts";
 import {
     EMPTY_TEXT, GIT, IGNORED_PREFIXES, TEXT_NAMES, MAX_BUFFER, NEWLINE, NUL, SCOPE_ENV, TEXT_EXTENSIONS, UTF8, HOOK_DIR, COLON, GIT_DIR_OPTION, GIT_NUL_OPTION, MODE_ALL, MODE_RANGE, MODE_STAGED, MODE_TREE, MODE_WORKTREE, SLASH, SPACE, TAB, NOT_FOUND,
 } from "../../constants/quality.ts";
@@ -21,6 +21,8 @@ export type Snapshot = {
     files: Map<string, string>;
     /** Changed paths that findings are reported for; null reports every path. */
     scope: Set<string> | null;
+    /** Raw change list of a diff based snapshot, including deletions and the old side of renames. */
+    changes?: Change[];
 };
 
 const INDEX = "index";
@@ -96,17 +98,19 @@ function fromScope(root: string, scope: Scope): Snapshot {
         const entries = treeEntries(root, scope.head);
         return {
             root, mode: MODE_RANGE, source: scope.head, base: scope.base, paths: entries.map(([path]) => path).sort(),
-            files: readBlobs(root, entries), scope: changed,
+            files: readBlobs(root, entries), scope: changed, changes: scope.changes,
         };
     }
     if (scope.mode === MODE_STAGED) {
         const entries = indexEntries(root);
         return {
             root, mode: MODE_STAGED, source: INDEX, base: scope.base, paths: entries.map(([path]) => path).sort(),
-            files: readBlobs(root, entries), scope: changed,
+            files: readBlobs(root, entries), scope: changed, changes: scope.changes,
         };
     }
-    return { root, mode: MODE_WORKTREE, source: WORKTREE, base: scope.base, ...worktreeFiles(root), scope: changed };
+    return {
+        root, mode: MODE_WORKTREE, source: WORKTREE, base: scope.base, ...worktreeFiles(root), scope: changed, changes: scope.changes,
+    };
 }
 
 /**
