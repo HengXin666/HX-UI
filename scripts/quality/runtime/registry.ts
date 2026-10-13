@@ -28,6 +28,12 @@ const COMMENT_ROW = /^\s*#/;
 const TRAILING_COMMENT = /\s#.*$/;
 const RUN_KEY = /^(?<before>\s*(?:-\s+)?)run:\s*(?<command>.*)$/;
 const BLOCK_SCALAR = /^[|>]/;
+const QUOTED_SCALAR = /^(?:"(?:[^"\\]|\\.)*"|'(?:[^']|'')*')/;
+
+/** A quoted YAML scalar keeps any ` #` inside it and ends at its closing quote; a plain one ends at the first ` #`. */
+function scalarText(value: string): string {
+    return QUOTED_SCALAR.exec(value)?.[0] ?? value.replace(TRAILING_COMMENT, "");
+}
 
 /**
  * Text of the workflow's `run:` steps only: comments, names and other keys never count as running a command.
@@ -37,16 +43,16 @@ function runSteps(text: string): string {
     const steps: string[] = [];
     let blockIndent = NOT_FOUND;
     for (const raw of text.split(NEWLINE)) {
-        const row = COMMENT_ROW.test(raw) ? "" : raw.replace(TRAILING_COMMENT, "");
+        const comment = COMMENT_ROW.test(raw);
         const indent = raw.length - raw.trimStart().length;
         if (blockIndent !== NOT_FOUND && (!raw.trim() || indent > blockIndent)) {
-            steps.push(row);
+            steps.push(comment ? "" : raw.replace(TRAILING_COMMENT, ""));
             continue;
         }
         blockIndent = NOT_FOUND;
-        const match = RUN_KEY.exec(row);
+        const match = comment ? null : RUN_KEY.exec(raw);
         if (match) {
-            steps.push(match.groups!.command);
+            steps.push(scalarText(match.groups!.command));
             blockIndent = BLOCK_SCALAR.test(match.groups!.command) ? match.groups!.before.length : NOT_FOUND;
         }
     }

@@ -115,6 +115,7 @@ export const MODE_RANGE = "range";
 export const CMD_CHECK = "check";
 export const CMD_AUDIT = "audit";
 export const CMD_PUSH = "push";
+export const RULE_CI = "HC-CI";
 export const CMD_BASELINE = "baseline";
 export const FLAG_ROOT = "root";
 export const FLAG_MODE = "mode";
