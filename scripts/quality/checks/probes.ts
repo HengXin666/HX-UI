@@ -76,8 +76,11 @@ function repo(base: Record<string, Content>): string {
     return dir;
 }
 
+// 探针在临时仓库里运行检查器; 外层 CI runner 注入的 HX_QUALITY_* (范围文件、构建目录) 指向真实仓库, 必须剥离, 否则检查器会按错误的范围运行
+const PROBE_ENV: NodeJS.ProcessEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("HX_QUALITY_")));
+
 function run(dir: string, args: string[], input?: string) {
-    const result = spawnSync(NODE, [ENTRY, ...args, "--root", dir], { encoding: UTF8, input, cwd: dir });
+    const result = spawnSync(NODE, [ENTRY, ...args, "--root", dir], { encoding: UTF8, input, cwd: dir, env: PROBE_ENV });
     let findings: Array<{ ruleId: string; message: string }> = [];
     let parsed = true;
     try {
@@ -192,7 +195,7 @@ function baselineProbe(): void {
 function auditProbe(): void {
     const dir = repo({ [COVERAGE_FILE]: { copy: COVERAGE_FILE, dropRule: "HC-TEXT" } });
     const out = spawnSync(NODE, [join(ROOT, VENDOR_SKILL, "scripts/cli.ts"), CMD_AUDIT, "--manifest", join(dir, COVERAGE_FILE),
-        OUT_OPTION, join(dir, CMD_AUDIT)], { encoding: UTF8 });
+        OUT_OPTION, join(dir, CMD_AUDIT)], { encoding: UTF8, env: PROBE_ENV });
     record("audit fails when a catalog rule loses its coverage row", out.status === EXIT_ERROR, String(out.status));
     rmSync(dir, { recursive: true, force: true });
 }
