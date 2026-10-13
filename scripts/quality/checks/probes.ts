@@ -76,12 +76,13 @@ function repo(base: Record<string, Content>): string {
 function run(dir: string, args: string[], input?: string) {
     const result = spawnSync(NODE, [ENTRY, ...args, "--root", dir], { encoding: UTF8, input, cwd: dir });
     let findings: Array<{ ruleId: string; message: string }> = [];
+    let parsed = true;
     try {
         findings = JSON.parse(result.stdout);
     } catch {
-        findings = [];
+        parsed = false;
     }
-    return { status: result.status, findings, stdout: result.stdout, stderr: result.stderr };
+    return { status: result.status, findings, parsed, stdout: result.stdout, stderr: result.stderr };
 }
 
 function record(probe: string, ok: boolean, detail: string): void {
@@ -101,9 +102,9 @@ function ruleProbes(fixtures: Record<string, Fixture>): void {
             const out = run(dir, [CMD_CHECK, MODE_OPTION, fixture.mode, RULE_OPTION, rule.id, FORMAT_OPTION, FINDINGS]);
             const hits = out.findings.filter((item) => item.ruleId === rule.id);
             const expected = side === POSITIVE || rule.severity !== ERROR ? EXIT_OK : EXIT_ERROR;
-            const ok = (side === POSITIVE ? hits.length === 0 : hits.length > 0) && out.status === expected;
+            const ok = out.parsed && (side === POSITIVE ? hits.length === 0 : hits.length > 0) && out.status === expected;
             record(rule.id + SPACE + side, ok, "exit " + out.status + ", findings " + hits.length
-                + (ok ? "" : SPACE + (hits[0]?.message ?? out.stderr.slice(0, EVIDENCE_LIMIT))));
+                + (ok ? "" : SPACE + (out.parsed ? hits[0]?.message ?? out.stderr.slice(0, EVIDENCE_LIMIT) : "输出不是合法 JSON")));
             rmSync(dir, { recursive: true, force: true });
         }
     }
@@ -122,7 +123,7 @@ function integration(fixtures: Record<string, Fixture>): void {
     writeFileSync(join(dir, FIXTURE_FILE), "export const A = 1;\n");
     const staged = run(dir, [CMD_CHECK, MODE_OPTION, MODE_STAGED, RULE_OPTION, HEX_RULE, FORMAT_OPTION, FINDINGS]);
     const worktree = run(dir, [CMD_CHECK, MODE_OPTION, MODE_WORKTREE, RULE_OPTION, HEX_RULE, FORMAT_OPTION, FINDINGS]);
-    record("pre-commit reads the index, not the worktree", staged.findings.length > 0 && worktree.findings.length === 0,
+    record("pre-commit reads the index, not the worktree", staged.parsed && worktree.parsed && staged.findings.length > 0 && worktree.findings.length === 0,
         staged.findings.length + SLASH + worktree.findings.length);
 
     const odd = "src/空 格/ü.tsx";
