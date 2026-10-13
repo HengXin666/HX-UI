@@ -107,3 +107,5 @@ npm run quality:audit
 npm run build
 npm run test
 ```
+
+`quality:audit` 目前预期失败: coverage.json 里还有 7 条 blocked 规则 (HC-FORMAT, HC-LINT, HC-TEST, HC-PERF, HC-NOTES, HC-BOUNDARY, HC-DIR-MIX), 上表的审批项落地后该命令才能通过.
