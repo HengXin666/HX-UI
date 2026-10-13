@@ -66,8 +66,8 @@ function writeFiles(base, files) {
  * 把仓库复制一份到临时目录 (排除 node_modules/.git/dist/.bpprobe)。
  * 接线探针要真的去改注册表和检查点配置, 只能在副本上改 —— 绝不碰真实仓库。
  *
- * `.git/hooks` 单独复制过来: 指纹第二组要读"hook 装没装"这个事实,
- * 不复制它的话所有副本都会算成「未安装」, 指纹控制组就永远不 PASS。
+ * 指纹第二组读的是仓库内受版本控制的钩子源文件 (scripts/gates/hooks 与 .githooks),
+ * 不读本机 .git/hooks 安装状态, 所以副本无需额外复制 .git/hooks, 干净 CI checkout 上也能跑。
  */
 function repoCopy(label) {
   const dir = path.join(tmpRoot, label);
@@ -77,10 +77,6 @@ function repoCopy(label) {
     filter: (src) =>
       !["node_modules", ".git", "dist", ".vite", ".bpprobe"].includes(path.basename(src)),
   });
-  const hooksSrc = path.join(ROOT, ".git", "hooks");
-  if (fs.existsSync(hooksSrc)) {
-    fs.cpSync(hooksSrc, path.join(dir, ".git", "hooks"), { recursive: true });
-  }
   created.push(dir);
   return dir;
 }
@@ -434,14 +430,14 @@ const probes = [
     expectIn: ["wiring:checkpoints"],
   },
   {
-    name: "接线: 摘掉 .git/hooks/pre-commit → 指纹必须 FAIL",
+    name: "接线: 摘掉仓库内 pre-commit 钩子源文件 → 指纹必须 FAIL",
     gate: "check-fingerprint",
     expect: "fail",
     reason: "hook 被摘掉后提交流程里一条门禁都不跑, 而所有门禁脚本本身完好无损",
     run: () => {
       const dir = repoCopy("fp-drop-hook");
-      const h = path.join(dir, ".git/hooks/pre-commit");
-      if (!fs.existsSync(h)) return { status: -1, output: "夹具失败: 真仓库未安装 pre-commit, 无法验证「摘掉后必须 FAIL」" };
+      const h = path.join(dir, "scripts/gates/hooks/pre-commit");
+      if (!fs.existsSync(h)) return { status: -1, output: "夹具失败: 仓库内没有 scripts/gates/hooks/pre-commit, 无法验证「摘掉后必须 FAIL」" };
       fs.rmSync(h);
       return run(...CHECK.fingerprint, { CHECK_UI_ROOT: dir });
     },
