@@ -110,7 +110,7 @@ const cycle: Rule = {
         const graph = importGraph(snapshot);
         const touched = new Set<string>();
         for (const part of cycles(graph.edges)) {
-            loops.add(part[0], 1, "导入环成员 (按路径排序, 不表示导入方向): " + part.join(", "), part.join(SPACE), part.join(SPACE));
+            loops.add(part[0], 1, "导入环成员 (按路径排序, 不表示导入方向): " + part.join(SPACE), part.join(SPACE), part.join(SPACE));
             if (part.some((member) => inScope(snapshot, member))) {
                 touched.add(part[0]);
             }
