@@ -65,7 +65,7 @@
             "mode": "all",
             "base": {},
             "positive": {
-                "src/a.tsx": "export const B = (x: () => void) => <button type=\"button\" onClick={() => x()}>ok</button>;\n"
+                "src/a.tsx": "export const B = (x: () => void, kind: \"button\" | \"submit\") => (\n    <div>\n        <button type=\"button\" onClick={() => x()}>ok</button>\n        <button type={\"submit\"}>go</button>\n        <button type={kind}>dynamic</button>\n    </div>\n);\n"
             },
             "negative": {
                 "src/a.tsx": "export const B = (x: () => void) => (\n    <button\n        onClick={() => x()}\n    >\n        ok\n    </button>\n);\n"

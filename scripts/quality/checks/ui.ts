@@ -1,6 +1,6 @@
 import ts from "typescript";
 import {
-    ERROR, ICON_DECLARATION_FIELDS, ICON_PACKAGE_PREFIX, PACKAGE_FILE, UI_COLOR_EXEMPT, UI_ROOT, GROUP_CODE, NEWLINE, NOT_FOUND, REGEX_GLOBAL, SLASH, TSX_EXT,
+    ERROR, ICON_DECLARATION_FIELDS, ICON_PACKAGE_PREFIX, PACKAGE_FILE, UI_COLOR_EXEMPT, UI_ROOT, GROUP_CODE, NEWLINE, NOT_FOUND, REGEX_GLOBAL, SLASH, TSX_EXT, COLON,
 } from "../../constants/quality.ts";
 import { codeFiles, comments, line, parse, visit, withoutComments } from "../runtime/ast.ts";
 import { Collector } from "../runtime/finding.ts";
@@ -13,6 +13,7 @@ type Pattern = { id: string; summary: string; pattern: RegExp; colors?: boolean;
 const CODE = GROUP_CODE;
 const BUTTON = "button";
 const TYPE_ATTRIBUTE = "type";
+const BUTTON_TYPES = [BUTTON, "submit", "reset"];
 const ICON_CLASS = /icon-\[([a-z0-9]+(?:-[a-z0-9]+)*)--([a-z0-9-]+)\]/g;
 /**
  * 开发日记特征词: 只收调试经过类说法, "实测默认 16" 这类技术依据不算.
@@ -78,6 +79,13 @@ function scanPatterns(spec: Pattern): Rule {
     return rule;
 }
 
+/** The type written as a string literal (`type="x"` or `type={"x"}`); a computed value cannot be judged statically. */
+function staticType(attribute: ts.JsxAttribute): string | undefined {
+    const value = attribute.initializer;
+    const expression = value && ts.isJsxExpression(value) ? value.expression : value;
+    return expression && ts.isStringLiteralLike(expression) ? expression.text : undefined;
+}
+
 const buttonType: Rule = {
     id: "PROJECT-UI-BUTTON-TYPE", severity: ERROR, group: CODE,
     summary: "原生 <button> 必须显式写 type, AST 判定, 不受换行与箭头函数影响",
@@ -95,12 +103,16 @@ const buttonType: Rule = {
                 if (node.tagName.getText(source) !== BUTTON) {
                     return;
                 }
-                const typed = node.attributes.properties.some((item) => {
+                const attribute = node.attributes.properties.find((item): item is ts.JsxAttribute => {
                     return ts.isJsxAttribute(item) && item.name.getText(source) === TYPE_ATTRIBUTE;
                 });
-                if (!typed) {
-                    out.add(path, line(source, node.getStart(source)), "原生 <button> 必须写 type, 默认 submit 会意外提交表单",
-                        node.getText(source).split(NEWLINE)[0], BUTTON);
+                const written = attribute && staticType(attribute);
+                const first = node.getText(source).split(NEWLINE)[0];
+                if (!attribute) {
+                    out.add(path, line(source, node.getStart(source)), "原生 <button> 必须写 type, 默认 submit 会意外提交表单", first, BUTTON);
+                } else if (written !== undefined && !BUTTON_TYPES.includes(written)) {
+                    out.add(path, line(source, node.getStart(source)), "原生 <button> 的 type 只能是 " + BUTTON_TYPES.join(SLASH)
+                        + ", 无效值会回退成 submit", first, BUTTON + COLON + written);
                 }
             });
         }

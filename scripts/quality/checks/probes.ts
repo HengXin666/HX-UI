@@ -121,6 +121,10 @@ function integration(fixtures: Record<string, Fixture>): void {
     record("unknown rule is a tool error", run(dir, [CMD_CHECK, RULE_OPTION, "HC-NOPE"]).status === EXIT_TOOL, "exit 2");
     record("unknown group is a tool error", run(dir, [CMD_CHECK, GROUP_OPTION, "nope"]).status === EXIT_TOOL, "exit 2");
 
+    writeAll(dir, { "src/c.tsx": 'export const C = () => <button type="text">x</button>;\n' });
+    const invalidType = run(dir, [CMD_CHECK, MODE_OPTION, MODE_ALL, RULE_OPTION, "PROJECT-UI-BUTTON-TYPE", FORMAT_OPTION, FINDINGS]);
+    record("button with an invalid static type is reported", invalidType.parsed && invalidType.findings.length === 1, String(invalidType.findings.length));
+
     sh(dir, ["add", FIXTURE_FILE]);
     writeFileSync(join(dir, FIXTURE_FILE), "export const A = 1;\n");
     const staged = run(dir, [CMD_CHECK, MODE_OPTION, MODE_STAGED, RULE_OPTION, HEX_RULE, FORMAT_OPTION, FINDINGS]);
