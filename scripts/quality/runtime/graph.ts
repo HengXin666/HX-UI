@@ -4,7 +4,7 @@ import { rmSync } from "node:fs";
 import { dirname, join, normalize } from "node:path";
 import { CI_FILE, ERROR, MAX_BUFFER, NEWLINE, NODE, PACKAGE_FILE, SLASH, TSC_BIN, TSCONFIGS, UTF8, VENDOR_SKILL, CODEOWNERS_FILE, COLON_SPACE, CONTRIBUTING_FILE, GROUP_CODE, SPACE, TSX_EXT, NODE_MODULES } from "../../constants/quality.ts";
 import type { Graph } from "../../../.agents/skills/hx-agent-code/scripts/core/model.ts";
-import { exportSnapshot } from "../checks/snapshot.ts";
+import { exportSnapshot, inScope } from "../checks/snapshot.ts";
 import type { Snapshot } from "../checks/snapshot.ts";
 import { codeFiles, line, parse, visit } from "./ast.ts";
 import { Collector } from "./finding.ts";
@@ -105,15 +105,20 @@ const cycle: Rule = {
     id: "HC-CYCLE", severity: ERROR, group: CODE,
     summary: "src 与 docs/src 的 AST 导入图无环, 无法解析的相对导入或动态导入显式报错",
     run: (snapshot) => {
-        const out = new Collector(cycle);
+        const loops = new Collector(cycle);
+        const imports = new Collector(cycle);
         const graph = importGraph(snapshot);
+        const touched = new Set<string>();
         for (const part of cycles(graph.edges)) {
-            out.add(part[0], 1, "导入环: " + part.join(" -> "), part.join(SPACE), part.join(SPACE));
+            loops.add(part[0], 1, "导入环成员 (按路径排序, 不表示导入方向): " + part.join(", "), part.join(SPACE), part.join(SPACE));
+            if (part.some((member) => inScope(snapshot, member))) {
+                touched.add(part[0]);
+            }
         }
         for (const item of graph.unresolved) {
-            out.add(item.path, item.line, "无法静态解析的导入 " + item.spec, item.spec, item.spec);
+            imports.add(item.path, item.line, "无法静态解析的导入 " + item.spec, item.spec, item.spec);
         }
-        return out.scoped(snapshot);
+        return [...loops.findings.filter((item) => touched.has(item.path)), ...imports.scoped(snapshot)];
     },
 };
 
