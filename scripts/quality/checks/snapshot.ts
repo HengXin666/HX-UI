@@ -140,6 +140,19 @@ export function inScope(snapshot: Snapshot, path: string): boolean {
     return snapshot.scope === null || snapshot.scope.has(path);
 }
 
+/** Paths deleted or renamed away in a diff based snapshot; they are never part of its scope. */
+export function removedPaths(snapshot: Snapshot): Set<string> {
+    const removed = new Set<string>();
+    for (const item of snapshot.changes ?? []) {
+        if (item.status === "D") {
+            removed.add(item.path);
+        } else if (item.status.startsWith("R") && item.oldPath) {
+            removed.add(item.oldPath);
+        }
+    }
+    return removed;
+}
+
 /** Reads a file of the base side of the diff, or undefined when absent. */
 export function baseFile(snapshot: Snapshot, path: string): string | undefined {
     if (!snapshot.base) {

@@ -7,7 +7,8 @@ import {
 } from "../../constants/quality.ts";
 import { Collector } from "../runtime/finding.ts";
 import type { Rule } from "../runtime/finding.ts";
-import { baseFile } from "./snapshot.ts";
+import type { Finding } from "../../../.agents/skills/hx-agent-code/scripts/core/model.ts";
+import { baseFile, inScope, removedPaths } from "./snapshot.ts";
 import type { Snapshot } from "./snapshot.ts";
 
 const CODE = GROUP_CODE;
@@ -112,24 +113,33 @@ const context: Rule = {
         + AGENTS_MAX_BYTES + " bytes",
     run: (snapshot) => {
         const out = new Collector(context);
+        const removed = removedPaths(snapshot);
+        const brokenByRemoval = new Set<Finding>();
         const dirs = new Set(snapshot.paths.filter((path) => [README, AGENTS].includes(basename(path))).map(dirname));
         for (const dir of dirs) {
             const readme = snapshot.files.get(pairPath(dir, README));
             const agents = snapshot.files.get(pairPath(dir, AGENTS));
             if (readme === undefined || agents === undefined) {
+                const missing = pairPath(dir, readme === undefined ? README : AGENTS);
                 const present = pairPath(dir, readme === undefined ? AGENTS : README);
-                out.add(present, 1, "缺少同目录配对文件 " + (readme === undefined ? README : AGENTS), present, "pair");
+                out.add(present, 1, "缺少同目录配对文件 " + basename(missing), present, "pair");
+                if (removed.has(missing)) {
+                    brokenByRemoval.add(out.findings[out.findings.length - 1]);
+                }
                 continue;
             }
-            if (!agents.includes(README) || !readme.includes(AGENTS)) {
-                out.add(pairPath(dir, AGENTS), 1, "README.md 与 AGENTS.md 需要互相引用", dir, "link");
+            if (!agents.includes(README)) {
+                out.add(pairPath(dir, AGENTS), 1, "AGENTS.md 需要引用 README.md", dir, "link");
+            }
+            if (!readme.includes(AGENTS)) {
+                out.add(pairPath(dir, README), 1, "README.md 需要引用 AGENTS.md", dir, "link");
             }
             const lines = agents.replace(/\n$/, "").split(NEWLINE).length;
             if (lines >= AGENTS_MAX_LINES || Buffer.byteLength(agents, UTF8) >= AGENTS_MAX_BYTES) {
                 out.add(pairPath(dir, AGENTS), 1, "AGENTS.md 超出上下文上限", lines + LINES_LABEL, "size");
             }
         }
-        return out.scoped(snapshot);
+        return out.findings.filter((item) => inScope(snapshot, item.path) || brokenByRemoval.has(item));
     },
 };
 
