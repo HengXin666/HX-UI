@@ -16,10 +16,10 @@ const TYPE_ATTRIBUTE = "type";
 const ICON_CLASS = /icon-\[([a-z0-9]+(?:-[a-z0-9]+)*)--([a-z0-9-]+)\]/g;
 /**
  * 开发日记特征词: 只收调试经过类说法, "实测默认 16" 这类技术依据不算.
- * 迁自 scripts/check-ui-rules.mjs 的 no-dev-diary, 词表保持原样.
+ * 迁自 scripts/check-ui-rules.mjs 的 no-dev-diary, 词表保持原样; 只去掉了对中文无效的 \b 词边界 (汉字前不存在 \b).
  */
 const DEV_DIARY =
-    /实测(?:踩到|踩过|发现|确认|表现|就是|会)|\b踩过(?:的坑|的)|上一版|曾经(?:在这里|这里|写成|用) |用户(?:报|原话)|这一版是\*\*重写\*\*/;
+    /实测(?:踩到|踩过|发现|确认|表现|就是|会)|踩过(?:的坑|的)|上一版|曾经(?:在这里|这里|写成|用) |用户(?:报|原话)|这一版是\*\*重写\*\*/;
 const JSX_BLOCK_COMMENT = /^\s*\/\*/;
 
 /** Tailwind/CSS token boundary: a class token never continues with these characters. */
