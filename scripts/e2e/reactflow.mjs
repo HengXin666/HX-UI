@@ -16,7 +16,14 @@
  * 所有判据走**真实鼠标** —— 用 evaluate 直接派发事件会绕过命中测试,
  * 那样在功能失效时也会通过。
  */
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { Harness, report } from "./harness.mjs";
+
+// 注释框只存在于兄弟目录 HX-Blueprint-Demo 的 dsh 实体图里; 单独 clone 本仓时文档站退到仓内替身 (没有注释),
+// 与 check-blueprint 同一口径: 缺席时这几组断言逐组打印 SKIP, 不把"没有被测对象"误报成功能坏了
+const DSH_PRESENT = existsSync(fileURLToPath(new URL("../../../HX-Blueprint-Demo/src/dsh", import.meta.url)));
+const skipDsh = (group) => console.log("  SKIP: " + group + " (需要兄弟目录 HX-Blueprint-Demo 的 dsh 实体图)");
 
 const steps = [];
 const h = new Harness();
@@ -341,7 +348,9 @@ async function handlePos(nodeId, hid) {
 }
 
 // 12. 注释框必须**看得见** —— 有底色、有层次、与画布能分开
-{
+if (!DSH_PRESENT) {
+  skipDsh("RF: 注释框可见 / 注释 tone 各不同色");
+} else {
   // 注释只在 dsh 图里有, 换一个 harness 打开 (close 后原 page 引用会失效)
   const h2 = new Harness();
   await h2.open("#src=dsh&rf=1");
@@ -461,8 +470,10 @@ async function handlePos(nodeId, hid) {
 }
 
 // 14. 注释必须垫在节点**下面**, 但自己仍可见
-{
-  await h.close();
+await h.close();
+if (!DSH_PRESENT) {
+  skipDsh("RF: 注释垫在节点下面 / 注释自身仍可见");
+} else {
   const hz = new Harness();
   await hz.open("#src=dsh");
   const pz = hz.p;
