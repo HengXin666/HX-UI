@@ -1,4 +1,4 @@
-import { CI_FILE, COVERAGE_FILE, ENTRY_FILE, ERROR, HOOK_DIR, PACKAGE_FILE, VENDOR_SKILL, CODEOWNERS_FILE, COLON_SPACE, CONTRIBUTING_FILE, GIT_CONFIG, GROUP_BUILD, GROUP_CODE, GROUP_DOCS, NEWLINE, SPACE, CMD_PUSH, MODE_STAGED } from "../../constants/quality.ts";
+import { CI_FILE, COVERAGE_FILE, ENTRY_FILE, ERROR, HOOK_DIR, PACKAGE_FILE, VENDOR_SKILL, CODEOWNERS_FILE, COLON_SPACE, CONTRIBUTING_FILE, GIT_CONFIG, GROUP_BUILD, GROUP_CODE, GROUP_DOCS, NEWLINE, SPACE, CMD_PUSH, MODE_STAGED, NOT_FOUND } from "../../constants/quality.ts";
 import { parseConfig } from "../../../.agents/skills/hx-agent-code/scripts/ci/config.ts";
 import { codeRules } from "../checks/code.ts";
 import { docsRules } from "../checks/docs.ts";
@@ -24,6 +24,31 @@ const CODEOWNERS = CODEOWNERS_FILE;
 const VERIFIED_OWNERS = ["@HengXin666"];
 const HOOKS: Record<string, string> = { "pre-commit": MODE_STAGED, "pre-push": CMD_PUSH };
 const RUNNER = VENDOR_SKILL + "/scripts/ci.ts";
+const COMMENT_ROW = /^\s*#/;
+const TRAILING_COMMENT = /\s#.*$/;
+const RUN_KEY = /^(?<before>\s*(?:-\s+)?)run:\s*(?<command>.*)$/;
+const BLOCK_SCALAR = /^[|>]/;
+
+/** Text of the workflow's `run:` steps only: comments, names and other keys never count as running a command. */
+function runSteps(text: string): string {
+    const steps: string[] = [];
+    let blockIndent = NOT_FOUND;
+    for (const raw of text.split(NEWLINE)) {
+        const row = COMMENT_ROW.test(raw) ? "" : raw.replace(TRAILING_COMMENT, "");
+        const indent = raw.length - raw.trimStart().length;
+        if (blockIndent !== NOT_FOUND && row.trim() && indent > blockIndent) {
+            steps.push(row);
+            continue;
+        }
+        blockIndent = NOT_FOUND;
+        const match = RUN_KEY.exec(row);
+        if (match) {
+            steps.push(match.groups!.command);
+            blockIndent = BLOCK_SCALAR.test(match.groups!.command) ? match.groups!.before.length : NOT_FOUND;
+        }
+    }
+    return steps.join(NEWLINE);
+}
 
 const ci: Rule = {
     id: "HC-CI", severity: ERROR, group: CODE,
@@ -31,8 +56,8 @@ const ci: Rule = {
     run: (snapshot) => {
         const out = new Collector(ci);
         for (const [file, groups] of Object.entries(CI_GROUPS)) {
-            const text = snapshot.files.get(WORKFLOWS + file);
-            for (const group of groups.filter((item) => !text?.includes(RUNNER + SPACE + item))) {
+            const text = runSteps(snapshot.files.get(WORKFLOWS + file) ?? "");
+            for (const group of groups.filter((item) => !text.includes(RUNNER + SPACE + item))) {
                 out.add(WORKFLOWS + file, 1, "工作流缺失或未调用 " + RUNNER + SPACE + group, file, group);
             }
         }
