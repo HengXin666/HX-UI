@@ -29,6 +29,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 const HERE = import.meta.dirname;
 const ROOT = process.env.CHECK_UI_ROOT ? path.resolve(process.env.CHECK_UI_ROOT) : path.resolve(HERE, "..", "..", "..");
@@ -98,13 +99,29 @@ const UI_RULE_SOURCES = [
 ];
 const BROWSER_CONSTANTS = "scripts/constants/browser.ts";
 
+/**
+ * 去注释后的 token 序列, token 之间只留一个空格, token 内部 (字符串 / 正则 / 模板字面量) 原样保留。
+ * 这样改注释, 换行, 缩进不动指纹, 而 `曾经用 ` 与 `曾经用  ` 这种只差字面量内空白的放松必须动指纹。
+ */
+function tokensOf(src) {
+  const sourceFile = ts.createSourceFile("fingerprint.ts", src, ts.ScriptTarget.Latest, true);
+  const tokens = [];
+  const walk = (node) => {
+    if (node.kind >= ts.SyntaxKind.FirstJSDocNode && node.kind <= ts.SyntaxKind.LastJSDocNode) return;
+    const children = node.getChildren(sourceFile);
+    if (children.length === 0) tokens.push(node.getText(sourceFile));
+    else children.forEach(walk);
+  };
+  walk(sourceFile);
+  return tokens.filter(Boolean).join(" ");
+}
+
 function codeOf(files) {
   return files
     .map((file) => {
       const src = read(path.join(ROOT, file));
       if (src === null) return `(缺文件 ${file})`;
-      const code = src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-      return `${file}:\n${code.replace(/\s+/g, " ").trim()}`;
+      return `${file}:\n${tokensOf(src)}`;
     })
     .join("\n");
 }
