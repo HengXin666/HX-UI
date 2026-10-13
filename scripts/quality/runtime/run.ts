@@ -49,6 +49,9 @@ export function collect(snapshot: Snapshot, flags: Flags): Finding[] {
     if (unknown.length) {
         throw new Error("Unknown rule: " + unknown.join(", "));
     }
+    if (group && !RULES.some((rule) => rule.group === group)) {
+        throw new Error("Unknown group: " + group);
+    }
     const findings: Finding[] = [];
     for (const rule of selected) {
         try {

@@ -21,6 +21,7 @@ const ROOT = fileURLToPath(new URL("../../..", import.meta.url));
 const ENTRY = join(ROOT, ENTRY_FILE);
 const FINDINGS = "findings";
 const RULE_OPTION = "--rule";
+const GROUP_OPTION = "--group";
 const MODE_OPTION = "--mode";
 const FORMAT_OPTION = "--format";
 const OUT_OPTION = "--out";
@@ -118,6 +119,7 @@ function integration(fixtures: Record<string, Fixture>): void {
     record("two failing checkers both reported", new Set(both.findings.map((item) => item.ruleId)).size === RULE_PAIR, String(both.status));
     record("unknown option is a tool error", run(dir, [CMD_CHECK, "--bogus", "x"]).status === EXIT_TOOL, "exit 2");
     record("unknown rule is a tool error", run(dir, [CMD_CHECK, RULE_OPTION, "HC-NOPE"]).status === EXIT_TOOL, "exit 2");
+    record("unknown group is a tool error", run(dir, [CMD_CHECK, GROUP_OPTION, "nope"]).status === EXIT_TOOL, "exit 2");
 
     sh(dir, ["add", FIXTURE_FILE]);
     writeFileSync(join(dir, FIXTURE_FILE), "export const A = 1;\n");
