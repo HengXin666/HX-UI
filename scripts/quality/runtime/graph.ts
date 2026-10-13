@@ -164,7 +164,7 @@ export function impactGraph(snapshot: Snapshot): Graph {
         modules: {
             lib: { paths: ["src"], tests: smoke, dependsOn: [], contracts: [] },
             docs: { paths: ["docs/src", "docs/scripts"], tests: ["docs:icons", ...smoke], dependsOn: ["lib"], contracts: [] },
-            e2e: { paths: ["scripts/check-smoke.ts", "scripts/check-shell.ts"], tests: smoke, dependsOn: [], contracts: [] },
+            e2e: { paths: ["scripts/check-smoke.ts", "scripts/check-shell.ts", "scripts/constants"], tests: smoke, dependsOn: [], contracts: [] },
             quality: {
                 paths: ["scripts/quality", "scripts/constants", VENDOR_SKILL, ".githooks"], tests: ["quality:probes"],
                 dependsOn: [], contracts: [],
