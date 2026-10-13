@@ -100,8 +100,9 @@ const UI_RULE_SOURCES = [
 const BROWSER_CONSTANTS = "scripts/constants/browser.ts";
 
 /**
- * 去注释后的 token 序列, token 之间只留一个空格, token 内部 (字符串 / 正则 / 模板字面量) 原样保留。
+ * 去注释后的 token 序列加语法树括号, token 之间只留一个空格, token 内部 (字符串 / 正则 / 模板字面量) 原样保留。
  * 这样改注释, 换行, 缩进不动指纹, 而 `曾经用 ` 与 `曾经用  ` 这种只差字面量内空白的放松必须动指纹。
+ * 括号记录节点的嵌套结构: 换行只有在改变解析结果时才会体现 (`return\nx;` 与 `return x;` 的树不同, 指纹也就不同)。
  */
 function tokensOf(src) {
   const sourceFile = ts.createSourceFile("fingerprint.ts", src, ts.ScriptTarget.Latest, true);
@@ -109,8 +110,13 @@ function tokensOf(src) {
   const walk = (node) => {
     if (node.kind >= ts.SyntaxKind.FirstJSDocNode && node.kind <= ts.SyntaxKind.LastJSDocNode) return;
     const children = node.getChildren(sourceFile);
-    if (children.length === 0) tokens.push(node.getText(sourceFile));
-    else children.forEach(walk);
+    if (children.length === 0) {
+      tokens.push(node.getText(sourceFile));
+      return;
+    }
+    tokens.push("(");
+    children.forEach(walk);
+    tokens.push(")");
   };
   walk(sourceFile);
   return tokens.filter(Boolean).join(" ");
