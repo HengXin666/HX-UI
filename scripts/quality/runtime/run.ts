@@ -19,6 +19,8 @@ const TRUSTED = "trusted";
 /** Wiring rules must pass outright; vanished violations are pruned so the baseline only ratchets down. */
 const NEVER_BASELINED = ["HC-CI", "HC-COLLAB", "HC-META", "HC-TYPE"];
 const NONE = "none";
+/** A crashing checker surfaces as an Error finding with this prefix; it is never baselined. */
+const CHECKER_FAULT = "checker 故障: ";
 const MODES: Mode[] = [MODE_ALL, MODE_TREE, MODE_WORKTREE, MODE_STAGED, MODE_RANGE];
 
 export function write(path: string, value: unknown): void {
@@ -52,7 +54,7 @@ export function collect(snapshot: Snapshot, flags: Flags): Finding[] {
         try {
             findings.push(...rule.run(snapshot));
         } catch (error) {
-            const message = "checker 故障: " + (error instanceof Error ? error.message : String(error));
+            const message = CHECKER_FAULT + (error instanceof Error ? error.message : String(error));
             findings.push({
                 ruleId: rule.id, severity: ERROR, path: rule.id, line: 1, message, evidence: message,
                 fingerprint: fingerprint(rule.id, rule.id, "tool", message),
@@ -112,7 +114,8 @@ export function makeBaseline(root: string, flags: Flags): number {
     const snapshot = loadSnapshot(root, MODE_TREE, undefined, tree);
     const current = new Set(collect(loadSnapshot(root, MODE_ALL), {}).map((item) => item.fingerprint));
     const entries = collect(snapshot, {})
-        .filter((item) => item.severity === ERROR && !NEVER_BASELINED.includes(item.ruleId) && current.has(item.fingerprint))
+        .filter((item) => item.severity === ERROR && !NEVER_BASELINED.includes(item.ruleId) && !item.message.startsWith(CHECKER_FAULT)
+            && current.has(item.fingerprint))
         .map((item) => ({ ruleId: item.ruleId, path: item.path, fingerprint: item.fingerprint, reason, approvedBy }))
         .sort((a, b) => JSON.stringify([a.path, a.ruleId, a.fingerprint]) < JSON.stringify([b.path, b.ruleId, b.fingerprint]) ? NOT_FOUND : 1);
     write(one(flags, FLAG_OUT, join(root, BASELINE_FILE))!, entries);
