@@ -3,12 +3,12 @@
  * Each probe runs the real entry in a temporary Git repository; fixtures live in scripts/quality/fixtures.json.
  */
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-    COVERAGE_FILE, ENTRY_FILE, ERROR, EXIT_ERROR, EXIT_OK, EXIT_TOOL, FIXTURES_FILE, GIT, JSON_INDENT, NEWLINE, NODE,
+    CI_FILE, COVERAGE_FILE, ENTRY_FILE, RULE_CI, ERROR, EXIT_ERROR, EXIT_OK, EXIT_TOOL, FIXTURES_FILE, GIT, JSON_INDENT, NEWLINE, NODE,
     REPORT_DIR, UTF8, VENDOR_SKILL, CMD_AUDIT, CMD_BASELINE, CMD_CHECK, COLON_SPACE, FLAG_BASE, GIT_CONFIG, GIT_DIR_OPTION, JSON_EXT, MODE_ALL, MODE_STAGED, MODE_WORKTREE, NODE_MODULES, SLASH, SPACE, STRING_TYPE, EVIDENCE_LIMIT,
 } from "../../constants/quality.ts";
 import { RULES } from "../runtime/registry.ts";
@@ -22,6 +22,7 @@ const ENTRY = join(ROOT, ENTRY_FILE);
 const FINDINGS = "findings";
 const RULE_OPTION = "--rule";
 const GROUP_OPTION = "--group";
+const WORKFLOW_DIR = ".github/workflows/";
 const MODE_OPTION = "--mode";
 const FORMAT_OPTION = "--format";
 const OUT_OPTION = "--out";
@@ -155,6 +156,26 @@ function scopeProbes(): void {
     rmSync(loop, { recursive: true, force: true });
 }
 
+/** HC-CI reads workflow YAML by hand: a quoted run scalar may hold ` #`, a trailing comment never runs anything. */
+function workflowProbes(): void {
+    const runner = "node " + VENDOR_SKILL + "/scripts/ci.ts ";
+    const target = WORKFLOW_DIR + "quality-code.yml";
+    const others = Object.fromEntries(readdirSync(join(ROOT, WORKFLOW_DIR))
+        .map((name) => WORKFLOW_DIR + name).filter((path) => path.includes("/quality-") && path !== target)
+        .map((path) => [path, { copy: path }]));
+    const steps = "jobs:\n  code:\n    steps:\n      - run: ";
+    const cases: Array<[string, string, number]> = [
+        ["HC-CI accepts a quoted run scalar containing a hash", steps + '"echo \' #\' && ' + runner + 'code"\n', 0],
+        ["HC-CI rejects a runner command that is only a trailing comment", steps + "echo hi # " + runner + "code\n", 1],
+    ];
+    for (const [probe, body, expected] of cases) {
+        const dir = repo({ ...others, [target]: body, [CI_FILE]: { copy: CI_FILE } });
+        const out = run(dir, [CMD_CHECK, MODE_OPTION, MODE_ALL, RULE_OPTION, RULE_CI, FORMAT_OPTION, FINDINGS]);
+        record(probe, out.parsed && out.findings.length === expected, String(out.findings.length));
+        rmSync(dir, { recursive: true, force: true });
+    }
+}
+
 function baselineProbe(): void {
     const one = 'export const A = () => <div className="text-[#111111]" />;\n';
     const dir = repo({ [FIXTURE_FILE]: one });
@@ -181,6 +202,7 @@ function main(): number {
     ruleProbes(fixtures);
     integration(fixtures);
     scopeProbes();
+    workflowProbes();
     baselineProbe();
     auditProbe();
     const failed = results.filter((item) => !item.ok);
