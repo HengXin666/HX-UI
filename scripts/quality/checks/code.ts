@@ -19,7 +19,7 @@ const LINE_COMMENT = "//";
 const BLOCK_OPEN = /^\/\*\*?(?![\s/*]|$)/;
 const LINE_SPACING = /^\/\/\/?(?:[^\s/]|\s{2,}\S)/;
 const STAR_SPACING = /^\s*\*(?![\s/]|$)/;
-const CSS_COMMENT = /\/\*[\s\S]*?\*\//g;
+const CSS_TOKEN = /"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|(?<comment>\/\*[\s\S]*?\*\/)/g;
 const FENCE = /^\s*(?:```|~~~)/;
 const INLINE_CODE = /`[^`\n]*`/g;
 const BAD_TEXT = /[\p{Extended_Pictographic}\uFE0F]|(?![\x00-\x7F])\p{P}/gu;
@@ -158,7 +158,8 @@ function prose(path: string, text: string): Array<{ offset: number; text: string
         return [{ offset: 0, text }];
     }
     if (extname(path) === ".css") {
-        return [...text.matchAll(CSS_COMMENT)].map((match) => ({ offset: match.index, text: match[0] }));
+        return [...text.matchAll(CSS_TOKEN)].filter((match) => match.groups!.comment !== undefined)
+            .map((match) => ({ offset: match.index, text: match[0] }));
     }
     if (CODE_ROOTS.some((root) => path.startsWith(root)) && /\.tsx?$/.test(path)) {
         return comments(parse(path, text)).map((item) => ({ offset: item.pos, text: item.text }));
