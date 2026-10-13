@@ -20,7 +20,7 @@ const ICON_CLASS = /icon-\[([a-z0-9]+(?:-[a-z0-9]+)*)--([a-z0-9-]+)\]/g;
  */
 const DEV_DIARY =
     /实测(?:踩到|踩过|发现|确认|表现|就是|会)|踩过(?:的坑|的)|上一版|曾经(?:在这里|这里|写成|用) |用户(?:报|原话)|这一版是\*\*重写\*\*/;
-const JSX_BLOCK_COMMENT = /^\s*\/\*/;
+const JSX_BLOCK_COMMENT = /\/\*/;
 
 /** Tailwind/CSS token boundary: a class token never continues with these characters. */
 const LEFT = String.raw`(?<![\w-])`;
