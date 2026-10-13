@@ -24,7 +24,7 @@
 
 | 检查点 | 运行内容 |
 |---|---|
-| pre-commit (`.githooks/pre-commit`) | staged 静态检查, 不跑测试, 不读工作区 |
+| pre-commit (`.githooks/pre-commit`) | staged 静态检查, 不跑测试; 本钩子自身只读 index, 不读工作区 (同时装了 gates 钩子时见下) |
 | pre-push (`.githooks/pre-push`) | 每个推送 ref 的精确范围静态检查 + affected 测试; 新远程分支取与 `<remote>/HEAD` 的 merge-base, 无法确定时与空树比较 (全量) |
 | post-commit (`.githooks/post-commit`) | 目前没有格式化缓存, 只委托原有 hook |
 | 任务完成 | `npm run quality:done` |
@@ -32,6 +32,8 @@
 | CI | quality-code / quality-docs / quality-build (+ quality-tests), 见 .github/workflows |
 
 启用: `npm run hooks:install` 设置 `core.hooksPath=.githooks` 并补可执行位; 已有其他 core.hooksPath 时不覆盖并提示.
+
+同时执行过 `npm run gates:install-hooks` 时, `.githooks` 下的 pre-commit 与 pre-push 会先调用 `.git/hooks` 里的同名 hook. 那份 gates 钩子按 `scripts/gates` 的检查点分组运行 (类型检查, 设计规约等), 读的是工作区, 因此 "只读 index" 只描述本入口自己的检查, 未暂存的问题仍可能让 pre-commit 失败.
 
 ## 规则
 
