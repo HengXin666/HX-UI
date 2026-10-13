@@ -78,10 +78,16 @@ const collab: Rule = {
         for (const file of COLLAB_FILES.filter((item) => !snapshot.files.get(item)?.trim())) {
             out.add(file, 1, "协作文件缺失或为空", file, file);
         }
-        const owners = (snapshot.files.get(CODEOWNERS) ?? "").split(NEWLINE).filter((row) => row.trim() && !row.startsWith("#"))
-            .flatMap((row) => row.trim().split(/\s+/).slice(1));
-        for (const owner of owners.filter((item) => !VERIFIED_OWNERS.includes(item))) {
-            out.add(CODEOWNERS, 1, "CODEOWNERS 含未验证身份 " + owner, owner, owner);
+        const rules = (snapshot.files.get(CODEOWNERS) ?? "").split(NEWLINE).map((row) => row.trim())
+            .filter((row) => row && !row.startsWith("#"));
+        for (const row of rules) {
+            const [pattern, ...owners] = row.split(/\s+/);
+            if (!owners.length) {
+                out.add(CODEOWNERS, 1, "CODEOWNERS 规则没有 owner: " + pattern, row, "ownerless:" + pattern);
+            }
+            for (const owner of owners.filter((item) => !VERIFIED_OWNERS.includes(item))) {
+                out.add(CODEOWNERS, 1, "CODEOWNERS 含未验证身份 " + owner, owner, owner);
+            }
         }
         return out.findings;
     },
