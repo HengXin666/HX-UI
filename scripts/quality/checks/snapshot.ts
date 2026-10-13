@@ -115,9 +115,11 @@ function fromScope(root: string, scope: Scope): Snapshot {
 
 /**
  * Read one consistent snapshot: worktree, Git index or an exact tree, never a mix.
+ * A root inside the repository is lifted to the repository top, the base of every path Git reports.
  * HX_QUALITY_SCOPE from the CI runner wins over the requested mode.
  */
-export function loadSnapshot(root: string, mode: Mode, base?: string, head?: string): Snapshot {
+export function loadSnapshot(requested: string, mode: Mode, base?: string, head?: string): Snapshot {
+    const root = git(requested, ["rev-parse", "--show-toplevel"]).trim();
     const injected = process.env[SCOPE_ENV];
     if (injected) {
         return fromScope(root, parseScope(JSON.parse(readFileSync(injected, UTF8))));
