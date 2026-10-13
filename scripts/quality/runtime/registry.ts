@@ -29,14 +29,17 @@ const TRAILING_COMMENT = /\s#.*$/;
 const RUN_KEY = /^(?<before>\s*(?:-\s+)?)run:\s*(?<command>.*)$/;
 const BLOCK_SCALAR = /^[|>]/;
 
-/** Text of the workflow's `run:` steps only: comments, names and other keys never count as running a command. */
+/**
+ * Text of the workflow's `run:` steps only: comments, names and other keys never count as running a command.
+ * Inside a block scalar blank lines and shell comments belong to the scalar, so only a less indented line ends it.
+ */
 function runSteps(text: string): string {
     const steps: string[] = [];
     let blockIndent = NOT_FOUND;
     for (const raw of text.split(NEWLINE)) {
         const row = COMMENT_ROW.test(raw) ? "" : raw.replace(TRAILING_COMMENT, "");
         const indent = raw.length - raw.trimStart().length;
-        if (blockIndent !== NOT_FOUND && row.trim() && indent > blockIndent) {
+        if (blockIndent !== NOT_FOUND && (!raw.trim() || indent > blockIndent)) {
             steps.push(row);
             continue;
         }
