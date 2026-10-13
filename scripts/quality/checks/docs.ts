@@ -22,6 +22,8 @@ const ALLOWED_NAMES = [README, AGENTS, "CHANGELOG.md", CONTRIBUTING_FILE, "LICEN
 const FOREIGN_LOCK = /(?:^|\/)(?:pnpm-lock\.yaml|yarn\.lock|bun\.lockb?)$/;
 const SECTIONS = ["## 架构推荐", "## 依赖推荐"];
 const MAJOR = /^\D*(\d+)/;
+const SUBJECT_NOTE = /\s*\([^)]*\)\s*$/;
+const SUBJECT_SPLIT = /\s*[,+]\s*/;
 
 function docPaths(snapshot: Snapshot): string[] {
     return snapshot.paths.filter((path) => path.startsWith(DOCS_ROOT)
@@ -187,9 +189,15 @@ const stack: Rule = {
     },
 };
 
-function approved(snapshot: Snapshot, name: string): string | undefined {
+/** An approval subject lists one or more `name@range` entries and covers a dependency only for the major it names. */
+function approved(snapshot: Snapshot, name: string, range: string): string | undefined {
     const list = JSON.parse(snapshot.files.get(APPROVALS_FILE) ?? "[]") as Array<Record<string, string>>;
-    return list.find((item) => item.status === "approved" && item.subject?.replace(/(?<=.)@[^@]*$/, "") === name)?.id;
+    const covers = (spec: string): boolean => {
+        const at = spec.lastIndexOf("@");
+        return (at > 0 ? spec.slice(0, at) : spec) === name && (at <= 0 || spec.slice(at + 1).match(MAJOR)?.[1] === range.match(MAJOR)?.[1]);
+    };
+    return list.find((item) => item.status === "approved"
+        && (item.subject ?? "").replace(SUBJECT_NOTE, "").split(SUBJECT_SPLIT).some(covers))?.id;
 }
 
 const dependencies: Rule = {
@@ -208,7 +216,7 @@ const dependencies: Rule = {
                     continue;
                 }
                 const major = !old[name] || old[name].match(MAJOR)?.[1] !== range.match(MAJOR)?.[1];
-                const id = approved(snapshot, name);
+                const id = approved(snapshot, name, range);
                 const status = major ? (id ? "approved " + id : "unapproved") : "review-only";
                 out.add(file, 1, name + SPACE + (old[name] ?? "(new)") + " -> " + range + COLON_SPACE + status, name, name);
             }
