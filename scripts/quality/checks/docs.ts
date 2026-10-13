@@ -88,9 +88,11 @@ const docSize: Rule = {
     id: "HC-DOCSIZE", severity: ERROR, group: DOCS, summary: "单个文档不超过 " + DOC_MAX_LINES + LINES_LABEL,
     run: (snapshot) => {
         const out = new Collector(docSize);
+        const tree = new Set(docPaths(snapshot));
         for (const [path, text] of snapshot.files) {
             const lines = text.replace(/\n$/, "").split(NEWLINE).length;
-            if (MARKDOWN_EXTENSIONS.includes(extname(path)) && lines > DOC_MAX_LINES) {
+            const document = MARKDOWN_EXTENSIONS.includes(extname(path)) || (tree.has(path) && DOC_EXTENSIONS.includes(extname(path)));
+            if (document && lines > DOC_MAX_LINES) {
                 out.add(path, DOC_MAX_LINES + 1, lines + LIMIT_LABEL + DOC_MAX_LINES, path, "size");
             }
         }
