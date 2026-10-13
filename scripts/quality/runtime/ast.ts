@@ -1,6 +1,6 @@
 import ts from "typescript";
 import { extname } from "node:path";
-import { CODE_EXTENSIONS, CODE_ROOTS, NEWLINE, SPACE, TSX_EXT } from "../../constants/quality.ts";
+import { CODE_EXTENSIONS, CODE_ROOTS, NUL, SPACE, TSX_EXT } from "../../constants/quality.ts";
 import type { Snapshot } from "../checks/snapshot.ts";
 
 export type Comment = { pos: number; end: number; text: string; trailing: boolean };
@@ -17,7 +17,7 @@ export function codeFiles(snapshot: Snapshot): Array<[string, string]> {
 }
 
 export function parse(path: string, text: string): ts.SourceFile {
-    const key = path + NEWLINE + text;
+    const key = path + NUL + text;
     let source = cache.get(key);
     if (!source) {
         const kind = extname(path) === TSX ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
