@@ -87,8 +87,15 @@ function thresholdsOf(script) {
  * 设计规约在 scripts/quality/checks/ui.ts: 判据写在规则对象数组里, 不是行首大写常量,
  * thresholdsOf 抽不全, 所以对去掉注释与空白后的整份代码求哈希 (宁可多抽).
  * 共享阈值与例外 (UI_ROOT / UI_COLOR_EXEMPT 等) 在 scripts/constants/quality.ts, 一并纳入.
+ * 规则的实际扫描范围与 findings 还取决于 ast.ts (注释 / AST), finding.ts (指纹与范围过滤) 和 snapshot.ts (读哪些文件), 它们也算严格度的一部分.
  */
-const UI_RULE_SOURCES = ["scripts/quality/checks/ui.ts", "scripts/constants/quality.ts"];
+const UI_RULE_SOURCES = [
+  "scripts/quality/checks/ui.ts",
+  "scripts/constants/quality.ts",
+  "scripts/quality/runtime/ast.ts",
+  "scripts/quality/runtime/finding.ts",
+  "scripts/quality/checks/snapshot.ts",
+];
 const BROWSER_CONSTANTS = "scripts/constants/browser.ts";
 
 function codeOf(files) {
