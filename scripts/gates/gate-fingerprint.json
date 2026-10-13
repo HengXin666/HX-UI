@@ -1,18 +1,18 @@
 {
   "note": "由 scripts/gates/shared/check-fingerprint.mjs --update 生成。改动它 = 显式承认门禁严格度或接线变了。",
-  "hashedAt": "2026-10-12T17:55:37.208Z",
+  "hashedAt": "2026-10-13T05:47:23.555Z",
   "sources": {
     "thresholds:check-ui-rules": {
       "group": "strictness",
-      "hash": "d9104c9849f3cd8e"
+      "hash": "94bab864d6651ccd"
     },
     "thresholds:check-smoke": {
       "group": "strictness",
-      "hash": "4e6f3e0eae054833"
+      "hash": "6cfe76520c28957b"
     },
     "thresholds:check-shell": {
       "group": "strictness",
-      "hash": "4934cf4667404524"
+      "hash": "c4d09a66e200154f"
     },
     "thresholds:check-blueprint": {
       "group": "strictness",
@@ -36,7 +36,7 @@
     },
     "wiring:checkpoints": {
       "group": "wiring",
-      "hash": "cbfecda3096b6e70"
+      "hash": "d96cd3b58af6d9d8"
     }
   }
 }
