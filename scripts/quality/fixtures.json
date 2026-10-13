@@ -318,16 +318,24 @@
                     "repeat": "y",
                     "times": 30000
                 },
+                ".agents/skills/hx-agent-code/SKILL.md": {
+                    "repeat": "z",
+                    "times": 5000
+                },
                 "a/x.ts": "export {};\n"
             },
             "negative": {
                 "AGENTS.md": {
                     "repeat": "x",
-                    "times": 40000
+                    "times": 30000
                 },
                 "a/AGENTS.md": {
                     "repeat": "y",
                     "times": 30000
+                },
+                ".agents/skills/hx-agent-code/SKILL.md": {
+                    "repeat": "z",
+                    "times": 6000
                 },
                 "a/x.ts": "export {};\n"
             }
