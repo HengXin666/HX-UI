@@ -3,7 +3,7 @@ import { basename, dirname, extname, join } from "node:path";
 import {
     AGENTS_MAX_BYTES, AGENTS_MAX_LINES, APPROVALS_FILE, BUDGET_MAX_BYTES, DEPENDENCY_FIELDS, DOC_EXTENSIONS,
     DOC_MAX_LINES, DOC_TOP_DIRS, DOCS_APP_PATHS, DOCS_PACKAGE_FILE, DOT, ERROR, FOREIGN_FRAMEWORKS, INVENTORY_FILE,
-    MARKDOWN_EXTENSIONS, NEWLINE, PACKAGE_FILE, SKILL_INJECTION_DIRS, SLASH, UTF8, WARNING, COLON_SPACE, CONTRIBUTING_FILE, GROUP_CODE, GROUP_DOCS, LIMIT_LABEL, LINES_LABEL, SPACE,
+    MARKDOWN_EXTENSIONS, NEWLINE, PACKAGE_FILE, LOCKFILES, EMPTY_JSON_OBJECT, LIST_SEPARATOR, SKILL_INJECTION_DIRS, SLASH, UTF8, WARNING, COLON_SPACE, CONTRIBUTING_FILE, GROUP_CODE, GROUP_DOCS, LIMIT_LABEL, LINES_LABEL, SPACE,
 } from "../../constants/quality.ts";
 import { Collector } from "../runtime/finding.ts";
 import type { Rule } from "../runtime/finding.ts";
@@ -210,9 +210,34 @@ function approved(snapshot: Snapshot, name: string, range: string): string | und
         && (item.subject ?? "").replace(SUBJECT_NOTE, "").split(SUBJECT_SPLIT).some(covers))?.id;
 }
 
+/** lockfile 里每个安装路径的版本; 根条目 "" 是项目自身, 不算依赖 */
+function locked(text: string | undefined): Map<string, string> {
+    const packages = (JSON.parse(text ?? EMPTY_JSON_OBJECT).packages ?? {}) as Record<string, { version?: string }>;
+    return new Map(Object.entries(packages).filter(([key]) => key !== "").map(([key, item]) => [key, item.version ?? "(none)"]));
+}
+
+/** 只改 lockfile 的传递依赖变化: 不需要审批单, 但必须进 review (review-only), 否则这类变化完全不可见 */
+function lockfileChanges(snapshot: Snapshot, out: Collector): void {
+    for (const file of LOCKFILES) {
+        const before = baseFile(snapshot, file);
+        if (before === undefined || !snapshot.scope?.has(file)) {
+            continue;
+        }
+        const old = locked(before);
+        const now = locked(snapshot.files.get(file));
+        const changed = [...new Set([...old.keys(), ...now.keys()])].sort()
+            .filter((key) => old.get(key) !== now.get(key))
+            .map((key) => key.replace(/^(?:.*\/)?node_modules\//, "") + SPACE + (old.get(key) ?? "(new)") + " -> " + (now.get(key) ?? "(removed)"));
+        if (changed.length) {
+            const shown = changed.slice(0, 5).join(LIST_SEPARATOR) + (changed.length > 5 ? ", ..." : "");
+            out.add(file, 1, "lockfile 依赖变化 " + changed.length + " 项" + COLON_SPACE + shown + COLON_SPACE + "review-only", file, changed.join("|"));
+        }
+    }
+}
+
 const dependencies: Rule = {
     id: "HC-DEPS", severity: WARNING, group: CODE,
-    summary: "依赖变化进 review: 新直接依赖与跨大版本需批准记录, 否则 unapproved; 补丁/小版本 review-only",
+    summary: "依赖变化进 review: 新直接依赖与跨大版本需批准记录, 否则 unapproved; 补丁/小版本与仅 lockfile 的传递依赖变化 review-only",
     run: (snapshot) => {
         const out = new Collector(dependencies);
         for (const file of [PACKAGE_FILE, DOCS_PACKAGE_FILE]) {
@@ -231,6 +256,7 @@ const dependencies: Rule = {
                 out.add(file, 1, name + SPACE + (old[name] ?? "(new)") + " -> " + range + COLON_SPACE + status, name, name);
             }
         }
+        lockfileChanges(snapshot, out);
         return out.findings;
     },
 };

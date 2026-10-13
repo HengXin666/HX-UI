@@ -5,8 +5,8 @@
  * 只把包名引用改成相对路径。这就是"看起来一样"的唯一可靠来源  类名组合没法靠描述复现。
  *
  * 分两层:
- *   primitives/ 基础件 (按钮 / 输入 / 开关 / 弹层 / 下拉 ...), 建在 radix-ui 之上
- *   layout/     版式件 (应用外壳 / 设置页一行式卡片 / 分段控件 ...), 决定页面长什么样
+ * - primitives/ 基础件 (按钮 / 输入 / 开关 / 弹层 / 下拉 ...), 建在 radix-ui 之上
+ * - layout/ 版式件 (应用外壳 / 设置页一行式卡片 / 分段控件 ...), 决定页面长什么样
  */
 
 // ── 基础件 ──
@@ -204,10 +204,6 @@ export {
   DataTable, TableShell, useTableSearch,
   type DataTableProps, type DataTableColumn,
 } from "./layout/DataTable";
-export {
-  ChatStream,
-  type ChatStreamProps, type ChatMessage, type ChatRole, type ChatStatus,
-} from "./layout/ChatStream";
 export { StatCard, StatGrid, statValueVariants, type StatCardProps, type StatTone } from "./layout/StatCard";
 export { EmptyState, DataBoundary, type EmptyStateProps, type EmptyKind } from "./layout/EmptyState";
 export { PageHeader, type PageHeaderProps } from "./layout/PageHeader";

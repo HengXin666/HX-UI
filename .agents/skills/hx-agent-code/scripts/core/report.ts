@@ -62,8 +62,10 @@ export function consoleReport(findings: Finding[], output: string): void {
 
 export function saveToolError(error: unknown, output: string): void {
     const message = error instanceof Error ? error.message : String(error);
-    const finding: Finding = { ruleId: "tool-error", severity: "error", path: "", line: 1,
-        message, evidence: "CLI", fingerprint: fingerprint("tool-error", "", "CLI", message) };
+    // 工具级错误没有源文件, 用稳定的非空占位路径, 报告才能被 parseFindings 回读
+    const toolPath = ".agents/skills/hx-agent-code/scripts";
+    const finding: Finding = { ruleId: "tool-error", severity: "error", path: toolPath, line: 1,
+        message, evidence: "CLI", fingerprint: fingerprint("tool-error", toolPath, "CLI", message) };
     const report = makeReport([finding], []);
     try {
         mkdirSync(dirname(resolve(output)), { recursive: true });

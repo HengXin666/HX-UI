@@ -23,7 +23,8 @@
         "../src/index.ts"
       ],
       "@hx/blueprint-demo": [
-        "../../HX-Blueprint-Demo/src/index.ts"
+        "../../HX-Blueprint-Demo/src/index.ts",
+        "./src/blueprint-demo-fallback/index.tsx"
       ],
       "react": [
         "../node_modules/@types/react"

@@ -107,3 +107,53 @@ test("runner preserves child output in files without streaming it", () => {
         repo.cleanup();
     }
 });
+
+test("CI accepts a new baseline entry only when the base tree reproduces it", () => {
+    const repo = fixture();
+    try {
+        repo.write("src/value.txt", "legacy\n");
+        repo.git("add", "-A");
+        repo.git("commit", "-qm", "legacy debt");
+        const legacy = repo.git("rev-parse", "HEAD");
+        repo.write("scripts/quality/baseline.json", JSON.stringify([{
+            ruleId: "PROJECT-VALUE", path: "src/value.txt", fingerprint: "value:legacy",
+            reason: "Existing at the trusted base", approvedBy: "owner",
+        }]));
+        repo.write("docs/guide.md", "# Touched\n");
+        repo.write("src/value.txt", "legacy\n\n");
+        repo.git("add", "-A");
+        repo.git("commit", "-qm", "adopt");
+        const head = repo.git("rev-parse", "HEAD");
+        repo.write("event.json", JSON.stringify({ pull_request: { base: { sha: legacy }, head: { sha: head } } }));
+        process.env.GITHUB_EVENT_NAME = "pull_request";
+        process.env.GITHUB_EVENT_PATH = join(repo.root, "event.json");
+        assert.equal(runCI(repo.root, "code"), 0);
+        assert.equal(repo.json("scripts/.hx_code_quality/reports/code.json").historical, 1);
+    } finally {
+        repo.cleanup();
+    }
+});
+
+test("first push of a new branch only checks commits after the default branch", () => {
+    const repo = fixture();
+    try {
+        repo.git("update-ref", "refs/remotes/origin/main", repo.base);
+        const head = repo.push();
+        const result = eventScope(repo.root, "push", { before: "0".repeat(40), after: head, repository: { default_branch: "main" } });
+        assert.equal(result.scope.changes.length, 0);
+        assert(eventScope(repo.root, "push", { before: "0".repeat(40), after: head }).scope.changes.length > 0);
+    } finally {
+        repo.cleanup();
+    }
+});
+
+test("PR baseline is read from the target branch tip, not the merge-base", () => {
+    const repo = fixture();
+    try {
+        const head = repo.push();
+        const result = eventScope(repo.root, "pull_request", { pull_request: { base: { sha: repo.base }, head: { sha: head } } });
+        assert.equal(result.baselineTree, repo.base);
+    } finally {
+        repo.cleanup();
+    }
+});

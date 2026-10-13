@@ -13,7 +13,7 @@ export type Config = {
 function task(value: unknown): Task {
     const item = record(value);
     const command = strings(item.command);
-    if (command.length === 0 || !["findings", "exit"].includes(String(item.format))) {
+    if (command.length === 0 || (item.format !== "findings" && item.format !== "exit")) {
         throw new Error("Each task needs a command array and findings/exit format");
     }
     return { id: string(item.id), command, format: item.format as Task["format"] };
@@ -41,8 +41,8 @@ export function parseConfig(value: unknown): Config {
     if (new Set(ids).size !== ids.length) {
         throw new Error("Task IDs must be unique across groups");
     }
-    const timeoutMs = Number(data.timeoutMs);
-    if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 3600000) {
+    const timeoutMs = data.timeoutMs;
+    if (typeof timeoutMs !== "number" || !Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 3600000) {
         throw new Error("timeoutMs must be an integer from 1 to 3600000");
     }
     return { setup, groups, tests, impact: task(data.impact), timeoutMs };

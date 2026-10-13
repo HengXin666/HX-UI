@@ -21,7 +21,7 @@ report 与 audit 有 Error 返回 1, 输入/工具错误返回 2, 只有 Warning
 
 - worktree: HEAD 与最终工作树之差, 包括 staged + unstaged + untracked, 排除 ignored; 尚无 HEAD 时与空树比. staged 后又还原工作树的文件仍纳入检查
 - staged: HEAD 与 index 比, checker 必须从 index 读取内容, 不能检查工作树冒充暂存检查. 格式化 index 可导出临时快照; 部分暂存时不自动 git add 工作树版本
-- range: 精确 base/head, CI 通过可信事件取 SHA; PR 使用 merge-base(base, head) 与实际 PR head, push 使用 before/after, 首次 push 使用空树. 不凭 HEAD~1 猜多提交范围
+- range: 精确 base/head, CI 通过可信事件取 SHA; PR 使用 merge-base(base, head) 与实际 PR head, push 使用 before/after, 首次 push 取与默认分支的 merge-base, 拿不到才用空树. 不凭 HEAD~1 猜多提交范围
 - 使用 NUL 路径解析, rename 同时保留旧名新名, delete 仍用于依赖/契约影响计算. 子模块变动标为子仓边界, 不递归混入父仓规则
 - diff 是入口, 可读完整文件/函数/类型/反向依赖图. AST/type checker 可分析更广上下文, 报告归属受影响范围; 根 AGENTS 改动必须检查整棵后代上下文
 - 接入项目 checker 时提供工作区/索引/提交树读取适配器, 禁止 scope 是 index 而实际工具读取工作区. 未支持的模式返回 Error

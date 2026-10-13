@@ -75,6 +75,9 @@ export function parseScope(value: unknown): Scope {
         if (item.oldPath !== undefined) {
             change.oldPath = string(item.oldPath);
         }
+        if (/^[RC]/.test(change.status) && change.oldPath === undefined) {
+            throw new Error("Rename or copy change requires oldPath: " + change.path);
+        }
         return change;
     });
     return { mode, base: string(data.base), head: string(data.head), changes };

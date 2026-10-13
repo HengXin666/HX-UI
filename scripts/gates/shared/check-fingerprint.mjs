@@ -208,14 +208,17 @@ function wiringOf() {
   } catch {
     parts.push("package.json scripts: (无法解析)");
   }
-  // 2. git hooks (.git/hooks —— 不在版本控制里, 所以要显式登记它的存在与内容 hash)
-  const hookNames = ["pre-commit", "pre-push"];
+  // 2. git hooks: 取仓库里受版本控制的钩子源文件 (scripts/gates/hooks 与 .githooks),
+  //    不读本机 .git/hooks: 那是安装状态, CI 的干净 checkout 里永远是"未安装",
+  //    以它为指纹会让同一提交在本地与 CI 上算出不同的值
   const hooks = [];
-  for (const h of hookNames) {
-    const src = read(path.join(ROOT, ".git", "hooks", h));
-    hooks.push(`  ${h} = ${src === null ? "(未安装)" : `sha256:${sha(src)}`}`);
+  for (const dir of ["scripts/gates/hooks", ".githooks"]) {
+    for (const h of ["pre-commit", "pre-push", "post-commit"]) {
+      const src = read(path.join(ROOT, dir, h));
+      if (src !== null) hooks.push(`  ${dir}/${h} = sha256:${sha(src)}`);
+    }
   }
-  parts.push("git hooks:\n" + hooks.join("\n"));
+  parts.push("git hooks:\n" + (hooks.length ? hooks.join("\n") : "  (仓库内无钩子源文件)"));
   // 3. CI workflow (注册了哪些 job + 跑了什么命令)
   const wfDir = path.join(ROOT, ".github", "workflows");
   if (fs.existsSync(wfDir)) {

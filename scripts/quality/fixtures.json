@@ -193,10 +193,10 @@
             "mode": "all",
             "base": {},
             "positive": {
-                "src/s.ts": "// ok\nconst a = 1;  // first\nconst bb = 2; // second\nexport { a, bb };\n"
+                "src/s.ts": "// ok\n/**\n * one space\n *\n */\nconst a = 1;  // first\nconst bb = 2; // second\nexport { a, bb };\n"
             },
             "negative": {
-                "src/s.ts": "//bad\nconst a = 1; // first\nconst bb = 2;  // second\nexport { a, bb };\n"
+                "src/s.ts": "//bad\n/**\n *  two spaces\n */\nconst a = 1; // first\nconst bb = 2;  // second\nexport { a, bb };\n"
             }
         },
         "HC-TEXT": {

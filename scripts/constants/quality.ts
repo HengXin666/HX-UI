@@ -132,3 +132,10 @@ export const GIT_NUL_OPTION = "-z";
 export const GIT_CONFIG = "config";
 export const STRING_TYPE = "string";
 export const DOCS_DIR = "docs";
+
+/** 推送检查用的临时工作树与子进程参数 */
+export const GIT_WORKTREE = "worktree";
+export const GIT_ADD = "add";
+export const STDIO_INHERIT = "inherit";
+export const LIST_SEPARATOR = ", ";
+export const EMPTY_JSON_OBJECT = "{}";

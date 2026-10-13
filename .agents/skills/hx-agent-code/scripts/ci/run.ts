@@ -5,9 +5,10 @@ import { parseConfig } from "./config.ts";
 import type { Config, Task } from "./config.ts";
 import { githubScope } from "./context.ts";
 import { sealArtifact, verifyArtifact } from "./artifact.ts";
-import { trustedBaseline } from "./baseline.ts";
+import { reproducedBaseline, trustedBaseline } from "./baseline.ts";
 import { parseGraph, selectTests } from "../core/affected.ts";
 import { consoleReport, fingerprint, makeReport, parseFindings } from "../core/report.ts";
+import { collectScope } from "../core/scope.ts";
 import type { Baseline, Finding, Scope } from "../core/model.ts";
 
 function failure(id: string, message: string): Finding {
@@ -76,6 +77,23 @@ function tests(root: string, config: Config, scope: Scope, event: string, env: N
     return plan.tests.map((id) => registered.get(id)!);
 }
 
+/** 改动自带的基线条目里, 能在 base tree 上复现的存量违规 (见 reproducedBaseline) */
+function baseDebt(root: string, scope: Scope, trusted: Baseline[], tasks: Task[], timeout: number,
+    env: NodeJS.ProcessEnv, reports: string, group: string): Baseline[] {
+    const checkers = tasks.filter((task) => task.format === "findings");
+    if (scope.base === "EMPTY" || !checkers.length) {
+        return [];
+    }
+    const proposed = trustedBaseline(root, scope.head);
+    if (!proposed.length) {
+        return [];
+    }
+    const basePath = join(reports, "scope-" + group + "-base.json");
+    writeFileSync(basePath, JSON.stringify(collectScope(root, "range", "EMPTY", scope.base), null, 4) + "\n");
+    const existing = runTasks(root, checkers, timeout, { ...env, HX_QUALITY_SCOPE: basePath }, join(reports, group + "-base-tasks"));
+    return reproducedBaseline(proposed, trusted, existing);
+}
+
 /**
  * Execute independent checks without dropping failures from later tasks
  *
@@ -96,8 +114,8 @@ export function runCI(root: string, group: string): number {
     let baseline: Baseline[] = [];
     try {
         const config = parseConfig(JSON.parse(readFileSync(join(root, "scripts/quality/ci.json"), "utf8")));
-        const { scope, event } = githubScope(root);
-        baseline = trustedBaseline(root, scope.base);
+        const { scope, event, baselineTree } = githubScope(root);
+        baseline = trustedBaseline(root, baselineTree);
         const scopePath = join(reports, "scope-" + group + ".json");
         writeFileSync(scopePath, JSON.stringify(scope, null, 4) + "\n");
         const env = { ...process.env, HX_QUALITY_SCOPE: scopePath, HX_QUALITY_BUILD: build };
@@ -115,6 +133,7 @@ export function runCI(root: string, group: string): number {
                 mkdirSync(build, { recursive: true });
             }
             findings.push(...runTasks(root, selected.tasks, config.timeoutMs, env, logs));
+            baseline.push(...baseDebt(root, scope, baseline, selected.tasks, config.timeoutMs, env, reports, group));
             if (group === "build" && !findings.some((item) => item.severity === "error")) {
                 sealArtifact(build, scope.head, notApplicable);
             }

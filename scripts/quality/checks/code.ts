@@ -18,7 +18,7 @@ const UI_FILE = TSX_EXT;
 const LINE_COMMENT = "//";
 const BLOCK_OPEN = /^\/\*\*?(?![\s/*]|$)/;
 const LINE_SPACING = /^\/\/\/?(?:[^\s/]|\s{2,}\S)/;
-const STAR_SPACING = /^\s*\*(?![\s/]|$)/;
+const STAR_SPACING = /^\s*\*(?:(?![\s/]|$)|\t|\s{2,}\S)/;
 const CSS_TOKEN = /"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|(?<comment>\/\*[\s\S]*?\*\/)/g;
 const FENCE = /^\s*(?<mark>`{3,}|~{3,})(?<info>.*)$/;
 const INLINE_CODE = /`[^`\n]*`/g;
@@ -123,7 +123,7 @@ const commentSpace: Rule = {
                 }
                 lines.slice(1).forEach((item, offset) => {
                     if (STAR_SPACING.test(item)) {
-                        out.add(path, at + offset + 1, "块注释的 * 后需要一个空格", item, "star");
+                        out.add(path, at + offset + 1, "块注释的 * 后需要恰好一个空格", item, "star");
                     }
                 });
             }

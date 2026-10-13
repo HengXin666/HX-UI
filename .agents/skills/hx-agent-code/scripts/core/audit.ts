@@ -32,9 +32,16 @@ export function auditCoverage(value: unknown, catalog: Map<string, Severity>): F
             fingerprint: fingerprint("HC-META", "coverage.json", id, message),
         });
     }
-    for (const raw of rows) {
-        const row = record(raw);
-        const id = string(row.id);
+    for (const [index, raw] of rows.entries()) {
+        let row: Record<string, unknown>;
+        let id: string;
+        try {
+            row = record(raw);
+            id = string(row.id);
+        } catch (error) {
+            fail("row " + (index + 1), "Malformed coverage row: " + (error instanceof Error ? error.message : "invalid row"));
+            continue;
+        }
         if (seen.has(id)) {
             fail(id, "Duplicate rule ID");
         }
