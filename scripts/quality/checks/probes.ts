@@ -140,6 +140,21 @@ function integration(fixtures: Record<string, Fixture>): void {
     rmSync(dir, { recursive: true, force: true });
 }
 
+/** A violation caused by the diff must surface even when the finding is anchored on a path the diff does not list. */
+function scopeProbes(): void {
+    const pair = repo({ "x/README.md": "# x\n\nSee AGENTS.md\n", "x/AGENTS.md": "# a\n\nSee README.md\n" });
+    rmSync(join(pair, "x/README.md"));
+    const deleted = run(pair, [CMD_CHECK, MODE_OPTION, MODE_WORKTREE, RULE_OPTION, "HC-CONTEXT", FORMAT_OPTION, FINDINGS]);
+    record("deleting one file of a README/AGENTS pair is reported", deleted.parsed && deleted.findings.length > 0, String(deleted.findings.length));
+    rmSync(pair, { recursive: true, force: true });
+
+    const loop = repo({ "src/b.ts": 'import { C } from "./c.ts";\nexport const B = C;\n', "src/c.ts": "export const C = 1;\n" });
+    writeFileSync(join(loop, "src/c.ts"), 'import { B } from "./b.ts";\nexport const C = B;\n');
+    const cycle = run(loop, [CMD_CHECK, MODE_OPTION, MODE_WORKTREE, RULE_OPTION, "HC-CYCLE", FORMAT_OPTION, FINDINGS]);
+    record("a new cycle closed by a later member is reported", cycle.parsed && cycle.findings.length > 0, String(cycle.findings.length));
+    rmSync(loop, { recursive: true, force: true });
+}
+
 function baselineProbe(): void {
     const one = 'export const A = () => <div className="text-[#111111]" />;\n';
     const dir = repo({ [FIXTURE_FILE]: one });
@@ -165,6 +180,7 @@ function main(): number {
     const fixtures = (JSON.parse(readFileSync(join(ROOT, FIXTURES_FILE), UTF8)) as { rules: Record<string, Fixture> }).rules;
     ruleProbes(fixtures);
     integration(fixtures);
+    scopeProbes();
     baselineProbe();
     auditProbe();
     const failed = results.filter((item) => !item.ok);
