@@ -62,7 +62,14 @@ export function collect(snapshot: Snapshot, flags: Flags): Finding[] {
     return findings;
 }
 
-/** Baseline comes from a committed tree (the diff base, else HEAD), never from the working copy. */
+/**
+ * Baseline comes from a committed tree (the diff base, else HEAD), never from the working copy.
+ * An empty base tree (a push whose remote base cannot be proven) holds no baseline, so HEAD stands in.
+ */
+function baselineTree(snapshot: Snapshot): string {
+    return snapshot.base && git(snapshot.root, ["ls-tree", snapshot.base]).trim() ? snapshot.base : "HEAD";
+}
+
 function baseline(snapshot: Snapshot, flags: Flags): Baseline[] {
     const choice = one(flags, CMD_BASELINE, TRUSTED)!;
     if (choice === NONE) {
@@ -71,7 +78,7 @@ function baseline(snapshot: Snapshot, flags: Flags): Baseline[] {
     if (choice !== TRUSTED) {
         return parseBaseline(JSON.parse(readFileSync(choice, UTF8)));
     }
-    const tree = snapshot.base ?? "HEAD";
+    const tree = baselineTree(snapshot);
     try {
         return parseBaseline(JSON.parse(git(snapshot.root, ["show", tree + COLON + BASELINE_FILE])));
     } catch {
