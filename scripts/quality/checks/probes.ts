@@ -30,6 +30,7 @@ const FIXTURE_FILE = "src/a.tsx";
 const PROBE_NAME = "probe";
 const POSITIVE = "positive";
 const RULE_PAIR = 2;
+const TOOL_ERROR_DETAIL = "exit " + EXIT_TOOL;
 const results: Result[] = [];
 
 function content(spec: Content): string {
@@ -117,9 +118,9 @@ function integration(fixtures: Record<string, Fixture>): void {
         "src/b.tsx": fixtures["PROJECT-UI-BW"].negative[FIXTURE_FILE] as string });
     const both = run(dir, [CMD_CHECK, MODE_OPTION, MODE_ALL, RULE_OPTION, "PROJECT-UI-HEX,PROJECT-UI-BW", FORMAT_OPTION, FINDINGS]);
     record("two failing checkers both reported", new Set(both.findings.map((item) => item.ruleId)).size === RULE_PAIR, String(both.status));
-    record("unknown option is a tool error", run(dir, [CMD_CHECK, "--bogus", "x"]).status === EXIT_TOOL, "exit 2");
-    record("unknown rule is a tool error", run(dir, [CMD_CHECK, RULE_OPTION, "HC-NOPE"]).status === EXIT_TOOL, "exit 2");
-    record("unknown group is a tool error", run(dir, [CMD_CHECK, GROUP_OPTION, "nope"]).status === EXIT_TOOL, "exit 2");
+    record("unknown option is a tool error", run(dir, [CMD_CHECK, "--bogus", "x"]).status === EXIT_TOOL, TOOL_ERROR_DETAIL);
+    record("unknown rule is a tool error", run(dir, [CMD_CHECK, RULE_OPTION, "HC-NOPE"]).status === EXIT_TOOL, TOOL_ERROR_DETAIL);
+    record("unknown group is a tool error", run(dir, [CMD_CHECK, GROUP_OPTION, "nope"]).status === EXIT_TOOL, TOOL_ERROR_DETAIL);
 
     writeAll(dir, { "src/c.tsx": 'export const C = () => <button type="text">x</button>;\n' });
     const invalidType = run(dir, [CMD_CHECK, MODE_OPTION, MODE_ALL, RULE_OPTION, "PROJECT-UI-BUTTON-TYPE", FORMAT_OPTION, FINDINGS]);
