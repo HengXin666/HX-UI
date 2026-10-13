@@ -12,8 +12,13 @@ const DOCS = GROUP_DOCS;
 const HUNK = /^@@ -\d+(?:,\d+)? \+(?<start>\d+)(?:,(?<count>\d+))? @@/;
 const ALL_LINES = NOT_FOUND;
 
-/** Changed head-side line numbers of one file; ALL_LINES marks a file without a base version. */
-function changedLines(snapshot: Snapshot, path: string): Set<number> {
+/**
+ * Head-side lines of one file: added or modified ones, plus the line right before each pure deletion.
+ * ALL_LINES in `lines` marks a file without a base version.
+ */
+type Changes = { lines: Set<number>; deletedAfter: Set<number> };
+
+function changedLines(snapshot: Snapshot, path: string): Changes {
     const base = snapshot.base!;
     const head = snapshot.mode === MODE_RANGE ? [base, snapshot.source] : snapshot.mode === MODE_STAGED ? ["--cached", base] : [base];
     let raw: string;
@@ -21,20 +26,24 @@ function changedLines(snapshot: Snapshot, path: string): Set<number> {
         git(snapshot.root, ["cat-file", "-e", base + COLON + path]);
         raw = git(snapshot.root, ["diff", "--no-ext-diff", "-U0", ...head, OPTION_PREFIX, path]);
     } catch {
-        return new Set([ALL_LINES]);
+        return { lines: new Set([ALL_LINES]), deletedAfter: new Set() };
     }
     const lines = new Set<number>();
+    const deletedAfter = new Set<number>();
     for (const row of raw.split(NEWLINE)) {
         const match = row.match(HUNK);
         if (match) {
             const start = Number(match.groups!.start);
             const count = match.groups!.count === undefined ? 1 : Number(match.groups!.count);
-            for (let index = 0; index < Math.max(count, 1); index++) {
+            if (count === 0) {
+                deletedAfter.add(start);
+            }
+            for (let index = 0; index < count; index++) {
                 lines.add(start + index);
             }
         }
     }
-    return lines;
+    return { lines, deletedAfter };
 }
 
 function touches(lines: Set<number>, from: number, to: number): boolean {
@@ -49,7 +58,7 @@ function touches(lines: Set<number>, from: number, to: number): boolean {
     return false;
 }
 
-function diffFiles(snapshot: Snapshot): Array<[string, string, Set<number>]> {
+function diffFiles(snapshot: Snapshot): Array<[string, string, Changes]> {
     if (!snapshot.base || snapshot.scope === null) {
         return [];
     }
@@ -62,10 +71,11 @@ const docSync: Rule = {
     summary: "函数实现与其 JSDoc 只有一侧在 diff 中变化时, 提醒核对另一侧语义",
     run: (snapshot) => {
         const out = new Collector(docSync);
-        for (const [path, text, lines] of diffFiles(snapshot)) {
-            if (lines.has(ALL_LINES)) {
+        for (const [path, text, changes] of diffFiles(snapshot)) {
+            if (changes.lines.has(ALL_LINES)) {
                 continue;
             }
+            const lines = new Set([...changes.lines, ...changes.deletedAfter]);
             const source = parse(path, text);
             visit(source, (node) => {
                 const docs = ts.isFunctionLike(node) ? ts.getJSDocCommentsAndTags(node).filter(ts.isJSDoc) : [];
@@ -90,11 +100,11 @@ const why: Rule = {
     summary: "diff 中新增或修改的注释待 review: 只写意图/原因/约束, 不复述代码",
     run: (snapshot) => {
         const out = new Collector(why);
-        for (const [path, text, lines] of diffFiles(snapshot)) {
+        for (const [path, text, changes] of diffFiles(snapshot)) {
             const source = parse(path, text);
             for (const comment of comments(source)) {
                 const from = line(source, comment.pos);
-                if (touches(lines, from, line(source, comment.end))) {
+                if (touches(changes.lines, from, line(source, comment.end))) {
                     out.add(path, from, "注释变更待 review: 是否只说明意图/原因/约束", comment.text.split(NEWLINE)[0], comment.text);
                 }
             }
