@@ -49,7 +49,7 @@
     "hooks:install": "node scripts/quality/index.ts hooks",
     "test": "node scripts/quality/index.ts tests --event full",
     "test:affected": "node scripts/quality/index.ts tests --event local --mode worktree",
-    "test:e2e": "npm --prefix docs run build && node scripts/check-smoke.ts && node scripts/check-shell.ts",
+    "test:e2e": "npm --prefix docs run build && node scripts/check-smoke.ts --strict && node scripts/check-shell.ts --strict",
     "test:frontend": "node scripts/quality/index.ts layer --name frontend",
     "test:backend": "node scripts/quality/index.ts layer --name backend",
     "test:contract": "node scripts/quality/index.ts layer --name contract",
