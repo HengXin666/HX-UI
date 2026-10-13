@@ -20,7 +20,7 @@ const BLOCK_OPEN = /^\/\*\*?(?![\s/*]|$)/;
 const LINE_SPACING = /^\/\/\/?(?:[^\s/]|\s{2,}\S)/;
 const STAR_SPACING = /^\s*\*(?![\s/]|$)/;
 const CSS_TOKEN = /"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|(?<comment>\/\*[\s\S]*?\*\/)/g;
-const FENCE = /^\s*(?:```|~~~)/;
+const FENCE = /^\s*(?<mark>`{3,}|~{3,})(?<info>.*)$/;
 const INLINE_CODE = /`[^`\n]*`/g;
 const BAD_TEXT = /[\p{Extended_Pictographic}\uFE0F]|(?![\x00-\x7F])\p{P}/gu;
 
@@ -138,14 +138,22 @@ function blank(text: string): string {
     return text.replace(/[^\n]/g, SPACE);
 }
 
+/** A fence closes only with the same mark character, at least as long as the opener, and no info string. */
 function markdownProse(text: string): string {
-    let fenced = false;
+    let opener: string | undefined;
     return text.split(NEWLINE).map((row) => {
-        if (FENCE.test(row)) {
-            fenced = !fenced;
+        const fence = FENCE.exec(row);
+        if (opener === undefined && fence) {
+            opener = fence.groups!.mark;
             return blank(row);
         }
-        return fenced ? blank(row) : row.replace(INLINE_CODE, blank);
+        if (opener !== undefined) {
+            if (fence && fence.groups!.mark[0] === opener[0] && fence.groups!.mark.length >= opener.length && !fence.groups!.info.trim()) {
+                opener = undefined;
+            }
+            return blank(row);
+        }
+        return row.replace(INLINE_CODE, blank);
     }).join(NEWLINE);
 }
 
