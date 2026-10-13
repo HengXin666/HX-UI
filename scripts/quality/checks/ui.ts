@@ -38,7 +38,7 @@ export const UI_PATTERNS: Pattern[] = [
     },
     {
         id: "PROJECT-UI-RGB", summary: "src 组件内禁止 rgb/rgba/hsl/hsla/oklch/oklab/hwb 函数色值, 包括 Tailwind 任意值里的 _rgba(", colors: true,
-        pattern: /(?<![A-Za-z0-9-])(?:rgba?|hsla?|oklch|oklab|hwb)\(/g, hint: "用 token 或 color-mix()",
+        pattern: /(?<![A-Za-z0-9-])(?:rgba?|hsla?|oklch|oklab|hwb)\(/gi, hint: "用 token 或 color-mix()",
     },
     {
         id: "PROJECT-UI-LINE-1PX", summary: "border/ring/outline/divide 线宽只允许 1px, 禁止 -2/-4/-8 与 [0.5px] 等任意值",
