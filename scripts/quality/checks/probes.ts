@@ -76,7 +76,7 @@ function repo(base: Record<string, Content>): string {
     return dir;
 }
 
-// 探针在临时仓库里运行检查器; 外层 CI runner 注入的 HX_QUALITY_* (范围文件、构建目录) 指向真实仓库, 必须剥离, 否则检查器会按错误的范围运行
+// 探针在临时仓库里运行检查器; 外层 CI runner 注入的 HX_QUALITY_* (范围文件 / 构建目录) 指向真实仓库, 必须剥离, 否则检查器会按错误的范围运行
 const PROBE_ENV: NodeJS.ProcessEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("HX_QUALITY_")));
 
 function run(dir: string, args: string[], input?: string) {
