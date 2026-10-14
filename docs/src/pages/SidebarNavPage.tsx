@@ -18,7 +18,7 @@ export function SidebarNavPage(): JSX.Element {
       <P>
         侧栏导航项。源码取自上游 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">SidebarNavItemButton</code>,
         类串一字未改。图标走 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">mask-image</code>,
-        因此跟随 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">currentColor</code> —— 选中态改个文字色就整体变色, 不用换图。
+        因此跟随 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">currentColor</code>  选中态改个文字色就整体变色, 不用换图。
       </P>
       <Callout title="选中态分两处表达">
         按钮内部只改<b className="text-foreground">字重与文字色</b>(<code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">font-semibold</code>),

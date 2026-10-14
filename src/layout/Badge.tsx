@@ -6,7 +6,7 @@ import { cn } from "../primitives/utils";
  * 标签。
  *
  * 颜色白名单只有三种语义原色 (来自上游视觉规范 §1.3):
- *   成功/运行 emerald、警告/可更新 amber、错误走 destructive token。
+ * 成功/运行 emerald、警告/可更新 amber、错误走 destructive token。
  * 业务标签 (自定义 / 实验 / Beta) 一律降级为 token 叠色, 不引入第四种。
  */
 const badgeVariants = cva(

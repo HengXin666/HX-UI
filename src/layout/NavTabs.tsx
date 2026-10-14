@@ -14,9 +14,7 @@ import { cn } from "../primitives/utils";
  *
  * ## 选中态用 aria-current 而不是自定义 class
  * `aria-current="page"` 是标准, 屏幕阅读器与测试工具都认它。纯视觉的 active
- * class 对辅助技术不可见 —— 选中态是**语义**, 不只是颜色。
- *
- * (see the [collapsible rail note](../../../.agents/notes/implemented/feature/2026-10-12-collapsible-rail.md)).
+ * class 对辅助技术不可见, 选中态是**语义**, 不只是颜色.
  */
 
 export interface NavTabItem {
@@ -36,6 +34,9 @@ export interface NavTabsProps {
   readonly className?: string;
 }
 
+/**
+ * 顶栏导航: 选中态走 `aria-current`, 纯视觉的 active class 对辅助技术不可见.
+ */
 export function NavTabs({ items, value, onChange, className }: NavTabsProps): ReactNode {
   return (
     <nav

@@ -17,9 +17,7 @@ import { cn } from "../primitives/utils";
  *
  * ## 放下之后不自己改数据
  * `onDrop` 只把 (dragId, dropId) 交出去。数据怎么变由调用方决定 —— 本组件不知道
- * "拖到另一个容器"在业务上意味着改哪个字段。
- *
- * (see the [tree drag and drop note](../../../.agents/notes/implemented/feature/2026-10-12-tree-drag-and-drop.md)).
+ * "拖到另一个容器"在业务上意味着改哪个字段.
  */
 
 /** 拖拽用的 MIME。自定义类型可以避免接住从别处拖来的文本/文件。 */
@@ -56,6 +54,11 @@ export interface DragDropProps {
   readonly className?: string;
 }
 
+/**
+ * 拖放绑定: 把 (dragId, dropId) 交给调用方, 数据怎么变由调用方决定.
+ *
+ * .agents/notes/implemented/feature/2026-10-12-tree-drag-and-drop.md
+ */
 export function DragDrop({ children, canDrop, onDrop, className }: DragDropProps): ReactNode {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);

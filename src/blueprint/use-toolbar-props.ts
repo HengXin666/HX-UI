@@ -12,7 +12,7 @@ import type { BlueprintRegistry } from "./types";
  *
  * ## 为什么连 props 都要抽成 hook
  *
- * BlueprintEditor.tsx 被行预算压到 250 行, 而顶栏有 14 个回调 —— 每个一行
+ * BlueprintEditor.tsx 被行预算压到 250 行, 而顶栏有 14 个回调  每个一行
  * 箭头函数就是 14 行, 加上 JSX 里的缩进与换行占掉 30 多行。抽出来后编辑器
  * 只剩 `<EditorToolbar {...toolbarProps} />`, 一眼能读完整个布局。
  *
@@ -76,7 +76,7 @@ export function useToolbarProps(o: ToolbarWiring) {
   };
 }
 
-/** 校验结论按等级分开 —— 顶栏要显示条数, 诊断区要列清单, 两者都要。 */
+/** 校验结论按等级分开  顶栏要显示条数, 诊断区要列清单, 两者都要。 */
 export function splitIssues<T extends { readonly level: "error" | "warning" }>(
   issues: readonly T[]
 ): { readonly errors: readonly T[]; readonly warnings: readonly T[] } {

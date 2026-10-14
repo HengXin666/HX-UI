@@ -8,7 +8,7 @@ import type { BlueprintGraph, BlueprintRegistry } from "./types";
 import { nodeHeight, nodeWidth } from "./geometry";
 import { graphToHash } from "./sync";
 
-/** 标题条高度 (图坐标) —— 只有它能拖动整块注释。 */
+/** 标题条高度 (图坐标)  只有它能拖动整块注释。 */
 export const COMMENT_BAR_H = 22;
 
 /** 右下角 resize 热区边长 (图坐标)。 */
@@ -62,7 +62,7 @@ export function normRect(r: { x0: number; y0: number; x1: number; y1: number }) 
   };
 }
 
-/** 完全落在矩形里的节点 —— 与"拖动会带走哪些"同一判据。 */
+/** 完全落在矩形里的节点  与"拖动会带走哪些"同一判据。 */
 export function containedIds(
   reg: BlueprintRegistry,
   graph: Pick<BlueprintGraph, "nodes">,
@@ -87,7 +87,7 @@ export function hashId(id: string): number {
 /**
  * 把视口的三个命令打包交给外层。
  *
- * 视口 (平移/缩放) 是画布的私有状态, 外层复制一份必然漂移 —— 所以只传命令。
+ * 视口 (平移/缩放) 是画布的私有状态, 外层复制一份必然漂移  所以只传命令。
  * 快捷键 (Ctrl+= 放大 / Ctrl+0 重置 / Home 适应) 靠它工作。
  *
  * 为什么放这儿而不是画布里: BlueprintCanvas.tsx 是**冻结文件** (棘轮只许降),
@@ -110,11 +110,11 @@ export function makeViewportCommands(
 }
 
 /**
- * 点一个节点之后的选择集 —— UE5 的修饰键语义。
+ * 点一个节点之后的选择集  UE5 的修饰键语义。
  *
- *   Ctrl/Cmd + 点击 = **切换** (已选则取消)
- *   Shift    + 点击 = **加选**
- *   无修饰           = 只选它 (若它已在多选里, 保持整个多选以便整组拖动)
+ * Ctrl/Cmd + 点击 = **切换** (已选则取消)
+ * Shift    + 点击 = **加选**
+ * 无修饰           = 只选它 (若它已在多选里, 保持整个多选以便整组拖动)
  *
  * 修饰键决定点选的语义。若不认修饰键, 永远只能选中一个, 而"对齐"类
  * 快捷键要求选中两个以上节点才生效, 那几个键就形同虚设。
@@ -167,16 +167,16 @@ export function makeExpandHref(o: {
  *
  * ## 为什么必须判这个
  *
- * 画布在 pointerdown 里会 `setPointerCapture` —— 一旦捕获, 后续所有指针
+ * 画布在 pointerdown 里会 `setPointerCapture`  一旦捕获, 后续所有指针
  * 事件都归画布, 目标元素**再也收不到 click**。而左上角工具条的"独立页面"
  * 是个链接, 它就浮在画布上面: 真实鼠标点下去, 画布先捕获指针, 那个链接
- * 永远不会收到 click —— 表现就是"点了没反应"。
+ * 永远不会收到 click  表现就是"点了没反应"。
  *
  * 注意: 用 `element.click()` 直接派发事件会绕过命中测试, 那样的 e2e
  * 在功能失效时也会通过。判据必须走真实输入。
  *
  * @param target 事件目标。用 EventTarget 而不是 HTMLElement, 是为了让单测
- *               能塞一个只有 closest 的假对象进来。
+ * 能塞一个只有 closest 的假对象进来。
  */
 export function isInteractiveTarget(target: EventTarget | null): boolean {
   const el = target as { closest?: (s: string) => unknown } | null;

@@ -20,7 +20,7 @@ HX-UI 是一个 React 19 + TypeScript 5 的 UI 组件库，外加一个 38 页�
 **跨仓依赖（必须显式知道，否则 CI 与本地行为不一致）**：`docs/vite.config.ts` 的 alias 与
 `scripts/check-blueprint.mjs` 的打包入口都指向 `../../HX-Blueprint-Demo/src/*`，而那是
 **父仓的普通目录**（`git ls-files components/HX-Blueprint-Demo` 有 8 个文件），不在本仓里。
-单独 clone 本仓时 `check-blueprint` 会因 `UNRESOLVED_IMPORT` 失败 —— 实测过，见 `.github/workflows/quality.yml`
+单独 clone 本仓时 `check-blueprint` 会因 `UNRESOLVED_IMPORT` 失败  实测过，见 `.github/workflows/quality.yml`
 里那段 sparse-checkout。
 
 ## 二、现状：已有的防线（都是真的在跑吗）
@@ -31,7 +31,7 @@ HX-UI 是一个 React 19 + TypeScript 5 的 UI 组件库，外加一个 38 页�
 | `npm run verify` | build + docs build + smoke + shell | ~24.5s | 在跑；**2026-10-04 实跑全绿** |
 | `docs/package.json` 的 `verify` | docs typecheck + icons + build + smoke + shell | — | `check:icons` 此前红，见下 |
 
-五条既有门禁（都在 `scripts/` 与 `docs/scripts/`），**每条都有头部注释说明"拦什么、为什么需要它"**——
+五条既有门禁（都在 `scripts/` 与 `docs/scripts/`），**每条都有头部注释说明"拦什么、为什么需要它"**
 这是本仓已经做得很好的部分，必须保留：
 
 | 脚本 | 拦什么 | 实测耗时 | 备注 |
@@ -178,7 +178,7 @@ flowchart TD
 | 探针 | 类型 | 钉住什么 |
 |---|---|---|
 | ui-rules 违规组 / 控制组 | 违规 + 控制 | 三条规则真的会红；合规写法不被误伤 |
-| registry 违规组 ×3（幽灵页 / 图标残留 / 无引用模块） | 违规 | **幽灵页必须 FAIL** —— 这正是缺口一 |
+| registry 违规组 ×3（幽灵页 / 图标残留 / 无引用模块） | 违规 | **幽灵页必须 FAIL**  这正是缺口一 |
 | registry 控制组 ×2 | 控制 | 正常加页面流程放行；**内部拆分件不被误报** |
 | line-budget 违规组 ×3（水位上涨 / 超上限 / 陈旧条目） | 违规 | 棘轮方向 + 双向对账 |
 | line-budget 控制组 | 控制 | 小文件不被误伤 |
@@ -188,12 +188,12 @@ flowchart TD
 | 接线控制组 ×2（只改 label / 未改动副本） | 控制 | 指纹稳定，不会退化成确认键 |
 
 接线探针存在的理由值得单独说：从注册表删掉一行，那条门禁在**所有**检查点上同时消失，
-而每条门禁脚本本身一个字都没变、违规探针也照样全绿 —— 只有接线指纹能发现。
+而每条门禁脚本本身一个字都没变、违规探针也照样全绿  只有接线指纹能发现。
 
 两条探针是**实测逼出来的**，都不是先想好才写的：
 
 - 「改调色盘禁令正则」：指纹抽取器第一版只收 `const X = <字面量>` 形式的单行声明，
-  而本仓的严格度大多写在正则、`new Set([...])`、模板串里 —— 结果 `check-ui-rules` /
+  而本仓的严格度大多写在正则、`new Set([...])`、模板串里  结果 `check-ui-rules` /
   `check-shell` / `check-blueprint` 三条来源的哈希**完全相同**，它们都退化成同一句
   「(无字面量阈值常量)」，而指纹照样打印「通过」。**哈希相同就是抽取器瞎了的判据**；
   改正口径后 9 条来源现在是 9 个唯一哈希。
@@ -201,7 +201,7 @@ flowchart TD
   必须从 `src/index.ts` 导出，于是把行数棘轮**正推着人做**的拆分动作
   （`layout-parts.ts` / `canvas-parts.tsx` 这类只被主文件 import 的内部件）报成违规。
   门禁惩罚自己推荐的修复动作，结局只有一个：所有人学会无视它。
-  判据改成「导出**或**被同仓 import，至少一个」——它仍然拦住原本的目标，
+  判据改成「导出**或**被同仓 import，至少一个」它仍然拦住原本的目标，
   因为"忘了接上"必然同时满足两条。
 
 ## 六、待用户裁决（最多四个）
@@ -237,7 +237,7 @@ flowchart TD
    在核实之前，CI 只是"建议"，不是门禁。
 2. **HX-UI 里没有决策记录机制，而宿主的那个够不到它。** 父仓 `HXLoLis` 有完整的
    `hx-agent-notes`（`.agents/notes/` + 覆盖率门禁），但它的 `coverage.guarded` 是
-   `[".agents/**", "*.md"]`，而本仓在父仓眼里只是一个 gitlink `components/HX-UI` ——
+   `[".agents/**", "*.md"]`，而本仓在父仓眼里只是一个 gitlink `components/HX-UI` 
    不匹配任何 guarded 模式。实测 `verify-coverage.ts --base HEAD` 输出
    `ok — 142 guarded path(s) changed with a note in the same change`，对这 15 个新增文件
    **一条都没管**。所以本轮把设计理由写在了代码注释、`scripts/gates/lanes.mjs` 的
@@ -245,14 +245,14 @@ flowchart TD
    决策记录，属于裁决项。
 3. **`check-blueprint.mjs` 的 171 条断言在本轮取证期间一度是红的**（并行编辑
    `src/blueprint/layout.ts` 所致，非本轮引入），现已恢复全绿；期间 `pre-commit`
-   正确拦下了提交 —— 那正是期望行为。
+   正确拦下了提交  那正是期望行为。
 4. **`ui-rules` 的四条规则不在本 skill 的 31 条参考里**（它们是本仓自己的设计约定）。
    已保留并接线，但它们的"上限"没有被独立评估过（例如白名单 `COLOR_ALLOW` 里
    `src/layout/CodeBlock.tsx` 有 13 行硬编色，理由写在脚本注释里）。
 5. **`check-smoke` 与 `check-shell` 在无 chromium 时本地默认跳过**。已加 `--strict` 档给 CI，
    但**本地默认仍然是跳过**，因为把开发卡在"没装 chromium"上是负收益。
 6. **`docs-registry-allow.json` 当前是空的**（三条豁免数组都空）。它是为将来准备的，
-   而"空名单"与"名单能生效"是两件事 —— 后者的证据是那条陈旧条目探针（基线里放一个
+   而"空名单"与"名单能生效"是两件事  后者的证据是那条陈旧条目探针（基线里放一个
    已不存在的文件 → FAIL），它跑通了。
 
 ## 九、验证命令（可复算）

@@ -11,14 +11,14 @@ import { makeId } from "./useBlueprint";
  * ## 折叠为什么值得做
  *
  * 一张真实的蓝图会有几十上百个节点。"把一片节点折成一个节点"是**唯一**
- * 能让它保持可读的手段 —— 分层, 而不是靠缩放去找。
+ * 能让它保持可读的手段  分层, 而不是靠缩放去找。
  *
  * ## 关键设计: 隧道是真实节点
  *
  * 子图的对外端口由内部的 `subgraph.input` / `subgraph.output` 节点承担
  * (UE5 管这叫 Tunnel, n8n 叫 "Execute Workflow" 的 IO)。这么做的好处是:
  * 子图内部的连线是**普通的边**, 于是校验、环检测、拓扑序、求值
- * 全都不需要为子图写任何特例 —— 它们看到的就是一张普通的图。
+ * 全都不需要为子图写任何特例  它们看到的就是一张普通的图。
  *
  * 代价是"隧道节点"这个概念要多解释一句。相比之下, 让每个下游函数都
  * 判一次"我是不是在子图里"要糟得多。
@@ -34,8 +34,8 @@ export const TUNNEL_OUT = "subgraph.output";
  * 注册子图所需的节点类型。建注册中心时调一次。
  *
  * 三件事一起做是因为它们**必须同时存在**才有用:
- *   - `subgraph` 子图节点本身 (一个空壳, 外形由子图定义给)
- *   - `subgraph.input` / `subgraph.output` 隧道
+ * - `subgraph` 子图节点本身 (一个空壳, 外形由子图定义给)
+ * - `subgraph.input` / `subgraph.output` 隧道
  * 少了任何一个, 折叠出来的图校验就报 unknown-node-type。
  */
 export function registerTunnels(reg: BlueprintRegistry): void {
@@ -44,7 +44,7 @@ export function registerTunnels(reg: BlueprintRegistry): void {
     label: "子图",
     category: "子图",
     description: "一张被折叠起来的图。双击进入。",
-    // 外形完全由 SubGraphDef 决定, 这里刻意不声明任何端口 ——
+    // 外形完全由 SubGraphDef 决定, 这里刻意不声明任何端口 
     // 声明了就会与子图定义打架, 而"哪个说话算"又是一个要解释的新规则
   });
 
@@ -81,8 +81,8 @@ export function registerTunnels(reg: BlueprintRegistry): void {
  *
  * 判定规则: 一条边**跨越**了这批节点的边界 (一头在里面、一头在外面),
  * 那么它在边界上留下一个口:
- *   - 内部的节点是这条边的**终点** -> 外面有个输入口, 名字取自原输入口
- *   - 内部的节点是这条边的**起点** -> 外面有个输出口
+ * - 内部的节点是这条边的**终点** -> 外面有个输入口, 名字取自原输入口
+ * - 内部的节点是这条边的**起点** -> 外面有个输出口
  *
  * 为什么按端口 id 去重而不是按边去重: 两条不同来源的边连到同一个输入口时,
  * 对外应该只有**一个**口 (否则外面要连两次)。这也是 UE5 隧道的行为。
@@ -152,7 +152,7 @@ export function boundaryPorts(
 /**
  * 折叠: 把一批节点变成一个子图节点。
  *
- * 返回新图, 不改原图 —— 折叠是可撤销的一步, 撤销就是"用原图替换"。
+ * 返回新图, 不改原图  折叠是可撤销的一步, 撤销就是"用原图替换"。
  */
 export function collapseToSubgraph(
   reg: BlueprintRegistry,
@@ -221,7 +221,7 @@ export function collapseToSubgraph(
    * 对外输入口一律 **multi**。
    *
    * 折叠一片区域时, 原本连到不同节点、不同端口的多条外部边, 会汇到新子图
-   * 节点的同一个输入口上。若沿用"独占"语义, 第二条边会把第一条顶掉 ——
+   * 节点的同一个输入口上。若沿用"独占"语义, 第二条边会把第一条顶掉 
    * 折叠一次就丢一部分连线, 且不报错。
    *
    * 折叠的语义是"把这片东西收起来", 不是"选一个来源", 所以汇合是对的。
@@ -266,7 +266,7 @@ export function collapseToSubgraph(
      * 只看一端、或键里不含 from 都不够: 一个节点有两个执行出口都连到外面时 (例如 mode 的 parallel 出口
      * 同时连到并行池和 skip), 折叠后两条边映到子图节点的同一个出口上,
      * 若对端节点也相同就产出完全重复的边, 而校验报的是
-     * `duplicate-edge @undefined` —— 连是哪个节点都说不出。
+     * `duplicate-edge @undefined`  连是哪个节点都说不出。
      */
     const key = m.dir === "in"
       ? `${e.from.node}.${e.from.port}>${subNode.id}.${m.port}`
@@ -291,7 +291,7 @@ export function collapseToSubgraph(
 /**
  * 展开: 把子图节点还原成里头的那片节点。
  *
- * `keepSubgraphDef` 默认 true —— 定义留着, 别处还有调用点时不会跟着炸。
+ * `keepSubgraphDef` 默认 true  定义留着, 别处还有调用点时不会跟着炸。
  */
 export function expandSubgraph(
   graph: BlueprintGraph,
@@ -303,7 +303,7 @@ export function expandSubgraph(
   const sg = graph.subgraphs?.[node.subgraph];
   if (!sg) return graph;
 
-  // 内部节点要挪到"该子图节点现在所在的位置" —— 否则展开后它们出现在
+  // 内部节点要挪到"该子图节点现在所在的位置"  否则展开后它们出现在
   // 创建子图时的原始坐标, 而那个位置可能早就被别的节点占了
   const inner = sg.nodes.filter((n) => n.type !== TUNNEL_IN && n.type !== TUNNEL_OUT);
   const box = inner.length ? boundsOf(inner) : { x: node.x, y: node.y, w: 0, h: 0 };

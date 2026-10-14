@@ -6,7 +6,7 @@ export function CardPage(): JSX.Element {
   return (
     <>
       <P>
-        上游**没有** Card 组件 —— 它用的是一条约定: 所有卡片都是 <Code>rounded-xl border border-border bg-card</Code> 这一族类串,
+        上游**没有** Card 组件  它用的是一条约定: 所有卡片都是 <Code>rounded-xl border border-border bg-card</Code> 这一族类串,
         在上百个文件里手写。复刻时把那族类串收成一个组件, 免得每个使用方各自记一遍边界的写法。
       </P>
       <Callout title="三条硬约定">

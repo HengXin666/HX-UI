@@ -50,9 +50,10 @@ import { BlueprintDshPage } from "./pages/BlueprintDshPage";
 /**
  * 组件文档站。
  *
- * 外壳刻意用 @hx/ui 自己的 AppFrame 与 SidebarNavItemButton 搭 ——
+ * 外壳刻意用 @hx/ui 自己的 AppFrame 与 SidebarNavItemButton 搭 
  * 文档站本身就是这套库的第一个使用方, 它长什么样就是库长什么样。
  * 加一个组件 = nav.ts 加一行 + 下面 switch 加一个分支。
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
  */
 function renderPage(entry: DocEntry): JSX.Element {
   switch (entry.id) {
@@ -101,7 +102,7 @@ function renderPage(entry: DocEntry): JSX.Element {
 }
 
 export function App(): JSX.Element {
-  // 页面 id 的唯一事实源是 URL —— 组件里不存 currentPage, 否则刷新与后退都会失效。
+  // 页面 id 的唯一事实源是 URL  组件里不存 currentPage, 否则刷新与后退都会失效。
   const [active, navigate] = useHashRoute();
   const entry = DOCS.find((d) => d.id === active) ?? DOCS[0];
   const search = useSearchHotkey();
@@ -260,10 +261,10 @@ export function App(): JSX.Element {
           </div>
         </main>
       </div>
-      {/* 提醒容器整个应用只挂一次, 放在最外层 ——
+      {/* 提醒容器整个应用只挂一次, 放在最外层 
           每个页面各挂一个的话, 切页时正在显示的提醒会跟着页面卸载一起消失。 */}
       <Toaster position="bottom-right" maxVisible={3} />
-      {/* 命令式 confirmDialog() 的宿主。整个应用挂一次 —— 少了它, confirmDialog()
+      {/* 命令式 confirmDialog() 的宿主。整个应用挂一次  少了它, confirmDialog()
           返回的 Promise 永远不会 settle, await 它的代码会静默停住。 */}
       <ConfirmDialogHost />
       {/* 搜索面板: 与 Toaster 同理, 整个应用挂一次 */}

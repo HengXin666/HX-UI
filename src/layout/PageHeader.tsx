@@ -7,12 +7,12 @@ import { cn } from "../primitives/utils";
  * 两个下游面板各写了一份一模一样的 (gh-pool/Shell.tsx 与 ps-pool/Shell.tsx),
  * 字号、间距、断行行为逐年漂移。收进库里, 顺带定死两件事:
  *
- *   一、**标题与右操作的纵向基线对齐**。右操作区经常是按钮, 按钮比标题矮,
- *       用 items-start 会让按钮悬在标题上方; 这里用 items-center 对齐到整块的中线,
- *       有 desc 时视觉重心仍然落在标题行。
+ * 一、**标题与右操作的纵向基线对齐**。右操作区经常是按钮, 按钮比标题矮,
+ * 用 items-start 会让按钮悬在标题上方; 这里用 items-center 对齐到整块的中线,
+ * 有 desc 时视觉重心仍然落在标题行。
  *
- *   二、**标题不换行溢出**。长标题用 truncate, 而不是让它把右侧按钮挤到下一行 ——
- *       页面顶部一旦换行, 整页的纵向节奏就乱了。
+ * 二、**标题不换行溢出**。长标题用 truncate, 而不是让它把右侧按钮挤到下一行 
+ * 页面顶部一旦换行, 整页的纵向节奏就乱了。
  */
 export interface PageHeaderProps {
   readonly title: ReactNode;

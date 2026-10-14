@@ -5,7 +5,7 @@
  *
  *   **预测** (写在 verify 里) → **操作** (act) → **比对** (读真实 DOM)
  *
- * 预测必须写在操作**之前**, 且是可证伪的具体数字 —— "节点 7→8" 这种。
+ * 预测必须写在操作**之前**, 且是可证伪的具体数字  "节点 7→8" 这种。
  * 写"应该正常"等于没写。
  *
  * ## 覆盖
@@ -108,7 +108,7 @@ async function appearanceCases(h) {
     shot: await h.shot("02-appearance-color"),
   });
 
-  // 预测: 标题栏按类别配色 —— 至少有 2 种不同的标题栏背景色
+  // 预测: 标题栏按类别配色  至少有 2 种不同的标题栏背景色
   const titleColors = await p.evaluate(() => {
     const set = new Set();
     for (const n of document.querySelectorAll("[data-node-kind]")) {
@@ -130,7 +130,7 @@ async function appearanceCases(h) {
    *
    * 判据必须是 computed background-image 里有 gradient, 不能只数元素:
    *    网格层是无条件渲染的 div, 数它永远为真。而类名/变量拼错时
-   *    Tailwind 不报错、只静默不生成规则 —— 那时元素还在, 网格却是空的。
+   *    Tailwind 不报错、只静默不生成规则  那时元素还在, 网格却是空的。
    */
   const gridImg = await h.cssOf('[data-grid="1"]', "background-image");
   out.push({
@@ -151,7 +151,7 @@ async function editCases(h) {
 
   await selectNode(h, 0);
 
-  // 选中态必须真的能测出来 —— 否则上面那条判据是死的
+  // 选中态必须真的能测出来  否则上面那条判据是死的
   await selectNode(h, 0);
   const selN = (await h.stat()).selected;
   out.push({
@@ -185,7 +185,7 @@ async function editCases(h) {
   out.push(h.steps.pop());
 
   // 连按两次 Ctrl+V: 每次都要 +1。
-  // ⚠️ 曾经第二次粘贴毫无反应 —— 剪贴板被展开成了一次性快照
+  // ⚠️ 曾经第二次粘贴毫无反应  剪贴板被展开成了一次性快照
   //    (Object.defineProperty 的访问器在 spread 时退化成取值)。
   //    第一次粘贴能过、第二次不能, 这种"一半能用"的失效最容易被放过。
   await h.check("快捷键 Ctrl+V 再粘贴一次 (+1)", async () => { await p.keyboard.press("Control+v"); },
@@ -212,7 +212,7 @@ async function editCases(h) {
   // 必须**精确**相等。若写成 `a.nodes > 0`, 只要还剩一个节点就会 PASS,
   // 无法证伪"是否全回来了"。
   // 此时图已被清空 (b.nodes === 0), 撤销必须**精确**回到清空前的那个数。
-  // 用闭包记住清空前的数量, 而不是拿 b (清空后) 去比 —— 那会退化成恒真。
+  // 用闭包记住清空前的数量, 而不是拿 b (清空后) 去比  那会退化成恒真。
   await h.check("撤销: 精确恢复被删除的全部节点", async () => { await p.keyboard.press("Control+z"); },
     (b, a) => a.nodes === wipedFrom && a.nodes > 0);
   out.push(h.steps.pop());
@@ -223,7 +223,7 @@ async function editCases(h) {
 
 /**
  * 盲审指出这些操作**零覆盖**: 拖拽移动 / 连线 / 改参数 / 注释 / F2 / Tab / 缩放。
- * 补上 —— "快捷键表里写了"不等于"能用", 只有真的操作过才算。
+ * 补上  "快捷键表里写了"不等于"能用", 只有真的操作过才算。
  */
 async function interactionCases(h) {
   const out = [];
@@ -375,7 +375,7 @@ async function interactionCases(h) {
 
 
 /**
- * "独立页面": 用户点名说这个功能失效了 —— 它当时走 Fullscreen API,
+ * "独立页面": 用户点名说这个功能失效了  它当时走 Fullscreen API,
  * 在文档站里必然被拒, 退回的 fixed 覆盖层又被滚动容器挡住, 于是
  * "点了毫无反应"。现在改成开新标签页 (带上当前图 + 同步频道)。
  *
@@ -398,7 +398,7 @@ async function standaloneCases(h) {
   });
 
   /**
-   * 真点一次 —— **必须用真实鼠标, 不能用 element.click()**。
+   * 真点一次  **必须用真实鼠标, 不能用 element.click()**。
    *
    * element.click() 直接派发事件, 绕过了命中测试与指针捕获, 在画布抢走
    * 指针的情况下照样通过; 而真实用户点击走完整链路 (pointerdown ->
@@ -459,7 +459,7 @@ async function standaloneCases(h) {
  * 这简直就是反人类"。
  *
  * 根因: 画布整体没设 user-select: none, 于是浏览器的默认选区行为
- * 把拖拽劫持了 —— 节点没动, 文字全蓝了。
+ * 把拖拽劫持了  节点没动, 文字全蓝了。
  *
  * 判据必须走真实鼠标拖 (mouse.down + move + up), 用 evaluate 派发事件
  * 不会触发浏览器的选区逻辑, 断言会假绿。
@@ -472,7 +472,7 @@ async function dragSelectCases(h) {
    * 必须**从节点标题的文字上**起手, 再拖过其它文字。
    *
    * 必须从**有文字的地方**起手再拖过其它文字。若在空白处拖, 那里没有
-   * 文本可选, 断言会是死的 —— 判据要能被证伪。
+   * 文本可选, 断言会是死的  判据要能被证伪。
    */
   const title = p.locator("[data-node-kind]").first().locator("xpath=child::div[1]");
   const tb = await title.boundingBox().catch(() => null);
@@ -494,7 +494,7 @@ async function dragSelectCases(h) {
     shot: await h.shot("70-drag-no-select"),
   });
 
-  // 但参数输入框里必须**能**选 —— 禁过头就没法改参数了
+  // 但参数输入框里必须**能**选  禁过头就没法改参数了
   const input = p.locator("[data-node-kind] input").first();
   if (await input.count()) {
     const ib = await input.boundingBox();

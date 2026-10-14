@@ -14,13 +14,13 @@ import { nodeKindOf } from "./node-style";
  *
  * 两套数据模型的**形状与语义都不同**, 不能直接互用:
  *
- *   | 我们                        | React Flow                  |
- *   |---                          |---                          |
- *   | 端口是**命名**的 (id)        | Handle 是**位置**上的 (id)   |
- *   | 一条边两端是 {node, port}    | {source, sourceHandle, target, targetHandle} |
- *   | 边有 kind: exec/data        | 靠 style 区分               |
- *   | 类型相容由 registry 判       | 由 isValidConnection 回调判 |
- *   | 注释是一等公民               | 无 (用自定义节点模拟)        |
+ * | 我们                        | React Flow                  |
+ * |---                          |---                          |
+ * | 端口是**命名**的 (id)        | Handle 是**位置**上的 (id)   |
+ * | 一条边两端是 {node, port}    | {source, sourceHandle, target, targetHandle} |
+ * | 边有 kind: exec/data        | 靠 style 区分               |
+ * | 类型相容由 registry 判       | 由 isValidConnection 回调判 |
+ * | 注释是一等公民               | 无 (用自定义节点模拟)        |
  *
  * 直接把 BlueprintGraph 塞给 React Flow 会丢掉"端口名"这个最关键的信息
  * (线会连到错误的脚上)。所以两边各保留自己的模型, 这里做**双向转换**。
@@ -30,7 +30,7 @@ import { nodeKindOf } from "./node-style";
  * **我们的是真相。** React Flow 的 nodes/edges 只是渲染态。任何改动都
  * 先落到 BlueprintGraph, 再由本层换算成 React Flow 的形状。
  * 反过来做 (让 React Flow 持有真相) 会让"校验/求值/序列化"全部要读它的
- * 内部结构, 而那个结构不含类型信息 —— 那条路走不通。
+ * 内部结构, 而那个结构不含类型信息  那条路走不通。
  */
 
 /** React Flow 节点的 data 载荷。刻意只放渲染需要的东西。 */
@@ -93,8 +93,8 @@ export function portOfHandle(h?: string | null): string | null {
 /**
  * 我们的图 -> React Flow 的 nodes/edges。
  *
- * @param connectedByNode 外部算好的"每个节点各输入口是否已连" —— 算它要遍历
- *   全部边, 而调用方通常已经算过一次了, 这里不重复算。
+ * @param connectedByNode 外部算好的"每个节点各输入口是否已连"  算它要遍历
+ * 全部边, 而调用方通常已经算过一次了, 这里不重复算。
  */
 export function toReactFlow(
   registry: BlueprintRegistry,
@@ -119,7 +119,7 @@ export function toReactFlow(
         type: n.type,
         title: n.title ?? def?.label ?? n.type,
         kind: nodeKindOf(def, n),
-        // 实例级 ports 优先 —— 子图隧道的端口是每个实例不同的
+        // 实例级 ports 优先  子图隧道的端口是每个实例不同的
         inputs: (n.ports?.inputs ?? def?.inputs ?? []).map((p) => toRfPort(registry, p)),
         outputs: [
           ...execOutIds(def).map((id) => ({ id, type: EXEC, exec: true as const })),
@@ -215,7 +215,7 @@ function tintOf(reg: BlueprintRegistry, g: BlueprintGraph, e: BlueprintEdge): st
  *
  * React Flow 没有"注释"概念, 用**自定义节点 + 负 z-index** 模拟:
  * 它是画布上第一个被渲染的东西, 视觉上在节点下面, 但不参与连线
- * (没有 Handle, 所以连不上)。拖动时由我们自己把里面的节点一起带走 ——
+ * (没有 Handle, 所以连不上)。拖动时由我们自己把里面的节点一起带走 
  * 那是 UE5 的 DefaultCommentNodeMoveMode 行为。
  */
 /**
@@ -224,10 +224,10 @@ function tintOf(reg: BlueprintRegistry, g: BlueprintGraph, e: BlueprintEdge): st
  * React Flow 没有"注释"概念, 用**自定义节点 + 低 z-index** 模拟:
  * 它在节点之前渲染, 视觉上位于节点之下, 但不参与连线 (没有 Handle,
  * 所以连不上)。拖动由 React Flow 处理, "带走里面的节点"由我们自己在
- * use-graph-changes 里补 —— 那是 UE5 的 DefaultCommentNodeMoveMode。
+ * use-graph-changes 里补  那是 UE5 的 DefaultCommentNodeMoveMode。
  *
  * ⚠️ 必须**带完整的 comment 对象**过去, 不能塞进通用 node data:
- *    注释要渲染 title / body / tone, 而通用节点 data 里没有这些字段。
+ * 注释要渲染 title / body / tone, 而通用节点 data 里没有这些字段。
  */
 export function commentToNode(c: BlueprintComment): RfNode {
   return {
@@ -241,9 +241,9 @@ export function commentToNode(c: BlueprintComment): RfNode {
     /**
      * 注释必须在节点**下面**。
      *
-     * ⚠️ 这里曾经是 zIndex: 0, 与节点同级 —— 而注释是 append 在节点之后的,
-     *    同级时 DOM 靠后的盖在上面。注释一旦有了实心底色 (之前是空壳没暴露),
-     *    就会把整片节点糊住, 表现就是"打开页面节点内容全没了"。
+     * ⚠️ 这里曾经是 zIndex: 0, 与节点同级  而注释是 append 在节点之后的,
+     * 同级时 DOM 靠后的盖在上面。注释一旦有了实心底色 (之前是空壳没暴露),
+     * 就会把整片节点糊住, 表现就是"打开页面节点内容全没了"。
      *
      * UE5 里注释是垫在节点下面的分组底色, 所以用负值沉下去。
      */
@@ -274,9 +274,9 @@ function toRfPort(reg: BlueprintRegistry, p: PortDef): RfPort {
  *
  * 用于同步时的兼容性校验: 频道只是一个名字, 同名频道的另一端可能是另一套
  * 节点命名空间的图 (例如源码层 33 节点的图)。无条件接受会让整张图变成
- * "未注册" —— 架构层注册表不认识源码层的类型名, 实测一拖就 85 个错误。
+ * "未注册"  架构层注册表不认识源码层的类型名, 实测一拖就 85 个错误。
  *
- * 判据刻意宽松: 只查节点类型, 不查端口/连线 —— 端口可能随版本演进变化,
+ * 判据刻意宽松: 只查节点类型, 不查端口/连线  端口可能随版本演进变化,
  * 卡太死会让正常的同步全部失败。
  */
 export function graphMatchesRegistry(

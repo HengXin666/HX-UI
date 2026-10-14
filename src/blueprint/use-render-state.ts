@@ -12,7 +12,7 @@ import { useGraphChanges } from "./use-graph-changes";
  * ## 为什么不全量重建
  *
  * 之前是 `useMemo` 每次从 graph 换算 nodes, 而依赖链里有随 graph 变化的回调
- * (拖拽每帧都变)。于是**每帧重建整个 nodes 数组 -> 所有节点重新挂载** ——
+ * (拖拽每帧都变)。于是**每帧重建整个 nodes 数组 -> 所有节点重新挂载** 
  * 那就是闪屏的来源, 且拖得越久越卡。
  *
  * 官方做法: 用 useNodesState/useEdgesState 让库维护渲染态, 外部只在语义变化
@@ -20,9 +20,9 @@ import { useGraphChanges } from "./use-graph-changes";
  *
  * ## 位置以谁的为准
  *
- * **拖拽中以库内为准** —— 否则正在拖的节点会被外部的老坐标拽回去 (观感就是
+ * **拖拽中以库内为准**  否则正在拖的节点会被外部的老坐标拽回去 (观感就是
  * "拖不动/乱跳")。
- * **其余时候以外部为准** —— 否则撤销写回的旧坐标会被库内的新位置覆盖,
+ * **其余时候以外部为准**  否则撤销写回的旧坐标会被库内的新位置覆盖,
  * 表现是"按了撤销但节点不动"。
  */
 export function useRenderState(o: {
@@ -71,24 +71,49 @@ export function useRenderState(o: {
         onParamChange: onParam,
       });
       const sel = new Set(selected ?? []);
-      return [
-        ...r.nodes.map((n) => {
-          const old = byId.get(n.id);
-          return {
-            ...n,
-            selected: sel.has(String(n.data.bpId)),
-            ...(old && dragging ? { measured: old.measured, position: old.position } : {}),
-          };
-        }),
-        ...(graph.comments ?? []).map(commentToNode),
-      ];
+      const out: RfNode[] = r.nodes.map((n) => {
+        const old = byId.get(n.id);
+        return {
+          ...n,
+          selected: sel.has(String(n.data.bpId)),
+          /**
+           * `measured` 必须**无条件透传**, 不是只在拖拽时透传。
+           *
+           * 它是 React Flow 自己量出来的渲染尺寸, 我们的 BlueprintGraph 里没有
+           * 这个概念  所以每次从图重建渲染态时它天然缺席. 而库是用它决定
+           * 可见性的 (NodeWrapper: `visibility: hasDimensions ? 'visible' : 'hidden'`,
+           * hasDimensions 读 measured/width/initialWidth):
+           *
+           * 丢掉 measured -> 该节点整块 `visibility: hidden` -> 看起来"节点全没了".
+           *
+           * 触发它需要一个外部同步把图换掉 (每次同步都重建渲染态). 文档站 + 独立页
+           * 同频道时正好满足: 一端广播 -> 另一端 replace -> 每次 replace 都走一遍
+           * 这里 -> 整图变 hidden. 单开一个页面时没有外部 replace, 所以平时看不到.
+           *
+           * 之前只在 dragging 时保留, 那保住了"拖拽中不跳位", 却漏了"同步后不隐身".
+           */
+          ...(old?.measured ? { measured: old.measured } : {}),
+          /** 拖拽中以库内位置为准, 否则正在拖的节点会被外部的老坐标拽回去. */
+          ...(old && dragging ? { position: old.position } : {}),
+        };
+      });
+      for (const c of graph.comments ?? []) {
+        const node = commentToNode(c);
+        const old = byId.get(node.id);
+        /**
+         * 注释同理, 而且更脆: 它的 w/h 走的是 inline style (不进 nodeHasDimensions),
+         * 所以它**只能**靠 measured 才可见  一次同步丢掉就是永久隐身.
+         */
+        out.push(old?.measured ? { ...node, measured: old.measured } : node);
+      }
+      return out;
     });
     setRfEdges(
       toReactFlow(registry, graph, { connectedByNode: computeConnected(graph) }).edges
     );
   }, [registry, graph, errorsByNode, selected, setRfNodes, setRfEdges, onParam]);
 
-  /** 位置/删除 -> 落回我们的图 (真相仍是我们自己的图)。 */
+  /** 位置/删除 -> 落回我们的图 (真相仍是我们自己的图). */
   const { onNodesChange: syncNodes, onEdgesChange: syncEdges } = useGraphChanges({
     graph,
     onGraphChange,

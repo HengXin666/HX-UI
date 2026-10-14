@@ -3,12 +3,12 @@
 import type { JSX } from "react";
 
 /**
- * 画布网格 —— 对齐 UE5 的双层网格。
+ * 画布网格  对齐 UE5 的双层网格。
  *
  * ## UE5 的实际规格
  *
  * 网格粒度是 `UEditorStyleSettings::GridSnapSize`, 默认 **16**。
- * 细线每 16px 一条, 每 8 格 (128px) 一条更亮的主线 —— 缩得很远时靠主线
+ * 细线每 16px 一条, 每 8 格 (128px) 一条更亮的主线  缩得很远时靠主线
  * 判断大致位置, 拉近时靠细线对齐。
  *
  * 颜色官方没公开, 这里用极低透明度的白/黑 (走 --bp-grid-line 令牌),
@@ -17,7 +17,7 @@ import type { JSX } from "react";
  * ## 为什么用 background-image 而不是 SVG
  *
  * 一层 div + 两条 linear-gradient 就能画出来, 缩放时只改 background-size
- * 与 position —— 不产生任何 DOM 节点。而 SVG 网格要生成上百条 line,
+ * 与 position  不产生任何 DOM 节点。而 SVG 网格要生成上百条 line,
  * 平移缩放时每帧重排, 大图上会明显掉帧。
  *
  * 代价是"对齐到视口"要手动算 position, 但那只是两个减法。

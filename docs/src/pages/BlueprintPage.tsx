@@ -15,7 +15,7 @@ import { H2, P, Preview, PropsTable, Callout, Code, CodeBlock as DocCode } from 
  * 蓝图库文档页。
  *
  * 每个示例都是**活的**: 拖一条线、连错了、跑到哪个分支, 都在这里看得见。
- * 静态截图说明不了"连接合法性"这类东西 —— 它的全部价值在于实时反馈。
+ * 静态截图说明不了"连接合法性"这类东西  它的全部价值在于实时反馈。
  */
 
 const REG_DEFINE = `import { createRegistry } from "@hx/ui";
@@ -39,7 +39,7 @@ reg.node({
   evaluate: ({ inputs, params }) => ({ out: blur(inputs.src, params.k) }),
 });`;
 
-const REG_EXEC = `// 有副作用的节点必须有 execIn —— 否则它的求值时机无法确定
+const REG_EXEC = `// 有副作用的节点必须有 execIn  否则它的求值时机无法确定
 reg.node({
   type: "save",
   label: "保存文件",
@@ -67,7 +67,7 @@ reg.validator("save", ({ params }) => {
 const v = validateGraph(reg, graph);
 if (!v.ok) return;   // v.issues 里每条都带 code / nodeIds / edgeIds`;
 
-const CONNECT_RULE = `// 连接判定只有一个函数, 拖拽过程与落地都调它 —— 判据不能有两份
+const CONNECT_RULE = `// 连接判定只有一个函数, 拖拽过程与落地都调它  判据不能有两份
 const r = canConnect(reg, graph, { node: "a", port: "out" }, { node: "b", port: "src" });
 
 if ("reason" in r) {
@@ -105,7 +105,7 @@ function EditorDemo(): JSX.Element {
   /**
    * 求值并把"被走到的打印节点"的行收上来。
    *
-   * 关键点是**只有被走到的分支才求值** —— 把 n2 改成 3 再点运行,
+   * 关键点是**只有被走到的分支才求值**  把 n2 改成 3 再点运行,
    * 会看到走的是"假"那条。这正是执行流存在的理由。
    */
   const run = async () => {
@@ -221,13 +221,13 @@ function SubgraphDemo(): JSX.Element {
           <>
             外层少了三个节点, 多了一个「算比较」节点。它对外只有
             <Code>{sg.outputs?.map((p) => p.id).join(", ") || "无"}</Code> 一个输出口,
-            输入口为零 —— 数值节点被关在里面了。原来那条「比较结果 → 分支条件」
+            输入口为零  数值节点被关在里面了。原来那条「比较结果 → 分支条件」
             的边自动改接到子图节点身上。双击它可以进入。
           </>
         )}
         {step === "展开后" && (
           <>
-            展开后节点数与边数回到原样, 且求值结果与折叠前一致 ——
+            展开后节点数与边数回到原样, 且求值结果与折叠前一致 
             这是折叠语义正确性的硬判据。子图定义<strong>默认保留</strong>:
             一个子图可能有多个调用点, 展开其中一个就把定义删了, 别的调用点会立刻悬空。
           </>
@@ -271,7 +271,7 @@ function CommentDemo(): JSX.Element {
       <BlueprintCanvas registry={reg} graph={g} height={300} />
 
       <div className="text-[11.5px] leading-relaxed text-muted-foreground">
-        判据是「<strong>完全落在框里</strong>」而不是「相交」。相交会让一次拖动带走半个图 ——
+        判据是「<strong>完全落在框里</strong>」而不是「相交」。相交会让一次拖动带走半个图 
         注释框通常画得比内容大一圈, 相交判定几乎必然命中相邻节点。
         完全包含保守但可预测: 你能一眼看出哪些会被带走。
         注释不是节点: 不连线、不参与求值、不影响校验。
@@ -372,7 +372,7 @@ function CycleDemo(): JSX.Element {
           <div className="space-y-1">
             <div className="text-destructive">检出 {cycles.length} 个环: {cycles.map((c) => c.join(" → ")).join(" ｜ ")}</div>
             <div className="text-muted-foreground">
-              环的报错挂在**边**上而不是节点上 —— 删掉环上任意一条边都能解开, 挂节点会让人以为要删节点。
+              环的报错挂在**边**上而不是节点上  删掉环上任意一条边都能解开, 挂节点会让人以为要删节点。
             </div>
           </div>
         )}
@@ -412,7 +412,7 @@ function CanvasOnlyDemo(): JSX.Element {
         }}
       />
       <div className="text-[11px] text-muted-foreground">
-        这里没有 useBlueprint、没有校验、没有左侧面板 —— Canvas 是纯展示 + 事件, 判据你自己调。
+        这里没有 useBlueprint、没有校验、没有左侧面板  Canvas 是纯展示 + 事件, 判据你自己调。
       </div>
     </div>
   );
@@ -440,20 +440,20 @@ export function BlueprintPage(): JSX.Element {
 
       <H2>定义一个节点</H2>
       <P>
-        注册中心是普通的 TS 对象, 不用 Context —— 节点定义是静态的,
+        注册中心是普通的 TS 对象, 不用 Context  节点定义是静态的,
         而且校验函数在 React 之外 (后端、单测) 也要能跑。
       </P>
       <DocCode code={REG_DEFINE} />
       <P>
         有副作用的节点必须挂 <Code>execIn</Code>。这不是形式主义:
-        没有执行入口的节点, 求值时机只能靠拓扑序, 而拓扑序里"分支"没有意义 ——
+        没有执行入口的节点, 求值时机只能靠拓扑序, 而拓扑序里"分支"没有意义 
         两条分支的下游都会被算到。
       </P>
       <DocCode code={REG_EXEC} />
 
       <H2>折叠为子图 (进入 / 展开)</H2>
       <P>
-        几十上百个节点的图靠缩放是找不完的 —— 折叠成子图是唯一能让它保持可读的手段。
+        几十上百个节点的图靠缩放是找不完的  折叠成子图是唯一能让它保持可读的手段。
         框选一批节点 → 折叠，得到一个新的子图节点，<strong>双击进入</strong>里头那片，
         面包屑可以退回外层。
       </P>
@@ -463,18 +463,18 @@ export function BlueprintPage(): JSX.Element {
       <P>
         关键设计：子图的进出端点做成<strong>真实节点</strong>（隧道）。
         这样子图内部的连线就是普通的边，于是校验、环检测、拓扑序、求值
-        <strong>全都不需要为子图写任何特例</strong> —— 它们看到的就是一张普通的图。
+        <strong>全都不需要为子图写任何特例</strong>  它们看到的就是一张普通的图。
         代价是多一个要解释的概念，但比让每个下游函数都判一次「我是不是在子图里」好得多。
       </P>
       <Callout title="子图定义默认保留">
-        一个子图可以有多个调用点（改一处全变）。展开其中一个时，定义会留着 ——
+        一个子图可以有多个调用点（改一处全变）。展开其中一个时，定义会留着 
         否则别的调用点会立刻变成悬空引用。只有确认没有别的引用了才删。
       </Callout>
 
       <H2>区间注释</H2>
       <P>
         就是 UE5 的 Comment：画布上一个带标题的矩形，给一片节点加个说明框。
-        它<strong>不是节点</strong> —— 不连线、不参与求值、不影响校验。
+        它<strong>不是节点</strong>  不连线、不参与求值、不影响校验。
       </P>
       <Preview align="stretch">
         <CommentDemo />
@@ -485,7 +485,7 @@ const r = commentAround(reg, graph, selectedIds, { title: "这一段负责鉴权
 // 拖动注释: 完全落在框里的节点跟着走, 框外的不动
 const next = moveCommentWithNodes(reg, graph, commentId, { dx: 40, dy: 24 });`} />
       <P>
-        只有<strong>完全落在框里</strong>的节点才会被带走。点在注释空白处会穿透过去起框选 ——
+        只有<strong>完全落在框里</strong>的节点才会被带走。点在注释空白处会穿透过去起框选 
         否则注释会挡住整片区域的操作。
       </P>
 
@@ -496,7 +496,7 @@ const next = moveCommentWithNodes(reg, graph, commentId, { dx: 40, dy: 24 });`} 
       </P>
       <DocCode code={CONNECT_RULE} />
       <Callout title="独占输入">
-        独占输入被占时不算错 —— 新线直接顶掉旧线 (UE5 与 ComfyUI 都是这样),
+        独占输入被占时不算错  新线直接顶掉旧线 (UE5 与 ComfyUI 都是这样),
         并回传 <Code>replaces</Code> 让 UI 提示"将替换"。报个错逼人先去删线是纯粹的折磨。
       </Callout>
 
@@ -522,7 +522,7 @@ const next = moveCommentWithNodes(reg, graph, commentId, { dx: 40, dy: 24 });`} 
       <H2>求值</H2>
       <P>
         按拓扑序 + 结果缓存, 保证菱形图上公共上游只算一次。有执行流时沿 exec 边走,
-        <strong>没走到的分支不求值</strong> —— 这正是分支的语义。
+        <strong>没走到的分支不求值</strong>  这正是分支的语义。
       </P>
       <DocCode code={EVAL_CODE} />
       <Callout title="求值是可选项">
@@ -532,7 +532,7 @@ const next = moveCommentWithNodes(reg, graph, commentId, { dx: 40, dy: 24 });`} 
 
       <H2>序列化</H2>
       <P>
-        格式就是一个 JSON, 不加密、不加版本号以外的元数据 —— 蓝图是用户资产,
+        格式就是一个 JSON, 不加密、不加版本号以外的元数据  蓝图是用户资产,
         要能进 git diff、能被人手改。
       </P>
       <DocCode code={SERIAL_CODE} />
@@ -571,7 +571,7 @@ const next = moveCommentWithNodes(reg, graph, commentId, { dx: 40, dy: 24 });`} 
 
       <H2>三条硬约定</H2>
       <P>
-        一、端口一律竖排, 行高固定 20px —— 那个数值与 <Code>geometry.PORT_ROW</Code> 绑死,
+        一、端口一律竖排, 行高固定 20px  那个数值与 <Code>geometry.PORT_ROW</Code> 绑死,
         改一处不改另一处, 连线端点会偏离圆点。
       </P>
       <P>
@@ -580,7 +580,7 @@ const next = moveCommentWithNodes(reg, graph, commentId, { dx: 40, dy: 24 });`} 
       </P>
       <P>
         三、颜色走 token。端口圆点的颜色由 <Code>DataTypeDef.colorClass</Code> 给,
-        组件里不出现硬编色值 —— 换肤时这里要跟着变。
+        组件里不出现硬编色值  换肤时这里要跟着变。
       </P>
     </div>
   );

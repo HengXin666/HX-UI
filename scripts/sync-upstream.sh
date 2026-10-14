@@ -5,7 +5,7 @@
 #   上游 packages/ui 与 theme-ui 都**不发布** (package.json 的 main 直接指 ./src/index.ts),
 #   npm 上没有对应制品。观感 (那一串串类名) 只存在于源码里, 所以只能拷。
 #
-# 拷的时候**只改包名引用**, 视觉类名一个字不动 —— 那是这套观感的全部来源。
+# 拷的时候**只改包名引用**, 视觉类名一个字不动  那是这套观感的全部来源。
 #
 # 用法: ./scripts/sync-upstream.sh [上游路径]
 set -euo pipefail

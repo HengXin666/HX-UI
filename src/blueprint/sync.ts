@@ -6,21 +6,21 @@ import { parseGraph, serializeGraph } from "./serialize";
  *
  * ## 为什么需要
  *
- * 蓝图开在独立页面里编辑, 而用户可能开了好几个 —— 或者文档站那个页面
+ * 蓝图开在独立页面里编辑, 而用户可能开了好几个  或者文档站那个页面
  * 也开着同一张图。不同步的话, 两个页面各自改各自的, 后存的那份会覆盖
  * 前一份, 而用户看到的却是"我明明改了, 怎么没了"。
  *
  * ## 三条可选的路, 以及为什么选 BroadcastChannel
  *
- *   1. **BroadcastChannel** —— 同源多标签页直连。零依赖、零后端、零磁盘,
- *      消息内存传递, 延迟亚毫秒。缺点: 只在**打开着的**页面之间同步,
- *      全关了就没了; 且不能跨浏览器/跨设备。
- *   2. **localStorage + storage 事件** —— 能持久化, 但它是"写全量字符串",
- *      一张大图每次改动都全量 JSON 序列化一遍并落盘, 高频拖节点时会很卡
- *      (拖一次 = 一次 stringify + 一次磁盘写)。而且 storage 事件**不发给
- *      写入的那个页面**, 处理起来容易绕。
- *   3. **Web Locks + SharedWorker / 轮询文件** —— 最强, 但要一个 worker 文件
- *      与构建配置, 且 File System Access API 只有 Chromium 完整支持。
+ * 1. **BroadcastChannel**  同源多标签页直连。零依赖、零后端、零磁盘,
+ * 消息内存传递, 延迟亚毫秒。缺点: 只在**打开着的**页面之间同步,
+ * 全关了就没了; 且不能跨浏览器/跨设备。
+ * 2. **localStorage + storage 事件**  能持久化, 但它是"写全量字符串",
+ * 一张大图每次改动都全量 JSON 序列化一遍并落盘, 高频拖节点时会很卡
+ * (拖一次 = 一次 stringify + 一次磁盘写)。而且 storage 事件**不发给
+ * 写入的那个页面**, 处理起来容易绕。
+ * 3. **Web Locks + SharedWorker / 轮询文件**  最强, 但要一个 worker 文件
+ * 与构建配置, 且 File System Access API 只有 Chromium 完整支持。
  *
  * 选 1 作为**主通道**, 并把它设计成"可插拔的 Transport": 想落盘就把一个
  * localStorage / 文件的 transport 追加进来, 同步层不用改。
@@ -28,10 +28,10 @@ import { parseGraph, serializeGraph } from "./serialize";
  * ## 关于"基于本地文件"
  *
  * 浏览器不能像 Node 那样直接写任意路径。能落盘的只有两条路:
- *   - File System Access API (`showSaveFilePicker`): 需要用户手动授权一次,
- *     之后可以拿到 FileSystemFileHandle 并**持久化到 IndexedDB**, 下次免授权。
- *     这是唯一"真的是文件"的路, 但 Chromium 系才有。
- *   - localStorage / IndexedDB: 都在浏览器私有目录里, 不是用户可见的文件。
+ * - File System Access API (`showSaveFilePicker`): 需要用户手动授权一次,
+ * 之后可以拿到 FileSystemFileHandle 并**持久化到 IndexedDB**, 下次免授权。
+ * 这是唯一"真的是文件"的路, 但 Chromium 系才有。
+ * - localStorage / IndexedDB: 都在浏览器私有目录里, 不是用户可见的文件。
  *
  * 所以这里的取舍是: **内存同步用 BroadcastChannel 做默认, 落盘做成可选
  * transport**。不为了"文件"这个词去强推一个兼容性差的方案。
@@ -72,7 +72,7 @@ export function createBroadcastTransport(
  * 它是**持久化**的那一路: 写入全量 JSON, 靠 storage 事件广播。
  * 只在 BroadcastChannel 不可用、或明确要求落盘时启用。
  *
- * 节流放在外面 (SyncChannel 层), 这里不自己节流 ——
+ * 节流放在外面 (SyncChannel 层), 这里不自己节流 
  * transport 只管"怎么传", 不管"多久传一次"。
  */
 export function createStorageTransport(
@@ -86,7 +86,7 @@ export function createStorageTransport(
       const parsed = JSON.parse(ev.newValue);
       if (parsed && typeof parsed === "object" && typeof parsed.kind === "string") onMessage(parsed);
     } catch {
-      // 别的页面写了非本协议的键, 忽略 —— 不该让一个脏键打断同步
+      // 别的页面写了非本协议的键, 忽略  不该让一个脏键打断同步
     }
   };
   window.addEventListener("storage", onStorage);
@@ -107,7 +107,7 @@ export interface SyncOptions {
   readonly channel?: string;
   /** 节流间隔 (ms)。拖节点时每帧都发会把主线程打满。 */
   readonly throttleMs?: number;
-  /** 是否启用 localStorage 持久化 (默认关 —— 它不是免费的)。 */
+  /** 是否启用 localStorage 持久化 (默认关  它不是免费的)。 */
   readonly persist?: boolean;
   /** 收到远端图时。 */
   readonly onRemote: (graph: BlueprintGraph) => void;
@@ -116,7 +116,7 @@ export interface SyncOptions {
    *
    * 为什么必须要有: 同步频道只是一个名字, 谁都可以用同一个名字开页面。
    * 若一端是源码层图 (33 节点)、另一端是架构层图 (10 节点), 无条件接受
-   * 对方推来的图就会让**所有节点变成"未注册"** —— 架构层注册表不认识
+   * 对方推来的图就会让**所有节点变成"未注册"**  架构层注册表不认识
    * 源码层的类型名。实测: 拖一下触发广播, 对面立刻 85 个错误。
    *
    * 返回 false 表示"这张图我不认", 该消息被丢弃 (本地图保持不动)。
@@ -137,11 +137,11 @@ export interface SyncOptions {
  * ```
  *
  * 两个关键行为:
- *   - **回声抑制**: 两种 transport 都不会把消息发回给写入方, 但仍然按
- *     origin id 过滤一遍, 这样换 transport 时行为不依赖它的内部保证。
- *   - **后加入者拉全量**: 新开的页面不知道当前状态, 所以发一条 `request`,
- *     已有页面回一条 `graph`。谁先回算谁的 (不做仲裁 —— 同时有多个页面
- *     改同一张图本身就是用户该自己避免的用法)。
+ * - **回声抑制**: 两种 transport 都不会把消息发回给写入方, 但仍然按
+ * origin id 过滤一遍, 这样换 transport 时行为不依赖它的内部保证。
+ * - **后加入者拉全量**: 新开的页面不知道当前状态, 所以发一条 `request`,
+ * 已有页面回一条 `graph`。谁先回算谁的 (不做仲裁  同时有多个页面
+ * 改同一张图本身就是用户该自己避免的用法)。
  */
 export class SyncChannel {
   private readonly transports: SyncTransport[] = [];
@@ -152,6 +152,15 @@ export class SyncChannel {
   private pending: BlueprintGraph | null = null;
   private rev = 0;
   private closed = false;
+  /**
+   * 最近一次**从对端收到**的图, 让 `publish()` 认得出"这份图不是我改的"并跳过广播.
+   *
+   * 不跳过就会自激: 一端广播 → 对端收下并 `onRemote` → 应用层存图触发"图变了" → 又广播
+   * 回去. rev 单调递增且永远不会被 `<` 拦住, 所以它是无界的 (实测一次拖拽上百次广播).
+   * 用**引用相等**判据而不是 rev: 调用方的 `onRemote` 通常把收到的对象原样存起来, 下一次
+   * publish 拿到的就是同一个引用; 本地改动一定构造新对象, 引用必然不同.
+   */
+  private lastRemote: BlueprintGraph | null = null;
 
   constructor(opts: SyncOptions) {
     this.opts = opts;
@@ -193,6 +202,8 @@ export class SyncChannel {
       // 兼容性优先于版本: 不认识的图再新也不能收, 否则整张图会变非法
       if (this.opts.accept && !this.opts.accept(msg.graph)) return;
       this.rev = msg.rev;
+      // 记下"这份来自对端", 免得应用层把它当成自己的改动又广播回去 (自激)
+      this.lastRemote = msg.graph;
       this.opts.onRemote(msg.graph);
     }
   }
@@ -202,10 +213,15 @@ export class SyncChannel {
    *
    * 节流是这里的关键: 拖一个节点每帧都会触发 onChange, 不节流的话
    * 每帧一次 JSON 序列化 + 广播会把主线程打满。
-   * 节流窗口内只保留**最后一次** —— 中间态没有意义, 用户要的是最终位置。
+   * 节流窗口内只保留**最后一次**  中间态没有意义, 用户要的是最终位置。
    */
   publish(graph: BlueprintGraph): void {
     if (this.closed) return;
+    /**
+     * 回声抑制 (第二道): 刚收下的远端图不该再被广播回去 (见 `lastRemote`).
+     * 必须放在这里而不是 receive 里: 收到消息时还不知道调用方会不会把它交回来.
+     */
+    if (graph === this.lastRemote) return;
     this.pending = graph;
     if (this.timer) return;
     this.timer = setTimeout(() => {
@@ -218,7 +234,7 @@ export class SyncChannel {
     }, this.throttleMs);
   }
 
-  /** 立即发出待发的改动 (卸载前用, 免得最后一笔丢了)。 */
+  /** 立即发出待发的改动 (卸载前用, 免得最后一笔丢了). */
   flush(): void {
     if (this.timer) {
       clearTimeout(this.timer);
@@ -242,18 +258,18 @@ export class SyncChannel {
 }
 
 /**
- * 从 URL 读图。独立页面用它拿到初始状态, 免得一开就是空白再等同步。
+ * 从 URL 读图. 独立页面用它拿到初始状态, 免得一开就是空白再等同步.
  *
  * 支持两种:
- *   - `#graph=<base64>`  直接内联 (小图够用, 大图会让 URL 变得很长)
- *   - `?channel=<name>`  只给频道名, 内容靠同步拉
+ * - `#graph=<base64>`  直接内联 (小图够用, 大图会让 URL 变得很长)
+ * - `?channel=<name>`  只给频道名, 内容靠同步拉
  */
 export function graphFromUrl(hash: string): BlueprintGraph | null {
   /**
-   * 分隔符是 `&` **或** `#` 或 `?`。
+   * 分隔符是 `&` **或** `#` 或 `?`.
    *
-   * 只写 `(?:^|&)` 时 `#graph=...` 匹配不到 —— `#` 既不是行首也不是 `&`,
-   * 于是那种 URL 会悄悄失效, 页面打开是空的且不报错。
+   * 只写 `(?:^|&)` 时 `#graph=...` 匹配不到  `#` 既不是行首也不是 `&`,
+   * 于是那种 URL 会悄悄失效, 页面打开是空的且不报错.
    */
   const m = /(?:^|[&#?])graph=([^&]+)/.exec(hash);
   if (!m) return null;
@@ -268,7 +284,7 @@ export function graphFromUrl(hash: string): BlueprintGraph | null {
   }
 }
 
-/** 把图编码进 URL。超过阈值返回 null —— 别把 URL 撑爆。 */
+/** 把图编码进 URL. 超过阈值返回 null  别把 URL 撑爆. */
 export function graphToHash(graph: BlueprintGraph, maxChars = 8000): string | null {
   try {
     const text = JSON.stringify(serializeGraph(graph));

@@ -8,7 +8,7 @@ import { DOCS, GROUPS, type DocEntry } from "../nav";
  * ## 为什么值得做
  *
  * 38 个页面分 4 组挤在左栏, 找"那个能出提示的"只能靠眼睛扫。
- * 实测这是文档站最高频的动作, 而它此前**完全不存在** —— 没有任何快捷键处理。
+ * 实测这是文档站最高频的动作, 而它此前**完全不存在**  没有任何快捷键处理。
  *
  * ## 匹配策略: 子序列 + 中文子串双路
  *
@@ -131,7 +131,7 @@ export function SearchDialog({
               <div key={g}>
                 <div className="px-2 pb-1 pt-2 text-[10.5px] font-medium text-muted-foreground/60">{g}</div>
                 {list.map((h) => {
-                  // 用全局下标定位光标项 —— 分组后顺序变了, 不能用组内下标
+                  // 用全局下标定位光标项  分组后顺序变了, 不能用组内下标
                   const idx = hits.indexOf(h);
                   return (
                     <button

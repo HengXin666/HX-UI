@@ -7,15 +7,15 @@ import { Badge } from "./Badge";
  *
  * ## 为什么需要它 (语义, 不是装饰)
  *
- * 代理系统有**三层**, 而这三层经常被混为一个词 "节点" —— 那会导致沟通与代码
+ * 代理系统有**三层**, 而这三层经常被混为一个词 "节点"  那会导致沟通与代码
  * 双双出错 (把"入口数"当成"节点数"会得到完全错误的量级,
  * 且删除入口会连带断掉所有出口)。
  *
  * ```text
- *   listener  入口    对外端口 + 协议, 绑定一个 group
- *   group     策略    虚拟选择器 (url-test / manual / round-robin), **本身不含服务器**
- *   node      实体    真实上游服务器 (协议 / 指纹 / 加密配置)
- *   关系:  listener  ->  group  ->  (按策略筛出的)  node
+ * listener  入口    对外端口 + 协议, 绑定一个 group
+ * group     策略    虚拟选择器 (url-test / manual / round-robin), **本身不含服务器**
+ * node      实体    真实上游服务器 (协议 / 指纹 / 加密配置)
+ * 关系:  listener  ->  group  ->  (按策略筛出的)  node
  * ```
  *
  * 本组件把这层关系**画出来**, 而不是让使用方自己拼 `<div>`:
@@ -23,15 +23,15 @@ import { Badge } from "./Badge";
  *
  * ## 视觉约定 (沿用本库其它版式件)
  * ```text
- *   1. 普通面板零阴影 —— 层级靠 1px 边框 + 半透明底
- *   2. 层与层之间用一条竖直的细线 + 圆点连起来, 表示"上下级"而不是"并列"
- *   3. 全线条 1px; 状态色只出现在 Badge 上, 不染整行
+ * 1. 普通面板零阴影  层级靠 1px 边框 + 半透明底
+ * 2. 层与层之间用一条竖直的细线 + 圆点连起来, 表示"上下级"而不是"并列"
+ * 3. 全线条 1px; 状态色只出现在 Badge 上, 不染整行
  * ```
  */
 
 /** 链路的一层。`kind` 决定它画在哪个位置、用什么措辞。 */
 export interface ProxyLayer {
-  /** `listener` 入口 / `group` 策略 / `node` 实体 —— 决定语义与图标色。 */
+  /** `listener` 入口 / `group` 策略 / `node` 实体  决定语义与图标色。 */
   readonly kind: "listener" | "group" | "node";
   /** 层标题 (如 "hx-shared-inbound-standard-mixed")。 */
   readonly title: string;
@@ -60,7 +60,7 @@ const KIND_META: Record<ProxyLayer["kind"], { label: string; hint: string; dot: 
   },
   group: {
     label: "策略",
-    hint: "虚拟选择器 —— 本身不持有服务器",
+    hint: "虚拟选择器  本身不持有服务器",
     dot: "bg-amber-400",
   },
   node: {
@@ -74,7 +74,7 @@ const KIND_META: Record<ProxyLayer["kind"], { label: string; hint: string; dot: 
  * 一层。左侧是"层"标记 + 连接线, 右侧是标题/次要信息/状态。
  *
  * 为什么层标记用 `KIND_META` 而不是让使用方传:
- * 这三层的名字与含义是**协议事实**, 不是样式选择 —— 写死在组件里才能保证
+ * 这三层的名字与含义是**协议事实**, 不是样式选择  写死在组件里才能保证
  * 每个使用方说同一件事 (这正是这个组件要解决的问题)。
  */
 function Layer({ layer, last, showConnector }: {
@@ -94,7 +94,7 @@ function Layer({ layer, last, showConnector }: {
       )}
       <div className={cn("min-w-0 flex-1", !last && "pb-3")}>
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          {/* 层名 (入口/策略/实体) —— 这个词就是要让人不再混概念 */}
+          {/* 层名 (入口/策略/实体)  这个词就是要让人不再混概念 */}
           <span className="shrink-0 rounded border border-border/60 px-1 py-px text-[10px] font-medium text-muted-foreground">
             {meta.label}
           </span>
@@ -126,13 +126,13 @@ function Layer({ layer, last, showConnector }: {
  *
  * ```tsx
  * <ProxyChain layers={[
- *   { kind: "listener", title: "hx-shared-inbound-standard-mixed", meta: "mixed · 7890", status: "启用", tone: "success" },
- *   { kind: "group",    title: "良心云", meta: "url-test · 41 候选", status: "url-test" },
- *   { kind: "node",     title: "lxyus1.777078.xyz", meta: "hysteria2", status: "healthy", tone: "success" },
+ * { kind: "listener", title: "hx-shared-inbound-standard-mixed", meta: "mixed · 7890", status: "启用", tone: "success" },
+ * { kind: "group",    title: "良心云", meta: "url-test · 41 候选", status: "url-test" },
+ * { kind: "node",     title: "lxyus1.777078.xyz", meta: "hysteria2", status: "healthy", tone: "success" },
  * ]} />
  * ```
  *
- * 层数不固定 (一个策略组后面可能跟多个实体), 但 `kind` 的顺序应当符合 `listener → group → node` ——
+ * 层数不固定 (一个策略组后面可能跟多个实体), 但 `kind` 的顺序应当符合 `listener → group → node` 
  * 组件不强制校验, 因为真实系统里也可能只想看其中两段。
  */
 export function ProxyChain({ layers, className, showConnector = true }: ProxyChainProps): JSX.Element {
@@ -151,7 +151,7 @@ export function ProxyChain({ layers, className, showConnector = true }: ProxyCha
 }
 
 /**
- * 三层的**图例** —— 放在列表页顶部, 一句话说清谁是谁。
+ * 三层的**图例**  放在列表页顶部, 一句话说清谁是谁。
  *
  * 单独做成一个件而不是让使用方写文案, 理由同上: 这三句是协议事实,
  * 每个页面都该说同一遍。

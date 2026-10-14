@@ -12,7 +12,7 @@ export function FeedbackPage(): JSX.Element {
       <H2>Progress</H2>
       <P>
         用 radix 的 Root 而不是一个 div, 因为它把 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">role="progressbar"</code> 与
-        aria-valuenow / min / max 一起给齐了。手写 div 的进度条在读屏软件里是<b className="text-foreground">静默</b>的 ——
+        aria-valuenow / min / max 一起给齐了。手写 div 的进度条在读屏软件里是<b className="text-foreground">静默</b>的 
         视觉上有条, 无障碍上什么都没有, 而且不写 aria 不会有任何报错提示。
       </P>
       <Preview
@@ -68,7 +68,7 @@ export function FeedbackPage(): JSX.Element {
 
       <H2>Skeleton</H2>
       <P>
-        只做一件事: 占住位置。不要用它模拟真实内容的形状细节 —— 那会变成一份要跟着真实布局
+        只做一件事: 占住位置。不要用它模拟真实内容的形状细节  那会变成一份要跟着真实布局
         同步维护的赝品, 界面一改就对不上。宽度用比例 (w-2/3) 而不是像素, 嵌进任何宽度的容器都不会溢出。
       </P>
       <Preview
@@ -86,7 +86,7 @@ export function FeedbackPage(): JSX.Element {
 
       <H2>ScrollArea</H2>
       <P>
-        容器里要放带圆角或浮层的窄条内容时用它 —— 原生滚动条在 Linux / Windows 上是一条
+        容器里要放带圆角或浮层的窄条内容时用它  原生滚动条在 Linux / Windows 上是一条
         几十像素宽的实心条, 压在圆角卡片边上会露出直角。整页滚动不需要它。
       </P>
       <Preview

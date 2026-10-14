@@ -2,7 +2,7 @@
  * e2e 总入口。
  *
  * 逐个跑三个套件, 汇总退出码。单独成入口是因为门禁只能挂一条命令,
- * 而"外观 / 功能 / 持久化"是可分开诊断的三块 —— 一起跑但分别报告。
+ * 而"外观 / 功能 / 持久化"是可分开诊断的三块  一起跑但分别报告。
  *
  * 依赖 docs dev server (127.0.0.1:5600)。没起就自己起一个, 跑完关掉。
  */
@@ -12,6 +12,10 @@ import path from "node:path";
 const SUITES = ["visual.mjs", "blueprint.mjs", "persist.mjs", "reactflow.mjs"];
 const PORT = 5600;
 
+/**
+ * HX-UI 接入 Agent Notes v2
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+ */
 async function alive() {
   try {
     const r = await fetch(`http://127.0.0.1:${PORT}/blueprint.html`, { signal: AbortSignal.timeout(1500) });
@@ -24,6 +28,8 @@ async function alive() {
 /**
  * 没有现成的 server 时用 vite preview 起已构建的 docs/dist (门禁声明了 requires=dist),
  * 跑完关掉; CI 的干净 runner 上不会有人提前起 dev server.
+ *
+ * .agents/notes/implemented/process/2026-10-14-pr3-quality-gates-ci-fixes.md
  */
 let server = null;
 if (!(await alive())) {

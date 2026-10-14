@@ -14,13 +14,13 @@ import {
 import { H2, P } from "../components/DocKit";
 
 /**
- * 完整设置页 —— 照 open-vetta 的三级布局做。
+ * 完整设置页  照 open-vetta 的三级布局做。
  *
  * 结构 (从左到右):
- *   主侧栏 240px  |  设置二级栏 200px  |  内容区
- *   二级栏右侧有一条**浮着的 1px 竖线**, 底部留 44px 不到底。
+ * 主侧栏 240px  |  设置二级栏 200px  |  内容区
+ * 二级栏右侧有一条**浮着的 1px 竖线**, 底部留 44px 不到底。
  *
- * 这里没有用"页签"导航 —— 上游是靠左栏定位的, 顶部不重复一套页签。
+ * 这里没有用"页签"导航  上游是靠左栏定位的, 顶部不重复一套页签。
  */
 
 const TABS: SettingsSidebarTabItem[] = [
@@ -192,7 +192,7 @@ export function SettingsPageDemo(): JSX.Element {
       <H2>预览</H2>
       <P>
         下面的实例按真实窗口比例渲染。三级布局需要足够宽度: 240 (主侧栏) + 200 (设置栏) + 680 (版心), 再加两侧留白,
-        所以画布固定 1440px —— 这是这套布局的固有宽度需求, 不是排版失误。
+        所以画布固定 1440px  这是这套布局的固有宽度需求, 不是排版失误。
         文档正文只有 860px, 所以它在这里会被右边缘裁掉一点; 想看完整效果把浏览器窗口拉宽即可。
       </P>
       <div className="overflow-hidden rounded-xl border border-border" style={{ height: 720 }}>

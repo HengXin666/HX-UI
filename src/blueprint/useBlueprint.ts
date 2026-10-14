@@ -13,7 +13,7 @@ import type { GraphValidation } from "./types";
  * ## 受控 / 非受控
  *
  * 跟本库其它组件一个路子: 给 `value` 就是受控, 给 `defaultValue` 就是非受控。
- * 受控模式下所有命令原样转发给 onChange, 内部不留影子 ——
+ * 受控模式下所有命令原样转发给 onChange, 内部不留影子 
  * 留影子会出现"UI 显示了但外部没变"这种最难查的错位。
  *
  * ## 命令而不是 setState
@@ -56,7 +56,7 @@ export interface BlueprintApi {
 
   /** 连线。返回 false = 没连上 (原因见 check)。 */
   connect(from: PortRef, to: PortRef): boolean;
-  /** 拖线前先问一次 —— 不落库, 只拿结论给 UI 染色。 */
+  /** 拖线前先问一次  不落库, 只拿结论给 UI 染色。 */
   check(from: PortRef, to: PortRef): ConnectResult;
   disconnect(edgeId: string): void;
   /** 断开某输入口上的所有线。 */
@@ -106,7 +106,7 @@ export function useBlueprint(opts: UseBlueprintOptions): BlueprintApi {
     [controlled, onChange]
   );
 
-  /** 校验。按 graph 引用缓存 —— 拖坐标每帧变, 但结构没变时不该重算。 */
+  /** 校验。按 graph 引用缓存  拖坐标每帧变, 但结构没变时不该重算。 */
   const validation = useMemo(
     () => validateGraph(registry, graph, { requireEntry }),
     [registry, graph, requireEntry]
@@ -217,7 +217,7 @@ export function useBlueprint(opts: UseBlueprintOptions): BlueprintApi {
     [graph, commit]
   );
 
-  /** 自动布局。纯函数算坐标, 再整体替换 —— 一次提交, 不留中间态。 */
+  /** 自动布局。纯函数算坐标, 再整体替换  一次提交, 不留中间态。 */
   const doLayout: BlueprintApi["autoLayout"] = useCallback(
     (o) => {
       const layout = autoLayout(registry, graph, o ?? {});
@@ -249,7 +249,7 @@ export function useBlueprint(opts: UseBlueprintOptions): BlueprintApi {
     (nodeId: string) => {
       const node = graph.nodes.find((n) => n.id === nodeId);
       if (!node?.subgraph) return false;
-      // 还有别的调用点就把定义留着, 否则连定义一起删 —— 不然子图表会无限长
+      // 还有别的调用点就把定义留着, 否则连定义一起删  不然子图表会无限长
       const keep = subgraphRefCount(graph, node.subgraph) > 1;
       commit(expandSubgraph(graph, nodeId, { keepSubgraphDef: keep }));
       return true;
@@ -311,7 +311,7 @@ export function useBlueprint(opts: UseBlueprintOptions): BlueprintApi {
   };
 }
 
-/** 选中集。框选、多选、点空白清空 —— 每个画布都要, 抽出来免得各写一遍。 */
+/** 选中集。框选、多选、点空白清空  每个画布都要, 抽出来免得各写一遍。 */
 export function useSelection(initial: readonly string[] = []) {
   const [selected, setSelected] = useState<Set<string>>(() => new Set(initial));
   const ref = useRef(selected);

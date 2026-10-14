@@ -99,9 +99,9 @@ export function indentFor(level: number): string {
  * import { TreeRow } from "@hx/ui";
  *
  * <TreeRow
- *   entry={{ node: { id: "a", label: "a.ts" }, level: 1, parentId: "src" }}
- *   selected={false} expanded={false} focusable={false}
- *   onActivate={fn} onToggleClick={fn} onKeyDown={fn}
+ * entry={{ node: { id: "a", label: "a.ts" }, level: 1, parentId: "src" }}
+ * selected={false} expanded={false} focusable={false}
+ * onActivate={fn} onToggleClick={fn} onKeyDown={fn}
  * />
  * ```
  *

@@ -75,7 +75,7 @@ export function SettingChromePage(): JSX.Element {
       </Preview>
 
       <H2>SettingHeading</H2>
-      <P>只想要分组标题 (不要外面那层卡片容器) 时用它 —— 例如区块内容本身就是网格卡片。</P>
+      <P>只想要分组标题 (不要外面那层卡片容器) 时用它  例如区块内容本身就是网格卡片。</P>
       <Preview align="start" code={`<SettingHeading section={{ id: "x" }} title="外观模式" className="mb-3" />`}>
         <SettingHeading section={{ id: "x" }} title="外观模式" />
       </Preview>

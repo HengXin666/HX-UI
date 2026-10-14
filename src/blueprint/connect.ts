@@ -7,13 +7,13 @@ import type {
 import { EXEC } from "./types";
 
 /**
- * 连接判定 —— 蓝图库的心脏。
+ * 连接判定  蓝图库的心脏。
  *
  * ## 为什么它必须是一个纯函数
  *
  * 拖线时 UI 要问两件事, 而这两件事的答案是**同一条规则**:
- *   1. 悬停到某个端口上时, 能不能放? (要即时反馈, 每帧都在问)
- *   2. 松手之后, 这条边合不合法? (要落地判据)
+ * 1. 悬停到某个端口上时, 能不能放? (要即时反馈, 每帧都在问)
+ * 2. 松手之后, 这条边合不合法? (要落地判据)
  * 若两处各写一遍, 迟早出现"提示能连、连完却报错"。所以判定只有一份
  * `canConnect`, 拖拽过程与提交都调它。
  *
@@ -76,7 +76,7 @@ function findPort(ports: readonly PortDef[] | undefined, id: string): PortDef | 
 /**
  * 判定所需的最小图形状。
  *
- * 单独定义而不是直接吃 BlueprintGraph, 是为了让后端能只传两张表来校验 ——
+ * 单独定义而不是直接吃 BlueprintGraph, 是为了让后端能只传两张表来校验 
  * 它拿不到 (也不需要) 节点坐标、注释这些渲染侧的东西。
  */
 export interface ConnectableGraph {
@@ -115,7 +115,7 @@ export function nodeShape(
   if (node?.subgraph) {
     const sg = graph.subgraphs?.[node.subgraph];
     if (!sg) {
-      // 子图丢了也要返回一个空形貌而不是 undefined —— 否则"子图被删"会
+      // 子图丢了也要返回一个空形貌而不是 undefined  否则"子图被删"会
       // 让所有连到它的边变成 dangling, 报错信息指向边而不是根因
       return {
         inputs: [], outputs: [], execIn: false, execOut: [], multiExecIn: false, isSubgraph: true,
@@ -127,7 +127,7 @@ export function nodeShape(
      *
      * 为什么需要: 调用方常常只建 nodes/edges 就挂子图 (内容靠内部隧道,
      * 不需要对外端口)。此时若返回空端口, 所有连到它的边都会变成
-     * unknown-port —— 整张图一校验全是红, 而调用方完全不知道错在哪。
+     * unknown-port  整张图一校验全是红, 而调用方完全不知道错在哪。
      *
      * 推导规则: 内部指向"输入隧道"的边 -> 对外输入口; 从"输出隧道"出发的
      * 边 -> 对外输出口。没有隧道节点则按"内部悬空边"推导 (一端在内部、
@@ -177,7 +177,7 @@ export function nodeShape(
 
 /**
  * 解析一个端口引用。
- * `dir` 是"我们要把这端当什么用" —— 同一条边的 from 端被当输出、to 端被当输入。
+ * `dir` 是"我们要把这端当什么用"  同一条边的 from 端被当输出、to 端被当输入。
  */
 export function resolvePort(
   reg: BlueprintRegistry,
@@ -207,7 +207,7 @@ export function resolvePort(
  *
  * 判据只认端口的 `multi`: 数据输入口的独占由 PortDef.multi 决定,
  * 执行入口的独占由 NodeTypeDef.multiExecIn 决定 (经 resolvePort 落到 port.multi)。
- * 两者共用这一处逻辑 —— 否则"数据口会顶替、执行口却报错"这种不一致迟早出现。
+ * 两者共用这一处逻辑  否则"数据口会顶替、执行口却报错"这种不一致迟早出现。
  */
 function findReplaceable(
   graph: ConnectableGraph,
@@ -254,7 +254,7 @@ export function canConnect(
   /**
    * 独占输入上已经有线时**不算错**。
    *
-   * 拖线的语义是"我要这个来源", 报个错让人先去删线是纯粹的折磨 ——
+   * 拖线的语义是"我要这个来源", 报个错让人先去删线是纯粹的折磨 
    * UE5 与 ComfyUI 都是直接顶掉。所以这里放行, 但回传被顶掉的边 id:
    * UI 可以提示"将替换原有连线", 而 applyConnect 真的把它换掉。
    */
@@ -271,7 +271,7 @@ export function canConnect(
  * 落一条边, 返回新边数组。
  *
  * 返回 null = 不该连 (调 canConnect 判过还失败, 说明图在我们不知道的情况下变了)。
- * 独占输入会**替换**旧边而不是报错 —— 拖线的语义是"我要这个来源",
+ * 独占输入会**替换**旧边而不是报错  拖线的语义是"我要这个来源",
  * 报个错让人先去删线是纯粹的折磨。
  */
 export function applyConnect(
@@ -281,7 +281,7 @@ export function applyConnect(
   to: PortRef,
   makeId: () => string
 ): BlueprintGraph | null {
-  // 判别用 "reason" in 而不是 !ok —— 见 BlueprintCanvas.tsx 里那条注释:
+  // 判别用 "reason" in 而不是 !ok  见 BlueprintCanvas.tsx 里那条注释:
   // 本仓 strict 关着, 判别式窄化不生效, 只有 in 判据在所有配置下都成立。
   const verdict = canConnect(reg, graph, from, to);
   if ("reason" in verdict) return null;

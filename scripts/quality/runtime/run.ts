@@ -76,6 +76,11 @@ function baselineTree(snapshot: Snapshot): string {
     return snapshot.base && git(snapshot.root, ["ls-tree", snapshot.base]).trim() ? snapshot.base : "HEAD";
 }
 
+/**
+ * 基线条目只有在 base tree 上用同一 checker 复现出同一 finding 时才生效.
+ *
+ * .agents/notes/implemented/process/2026-10-14-pr3-quality-gates-ci-fixes.md
+ */
 function baseline(snapshot: Snapshot, flags: Flags): Baseline[] {
     const choice = one(flags, CMD_BASELINE, TRUSTED)!;
     if (choice === NONE) {

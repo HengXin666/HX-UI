@@ -3,17 +3,17 @@
 import type { JSX } from "react";
 
 /**
- * 引脚的形状 —— UE5 里 exec 与 data 唯一的形状区别。
+ * 引脚的形状  UE5 里 exec 与 data 唯一的形状区别。
  *
  * 单独成文件: 它是 JSX, 而 node-style.ts 要保持 .ts (纯逻辑, 能被后端/worker
  * 直接 import)。两者混在一个 .ts 里会 TS1005。
  *
  * 为什么 exec 用 SVG polygon 而不是 CSS 三角:
- *   CSS 三角靠 border 拼, 在画布的 transform: scale 下边角会露出半像素缝隙,
- *   而蓝图是全程缩放的 —— 缩到 40% 时那个缝会变成一条可见的白线。
+ * CSS 三角靠 border 拼, 在画布的 transform: scale 下边角会露出半像素缝隙,
+ * 而蓝图是全程缩放的  缩到 40% 时那个缝会变成一条可见的白线。
  */
 
-/** 极简类名合并 —— 不想为一个字符串拼接去依赖 primitives 层。 */
+/** 极简类名合并  不想为一个字符串拼接去依赖 primitives 层。 */
 function cx(...parts: Array<string | false | null | undefined>): string {
   return parts.filter(Boolean).join(" ");
 }
@@ -60,7 +60,7 @@ export function PinShape({
    * 未连接时: **空心圆, 轮廓用类型色**。
    *
    * 为什么轮廓也要是类型色: 引脚色是"这个口是什么类型"的信息,
-   * 而**没连线的口才是最需要看类型的** —— 你正要往那儿连。
+   * 而**没连线的口才是最需要看类型的**  你正要往那儿连。
    * 用中性灰描边等于把信息藏了起来, UE5 这里是类型色的空心圆。
    */
   const ring = color ? color.replace(/\bbg-/, "border-") : "border-foreground/50";

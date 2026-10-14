@@ -14,23 +14,23 @@ import { makeId } from "./useBlueprint";
  *
  * 直接让 Agent 写 `BlueprintGraph` 的 JSON 会有三个必然出现的问题:
  *
- *   1. **坐标**。Agent 要么不写 (全 0, 节点叠成一坨), 要么瞎写 (互相压住)。
- *      让它算坐标是浪费 token, 而且它算不准。
- *   2. **id**。Agent 写的 id 会撞、会含空格、会在二次调用时变 —— 而连线靠 id 引用。
- *   3. **合法性**。它不知道哪些类型能连, 于是产出一批非法边, 图一打开全是红线。
+ * 1. **坐标**。Agent 要么不写 (全 0, 节点叠成一坨), 要么瞎写 (互相压住)。
+ * 让它算坐标是浪费 token, 而且它算不准。
+ * 2. **id**。Agent 写的 id 会撞、会含空格、会在二次调用时变  而连线靠 id 引用。
+ * 3. **合法性**。它不知道哪些类型能连, 于是产出一批非法边, 图一打开全是红线。
  *
  * 所以这里的取舍是: **输入极宽松, 输出极严格**。
- *   - 输入: 不用坐标、可以用自己顺手的 key、可以按端口名连线
- *   - 输出: 坐标算好、id 稳定、非法边被拒且**说清为什么**
+ * - 输入: 不用坐标、可以用自己顺手的 key、可以按端口名连线
+ * - 输出: 坐标算好、id 稳定、非法边被拒且**说清为什么**
  *
  * ## 关于"默认布局不好看"
  *
  * Agent 产出的图不能是"能跑就行", 必须是人类愿意看的。所以:
- *   - 只要没显式给坐标, 就一定跑分层布局 (`autoLayout`)
- *   - 布局后**自检**: 有重叠就加大间距重排; 交叉数过多就多迭代几轮
- *   - 有环也能摆 (布局内部会拆回边), 不会退化成一坨
+ * - 只要没显式给坐标, 就一定跑分层布局 (`autoLayout`)
+ * - 布局后**自检**: 有重叠就加大间距重排; 交叉数过多就多迭代几轮
+ * - 有环也能摆 (布局内部会拆回边), 不会退化成一坨
  *
- * 这条是硬要求, 不是优化项 —— 一张叠在一起的图对人类等于没有。
+ * 这条是硬要求, 不是优化项  一张叠在一起的图对人类等于没有。
  */
 // ── 输入形状 ──────────────────────────────────────────────────────────
 
@@ -38,7 +38,7 @@ import { makeId } from "./useBlueprint";
  * Agent 描述的一个节点。
  *
  * `key` 是 Agent 自己用的引用名 (如 "load"、"check"), 连线时用它;
- * 最终落地的节点 id 由这里生成 —— 稳定、可复现 (同一 key 同一前缀)。
+ * 最终落地的节点 id 由这里生成  稳定、可复现 (同一 key 同一前缀)。
  */
 export interface AgentNode {
   /** Agent 侧的引用名。不写就用 type。 */
@@ -55,9 +55,9 @@ export interface AgentNode {
  * Agent 描述的一条连线。
  *
  * 两端都可以简写:
- *   - `"a"`              = 节点 key 为 a 的第一个输出
- *   - `"a.out"`          = key 为 a 的 out 端口
- *   - `{ node: "a", port: "out" }`  完整写法
+ * - `"a"`              = 节点 key 为 a 的第一个输出
+ * - `"a.out"`          = key 为 a 的 out 端口
+ * - `{ node: "a", port: "out" }`  完整写法
  *
  * 简写为什么值得做: 让 Agent 少写一半 token, 而且少写就少错。
  */
@@ -96,7 +96,7 @@ export interface AgentBuildInput {
 
 // ── 输出形状 ──────────────────────────────────────────────────────────
 
-/** 构建结果。失败时 `ok` 为 false, 但**仍然给出能画的图** —— 见 build 的说明。 */
+/** 构建结果。失败时 `ok` 为 false, 但**仍然给出能画的图**  见 build 的说明。 */
 export interface AgentBuildResult {
   readonly ok: boolean;
   readonly graph: BlueprintGraph;
@@ -150,8 +150,8 @@ function splitEnd(end: AgentEnd): { key: string; port?: string } {
  * 于是把合法的一对端点判成"执行流与数据流不能互连"。
  *
  * 所以改成: 先看对端能接什么, 再决定这端给什么。
- *   - 对端是 exec-in  -> 这端优先给执行出口
- *   - 对端是数据口    -> 这端优先给数据输出, 且类型要相容
+ * - 对端是 exec-in  -> 这端优先给执行出口
+ * - 对端是数据口    -> 这端优先给数据输出, 且类型要相容
  *
  * 这样 Agent 写 `{ from: "pre", to: "step" }` 就能连对, 不需要它知道
  * "preStep 有两个出口、第二个才是执行流" 这种实现细节。
@@ -190,15 +190,15 @@ function inferPort(
 }
 
 /**
- * 决定一对端点各自该用哪个端口 —— **双向**对端感知。
+ * 决定一对端点各自该用哪个端口  **双向**对端感知。
  *
  * 为什么单向不够: 有的节点只有执行出口, 有的只有数据入口。单向逻辑
  * 先看了对端再选源端口, 就会选出类型不匹配的那一个。
  * Agent 只是写了 `step -> stream`, 这个错不该由它承担。
  *
  * 解法: 先看两边各有什么, 能凑成执行流就凑执行流, 否则凑数据流。
- *   - 一边只有执行端口 -> 走执行流 (对端切 exec-in / execOut)
- *   - 否则 -> 走数据流
+ * - 一边只有执行端口 -> 走执行流 (对端切 exec-in / execOut)
+ * - 否则 -> 走数据流
  */
 function resolveEnds(
   reg: BlueprintRegistry,
@@ -242,7 +242,7 @@ function resolveEnds(
  *
  * 关键行为: **即使有错, 也返回能画的图**。
  *
- * 为什么: Agent 是迭代式的 —— 它先写一版, 看报错再修。如果非法就返回 null,
+ * 为什么: Agent 是迭代式的  它先写一版, 看报错再修。如果非法就返回 null,
  * 它得凭空重试; 而返回一张"尽力修复过"的图 + 一份问题清单, 它下一轮就能
  * 精确改那一条。人类也能立刻看到半成品, 不至于一开就是空白。
  */
@@ -261,7 +261,7 @@ export function buildFromAgent(
     const rawKey = n.key ?? n.type;
     let key = rawKey;
     if (usedKeys.has(key)) {
-      // key 撞了不该抛 —— 给个后缀继续, 并在 warnings 里说一声
+      // key 撞了不该抛  给个后缀继续, 并在 warnings 里说一声
       let i = 2;
       while (usedKeys.has(`${rawKey}-${i}`)) i += 1;
       key = `${rawKey}-${i}`;
@@ -298,7 +298,7 @@ export function buildFromAgent(
       rejected.push({
         from: String(e.from), to: String(e.to),
         reason: "missing-node",
-        message: `找不到节点 "${!fromId ? f.key : t.key}" —— 可用: ${[...ids.keys()].join(", ")}`,
+        message: `找不到节点 "${!fromId ? f.key : t.key}"  可用: ${[...ids.keys()].join(", ")}`,
       });
       continue;
     }
@@ -355,11 +355,11 @@ export function buildFromAgent(
     // 全给了坐标: 仍然检查重叠, 但不重排 (尊重显式坐标)
     overlaps = countOverlaps(reg, graph);
     if (overlaps > 0) {
-      warnings.push(`显式坐标里有 ${overlaps} 处重叠 —— 未自动调整 (你给了坐标, 我尊重它)`);
+      warnings.push(`显式坐标里有 ${overlaps} 处重叠  未自动调整 (你给了坐标, 我尊重它)`);
     }
   }
 
-  // 用刚算好的坐标评估 —— countCrossings 需要显式坐标
+  // 用刚算好的坐标评估  countCrossings 需要显式坐标
   const posForCross = new Map(graph.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
   const crossings = countCrossings(reg, graph, posForCross);
 
@@ -412,7 +412,7 @@ export function buildFromAgent(
    *
    * 校验层已经报了, 但那些报错挂在节点 id 上 (n1b2c3 这种), Agent 看到
    * 也不知道是哪个 key、该补什么。这里翻译成 key + 端口名, 它下一轮
-   * 就能精确补一条边 —— 这正是"Agent 友好"该做的事。
+   * 就能精确补一条边  这正是"Agent 友好"该做的事。
    */
   const idToKey = new Map<string, string>();
   for (const [k, id] of ids) idToKey.set(id, k);
@@ -429,7 +429,7 @@ export function buildFromAgent(
    *
    * 刻意**不包含**校验通过: 少连一个必填输入是很常见的中间状态
    * (Agent 边写边补), 那种情况下图是能画、能看的, 报 ok:false 会让它
-   * 以为整个调用失败了, 于是重来一遍 —— 而问题只是差一条边。
+   * 以为整个调用失败了, 于是重来一遍  而问题只是差一条边。
    * 校验结果仍然完整返回, 由 validate_graph 工具如实报告。
    */
   const ok = nodes.length > 0 && rejected.length === 0;
@@ -452,7 +452,7 @@ export function buildFromAgent(
 /**
  * 数重叠的节点对数。
  *
- * 只比包围盒 —— 节点是矩形卡片, 包围盒相交就是视觉上压住了。
+ * 只比包围盒  节点是矩形卡片, 包围盒相交就是视觉上压住了。
  */
 export function countOverlaps(reg: BlueprintRegistry, graph: BlueprintGraph): number {
   let n = 0;
@@ -473,7 +473,7 @@ export function countOverlaps(reg: BlueprintRegistry, graph: BlueprintGraph): nu
 
 /**
  * 节点尺寸。刻意不 import geometry 里的完整实现 (它会算 params 行数),
- * 这里只需要一个够用的估计值来做防重叠 —— 精确值留给渲染层。
+ * 这里只需要一个够用的估计值来做防重叠  精确值留给渲染层。
  */
 function nodeWidthOf(def: { readonly width?: number } | undefined): number {
   return def?.width ?? 176;

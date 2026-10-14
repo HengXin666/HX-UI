@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 安装本地 git 钩子 —— 把 scripts/gates/hooks/* 链到 .git/hooks/。
+# 安装本地 git 钩子  把 scripts/gates/hooks/* 链到 .git/hooks/。
 #
 # 为什么不直接把钩子提交进 .git/hooks: 那个目录不在版本控制里, 抄一份进去
 # 就没有 diff、没有 review、也不会随仓库更新。所以真身在 scripts/gates/hooks/,
@@ -28,7 +28,7 @@ for h in "$root"/scripts/gates/hooks/*; do
   target="$hooks_dir/$name"
   if [ -e "$target" ] && [ ! -L "$target" ]; then
     # 已有实体文件 (别人手写的钩子): 不覆盖, 打印出来让人自己合
-    echo "跳过 $name: .git/hooks/$name 已存在且不是符号链接 —— 请手工合并, 不要盲目覆盖"
+    echo "跳过 $name: .git/hooks/$name 已存在且不是符号链接  请手工合并, 不要盲目覆盖"
     continue
   fi
   if [ "$dry" = "1" ]; then

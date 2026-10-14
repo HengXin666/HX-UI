@@ -6,7 +6,7 @@ import type { BlueprintGraph, BlueprintRegistry } from "./types";
  * 格式刻意保持"就是一个 JSON": 不加密、不加版本号以外的元数据。
  * 蓝图是**用户资产**, 要能进 git diff、能被人手改、能被后端直接读。
  *
- * 校验放在读取侧 (`parseGraph`) 而不是写入侧 —— 写入侧校验会让"存一份半成品"
+ * 校验放在读取侧 (`parseGraph`) 而不是写入侧  写入侧校验会让"存一份半成品"
  * 变成不可能, 而自动保存就是需要能存半成品。
  */
 
@@ -22,7 +22,7 @@ export function serializeGraph(graph: BlueprintGraph): SerializedGraph {
   return { version: FORMAT_VERSION, nodes: graph.nodes, edges: graph.edges };
 }
 
-/** 反序列化。纯形状校验 —— 类型合法性交给 validateGraph (它需要 registry)。 */
+/** 反序列化。纯形状校验  类型合法性交给 validateGraph (它需要 registry)。 */
 export function parseGraph(raw: unknown): BlueprintGraph | null {
   if (typeof raw !== "object" || raw === null) return null;
   const o = raw as Record<string, unknown>;
@@ -58,7 +58,7 @@ export function parseGraph(raw: unknown): BlueprintGraph | null {
     if (!from || !to) return [];
     if (typeof from.node !== "string" || typeof from.port !== "string") return [];
     if (typeof to.node !== "string" || typeof to.port !== "string") return [];
-    // 指向不存在节点的边直接丢 —— 留着它只会让每个下游函数都要防一手
+    // 指向不存在节点的边直接丢  留着它只会让每个下游函数都要防一手
     if (!ids.has(from.node) || !ids.has(to.node)) return [];
     return [
       {
@@ -70,7 +70,7 @@ export function parseGraph(raw: unknown): BlueprintGraph | null {
     ];
   });
 
-  // 子图与注释只做"形状确认", 深层合法性交给 validateGraph 递归校验 ——
+  // 子图与注释只做"形状确认", 深层合法性交给 validateGraph 递归校验 
   // 读取侧不该因为一个字段类型不对就把整张图判死, 那样用户连修的机会都没有
   const subgraphs =
     typeof o.subgraphs === "object" && o.subgraphs !== null ? (o.subgraphs as Record<string, unknown>) : undefined;

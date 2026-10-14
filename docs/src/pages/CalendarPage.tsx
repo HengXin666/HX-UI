@@ -6,9 +6,9 @@ import { Callout, H2, H3, P, Preview, PropsTable } from "../components/DocKit";
  * Calendar / DatePicker 页。
  *
  * 两个必须从源码里读出来的事实:
- *   1. Calendar 的尺寸由 CSS 变量 --cell-size 决定 (默认 --spacing(8) = 32px), 不写死像素;
- *   2. DatePicker 的月份/年份是**两个 Select**(不是原生 select), 并由自己的导航箭头代替 Calendar 的导航,
- *      所以它给 Calendar 传了 hideNavigation 与 month_caption: "hidden"。
+ * 1. Calendar 的尺寸由 CSS 变量 --cell-size 决定 (默认 --spacing(8) = 32px), 不写死像素;
+ * 2. DatePicker 的月份/年份是**两个 Select**(不是原生 select), 并由自己的导航箭头代替 Calendar 的导航,
+ * 所以它给 Calendar 传了 hideNavigation 与 month_caption: "hidden"。
  * locale 用动态 import: 静态引一个几 KB 的语言包不该拖进首屏。
  */
 type Range = { from: Date; to?: Date };
@@ -130,7 +130,7 @@ const [date, setDate] = useState<Date | undefined>(new Date());
 
       <H2>跨月与禁用</H2>
       <P>
-        多个月份并排只需 numberOfMonths。禁用规则交给 DayPicker 的 disabled 数组 —— 它不是布尔, 而是
+        多个月份并排只需 numberOfMonths。禁用规则交给 DayPicker 的 disabled 数组  它不是布尔, 而是
         <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]"> {"{ before } / { after } / 日期数组"}</code> 这几种 matcher。
       </P>
       <Preview
@@ -239,7 +239,7 @@ const nextMonth = new Date(today.getFullYear(), today.getMonth(), today.getDate(
         触发器与 DayPicker 的日期格式都用 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">locale.code</code> 走
         <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]"> Intl.DateTimeFormat</code>;
         但面板底部的"今天 / 清除"、月份年份的 aria-label 全部来自你传进去的
-        <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]"> labels</code> —— 不传就是中文占位也会缺。
+        <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]"> labels</code>  不传就是中文占位也会缺。
       </Callout>
 
       <H2>属性</H2>

@@ -29,22 +29,22 @@ import { nodesInComment } from "./comment";
  * 画布。
  *
  * ## 它管什么
- *   平移 / 缩放 / 拖节点 / 拖线 / 框选 / 拖到空白处弹面板
+ * 平移 / 缩放 / 拖节点 / 拖线 / 框选 / 拖到空白处弹面板
  *
  * ## 它不管什么
- *   图的**内容**。图通过受控 props 进出, 画布不做任何结构判断 ——
- *   判断全在 `canConnect` 与 `validateGraph` 里。理由见 connect.ts:
- *   判据只能有一份, 否则 UI 提示与落地结果会分叉。
+ * 图的**内容**。图通过受控 props 进出, 画布不做任何结构判断 
+ * 判断全在 `canConnect` 与 `validateGraph` 里。理由见 connect.ts:
+ * 判据只能有一份, 否则 UI 提示与落地结果会分叉。
  *
  * ## 三条容易写错的地方
- *   1. 拖拽必须用 pointer events + setPointerCapture。用 mousemove 绑 window,
- *      鼠标移出 iframe 或松在元素外时会丢事件, 表现为"节点粘在手上"。
- *   2. 缩放要**以光标为锚点**。以原点缩放时每滚一下图就跑掉, 手感是坏的。
- *   3. 连线预览与已落地的边走同一个 path 公式。两处各画一遍会出现
- *      "预览一个形状、落地变成另一个"。
- *   4. 滚轮**必须**用 addEventListener(..., { passive: false }), 不能走 React 的
- *      onWheel —— React 17+ 把它注册成 passive, 于是 preventDefault() 被浏览器
- *      忽略, 结果是"图缩放了、页面同时也滚了"。
+ * 1. 拖拽必须用 pointer events + setPointerCapture。用 mousemove 绑 window,
+ * 鼠标移出 iframe 或松在元素外时会丢事件, 表现为"节点粘在手上"。
+ * 2. 缩放要**以光标为锚点**。以原点缩放时每滚一下图就跑掉, 手感是坏的。
+ * 3. 连线预览与已落地的边走同一个 path 公式。两处各画一遍会出现
+ * "预览一个形状、落地变成另一个"。
+ * 4. 滚轮**必须**用 addEventListener(..., { passive: false }), 不能走 React 的
+ * onWheel  React 17+ 把它注册成 passive, 于是 preventDefault() 被浏览器
+ * 忽略, 结果是"图缩放了、页面同时也滚了"。
  */
 
 export interface Viewport {
@@ -72,17 +72,17 @@ export interface BlueprintCanvasProps {
   readonly onCollapse?: (ids: readonly string[]) => void;
   /** 注释改动 (拖动 / 改尺寸 / 改文案)。 */
   readonly onCommentChange?: (id: string, patch: { x?: number; y?: number; w?: number; h?: number; title?: string }) => void;
-  /** 命中的注释被拖动: 由外层算"带走哪些节点" —— 那是图操作, 画布不管。 */
+  /** 命中的注释被拖动: 由外层算"带走哪些节点"  那是图操作, 画布不管。 */
   /**
    * 注释被拖动: 给**绝对坐标**, 不是增量。
    *
-   * 传增量时接收方每帧在"当前位置"上再加一次累积位移 —— 指数级放大,
+   * 传增量时接收方每帧在"当前位置"上再加一次累积位移  指数级放大,
    * 效果是位移被反复累加。绝对坐标天然幂等。
    */
   readonly onCommentMove?: (id: string, at: { x: number; y: number }) => void;
   /** 换注释底色 (UE5 的 Comment Color)。 */
   readonly onCommentTone?: (id: string, tone: string) => void;
-  /** 注释改尺寸 (拖右下角)。给新的绝对矩形 —— UE5 的行为。 */
+  /** 注释改尺寸 (拖右下角)。给新的绝对矩形  UE5 的行为。 */
   readonly onCommentResize?: (id: string, box: { x: number; y: number; w: number; h: number }) => void;
   /** 外部把节点**拖**到画布上松手。给的 type 与落点(画布坐标)。 */
   readonly onDropNode?: (type: string, at: DropAt) => void;
@@ -116,7 +116,7 @@ export interface BlueprintCanvasProps {
    *
    * 为什么是受控的: 菜单要在视口中心落点, 而"中心"只有画布知道;
    * 但"该不该开"由快捷键决定, 而快捷键在编辑器层。所以外层只给一个布尔,
-   * 落点由画布自己算 —— 各管各知道的那部分。
+   * 落点由画布自己算  各管各知道的那部分。
    */
   readonly pickerOpen?: boolean;
   readonly setPickerOpen?: (v: boolean) => void;
@@ -135,7 +135,7 @@ export interface BlueprintCanvasProps {
   readonly allowFullscreen?: boolean;
   /**
    * 拖出了一个注释框 (修饰键 + 拖空白)。
-   * `nodes` 是完全落在框里的节点 —— 与"拖动会带走哪些"同一判据。
+   * `nodes` 是完全落在框里的节点  与"拖动会带走哪些"同一判据。
    */
   readonly onCreateComment?: (box: {
     readonly x: number; readonly y: number; readonly w: number; readonly h: number;
@@ -148,7 +148,7 @@ export interface BlueprintCanvasProps {
    * 拦截器拦掉 (表现是标签页数不变)。
    * 链接是浏览器原生导航, 不会被拦。
    *
-   * 不传就退回 Fullscreen API —— 但独立页面才是"整屏归蓝图"的正解。
+   * 不传就退回 Fullscreen API  但独立页面才是"整屏归蓝图"的正解。
    */
   readonly standaloneHref?: string;
 }
@@ -188,7 +188,7 @@ export function BlueprintCanvas({
   const [paletteAt, setPaletteAt] = useState<{ x: number; y: number } | null>(null);
 
   const [editingComment, setEditingComment] = useState<string | null>(null);
-  /** 有东西正被拖进来 —— 用来给画布加一圈高亮, 否则用户看不出"能放这"。 */
+  /** 有东西正被拖进来  用来给画布加一圈高亮, 否则用户看不出"能放这"。 */
   const [dropActive, setDropActive] = useState(false);
   /** 正在拖出来的注释框 (修饰键 + 拖空白)。 */
   /** 注释交互: 命中分发 / 拖动 / 右下角改尺寸 (抽到单独 hook 以控行数)。 */
@@ -201,7 +201,7 @@ export function BlueprintCanvas({
   /** 两者任一为真都算"展开了"。 */
   const expanded = fullscreen || maximized;
 
-  // 监听 fullscreenchange 而不是只在 toggle 时改 state —— 用户按 Esc 或 F11
+  // 监听 fullscreenchange 而不是只在 toggle 时改 state  用户按 Esc 或 F11
   // 退出时不会经过我们的按钮, 不同步的话按钮状态会卡在"已全屏"。
   useEffect(() => {
     const onChange = () => setFullscreen(document.fullscreenElement === hostRef.current);
@@ -248,11 +248,11 @@ export function BlueprintCanvas({
    * 这里用 **原生非被动监听** 而不是 React 的 onWheel:
    * React 17+ 把 wheel/touchmove 注册成 **passive** 监听, 于是 handler 里的
    * `preventDefault()` 被浏览器直接忽略 (控制台还会警告 "Unable to preventDefault
-   * inside passive event listener")。表现就是: 图缩放了, 页面**同时也滚了** ——
+   * inside passive event listener")。表现就是: 图缩放了, 页面**同时也滚了** 
    * 滚到图外面继续滚整页, 手感非常坏。
    *
    * 只有 addEventListener(..., { passive: false }) 才能真正拦住默认行为。
-   * 代价是要自己管注册与清理, 以及 handler 里读不到最新的闭包变量 ——
+   * 代价是要自己管注册与清理, 以及 handler 里读不到最新的闭包变量 
    * 所以下面靠 ref 拿 view, 靠真正在变的东西触发重注册。
    */
   const viewRef = useRef(view);
@@ -281,10 +281,10 @@ export function BlueprintCanvas({
       /**
        * ⚠️ 浮层上的交互元素**一律不接管指针**。
        *
-       * 画布在这里会 setPointerCapture —— 一旦捕获, 后续所有指针事件都归它,
+       * 画布在这里会 setPointerCapture  一旦捕获, 后续所有指针事件都归它,
        * 目标元素再也收不到 click。而左上角工具条的"独立页面"是个链接, 它就
        * 浮在画布上面: 真实鼠标点下去, 画布先捕获指针, 那个链接**永远不会
-       * 收到 click** —— 表现就是"点了没反应"。
+       * 收到 click**  表现就是"点了没反应"。
        *
        * 注意: 用 element.click() 直接派发事件会绕过命中测试, 那样的判据
        * 在功能失效时也会通过。判据必须走真实输入。
@@ -325,7 +325,7 @@ export function BlueprintCanvas({
        * 都抓不到。注释在视觉上位于节点之下, 命中测试要反映这个层级。
        *
        * 那怎么拖注释? 靠标题条 (UE5 也是这样: 拖标题条搬整块)。所以注释的
-       * 命中判据是"标题条 + 右下角 resize 热区", 不是整个框 —— 整个框留给
+       * 命中判据是"标题条 + 右下角 resize 热区", 不是整个框  整个框留给
        * 里面的节点。
        */
       const node = hitNode(registry, graph, p);
@@ -352,7 +352,7 @@ export function BlueprintCanvas({
        * 空白处按下: 按住 Alt/Cmd/Ctrl -> **拖出一个注释框**; 否则框选。
        *
        * 用修饰键而不是"先点按钮再拖": 加注释是高频动作, 还要先去工具条
-       * 点一下再回来拖, 路径太长。而且拖出来的框**就是**注释的范围 ——
+       * 点一下再回来拖, 路径太长。而且拖出来的框**就是**注释的范围 
        * 你看到什么就得到什么, 不用"选节点再让系统算包围盒"这种间接方式。
        */
       if (e.altKey || e.metaKey || e.ctrlKey) {
@@ -398,7 +398,7 @@ export function BlueprintCanvas({
           const to = link.dir === "out" ? hover.ref : link.from;
           const r = canConnect(registry, graph, from, to);
           // 用 "reason" in r 而不是 !r.ok 做判别: 本仓 tsconfig 的 strict 是关的,
-          // 而判别式窄化在 strictNullChecks 关闭时不生效 —— 写成 !r.ok 时
+          // 而判别式窄化在 strictNullChecks 关闭时不生效  写成 !r.ok 时
           // else 分支里 r 仍是联合, 取 .reason 会报 TS2339。
           // "reason" in r 不依赖 strict 开关, 这条判据在所有配置下都成立。
           verdict = "reason" in r ? { ok: false, reason: r.reason } : { ok: true, replaces: r.replaces };
@@ -426,7 +426,7 @@ export function BlueprintCanvas({
           if (from.node !== to.node) onConnect?.(from, to);
         } else if (!hover && onAddNode) {
           // 拖到空白处松手: 弹面板, 选中的节点自动落在这里。
-          // 这是 ComfyUI 那个最好用的交互 —— 少一次"先加节点再找它再连线"。
+          // 这是 ComfyUI 那个最好用的交互  少一次"先加节点再找它再连线"。
           setPaletteAt(p);
         }
         setLink(null);
@@ -448,7 +448,7 @@ export function BlueprintCanvas({
       }
       if (commentDraft) {
         const box = normRect(commentDraft);
-        // 太小的框当误触丢弃 —— 否则误按一下就多一个空注释
+        // 太小的框当误触丢弃  否则误按一下就多一个空注释
         if (box.w > 40 && box.h > 30) {
           onCreateComment?.({
             x: box.x, y: box.y, w: box.w, h: box.h,
@@ -464,7 +464,7 @@ export function BlueprintCanvas({
     /**
      * 依赖必须带 commentDraft 与 onCreateComment。
      *
-     * 漏了的话 handler 闭包里拿到的永远是首次渲染时的 null —— 松手时
+     * 漏了的话 handler 闭包里拿到的永远是首次渲染时的 null  松手时
      * 判定 `if (commentDraft)` 直接跳过, 于是"拖了框却没创建注释",
      * 而且不报错, 属于静默失效。
      */
@@ -521,7 +521,7 @@ export function BlueprintCanvas({
   useEffect(() => {
     onViewportCenterReady?.(viewportCenter);
     // 视口命令一并交给外层 (快捷键 Ctrl+= / Ctrl+0 / Home 要用)。
-    // 只传命令不传状态 —— 外层复制一份 view 必然漂移。
+    // 只传命令不传状态  外层复制一份 view 必然漂移。
     onViewportReady?.(makeViewportCommands(setView, fitRef));
   }, [onViewportCenterReady, viewportCenter, onViewportReady]);
 
@@ -550,7 +550,7 @@ export function BlueprintCanvas({
    * 进出全屏后重新适应。
    *
    * 不做这件事的话, 全屏后画布从 620px 变成 1080px, 但视口 transform 还是
-   * 按旧尺寸算的 —— 图会挤在左上角一小块, 大片空白, 看起来像"全屏没生效"。
+   * 按旧尺寸算的  图会挤在左上角一小块, 大片空白, 看起来像"全屏没生效"。
    * 退出时同理。等一帧再 fit, 让浏览器先完成尺寸变更。
    */
   /**
@@ -560,8 +560,8 @@ export function BlueprintCanvas({
    * graph 每帧都变 -> fit 每帧重建身份 -> 这个 effect 每帧重跑 -> **每帧调
    * fit() 改 view**。于是 toGraph() 用新 view 算当前鼠标点, 而 drag.start
    * 是旧 view 下的值, 两者相减得到错误的位移, 且逐帧累积。
-   *   鼠标走 +20x/+10y (比例 0.5), 节点位移比例会漂移到 0.94 ——
-   *   就是这么来的。
+   * 鼠标走 +20x/+10y (比例 0.5), 节点位移比例会漂移到 0.94 
+   * 就是这么来的。
    *
    * 所以用 ref 拿最新的 fit, 依赖只留 expanded: 只在进出全屏时跑一次。
    */
@@ -578,7 +578,7 @@ export function BlueprintCanvas({
       className={cn(
         "relative overflow-hidden border-border bg-background transition-shadow",
         expanded ? "h-screen w-screen" : "rounded-xl border",
-        // 拖入时给一圈 ring —— 没有反馈的话用户不知道"这里能放"
+        // 拖入时给一圈 ring  没有反馈的话用户不知道"这里能放"
         dropActive && "ring-1 ring-primary/60",
         // 回退模式下要 fixed + 高 z, 否则会被页面其它浮层盖住
         maximized && "fixed inset-0 z-[var(--z-modal)]",
@@ -591,10 +591,10 @@ export function BlueprintCanvas({
         width: expanded ? "100vw" : undefined,
         touchAction: "none",
         /**
-         * ⚠️ 禁掉文本选中 —— 缺它的时候手感和"反人类"。
+         * ⚠️ 禁掉文本选中  缺它的时候手感和"反人类"。
          *
          * 浏览器默认在鼠标拖过一片区域时**选中文本**, 而画布上每次框选、
-         * 拖节点、拖连线都要划过一大片文字 —— 于是用户想拖节点, 结果拖出
+         * 拖节点、拖连线都要划过一大片文字  于是用户想拖节点, 结果拖出
          * 一片蓝色选区, 节点没动。这不是体验瑕疵, 是**拖拽被选区行为劫持**。
          * 所有图形编辑器 (UE5 / Figma / ComfyUI) 都禁它。
          * 可编辑的输入框在蓝图侧单独恢复 (见 node-parts / NodeRename)。
@@ -614,12 +614,12 @@ export function BlueprintCanvas({
        * 接收从面板拖过来的节点。
        *
        * 两件事缺一不可:
-       *   - dragover 里**必须** preventDefault(), 否则浏览器不认为这里是
-       *     合法放置目标, drop 根本不会触发。这是 HTML5 拖放最容易踩的坑,
-       *     表现是"拖过去没反应", 而代码看起来都对 (onDrop 写了、类型对了,
-       *     就是不掉)。
-       *   - drop 里把**鼠标位置**转成图坐标。注意是鼠标位置, 不是节点左上角:
-       *     用户拖着的时候想的是"这个点放这里", 把他看到的那个点对准落点才自然。
+       * - dragover 里**必须** preventDefault(), 否则浏览器不认为这里是
+       * 合法放置目标, drop 根本不会触发。这是 HTML5 拖放最容易踩的坑,
+       * 表现是"拖过去没反应", 而代码看起来都对 (onDrop 写了、类型对了,
+       * 就是不掉)。
+       * - drop 里把**鼠标位置**转成图坐标。注意是鼠标位置, 不是节点左上角:
+       * 用户拖着的时候想的是"这个点放这里", 把他看到的那个点对准落点才自然。
        */
       onDragOver={(e) => {
         if (!onDropNode) return;
@@ -665,7 +665,7 @@ export function BlueprintCanvas({
              * 依据官方文档 "Exec wires are displayed as white arrows...
              * the direction of the arrow indicates the flow of execution."
              *
-             * 选中节点时高亮与它相连的线、淡化其余的 —— 这是"图大了还能看"
+             * 选中节点时高亮与它相连的线、淡化其余的  这是"图大了还能看"
              * 的关键: 不这么做, 一片线里找不到某个节点的上下游。
              */
             const linked = selected && selected.size > 0;

@@ -6,19 +6,19 @@ import type { BlueprintGraph } from "./types";
  *
  * ## 三条设计取舍
  *
- *   1. **存快照, 不存操作**。
- *      存操作 (命令模式) 要为每个操作写一个逆操作, 而蓝图的操作有二十来个,
- *      漏写或写错一个逆操作就是静默的状态损坏。存快照则**天然正确** ——
- *      撤销就是把上一份整图放回去。代价是内存, 但蓝图是 JSON, 几十个节点
- *      一份快照才几 KB; 限制栈深 (默认 50) 后完全可控。
+ * 1. **存快照, 不存操作**。
+ * 存操作 (命令模式) 要为每个操作写一个逆操作, 而蓝图的操作有二十来个,
+ * 漏写或写错一个逆操作就是静默的状态损坏。存快照则**天然正确** 
+ * 撤销就是把上一份整图放回去。代价是内存, 但蓝图是 JSON, 几十个节点
+ * 一份快照才几 KB; 限制栈深 (默认 50) 后完全可控。
  *
- *   2. **合并连续的同类改动** (拖动 / 连续输入参数)。
- *      拖一个节点每帧都产生一份快照, 撤销一次只退 1px 等于没有撤销。
- *      所以给每次提交打一个 `tag`: 同 tag 且间隔很短的连续提交合并成一步。
- *      拖动用 "move" 这个 tag, 松手后换 tag 就自然断开了。
+ * 2. **合并连续的同类改动** (拖动 / 连续输入参数)。
+ * 拖一个节点每帧都产生一份快照, 撤销一次只退 1px 等于没有撤销。
+ * 所以给每次提交打一个 `tag`: 同 tag 且间隔很短的连续提交合并成一步。
+ * 拖动用 "move" 这个 tag, 松手后换 tag 就自然断开了。
  *
- *   3. **不给"重做"设歧义**: 新提交会清空重做栈 —— 这是所有编辑器的共识行为,
- *      不遵守会让用户按了重做却得到"另一条时间线"的东西。
+ * 3. **不给"重做"设歧义**: 新提交会清空重做栈  这是所有编辑器的共识行为,
+ * 不遵守会让用户按了重做却得到"另一条时间线"的东西。
  */
 
 export interface HistoryEntry {
@@ -48,7 +48,7 @@ export interface HistoryApi {
   /**
    * 提交**改动之后**的新状态。
    *
-   * ⚠️ 参数是**改动之后**的新状态, 不是旧状态 —— 内部会把"上一个状态"
+   * ⚠️ 参数是**改动之后**的新状态, 不是旧状态  内部会把"上一个状态"
    * 推进 past。传反了不报错, 但撤销恢复的是同一份旧图, 看起来毫无反应。
    *
    * @param tag 同类连续改动的标识 (如 "move" / "param")。给 null 表示不合并。
@@ -77,14 +77,14 @@ export interface HistoryApi {
 /**
  * 是否该把这次提交并入上一步。
  *
- * 抽成纯函数是为了可测 —— 合并逻辑是撤销/重做里最容易写错的地方
+ * 抽成纯函数是为了可测  合并逻辑是撤销/重做里最容易写错的地方
  * (判据反了会导致"拖一次撤不动"或"所有改动粘成一步"), 而它在 hook 内部
  * 时没法单独验证。
  *
  * 三条全满足才合并:
- *   1. 两步都给了 tag (tag 为 null 表示"这一步必须独立可撤")
- *   2. tag 相同
- *   3. 间隔在窗口内
+ * 1. 两步都给了 tag (tag 为 null 表示"这一步必须独立可撤")
+ * 2. tag 相同
+ * 3. 间隔在窗口内
  */
 export function shouldCoalesce(
   last: { tag: string | null; at: number } | null,
@@ -104,14 +104,14 @@ export function useHistory(opts: UseHistoryOptions = {}): HistoryApi {
   const [past, setPast] = useState<HistoryEntry[]>([]);
   const [future, setFuture] = useState<HistoryEntry[]>([]);
 
-  /** 最近一次提交的 tag 与时间 —— 判断是否该合并。 */
+  /** 最近一次提交的 tag 与时间  判断是否该合并。 */
   const lastRef = useRef<{ tag: string | null; at: number } | null>(null);
   /** 当前图。撤销/重做时需要在栈之间搬移它。 */
   const currentRef = useRef<BlueprintGraph | null>(null);
 
   /**
    * push 的语义: "graph 变成了这个新状态"。
-   * 所以要把**旧状态**推进 past —— 但旧状态只在合并判断失败时才需要,
+   * 所以要把**旧状态**推进 past  但旧状态只在合并判断失败时才需要,
    * 合并时保留更旧的那份即可 (中间态没有意义)。
    */
   const push = useCallback(
@@ -132,7 +132,7 @@ export function useHistory(opts: UseHistoryOptions = {}): HistoryApi {
       const coalesce = shouldCoalesce(last, { tag, at: now }, coalesceMs);
 
       if (coalesce) {
-        // 不改 past —— 已经存了更旧的那份, 中间态丢弃
+        // 不改 past  已经存了更旧的那份, 中间态丢弃
         lastRef.current = { tag, at: now };
       } else {
         setPast((p) => {
@@ -152,13 +152,13 @@ export function useHistory(opts: UseHistoryOptions = {}): HistoryApi {
    * 撤销。
    *
    * ⚠️ 要返回的东西必须**同步**从 past 里取, 不能靠 setState 的 updater
-   *    赋值 —— updater 是延迟执行的, 函数体 return 时那个变量还是 null,
-   *    于是 undo() 永远返回 null。而返回类型允许 null, 所以不会报错。
+   * 赋值  updater 是延迟执行的, 函数体 return 时那个变量还是 null,
+   * 于是 undo() 永远返回 null。而返回类型允许 null, 所以不会报错。
    *
-   *    这里 setState 只负责写, 读与写分开。
+   * 这里 setState 只负责写, 读与写分开。
    */
   /**
-   * "上一次见到的图" —— 只用于**去重**, 绝不用于判断"是不是第一次"。
+   * "上一次见到的图"  只用于**去重**, 绝不用于判断"是不是第一次"。
    *
    * 两个 ref 表达同一个概念却没有同步机制就会出错, 所以: 去重交给
    * seenRef, "是否是第一次提交"完全交给 push 内部的 currentRef。
@@ -202,7 +202,7 @@ export function useHistory(opts: UseHistoryOptions = {}): HistoryApi {
     (graph: BlueprintGraph, o?: { readonly tag?: string | null; readonly label?: string }) => {
       if (seenRef.current === graph) return; // 引用没变 = 没改
       seenRef.current = graph;
-      // 无条件交给 push —— 由它统一处理"第一次只记基线"与合并判定
+      // 无条件交给 push  由它统一处理"第一次只记基线"与合并判定
       push(graph, o);
     },
     [push]

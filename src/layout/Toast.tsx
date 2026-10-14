@@ -8,17 +8,17 @@ import { cn } from "../primitives/utils";
  * 消息提醒（toast）。
  *
  * 视觉对标 open-vetta 的 ToasterView（同一套设计语言）:
- *   右下角固定 340px 宽的堆叠、rounded-xl 边框、每种语义用**内环色**区分、
- *   进场 y:16→0 淡入、退场向右滑出。这些数值是上游调过的, 沿用。
+ * 右下角固定 340px 宽的堆叠、rounded-xl 边框、每种语义用**内环色**区分、
+ * 进场 y:16→0 淡入、退场向右滑出。这些数值是上游调过的, 沿用。
  *
  * 上游没做的两件事, 这里补上:
- *   1. position —— 除右下角外还支持顶部居中 (那种"操作成功"的短提示常用顶部)。
- *   2. maxVisible —— 堆叠上限。上游不限制, 连续报错时会铺满半个屏幕。
+ * 1. position  除右下角外还支持顶部居中 (那种"操作成功"的短提示常用顶部)。
+ * 2. maxVisible  堆叠上限。上游不限制, 连续报错时会铺满半个屏幕。
  *
  * 状态管理不走 jotai (那是上游的宿主选择)。这里用一个模块级 store + 订阅:
- *   - showToast 可以在任何地方直接调, 不需要 React context (事件回调、请求失败分支)
- *   - 组件通过 useSyncExternalStore 订阅, 因此不会因为 store 在组件外面而失效
- * 这样做的好处是与宿主的状态库解耦 —— 换 redux / zustand / jotai 都不用改这个文件。
+ * - showToast 可以在任何地方直接调, 不需要 React context (事件回调、请求失败分支)
+ * - 组件通过 useSyncExternalStore 订阅, 因此不会因为 store 在组件外面而失效
+ * 这样做的好处是与宿主的状态库解耦  换 redux / zustand / jotai 都不用改这个文件。
  */
 
 export type ToastVariant = "info" | "success" | "warning" | "error";
@@ -51,7 +51,7 @@ export interface ShowToastInput {
 
 /**
  * 默认停留 4000ms。
- * 2000 太短 —— 一行以上的正文读不完; 8000 太长 —— 用户会去找关闭按钮。
+ * 2000 太短  一行以上的正文读不完; 8000 太长  用户会去找关闭按钮。
  * 有 action 的提醒会自动延长 (见 showToast), 因为要留时间让人点。
  */
 const DEFAULT_DURATION_MS = 4000;
@@ -63,7 +63,7 @@ const ACTION_DURATION_MS = 8000;
  * (请求失败的 catch 分支、定时回调、非 React 的工具函数)。要求那些地方也拿到
  * context 会把简单的调用变成"先传一个 dispatch 下来"。
  *
- * 代价是同一页面上不能开两个独立的 Toaster 栈 —— 对消息提醒来说这是可接受的,
+ * 代价是同一页面上不能开两个独立的 Toaster 栈  对消息提醒来说这是可接受的,
  * 它本来就是一个全局通道。
  */
 let toasts: ToastItem[] = [];
@@ -146,7 +146,7 @@ export const toast = {
 };
 
 /**
- * 每种语义的样式。对标上游: 用**内环**区分而不是换整个底色 ——
+ * 每种语义的样式。对标上游: 用**内环**区分而不是换整个底色 
  * 换底色会让提醒在最需要被看清的时候变成一个彩色方块, 反而压过正文。
  * 环色取语义色, 图标跟着同色, 正文保持中性。
  */
@@ -163,7 +163,7 @@ const POSITION_CLASS: Record<ToastPosition, string> = {
   "top-center": "fixed top-4 left-1/2 -translate-x-1/2 w-[min(420px,calc(100vw-2rem))] flex-col",
 };
 
-/** 进场与退场的位移方向按位置分开 —— 从下方来就该回下方去。 */
+/** 进场与退场的位移方向按位置分开  从下方来就该回下方去。 */
 const POSITION_MOTION: Record<
   ToastPosition,
   { initial: TargetAndTransition; exit: TargetAndTransition }
@@ -217,7 +217,7 @@ export interface ToastViewportProps {
   /** 弹出位置。默认右下角。 */
   position?: ToastPosition;
   /**
-   * 最多同时显示几条。默认 3 —— 再多会盖住页面内容。
+   * 最多同时显示几条。默认 3  再多会盖住页面内容。
    * 超出时从最旧的一条开始丢 (最新的最可能是用户刚触发的, 更该被看到)。
    * 传 0 表示不限制。
    */
@@ -225,7 +225,7 @@ export interface ToastViewportProps {
 }
 
 /**
- * 提醒的容器。**整个应用挂一个就够了** —— 挂在根布局里, 而不是每个页面各挂一个,
+ * 提醒的容器。**整个应用挂一个就够了**  挂在根布局里, 而不是每个页面各挂一个,
  * 否则切页时正在显示的提醒会跟着页面的卸载一起消失。
  */
 export function Toaster({ position = "bottom-right", maxVisible = 3 }: ToastViewportProps): JSX.Element {
@@ -269,7 +269,7 @@ export function Toaster({ position = "bottom-right", maxVisible = 3 }: ToastView
 
 /* ── 命令式的辅助 hook ────────────────────────────────────────────────────
  * 让组件里可以 `const t = useToast(); t.success("已保存")`, 语义比裸调 showToast 清楚。
- * 它只是把模块级函数包一层, 没有自己的状态 —— 因此不会因为用到它就多一次渲染。
+ * 它只是把模块级函数包一层, 没有自己的状态  因此不会因为用到它就多一次渲染。
  */
 export function useToast(): typeof toast {
   return toast;
@@ -284,5 +284,5 @@ export function __resetToastsForTest(): void {
   for (const t of timers.values()) clearTimeout(t);
   timers.clear();
   toasts = [];
-  // 不 emit —— 调用方通常是测试, 没有订阅者
+  // 不 emit  调用方通常是测试, 没有订阅者
 }

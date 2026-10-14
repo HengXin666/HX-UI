@@ -6,7 +6,7 @@ import { H2, P, Preview, Callout, Code, CodeBlock } from "../components/DocKit";
 /**
  * 蓝图库的**使用方演示**页。
  *
- * 这一页的 dsh 图不在 HX-UI 里, 它住在兄弟包 HX-Blueprint-Demo ——
+ * 这一页的 dsh 图不在 HX-UI 里, 它住在兄弟包 HX-Blueprint-Demo 
  * 只能通过 @hx/ui 的公共 API 拿到东西。放在库里会忍不住摸内部,
  * 而那证明不了拓展点开得对不对。
  */
@@ -43,7 +43,7 @@ export function BlueprintDshPage(): JSX.Element {
       <H2>这是什么</H2>
       <P>
         把 <Code>dsh-agent-loop</Code> 的整个 agent loop 画成一张蓝图。
-        不是示意图 —— 每个节点对应源码里一个真实的控制流位置，每条白线对应一个真实的"下一步"，
+        不是示意图  每个节点对应源码里一个真实的控制流位置，每条白线对应一个真实的"下一步"，
         节点定义上带 <Code>source</Code> 字段标了行号，可以回去逐条核对。
       </P>
       <P>
@@ -54,7 +54,7 @@ export function BlueprintDshPage(): JSX.Element {
 
       <H2>全貌 (架构层)</H2>
       <P>
-        <strong>根图是 10 个大步骤</strong>, 每个大步骤是一个<strong>子图</strong> ——
+        <strong>根图是 10 个大步骤</strong>, 每个大步骤是一个<strong>子图</strong> 
         双击进入看它"怎么做"。粒度到"照着能 1:1 复现"为止, 不再往下拆到代码分支。
       </P>
       <Preview align="stretch">
@@ -66,7 +66,7 @@ export function BlueprintDshPage(): JSX.Element {
       <P>
         <strong>进 (输入 → 请求)。</strong>输入进收件箱后被原子领取, 从持久日志派生出
         本次要发的消息序列, 再由权威 waterfall 定出提示词与可见工具, 最后定路由、绑适配器、
-        记请求头、冻结请求。注意<strong>请求头只在必要时重写</strong> —— 否则 KV 前缀缓存
+        记请求头、冻结请求。注意<strong>请求头只在必要时重写</strong>  否则 KV 前缀缓存
         会从第一个变化的 token 起全部失效。
       </P>
       <P>
@@ -76,7 +76,7 @@ export function BlueprintDshPage(): JSX.Element {
       </P>
       <P>
         <strong>循环与压缩。</strong>步骤给出结束原因后决定: 继续本轮下一步、开新一轮、
-        还是先压缩再继续。压缩会改写历史, 所以压完必须<strong>重新组装提示词</strong> ——
+        还是先压缩再继续。压缩会改写历史, 所以压完必须<strong>重新组装提示词</strong> 
         这就是图上压缩回到组装的那条边。
       </P>
 
@@ -84,7 +84,7 @@ export function BlueprintDshPage(): JSX.Element {
       <P>
         另有一张<strong>对应源码控制流</strong>的图: 60 个节点, 每个带{" "}
         <Code>source</Code> 字段标了 <Code>dsh-agent-loop</Code> 里的行号。
-        那是代码流程图, 不是架构图 —— 用来逐条核对, 不是用来看结构。
+        那是代码流程图, 不是架构图  用来逐条核对, 不是用来看结构。
       </P>
       <Preview align="stretch">
         <DshDemo />
@@ -95,23 +95,23 @@ export function BlueprintDshPage(): JSX.Element {
         几个不那么显然的连线，都是从源码里读出来的：
       </P>
       <P>
-        <Code>requestError →(retry) prepareRequest</Code> —— 源码里是 <Code>continue</Code>，
+        <Code>requestError →(retry) prepareRequest</Code>  源码里是 <Code>continue</Code>，
         回到 <Code>while(true)</Code> 顶部。关键是<strong>重试复用已渲染的组装结果</strong>：
         不重新组装、不重跑 <Code>pre-step</Code>、不重复追加 user 消息。所以这条边不能画回
         <Code>stepStart</Code>，那会表达成"重新走一遍准入"。
       </P>
       <P>
-        <Code>checkEmpty →(empty) turnEnd</Code> 与 <Code>checkReject →(reject) turnEnd</Code> ——
+        <Code>checkEmpty →(empty) turnEnd</Code> 与 <Code>checkReject →(reject) turnEnd</Code> 
         两者都是直接 <Code>return false</Code>，轮次以 <Code>completed</Code> / <Code>blocked</Code> 结束，
         <strong>不打开步骤</strong>。空的首批输入不产生 <Code>step/start</Code>。
       </P>
       <P>
-        <Code>mode →(exclusive) exclusiveBarrier</Code> / <Code>(parallel) parallelPool</Code> ——
+        <Code>mode →(exclusive) exclusiveBarrier</Code> / <Code>(parallel) parallelPool</Code> 
         源码是 <Code>mode === "parallel" ? planned.slice(next) : [first]</Code>：
         独占调用单独跑一个并构成排序屏障，并行安全的整批进有界池，上限 <Code>maxParallelToolCalls</Code>。
       </P>
       <P>
-        <Code>wake →(again) kick</Code> —— <Code>turn()</Code> 末尾
+        <Code>wake →(again) kick</Code>  <Code>turn()</Code> 末尾
         <Code>return true</Code>，而 <Code>kick()</Code> 是 <Code>while (await this.turn())</Code>。
         这条边就是"再来一轮"。
       </P>
@@ -124,13 +124,13 @@ export function BlueprintDshPage(): JSX.Element {
         面包屑退回。
       </P>
       <Callout title="用自己演示自己">
-        折叠功能是蓝图库的能力，这张图用它来让自身可读 —— 这比另写一个假例子更有说服力：
+        折叠功能是蓝图库的能力，这张图用它来让自身可读  这比另写一个假例子更有说服力：
         如果它扛不住自己的复杂度，那它对使用方也没用。
       </Callout>
 
       <H2>怎么拓展</H2>
       <P>
-        加一个节点 = 往节点表里加一条定义。<strong>蓝图层零改动</strong> ——
+        加一个节点 = 往节点表里加一条定义。<strong>蓝图层零改动</strong> 
         校验、类型相容、面板、求值全都对新节点立即生效。
       </P>
       <CodeBlock code={EXTEND_NOTE} />
@@ -157,7 +157,7 @@ export function BlueprintDshPage(): JSX.Element {
         三条关键的取舍:
       </P>
       <P>
-        <strong>一、即使有错也返回能画的图。</strong>Agent 是迭代式的 —— 它先写一版,
+        <strong>一、即使有错也返回能画的图。</strong>Agent 是迭代式的  它先写一版,
         看报错再修。非法就返回 null 会让它凭空重试; 返回一张"尽力修复过"的图 +
         一份问题清单, 它下一轮就能精确改那一条。
       </P>
@@ -196,7 +196,7 @@ const r = await dispatchTool(tools, "build_graph", { nodes: [...], edges: [...] 
         Agent 视角拿到的文本。
       </P>
       <Callout title="工具是纯函数">
-        不持有状态 —— 图由调用方保管, 工具只做变换。所以它能在后端、在 worker、
+        不持有状态  图由调用方保管, 工具只做变换。所以它能在后端、在 worker、
         在浏览器里跑, 也能并发。这也是为什么 <Code>setGraph</Code> 是可选的:
         只读场景传个 registry 就能用。
       </Callout>

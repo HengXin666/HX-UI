@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { useMemo, useState } from "react";
 import {
-  Badge, Button, Card, CardContent, DataTable, EmptyState, Input, StatGrid, StatCard,
+  Badge, Button, Card, CardContent, DataTable, EmptyState, Input, StatGrid, StatCard, USER,
   type DataTableColumn,
 } from "@hx/ui";
 import { Callout, H2, P, Preview, PropsTable } from "../components/DocKit";
@@ -9,7 +9,7 @@ import { Callout, H2, P, Preview, PropsTable } from "../components/DocKit";
 /**
  * DataTable / StatCard 页。
  *
- * 这一页对着两个真实下游面板写的 —— gh-pool 与 ps-pool 各手搓了一份 170 / 184 行的
+ * 这一页对着两个真实下游面板写的  gh-pool 与 ps-pool 各手搓了一份 170 / 184 行的
  * 原生 table, 而且都把同样四件事重写了一遍: 粘性表头、行悬停、空态、加载态。
  */
 
@@ -31,7 +31,7 @@ const ROWS: readonly Acct[] = [
 
 const COLUMNS: readonly DataTableColumn<Acct>[] = [
   {
-    key: "user",
+    key: USER,
     header: "用户名",
     render: (r) => (
       <a
@@ -72,10 +72,10 @@ export function DataTablePage(): JSX.Element {
     <>
       <H2>DataTable</H2>
       <P>
-        三条刻意的设计约束: <b className="text-foreground">不接管数据获取</b> (排序分页筛选全由使用方给数据 ——
+        三条刻意的设计约束: <b className="text-foreground">不接管数据获取</b> (排序分页筛选全由使用方给数据 
         把请求逻辑塞进来会把"什么时候该重新取数"焊死, 而真实项目里数据可能来自轮询 / SSE / 共享 store);
         列宽走 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">&lt;col&gt;</code> 由浏览器原生算法分配;
-        <b className="text-foreground">粘性表头默认开</b> —— 表格超过一屏时看不到列名是最常见的可用性缺陷, 而且不写不报错。
+        <b className="text-foreground">粘性表头默认开</b>  表格超过一屏时看不到列名是最常见的可用性缺陷, 而且不写不报错。
       </P>
       <Preview
         align="stretch"
@@ -138,7 +138,7 @@ export function DataTablePage(): JSX.Element {
 
       <H2>StatCard / StatGrid</H2>
       <P>
-        tone 的<b className="text-foreground">全部</b>用途是"这个数说明好还是坏", 不是装饰 ——
+        tone 的<b className="text-foreground">全部</b>用途是"这个数说明好还是坏", 不是装饰 
         所以只有五档, 且默认档不染色。大多数指标本身没有好坏, 硬染色会让整页都在喊。
         数字用 tabular-nums: 轮询刷新时位数变化不会让整块面板左右抖, 这一点手写版本几乎总被漏掉。
       </P>
@@ -162,7 +162,7 @@ export function DataTablePage(): JSX.Element {
       </Preview>
 
       <Callout title="空态顺序由 DataBoundary 固定">
-        手写三态判断时最常出的错是顺序 —— 先判空再判 loading, 首次加载会先闪一下"暂无数据"
+        手写三态判断时最常出的错是顺序  先判空再判 loading, 首次加载会先闪一下"暂无数据"
         再变成内容。DataBoundary 把顺序固定为 loading &gt; error &gt; empty &gt; 内容。
       </Callout>
 

@@ -9,7 +9,7 @@ import { H2, H3, P, Preview, PropsTable } from "../components/DocKit";
 /**
  * DropdownMenu 页。
  *
- * 面板圆角是 xl (与 Select 的 lg 不同), 项是 py-2 的 13px —— 比 Select 项大一号。
+ * 面板圆角是 xl (与 Select 的 lg 不同), 项是 py-2 的 13px  比 Select 项大一号。
  * 子菜单箭头是硬编码的 solar 图标, 由本页 import 的库源码带进来, 不用自己登记。
  */
 export function DropdownMenuPage(): JSX.Element {

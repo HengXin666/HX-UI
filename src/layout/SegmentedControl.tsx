@@ -20,7 +20,7 @@ export interface SegmentedControlItem<T extends string> {
  *
  * 这里**不能**用 `NoInfer`: 加上它之后, `items={[{key:"a"},{key:"b"}]} value="a"`
  * 这种字面量写法会因为没有推断依据而把 T 推成 "a", 于是 "b" 报错。
- * 这条路走不通 —— T 必须能从 items 的 key 推出来。
+ * 这条路走不通  T 必须能从 items 的 key 推出来。
  */
 export interface SegmentedControlProps<T extends string> {
 	/** 选项列表。T 由各项的 key 推导, 因此 items 也参与泛型推断。 */

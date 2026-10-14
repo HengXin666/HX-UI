@@ -6,25 +6,25 @@ import { serializeGraph, parseGraph, FORMAT_VERSION } from "./serialize";
  *
  * ## 该存成什么
  *
- * 就是**一个 JSON 文件**。不加版本号以外的元数据、不加密、不压缩 ——
+ * 就是**一个 JSON 文件**。不加版本号以外的元数据、不加密、不压缩 
  * 蓝图是用户资产, 要能进 git diff、能被人手改、能被后端直接读。
  * 一旦加了包装, 这三件事全做不了, 而换来的只有"看起来更专业"。
  *
  * ## 文件扩展名
  *
- * `.bp.json`。带 `.json` 是因为它**就是** JSON —— 编辑器能直接高亮、
+ * `.bp.json`。带 `.json` 是因为它**就是** JSON  编辑器能直接高亮、
  * git 能直接 diff、双击能直接打开。只写 `.bp` 会让所有这些都失效。
  *
  * ## 为什么不做"自动保存到磁盘"
  *
  * 浏览器不能不经授权写任意路径。能落盘的两条路:
- *   - File System Access API (`showSaveFilePicker`): 要用户授权一次, 之后
- *     可把 handle 存进 IndexedDB 免授权。只有 Chromium 系完整支持。
- *   - 下载 / 读取: 零权限、全兼容, 但每次都要走一次文件对话框。
+ * - File System Access API (`showSaveFilePicker`): 要用户授权一次, 之后
+ * 可把 handle 存进 IndexedDB 免授权。只有 Chromium 系完整支持。
+ * - 下载 / 读取: 零权限、全兼容, 但每次都要走一次文件对话框。
  *
  * 这里两条都给: `downloadGraph` 是零权限的兜底 (永远可用),
  * `saveGraphToHandle` 是"真的存到那个文件" (Chromium, 授权一次后免打扰)。
- * 不做"静默写回原文件" —— 那是用户没预期的副作用。
+ * 不做"静默写回原文件"  那是用户没预期的副作用。
  */
 
 export const GRAPH_EXT = ".bp.json";
@@ -37,7 +37,7 @@ export function downloadGraph(graph: BlueprintGraph, filename = `blueprint${GRAP
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
-  // 必须挂进 DOM 再点 —— 游离节点的 click() 在部分浏览器里不触发下载
+  // 必须挂进 DOM 再点  游离节点的 click() 在部分浏览器里不触发下载
   document.body.appendChild(a);
   a.click();
   a.remove();
@@ -74,7 +74,7 @@ export function pickGraphFile(): Promise<BlueprintGraph | null> {
  * File System Access API 的落盘。
  *
  * 有 handle 就直写 (不会再弹框), 没有就先让用户选一次位置。
- * 不支持的浏览器 (Firefox / Safari) 返回 null —— 调用方退回 downloadGraph,
+ * 不支持的浏览器 (Firefox / Safari) 返回 null  调用方退回 downloadGraph,
  * 不做"降级到 localStorage 假装存住了"这种骗人的事。
  */
 export async function saveGraphToHandle(

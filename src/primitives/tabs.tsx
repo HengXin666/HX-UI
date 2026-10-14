@@ -10,11 +10,11 @@ import { cn } from "./utils";
  *
  * Radix 的 Tabs 只给了**行为** (roving focus / 方向键 / aria 关联), 样式全归使用方。
  * 这里给两种形态:
- *   underline —— 默认。用在"同一个对象的几个视图"上 (概览 / 日志 / 配置),
- *                下划线是这类切换最轻的指示, 不额外占一层底色。
- *   pill      —— 装在边框容器里的小开关, 用在工具条上。它与 SegmentedControl
- *                长得像但**职责不同**: SegmentedControl 只切视图不切面板内容,
- *                Tabs 负责把 TabsContent 与触发器做 aria 关联, 别用错。
+ * underline  默认。用在"同一个对象的几个视图"上 (概览 / 日志 / 配置),
+ * 下划线是这类切换最轻的指示, 不额外占一层底色。
+ * pill       装在边框容器里的小开关, 用在工具条上。它与 SegmentedControl
+ * 长得像但**职责不同**: SegmentedControl 只切视图不切面板内容,
+ * Tabs 负责把 TabsContent 与触发器做 aria 关联, 别用错。
  *
  * variant 由 TabsList 通过 context 下发给 trigger, 免得调用方两处都写、写岔了。
  */

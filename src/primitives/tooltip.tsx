@@ -8,11 +8,11 @@ import { cn } from "./utils";
  * 悬浮提示。
  *
  * 两处与 radix 默认不同, 都是针对"工具型界面"改的:
- *   1. Provider 默认 delayDuration 700ms —— 想确认一个图标按钮是什么要等将近一秒。
- *      这里压到 0; 需要滞后的场景由使用方显式传。
- *   2. 面板用前景色反相 (bg-foreground / text-background)。提示是"附在指针旁的
- *      临时标签", 不该和 popover 那种常驻面板抢同一层视觉重量 —— 靠反相拉开层级,
- *      而不是靠阴影。
+ * 1. Provider 默认 delayDuration 700ms  想确认一个图标按钮是什么要等将近一秒。
+ * 这里压到 0; 需要滞后的场景由使用方显式传。
+ * 2. 面板用前景色反相 (bg-foreground / text-background)。提示是"附在指针旁的
+ * 临时标签", 不该和 popover 那种常驻面板抢同一层视觉重量  靠反相拉开层级,
+ * 而不是靠阴影。
  */
 function TooltipProvider({
 	delayDuration = 0,
@@ -73,7 +73,7 @@ function TooltipContent({
  * 少了它, 每个使用方都要手拼 Root / Trigger asChild / Portal 三层。
  *
  * 它**自带 Provider**。radix 的 Tooltip.Root 在 Provider 之外
- * 会直接抛 \`Tooltip must be used within TooltipProvider\` 并把整棵子树打白 ——
+ * 会直接抛 \`Tooltip must be used within TooltipProvider\` 并把整棵子树打白 
  * 一个"只差一句说明"的便利组件不该让使用方去背这条约束。需要共享延迟策略时
  * 仍然可以自己在外面套 Provider (内层会读到外层的那一个)。
  */

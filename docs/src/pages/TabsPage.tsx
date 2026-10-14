@@ -10,7 +10,7 @@ export function TabsPage(): JSX.Element {
   return (
     <>
       <P>
-        radix 的 Tabs 只给了<b className="text-foreground">行为</b> —— roving focus、方向键切换、
+        radix 的 Tabs 只给了<b className="text-foreground">行为</b>  roving focus、方向键切换、
         触发器与面板的 aria 关联。样式全归使用方, 这里给两种形态。
       </P>
 
@@ -95,7 +95,7 @@ export function TabsPage(): JSX.Element {
         不负责面板内容, 用在工具栏那种"改一个筛选条件"的地方;
         <b className="text-foreground">Tabs</b> 会把触发器与 TabsContent 做 aria 关联
         (tab → tabpanel), 是"同一对象的多个视图", 读屏软件能正确播报。用错的那一个
-        在无障碍上是沉默的 —— 看起来一样, 用起来不一样。
+        在无障碍上是沉默的  看起来一样, 用起来不一样。
       </Callout>
 
       <H2>属性</H2>

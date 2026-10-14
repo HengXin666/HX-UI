@@ -19,15 +19,15 @@ const STEPS: readonly StepItem[] = [
  * 联动示例。
  *
  * 这个组件要演示的是「接口怎么设计」而不是「组件长什么样」:
- *   步骤条的状态、日志的内容、提醒的弹出, 三者都由**同一份流程状态**驱动。
- *   流程本身是一个 async 函数, 每推进一步就同时更新步骤与日志 —— 而不是各写各的。
+ * 步骤条的状态、日志的内容、提醒的弹出, 三者都由**同一份流程状态**驱动。
+ * 流程本身是一个 async 函数, 每推进一步就同时更新步骤与日志  而不是各写各的。
  */
 function ConnectionFlow(): JSX.Element {
   const [current, setCurrent] = useState(-1);
   const [statuses, setStatuses] = useState<Record<string, StepStatus>>({});
   const [lines, setLines] = useState<LogLine[]>([]);
   const [running, setRunning] = useState(false);
-  // 用来在演示中途取消 —— 真实场景里对应 AbortController
+  // 用来在演示中途取消  真实场景里对应 AbortController
   const cancelled = useRef(false);
 
   const log = useCallback((dir: "send" | "recv" | "system", msg: string) => {
@@ -46,7 +46,7 @@ function ConnectionFlow(): JSX.Element {
     setCurrent(-1);
     log("system", "开始连接流程");
 
-    // 步骤与日志在同一处推进 —— 这是关键。分开写迟早会不同步。
+    // 步骤与日志在同一处推进  这是关键。分开写迟早会不同步。
     const steps: Array<{ id: string; run: () => Promise<void> }> = [
       {
         id: "probe",
@@ -117,7 +117,7 @@ function ConnectionFlow(): JSX.Element {
     setRunning(false);
   }, [log, setStep]);
 
-  // 步骤状态由外部传入 —— Stepper 自己不记 current
+  // 步骤状态由外部传入  Stepper 自己不记 current
   const stepsView = STEPS.map((s) => ({ ...s, status: statuses[s.id] }));
 
   return (
@@ -176,7 +176,7 @@ export function StepperPage(): JSX.Element {
   return (
     <>
       <P>
-        步骤条与日志框。重点不在两个组件长什么样，而在**它们怎么被同一份流程状态驱动** ——
+        步骤条与日志框。重点不在两个组件长什么样，而在**它们怎么被同一份流程状态驱动** 
         真实场景里步骤的推进条件是「HTTP 探测成功」「token 拿到」「WebSocket 101」这些外部事实，
         组件自己记 <Code>current</Code> 的话，这些事实就要再同步一遍，迟早不同步。
       </P>
@@ -207,7 +207,7 @@ for (let i = 0; i < steps.length; i++) {
   }
 }
 
-// 步骤状态由外部传入 —— Stepper 自己不记 current
+// 步骤状态由外部传入  Stepper 自己不记 current
 <Stepper steps={steps.map(s => ({ ...s, status: statuses[s.id] }))} current={current} />
 <LogViewer lines={lines} height={240} />`}>
         <ConnectionFlow />
@@ -215,7 +215,7 @@ for (let i = 0; i < steps.length; i++) {
 
       <H2>失败分支</H2>
       <P>
-        某一步失败时把它的状态设成 <Code>error</Code>，步骤条会标红**并且停在那里** ——
+        某一步失败时把它的状态设成 <Code>error</Code>，步骤条会标红**并且停在那里** 
         失败必须能一眼看到，否则用户会卡在第二步不知道为什么。已经完成的步骤保持 <Code>done</Code>。
       </P>
       <Preview align="stretch" code={`setStep("auth", "error");   // 这一步标红
@@ -246,7 +246,7 @@ toast.error("token 端点返回 401", { title: "鉴权失败" });`}>
       <H2>可点击回看</H2>
       <P>
         默认只能点已完成的步骤（<Code>clickable="done"</Code>）。允许往前跳会绕过前置校验，
-        那是要显式开启的行为 —— 传 <Code>clickable="all"</Code> 或自定义 <Code>onStepClick</Code>。
+        那是要显式开启的行为  传 <Code>clickable="all"</Code> 或自定义 <Code>onStepClick</Code>。
       </P>
       <Preview
         align="stretch"
@@ -259,7 +259,7 @@ toast.error("token 端点返回 401", { title: "鉴权失败" });`}>
       <H2>紧凑圆点</H2>
       <P>
         只要「走到哪了」、不需要文字时用 <Code>StepDots</Code>。当前那个是一条短横条，
-        用 <Code>layoutId</Code> 在位置之间滑动 —— 两个点各自淡入淡出看不出移动，一个横条滑过去才有方向感。
+        用 <Code>layoutId</Code> 在位置之间滑动  两个点各自淡入淡出看不出移动，一个横条滑过去才有方向感。
       </P>
       <Preview
         align="center"
@@ -287,7 +287,7 @@ toast.error("token 端点返回 401", { title: "鉴权失败" });`}>
         三个它必须解决的问题，也是它与「一个滚动 div」的区别：
         <br />
         <b className="text-foreground">一、自动滚动要「粘底但不锁死」</b>：新行进来时若用户已在底部就跟着滚；
-        若用户往上翻了在看历史就**不要动** —— 强行滚动会把正在读的内容顶走。判定留了 24px 容差，
+        若用户往上翻了在看历史就**不要动**  强行滚动会把正在读的内容顶走。判定留了 24px 容差，
         用等值判会因为亚像素误差在临界点抖动。
         <br />
         <b className="text-foreground">二、等宽对齐与折行</b>：<Code>whitespace-pre-wrap</Code> 保留前导空格做列对齐，

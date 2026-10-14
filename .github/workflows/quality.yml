@@ -1,6 +1,6 @@
 name: quality
 
-# 远程检查点 —— 与本地钩子跑**同一个入口** (scripts/gates/run.mjs)。
+# 远程检查点  与本地钩子跑**同一个入口** (scripts/gates/run.mjs)。
 #
 # ## 为什么这么薄
 #

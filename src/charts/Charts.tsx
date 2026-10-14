@@ -13,14 +13,15 @@ import { useChartAnimation, type ChartAnimationOptions } from "./useChartAnimati
  * 图表组件集。基于 Recharts 3 套一层, 统一样式与动画策略。
  *
  * 所有图表都:
- *   - 响应式 (ResponsiveContainer, 宽度跟随父元素)
- *   - 配色走 token (换肤自动生效)
- *   - 使用统一的好看提示面板
- *   - 区分首次加载与增量动画 (见 animation.ts)
- *
+ * - 响应式 (ResponsiveContainer, 宽度跟随父元素)
+ * - 配色走 token (换肤自动生效)
+ * - 使用统一的好看提示面板
+ * - 区分首次加载与增量动画 (见 animation.ts)
  * 数据形状约定: 每条记录是一个对象, 横轴取 xKey (默认 "name"), 各系列取自己的 dataKey。
  */
 
+/** Agent Notes v2 双链
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md */
 export interface SeriesDef<T = Record<string, unknown>> {
   readonly dataKey: string;
   /** 图例与提示面板里显示的名字。不传则用 dataKey。 */
@@ -71,7 +72,7 @@ export function HxLineChart<T extends Record<string, unknown>>({
               name={s.name ?? s.dataKey}
               stroke={s.color ?? seriesColor(i)}
               strokeWidth={2}
-              // 描边不随容器缩放变形 —— 响应式图表里必须加, 否则线宽会被拉扁
+              // 描边不随容器缩放变形  响应式图表里必须加, 否则线宽会被拉扁
               vectorEffect="non-scaling-stroke"
               dot={showDots ? { r: 2.5, strokeWidth: 0, fill: s.color ?? seriesColor(i) } : false}
               activeDot={{ r: 4, strokeWidth: 0 }}

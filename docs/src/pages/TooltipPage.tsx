@@ -7,7 +7,7 @@ import { Callout, H2, P, Preview, PropsTable } from "../components/DocKit";
  *
  * 这一页存在的意义不只是"展示悬浮提示": 它是本库**依赖早已装好、封装却是空的那一批**
  * 的代表。package.json 里 radix-ui 是全量安装的 (55 个子包), 但在此之前只用了 6 个。
- * 换句话说 Tooltip 一直是可用的, 只是没人把它拼出来 —— 于是下游各自写
+ * 换句话说 Tooltip 一直是可用的, 只是没人把它拼出来  于是下游各自写
  * title= 属性顶着 (那个要等 1 秒、样式不可控、触摸设备上完全不出现)。
  */
 export function TooltipPage(): JSX.Element {
@@ -15,7 +15,7 @@ export function TooltipPage(): JSX.Element {
     <>
       <P>
         面板用<b className="text-foreground">前景色反相</b> (bg-foreground / text-background), 不是 popover 那种卡片面。
-        原因: 提示是"附在指针旁的临时标签", 不该和常驻面板抢同一层视觉重量 —— 靠反相拉开层级, 而不是靠加阴影。
+        原因: 提示是"附在指针旁的临时标签", 不该和常驻面板抢同一层视觉重量  靠反相拉开层级, 而不是靠加阴影。
       </P>
 
       <Callout title="Provider 的默认延迟被改成 0">
@@ -112,7 +112,7 @@ export function TooltipPage(): JSX.Element {
       <H2>注意</H2>
       <P>
         触发元素必须能接收 ref。给自研组件套 TooltipTrigger asChild 时, 那个组件要转发 ref,
-        否则提示不会出现 —— 而且不会有任何报错。库内所有基础件都已转发。
+        否则提示不会出现  而且不会有任何报错。库内所有基础件都已转发。
       </P>
     </>
   );

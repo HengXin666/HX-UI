@@ -13,7 +13,7 @@ import {
  *
  * 为什么不用 React Context: 节点定义是**静态**的, 与组件树无关。
  * 放进 Context 会逼着每个使用方包一层 Provider, 而校验函数在图外也要能跑
- * (后端导出、单元测试) —— 那时根本没有 React。
+ * (后端导出、单元测试)  那时根本没有 React。
  *
  * 但**自定义校验钩子**(`validators`)是一次性的、按实例装的, 所以放在这里
  * 而不写进 NodeTypeDef: 定义是可序列化的 JSON, 钩子不是。
@@ -28,7 +28,7 @@ export class BlueprintRegistryImpl implements BlueprintRegistry {
     if (withBaseTypes) for (const t of Object.values(BASE_TYPES)) this.dataTypes.set(t.id, t);
   }
 
-  /** 注册一个节点类型。重名覆盖 —— 交给源码的最后一版说话。 */
+  /** 注册一个节点类型。重名覆盖  交给源码的最后一版说话。 */
   node(def: NodeTypeDef): this {
     this.nodeTypes.set(def.type, def);
     return this;
@@ -56,7 +56,7 @@ export class BlueprintRegistryImpl implements BlueprintRegistry {
     };
   }
 
-  /** 取节点定义。未知类型返回 undefined —— 调用方按"未注册"处理。 */
+  /** 取节点定义。未知类型返回 undefined  调用方按"未注册"处理。 */
   def(type: string): NodeTypeDef | undefined {
     return this.nodeTypes.get(type);
   }
@@ -72,8 +72,8 @@ export class BlueprintRegistryImpl implements BlueprintRegistry {
    * 类型相容判定: `from` 的值能不能喂给 `to` 输入口。
    *
    * 沿 `extends` 链向上走 (协变)。`any` 在两个方向都通:
-   *   - 输出端是 any  ->  能进任何输入口 (编译器不知道它是什么, 只能放行)
-   *   - 输入端是 any  ->  任何输出都能进
+   * - 输出端是 any  ->  能进任何输入口 (编译器不知道它是什么, 只能放行)
+   * - 输入端是 any  ->  任何输出都能进
    * 相等短路在前面, 免得自引用类型走进死循环。
    */
   assignable(from: DataTypeId, to: DataTypeId): boolean {
@@ -100,7 +100,7 @@ export class BlueprintRegistryImpl implements BlueprintRegistry {
   /**
    * 连线的颜色 (stroke-*)。
    *
-   * 没写 strokeClass 时从 colorClass 把 `bg-` 换成 `stroke-` 推导 ——
+   * 没写 strokeClass 时从 colorClass 把 `bg-` 换成 `stroke-` 推导 
    * 这样注册一个类型只需写一处颜色, 圆点与连线自动一致。
    * 显式写了 strokeClass 就以它为准。
    */

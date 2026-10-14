@@ -50,7 +50,7 @@ export function SettingsSidebarView({
 	title,
 }: SettingsSidebarViewProps): JSX.Element {
 	// 展开态不是独立状态，而是「当前停在这个标签里」的表现：选中即展开，切走即收起。
-	// 深链直接进到某个下级入口时也一样——它所属的标签就是当前标签。
+	// 深链直接进到某个下级入口时也一样它所属的标签就是当前标签。
 	const activeParentKey = activeChildKey
 		? (tabs.find((tab) => tab.children?.some((child) => child.key === activeChildKey))?.key ?? null)
 		: null;

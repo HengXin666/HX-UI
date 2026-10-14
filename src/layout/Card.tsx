@@ -5,14 +5,14 @@ import { cn } from "../primitives/utils";
 /**
  * 卡片。
  *
- * 上游**没有** Card 组件 —— 它用的是一条约定: 所有卡片都是
+ * 上游**没有** Card 组件  它用的是一条约定: 所有卡片都是
  * `rounded-xl border border-border bg-card` 这一族类串, 在上百个文件里手写。
  * 复刻时把那族类串收成一个组件, 免得每个使用方各自记一遍边界的写法。
  *
  * 三条硬约定 (来自上游的视觉规范):
- *   1. 普通卡片**零阴影**。层级靠 1px 边框 + 半透明底色叠出来。
- *   2. hover 只换边框色与背景透明度, 不加阴影、不放大、不平移超过 2px。
- *   3. 线条全局 1px。
+ * 1. 普通卡片**零阴影**。层级靠 1px 边框 + 半透明底色叠出来。
+ * 2. hover 只换边框色与背景透明度, 不加阴影、不放大、不平移超过 2px。
+ * 3. 线条全局 1px。
  */
 const cardVariants = cva("rounded-xl border transition-colors", {
   variants: {

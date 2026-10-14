@@ -16,7 +16,7 @@
  * ## 棘轮怎么用 (存量不因老债直接全仓红)
  *
  * 已经超标的 12 个文件全部登记在 baselines/line-budget.json, 各自以**当前值**为上限。
- * 于是第一次接入就是全绿, 而它们**只许降不许涨** —— 涨 1 行即 FAIL。
+ * 于是第一次接入就是全绿, 而它们**只许降不许涨**  涨 1 行即 FAIL。
  *
  * ## 为什么阈值与基线进指纹
  *
@@ -40,7 +40,9 @@ const BASELINE = process.env.CHECK_UI_BASELINE
 
 const UPDATE = process.argv.includes("--update");
 
-/** 行数口径: 换行符个数 (与 `wc -l` 一致)。测法写在这里, 免得两处算法不同。 */
+/** 行数口径: 换行符个数 (与 `wc -l` 一致)。测法写在这里, 免得两处算法不同。 
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+ */
 function linesOf(file) {
   return fs.readFileSync(file, "utf8").split("\n").length - 1;
 }
@@ -89,7 +91,7 @@ if (UPDATE) {
   if (raised.length > 0) {
     console.error("check-line-budget: --update 拒绝抬高水位 (棘轮只许降):");
     for (const f of raised) console.error(`  ${f}: ${FROZEN[f]} → ${frozen[f]}`);
-    console.error("  水位要涨说明文件变长了 —— 先拆文件, 而不是改基线。");
+    console.error("  水位要涨说明文件变长了  先拆文件, 而不是改基线。");
     process.exit(1);
   }
   fs.writeFileSync(BASELINE, JSON.stringify({ ...base, limits: LIMITS, frozen }, null, 2) + "\n");
@@ -129,7 +131,7 @@ for (const f of Object.keys(FROZEN)) {
       file: f,
       rule: "stale-baseline",
       msg: "基线里登记了这个文件, 但它已经不在仓库里 (改名或删除)",
-      hint: "删掉这条 —— 基线只该缩小, 留着会让人以为还有一笔债。",
+      hint: "删掉这条  基线只该缩小, 留着会让人以为还有一笔债。",
     });
   }
 }

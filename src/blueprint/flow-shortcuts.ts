@@ -18,7 +18,7 @@ import { SHORTCUTS } from "./shortcuts";
  * 那些是我们的语义, 库里没有。
  *
  * 好处是: 键位识别与分派**复用同一份** shortcuts.ts / runShortcut,
- * 于是"表里声明了就必须有实现"那条断言对新画布同样成立 ——
+ * 于是"表里声明了就必须有实现"那条断言对新画布同样成立 
  * 换库不能把已经锁住的判据换掉。
  */
 
@@ -36,7 +36,7 @@ export interface FlowShortcutsProps {
   readonly onSearchClose?: () => void;
 }
 
-/** 键位表暴露出去, 帮助面板照它渲染 —— 与手写画布同一份。 */
+/** 键位表暴露出去, 帮助面板照它渲染  与手写画布同一份。 */
 export const FLOW_SHORTCUTS: readonly ShortcutDef[] = SHORTCUTS;
 
 export function useFlowShortcuts(o: FlowShortcutsProps): {

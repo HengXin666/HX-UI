@@ -8,11 +8,11 @@ import type { ReactNode } from "react";
  * `"image": { extends: "tensor" }` 就能让 image 连进 tensor 输入口。
  *
  * 三个刻意的选择:
- *   1. 端口数据类型用开放 string (`DataTypeId`), 内置那几个只是默认值。
- *   2. 节点的**求值**是可选项 (`evaluate`)。蓝图库的本职是"图 + 合法性",
- *      执行引擎是另一个问题 —— 不提供也能用 (导出图 / 生成代码 / 交给后端)。
- *   3. 校验结果带 `code`。UI 要靠 code 决定"这条红线画在哪",
- *      靠 message 只能打印一行字。
+ * 1. 端口数据类型用开放 string (`DataTypeId`), 内置那几个只是默认值。
+ * 2. 节点的**求值**是可选项 (`evaluate`)。蓝图库的本职是"图 + 合法性",
+ * 执行引擎是另一个问题  不提供也能用 (导出图 / 生成代码 / 交给后端)。
+ * 3. 校验结果带 `code`。UI 要靠 code 决定"这条红线画在哪",
+ * 靠 message 只能打印一行字。
  */
 
 // ── 数据类型 ──────────────────────────────────────────────────────────
@@ -20,7 +20,7 @@ import type { ReactNode } from "react";
 /** 端口上的数据类型标识。开放: 使用方注册什么就是什么。 */
 export type DataTypeId = string;
 
-/** 万物之父 —— 任何类型都能连进 `any` 输入口, `any` 能连进任何输入口。 */
+/** 万物之父  任何类型都能连进 `any` 输入口, `any` 能连进任何输入口。 */
 export const ANY = "any";
 /** 执行流。它不是数据, 是"下一步做这个"。UE5 的白线。 */
 export const EXEC = "exec";
@@ -47,7 +47,7 @@ export interface DataTypeDef {
   /**
    * 端口圆点的颜色类名 (bg-*)。不写就用默认描边色。
    *
-   * 只写 bg-* 是不够的 —— 连线要按类型着色, 而线是 stroke, 不是 background。
+   * 只写 bg-* 是不够的  连线要按类型着色, 而线是 stroke, 不是 background。
    * 所以另给一个 strokeClass; 不写时从 colorClass 推导 (把 bg- 换成 stroke-),
    * 这样绝大多数情况只需写一处。
    */
@@ -79,7 +79,7 @@ export interface PortDef {
   /**
    * 非必填输入。没连线时用这个默认值, 不报"缺少输入"。
    * ComfyUI 的强制输入 / 可选输入之分; 这里用"有没有 default"表达,
-   * 省掉一个布尔字段 —— 有 default 就是可选。
+   * 省掉一个布尔字段  有 default 就是可选。
    */
   readonly default?: unknown;
   /**
@@ -97,7 +97,7 @@ export type ExecOutDef = string | { readonly id: string; readonly label?: string
 /**
  * 求值上下文。
  *
- * 只给**已经算好的输入值**, 不给整个图 —— 节点不该有遍历整张图的权力,
+ * 只给**已经算好的输入值**, 不给整个图  节点不该有遍历整张图的权力,
  * 那会让"局部求值"和"缓存"都没法做。
  */
 export interface EvalContext {
@@ -113,7 +113,7 @@ export interface EvalContext {
  * 节点实例自带的端口声明。
  *
  * 为什么需要它: 子图的进出端点 ("隧道") 是**每个子图都不一样**的,
- * 而 NodeTypeDef 是注册中心里静态的、按 type 共享的 —— 用静态定义表达不了。
+ * 而 NodeTypeDef 是注册中心里静态的、按 type 共享的  用静态定义表达不了。
  * 把端口声明下放一层到实例上, 隧道就变成一个普通节点:
  * 校验 / 环检测 / 拓扑序 / 求值全都无需为子图写特例。
  *
@@ -129,7 +129,7 @@ export interface NodePorts {
 }
 
 /**
- * 节点类别 —— 决定标题栏的颜色。
+ * 节点类别  决定标题栏的颜色。
  *
  * UE5 里标题栏颜色不是装饰, 是**节点语义的第一眼信息**: 红色 = 事件起点、
  * 蓝色 = 函数调用、绿色 = 纯函数 (无副作用)、灰色 = 宏/折叠子图、紫色 = 流程
@@ -173,7 +173,7 @@ export interface NodeTypeDef {
    * 节点类别, 决定标题栏配色。不给时按结构推导 (见 nodeKindOf)。
    *
    * 推导规则与 UE5 一致: 有执行入口的是事件/函数调用, 纯函数 (无执行入口但
-   * 有输出) 走绿色 —— 这正是 UE5 区分 "纯/非纯" 的判据。
+   * 有输出) 走绿色  这正是 UE5 区分 "纯/非纯" 的判据。
    */
   readonly kind?: NodeKind;
   readonly description?: string;
@@ -198,7 +198,7 @@ export interface NodeTypeDef {
    * 执行入口是否允许接多条线 (默认 false = 独占)。
    *
    * 独占是绝大多数节点想要的: 新连一根会顶掉旧的, 语义是"我要这个来源"。
-   * 但**回路汇合点**必须放开 —— 例如"循环回到起点"与"启动进入"两条边
+   * 但**回路汇合点**必须放开  例如"循环回到起点"与"启动进入"两条边
    * 同时存在, 独占会把其中一条顶掉, 而那两条都是真的。
    *
    * 这条只影响执行入口; 数据输入口的独占与否仍由 PortDef.multi 决定。
@@ -209,7 +209,7 @@ export interface NodeTypeDef {
   readonly evaluate?: (ctx: EvalContext) => Record<string, unknown> | Promise<Record<string, unknown>>;
 }
 
-/** 节点内可编辑字段。刻意只做四种 —— 够覆盖九成场景, 多一个就多一份 UI 维护。 */
+/** 节点内可编辑字段。刻意只做四种  够覆盖九成场景, 多一个就多一份 UI 维护。 */
 export interface ParamDef {
   readonly id: string;
   readonly label?: string;
@@ -232,7 +232,7 @@ export interface BlueprintRegistry {
    * 类型相容: `from` 的值能不能喂给 `to` 输入口。
    *
    * 沿 `extends` 链向上走 (协变)。`any` 双向都通。
-   * 放在接口上而不是写成自由函数, 是因为判定需要读 dataTypes 表 ——
+   * 放在接口上而不是写成自由函数, 是因为判定需要读 dataTypes 表 
    * 让它跟着注册中心走, 调用方不用到处传两张表。
    */
   assignable(from: DataTypeId, to: DataTypeId): boolean;
@@ -264,7 +264,7 @@ export interface BlueprintNode {
 }
 
 /**
- * 子图定义 —— "把一片节点折成一个节点"之后, 里面那片东西存在这。
+ * 子图定义  "把一片节点折成一个节点"之后, 里面那片东西存在这。
  *
  * 存在 graph.subgraphs 里而不是直接嵌在节点上, 是为了**可复用**:
  * 一个定义可以有多个调用点 (UE5 的函数就是这么回事), 改一处全变。
@@ -299,21 +299,21 @@ export interface BlueprintComment {
   readonly w: number;
   readonly h: number;
   /**
-   * 语义色。注释是给**人**看的分组标记, 所以它可以用语义色 ——
+   * 语义色。注释是给**人**看的分组标记, 所以它可以用语义色 
    * 但只这几个, 不放开任意颜色, 否则换肤时又会失效。
    */
   readonly tone?: "default" | "primary" | "warning" | "success" | "info" | "danger" | "neutral";
   /**
    * 是否"锁定内容": true 时拖动注释**不带走**里面的节点。
    *
-   * UE5 的注释有两种行为, 而用户会明确地想要其中一种 —— 有时你想挪整个
+   * UE5 的注释有两种行为, 而用户会明确地想要其中一种  有时你想挪整个
    * 分组, 有时你只想挪那张说明便签。做成字段而不是全局开关, 因为同一张
    * 图里两种需求会同时出现。
    */
   readonly moveWithNodes?: boolean;
 }
 
-/** 端口引用。`node` + `port` 两端齐全, 不带索引 —— 索引会随增删漂移。 */
+/** 端口引用。`node` + `port` 两端齐全, 不带索引  索引会随增删漂移。 */
 export interface PortRef {
   readonly node: string;
   readonly port: string;

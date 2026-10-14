@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 /**
- * 负向探针 —— 证明每一条门禁**真的会红**, 以及它**真的被接上了**。
+ * 负向探针  证明每一条门禁**真的会红**, 以及它**真的被接上了**。
  *
  * ## 为什么必须有它
  *
  * "我加了检查规则"和"检查规则真的会拦下违规"是两件事。规则被改坏、锚点被删掉、
- * 正则写漏、路径算错, 都会让门禁**静默失效** —— 而失效的表现和"没发现问题"完全一样:
+ * 正则写漏、路径算错, 都会让门禁**静默失效**  而失效的表现和"没发现问题"完全一样:
  * 退出码 0、没有输出、CI 上还是绿的。
  *
  * 本仓已经有过一次实例 (2026-10-04 实测): 文档注册表门禁的第一版把图标键正则写成
- * 只匹配带引号的写法, 于是一半的键落在检查之外 —— 它照样打印「通过」。
+ * 只匹配带引号的写法, 于是一半的键落在检查之外  它照样打印「通过」。
  * 那条正则是在写完本探针、发现违规组不 FAIL 之后才改对的。
  *
  * ## 三类探针缺一不可
@@ -64,7 +64,7 @@ function writeFiles(base, files) {
 
 /**
  * 把仓库复制一份到临时目录 (排除 node_modules/.git/dist/.bpprobe)。
- * 接线探针要真的去改注册表和检查点配置, 只能在副本上改 —— 绝不碰真实仓库。
+ * 接线探针要真的去改注册表和检查点配置, 只能在副本上改  绝不碰真实仓库。
  *
  * 指纹第二组读的是仓库内受版本控制的钩子源文件 (scripts/gates/hooks 与 .githooks),
  * 不读本机 .git/hooks 安装状态, 所以副本无需额外复制 .git/hooks, 干净 CI checkout 上也能跑。
@@ -119,10 +119,10 @@ const CHECK = {
 /** ── 夹具模板 ──────────────────────────────────────────────────── */
 
 /**
- * 最小 docs+src 骨架 —— 给「注册表对账 / 行数 / 分流」三条门禁喂最小输入。
+ * 最小 docs+src 骨架  给「注册表对账 / 行数 / 分流」三条门禁喂最小输入。
  * 这不是可构建的站点: 这三条门禁都只做静态对账, 不跑构建。
  *
- * ⚠️ App.tsx 必须写成 `switch (page) { case "a": ... }` 的形式 ——
+ * ⚠️ App.tsx 必须写成 `switch (page) { case "a": ... }` 的形式 
  * 门禁的判据是"页面 id 在 renderPage 里有对应 case"。夹具写成别的形式
  * (例如直接 return) 会让**控制组**报红, 而这正是控制组的价值:
  * 它证明门禁不是靠"有没有 import"这类弱信号在放行。
@@ -169,7 +169,7 @@ export function renderPage(page: string) {
 }
 
 /**
- * 注意: check-lanes 的 LANES 表来自它**自己所在的模块** (import), 不由扫描根覆盖 ——
+ * 注意: check-lanes 的 LANES 表来自它**自己所在的模块** (import), 不由扫描根覆盖 
  * 所以夹具只能验证"多出来的顶层条目会被拦下"与"真实 lane 表能认领干净骨架",
  * 不能验证"改 lane 表本身"。后者由指纹的 registry:lanes 来源覆盖。
  */
@@ -219,7 +219,7 @@ const probes = [
     gate: "check-docs-registry",
     expect: "fail",
     reason:
-      "这是本探针存在的直接理由: 幽灵页会落进 default 分支渲染成占位页 —— 有 h1、DOM 够大, " +
+      "这是本探针存在的直接理由: 幽灵页会落进 default 分支渲染成占位页  有 h1、DOM 够大, " +
       "实测 check-smoke 会报「41/41 页渲染正常」并 exit 0",
     run: () => {
       const dir = fixture("registry-ghost");
@@ -243,7 +243,7 @@ const probes = [
     expect: "fail",
     reason:
       "「组件写好了但忘了接上」必然同时满足这两条, 所以这条同时拦住真实的接线缺口。" +
-      "反过来也要成立: 行数棘轮拆出来的内部件 (只被主文件 import、不对外导出) **必须放行** —— " +
+      "反过来也要成立: 行数棘轮拆出来的内部件 (只被主文件 import、不对外导出) **必须放行**  " +
       "否则门禁在惩罚它自己推荐的修复动作 (实测踩过: canvas-parts.tsx 就被误报过)",
     run: () => {
       const dir = fixture("registry-unexported");
@@ -257,7 +257,7 @@ const probes = [
     gate: "check-docs-registry",
     expect: "pass",
     reason:
-      "这条控制组钉住上面那条的边界。它防的是「门禁把正确的拆分动作报成违规」—— " +
+      "这条控制组钉住上面那条的边界。它防的是「门禁把正确的拆分动作报成违规」 " +
       "而那种误报的结局是所有人学会无视这条门禁",
     run: () => {
       const dir = fixture("registry-splitparts");
@@ -397,7 +397,7 @@ const probes = [
     gate: "check-fingerprint",
     expect: "fail",
     reason:
-      "第一组指纹一个字都没变, 而那条门禁在**所有**检查点上同时消失 —— " +
+      "第一组指纹一个字都没变, 而那条门禁在**所有**检查点上同时消失  " +
       "这是单条门禁自身与违规探针都拦不住的一类失效",
     run: () => {
       const dir = repoCopy("fp-drop-gate");
@@ -466,7 +466,7 @@ const probes = [
     expect: "fail",
     reason:
       "这条钉的是**指纹抽取器本身**。实测过它退化的形态: 第一版只抽 `const X = <字面量>`," +
-      "而 check-ui-rules 的禁令是正则、白名单是 new Set([...]), 一个都没读到 —— " +
+      "而 check-ui-rules 的禁令是正则、白名单是 new Set([...]), 一个都没读到  " +
       "于是三条门禁的指纹哈希完全相同, 它却照样打印「通过」。哈希相同就是抽取器瞎了的判据。",
     run: () => {
       const dir = repoCopy("fp-regex");
@@ -481,7 +481,7 @@ const probes = [
     expectIn: ["thresholds:check-ui-rules"],
   },
   {
-    name: "接线: 控制组 —— 未改动的副本指纹必须 PASS",
+    name: "接线: 控制组  未改动的副本指纹必须 PASS",
     gate: "check-fingerprint",
     expect: "pass",
     reason: "防误报: 指纹对「同样的内容」必须稳定, 否则它是个随机数生成器",

@@ -8,7 +8,7 @@ import { cn } from "./utils";
  * 进度条。
  *
  * 为什么用 radix 的 Root 而不是一个 div: 它把 role="progressbar" 与
- * aria-valuenow / min / max 一起给齐了。手写 div 的进度条在读屏软件里是**静默**的 ——
+ * aria-valuenow / min / max 一起给齐了。手写 div 的进度条在读屏软件里是**静默**的 
  * 视觉上有条, 无障碍上什么都没有, 而且不写 aria 不会有任何报错提示。
  *
  * 指示器的进度用 transform 表达而不是 width: transform 走合成器, 高频更新

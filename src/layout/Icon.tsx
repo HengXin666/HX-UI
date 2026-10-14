@@ -39,10 +39,10 @@ import { cn } from "../primitives/utils";
  * 图标来源。
  *
  * - `string`             Iconify 类串 (形如 `icon-[solar--folder-linear]`)。
- *                         走 mask-image, 因此跟随 currentColor, 选中态改个文字色
- *                         就能整体变色, 不必换图。这是向后兼容的那条路径。
+ * 走 mask-image, 因此跟随 currentColor, 选中态改个文字色
+ * 就能整体变色, 不必换图。这是向后兼容的那条路径。
  * - `ComponentType`      图标组件 (lucide 等)。这类组件的 props 只要含
- *                         `className`, 就能被本槽统一控制尺寸与颜色。
+ * `className`, 就能被本槽统一控制尺寸与颜色。
  * - `ReactNode`          任意节点 (自绘 svg / 图片 / 文本徽记)。
  *
  * .agents/notes/implemented/feature/2026-10-12-icon-slot-and-tree-primitives.md

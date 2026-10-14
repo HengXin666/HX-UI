@@ -13,7 +13,7 @@ import { isTypingTarget } from "./shortcuts";
  *
  * link / marquee / maximized 是画布的私有状态, 编辑器层根本看不见它们,
  * 没法代为清理。所以 Esc 是**两处协作**: 这里清画布私有态, 编辑器层清
- * 选择与浮层。两者职责不重叠 —— 靠一处猜另一处的状态迟早猜错。
+ * 选择与浮层。两者职责不重叠  靠一处猜另一处的状态迟早猜错。
  */
 export function useCanvasEscape(h: {
   readonly setLink: (v: null) => void;

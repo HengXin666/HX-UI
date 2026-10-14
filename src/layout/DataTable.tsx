@@ -16,21 +16,21 @@ import { Skeleton } from "../primitives/skeleton";
  * 数据表。
  *
  * 为什么要有它: 两个已接入的下游面板各手搓了一份 170 / 184 行的原生 <table>,
- * 而且都把同样四件事重写了一遍 —— 粘性表头、行悬停、空态、加载态。
+ * 而且都把同样四件事重写了一遍  粘性表头、行悬停、空态、加载态。
  * 这类"每个页面都要重来一次"的活不该由使用方承担。
  *
  * ## 三条刻意的设计约束
  *
  * 一、**不接管数据获取**。排序、分页、筛选全部由使用方给数据, 组件只负责渲染。
- *     组件里塞请求逻辑会把"什么时候该重新取数"这类业务问题焊进来, 用两次就会发现
- *     约束不对 —— 真实项目里数据往往来自轮询、SSE、共享 store, 三种都不一样。
+ * 组件里塞请求逻辑会把"什么时候该重新取数"这类业务问题焊进来, 用两次就会发现
+ * 约束不对  真实项目里数据往往来自轮询、SSE、共享 store, 三种都不一样。
  *
  * 二、**列宽用 CSS 网格感**, 不用 table-layout: fixed。列定义里的 width 直接落到
- *     <col>, 这是浏览器原生支持的窄列优先算法, 比手算百分比稳。
+ * <col>, 这是浏览器原生支持的窄列优先算法, 比手算百分比稳。
  *
  * 三、**粘性表头默认开**。表格一旦超过一屏, 滚动时看不到列名是数据表最常见的可用性缺陷,
- *     而且不写不报错。用 sticky + backdrop-blur 处理半透明底 (直接给不透明底色会让
- *     表头在圆角卡片里露出一条硬边)。
+ * 而且不写不报错。用 sticky + backdrop-blur 处理半透明底 (直接给不透明底色会让
+ * 表头在圆角卡片里露出一条硬边)。
  *
  * ## 与 Card 的关系
  * 默认用 Card 包一层 (与下游现在的写法一致)。要嵌进已有卡片里就传 bare。
@@ -53,7 +53,7 @@ export interface DataTableColumn<T> {
 export interface DataTableProps<T> {
   readonly columns: readonly DataTableColumn<T>[];
   readonly rows: readonly T[];
-  /** 行 key。默认取 (row as {id}).id, 取不到就用下标 —— 有重复 key 的风险, 建议显式给。 */
+  /** 行 key。默认取 (row as {id}).id, 取不到就用下标  有重复 key 的风险, 建议显式给。 */
   readonly rowKey?: (row: T, index: number) => string | number;
   /** 点整行。给了就会加 cursor-pointer 与键盘可达性。 */
   readonly onRowClick?: (row: T) => void;
@@ -64,7 +64,7 @@ export interface DataTableProps<T> {
   readonly emptyText?: string;
   /** 容器最大高度。给值才出滚动区与粘性表头。 */
   readonly maxHeight?: string;
-  /** 不套 Card, 直接渲染表格 —— 嵌进已有卡片时用。 */
+  /** 不套 Card, 直接渲染表格  嵌进已有卡片时用。 */
   readonly bare?: boolean;
   /** 表格外的标题栏 (套 Card 时包在 CardHeader 里)。 */
   readonly title?: ReactNode;
@@ -217,7 +217,7 @@ export function DataTable<T>({
  * 客户端搜索框: 输入即时过滤。
  *
  * 单独给出是因为"表格右上角一个搜索框"几乎每张表都要, 而手写时总会出现
- * 一个通病 —— 输入框与过滤后的列表不同步 (受控值存在父层, 过滤结果却按另一个
+ * 一个通病  输入框与过滤后的列表不同步 (受控值存在父层, 过滤结果却按另一个
  * 变量算)。这里把两者收进一个 hook, 使用方只管给数据与匹配函数。
  */
 export function useTableSearch<T>(

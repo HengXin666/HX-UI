@@ -17,7 +17,7 @@ import { downloadGraph, pickGraphFile, saveGraphToHandle } from "./persist";
  * ## 一条贯穿的约定
  *
  * 每个回调都只做两件事: 算出新图, 交给 commitInnerWithHistory 并声明这一步
- * 在历史里叫什么。不在这里碰视图状态、不在这里发同步消息 —— 那些各有各的
+ * 在历史里叫什么。不在这里碰视图状态、不在这里发同步消息  那些各有各的
  * 归口。混进来就会变成"改一处要懂三个子系统"。
  */
 
@@ -90,7 +90,7 @@ export function useCanvasCallbacks(opts: CanvasCallbacksOptions): CanvasCallback
   );
 
   /**
-   * 改注释文字。必须设 tag="param" —— 不设的话每个字都是独立的一步,
+   * 改注释文字。必须设 tag="param"  不设的话每个字都是独立的一步,
    * 打 20 个字要按 20 次撤销才能退回, 那等于没有撤销。
    */
   const onCommentChange = useCallback(
@@ -242,7 +242,7 @@ export function useEditorShortcuts(opts: ShortcutWiringOptions) {
  * 导入 / 导出。
  *
  * 一条刻意的取舍: **读失败时不动当前图**。
- * 用户选错了文件 (不是蓝图 JSON / 缺 nodes), 最糟的做法是清空画布 ——
+ * 用户选错了文件 (不是蓝图 JSON / 缺 nodes), 最糟的做法是清空画布 
  * 那等于把他正在编辑的东西弄没了。留着原图、什么都不做, 比报错弹窗友好,
  * 也比静默清空安全。
  *
@@ -252,7 +252,7 @@ export function useEditorShortcuts(opts: ShortcutWiringOptions) {
 export function useGraphIO(
   getGraph: () => BlueprintGraph,
   replace: (g: BlueprintGraph) => void,
-  /** 导入后重置历史栈 —— 否则按一下 Ctrl+Z 就把刚导入的图撤没了。 */
+  /** 导入后重置历史栈  否则按一下 Ctrl+Z 就把刚导入的图撤没了。 */
   resetHistory?: (g: BlueprintGraph) => void
 ): {
   readonly onSave: () => void;
@@ -266,10 +266,10 @@ export function useGraphIO(
    * 另存到… (File System Access)。
    *
    * 与"导出"的区别: 导出每次都是一个**新**下载, 而这里拿到 handle 后可以
-   * 反复写回同一个文件 —— 那才是"保存"这个词的意思。
+   * 反复写回同一个文件  那才是"保存"这个词的意思。
    *
    * 不支持的浏览器 (Firefox / Safari) 返回 null, 此时退回下载。不做
-   * "假装有 handle" 的降级 —— 那会让用户以为存住了而实际没有。
+   * "假装有 handle" 的降级  那会让用户以为存住了而实际没有。
    */
   const handleRef = useRef(null);
   const onSaveAs = useCallback(() => {

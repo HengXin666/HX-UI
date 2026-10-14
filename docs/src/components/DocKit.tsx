@@ -7,7 +7,7 @@ import {
 /**
  * 文档站自己的壳。
  *
- * 这一层刻意**只用 @hx/ui 里的组件**构成 —— 文档站自己就是这套库最直接的示范。
+ * 这一层刻意**只用 @hx/ui 里的组件**构成  文档站自己就是这套库最直接的示范。
  * 只有"预览框"这类文档专有的容器才允许写自有的类串, 因为它们是文档的排版, 不是产品界面。
  */
 
@@ -43,7 +43,7 @@ export function Preview({
 }
 
 /**
- * 代码块 —— 直接用库的 CodeBlock (shiki + One Dark Pro)。
+ * 代码块  直接用库的 CodeBlock (shiki + One Dark Pro)。
  *
  * 文档站展示代码用的就是被展示的那个组件, 这是最直接的自证。
  * 这里只做一件事: 去掉外层卡片的圆角与边框, 因为它已经嵌在 Preview 卡片里了。
@@ -63,7 +63,7 @@ export function CodeBlock({ code, lang = "tsx" }: { code: string; lang?: string 
  *
  * id 由**标题文本自动推导** (中文原样保留, 只把空白与标点换成连字符)。
  * 为什么不做成"必须手写 id": 全站 161 处 <H2>, 一个个补 id 是纯噪音, 而且新页面
- * 一定会忘 —— 忘了就没有锚点、右侧目录就空着, 且不会报错。
+ * 一定会忘  忘了就没有锚点、右侧目录就空着, 且不会报错。
  * 想覆盖时传 id 即可。
  */
 export function H2({ children, id }: { children: ReactNode; id?: string }): JSX.Element {
@@ -98,7 +98,7 @@ export function H2({ children, id }: { children: ReactNode; id?: string }): JSX.
 /**
  * 把标题文本变成 URL 片段。
  *
- * 中文不做音译、不编码成 %XX —— 直接保留。原因是 hash 路由下 `#/page` 与
+ * 中文不做音译、不编码成 %XX  直接保留。原因是 hash 路由下 `#/page` 与
  * `#anchor` 共存时, 可读的中文锚点比一串百分号编码有用得多 (可复制、可肉眼识别)。
  * 只归一掉会破坏 CSS 选择器与 URL 语义的字符。
  */
@@ -122,7 +122,9 @@ export function slugify(node: ReactNode): string {
   return slug || "section";
 }
 
-/** 取出 React 节点里的纯文本 (标题都是纯文本或含 <Code>, 不做完整递归)。 */
+/** 取出 React 节点里的纯文本 (标题都是纯文本或含 <Code>, 不做完整递归)。 
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+ */
 function plainText(node: ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node);
   if (Array.isArray(node)) return node.map(plainText).join("");
@@ -136,7 +138,7 @@ function plainText(node: ReactNode): string {
 /**
  * 把 `**文本**` 渲染成加粗。
  *
- * 文档正文里用 markdown 的星号写法最省事, 但 `P` 拿到的是 React 节点而不是 markdown ——
+ * 文档正文里用 markdown 的星号写法最省事, 但 `P` 拿到的是 React 节点而不是 markdown 
  * 不处理就会把星号原样显示出来 (实测有过 12 处)。这里只认成对的 `**`, 不做其它 markdown 解析:
  * 范围越窄越不容易出意外。
  */

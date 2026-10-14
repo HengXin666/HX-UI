@@ -11,7 +11,7 @@ Decision-ID: repository-agent-notes-v2-adoption
 - `.agents/skills/hx-agent-notes/scripts/triage/note-triage.py`
 - `docs/src/App.tsx`
 - `docs/src/components/DocKit.tsx`
-- `scripts/check-shell.mjs`
+- `scripts/check-shell.ts`
 - `scripts/e2e/run.mjs`
 - `scripts/gates/run.mjs`
 - `scripts/gates/frontend/check-line-budget.mjs`

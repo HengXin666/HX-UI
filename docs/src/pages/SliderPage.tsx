@@ -8,7 +8,7 @@ import { Callout, H2, H3, P, Preview, PropsTable } from "../components/DocKit";
  * Slider 是库内**没有用 radix**的少数几个基础件之一: 轨道是普通 div + 指针事件,
  * 但真正承载键盘与无障碍的是里面那个 opacity-0 的原生 input[type=range]。
  * 所以键盘操作、Home/End、PageUp/PageDown 都是浏览器给的, 不用自己实现。
- * 值永远是数组 —— 即使只支持单个滑块, API 也按数组给, 方便以后扩展。
+ * 值永远是数组  即使只支持单个滑块, API 也按数组给, 方便以后扩展。
  */
 export function SliderPage(): JSX.Element {
   const [volume, setVolume] = useState(42);
@@ -46,7 +46,7 @@ export function SliderPage(): JSX.Element {
 
       <H2>区间与步长</H2>
       <P>
-        <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">step</code> 支持小数, 但轨道宽度是按 0~100 映射的 ——
+        <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">step</code> 支持小数, 但轨道宽度是按 0~100 映射的 
         负值区间的起点靠 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">min</code> 换算, 不需要手动偏移。
       </P>
       <Preview

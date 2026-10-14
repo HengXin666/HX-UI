@@ -15,19 +15,19 @@ import { EXEC_IN_PORT, execOutIds, resolvePort, nodeShape } from "./connect";
  *
  * ## 分层 (这是整套设计的要点)
  *
- *   L1 结构  节点类型注册了吗 / 端口存在吗 / 边指向的节点在吗
- *   L2 局部  这条线的类型对不对 / 必填输入有没有连
- *   L3 全局  有没有环
- *   L4 业务  节点自带的 validate 钩子
+ * L1 结构  节点类型注册了吗 / 端口存在吗 / 边指向的节点在吗
+ * L2 局部  这条线的类型对不对 / 必填输入有没有连
+ * L3 全局  有没有环
+ * L4 业务  节点自带的 validate 钩子
  *
- * 只有 L1 通过了才跑 L2 —— 拿一个未知端口去做类型比较没有意义,
+ * 只有 L1 通过了才跑 L2  拿一个未知端口去做类型比较没有意义,
  * 而且会产出两条互相矛盾的报错。L3 必须最后跑: 环上的每个节点都"局部正确",
  * 只有把整张图连起来看才出问题。
  *
  * ## 关于环
  *
  * 环不是"某一行代码错了", 它是**一组边**的属性。所以环的报错挂在边上
- * (`byEdge`), 而不是节点上 —— 挂节点会让人以为删掉那个节点就好,
+ * (`byEdge`), 而不是节点上  挂节点会让人以为删掉那个节点就好,
  * 实际得删环上任意一条边。
  */
 
@@ -43,7 +43,7 @@ function indexIncoming(graph: BlueprintGraph): Map<string, BlueprintEdge[]> {
   return m;
 }
 
-/** 端口形貌统一走 nodeShape —— 子图节点与实例 ports 才能被正确识别。 */
+/** 端口形貌统一走 nodeShape  子图节点与实例 ports 才能被正确识别。 */
 function outPorts(reg: BlueprintRegistry, graph: BlueprintGraph, node: BlueprintNode): PortDef[] {
   return [...nodeShape(reg, graph, node.id).outputs];
 }
@@ -195,12 +195,12 @@ export function validateGraph(
   /**
    * 环检测只看**执行流边**。
    *
-   * 数据边不参与: 它是"取值"不是"控制流"。把数据边算进来会误判 ——
+   * 数据边不参与: 它是"取值"不是"控制流"。把数据边算进来会误判 
    * 例如一条横跨两段的取值边, 而那两段之间又有执行流回路,
    * 于是那条数据边被圈进执行环, 整个环被判成"数据环"而报错。
    * 实际上数据在图上从来没有回环, 是控制流在回环。
    *
-   * 那数据依赖的环就不管了吗? 管 —— 求值器里有独立的环保护
+   * 那数据依赖的环就不管了吗? 管  求值器里有独立的环保护
    * (`evaluating` 集合), 它报的是"求值过程中出现循环依赖", 且落在具体节点上,
    * 比在这里静态报更准。这里的职责是"图能不能连", 不是"值能不能算出来"。
    */
@@ -209,12 +209,12 @@ export function validateGraph(
   /**
    * 只有**数据流**上的环才是错误。
    *
-   * 执行流上的回路是 agent loop 这类东西的正常形态 —— "做完再来一轮"
+   * 执行流上的回路是 agent loop 这类东西的正常形态  "做完再来一轮"
    * 就是一条回到起点的边。把执行回路报成错误, 会让所有带循环的图
    * 永远红着, 于是人们只能关掉这条规则, 那时真正的数据环也没人管了。
    *
    * 所以判据是: 环里只要有一条**数据边**就报错; 纯执行回路放行。
-   * 数据环是真错误, 因为求值无法确定顺序 —— 上游依赖下游的值。
+   * 数据环是真错误, 因为求值无法确定顺序  上游依赖下游的值。
    */
   for (const cycle of findCycles(graph, execEdges)) {
     const edgesOnCycle = cycleEdges(execEdges, cycle);
@@ -254,13 +254,13 @@ export function validateGraph(
 
   // ── 子图: 逐张递归校验 ──────────────────────────────────────────
   // 子图内部的报错要带上"哪张子图"的前缀, 否则用户看到一条报错却不知道
-  // 该进哪一层去修 —— 那是最折磨人的一类诊断。
+  // 该进哪一层去修  那是最折磨人的一类诊断。
   for (const [sgId, sg] of Object.entries(graph.subgraphs ?? {})) {
     /**
      * 递归必须带"已访问"集合。
      *
      * 第一版把整张 subgraphs 表原样传下去, 于是每张子图都会再校验一遍
-     * **全部**子图 (包括它自己) —— 一层嵌套就是无限递归, 直接爆栈。
+     * **全部**子图 (包括它自己)  一层嵌套就是无限递归, 直接爆栈。
      * 子图之间的引用不是树而是任意图 (一个子图可以被多个子图调用),
      * 所以这里必须按 id 去重, 而不是靠"深度递减"。
      */
@@ -309,7 +309,7 @@ export function validateGraph(
 /**
  * 构成这个环的那些边。
  *
- * 判据是"首尾相接", 不是"两端都落在环节点集合里" —— 后者会把环上节点之间
+ * 判据是"首尾相接", 不是"两端都落在环节点集合里"  后者会把环上节点之间
  * 的**其它**边也圈进来, 于是纯执行回路会被误判成数据环。
  */
 function cycleEdges(edges: readonly BlueprintEdge[], cycle: readonly string[]): BlueprintEdge[] {
@@ -327,7 +327,7 @@ function cycleEdges(edges: readonly BlueprintEdge[], cycle: readonly string[]): 
 /**
  * 找出所有环 (DFS + 着色)。
  *
- * 返回的是环上的节点 id 列表。节点数很多时环可能很多, 这里只做完整枚举 ——
+ * 返回的是环上的节点 id 列表。节点数很多时环可能很多, 这里只做完整枚举 
  * 蓝图规模通常在百级, 不值得为它写 Tarjan 那种强连通分量分解
  * (而且 SCC 会把"两个环共用一个节点"合并成一片, 报出来反而不如逐个清楚)。
  */
@@ -376,7 +376,7 @@ export function findCycles(graph: BlueprintGraph, edges?: readonly BlueprintEdge
 }
 
 /**
- * 拓扑排序 (Kahn)。有环时返回 null —— 调用方拿它当"能不能执行"的判据。
+ * 拓扑排序 (Kahn)。有环时返回 null  调用方拿它当"能不能执行"的判据。
  */
 export function topoSort(graph: BlueprintGraph, edges?: readonly BlueprintEdge[]): string[] | null {
   const es = edges ?? graph.edges;
@@ -427,7 +427,7 @@ export function upstreamOf(graph: BlueprintGraph, nodeId: string): Set<string> {
 
 /**
  * 端口形貌汇总, 序列化与调试用。
- * 需要传 graph —— 子图节点的外形由子图定义决定, 光有 node 算不出来。
+ * 需要传 graph  子图节点的外形由子图定义决定, 光有 node 算不出来。
  */
 export function allPorts(
   reg: BlueprintRegistry,

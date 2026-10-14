@@ -7,17 +7,17 @@ import type { BlueprintComment } from "./types";
 import type { RfNode } from "./rf-adapter";
 
 /**
- * 注释框 —— 画布上用于圈出一片节点的分组标记。
+ * 注释框  画布上用于圈出一片节点的分组标记。
  *
  * 结构与节点卡片不同, 它不是一个"卡片":
- *   1. 整块半透明底色 —— 能透出下面的节点与连线, 但一眼看出"这片属于它"
- *   2. 顶部一条实色标题栏 —— 颜色即 Comment Color
- *   3. 下面是正文
+ * 1. 整块半透明底色  能透出下面的节点与连线, 但一眼看出"这片属于它"
+ * 2. 顶部一条实色标题栏  颜色即 Comment Color
+ * 3. 下面是正文
  *
  * 底色必须**半透明但不全透**: 全透就圈不住任何东西, 不透明则把里面的节点
  * 全糊住。所以取中等明度的低饱和色。
  *
- * 它不参与连线 (没有 Handle), 也不参与求值 —— 只是给人看的标记。
+ * 它不参与连线 (没有 Handle), 也不参与求值  只是给人看的标记。
  */
 
 export interface RfCommentData extends Record<string, unknown> {

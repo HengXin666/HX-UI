@@ -85,11 +85,11 @@ export function ChartsPage(): JSX.Element {
     <>
       <P>
         图表基于 <Code>Recharts 3</Code> 套一层。响应式、配色走 token、统一好看的提示面板，
-        并且**区分「首次加载」与「后续增量」的动画** —— 后者是这个包与直接用 Recharts 最不同的地方。
+        并且**区分「首次加载」与「后续增量」的动画**  后者是这个包与直接用 Recharts 最不同的地方。
       </P>
 
       <Callout title="首次加载有动效, 新增只新增">
-        Recharts 默认按下标配对新旧数据，数量变化时按比例拉伸 ——
+        Recharts 默认按下标配对新旧数据，数量变化时按比例拉伸 
         5 个点变 15 个点时每个旧点「覆盖」约 3 个新点，结果是整条线从头重排一遍。
         实时图表每秒加一个点，就会每秒抖一次。
         <br /><br />
@@ -101,7 +101,7 @@ export function ChartsPage(): JSX.Element {
       <H2>增量动画对比</H2>
       <P>
         下面两个图数据完全一样、推送节奏一样，只有动画策略不同。
-        切换标签看差别 —— 左边那种每来一个点整条线都会重排，右边只有新点从右侧淡入、旧点纹丝不动。
+        切换标签看差别  左边那种每来一个点整条线都会重排，右边只有新点从右侧淡入、旧点纹丝不动。
       </P>
       <Preview
         align="stretch"
@@ -145,7 +145,7 @@ export function ChartsPage(): JSX.Element {
       </Preview>
 
       <H2>柱状图</H2>
-      <P>圆角只给顶边 —— 底边也圆会让柱子看起来浮着。</P>
+      <P>圆角只给顶边  底边也圆会让柱子看起来浮着。</P>
       <Preview
         align="stretch"
         code={`<HxBarChart data={data} series={series} height={240} />
@@ -189,7 +189,7 @@ export function ChartsPage(): JSX.Element {
 
       <H2>自定义组合</H2>
       <P>
-        需要 Recharts 的完整能力时用 <Code>ChartFrame</Code> + <Code>ChartChrome</Code> 自己拼 ——
+        需要 Recharts 的完整能力时用 <Code>ChartFrame</Code> + <Code>ChartChrome</Code> 自己拼 
         它们给出统一的容器、网格、坐标轴与提示面板，图表类型由你选。
       </P>
       <Preview
@@ -217,7 +217,7 @@ import { ChartFrame, ChartChrome } from "@hx/ui";
           { name: "animation.duration", type: "number", default: "320", desc: "动效毫秒数。" },
           { name: "animation.easing", type: "string", default: '"ease-out"', desc: "缓动。数据变化该快到位置再停。" },
           { name: "animation.disabled", type: "boolean", default: "false", desc: "关掉动画。数据量大时建议开。" },
-          { name: "（自动）", type: "-", default: "-", desc: "超过 800 个点时自动关掉动画 —— 每帧对所有点插值会掉帧。" },
+          { name: "（自动）", type: "-", default: "-", desc: "超过 800 个点时自动关掉动画  每帧对所有点插值会掉帧。" },
         ]}
       />
 
@@ -227,7 +227,7 @@ import { ChartFrame, ChartChrome } from "@hx/ui";
           { name: "data", type: "readonly T[]", default: "-", desc: "数据数组。每条记录一个对象。" },
           { name: "series", type: "readonly SeriesDef[]", default: "-", desc: "系列定义：dataKey / name / color。" },
           { name: "xKey", type: "string", default: '"name"', desc: "横轴取哪个字段。" },
-          { name: "height", type: "number", default: "260", desc: "高度。必须给 —— 响应式容器只接管宽度。" },
+          { name: "height", type: "number", default: "260", desc: "高度。必须给  响应式容器只接管宽度。" },
           { name: "className", type: "string", desc: "外层类名。宽度由父元素决定。" },
         ]}
       />
@@ -235,11 +235,11 @@ import { ChartFrame, ChartChrome } from "@hx/ui";
       <H2>响应式</H2>
       <P>
         所有图表都包在 <Code>ResponsiveContainer</Code> 里，宽度跟随父元素。
-        <b className="text-foreground">不要给图表设固定宽度</b> ——
+        <b className="text-foreground">不要给图表设固定宽度</b> 
         那是最常见的错误，它会撑破容器或被裁掉。高度必须由外层给，因为容器只接管宽度。
       </P>
       <P>
-        线宽用了 <Code>vectorEffect="non-scaling-stroke"</Code> —— 响应式拉伸时描边不跟着变形，
+        线宽用了 <Code>vectorEffect="non-scaling-stroke"</Code>  响应式拉伸时描边不跟着变形，
         否则线宽会被拉扁。
       </P>
     </>

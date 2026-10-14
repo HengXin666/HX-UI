@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 质量指纹 —— 把"门禁有多严"和"门禁还跑不跑"变成可见的。
+ * 质量指纹  把"门禁有多严"和"门禁还跑不跑"变成可见的。
  *
  * ## 问题
  *
@@ -17,7 +17,7 @@
  *
  * ## 只抽"决定严格度"的字段, 不抽显示名
  *
- * 改 label 文案、重排格式都不该动指纹 —— 否则会天天报警, 所有人去跑 --update,
+ * 改 label 文案、重排格式都不该动指纹  否则会天天报警, 所有人去跑 --update,
  * 报警器就退化成确认键。探针里有一条控制组专门钉这件事 (只改 label 必须 PASS)。
  *
  * ## 用法
@@ -51,7 +51,7 @@ const sha = (s) => createHash("sha256").update(s, "utf8").digest("hex").slice(0,
  * ## 为什么第一版是错的 (实测发现)
  *
  * 第一版只收 `const NAME = <字面量>` 形式的单行声明。结果三条门禁的指纹哈希
- * **完全相同** —— 因为 check-ui-rules 的调色盘禁令是个正则、白名单是个 `new Set([...])`、
+ * **完全相同**  因为 check-ui-rules 的调色盘禁令是个正则、白名单是个 `new Set([...])`、
  * check-shell 的期望值是模板串, 一个都不匹配, 于是三条都退化成同一句
  * "(无字面量阈值常量)"。哈希相同本身就说明抽取器什么都没读到, 而它**照样打印"通过"**。
  *
@@ -81,7 +81,7 @@ function thresholdsOf(script) {
     i = j;
     out.push(text.replace(/\/\/.*$/gm, "").replace(/\s+/g, " ").trim());
   }
-  return out.length > 0 ? out.join("\n") : "(无大写常量声明 —— 抽取器没读到任何严格度字段)";
+  return out.length > 0 ? out.join("\n") : "(无大写常量声明  抽取器没读到任何严格度字段)";
 }
 
 /**
@@ -154,7 +154,7 @@ function entriesOf(file) {
 
 /**
  * 注册表: 只抽 id/group/produces/requires/args/*Args 与 lane 表。
- * **不抽 label** —— 那是显示名。
+ * **不抽 label**  那是显示名。
  */
 function registryOf() {
   const src = read(path.join(ROOT, "scripts", "gates", "registry.mjs"));
@@ -193,7 +193,9 @@ function lanesOf() {
 
 /**
  * 第二组: "还跑不跑"。
- * 三个检查点各自的接线 —— 从任何一处摘掉一条, 第一组指纹一个字都不变。
+ * 三个检查点各自的接线  从任何一处摘掉一条, 第一组指纹一个字都不变。
+ *
+ * .agents/notes/implemented/process/2026-10-14-pr3-quality-gates-ci-fixes.md
  */
 function wiringOf() {
   const parts = [];
@@ -234,7 +236,7 @@ function wiringOf() {
   return parts.join("\n");
 }
 
-/** 指纹来源清单 —— 每条都是"决定严格度或接线"的东西, 删掉某条来源本身也会触发 FAIL。 */
+/** 指纹来源清单  每条都是"决定严格度或接线"的东西, 删掉某条来源本身也会触发 FAIL。 */
 const SOURCES = [
   { name: "thresholds:check-ui-rules", group: "strictness", extract: () => codeOf(UI_RULE_SOURCES) },
   { name: "thresholds:check-smoke", group: "strictness", extract: () => thresholdsOf("scripts/check-smoke.ts") + "\n" + codeOf([BROWSER_CONSTANTS]) },
@@ -295,7 +297,7 @@ if (changed.length === 0) {
 console.error(`check-fingerprint: ${changed.length} 条来源变了\n`);
 for (const c of changed) console.error(`  ${c.name}\n    → ${c.why}`);
 console.error("");
-console.error(`这不是"代码有问题", 是"门禁严格度或接线被改了" —— 需要一个显式动作:`);
+console.error(`这不是"代码有问题", 是"门禁严格度或接线被改了"  需要一个显式动作:`);
 console.error(`  1. 确认这次改动是**有意**的 (放松阈值 / 加白名单 / 改注册表 / 摘 hook 都算)`);
 console.error(`  2. 写进 Agent Note, 说明为什么放松`);
 console.error(`  3. node scripts/gates/shared/check-fingerprint.mjs --update`);

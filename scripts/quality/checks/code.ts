@@ -95,6 +95,11 @@ const header: Rule = {
     },
 };
 
+/**
+ * 连续尾随单行注释起始列对齐, 与规则表里 HC-COMMENT-SPACE 的块注释续行口径一致.
+ *
+ * .agents/notes/implemented/process/2026-10-14-pr3-quality-gates-ci-fixes.md
+ */
 function trailingColumns(source: ts.SourceFile, list: Comment[], out: Collector, path: string): void {
     const trailing = list.filter((item) => item.trailing && item.text.startsWith(LINE_COMMENT));
     for (let index = 1; index < trailing.length; index++) {

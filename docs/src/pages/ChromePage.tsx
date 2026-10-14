@@ -67,7 +67,7 @@ export function ChromePage(): JSX.Element {
 
       <H2>EmptyState</H2>
       <P>
-        空态是<b className="text-foreground">最容易被漏掉</b>的一种界面 —— 手写时它总是最后才补,
+        空态是<b className="text-foreground">最容易被漏掉</b>的一种界面  手写时它总是最后才补,
         于是措辞、留白、图标风格每个页面都不一样。三种语气 (空 / 错误 / 加载) 共用同一个骨架,
         因为它们在视觉上本就是同一件事: 这个位置现在没有内容。
       </P>
@@ -102,7 +102,7 @@ export function ChromePage(): JSX.Element {
 
       <H2>DataBoundary: 三态一次判完</H2>
       <P>
-        手写这段判断时最常出的错是<b className="text-foreground">顺序</b> —— 先判空再判 loading,
+        手写这段判断时最常出的错是<b className="text-foreground">顺序</b>  先判空再判 loading,
         首次加载会先闪一下"暂无数据"再变成内容。这里把顺序固定为 loading &gt; error &gt; empty &gt; 内容。
       </P>
       <Preview
@@ -149,7 +149,7 @@ export function ChromePage(): JSX.Element {
       </Preview>
 
       <Callout title="空态该不该给操作按钮">
-        给。空态是新用户唯一会看到的界面之一 —— "还没有账号"配一句"点右上角抓取开始"
+        给。空态是新用户唯一会看到的界面之一  "还没有账号"配一句"点右上角抓取开始"
         比只写"暂无数据"有用得多。没有下一步可给的场景 (例如筛选后为空) 才只留一句话。
       </Callout>
 

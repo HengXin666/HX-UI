@@ -3,22 +3,22 @@
  *
  * ## 为什么要单独一套
  *
- * 换库之后, 交互**不再由我们的代码提供** —— 拖拽/缩放/连线/选中全由
+ * 换库之后, 交互**不再由我们的代码提供**  拖拽/缩放/连线/选中全由
  * React Flow 保证。所以这里的判据不是"我们的逻辑对不对", 而是
  * **"这套集成真的通吗"**:
  *
- *   1. 我们的语义层 (类型 DAG / 连线合法性) 有没有真的接上去 ——
+ *   1. 我们的语义层 (类型 DAG / 连线合法性) 有没有真的接上去 
  *      这是最容易断的地方: 库给了 isValidConnection 回调, 但忘记接
  *      就等于"什么都能连", 而页面看起来一切正常。
- *   2. 节点/边的数据往返有没有丢端口名 —— 端口名丢了线会连到错的脚上。
+ *   2. 节点/边的数据往返有没有丢端口名  端口名丢了线会连到错的脚上。
  *   3. 换库买到的东西是不是真的拿到了 (拖拽不选中文本、缩放、小地图)。
  *
- * 所有判据走**真实鼠标** —— 用 evaluate 直接派发事件会绕过命中测试,
+ * 所有判据走**真实鼠标**  用 evaluate 直接派发事件会绕过命中测试,
  * 那样在功能失效时也会通过。
  */
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { Harness, report } from "./harness.mjs";
+import { Harness, report, BASE, SHOTS } from "./harness.mjs";
 
 // 注释框只存在于兄弟目录 HX-Blueprint-Demo 的 dsh 实体图里; 单独 clone 本仓时文档站退到仓内替身 (没有注释),
 // 与 check-blueprint 同一口径: 缺席时这几组断言逐组打印 SKIP, 不把"没有被测对象"误报成功能坏了
@@ -83,7 +83,7 @@ steps.push({
   });
 }
 
-// 5. 缩放 —— 走快捷键 (UE5 没有缩放按钮条, 靠 Ctrl+= / Ctrl+0 / Home)
+// 5. 缩放  走快捷键 (UE5 没有缩放按钮条, 靠 Ctrl+= / Ctrl+0 / Home)
 {
   const zoomNow = () => p.evaluate(() => {
     const t = document.querySelector(".react-flow__viewport")?.style.transform || "";
@@ -154,7 +154,7 @@ async function handlePos(nodeId, hid) {
 {
   /**
    * 独立 harness + 重载: 前面的缩放/拖拽会挪动节点, 硬编码"等 6 条边"
-   * 在图被改过时会等到超时 —— 那是判据脆弱, 不是功能坏。
+   * 在图被改过时会等到超时  那是判据脆弱, 不是功能坏。
    * 这里只等"边渲染出来", 数量由断言自己动态取。
    */
   await h.close();
@@ -168,7 +168,7 @@ async function handlePos(nodeId, hid) {
   );
   await pc.waitForTimeout(400);
   const before = await pc.locator(".react-flow__edge").count();
-  // n4.a / n4.b 都已被占用 —— 连它们会走"顶替", 总数不变 (见第 10 条)。
+  // n4.a / n4.b 都已被占用  连它们会走"顶替", 总数不变 (见第 10 条)。
   // 这里要测的是"新增", 所以连到 n6 空闲的 msg 输入 (类型 any, 任何值都能进)。
   const src = await handlePos2(pc, "n2", "o:value");
   const dst = await handlePos2(pc, "n6", "i:msg");
@@ -189,7 +189,7 @@ async function handlePos(nodeId, hid) {
     shot: await hc.shot("82-rf-connect-ok"),
   });
 
-  // 8. 非法连线被拒 —— 这条最关键: 证明语义层真的接上去了
+  // 8. 非法连线被拒  这条最关键: 证明语义层真的接上去了
   //    (与第 7 条共用 harness: 它依赖"刚连过一条"之后的图)
   {
     const b0 = await pc.locator(".react-flow__edge").count();
@@ -215,11 +215,11 @@ async function handlePos(nodeId, hid) {
   await hc.close();
 }
 
-// 9. 快捷键 —— 换库不能把已锁住的判据换掉
+// 9. 快捷键  换库不能把已锁住的判据换掉
 {
   /**
    * 用**独立的 harness**: 前面的连线/拖拽用例会挪动节点并改变选择,
-   * 后续点击"第一个节点"可能落到空白处, 于是 Ctrl+D 静默无效 ——
+   * 后续点击"第一个节点"可能落到空白处, 于是 Ctrl+D 静默无效 
    * 那是判据互相污染造成的假失败, 不是功能坏了。
    */
   await h.close();
@@ -242,7 +242,7 @@ async function handlePos(nodeId, hid) {
   /**
    * 等选择**真正建立**: 判据是节点出现 UE5 那圈黄色选中描边。
    *
-   * 不能用 .selected 类 —— React Flow 12 不在 DOM 上加这个类, 选中态是
+   * 不能用 .selected 类  React Flow 12 不在 DOM 上加这个类, 选中态是
    * 通过 props 传给自定义节点的。也不能睡固定时长, 那会偶发失败。
    */
   await pk.waitForFunction(
@@ -347,7 +347,7 @@ async function handlePos(nodeId, hid) {
   await hm.close();
 }
 
-// 12. 注释框必须**看得见** —— 有底色、有层次、与画布能分开
+// 12. 注释框必须**看得见**  有底色、有层次、与画布能分开
 if (!DSH_PRESENT) {
   skipDsh("RF: 注释框可见 / 注释 tone 各不同色");
 } else {
@@ -534,7 +534,7 @@ if (!DSH_PRESENT) {
   await h4.close();
 }
 
-// 16. 拖拽不能重建节点 DOM —— 重建就是闪屏
+// 16. 拖拽不能重建节点 DOM  重建就是闪屏
 {
   await h.close();
   const hf = new Harness();
@@ -590,7 +590,124 @@ if (!DSH_PRESENT) {
   await hp.close();
 }
 
-// 17. 无运行时错误
+// 17. 跨页面同步不能把节点弄没, 也不能自激
+//
+// 用户实测: "在全屏/独立页面下, 一拖节点 -> 注释框消失 -> 所有节点都消失"。
+//
+// ## 实测出来的触发条件 (三条同时满足才复现)
+//
+//   1. 两个页面**同时开着**某一个同频道页面;
+//   2. 其中一个用的是**不同注册表的图层** (文档站的 `DshDemo` 是源码层,
+//      而 `#src=dsh` 的独立页是架构层)  两边节点类型名互不认识;
+//   3. 一端做了会**持续**同步的改动 (拖一下节点就够)。
+//
+// ## 为什么这些判据是这个形状
+//
+// 归因实验 (逐个摘除修复项) 得出的结论:
+//   - 只回退 `measured` 修复        -> 不复现 (接收端单次同步会被 ResizeObserver 治回来)
+//   - 只回退 DshDemo 的修复         -> **复现** (广播 343 次 / 文档站 70 个错误)
+//   - 只修库层 (URS + 闸门)         -> **不复现** (371 次 / 70 个错误)  库层单独修不好
+//
+// 所以这条断言必须**以真实组合**跑: 文档站 + 同频道的独立页, 且两边图层不同。
+// 只开两个同图层页面测不出来 (那样 measured 修复和自激闸门都能扛住)。
+{
+  await h.close();
+  /**
+   * 需要**两个页面** (其中一个还是文档站的 SPA 路由), 自己起 browser。
+   * 上面的 Harness 一次只持有一个 page。
+   */
+  const { chromium } = await import("playwright");
+  const browser2 = await chromium.launch();
+  const ctx = await browser2.newContext({ viewport: { width: 1400, height: 900 } });
+  await ctx.addInitScript(() => {
+    localStorage.setItem("hx-ui-docs-theme", "dark");
+    /**
+     * 在 **prototype** 上打点, 而不是替换构造函数 
+     * 同步通道在页面加载时就建好了, 换构造函数只能数到之后 new 出来的实例。
+     */
+    window.__syncSent = 0;
+    const orig = BroadcastChannel.prototype.postMessage;
+    BroadcastChannel.prototype.postMessage = function (m) {
+      window.__syncSent++;
+      return orig.call(this, m);
+    };
+  });
+
+  // 文档站 (DshDemo: 源码层 + 它自己的频道)
+  const docs = await ctx.newPage();
+  await docs.goto("http://127.0.0.1:5600/#/blueprint-dsh", { waitUntil: "networkidle" });
+  await docs.waitForTimeout(2500);
+
+  /** 文档站上每个 demo 的校验徽章 (只读叶子节点, 免得抓到说明文字)。 */
+  const docBadges = () =>
+    docs.evaluate(() =>
+      [...document.querySelectorAll("*")]
+        .filter((e) => e.children.length === 0 && /个错误|校验通过/.test(e.textContent || ""))
+        .map((e) => e.textContent.trim())
+    );
+
+  const beforeBadges = await docBadges();
+
+  // 架构层独立页 (src=dsh 用的就是架构层注册表)
+  const sa = await ctx.newPage();
+  await sa.goto(`${BASE}#src=dsh&channel=hx-blueprint-dsh`, { waitUntil: "networkidle" });
+  await sa.waitForTimeout(2500);
+
+  const saState = () =>
+    sa.evaluate(() => {
+      const all = [...document.querySelectorAll(".react-flow__node")];
+      return {
+        total: all.length,
+        visible: all.filter((n) => getComputedStyle(n).visibility === "visible").length,
+        sent: window.__syncSent ?? 0,
+      };
+    });
+
+  await sa.evaluate(() => { window.__syncSent = 0; });
+  const s0 = await saState();
+
+  // 拖一下 (触发本地改动 -> 广播)
+  const nb = sa.locator('.react-flow__node:not([data-id^="cmt:"])').first();
+  const bb = await nb.boundingBox();
+  await sa.mouse.move(bb.x + bb.width / 2, bb.y + 14);
+  await sa.mouse.down();
+  for (let i = 1; i <= 20; i++) {
+    await sa.mouse.move(bb.x + bb.width / 2 + i * 16, bb.y + 14 + i * 9);
+    await sa.waitForTimeout(16);
+  }
+  await sa.mouse.up();
+  await sa.waitForTimeout(2500);
+
+  const s1 = await saState();
+  const afterBadges = await docBadges();
+
+  steps.push({
+    name: "RF: 同步后节点与注释仍可见 (不因丢 measured 整块变 hidden)",
+    ok: s1.visible === s1.total && s1.total > 0,
+    expect: `独立页 ${s0.total}/${s0.total} 可见`,
+    actual: `${s1.visible}/${s1.total} 可见`,
+    shot: await sa.screenshot({ path: `${SHOTS}94-sync-visible.png` }).then(() => "94-sync-visible.png"),
+  });
+
+  steps.push({
+    name: "RF: 跨图层同步被 accept 拦下 (对端不变成一片未注册)",
+    ok: JSON.stringify(afterBadges) === JSON.stringify(beforeBadges) && afterBadges.every((b) => b === "校验通过"),
+    expect: `文档站徽章保持 ${JSON.stringify(beforeBadges)}`,
+    actual: JSON.stringify(afterBadges),
+    shot: await docs.screenshot({ path: `${SHOTS}95-sync-accept.png` }).then(() => "95-sync-accept.png"),
+  });
+
+  steps.push({
+    name: "RF: 同步广播有界 (不自激; 同频道跨页面拖一次)",
+    ok: s1.sent > 0 && s1.sent < 40,
+    expect: ">0 且 <40 次",
+    actual: `${s1.sent} 次 (原始缺陷版实测 343 次)`,
+  });
+
+  await browser2.close();
+}
+
+// 18. 无运行时错误
 steps.push({
   name: "RF: 控制台无错误 (SVG marker 等未误用)",
   ok: h.errors.length === 0,

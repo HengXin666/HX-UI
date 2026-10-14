@@ -4,7 +4,7 @@
  * ## 三条链路各自验什么
  *
  *   1. **导出**: 点"导出"真的触发了一次 .bp.json 下载, 且内容能被 parseGraph
- *      读回来 (往返一致)。只验证"弹出了保存框"是不够的 —— 那证明不了内容对。
+ *      读回来 (往返一致)。只验证"弹出了保存框"是不够的  那证明不了内容对。
  *   2. **导入**: 塞一份 JSON 进去, 图真的变了。
  *   3. **同步**: 两个标签页开同一频道, A 改了 B 能收到。这是本库的卖点,
  *      不测等于没做。
@@ -20,7 +20,7 @@ await h.open("#src=demo&rf=0");
 const before = await h.stat();
 
 const downloaded = await h.p.evaluate(async () => {
-  // 拦下 Blob URL 的创建, 把内容读出来 —— 不落地到磁盘也要能验
+  // 拦下 Blob URL 的创建, 把内容读出来  不落地到磁盘也要能验
   const orig = URL.createObjectURL;
   let captured = null;
   URL.createObjectURL = (blob) => {
@@ -64,7 +64,7 @@ steps.push({
  * 真走一次导入: 用 DataTransfer 伪造一个 File 塞进 input。
  *
  * 为什么能这么干: pickGraphFile 内部建一个 <input type=file>, 而
- * Playwright 的 setInputFiles 能直接给它喂内容 —— 绕开系统文件对话框,
+ * Playwright 的 setInputFiles 能直接给它喂内容  绕开系统文件对话框,
  * 但走的**完全是同一条代码路径** (同一个 change 事件、同一个 parseGraph)。
  * 不像"只测解析函数"那种自欺欺人的断言。
  */
@@ -157,7 +157,7 @@ await browser.close();
  * 同步必须**拒绝不兼容的图**。
  *
  * 频道只是一个名字: 同名频道的另一端可能是另一套节点命名空间的图
- * (例如源码层 33 节点)。无条件接受会让对面所有节点变成"未注册" ——
+ * (例如源码层 33 节点)。无条件接受会让对面所有节点变成"未注册" 
  * 实测一拖就 85 个错误。所以收到图要先校验节点类型是否被注册表认识。
  */
 {

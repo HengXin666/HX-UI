@@ -8,7 +8,7 @@ import type { HistoryApi } from "./history";
 /**
  * 编辑器顶部的工具条。
  *
- * 单独成文件是因为 BlueprintEditor.tsx 被行预算**冻结且只许降** ——
+ * 单独成文件是因为 BlueprintEditor.tsx 被行预算**冻结且只许降** 
  * 而这块是纯展示 + 转发回调, 与编辑器的层级/同步逻辑没有纠缠。
  */
 
@@ -124,7 +124,7 @@ export function EditorToolbar({
         ↷ 重做{history.depth.future ? ` ${history.depth.future}` : ""}
       </Button>
 
-      {/* 保存 / 加载。刻意在撤销之后 —— 它们是"整张图"的操作,
+      {/* 保存 / 加载。刻意在撤销之后  它们是"整张图"的操作,
           与上面的"选中项"操作不是一类。 */}
       {onSave && (
         <Button size="xs" variant="outline" onClick={onSave} title="导出成 .bp.json (就是一个 JSON, 可进 git diff)">

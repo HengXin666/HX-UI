@@ -17,9 +17,9 @@ export type { SessionStatus } from "./SessionStatusDot";
  * import { TreeNav, type TreeNode } from "@hx/ui";
  *
  * const nodes: TreeNode[] = [
- *   { id: "src", label: "src", icon: FolderIcon, children: [
- *     { id: "src/a.ts", label: "a.ts", icon: FileIcon, meta: "1.2 KB" },
- *   ]},
+ * { id: "src", label: "src", icon: FolderIcon, children: [
+ * { id: "src/a.ts", label: "a.ts", icon: FileIcon, meta: "1.2 KB" },
+ * ]},
  * ];
  *
  * // 非受控: 展开状态由树自己记
@@ -27,15 +27,15 @@ export type { SessionStatus } from "./SessionStatusDot";
  *
  * // 行首状态 + 行尾附加: [状态点] [图标] 标签 … [trailing]
  * const running: TreeNode[] = [
- *   { id: "build", label: "构建", icon: HammerIcon, status: "running" },
- *   { id: "lint",  label: "静态检查", status: "unread", trailing: "2 分钟前" },
+ * { id: "build", label: "构建", icon: HammerIcon, status: "running" },
+ * { id: "lint",  label: "静态检查", status: "unread", trailing: "2 分钟前" },
  * ];
  *
  * // 受控: 展开状态由调用方持有 (需要持久化, 或与外部筛选联动时)
  * <TreeNav
- *   nodes={nodes}
- *   expandedIds={openIds}
- *   onToggle={(id, next) => setOpenIds(next ? [...openIds, id] : openIds.filter((x) => x !== id))}
+ * nodes={nodes}
+ * expandedIds={openIds}
+ * onToggle={(id, next) => setOpenIds(next ? [...openIds, id] : openIds.filter((x) => x !== id))}
  * />
  * ```
  *

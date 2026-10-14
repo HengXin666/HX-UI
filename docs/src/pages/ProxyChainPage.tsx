@@ -3,7 +3,7 @@ import { ProxyChain, ProxyLayerLegend, Badge, Button, Card, CardContent, CardHea
 import { H2, P, Preview, PropsTable, Callout, Code } from "../components/DocKit";
 
 /**
- * 一份真实形态的数据 —— 用来演示这个件真正要解决的问题。
+ * 一份真实形态的数据  用来演示这个件真正要解决的问题。
  *
  * 注意三条 `meta`: 41 / 1 / 200 是**不同层**的数量。混起来说就会出现
  * "有 17 个节点"这种错话 (那是入口数)。
@@ -26,16 +26,16 @@ const BAD: readonly ProxyLayer[] = [
   {
     kind: "node", title: "lxyus2.777078.xyz", meta: "hysteria2",
     status: "未命中", tone: "destructive",
-    detail: "节点不可达 —— 该策略组下无可用实体, 此入口当前无法出网",
+    detail: "节点不可达  该策略组下无可用实体, 此入口当前无法出网",
   },
 ];
 
-/** 可切换的实例 —— 演示"同一个组件表达三种真实状态"。 */
+/** 可切换的实例  演示"同一个组件表达三种真实状态"。 */
 function ChainDemo(): JSX.Element {
   const [i, setI] = useState(0);
   const sets = [
     { name: "共享入口 + url-test 组", data: EGRESS, note: "一个入口, 组内 41 个候选, 自动选延迟最低" },
-    { name: "专用入口 + manual 组", data: FIXED, note: "钉死单节点 —— 同一身份永远同一 IP" },
+    { name: "专用入口 + manual 组", data: FIXED, note: "钉死单节点  同一身份永远同一 IP" },
     { name: "实体失效", data: BAD, note: "组还在, 但它筛出的实体不可达" },
   ];
   const cur = sets[i];
@@ -70,7 +70,7 @@ export function ProxyChainPage(): JSX.Element {
           <br />
           <span className="font-mono text-[11px]">入口 17 个 / 策略组 5 个 / 实体 200 个</span>
           <br />
-          实测事故: 把 "入口数" 当成 "节点数" 上报, 并据此删除入口 ——
+          实测事故: 把 "入口数" 当成 "节点数" 上报, 并据此删除入口 
           连带断掉了挂在那些入口上的<b>全部出口</b>。本组件把层名写死在每一行左侧,
           从视觉上杜绝这种混淆。
         </span>
@@ -100,7 +100,7 @@ export function ProxyChainPage(): JSX.Element {
                 <tr className="border-b border-border/25">
                   <td className="py-1.5 pr-4 font-medium text-foreground">策略 group</td>
                   <td className="py-1.5 pr-4">虚拟选择器 (<span className="font-mono text-[11px]">url-test / manual / round-robin</span>)</td>
-                  <td className="py-1.5">否 —— 只描述"怎么挑"</td>
+                  <td className="py-1.5">否  只描述"怎么挑"</td>
                 </tr>
                 <tr>
                   <td className="py-1.5 pr-4 font-medium text-foreground">实体 node</td>
@@ -129,7 +129,7 @@ export function ProxyChainPage(): JSX.Element {
         <H2>单层与失败态</H2>
         <P>
           层数不固定: 一个策略组后面可能跟多个实体。也可以只看其中一段。
-          失败态用 <span className="font-mono text-[11px]">tone="destructive"</span> + <span className="font-mono text-[11px]">detail</span> 说明原因 ——
+          失败态用 <span className="font-mono text-[11px]">tone="destructive"</span> + <span className="font-mono text-[11px]">detail</span> 说明原因 
           不要只画一个红点。
         </P>
       </div>
@@ -145,7 +145,7 @@ export function ProxyChainPage(): JSX.Element {
   { kind: "group",    title: "ghreg-us02", meta: "manual", status: "manual", tone: "outline" },
   { kind: "node",     title: "lxyus2.777078.xyz", meta: "hysteria2",
     status: "未命中", tone: "destructive",
-    detail: "节点不可达 —— 该策略组下无可用实体, 此入口当前无法出网" },
+    detail: "节点不可达  该策略组下无可用实体, 此入口当前无法出网" },
 ]} />`}
       >
         <div className="space-y-3">
@@ -173,7 +173,7 @@ export function ProxyChainPage(): JSX.Element {
 
       <PropsTable
         rows={[
-          { name: "kind", type: '"listener" | "group" | "node"', desc: "决定层名与圆点颜色 —— 这是协议事实, 不由使用方覆写" },
+          { name: "kind", type: '"listener" | "group" | "node"', desc: "决定层名与圆点颜色  这是协议事实, 不由使用方覆写" },
           { name: "title", type: "string", desc: "主体 (等宽字体显示): 入口名 / 组名 / 节点名" },
           { name: "meta", type: "string", desc: "次要信息: 端口 / 策略 / 协议 / 延迟" },
           { name: "status", type: "string", desc: "右侧角标文本" },
@@ -184,7 +184,7 @@ export function ProxyChainPage(): JSX.Element {
 
       <Callout kind="info" title="设计取舍">
         <span className="text-[12px]">
-          层名 (<span className="font-mono text-[11px]">入口 / 策略 / 实体</span>) 写死在组件里, 不让使用方传 ——
+          层名 (<span className="font-mono text-[11px]">入口 / 策略 / 实体</span>) 写死在组件里, 不让使用方传 
           如果每个调用方自己写标签, 迟早有人写成 "节点 / 节点 / 节点", 那这个组件就没有意义了。
           同理 <ProxyLayerLegend /> 是独立件: 这三句是协议事实, 每个列表页都该说同一遍。
         </span>

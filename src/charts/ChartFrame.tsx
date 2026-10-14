@@ -14,16 +14,16 @@ import { cn } from "../primitives/utils";
 /**
  * 图表外壳。基于 Recharts 3 套一层, 解决四件事:
  *
- *   1. 响应式。所有图表都放进 ResponsiveContainer, 宽度跟随父元素。
- *      **不要给图表设固定 width** —— 那是最常见的错误, 它会撑破容器或被裁掉。
+ * 1. 响应式。所有图表都放进 ResponsiveContainer, 宽度跟随父元素。
+ * **不要给图表设固定 width**  那是最常见的错误, 它会撑破容器或被裁掉。
  *
- *   2. 主题。坐标轴、网格、提示面板的配色全部走 token, 换肤自动生效。
- *      Recharts 默认的灰色调与这套设计语言不搭, 必须显式覆盖。
+ * 2. 主题。坐标轴、网格、提示面板的配色全部走 token, 换肤自动生效。
+ * Recharts 默认的灰色调与这套设计语言不搭, 必须显式覆盖。
  *
- *   3. 提示面板。Recharts 的默认 tooltip 是一个灰底小方块。
- *      这里换成与库内其他浮层同款的面板 (圆角、边框、毛玻璃、语义色圆点)。
+ * 3. 提示面板。Recharts 的默认 tooltip 是一个灰底小方块。
+ * 这里换成与库内其他浮层同款的面板 (圆角、边框、毛玻璃、语义色圆点)。
  *
- *   4. 增量动画。见 src/charts/animation.ts —— 那是这个包与直接用 Recharts 最不同的地方。
+ * 4. 增量动画。见 src/charts/animation.ts  那是这个包与直接用 Recharts 最不同的地方。
  */
 
 /** 坐标轴与网格的统一配色。改这里就换全站图表观感。 */
@@ -59,19 +59,19 @@ export function seriesColor(index: number): string {
  * 泛型为什么必须写出来, 而不是钉成 <number, string>:
  *
  * Recharts 3 把 \`content\` 的属性类型声明成 \`ContentType<ValueType, NameType>\`,
- * 其中 ValueType 默认是 \`number | string | Array<number | string>\`。函数参数是**逆变**的 ——
+ * 其中 ValueType 默认是 \`number | string | Array<number | string>\`。函数参数是**逆变**的 
  * 钉死成 <number, string> 之后, 这个组件就不再是 ContentType 的合法子类型,
  * 于是每一处 \`<Tooltip content={ChartTooltip} />\` 都会报 TS2322。
  *
  * 在本库自己的 tsconfig 下看不出来 (strict: false 让函数参数双变), 但任何
- * 开启 strict 的消费者一 import 就会炸 —— gh-pool 面板的 build 正是因此在库里失败。
+ * 开启 strict 的消费者一 import 就会炸  gh-pool 面板的 build 正是因此在库里失败。
  * 让泛型跟着 Recharts 走, 两边就一致了。
  */
 function ChartTooltip({
   active,
   payload,
   label,
-  // 参数类型写成"recharts 的默认泛型" —— 即不写类型参数, 直接用 TooltipContentProps
+  // 参数类型写成"recharts 的默认泛型"  即不写类型参数, 直接用 TooltipContentProps
   // 的 default。这样它与 <Tooltip content={...}> 期望的 ContentType 完全同型。
 }: TooltipContentProps): JSX.Element | null {
   if (!active || !payload?.length) return null;
@@ -101,7 +101,7 @@ function ChartTooltip({
 
 export interface ChartFrameProps {
   readonly children: ReactNode;
-  /** 高度。必须给 —— ResponsiveContainer 只接管宽度, 高度要由容器决定。 */
+  /** 高度。必须给  ResponsiveContainer 只接管宽度, 高度要由容器决定。 */
   readonly height?: number;
   /** 横轴数据键。传 false 表示不画横轴。 */
   readonly xKey?: string | false;
@@ -141,7 +141,7 @@ export function ChartFrame({
  *
  * 单独导出而不是塞进 ChartFrame 的原因: Recharts 的 XAxis / YAxis / CartesianGrid
  * 必须是图表组件的**直接子元素**, 不能由外面包一层再传进来。
- * 所以这里给配置而不是给组件 —— 使用方在图表里写 <XAxis {...CHART_AXIS} />。
+ * 所以这里给配置而不是给组件  使用方在图表里写 <XAxis {...CHART_AXIS} />。
  */
 export const CHART_AXIS = {
   stroke: CHART_THEME.axis,
@@ -182,7 +182,7 @@ export function ChartChrome({
         content 传函数而不是 <ChartTooltip /> 元素:
         TooltipContentProps 里 active / payload / coordinate 等是必填, 但它们由 Recharts
         在运行时注入。传元素形式会让 TS 报"缺属性"; 传函数则签名为 (props) => ReactNode,
-        类型上是完整的 —— 这是 Recharts 自定义 content 的推荐写法。
+        类型上是完整的  这是 Recharts 自定义 content 的推荐写法。
       */}
       {tooltip ? <Tooltip content={ChartTooltip} cursor={{ stroke: CHART_THEME.axisLine }} /> : null}
     </>

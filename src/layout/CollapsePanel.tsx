@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type JSX, type ReactNode } from "react";
  * 折叠面板：CSS `grid-template-rows: 0fr → 1fr` 过渡，取代 framer-motion 的
  * `height: 0 → auto`。
  *
- * 为什么换：motion 的 height:auto 是 JS 驱动的——每帧回到主线程写一次内联
+ * 为什么换：motion 的 height:auto 是 JS 驱动的每帧回到主线程写一次内联
  * height，再触发一次强制样式重算。消息列表跑在 Virtuoso 上，外层
  * ResizeObserver 会把这每一帧的尺寸变化都变成一次列表重测量，同时滚动跟随的
  * rAF 也在读布局。低配机上三者叠在同一帧里，展开就明显掉帧。CSS 过渡走浏览器
@@ -15,7 +15,7 @@ import { useEffect, useRef, useState, type JSX, type ReactNode } from "react";
  * 内容仍然按需挂载（没打开过就不在树里）：工具卡片里有 markdown 与 shiki 高亮，
  * 常驻挂载会把折叠的代价提前付掉。
  *
- * 收起分两步，见下面 `settled` 的说明——卸载一整棵工具卡片子树是一次很长的同步
+ * 收起分两步，见下面 `settled` 的说明卸载一整棵工具卡片子树是一次很长的同步
  * 提交，压在动画收尾那一帧上就是肉眼可见的一顿。
  */
 
@@ -78,7 +78,7 @@ export function CollapsePanel({
 			idleHandleRef.current = null;
 		};
 
-		// 首帧的 state 就是目标状态，既不播动画也不排任何定时器——否则每个「初始收起」
+		// 首帧的 state 就是目标状态，既不播动画也不排任何定时器否则每个「初始收起」
 		// 的面板都会在挂载时白排一个 200ms timer，工作模式一条消息几十行就是几十个。
 		if (firstRunRef.current) {
 			firstRunRef.current = false;

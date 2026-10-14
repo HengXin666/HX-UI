@@ -9,7 +9,7 @@
  * ## 为什么必须走真实浏览器
  *
  * 静默失效只能靠真实浏览器抓: 节点渲染成"未知节点"、撤销按了没反应、
- * hash 参数没生效 —— 这些在 tsc、构建、冒烟里都是绿的。
+ * hash 参数没生效  这些在 tsc、构建、冒烟里都是绿的。
  *
  * ## 用法
  *
@@ -70,7 +70,7 @@ export class Harness {
   /**
    * 读图的**可观测状态**。
    *
-   * 只读顶栏那行"N 节点 / M 连线"与错误数 —— 那是页面自己的账本,
+   * 只读顶栏那行"N 节点 / M 连线"与错误数  那是页面自己的账本,
    * 不是测试自己算的。测自己的算法等于没测。
    */
   async stat() {
@@ -87,7 +87,7 @@ export class Harness {
          *
          * 两种写法都会让它变成恒 0 的死断言:
          *   1. 读 DOM 上不存在的属性。
-         *   2. 硬编码颜色值 —— 选中色随主题变化, 硬编码只在一个主题下成立。
+         *   2. 硬编码颜色值  选中色随主题变化, 硬编码只在一个主题下成立。
          *
          * 现在: 运行时从 CSS 变量读当前主题的真实值, 再拿去比对。
          */
@@ -97,7 +97,7 @@ export class Harness {
             .trim();
           // token 读不到 = 判据失效。返回 -1 让断言红, 而不是静默当"没选中"。
           if (!token) return -1;
-          // --bp-selected 是 hex (#ffd400), computed boxShadow 里是 rgb() ——
+          // --bp-selected 是 hex (#ffd400), computed boxShadow 里是 rgb() 
           // 借一个临时元素让浏览器帮我们换算, 免得自己写 hex->rgb 再错一次
           const probe = document.createElement("div");
           probe.style.color = token;
@@ -116,7 +116,7 @@ export class Harness {
   /**
    * 取一个元素的**实际计算样式**。
    *
-   * 视觉断言不能靠"类名里写了 bg-bp-int" —— 类名写错了 Tailwind 不会报错,
+   * 视觉断言不能靠"类名里写了 bg-bp-int"  类名写错了 Tailwind 不会报错,
    * 只是静默不生成规则。必须读 computed value 才知道颜色到底有没有生效。
    */
   async cssOf(selector, prop) {
@@ -130,7 +130,7 @@ export class Harness {
   }
 
   /**
-   * 数一数画面上出现了多少种不同的颜色 —— 用于"标题栏真的分色了吗"这类
+   * 数一数画面上出现了多少种不同的颜色  用于"标题栏真的分色了吗"这类
    * 视觉断言。比"有 N 个元素"强: 元素可以都画成同一个色然后照样 PASS。
    */
   async distinctColors(selector, prop = "background-color") {

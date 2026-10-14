@@ -53,7 +53,10 @@
     "test:frontend": "node scripts/quality/index.ts layer --name frontend",
     "test:backend": "node scripts/quality/index.ts layer --name backend",
     "test:contract": "node scripts/quality/index.ts layer --name contract",
-    "test:perf": "node scripts/quality/index.ts layer --name perf"
+    "test:perf": "node scripts/quality/index.ts layer --name perf",
+    "verify-notes": "uv run scripts/redlines/agent_notes.py --diff",
+    "verify-notes:all": "uv run scripts/redlines/agent_notes.py --all",
+    "verify-notes:staged": "uv run scripts/redlines/agent_notes.py --staged"
   },
   "dependencies": {
     "@xyflow/react": "^12.12.0",

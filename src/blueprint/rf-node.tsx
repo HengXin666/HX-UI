@@ -10,19 +10,19 @@ import type { RfNode } from "./rf-adapter";
 import { handleId } from "./rf-adapter";
 
 /**
- * React Flow 的自定义节点 / 连线 —— **UE5 外观在这一层**, 不在别处。
+ * React Flow 的自定义节点 / 连线  **UE5 外观在这一层**, 不在别处。
  *
  * ## 这一层负责什么
  *
  * 只负责"长什么样": 标题栏分类色、引脚形状与配色、端口行、参数控件。
  * **所有交互 (拖拽/缩放/框选/连线/选中) 都由 React Flow 提供**, 我们一行
- * 都不写 —— 那正是这次换库要买的东西。
+ * 都不写  那正是这次换库要买的东西。
  *
  * ## Handle 的位置约定
  *
  * React Flow 的 Handle 是**绝对定位在节点边缘**的。要让线端点对准我们画
  * 的引脚圆点, 必须让两者的位置一致: 输入在左边界、输出在右边界,
- * 纵向按 PORT_ROW 排。所以这里用 inline style 精确摆, 不用 CSS 类 ——
+ * 纵向按 PORT_ROW 排。所以这里用 inline style 精确摆, 不用 CSS 类 
  * 差 1px 线就会离开圆点。
  */
 
@@ -30,7 +30,7 @@ const PORT_ROW = 20;
 const HEADER_H = 30;
 const BODY_TOP = HEADER_H + 8;
 
-/** 端口在图坐标里相对节点顶部的 y —— 必须与 geometry.portPos 的公式一致。 */
+/** 端口在图坐标里相对节点顶部的 y  必须与 geometry.portPos 的公式一致。 */
 function portY(index: number): number {
   return BODY_TOP + index * PORT_ROW + PORT_ROW / 2;
 }
@@ -58,7 +58,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
       >
         {/* 执行入口: 楔形, 画在标题栏左边 */}
         {/*
-          执行入口。Handle 必须有**真实尺寸**才可被拖、被点 ——
+          执行入口。Handle 必须有**真实尺寸**才可被拖、被点 
           尺寸为 0 时它不可交互, 拖不出线也连不上。
           这里给 11px 的命中区域并设为透明, 视觉由 PinShape 决定。
         */}
@@ -135,7 +135,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
 /**
  * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows")。
  *
- * 用 getBezierPath 拿 React Flow 自己算的路径 —— 不自己算, 否则缩放/平移
+ * 用 getBezierPath 拿 React Flow 自己算的路径  不自己算, 否则缩放/平移
  * 时端点会漂。
  */
 export function BpExecEdge({
@@ -172,8 +172,8 @@ export function BpDataEdge({
 /**
  * 执行线箭头的 marker 定义。
  *
- * ⚠️ marker/defs/path 只能在 **<svg> 内部** —— 放到别处会被当成 HTML
- *    未知标签, 箭头不生效。所以这里渲染一个 0 尺寸的 svg 专门装 defs。
+ * ⚠️ marker/defs/path 只能在 **<svg> 内部**  放到别处会被当成 HTML
+ * 未知标签, 箭头不生效。所以这里渲染一个 0 尺寸的 svg 专门装 defs。
  *
  * 所以这里渲染一个自己的 <svg> (0 尺寸、绝对定位、不挡事), 只用来装 defs。
  */

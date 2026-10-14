@@ -10,13 +10,13 @@ import type { BlueprintGraph, BlueprintRegistry, ValidationIssue } from "./types
  * 底部的诊断区。
  *
  * 单独成文件是为了行预算 (BlueprintEditor.tsx 上限 250), 但拆得也有道理:
- * 它是**只读**的一块 —— 不产生任何改动, 只消费校验结果。与编辑器的状态
+ * 它是**只读**的一块  不产生任何改动, 只消费校验结果。与编辑器的状态
  * 机没有任何纠缠。
  *
  * 三块内容:
- *   1. 错误 / 警告条数 —— 一眼知道图能不能跑
- *   2. 问题列表 —— 点得到具体是哪条
- *   3. 生成物 (JSON + 伪代码) —— 确认图连对了没有
+ * 1. 错误 / 警告条数  一眼知道图能不能跑
+ * 2. 问题列表  点得到具体是哪条
+ * 3. 生成物 (JSON + 伪代码)  确认图连对了没有
  */
 
 export function BlueprintIssues({

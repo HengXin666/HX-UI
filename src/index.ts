@@ -207,6 +207,12 @@ export {
 export { StatCard, StatGrid, statValueVariants, type StatCardProps, type StatTone } from "./layout/StatCard";
 export { EmptyState, DataBoundary, type EmptyStateProps, type EmptyKind } from "./layout/EmptyState";
 export { PageHeader, type PageHeaderProps } from "./layout/PageHeader";
+// ChatStream: 消费方 (HX-Jungle 的 console/hark) 一直在 import 它, 组件文件在
+// src/layout/ 里, 但 index.ts 少了这一行导出, 于是 dev server 一重启就
+// "does not provide an export named 'ChatStream'" 白屏 (实测 2026-10-15)。
+export {
+  ChatStream, type ChatStreamProps, type ChatMessage, type ChatRole, type ChatStatus,
+} from "./layout/ChatStream";
 export { Badge, badgeVariants, type BadgeProps } from "./layout/Badge";
 export {
   CodeBlock, CODE_THEME, ONE_DARK_PRO, type CodeBlockProps,
@@ -242,7 +248,7 @@ export {
   NavTabs, type NavTabItem, type NavTabsProps,
 } from "./layout/NavTabs";
 /**
- * 树的行级动作: 右键菜单 + 拖放。
+ * 树的行级动作: 右键菜单 + 拖放.
  *
  * .agents/notes/implemented/feature/2026-10-12-tree-context-menu.md
  * .agents/notes/implemented/feature/2026-10-12-tree-drag-and-drop.md
@@ -263,3 +269,7 @@ export {
   type SettingsSidebarTabItem,
   type SettingsSidebarChildItem,
 } from "./layout/SettingsSidebarView";
+
+// ── 常量 ──
+// 库与文档站共用同一份字面量 (PROJECT-CONST-DUP), 目前文档站的表格列用到 USER.
+export { USER } from "./constants";

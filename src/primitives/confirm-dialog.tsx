@@ -27,12 +27,12 @@ import { cn } from "./utils";
  *
  * 两种调用方式, 覆盖两类真实场景:
  *
- *   一、**命令式** `await confirmDialog({ title, message })` —— 用在事件回调里。
- *       删除、覆盖、清空这类高危操作往往发生在 async 分支的中间, 此时手边没有
- *       React 状态可用, 声明式写不进去。命令式返回 Promise<boolean>, 一行拿到答案。
- *       要求应用根部挂一次 <ConfirmDialogHost />。
+ * 一、**命令式** `await confirmDialog({ title, message })`  用在事件回调里。
+ * 删除、覆盖、清空这类高危操作往往发生在 async 分支的中间, 此时手边没有
+ * React 状态可用, 声明式写不进去。命令式返回 Promise<boolean>, 一行拿到答案。
+ * 要求应用根部挂一次 <ConfirmDialogHost />。
  *
- *   二、**声明式** `<ConfirmDialog open title ... />` —— 用在已有状态的地方。
+ * 二、**声明式** `<ConfirmDialog open title ... />`  用在已有状态的地方。
  *
  * 为什么必须有 `variant="danger"` 这一档而不是让使用方传红色按钮: 危险操作的按钮
  * 颜色如果由每个调用点自觉传, 迟早会出现"清空全部"配一个蓝色主按钮。把它做成
@@ -173,7 +173,7 @@ function emit(): void {
 
 /** 弹一个确认框, 返回用户的选择。需要根部挂 <ConfirmDialogHost />。 */
 export function confirmDialog(options: ConfirmDialogOptions): Promise<boolean> {
-  // 上一个还没答完就被新的顶掉时, 旧的那个按"取消"结算 —— 否则调用方的 await 永远悬着
+  // 上一个还没答完就被新的顶掉时, 旧的那个按"取消"结算  否则调用方的 await 永远悬着
   if (hasPending) pending.resolve(false);
   return new Promise<boolean>((resolve) => {
     pending = { ...options, id: pending.id + 1, resolve };

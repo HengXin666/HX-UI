@@ -16,9 +16,7 @@ import { cn } from "../primitives/utils";
  * ## 为什么菜单项要支持 `disabled` + `destructive` 两个语义位
  * 它们不是样式开关, 是**能力声明**: `disabled` 表示"这个动作此刻不适用"
  * (比如目标还没准备好), `destructive` 表示"做了不好撤销"。调用方声明意图,
- * 视觉由组件统一决定 —— 否则每个页面都会自己调一遍红色。
- *
- * (see the [tree context menu note](../../../.agents/notes/implemented/feature/2026-10-12-tree-context-menu.md)).
+ * 视觉由组件统一决定, 否则每个页面都会自己调一遍红色.
  */
 
 const CONTENT_CLASS =
@@ -47,6 +45,11 @@ export interface ContextMenuProps {
   readonly heading?: string;
 }
 
+/**
+ * 右键菜单: 动作与标题由调用方声明, 外观由组件统一.
+ *
+ * .agents/notes/implemented/feature/2026-10-12-tree-context-menu.md
+ */
 export function ContextMenu({ children, actions, heading }: ContextMenuProps): React.ReactElement {
   return (
     <ContextMenuPrimitive.Root>

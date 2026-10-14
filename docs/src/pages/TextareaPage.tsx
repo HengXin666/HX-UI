@@ -10,7 +10,7 @@ export function TextareaPage(): JSX.Element {
   return (
     <>
       <P>
-        类串与 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">Input</code> 同源 ——
+        类串与 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">Input</code> 同源 
         边框、底色、焦点、禁用、aria-invalid 全部对齐, 所以两者并排放在一个设置区里不会显得是两个时代的控件。
       </P>
 
@@ -50,7 +50,7 @@ export function TextareaPage(): JSX.Element {
 
       <H2>放进设置行</H2>
       <P>
-        设置页里它通常不是单独一行, 而是某个开关打开后才出现 —— SettingRow 的 children 位置可以直接放。
+        设置页里它通常不是单独一行, 而是某个开关打开后才出现  SettingRow 的 children 位置可以直接放。
       </P>
       <Preview
         align="start"

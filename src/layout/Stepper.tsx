@@ -5,22 +5,22 @@ import { motion } from "motion/react";
 import { cn } from "../primitives/utils";
 
 /**
- * 步骤条。数据驱动, 且**状态可由外部控制** —— 这是它区别于纯展示型 stepper 的地方。
+ * 步骤条。数据驱动, 且**状态可由外部控制**  这是它区别于纯展示型 stepper 的地方。
  *
  * 对标 open-vetta 的 setup-wizard (apps/desktop/src/renderer/domains/setup-wizard):
- *   指示器是一排点, 当前那个用 layoutId 拉着跑; 步骤内容切换用 opacity + y + blur。
- *   这两点沿用 —— 尤其是 layoutId, 它让指示点真正"滑过去"而不是两个点各自淡入淡出。
+ * 指示器是一排点, 当前那个用 layoutId 拉着跑; 步骤内容切换用 opacity + y + blur。
+ * 这两点沿用  尤其是 layoutId, 它让指示点真正"滑过去"而不是两个点各自淡入淡出。
  *
  * 为什么把状态交出去:
- *   真实场景里步骤的完成与否由外部事实决定 (HTTP 请求成功、websocket 连上、权限授予)。
- *   组件自己记 currentStep 的话, 这些事实就要再同步一遍, 迟早不同步。
- *   所以这里只收 `steps` 与 `current` —— 谁推进、什么时候推进由使用方决定。
+ * 真实场景里步骤的完成与否由外部事实决定 (HTTP 请求成功、websocket 连上、权限授予)。
+ * 组件自己记 currentStep 的话, 这些事实就要再同步一遍, 迟早不同步。
+ * 所以这里只收 `steps` 与 `current`  谁推进、什么时候推进由使用方决定。
  *
  * 三种状态:
- *   done     已完成。实心或勾。
- *   active   正在进行。它是唯一"被指出来"的那个。
- *   pending  还没到。最淡。
- *   error    出错。红色 —— 步骤失败必须能一眼看到, 否则用户会卡在第二步不知道为什么。
+ * done     已完成。实心或勾。
+ * active   正在进行。它是唯一"被指出来"的那个。
+ * pending  还没到。最淡。
+ * error    出错。红色  步骤失败必须能一眼看到, 否则用户会卡在第二步不知道为什么。
  */
 
 export type StepStatus = "pending" | "active" | "done" | "error";
@@ -45,11 +45,11 @@ export interface StepperProps {
   readonly current: number;
   /**
    * 点击已完成/可跳转的步骤时触发。
-   * 传了它才会让步骤可点 —— 没传时整排只是展示, 不响应点击。
+   * 传了它才会让步骤可点  没传时整排只是展示, 不响应点击。
    */
   readonly onStepClick?: (index: number, step: StepItem) => void;
   /**
-   * 允许点击的范围。默认 "done" —— 只能回看已完成的步骤, 不能跳到还没到的。
+   * 允许点击的范围。默认 "done"  只能回看已完成的步骤, 不能跳到还没到的。
    * 允许往前跳会绕过前置校验, 那是要显式开启的行为。
    */
   readonly clickable?: "none" | "done" | "all";
@@ -100,7 +100,7 @@ export function Stepper({
   orientation = "horizontal",
   className,
 }: StepperProps): JSX.Element {
-  // layoutId 需要全局唯一 —— 同一页放两个 Stepper 时不加前缀会互相抢指示器
+  // layoutId 需要全局唯一  同一页放两个 Stepper 时不加前缀会互相抢指示器
   const uid = useId().replace(/:/g, "");
 
   const canClick = (index: number, status: StepStatus): boolean => {
@@ -123,7 +123,7 @@ export function Stepper({
         const isLast = index === steps.length - 1;
         const clickableNow = canClick(index, status);
 
-        // 连接线。已完成的段落用主色, 其余用淡色 —— 这条线本身就在表达进度。
+        // 连接线。已完成的段落用主色, 其余用淡色  这条线本身就在表达进度。
         const line = (
           <span
             aria-hidden
@@ -208,7 +208,7 @@ export function Stepper({
 /**
  * 步骤内容容器。切换时做淡入 + 轻微上移 + 模糊。
  *
- * 模糊 (filter: blur) 是这一步的关键 —— 只做 opacity 会看起来像两个画面叠着换;
+ * 模糊 (filter: blur) 是这一步的关键  只做 opacity 会看起来像两个画面叠着换;
  * 加上模糊之后是"旧的散掉、新的聚起来", 观感更接近翻页。上游就是这么做的。
  */
 export function StepContent({
@@ -216,7 +216,7 @@ export function StepContent({
   children,
   className,
 }: {
-  /** 当前步骤的标识。它变了就播一次切换动画 —— 必须与步骤一一对应。 */
+  /** 当前步骤的标识。它变了就播一次切换动画  必须与步骤一一对应。 */
   stepKey: string;
   readonly children: ReactNode;
   readonly className?: string;
@@ -255,7 +255,7 @@ export function StepDots({
           <span key={i} className="relative flex h-2 items-center justify-center">
             {active ? (
               /*
-               * 当前这个是一条短横条, 并且用 layoutId 在位置之间滑动 ——
+               * 当前这个是一条短横条, 并且用 layoutId 在位置之间滑动 
                * 两个点各自淡入淡出看不出"移动", 一个横条滑过去才有方向感。
                */
               <motion.span

@@ -9,7 +9,7 @@ import { H2, H3, P, Preview, PropsTable } from "../components/DocKit";
  * Popover 页。
  *
  * 面板有**默认宽度 w-72**(不是 w-fit), 所以窄内容会显得空; 要贴内容宽必须显式覆盖,
- * 这也是 DatePicker 必须写 className="w-auto" 的原因 —— 它把 Calendar 塞进来时不覆盖就会窄 288px 卡住。
+ * 这也是 DatePicker 必须写 className="w-auto" 的原因  它把 Calendar 塞进来时不覆盖就会窄 288px 卡住。
  */
 export function PopoverPage(): JSX.Element {
   const [open, setOpen] = useState(false);

@@ -7,13 +7,13 @@ import { isCommentNode, commentIdOf, type RfNode, type RfEdge } from "./rf-adapt
  * React Flow 的"变化事件" -> 我们的图。
  *
  * 单独成文件是因为 BlueprintFlow.tsx 撞 250 行上限, 但拆得也合理:
- * 这是**纯转换** —— 读 React Flow 的 change 数组, 产出我们的图。
+ * 这是**纯转换**  读 React Flow 的 change 数组, 产出我们的图。
  * 与渲染没有任何纠缠。
  *
  * ## 为什么必须自己处理 position / remove
  *
  * React Flow 的 change 是它自己内部的 diff 格式 (不是最终状态)。
- * 如果不接, 拖节点时**画布上动了但我们的图没变** —— 刷新就回原位,
+ * 如果不接, 拖节点时**画布上动了但我们的图没变**  刷新就回原位,
  * 而序列化出去的也还是旧坐标。这类"看着能用、数据没落"的失效最难发现。
  */
 export function useGraphChanges(o: {
@@ -24,14 +24,14 @@ export function useGraphChanges(o: {
    *
    * 走 NodeChange 里的 `select` 项, 而不是 React Flow 的 onSelectionChange:
    * 后者在受控模式下依赖内部 selection state, 实测点击后**不回调**,
-   * 于是外部 selected 一直是空 —— 表现是"能操作但看不出选中了谁"。
+   * 于是外部 selected 一直是空  表现是"能操作但看不出选中了谁"。
    */
   readonly onSelect?: (ids: readonly string[]) => void;
   /**
    * 告诉外层"这批 change 属于哪一类", 好让它给历史打 tag。
    *
    * 为什么需要: 拖动时 React Flow 每移动几像素就发一次 position change,
-   * 如果每次都当独立的一步, 拖一下要按十几次撤销才回得去 ——
+   * 如果每次都当独立的一步, 拖一下要按十几次撤销才回得去 
    * 那等于没有撤销。所以移动必须打同一个 tag 让历史合并。
    */
   readonly onKind?: (kind: "move" | "remove" | "other", label: string) => void;

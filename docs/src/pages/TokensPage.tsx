@@ -1,7 +1,7 @@
 import { useState, type JSX } from "react";
 import { H2, H3, P } from "../components/DocKit";
 
-/** 色板: 直接把 CSS 变量的值渲染出来, 不写死色值 —— 换肤时这里自动跟着变。 */
+/** 色板: 直接把 CSS 变量的值渲染出来, 不写死色值  换肤时这里自动跟着变。 */
 const COLORS = [
   { name: "--background", use: "页面底" },
   { name: "--foreground", use: "正文" },
@@ -41,7 +41,7 @@ export function TokensPage(): JSX.Element {
   return (
     <>
       <P>
-        所有颜色、圆角、阴影都来自 CSS 变量。组件里出现任何硬编色值都是错的 ——
+        所有颜色、圆角、阴影都来自 CSS 变量。组件里出现任何硬编色值都是错的 
         换肤只需改这一层, 组件代码一行不动。
       </P>
       <button

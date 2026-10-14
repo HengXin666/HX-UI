@@ -8,11 +8,11 @@ import { ANY, EXEC, type NodeTypeDef } from "./types";
  * 真实项目里照这个形状写自己的节点, 一个文件就能扩出几十个。
  *
  * 三条从样板里能看出来的约定:
- *   1. 纯数据节点没有 execIn —— 它只在被别人取值时才算 (惰性)。
- *   2. 有副作用的节点 (发请求 / 写文件 / 打印) 必须有 execIn ——
- *      否则它在图里的求值时机无法确定, 分支语义也会失效。
- *   3. 参数缺省值写在 ParamDef.default 上, 不写在 evaluate 里兜 ——
- *      后者会让"节点上显示的值"与"实际用的值"不是同一个。
+ * 1. 纯数据节点没有 execIn  它只在被别人取值时才算 (惰性)。
+ * 2. 有副作用的节点 (发请求 / 写文件 / 打印) 必须有 execIn 
+ * 否则它在图里的求值时机无法确定, 分支语义也会失效。
+ * 3. 参数缺省值写在 ParamDef.default 上, 不写在 evaluate 里兜 
+ * 后者会让"节点上显示的值"与"实际用的值"不是同一个。
  */
 
 const DEMO_NODES: Record<string, NodeTypeDef> = {
@@ -112,7 +112,7 @@ const DEMO_NODES: Record<string, NodeTypeDef> = {
     type: "branch",
     label: "分支",
     category: "流程",
-    description: "按条件走真/假两条执行流 —— 走哪条由求值器决定",
+    description: "按条件走真/假两条执行流  走哪条由求值器决定",
     execIn: true,
     execOut: ["true", "false"],
     inputs: [{ id: "cond", label: "条件", type: "boolean", default: false }],
@@ -131,7 +131,7 @@ const DEMO_NODES: Record<string, NodeTypeDef> = {
      * 刻意**不在这里 console.log**。
      *
      * 库不该替使用方决定输出目标 (控制台 / 文件 / 网络 / 界面上的日志框)。
-     * 所以这个节点把"要打印的那一行"作为值吐出来, 由宿主决定往哪送 ——
+     * 所以这个节点把"要打印的那一行"作为值吐出来, 由宿主决定往哪送 
      * 副作用收敛到宿主那一侧, 节点本身保持纯的、可测的。
      */
     evaluate: ({ inputs, params }) => ({
@@ -151,7 +151,9 @@ const DEMO_NODES: Record<string, NodeTypeDef> = {
   },
 };
 
-/** 演示用的注册中心。含内置类型 + 上面这些节点。 */
+/** 演示用的注册中心。含内置类型 + 上面这些节点。 
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+ */
 export function createDemoRegistry(): BlueprintRegistryImpl {
   const reg = createRegistry();
   reg.type({ id: "image", label: "图像", colorClass: "bg-amber-400", extends: "object" });

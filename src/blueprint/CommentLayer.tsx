@@ -33,7 +33,7 @@ export function CommentLayer({
   /**
    * 换底色 (UE5 的 Comment Color)。
    *
-   * UE5 放在 Details 面板里改; 这里做成标题条上的一个色块按钮 ——
+   * UE5 放在 Details 面板里改; 这里做成标题条上的一个色块按钮 
    * 面板要滚到下面找, 而换色是高频的视觉整理动作, 就地改更顺手。
    */
   readonly onChangeTone?: (id: string, tone: CommentToneId) => void;
@@ -92,7 +92,7 @@ export function CommentLayer({
             )}
 
             {/*
-              取色按钮 (UE5 的 Comment Color)。放在标题条右侧 ——
+              取色按钮 (UE5 的 Comment Color)。放在标题条右侧 
               它是这一块的分类标记, 换色是高频动作, 不该藏进右键菜单。
               onPointerDown 拦住, 否则点它会被当成"开始拖标题条"。
             */}
@@ -137,11 +137,11 @@ export function CommentLayer({
             <div className="min-h-0 flex-1" />
           )}
           {/*
-            "框住了几个" —— 这条是注释与节点之间**看得见**的联系。
+            "框住了几个"  这条是注释与节点之间**看得见**的联系。
             没有它, 用户不知道拖动会带走什么, 于是要么不敢拖、要么拖错。
           */}
           {/*
-            右下角 resize 把手 —— UE5 就是拖这个角改大小。
+            右下角 resize 把手  UE5 就是拖这个角改大小。
             没有它, 注释的尺寸只能靠"创建时框多大就是多大", 完全没法调。
           */}
           {onResize && (
@@ -153,7 +153,7 @@ export function CommentLayer({
                  * 用**原生 capture 阶段**监听, 不用 React 的 onPointerDown。
                  *
                  * 为什么: 画布自己也在这棵树上监听 pointerdown (用于拖注释/框选),
-                 * 并且对画布元素调 setPointerCapture —— 那会**抢走**指针,
+                 * 并且对画布元素调 setPointerCapture  那会**抢走**指针,
                  * 把手上的后续 pointermove 就再也收不到 (
                  * 拖动完全没反应)。
                  *

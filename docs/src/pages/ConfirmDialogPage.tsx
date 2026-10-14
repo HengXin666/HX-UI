@@ -6,7 +6,7 @@ import { Callout, H2, P, Preview, PropsTable } from "../components/DocKit";
 /**
  * ConfirmDialog 页。
  *
- * 本页要能跑起来, 根部必须挂一次 <ConfirmDialogHost /> —— 文档站已在 App.tsx 挂了。
+ * 本页要能跑起来, 根部必须挂一次 <ConfirmDialogHost />  文档站已在 App.tsx 挂了。
  * 少了它, confirmDialog() 返回的 Promise 永远不会 settle, await 它的那段代码
  * 会静默停在那里, 既没有报错也没有对话框。这是命令式 API 唯一的坑, 所以单独说。
  */
@@ -19,7 +19,7 @@ export function ConfirmDialogPage(): JSX.Element {
   return (
     <>
       <P>
-        两种调用方式, 覆盖两类真实场景。先看命令式 —— 高危操作往往发生在 async 分支中间,
+        两种调用方式, 覆盖两类真实场景。先看命令式  高危操作往往发生在 async 分支中间,
         那时手边没有 React 状态可用, 声明式写不进去。
       </P>
 
@@ -61,7 +61,7 @@ export function ConfirmDialogPage(): JSX.Element {
 
       <H2>危险操作必须用 variant="danger"</H2>
       <P>
-        把红色做成 variant, 而不是让调用点自己传一个红色按钮 —— 后者迟早会出现
+        把红色做成 variant, 而不是让调用点自己传一个红色按钮  后者迟早会出现
         "清空全部"配一个蓝色主按钮。做成 variant 之后危险语义<b className="text-foreground">无法被漏掉</b>:
         标题会带三角图标并转成 destructive 色。
       </P>
@@ -91,7 +91,7 @@ export function ConfirmDialogPage(): JSX.Element {
 
       <H2>不可逆操作: requireText</H2>
       <P>
-        真·不可逆的操作 (删除整个数据集) 用点一次按钮挡住是不够的 —— 人手快会直接点过去。
+        真·不可逆的操作 (删除整个数据集) 用点一次按钮挡住是不够的  人手快会直接点过去。
         要求输入确认词是唯一真正有效的摩擦: 确认按钮在输入正确前一直是禁用的。
       </P>
       <Preview

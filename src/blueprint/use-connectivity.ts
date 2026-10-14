@@ -8,7 +8,7 @@ import { makeId } from "./useBlueprint";
 /**
  * 连线: 合法性判定 + 落地。
  *
- * 单独成文件是因为 BlueprintFlow.tsx 撞 250 行上限, 但拆得也对 ——
+ * 单独成文件是因为 BlueprintFlow.tsx 撞 250 行上限, 但拆得也对 
  * 这是整套东西**最核心**的一块, 值得单独待着并被人反复读。
  */
 
@@ -20,14 +20,14 @@ export function useConnectivity(o: {
   const { registry, graph, onGraphChange } = o;
 
   /**
-   * "能不能连" —— **这是这套库的核心卖点, 必须走我们自己的判定**。
+   * "能不能连"  **这是这套库的核心卖点, 必须走我们自己的判定**。
    *
    * React Flow 只提供"两个 handle 能不能连"的回调, 真正的规则
    * (类型 DAG 协变 / exec 与 data 不能互连 / 独占输入 / 环检测)
    * 全部在 connect.ts 里, 这里只是转发。
    *
-   * ⚠️ 这条只回答"能不能放", **不**处理"顶替" —— 那是 applyConnect 的事。
-   *    两个都接才完整 (见下面的 onConnect)。
+   * ⚠️ 这条只回答"能不能放", **不**处理"顶替"  那是 applyConnect 的事。
+   * 两个都接才完整 (见下面的 onConnect)。
    */
   const isValidConnection = useCallback(
     (c: Connection | RfEdge): boolean => {

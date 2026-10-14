@@ -2,6 +2,13 @@
 
 Status: implemented
 
+Decision-ID: collapsible-rail
+
+## Code
+
+- `src/layout/CollapsibleRail.tsx`
+- `src/index.ts`
+
 ## Problem
 
 侧栏里同时装着两类东西: **导航** (几个项, 很少变) 和**内容** (任务树, 需要纵向空间)。

@@ -3,7 +3,7 @@ import { Spin, SPIN_VARIANTS, type SpinVariant, Card, Badge, Button } from "@hx/
 import { H2, P, Preview, PropsTable, Callout, Code } from "../components/DocKit";
 
 /**
- * 变体展示卡。每张卡自己维护一份"是否放大"的状态 ——
+ * 变体展示卡。每张卡自己维护一份"是否放大"的状态 
  * 放在页面级 state 里会让 44 张卡每次操作都全量重渲染。
  */
 function VariantCard({
@@ -49,12 +49,12 @@ export function SpinPage(): JSX.Element {
     <>
       <P>
         全部 44 种形态来自 <Code>UI Ball LDRS</Code>（MIT 许可，带官方 React 版）。
-        它们是**逐帧手调**出来的动效 —— 每个关键帧各自的插值曲线、每个元素各自的延迟，
+        它们是**逐帧手调**出来的动效  每个关键帧各自的插值曲线、每个元素各自的延迟，
         不是参数化生成。这也是为什么不该手写复刻：能做出来"像"，但没那个劲。
       </P>
 
       <Callout title="选它，然后告诉我">
-        下面每张卡都能点「选它」。挑完把名字发我，我把其他的裁掉只留你选的 ——
+        下面每张卡都能点「选它」。挑完把名字发我，我把其他的裁掉只留你选的 
         组件的 <Code>variant</Code> 白名单在 <Code>src/primitives/spin.tsx</Code> 顶部，
         裁剪就是删几行。
       </Callout>
@@ -79,7 +79,7 @@ export function SpinPage(): JSX.Element {
       <H2>轮播模式</H2>
       <P>
         <Code>mode="rotate"</Code> 会每隔 <Code>interval</Code> 毫秒随机换一个形态，带交叉淡入淡出。
-        换的时机按**时间**而不是按"播了几轮"—— 44 个形态的周期从 0.5s 到 1.8s 不等，
+        换的时机按**时间**而不是按"播了几轮" 44 个形态的周期从 0.5s 到 1.8s 不等，
         按轮数换算会让每个形态停留的时长不一致，看起来像随机抽搐。
       </P>
       <Preview
@@ -194,7 +194,7 @@ export function SpinPage(): JSX.Element {
       <P>
         <Code>prefers-reduced-motion</Code> 的处理交给使用方：库不替使用者决定
         "减少动态"时该显示什么。要停掉动画时给一个静态替代（例如 <Code>&lt;span&gt;加载中&lt;/span&gt;</Code>），
-        而不是让它冻在中间帧 —— 冻结会留下一个看不出状态的形状。
+        而不是让它冻在中间帧  冻结会留下一个看不出状态的形状。
       </P>
     </>
   );

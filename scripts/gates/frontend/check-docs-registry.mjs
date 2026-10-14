@@ -16,7 +16,7 @@
  *
  * App.tsx 的 `renderPage` 有一个 `default:` 分支返回 `PlaceholderPage`。它的本意是
  * "还没写文档的占位", 但实际效果是: **在 nav 里加了 id 而 App 忘了加 case 时,
- * 页面照样渲染、有 h1、DOM 体积达标** ——
+ * 页面照样渲染、有 h1、DOM 体积达标** 
  *
  *   实测 (2026-10-04): 往 nav.ts 注入一个没有 case 的 id, `check-smoke` 输出
  *   「41/41 页渲染正常」并 exit 0。**幽灵页完美通过了唯一会打开浏览器的门禁。**
@@ -27,7 +27,7 @@
  *
  * ## 扫描根
  *
- * 读 CHECK_UI_ROOT (默认仓库根) —— 负向探针靠它把夹具指到临时目录。
+ * 读 CHECK_UI_ROOT (默认仓库根)  负向探针靠它把夹具指到临时目录。
  *
  * 用法: node scripts/gates/frontend/check-docs-registry.mjs
  * 退出码: 0=通过 / 1=有违规 / 2=扫描根或输入坏了 (区别于"内容违规")
@@ -61,7 +61,7 @@ const indexSrc = fs.readFileSync(INDEX, "utf8");
 
 /**
  * 豁免: 少数页面的"页面 id 与图标表键名不同"之类的历史差异。
- * 每条必须**说明理由**, 且必须**当前真的还在豁免某样东西** —— 目标消失了还留着 = FAIL (陈旧条目)。
+ * 每条必须**说明理由**, 且必须**当前真的还在豁免某样东西**  目标消失了还留着 = FAIL (陈旧条目)。
  */
 const WHITELIST = path.join(ROOT, "scripts", "gates", "frontend", "docs-registry-allow.json");
 let allow = { navWithoutIcon: [], navWithoutCase: [], unexportedModules: [] };
@@ -82,7 +82,7 @@ const caseIds = [...appSrc.matchAll(/case\s+"([a-z0-9-]+)":/g)].map((m) => m[1])
 const importedPages = [...appSrc.matchAll(/from "\.\/pages\/(\w+)"/g)].map((m) => m[1]);
 /**
  * navIcons.ts: `"x": "icon-[..."` 或 `x: "icon-[..."`。
- * **两种键写法都要匹配** —— 第一版只写了带引号的那种, 于是 40 个键里只读到 16 个,
+ * **两种键写法都要匹配**  第一版只写了带引号的那种, 于是 40 个键里只读到 16 个,
  * 剩下 24 个成了永远不会被检查的死区。这是正则式解析最典型的失败形态:
  * 漏报和通过长得一模一样。
  */
@@ -110,7 +110,7 @@ for (const id of navWithoutCase) {
     rule: "nav-without-case",
     where: `docs/src/nav.ts 的 ${id}`,
     hint:
-      "nav 里有这个页面, 但 App.tsx 的 renderPage 没有对应分支 —— 它会落进 default 分支渲染成占位页, " +
+      "nav 里有这个页面, 但 App.tsx 的 renderPage 没有对应分支  它会落进 default 分支渲染成占位页, " +
       "于是**有 h1、DOM 够大、冒烟通过**, 而用户看到的是\"这一页的示例还没写\"。",
   });
 }
@@ -137,18 +137,18 @@ for (const k of iconOrphans) {
 // ## 判据: 每个模块必须【从 src/index.ts 导出】或【被同仓模块 import】, 二者至少一个
 //
 // 我一开始把 .tsx 与 .ts 分成两类判据 (.tsx 必须导出, .ts 允许只被引用),
-// 复杂度上去了而收益是零 —— 实测发现 `src/blueprint/canvas-parts.tsx` 就是
+// 复杂度上去了而收益是零  实测发现 `src/blueprint/canvas-parts.tsx` 就是
 // **渲染拆分件**: 它和 `layout-parts.ts` 一样是行数棘轮的正确产物 (主文件超预算后
 // 把独立部分拆出来), 只是恰好含 JSX。对它要求"必须对外导出"同样是
 // **门禁在惩罚它自己推荐的修复动作**。
 //
 // 统一判据之后, 这条拦的是真正坏的味道: **既没导出、也没人引用的死文件**。
-// 同时它仍然拦住原本的目标 —— "组件写好了但忘了接上"必然同时满足
+// 同时它仍然拦住原本的目标  "组件写好了但忘了接上"必然同时满足
 // "没导出"和"没人 import", 所以那条真实缺口照样红。
 //
 // ⚠️ 引用检测是**文本级**的 (匹配 `from "...<模块名>"`), 不是 AST。
 // 代价: 只在注释里提到模块名会被误判为"被引用"。收益: 不需要 TS 编译器 API。
-// 这是刻意的取舍 —— 报错信息里写清了判据, 误判时可以一眼看出原因。
+// 这是刻意的取舍  报错信息里写清了判据, 误判时可以一眼看出原因。
 const COMPONENT_DIRS = ["primitives", "layout", "charts", "blueprint"];
 const allSources = [];
 for (const d of COMPONENT_DIRS) {
@@ -193,7 +193,7 @@ for (const m of unexported) {
     rule: "module-unreachable",
     where: `src/${m}.ts(x)`,
     hint:
-      "既没有从 src/index.ts 导出, 也没有任何同仓模块 import 它 —— 使用方拿不到, 仓内也没人用。" +
+      "既没有从 src/index.ts 导出, 也没有任何同仓模块 import 它  使用方拿不到, 仓内也没人用。" +
       "要么加一行导出, 要么让用它的人 import 它, 要么删掉。",
   });
 }
@@ -207,7 +207,7 @@ for (const m of exportedModules.filter(
   violations.push({
     rule: "export-without-file",
     where: `src/index.ts 引用 ./${m}`,
-    hint: "导出指向不存在的文件 —— 使用方 import 时会直接报错。",
+    hint: "导出指向不存在的文件  使用方 import 时会直接报错。",
   });
 }
 
@@ -217,7 +217,7 @@ for (const id of allow.navWithoutCase) if (!navIds.includes(id)) stale.push(`nav
 for (const id of allow.navWithoutIcon) if (!iconKeys.includes(id)) stale.push(`navWithoutIcon: ${id}`);
 for (const m of allow.unexportedModules) if (!allSources.includes(m)) stale.push(`unexportedModules: ${m}`);
 for (const s of stale) {
-  violations.push({ rule: "stale-allowance", where: `scripts/gates/frontend/docs-registry-allow.json 的 ${s}`, hint: "这条豁免的目标已经不存在了, 删掉它 —— 留着会让这条豁免永远生效且没人敢删。" });
+  violations.push({ rule: "stale-allowance", where: `scripts/gates/frontend/docs-registry-allow.json 的 ${s}`, hint: "这条豁免的目标已经不存在了, 删掉它  留着会让这条豁免永远生效且没人敢删。" });
 }
 
 // ── 结论 ──────────────────────────────────────────────────────────

@@ -9,11 +9,11 @@ import type { BlueprintRegistry } from "./types";
  *
  * ## 两种触发方式, 同一个组件
  *
- *   1. **拖线到空白松手** → `mode="connect"`, 选中的节点自动连到那根线上。
- *      UE5 官方行为: "releasing on empty space opens a context menu with
- *      only relevant nodes"。
- *   2. **Tab** → `mode="add"`, 在视口中心加一个节点。
- *      同样是 UE5: `bOpenCreateMenuOnBlankGraphAreas`, 默认键 Tab。
+ * 1. **拖线到空白松手** → `mode="connect"`, 选中的节点自动连到那根线上。
+ * UE5 官方行为: "releasing on empty space opens a context menu with
+ * only relevant nodes"。
+ * 2. **Tab** → `mode="add"`, 在视口中心加一个节点。
+ * 同样是 UE5: `bOpenCreateMenuOnBlankGraphAreas`, 默认键 Tab。
  *
  * 合成一个组件是因为两者**长得一样、行为只差落点用途**。分成两个组件会
  * 出现"改了一个忘了另一个"。

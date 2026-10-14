@@ -10,7 +10,7 @@ import { Callout, H2, H3, P, Preview, PropsTable } from "../components/DocKit";
  *
  * 库里有两条下拉路线: 这里的 Radix Select (基础件) 与 layout/MotionSelect
  * (设置页那张皮)。两者视觉几乎一致, 但 Radix 这条**由 Item 反写触发器的显示文案**,
- * 所以选项必须真实挂载过 —— 这也是为什么 DatePicker 的月份/年份下拉用 Select,
+ * 所以选项必须真实挂载过  这也是为什么 DatePicker 的月份/年份下拉用 Select,
  * 而设置页用 MotionSelect 的显式 label。
  */
 export function SelectPage(): JSX.Element {
@@ -111,7 +111,7 @@ export function SelectPage(): JSX.Element {
       <H2>禁用</H2>
       <P>
         单个选项禁用只降到 50% 透明度并挡住指针; 整个触发器禁用则连展开都拦掉。
-        单选下拉不要用它表达"不可用"以外的语义 —— 禁用项仍然在列表里占位, 用户会去点。
+        单选下拉不要用它表达"不可用"以外的语义  禁用项仍然在列表里占位, 用户会去点。
       </P>
       <Preview
         align="start"

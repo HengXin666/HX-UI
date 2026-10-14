@@ -8,7 +8,7 @@ import { EXEC } from "./types";
 /**
  * 节点面板。
  *
- * 一级分组用 category, 二级是节点。搜索走"子串 + 子序列"双路 ——
+ * 一级分组用 category, 二级是节点。搜索走"子串 + 子序列"双路 
  * 只做子串时中英混排的目录很难命中 (打 "add" 搜不到 "AddNumber")。
  */
 
@@ -55,7 +55,7 @@ export interface BlueprintPaletteProps {
   /**
    * 某项被**拖到画布上**并松手。
    *
-   * `at` 是画布坐标; 没有它表示"点了一下" —— 那种情况由调用方自己决定
+   * `at` 是画布坐标; 没有它表示"点了一下"  那种情况由调用方自己决定
    * 落在哪 (通常是视口中心)。两种交互都保留: 拖拽是主要方式,
    * 点击是键盘/无障碍用户的退路, 不能因为做了拖拽就把点击删掉。
    */
@@ -99,7 +99,7 @@ export function BlueprintPalette({
   return (
     <div className={cn("flex h-full min-h-0 flex-col", className)}>
       {header}
-      {/* 提示: 不写这句话, 没人知道要拖 —— 面板看起来只是个列表 */}
+      {/* 提示: 不写这句话, 没人知道要拖  面板看起来只是个列表 */}
       <div className="border-b border-border px-2.5 py-1 text-[10.5px] text-muted-foreground">
         拖到画布上, 或点击添加
       </div>

@@ -6,17 +6,12 @@ Decision-ID: pr3-quality-gates-ci-fixes
 
 ## Code
 
-- `.agents/skills/hx-agent-code/scripts/ci/baseline.ts`
-- `.agents/skills/hx-agent-code/scripts/ci/context.ts`
-- `.agents/skills/hx-agent-code/scripts/ci/run.ts`
 - `scripts/quality/checks/code.ts`
-- `scripts/quality/checks/docs.ts`
 - `scripts/quality/runtime/run.ts`
 - `scripts/gates/shared/check-fingerprint.mjs`
 - `scripts/check-blueprint.mjs`
 - `scripts/e2e/run.mjs`
 - `docs/src/blueprint-demo-fallback/dsh.ts`
-- `.github/workflows/quality.yml`
 
 ## Problem
 
@@ -36,3 +31,8 @@ PR 3 的四个 workflow 全红. 原因不在单条违规: (1) 基线只从可信
 - 直接信任 PR 里的 baseline.json: 最省事, 但等于允许自批新违规
 - 先单独合入基线再合本 PR: 符合原设计, 但需要维护者额外操作, 且下一个首次接入的仓库会再踩一次
 - 把 HX-Blueprint-Demo 复制进本仓: 能保留全部断言, 但拿不到源码, 且会出现两份权威
+- 什么都不做 / 复用现有 workflow: 不需要维护者额外操作, 但四个 workflow 继续全红, 等于引入基线的 PR 永远拿不到基线, 下一个首次接入的仓库还会再踩一次
+
+## Consequences
+
+四个 workflow 在干净 checkout 上可运行, 引入基线的 PR 不再自己判自己, 接线指纹只覆盖受版本控制的钩子源文件. 代价是首次推送必须能算出 merge-base, 兄弟目录缺席时文档站与 check-blueprint 退到仓内替身, 那几组断言只能打印 SKIP, 强度低于真实实体图; --strict 下还要靠 HX_BLUEPRINT_DEMO_OPTIONAL=1 显式放行.

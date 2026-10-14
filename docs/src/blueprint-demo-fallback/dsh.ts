@@ -8,7 +8,11 @@
 import { createDemoRegistry, demoGraph } from "../../../src/blueprint/demo";
 import type { BlueprintGraph } from "../../../src/blueprint/types";
 
-/** 替身标记: 页面与门禁据此说明当前展示的不是真实 dsh 图 */
+/**
+ * 替身标记: 页面与门禁据此说明当前不是真实 dsh 图
+ *
+ * .agents/notes/implemented/process/2026-10-14-pr3-quality-gates-ci-fixes.md
+ */
 export const BLUEPRINT_DEMO_FALLBACK = true;
 
 export const NODES: Record<string, unknown> = {};

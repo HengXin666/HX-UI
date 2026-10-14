@@ -7,7 +7,7 @@ import { Callout, H2, H3, P, Preview, PropsTable } from "../components/DocKit";
  *
  * 容器是 self-drawn: 没有 radix, 也没有 <input type=radio>。
  * 它靠 motion 的 layoutId 把指示器在按钮之间"搬"过去, 所以**同一页里每个实例的
- * layoutId 必须唯一** —— 源码用 useId() 做到这点, 这也是为什么不要手写 layoutId。
+ * layoutId 必须唯一**  源码用 useId() 做到这点, 这也是为什么不要手写 layoutId。
  */
 
 type View = "grid" | "list" | "timeline";
@@ -35,7 +35,7 @@ export function SegmentedControlPage(): JSX.Element {
         分段控件的容器底是 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">bg-black/[0.06]</code>
         (暗色下 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">bg-white/[0.08]</code>),
         内边距 2px, 所以指示器与容器之间天然留出一条 1px 旁的缝, 不用额外画边。
-        这是<b className="text-foreground">唯一一个允许出现阴影的基础件</b> —— 指示器的 1px 影子是它表达"浮在底上"的方式。
+        这是<b className="text-foreground">唯一一个允许出现阴影的基础件</b>  指示器的 1px 影子是它表达"浮在底上"的方式。
       </P>
 
       <H2>基础</H2>
@@ -63,7 +63,7 @@ const items = [
       <H2>角标</H2>
       <P>
         <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">badge</code> 是未读数, 大于 99 显示 99+,
-        为 0 或 undefined 时不渲染。它只用红色实底 —— 用的是 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">bg-red-500</code>,
+        为 0 或 undefined 时不渲染。它只用红色实底  用的是 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">bg-red-500</code>,
         因为红点是通用约定, 不走 token 反而更稳。文字角标请改用 Badge 组件。
       </P>
       <Preview
@@ -118,7 +118,7 @@ const items = [{ key: "grid", label: "网格" }, { key: "list", label: "列表" 
       <Callout kind="warning" title="suppressLayoutAnimation 只给容器尺寸正在变的场景">
         面板从窄变宽、侧栏展开收起时, 外层尺寸一帧一变, 指示器的 spring 动画会追着这些中间值跑, 看起来是抖。
         这时传 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">suppressLayoutAnimation</code> 把过渡时长置 0,
-        等尺寸稳定了再关掉。平时不要开 —— 指示器的高光全在滑动那一下。
+        等尺寸稳定了再关掉。平时不要开  指示器的高光全在滑动那一下。
       </Callout>
 
       <H2>属性</H2>

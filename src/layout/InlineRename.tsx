@@ -12,10 +12,10 @@ import { cn } from "../primitives/utils";
  * import { InlineRename } from "@hx/ui";
  *
  * <InlineRename
- *   value={name}
- *   onSubmit={(next) => rename(id, next)}   // 空串也会送到这里, 语义由调用方决定
- *   onCancel={() => setRenaming(null)}
- *   maxLength={80}
+ * value={name}
+ * onSubmit={(next) => rename(id, next)}   // 空串也会送到这里, 语义由调用方决定
+ * onCancel={() => setRenaming(null)}
+ * maxLength={80}
  * />
  * ```
  *

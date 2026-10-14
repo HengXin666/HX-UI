@@ -1,5 +1,5 @@
 /**
- * 蓝图编辑器的快捷键 —— 对齐 UE5。
+ * 蓝图编辑器的快捷键  对齐 UE5。
  *
  * ## 键位来源
  *
@@ -9,12 +9,12 @@
  *
  * ## 三条边界 (不遵守会把编辑器做成没法用)
  *
- *   1. **输入框里不拦**。在注释标题里按 Delete 要删的是字, 不是节点。
- *      所有编辑器都守这条线。
- *   2. **没有选中时不吞键**。按 Ctrl+D 但没选节点, 应该让浏览器收到
- *      (加书签), 而不是静默什么都不做 —— 那会让人以为键盘坏了。
- *   3. **preventDefault 只在真的处理了之后调**。否则 Ctrl+F 这类
- *      浏览器原生功能会被永久挡死。
+ * 1. **输入框里不拦**。在注释标题里按 Delete 要删的是字, 不是节点。
+ * 所有编辑器都守这条线。
+ * 2. **没有选中时不吞键**。按 Ctrl+D 但没选节点, 应该让浏览器收到
+ * (加书签), 而不是静默什么都不做  那会让人以为键盘坏了。
+ * 3. **preventDefault 只在真的处理了之后调**。否则 Ctrl+F 这类
+ * 浏览器原生功能会被永久挡死。
  */
 
 export interface ShortcutDef {
@@ -32,7 +32,7 @@ export interface ShortcutDef {
  * 快捷键全表。
  *
  * 它是**唯一事实源**: 帮助面板照它渲染, 处理器照它分派, e2e 照它断言。
- * 分开写三份必然漂移 —— 那就是"文档说支持、实际不支持"的来源。
+ * 分开写三份必然漂移  那就是"文档说支持、实际不支持"的来源。
  */
 export const SHORTCUTS: readonly ShortcutDef[] = [
   // ── 编辑 ──
@@ -74,7 +74,7 @@ export const SHORTCUTS: readonly ShortcutDef[] = [
  * (Mac 上 metaKey、大小写、Shift 组合), 而它埋在 DOM 事件回调里没法单测。
  *
  * @param e 只要 { key, ctrlKey, metaKey, shiftKey, altKey } 的形状,
- *          这样测试里可以造普通对象, 不必造 KeyboardEvent。
+ * 这样测试里可以造普通对象, 不必造 KeyboardEvent。
  */
 export function matchShortcut(e: {
   readonly key: string;
@@ -87,7 +87,7 @@ export function matchShortcut(e: {
   /**
    * 键名归一: **一律**小写。
    *
-   * 必须对所有键生效, 不能只处理单字符键 —— "Delete" / "Escape" / "Tab"
+   * 必须对所有键生效, 不能只处理单字符键  "Delete" / "Escape" / "Tab"
    * 这些是多字符键, 若不做归一, 它们与下面小写常量的比对永远不成立,
    * 那几个键会全部静默失效。
    */
@@ -140,7 +140,7 @@ export function matchShortcut(e: {
 /**
  * 这个快捷键该不该被拦下。
  *
- * 只有**真的能执行**时才返回 true —— 没选中节点时按 Ctrl+D 不该吞掉
+ * 只有**真的能执行**时才返回 true  没选中节点时按 Ctrl+D 不该吞掉
  * 浏览器的"加书签", 否则用户会觉得键盘失灵。
  */
 export function shouldHandle(id: string, ctx: { readonly hasSelection: boolean }): boolean {
@@ -159,7 +159,7 @@ export function shouldHandle(id: string, ctx: { readonly hasSelection: boolean }
   }
 }
 
-/** 焦点是否落在可输入元素里 —— 在里面的按键不该被编辑器劫持。 */
+/** 焦点是否落在可输入元素里  在里面的按键不该被编辑器劫持。 */
 export function isTypingTarget(t: { readonly tagName?: string; readonly isContentEditable?: boolean } | null): boolean {
   if (!t) return false;
   if (t.isContentEditable) return true;

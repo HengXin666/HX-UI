@@ -14,7 +14,7 @@ export function TimePickerPage(): JSX.Element {
     <>
       <P>
         为什么不用 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">&lt;input type="time"&gt;</code>:
-        它的呈现完全交给浏览器 —— Chrome 是带钟表图标的分段输入, Firefox 是另一种,
+        它的呈现完全交给浏览器  Chrome 是带钟表图标的分段输入, Firefox 是另一种,
         而且<b className="text-foreground">宽度与高度不可控</b>, 放进设置页的一行式版式里会把整行撑歪。
         这里自己拼两个数字输入, 尺寸与 Input 一致。
       </P>
@@ -39,7 +39,7 @@ const [m, setM] = useState(0);
         只有解析得出的数字才回调; 失焦时按规范化值回填, 于是 "7" 会变成 "07"。
       </P>
       <P>
-        二、<b className="text-foreground">越界即夹紧</b>, 不报错也不拒绝。输了 99 就变成 59 —— 比弹出校验提示更顺手。
+        二、<b className="text-foreground">越界即夹紧</b>, 不报错也不拒绝。输了 99 就变成 59  比弹出校验提示更顺手。
       </P>
       <P>
         三、<b className="text-foreground">去掉 spinner</b>。数字框右侧的上下箭头在 48px 宽的框里占掉三分之一,
@@ -47,7 +47,7 @@ const [m, setM] = useState(0);
       </P>
       <Preview
         align="start"
-        code={`{/* 试着输入 99 再失焦 —— 会被夹到 59 */}`}
+        code={`{/* 试着输入 99 再失焦  会被夹到 59 */}`}
       >
         <TimePicker hour={h2} minute={m2} onHourChange={setH2} onMinuteChange={setM2} />
         <span className="self-center text-[11.5px] text-muted-foreground">往小时里输 99 试试</span>

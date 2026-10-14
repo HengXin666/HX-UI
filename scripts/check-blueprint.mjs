@@ -6,7 +6,7 @@
  *
  * 蓝图的核心卖点是"连接合法性判定", 而它是**纯逻辑**: 不依赖 React、
  * 不依赖 DOM、不依赖浏览器。check-smoke 只能证明"页面渲染出来了",
- * 证明不了"number 连不进 string" —— 后者才是这套东西成立与否的判据。
+ * 证明不了"number 连不进 string"  后者才是这套东西成立与否的判据。
  *
  * 而且这里有一条真实教训: 判据写错时, 页面照样渲染、tsc 照样通过、
  * 冒烟照样全绿。只有断言具体行为才能抓到。
@@ -14,14 +14,14 @@
  * ## 怎么跑得起来
  *
  * 本仓 tsconfig 的 `moduleResolution` 是 bundler, 源文件里 import 不带
- * `.ts` 后缀, 而 Node 的 ESM loader 要求带后缀 —— 直接 node 跑源码会
+ * `.ts` 后缀, 而 Node 的 ESM loader 要求带后缀  直接 node 跑源码会
  * ERR_MODULE_NOT_FOUND。所以先用 vite 把纯逻辑层打成一个 ESM 产物再断言。
  * 代价是多一步构建 (~20ms), 换来的是断言**真实源码**而不是复制品。
  *
  * 用法: node scripts/check-blueprint.mjs [--strict]
  *
  * 扫描根: CHECK_UI_ROOT 可覆盖 (默认上一级目录)。
- * --strict: 打包依赖 (docs/node_modules/vite) 缺失时不再静默 exit 0 ——
+ * --strict: 打包依赖 (docs/node_modules/vite) 缺失时不再静默 exit 0 
  *   在本地它是有意的降级 (没装依赖不该卡住开发), 在 CI 里它就是"这次什么都没验证",
  *   两者必须区分, 否则这条门禁可以靠删 node_modules 永久变绿。
  */
@@ -40,6 +40,8 @@ const STRICT = process.argv.includes("--strict");
  * 使用方演示包 HX-Blueprint-Demo 是父仓的普通目录, 单独 clone 本仓 (CI 也是) 时不存在.
  * 缺席时: 本地降级为跳过 dsh 实体图那几组断言; --strict 下必须由 HX_BLUEPRINT_DEMO_OPTIONAL=1
  * 显式声明"这次不验证跨组件契约"才放行, 并在输出里逐组写明跳过, 不静默变绿.
+ *
+ * .agents/notes/implemented/process/2026-10-14-pr3-quality-gates-ci-fixes.md
  */
 const SIBLING = path.resolve(ROOT, "..", "HX-Blueprint-Demo", "src", "dsh");
 const HAS_DSH = existsSync(SIBLING);
@@ -160,7 +162,7 @@ const skipDsh = (group) => { console.log("  SKIP: " + group + " (需要兄弟目
   ok("任意类型→any 放行", reg.assignable("number", "any"));
   ok("any→任意类型放行", reg.assignable("any", "number"));
 
-  // 注册写错成环时不能拖死 UI —— 这条是防御性的, 但真出事就是整页卡死
+  // 注册写错成环时不能拖死 UI  这条是防御性的, 但真出事就是整页卡死
   reg.type({ id: "loopA", extends: "loopB" });
   reg.type({ id: "loopB", extends: "loopA" });
   ok("类型环不死循环", !reg.assignable("loopA", "number"));
@@ -225,7 +227,7 @@ const G0 = {
   // math 的两个输入都带 default, 所以不该报 missing-input
   ok("有默认值的输入不算缺失", !validateGraph(demo, { nodes: [{ id: "m", type: "math", x: 0, y: 0 }], edges: [] }).issues.some((i) => i.code === "missing-input"));
 
-  // log.msg 带 default:"" 也是可选 —— 另注册一个真必填的节点来测
+  // log.msg 带 default:"" 也是可选  另注册一个真必填的节点来测
   const strict = createDemoRegistry();
   strict.node({
     type: "strict", label: "必填",
@@ -252,7 +254,7 @@ const G0 = {
   ok("有环时 topoSort 返回 null", topoSort(cyc) === null);
   const vc = validateGraph(demo, cyc);
   /**
-   * 静态校验不再报数据环 —— 环检测只看执行流边。
+   * 静态校验不再报数据环  环检测只看执行流边。
    *
    * 为什么: 拿数据边判环会误判。agent loop 里一条横跨两段的数据边
    * (assemble -> admitPrompt) 会被圈进执行回路里, 于是纯控制流循环
@@ -363,7 +365,7 @@ const G0 = {
   const rc = canConnect(demo, folded, { node: sub.id, port: sg.outputs[0].id }, { node: "n6", port: "msg" });
   ok("子图输出能连到下游 (boolean -> any)", rc.ok === true);
 
-  // 折叠后校验仍通过 —— 子图内部被递归校验
+  // 折叠后校验仍通过  子图内部被递归校验
   const vf = validateGraph(demo, folded);
   ok("折叠后整图校验通过", vf.ok);
   if (!vf.ok) console.log("    折叠后报错:", JSON.stringify(vf.issues.slice(0, 6), null, 1));
@@ -376,7 +378,7 @@ const G0 = {
   ok("展开后校验通过", validateGraph(demo, unfolded).ok);
   ok("展开后子图定义默认保留", !!unfolded.subgraphs[sub.subgraph]);
 
-  // 展开后求值结果必须和折叠前一致 —— 这是折叠语义正确性的硬判据
+  // 展开后求值结果必须和折叠前一致  这是折叠语义正确性的硬判据
   const before = await evaluateGraph(demo, demoGraph, { entry: "n1" });
   const after = await evaluateGraph(demo, unfolded, { entry: "n1" });
   ok("折叠-展开往返后求值结果不变", JSON.stringify(before.outputs.get("n4")) === JSON.stringify(after.outputs.get("n4")));
@@ -419,7 +421,7 @@ const G0 = {
   ok("框外节点不动", Math.abs(n5.x - demoGraph.nodes.find((n) => n.id === "n5").x) < 0.001);
 
   /**
-   * 幂等性 —— "拖拽乱飞"的直接防线。
+   * 幂等性  "拖拽乱飞"的直接防线。
    * 旧的增量语义下, 同样的调用会不断累加位移 (实测注释一拖就飞出去)。
    * 绝对坐标天然幂等: 无论调多少次, 结果只取决于最后那个目标位置。
    */
@@ -427,7 +429,7 @@ const G0 = {
   ok("★ 传同样的目标位置两次, 位置不变 (幂等)", Math.abs(again.comments[0].x - after.x) < 0.001);
   ok("★ 节点也不会被二次位移", Math.abs(again.nodes.find((n) => n.id === "n2").x - n2.x) < 0.001);
 
-  // 注释不影响校验与求值 —— 它不是节点
+  // 注释不影响校验与求值  它不是节点
   ok("加注释后校验仍通过", validateGraph(demo, g).ok);
   ok("注释不会被当成节点算进拓扑序", topoSort(g).length === g.nodes.length);
   ok("注释不产生端口", !hitPort(demo, g, { x: c.x + 1, y: c.y + 1 }, 9));
@@ -470,7 +472,7 @@ if (HAS_DSH || skipDsh("10. dsh agent loop 图")) {
   if (!vd.ok) console.log("    dsh 图报错:", JSON.stringify(vd.issues.filter((i)=>i.level==="error").map((i) => i.code + " @" + (i.nodeIds ?? []).join(",")), null, 1));
   console.log("    回路(warning):", vd.issues.filter((i)=>i.level==="warning").length, "条");
 
-  // 每条边都要能被解析成真实端口 —— 这是"图连对了"的最低判据
+  // 每条边都要能被解析成真实端口  这是"图连对了"的最低判据
   const dangling = dshAgentLoopGraph.edges.filter(
     (e) => !resolvePort(dsh, dshAgentLoopGraph, e.from, "out") || !resolvePort(dsh, dshAgentLoopGraph, e.to, "in")
   );
@@ -531,7 +533,7 @@ if (HAS_DSH || skipDsh("10. dsh agent loop 图")) {
     ok("折叠「" + label + "」后能进子图", !!subgraphAsGraph(g, sub.subgraph));
   }
 
-  // 三个分组全部折叠: 图应该塌成很小但依然合法 —— 这是"分层能压住复杂度"的证据
+  // 三个分组全部折叠: 图应该塌成很小但依然合法  这是"分层能压住复杂度"的证据
   let all = dshAgentLoopGraph;
   for (const [label, ids] of Object.entries(COLLAPSIBLE_GROUPS)) {
     all = collapseToSubgraph(dsh, all, ids, { label });
@@ -561,7 +563,7 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
   /**
    * 方向性判据必须**分行的**看。
    *
-   * 折行之后, 下一行从 x=0 重新开始 —— 于是"跨行"的边在 x 上一定是
+   * 折行之后, 下一行从 x=0 重新开始  于是"跨行"的边在 x 上一定是
    * "从右往左", 但那是折行的正常结果, 不是布局失败。
    * 只看 x 会把这些误判成逆流 (实测就这么失败过)。
    *
@@ -586,7 +588,7 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
   console.log("    (执行边: 同行顺流 " + sameRowFwd + " / 同行逆流 " + sameRowBack + " / 跨行 " + crossRow + ")");
 
   // 不重叠: 直接两两比包围盒。
-  // 不能按 x 分组 —— 折行后不同行的节点会有相同的 x, 被误判成"同列"。
+  // 不能按 x 分组  折行后不同行的节点会有相同的 x, 被误判成"同列"。
   let overlaps = 0;
   {
     const boxes = dshAgentLoopGraph.nodes.map((n) => {
@@ -605,7 +607,7 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
   ok("★ 任意两节点都不重叠", overlaps === 0);
   if (overlaps) console.log("    重叠:", overlaps);
 
-  // 坐标非负 —— 负坐标会让"缩放到适应"算出奇怪偏移
+  // 坐标非负  负坐标会让"缩放到适应"算出奇怪偏移
   ok("坐标非负", [...l1.values()].every((p) => p.x >= 0 && p.y >= 0));
 
   // 交叉数: 布局后不应比随机摆放更差。这里只做"能算出来"的下限判据,
@@ -615,9 +617,9 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
   console.log("    (交叉数: " + cx + ")");
   /**
    * 布局质量的硬判据 (这三条是"整理完不难看"的量化定义):
-   *   1. 零重叠 —— 叠在一起的图对人类等于没有
-   *   2. 宽高比落在 0.5~6 —— 太瘦长(实测过 39.6)或太方都难看
-   *   3. 有层次 —— 同行内执行流从左往右
+   *   1. 零重叠  叠在一起的图对人类等于没有
+   *   2. 宽高比落在 0.5~6  太瘦长(实测过 39.6)或太方都难看
+   *   3. 有层次  同行内执行流从左往右
    */
   {
     const L = autoLayout(dsh, dshAgentLoopGraph);
@@ -647,7 +649,7 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
       { id: "c2", from: { node: "p1", port: "value" }, to: { node: "q0", port: "a" }, kind: "data" as const },
     ],
   };
-  // countCrossings 内部会先 autoLayout, 所以布局已经把交叉修掉了 —— 这里测不到。
+  // countCrossings 内部会先 autoLayout, 所以布局已经把交叉修掉了  这里测不到。
   // 直接验证: 用"已经摆成交叉"的坐标 + 不重叠的 x 列, 看统计能否报出来。
   const crossed = {
     nodes: [
@@ -702,7 +704,7 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
   ok("应用布局后校验仍通过", validateGraph(dsh, applied).issues.every((i) => i.level !== "error"));
   ok("应用布局后节点数不变", applied.nodes.length === dshAgentLoopGraph.nodes.length);
 
-  // 有环的图不能死循环 —— 分层要求偏序, 有环必须能拆
+  // 有环的图不能死循环  分层要求偏序, 有环必须能拆
   const cyclic = {
     nodes: [
       { id: "a", type: "number", x: 0, y: 0 },
@@ -763,7 +765,7 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
   /**
    * inside 与"拖动会带走哪些"必须是**同一判据**。
    * 两条规则不一致的话, UI 显示的"框住 3 个"和实际带走的 4 个对不上,
-   * 用户会按显示的预期操作然后带错 —— 这正是"注释和节点要有交互"的意思。
+   * 用户会按显示的预期操作然后带错  这正是"注释和节点要有交互"的意思。
    */
   const cm = (r1.comments ?? [])[0];
   const moved = moveCommentWithNodes(dsh, r1, cm.id, { x: cm.x + 50, y: cm.y + 50 });
@@ -777,7 +779,7 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
 
 // ── 12. 多页面同步: URL 编解码 ──
 {
-  // 中文标签要能完整往返 —— 直接 atob 处理不了多字节, 必须走 TextDecoder
+  // 中文标签要能完整往返  直接 atob 处理不了多字节, 必须走 TextDecoder
   const withChinese = {
     nodes: [{ id: "n1", type: "text", x: 10, y: 20, params: { v: "中文内容「引号」" } }],
     edges: [],
@@ -788,7 +790,7 @@ if (HAS_DSH || skipDsh("11. 自动布局")) {
   ok("URL 往返后中文不丢", back?.nodes[0]?.params?.v === "中文内容「引号」");
   ok("URL 往返后坐标不变", back?.nodes[0]?.x === 10 && back?.nodes[0]?.y === 20);
 
-  // 大图不该硬塞进 URL —— 撑爆 URL 比"不同步"更糟
+  // 大图不该硬塞进 URL  撑爆 URL 比"不同步"更糟
   const huge = {
     nodes: Array.from({ length: 400 }, (_, i) => ({ id: "n" + i, type: "text", x: i, y: i })),
     edges: [],
@@ -807,7 +809,7 @@ if (HAS_DSH || skipDsh("13. Agent API")) {
 
   /**
    * 最典型的 Agent 输入: 只说有什么节点、怎么连, **一个坐标都不给**。
-   * 这正是之前"叠成一坨"的用法 —— 现在必须摆得好看。
+   * 这正是之前"叠成一坨"的用法  现在必须摆得好看。
    */
   const built = buildFromAgent(dsh, {
     nodes: [
@@ -971,7 +973,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
   const listed = await dispatchTool(tools, "list_node_types");
   ok("list_node_types 列出了类型", listed.ok && listed.text.includes("kick"));
 
-  // 2) 建图 —— 不给坐标
+  // 2) 建图  不给坐标
   const built = await dispatchTool(tools, "build_graph", {
     nodes: [
       { key: "start", type: "agentCreated" },
@@ -1067,7 +1069,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
 
   /**
    * 为什么必须合并: 拖一个节点每帧都产生一次提交, 不合并的话
-   * 撤销一次只退 1px —— 等于没有撤销。这是"撤销能用"的前提。
+   * 撤销一次只退 1px  等于没有撤销。这是"撤销能用"的前提。
    */
   ok("★ 连续拖动会被合并成一步 (撤销才退得动)",
     shouldCoalesce({ tag: "move", at: 1000 }, { tag: "move", at: 1016 }, W));
@@ -1101,9 +1103,9 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
   /**
    * 色板: 每档都要有**框体色 + 标题栏色**。
    *
-   * COMMENT_TONE 已从字符串改成 { bg, bar, fg } —— 旧断言把色板当字符串取 indexOf
+   * COMMENT_TONE 已从字符串改成 { bg, bar, fg }  旧断言把色板当字符串取 indexOf
    * 会直接崩。顺带把断言改得更有意义: 不只"有背景", 还要"标题栏与框体
-   * 不是同一个色" —— 那正是"标题 / 正文分得开"的前提。
+   * 不是同一个色"  那正是"标题 / 正文分得开"的前提。
    */
   const tones = ["default", "neutral", "primary", "success", "warning", "danger", "info"];
   for (const t of tones) {
@@ -1123,7 +1125,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
 {
   /**
    * 折行之后, "上一行末尾 -> 下一行开头"这类边在几何上必然往左回拉。
-   * 普通贝塞尔会让它**斜穿过中间所有节点** —— 就是"从左边深入右边又拉
+   * 普通贝塞尔会让它**斜穿过中间所有节点**  就是"从左边深入右边又拉
    * 回去"的那条。绕行让它在两行之间的空白车道里走。
    */
   const a = { x: 1000, y: 300 };
@@ -1133,7 +1135,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
   ok("绕行路径含横向段", p.indexOf(" L ") !== -1);
   ok("绕行从起点出发、到终点结束", p.startsWith("M " + a.x + " " + a.y) && p.indexOf(String(b.x) + " " + String(b.y)) !== -1);
 
-  // 不该绕的不能绕 —— 否则短边也会被画成绕来绕去, 比原来更难看
+  // 不该绕的不能绕  否则短边也会被画成绕来绕去, 比原来更难看
   ok("同行的正向边不绕", !shouldDetour({ x: 100, y: 100 }, { x: 400, y: 130 }));
   ok("短距离的回拉不绕", !shouldDetour({ x: 400, y: 100 }, { x: 300, y: 105 }));
   ok("垂直跨度小的回拉不绕", !shouldDetour({ x: 900, y: 100 }, { x: 200, y: 110 }));
@@ -1151,7 +1153,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
   /**
    * ★ 框体内部**不命中**。
    *
-   * 用户报"框选的内容在内部不能再被移动" —— 根因就是命中范围是整个框,
+   * 用户报"框选的内容在内部不能再被移动"  根因就是命中范围是整个框,
    * 于是框里的节点永远抓不到 (注释先被命中, 直接开始拖注释)。
    * 注释在视觉上确实在节点下面, 命中测试必须反映这个层级:
    * 框体留给节点, 注释只认标题条与把手。
@@ -1214,7 +1216,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
    *
    * 两个成因, 都静默:
    *   1. COMMENT_TONE 里每组只有 border-* 与 text-*, **没有任何 bg-* **
-   *      —— 于是框体完全透明, 只剩 22px 的标题条
+   *       于是框体完全透明, 只剩 22px 的标题条
    *   2. 修的时候若写 bg-primary/[0.14] 这种任意透明度, 本工程的 Tailwind
    *      **不生成规则**, 类名静默失效, 背景还是没有
    *
@@ -1234,7 +1236,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
    *
    * 为什么还要查源文件: 上面那条读的是打包产物, 只能证明"色板存在"。
    * 而真正的失效方式是"色板用了 bg-muted/25 这种在深色画布上等于透明
-   * 的值" —— 它存在、也不报错, 只是看不见。所以断言色板必须走 --bp-cmt-*
+   * 的值"  它存在、也不报错, 只是看不见。所以断言色板必须走 --bp-cmt-*
    * 这组专用 token。
    */
   ok("注释色板走专用 token (不是 bg-muted 这类等于透明的)", has("--bp-cmt-") || toneBlock.indexOf("bg-bp-cmt-") !== -1);
@@ -1242,7 +1244,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
   /**
    * 标准档检查: 不允许 /[0.xx] 这种任意值语法 (它不生成规则)。
    *
-   * ⚠️ 必须先把注释行去掉再查 —— 色调表上方的说明里**提到了这个反例**,
+   * ⚠️ 必须先把注释行去掉再查  色调表上方的说明里**提到了这个反例**,
    * 不去掉的话检查会被自己的文档命中, 永远失败 (实测踩到)。
    * 这和 ui-rules 门禁里"注释行不参与判定"是同一个道理。
    */
@@ -1259,7 +1261,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
   /**
    * 这条是**结构性**的回归防线, 不是行为断言。
    *
-   * 背景: 用户报"拿起注释块就放不下去" —— 根因是 onPointerUp 里处理完
+   * 背景: 用户报"拿起注释块就放不下去"  根因是 onPointerUp 里处理完
    * 注释位移后写了提前 return, 跳过了函数末尾的 setCommentDrag(null),
    * 于是拖拽状态永远清不掉, 注释粘着光标不放。
    *
@@ -1278,7 +1280,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
   ok("找得到 onPointerUp", start !== -1 && end !== -1);
   if (start !== -1 && end !== -1) {
     const body = src.slice(start, end);
-    // 去掉注释再找 return —— 注释里提到 return 是正常的
+    // 去掉注释再找 return  注释里提到 return 是正常的
     // 不用正则: 反斜杠在模板字符串里会被吃掉, 实测踩过两次
     const NL = String.fromCharCode(10);
     const lines = body.split(NL);
@@ -1364,7 +1366,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
      *
      * 这不是形式主义: 子图节点的外形完全由 SubGraphDef 决定, 不声明就等于
      * "没有任何端口", 所有连到它的边都会变成 unknown-port。库里有从内部
-     * 隧道推导的容错, 但显式声明才是可靠做法 —— 尤其是子图还要再被折叠时。
+     * 隧道推导的容错, 但显式声明才是可靠做法  尤其是子图还要再被折叠时。
      */
     subgraphs[id] = {
       id, label: "步骤 " + (i + 1), nodes: inner.graph.nodes, edges: inner.graph.edges,
@@ -1388,7 +1390,7 @@ if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
    *
    * 已知的残留限制: 折叠"已经含子图的节点"时, 多个外部入边会汇到新子图的
    * 同一个输入口, 触发 input-occupied。这是**可见**的报错 (不是静默丢边),
-   * 属于可接受的已知边界 —— 修它需要让折叠产生的对外端口一律可多入,
+   * 属于可接受的已知边界  修它需要让折叠产生的对外端口一律可多入,
    * 那会牵动"独占输入"的默认语义。当前不做。
    */
   const folded = collapseToSubgraph(reg, withSub, [nodes[0].id, nodes[1].id], { label: "前半段" });
@@ -1551,11 +1553,11 @@ ok("输入框里不拦", isTypingTarget({ tagName: "INPUT" }) === true);
 /**
  * 为什么要这条: 节点由 CSS 变量画 (BlueprintNode 用 var(--bp-title-h)),
  * 而连线端点由 geometry.portPos 按 HEADER_H 算。两者一旦不等, 表现是
- * "每根线都偏出圆点" —— 不报错、tsc 全绿、页面看起来基本正常, 是本模块
+ * "每根线都偏出圆点"  不报错、tsc 全绿、页面看起来基本正常, 是本模块
  * 最难查的一类失效。
  *
  * 实测踩过: --bp-title-h 曾写 28 而 HEADER_H = 30, 每个端口都偏 2px。
- * 所以这里**直接读两个源文件**比对, 而不是断言"某个数等于 30" ——
+ * 所以这里**直接读两个源文件**比对, 而不是断言"某个数等于 30" 
  * 后者在两边一起改成 31 时照样绿, 那就等于没守。
  */
 {

@@ -23,7 +23,7 @@ export interface LayoutNode {
  *
  * 为什么需要: 分层布局的天然倾向是"链有多长就有多少列", 出来的图是一条
  * 细长带子。dsh 图 28 列 / 宽高比 39.6 (8000 x 202), 缩放到适应后
- * 每个节点小得看不清 —— 那是"整理完更难看"的典型。
+ * 每个节点小得看不清  那是"整理完更难看"的典型。
  *
  * 做法: 目标列数约 sqrt(n)*1.6 (让宽高比落在 1~3, 人眼舒服的区间)。
  * 超过就合并相邻列, 每次挑**合并代价最小**的一对 (代价 = 两列节点数之和)。
@@ -117,7 +117,7 @@ export function findBackEdges(ids: readonly string[], edges: readonly BlueprintE
 /**
  * 数交叉数。用于评估布局质量与写测试。
  *
- * 接受**显式的坐标来源**, 而不是内部跑一次 autoLayout ——
+ * 接受**显式的坐标来源**, 而不是内部跑一次 autoLayout 
  * 后者让这个函数永远只能测"布局后的交叉数", 于是它自己有没有算对
  * 根本无法验证 (一张必然交叉的图会报 0, 因为布局已经把
  * 交叉修掉了, 看上去像是"算法完美", 实际是测量工具失效)。
@@ -130,7 +130,7 @@ export function countCrossings(
   positions?: ReadonlyMap<string, { x: number; y: number }>
 ): number {
   /**
-   * 不传坐标时无法评估 —— 这里不再内部调 autoLayout。
+   * 不传坐标时无法评估  这里不再内部调 autoLayout。
    *
    * 原来会调, 于是 layout.ts 与 layout-parts.ts 形成了**循环依赖**
    * (parts 需要 autoLayout, layout 需要 parts 的辅助函数)。ESM 能跑,
@@ -164,14 +164,14 @@ export function countCrossings(
       const a = es[i];
       const b = es[j];
       /**
-       * 判据: 两条边的两端顺序相反即交叉 —— 与"两端是否同列"无关。
+       * 判据: 两条边的两端顺序相反即交叉  与"两端是否同列"无关。
        *
        * 两处易错点, 都会让统计静默失效:
-       *   1. 原本要求"终点同层"才算, 于是跨列的交叉统计不到 (dsh 图报 0
-       *      而实际一堆交叉, 看上去像算法完美, 实际是尺子坏了)。
-       *   2. 去掉那个条件后又写了 `if (ax === bx) continue`, 于是**起点同列**
-       *      的一对边被跳过 —— 而"一个节点扇形展开两条输出"恰恰是最常见
-       *      的交叉场景。手工摆的交叉图就是这么漏掉的。
+       * 1. 原本要求"终点同层"才算, 于是跨列的交叉统计不到 (dsh 图报 0
+       * 而实际一堆交叉, 看上去像算法完美, 实际是尺子坏了)。
+       * 2. 去掉那个条件后又写了 `if (ax === bx) continue`, 于是**起点同列**
+       * 的一对边被跳过  而"一个节点扇形展开两条输出"恰恰是最常见
+       * 的交叉场景。手工摆的交叉图就是这么漏掉的。
        *
        * 现在不做任何列相等的过滤: 用有向边端点的层内序号比较即可。
        * 起点/终点同列时序号是按 y 排的, 比较依然有意义。
@@ -200,10 +200,10 @@ export function countCrossings(
  *
  * 为什么需要兜底而不是修好上游: 折行逻辑涉及"行宽试算 + 行距累加 +
  * 行内居中", 任一处算错都会让相邻行的节点压住, 而这类错误只在特定
- * 图规模下才出现 —— dsh 图就有 6 处。与其保证上游每一步都对,
+ * 图规模下才出现  dsh 图就有 6 处。与其保证上游每一步都对,
  * 不如在最下游加一道**必然成立**的约束: 不重叠是硬要求。
  *
- * 只向下推 (保序), 所以同列的相对顺序不变 —— 顺序是前面辛苦算出来的。
+ * 只向下推 (保序), 所以同列的相对顺序不变  顺序是前面辛苦算出来的。
  */
 export function resolveOverlaps(
   nodes: Map<string, LayoutNode>,
@@ -259,7 +259,7 @@ export function worstBackPull(
     colX[i] = cursor;
     cursor += w + gapX;
   }
-  // succ 的 key 是节点 id, 不是 rank —— 先建 "节点 id -> 列索引"
+  // succ 的 key 是节点 id, 不是 rank  先建 "节点 id -> 列索引"
   const nodeCol = new Map<string, number>();
   for (let i = 0; i < rankKeys.length; i++) {
     for (const id of ranks.get(rankKeys[i])!) nodeCol.set(id, i);

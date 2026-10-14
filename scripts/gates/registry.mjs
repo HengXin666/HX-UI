@@ -1,5 +1,5 @@
 /**
- * 门禁唯一注册表 —— 本仓红线集的**单一定义点**。
+ * 门禁唯一注册表  本仓红线集的**单一定义点**。
  *
  * 为什么单独一个文件: 检查点有三个 (提交前 / 推送前 / CI), 而"跑哪些检查"这件事
  * 必须在人脑里只有一个答案。同一套判据在两个检查点上各写一遍的后果是实测出来的:
@@ -11,9 +11,9 @@
  * 字段:
  *   id          稳定标识, 被 --group / 指纹 / 输出引用
  *   group       账单单位 (lib / docs / shape / browser / guard / probe), 由命令行选
- *   label       写"这条拦什么", 不写命令复述 —— 它会原样打进日志
+ *   label       写"这条拦什么", 不写命令复述  它会原样打进日志
  *   cwd         相对仓库根; 有些门禁必须在自己那层跑 (docs 的图标集在 docs/node_modules)
- *   args        完整 argv, 含解释器 —— 不拼接
+ *   args        完整 argv, 含解释器  不拼接
  *   produces    本条在**本次运行内**产出的逻辑产物名
  *   requires    依赖某个产物由本次运行产出; 缺了就把生产者拉进来 (绝不读上一轮的旧产物)
  *   strictArgs  严格档 argv (CI / 手动全量); 缺省等于 args
@@ -136,7 +136,7 @@ export const GATES = [
 
 export const GROUPS = [...new Set(GATES.map((g) => g.group))];
 
-/** 按 id 取门禁; 未知 id 返回 undefined 而不是抛 —— 调用方要能打印可操作信息。 */
+/** 按 id 取门禁; 未知 id 返回 undefined 而不是抛  调用方要能打印可操作信息。 */
 export function gateById(id) {
   return GATES.find((g) => g.id === id);
 }

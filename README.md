@@ -9,8 +9,8 @@
 
 | 层 | 内容 | 依赖 |
 |---|---|---|
-| 令牌 | `src/tokens.css` —— 颜色 / 圆角 / 阴影 / 字体 / 图表色序 | **零** |
-| 桥接 | `src/styles.css` —— Tailwind 4 的 `@theme inline` 映射 | Tailwind v4 |
+| 令牌 | `src/tokens.css`  颜色 / 圆角 / 阴影 / 字体 / 图表色序 | **零** |
+| 桥接 | `src/styles.css`  Tailwind 4 的 `@theme inline` 映射 | Tailwind v4 |
 | 组件 | `src/primitives/` `src/layout/` `src/charts/` | React 19 + radix-ui |
 
 `tokens.css` 不 import Tailwind, 因此非 Tailwind 项目也能直接用.
@@ -50,7 +50,7 @@
 `HxLineChart` `HxAreaChart` `HxBarChart` `HxPieChart` `HxRadarChart` `HxRadialChart`
 外加 `ChartFrame` + `ChartChrome`, 需要 Recharts 完整能力时自己拼.
 
-**蓝图**（`src/blueprint/`）—— 节点图编辑器
+**蓝图**（`src/blueprint/`） 节点图编辑器
 `BlueprintEditor` 默认形态（面板 + 画布 + 诊断）；`BlueprintCanvas` 只要画布；
 `canConnect` / `validateGraph` 是纯函数，没有 React 也能跑，后端可以拿同一份判据校验上传上来的图。
 
@@ -68,7 +68,7 @@ reg.node({
 });
 ```
 
-连接合法性只有一份判据 `canConnect`，拖拽反馈与落地都调它 —— 写成两处迟早出现
+连接合法性只有一份判据 `canConnect`，拖拽反馈与落地都调它  写成两处迟早出现
 “提示能连、连完报错”。独占输入被占时不报错而是顶掉旧线，并把被顶掉的边 id
 回传给你提示。校验分四层（结构 → 局部 → 环 → 业务钩子），环的报错挂在**边**上
 而不是节点上：删环上任意一条边都能解开，挂节点会让人以为要删节点。
@@ -83,10 +83,10 @@ reg.node({
 环检测 / 分支求值 / 序列化往返）。判据写错时 tsc、构建、冒烟全绿，只有这层能抓到。
 
 **二、蓝图里执行流与数据流共存。** 有副作用的节点必须挂 `execIn`，求值沿 exec 边走，
-没走到的分支不求值 —— 这正是分支的语义。数据节点惰性求值，按拓扑序 + 缓存，
+没走到的分支不求值  这正是分支的语义。数据节点惰性求值，按拓扑序 + 缓存，
 菱形图上公共上游只算一次。
 
-**三、图表的增量动画。** Recharts 默认按数组下标配对数据，数量变化时按比例拉伸 ——
+**三、图表的增量动画。** Recharts 默认按数组下标配对数据，数量变化时按比例拉伸 
 5 个点变 15 个点时每个旧点"覆盖"约 3 个新点，整条线从头重排。
 这里区分「首次加载」与「后续增量」：首次播完整绘制动画，之后用 `matchAppend`
 （或 `matchByDataKey`）让已存在的点留在原位，只有新点淡入。
@@ -130,7 +130,7 @@ npm run gates:fingerprint # 严格度与接线指纹 (防静默放松)
 
 三条容易踩的坑，已由机器兜住：`check-docs-registry.mjs` 对账
 `nav.ts ↔ App.tsx 分支 ↔ 页面文件 ↔ 图标表 ↔ 库导出`（`nav` 有页面而 `App` 没有 case 时
-会渲染成占位页，而冒烟抓不到它 —— 有负向探针钉着）；`check-line-budget.mjs` 管单文件行数
+会渲染成占位页，而冒烟抓不到它  有负向探针钉着）；`check-line-budget.mjs` 管单文件行数
 （tsx ≤ 250 / ts ≤ 450，存量 12 个文件逐个冻结、只降不升）；`check-lanes.mjs` 保证
 每个顶层目录都被某条 lane 认领（否则改它一条门禁都不跑）。
 

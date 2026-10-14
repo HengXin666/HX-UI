@@ -1,17 +1,17 @@
 #!/usr/bin/env node
 /**
- * 门禁总线 —— 本仓红线集的唯一入口。所有检查点 (pre-commit / pre-push / CI / 手动) 都走它。
+ * 门禁总线  本仓红线集的唯一入口。所有检查点 (pre-commit / pre-push / CI / 手动) 都走它。
  *
  * 为什么要有它: 判据定义只能有一份。同一套检查在三个检查点上各写一遍时, 差别不会
- * 报错, 只会**悄悄出现** —— 某个检查点漏掉一条, 表现和"全绿"完全一样。
+ * 报错, 只会**悄悄出现**  某个检查点漏掉一条, 表现和"全绿"完全一样。
  *
  * 五条防"跑错"的机制 (门禁最危险的失败形态是"它看起来跑了"):
- *   1. 参数是闭集, 未知参数 exit 2 —— 否则新 flag 会被静默当成组名
- *   2. preflight —— 门禁脚本文件不存在就**立刻报错**, 不当成通过 (一次改名会让整条门禁静默消失)
- *   3. produces/requires —— 依赖产物的门禁只认**本次运行内**产出的产物, 生产者不在计划里就自动拉进来
+ *   1. 参数是闭集, 未知参数 exit 2  否则新 flag 会被静默当成组名
+ *   2. preflight  门禁脚本文件不存在就**立刻报错**, 不当成通过 (一次改名会让整条门禁静默消失)
+ *   3. produces/requires  依赖产物的门禁只认**本次运行内**产出的产物, 生产者不在计划里就自动拉进来
  *      (缺这条的症状: 读到上一轮留在磁盘上的旧 dist 而静默变绿)
- *   4. fail-fast —— 第一条红就停, 并打印可直接复制的复现命令
- *   5. --dry-run —— 只打印会跑什么与真实参数, 不执行 (写文档、排查、code review 都要它)
+ *   4. fail-fast  第一条红就停, 并打印可直接复制的复现命令
+ *   5. --dry-run  只打印会跑什么与真实参数, 不执行 (写文档、排查、code review 都要它)
  *
  * 用法:
  *   node scripts/gates/run.mjs                          # 按工作区改动选 lane
@@ -63,7 +63,7 @@ if (flags.has("--help")) {
 }
 
 /**
- * 扫描根必须可被覆盖, 否则负向探针没有输入可喂 —— 门禁脚本一律读 CHECK_UI_ROOT,
+ * 扫描根必须可被覆盖, 否则负向探针没有输入可喂  门禁脚本一律读 CHECK_UI_ROOT,
  * 探针把它指向临时目录。总线自己也从这里取根, 保证两边看到同一个仓库。
  */
 const ROOT = process.env.CHECK_UI_ROOT ? path.resolve(process.env.CHECK_UI_ROOT) : REPO_ROOT;
@@ -93,13 +93,13 @@ if (cpName !== undefined) {
   chosenGroups = cp.groups.filter((g) => GROUP_ORDER.includes(g));
   checkpointStrict = cp.strict === true;
   laneNote = `<检查点 ${cpName}: ${cp.title}>`;
-  // 检查点档位与显式分组不该同时给 —— 两个"跑哪些"的来源会让人分不清生效的是哪个
+  // 检查点档位与显式分组不该同时给  两个"跑哪些"的来源会让人分不清生效的是哪个
   if (flags.has("--all") || valued["--group"] !== undefined) {
     console.error("run.mjs: --checkpoint 不能与 --all / --group 同时使用 (跑哪些只能有一个来源)");
     process.exit(2);
   }
   // --checkpoint 决定"跑哪些", 与变更集无关 (本仓门禁多为全仓分析器)。
-  // 但仍把变更集算出来打在输出里 —— 它回答"这次改动落在哪几条 lane 上",
+  // 但仍把变更集算出来打在输出里  它回答"这次改动落在哪几条 lane 上",
   // 是排查"为什么这条没跑"时的第一手信息。
   const f = changedFiles();
   if (f !== null) checkpointFiles = f;
@@ -123,7 +123,7 @@ if (cpName !== undefined) {
   if (lane.unclaimed.length > 0) {
     console.error(`run.mjs: 有路径没被任何 lane 认领, 按兜底跑全部分组:`);
     for (const u of lane.unclaimed.slice(0, 10)) console.error(`  ${u}`);
-    console.error(`  —— 请把它登记进 scripts/gates/lanes.mjs (改它们会一条门禁都不跑, 而运行时看不出来)`);
+    console.error(`   请把它登记进 scripts/gates/lanes.mjs (改它们会一条门禁都不跑, 而运行时看不出来)`);
     laneNote = "<lane: 未认领路径 → 全量兜底>";
   }
 }
@@ -140,7 +140,7 @@ function changedFiles() {
   }
   const r = git(["status", "--porcelain", "--untracked-files=all"]);
   if (r === null) return null;
-  // porcelain 每行是 "XY<空格><路径>"。**不能先 trim 再 slice(3)** ——
+  // porcelain 每行是 "XY<空格><路径>"。**不能先 trim 再 slice(3)** 
   // 状态码常以空格开头 (" M docs/x"), trim 会吃掉它, 得到 "ocs/x"。
   const files = r.map((l) => l.replace(/^..\s/, "").trim()).filter(Boolean);
   // 工作区干净: 用最近一次提交的改动面, 避免"干净=什么都不跑"这个诱人的错误默认值
@@ -158,7 +158,7 @@ let chosen = GATES.filter((g) => chosenGroups.includes(g.group));
 
 // ── produces / requires: 依赖产物时自动把生产者拉进来 ──────────────
 // requires 指的是**产物名** (如 dist), 不是门禁 id。所以这里先按产物名找到生产者,
-// 再判断它是否已在计划里 —— 漏掉后一个判断会让同一条门禁在输出里出现两次
+// 再判断它是否已在计划里  漏掉后一个判断会让同一条门禁在输出里出现两次
 // (实测: --group browser 打出 4 条, 其中 docs-build 重复)。
 const planned = new Set(chosen.map((g) => g.id));
 const producers = GATES.filter(
@@ -173,7 +173,7 @@ if (producers.length > 0) {
     `run.mjs: 计划里有依赖产物的门禁, 已自动加入其生产者: ${producers.map((p) => p.id).join(", ")}`,
   );
 }
-/** 本次运行真正产出过的产物名 —— 只有它能让 requires 成立 (防读旧产物变绿)。 */
+/** 本次运行真正产出过的产物名  只有它能让 requires 成立 (防读旧产物变绿)。 */
 const produced = new Set();
 // 同组内按"生产者先跑"排序, 否则 requires 会先于 produces 求值, 于是被 SKIP。
 // 组间顺序仍按 GROUP_ORDER (便宜的先跑)。
@@ -195,7 +195,7 @@ for (const g of chosen) {
   }
 }
 if (missingFiles.length > 0) {
-  console.error(`run.mjs: preflight 失败 —— 注册表里的门禁文件不存在:`);
+  console.error(`run.mjs: preflight 失败  注册表里的门禁文件不存在:`);
   for (const m of missingFiles) console.error(`  ${m.id}: ${m.p}`);
   console.error(`  一次改名就会让整条门禁静默消失, 所以这里直接报错而不是跳过。`);
   process.exit(2);
@@ -204,6 +204,10 @@ if (missingFiles.length > 0) {
 const STRICT = flags.has("--strict") || checkpointStrict;
 const argvFor = (g) => (STRICT && g.strictArgs ? g.strictArgs : g.args);
 const reproOf = (g) => {
+  /**
+   * HX-UI 接入 Agent Notes v2
+   * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+   */
   const cmd = [process.execPath, "scripts/gates/run.mjs"].concat(
     flags.has("--all") ? ["--all"] : ["--group", g.group],
   );

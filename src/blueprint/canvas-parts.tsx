@@ -8,16 +8,16 @@ export { CommentLayer } from "./CommentLayer";
 /**
  * 画布的两块纯展示件。
  *
- * 单独成文件是因为 BlueprintCanvas.tsx 已被行预算**冻结且只许降** ——
+ * 单独成文件是因为 BlueprintCanvas.tsx 已被行预算**冻结且只许降** 
  * 而这两块 (区间注释层、左上角工具条) 与画布的主逻辑 (拖拽/连线/缩放)
  * 没有任何纠缠, 搬出来既降行数也更清楚。
  */
 
-/** 注释的语义色。只允许这四种 —— 放开任意颜色换肤时又会失效。 */
+/** 注释的语义色。只允许这四种  放开任意颜色换肤时又会失效。 */
 /**
  * 注释的语义色。
  *
- * ⚠️ 必须同时给 **背景** 与 **边框** —— 之前每组只有 border-* 与 text-*,
+ * ⚠️ 必须同时给 **背景** 与 **边框**  之前每组只有 border-* 与 text-*,
  * 没有任何 bg, 于是整个框体是**透明的**: 看起来就是"一个悬空的标题条 +
  * 一片空白", 完全不像一个框。注释框的意义是把一片节点**圈出来**,
  * 没有底色就圈不住任何东西。
@@ -38,7 +38,7 @@ export const COMMENT_HANDLE = 14;
  * 深色下比节点体亮一档、亮色下比画布暗一档, 两种主题都分得清。
  *
  * 每个 tone 给两组: bg 是框体, bar 是标题栏 (比框体再亮一档,
- * 让"标题 / 正文"分得开 —— UE5 就是这样)。
+ * 让"标题 / 正文"分得开  UE5 就是这样)。
  */
 export const COMMENT_TONE: Record<string, { readonly bg: string; readonly bar: string; readonly fg: string }> = {
   default: { bg: "bg-bp-cmt-default", bar: "bg-bp-cmt-bar-default", fg: "text-foreground" },
@@ -53,12 +53,12 @@ export const COMMENT_TONE: Record<string, { readonly bg: string; readonly bar: s
 /**
  * 可选的注释底色。
  *
- * UE5 的 Comment Color 是任意 RGB + Alpha, 这里刻意只给**语义色板** ——
+ * UE5 的 Comment Color 是任意 RGB + Alpha, 这里刻意只给**语义色板** 
  * 任意值会让换肤失效 (本库第一条硬约定: 颜色只有 tokens.css 一个来源),
  * 而且注释是给人看的分组标记, 语义色比自由调色更清楚地表达"这块是什么"。
  *
  * 色板刻意只有六档, 且全部落在本库允许的三条语义原色 (emerald/amber/red)
- * 与两个 token 上 —— 门禁 check-ui-rules 会拦住任何调色盘色 (sky/violet/...),
+ * 与两个 token 上  门禁 check-ui-rules 会拦住任何调色盘色 (sky/violet/...),
  * 那是换肤失效的根源。
  */
 export const COMMENT_TONES = ["default", "neutral", "primary", "success", "warning", "danger"] as const;
@@ -113,11 +113,11 @@ export function CanvasButton({
  *
  * ## 所以两个都要, 各管一段
  *
- *   - `<a href target=_blank>`: 负责**语义** —— 中键、Ctrl+点、右键菜单里
- *     的"在新标签页打开"都靠它, 那是浏览器原生行为, 最可靠。
- *   - 左键点击时**同步**调 window.open: 它处在用户手势的调用栈里, 不会被拦。
- *     (被拦的从来都是 setTimeout / await 之后脱离手势上下文的调用。)
- *     开成功了就 preventDefault, 免得当前页也被导航带走。
+ * - `<a href target=_blank>`: 负责**语义**  中键、Ctrl+点、右键菜单里
+ * 的"在新标签页打开"都靠它, 那是浏览器原生行为, 最可靠。
+ * - 左键点击时**同步**调 window.open: 它处在用户手势的调用栈里, 不会被拦。
+ * (被拦的从来都是 setTimeout / await 之后脱离手势上下文的调用。)
+ * 开成功了就 preventDefault, 免得当前页也被导航带走。
  */
 function StandaloneLink({ href }: { readonly href: string }): JSX.Element {
   return (
@@ -127,7 +127,7 @@ function StandaloneLink({ href }: { readonly href: string }): JSX.Element {
       rel="noopener noreferrer"
       title="在新标签页里打开整页画布 (带上当前图, 改动实时同步)"
       /**
-       * 不做 onClick、不调 window.open —— 全部交给原生 <a target="_blank">。
+       * 不做 onClick、不调 window.open  全部交给原生 <a target="_blank">。
        *
        * 在 onClick 里同时调 window.open 并 preventDefault 是错的:
        * 某些环境里 open 返回非空的空壳窗口, preventDefault 又掐掉了原生
@@ -184,6 +184,6 @@ export function CanvasToolbar({
 /**
  * 画布的辅助函数。
  *
- * 单独成文件是因为 BlueprintCanvas.tsx 已被行预算冻结且只许降 ——
+ * 单独成文件是因为 BlueprintCanvas.tsx 已被行预算冻结且只许降 
  * 这些是独立的小函数, 与主流程没有纠缠。
  */

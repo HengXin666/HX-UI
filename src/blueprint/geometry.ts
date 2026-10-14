@@ -63,7 +63,7 @@ export function portPos(
 
   /**
    * 输出列的行序 = [执行出口..., 数据出口...], 输入列 = [数据入口...]。
-   * 这个顺序必须和 BlueprintNode 里画圆点的顺序一字不差 ——
+   * 这个顺序必须和 BlueprintNode 里画圆点的顺序一字不差 
    * 差一行就是 20px, 线的端点会明显偏离圆点。
    */
   let idx: number;
@@ -98,7 +98,7 @@ export function edgePath(a: Point, b: Point): string {
  * 回边的**绕行**路径。
  *
  * 为什么需要: 分层布局折行之后, "上一行末尾 -> 下一行开头"这类边在几何上
- * 必然往左回拉。用普通贝塞尔画, 它会**斜穿过中间所有节点** —— 就是用户说的
+ * 必然往左回拉。用普通贝塞尔画, 它会**斜穿过中间所有节点**  就是用户说的
  * "从左边深入右边又拉回去", 极难看。
  *
  * 绕行: 从起点向右出一小段, 向下绕到两行之间的空白, 向左走到目标列, 再向下
@@ -124,12 +124,12 @@ export function detourPath(a: Point, b: Point, opts?: { readonly lane?: number }
  * 是否该走绕行。
  *
  * 三个条件**同时**成立才绕:
- *   1. 明显往左回拉 (dx 为负且幅度可观)
- *   2. 垂直跨度也大 —— 说明它跨了行。同一行内的回勾走普通曲线就够了,
- *      绕行反而画蛇添足
- *   3. 水平跨度足够大 —— 短距离的回拉用贝塞尔已经很自然
+ * 1. 明显往左回拉 (dx 为负且幅度可观)
+ * 2. 垂直跨度也大  说明它跨了行。同一行内的回勾走普通曲线就够了,
+ * 绕行反而画蛇添足
+ * 3. 水平跨度足够大  短距离的回拉用贝塞尔已经很自然
  *
- * 第一版只看条件 1, 结果 70 条边里 50 条都在绕 —— 短边也被画成绕来绕去,
+ * 第一版只看条件 1, 结果 70 条边里 50 条都在绕  短边也被画成绕来绕去,
  * 比原来更难看。收紧之后只有真正跨行长回边才绕。
  */
 export function shouldDetour(a: Point, b: Point): boolean {
@@ -152,7 +152,7 @@ export function toGraphPt(p: Point, view: { x: number; y: number; zoom: number }
   return { x: (p.x - view.x) / view.zoom, y: (p.y - view.y) / view.zoom };
 }
 
-/** 命中测试: 点落在哪个节点上。倒序遍历 —— 后画的在上层。 */
+/** 命中测试: 点落在哪个节点上。倒序遍历  后画的在上层。 */
 export function hitNode(reg: BlueprintRegistry, graph: BlueprintGraph, p: Point): BlueprintNode | undefined {
   for (let i = graph.nodes.length - 1; i >= 0; i--) {
     const n = graph.nodes[i];
@@ -220,12 +220,12 @@ export function graphBounds(reg: BlueprintRegistry, graph: BlueprintGraph) {
  * 连线的视觉分类。
  *
  * 依据 UE 官方文档 (Nodes in Unreal Engine):
- *   "Exec wires are displayed as **white arrows** spanning from an output exec
- *    pin to an input exec pin. **The direction of the arrow indicates the flow
- *    of execution.**"
+ * "Exec wires are displayed as **white arrows** spanning from an output exec
+ * pin to an input exec pin. **The direction of the arrow indicates the flow
+ * of execution.**"
  *
  * 所以执行线靠**白色 + 粗 + 箭头**三件事一起表达; 数据线是细的有色线,
- * 不带箭头 —— 数据的方向由"左进右出"的版式表达, 再加箭头反而吵。
+ * 不带箭头  数据的方向由"左进右出"的版式表达, 再加箭头反而吵。
  *
  * 加箭头是个关键差异: 之前的执行线只是"粗一点的灰线", 与数据线区分度不够,
  * 扫一眼看不出控制流走向。UE 那套之所以看得舒服, 很大一部分来自这个箭头。
@@ -271,7 +271,7 @@ export function wireStyle(opts: {
 /**
  * 箭头顶点 (三角形三点坐标)。
  *
- * 锚在**终点端口**处, 方向取终点处的切线 —— 否则折行/绕行的边上箭头会
+ * 锚在**终点端口**处, 方向取终点处的切线  否则折行/绕行的边上箭头会
  * 歪向一边, 反而误导方向。
  */
 export function arrowHead(a: Point, b: Point, size = 6): string {
@@ -296,7 +296,7 @@ export function arrowHead(a: Point, b: Point, size = 6): string {
   ].join(" ");
 }
 
-/** 箭头颜色取线的颜色 —— 用 fill 类名而不是 stroke。 */
+/** 箭头颜色取线的颜色  用 fill 类名而不是 stroke。 */
 export function arrowFillClass(w: WireStyle): string {
   return w.className.replace(/stroke-/g, "fill-");
 }

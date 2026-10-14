@@ -2,6 +2,13 @@
 
 Status: implemented
 
+Decision-ID: tree-context-menu
+
+## Code
+
+- `src/layout/ContextMenu.tsx`
+- `src/index.ts`
+
 ## Problem
 
 树的行很窄, 而一行上可能有四五个动作 (重命名 / 归档 / 删除 / 打开仓库 / 复制路径)。

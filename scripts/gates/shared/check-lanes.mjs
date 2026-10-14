@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * 分流表覆盖校验 —— 保证"改了任何文件, 至少有一条门禁会被触发"。
+ * 分流表覆盖校验  保证"改了任何文件, 至少有一条门禁会被触发"。
  *
  * ## 为什么必须有这一条 (分流设计里唯一必须自动化的一环)
  *
  * lane 表的失败形态是**静默**的: 仓库里新加了一个顶层目录, 它没被任何 lane 的前缀
- * 认领, 于是改那里的代码**一条门禁都不跑**。而这件事在运行时完全看不出来 ——
+ * 认领, 于是改那里的代码**一条门禁都不跑**。而这件事在运行时完全看不出来 
  * 不报错、不输出、退出码 0, 和"检查全过"长得一模一样。
  *
  * 所以: 仓库里每个被 git 跟踪的顶层条目, 必须被某条 lane 前缀或一份
@@ -13,7 +13,7 @@
  *
  * ## 双向对账
  *
- * 只查单向 (lane 里的前缀还有没有对应文件) 不够 —— 还要查反向:
+ * 只查单向 (lane 里的前缀还有没有对应文件) 不够  还要查反向:
  *   · 顶层条目没被认领        → 新增一类路径会静默免检
  *   · NO_GATE 条目已经不存在  → 名单在腐烂, 留着让"免检"无声扩张
  *   · lane 前缀指向不存在的路径 → 前缀写错 (改名后), 该 lane 永不触发
@@ -26,10 +26,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { LANES, NO_GATE_ENTRIES } from "../lanes.mjs";
 
+/**
+ * HX-UI 接入 Agent Notes v2
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+ */
 const ROOT = process.env.CHECK_UI_ROOT ? path.resolve(process.env.CHECK_UI_ROOT) : path.resolve(import.meta.dirname, "..", "..", "..");
 
 // --cached --others --exclude-standard: 已跟踪的 + 未跟踪但没被忽略的。
-// 只用 `git ls-files` 会漏掉刚创建还没 add 的文件 —— 而"新加了一个顶层目录"
+// 只用 `git ls-files` 会漏掉刚创建还没 add 的文件  而"新加了一个顶层目录"
 // 正是这条门禁最该抓的场景, 用索引会把那个场景整个漏掉。
 const r = spawnSync("git", ["ls-files", "--cached", "--others", "--exclude-standard"], {
   cwd: ROOT,
@@ -41,7 +45,7 @@ if (r.status === 0) {
   files = (r.stdout ?? "").split("\n");
 } else {
   // 探针夹具是临时目录里的最小仓库, 可能没有 .git。
-  // 退回文件系统遍历 (跳过与 lane 无关的重目录), 而不是直接失败 ——
+  // 退回文件系统遍历 (跳过与 lane 无关的重目录), 而不是直接失败 
   // 这条门禁要能在两种输入上都跑得起来。
   source = "fs walk (无 git)";
   files = [];
@@ -62,7 +66,7 @@ const topLevel = [...new Set(files.map((f) => (f.includes("/") ? f.split("/")[0]
 
 /**
  * 前缀匹配: 目录型前缀 "src/" 要能认领顶层条目 "src" (顶层条目本身不带斜杠),
- * 也要能认领 "src/a/b.ts"。这是第一版漏掉的地方 —— 它把 src/docs/scripts
+ * 也要能认领 "src/a/b.ts"。这是第一版漏掉的地方  它把 src/docs/scripts
  * 三个最常改的目录都报成"未认领", 而它们明明是最该被认领的。
  */
 const norm = (p) => p.replace(/\/+$/, "");
@@ -83,7 +87,7 @@ for (const t of topLevel) {
       rule: "unclaimed-top-level",
       where: t,
       hint:
-        "这个顶层条目没被任何 lane 认领 —— 改它**一条门禁都不会跑**, 而运行时看不出任何异常。" +
+        "这个顶层条目没被任何 lane 认领  改它**一条门禁都不会跑**, 而运行时看不出任何异常。" +
         "把它加进 scripts/gates/lanes.mjs 的某条 lane, 或加进 NO_GATE_ENTRIES 并写清理由。",
     });
   }
@@ -98,7 +102,7 @@ for (const l of LANES) {
       violations.push({
         rule: "dead-lane-prefix",
         where: `lane "${l.name}" 的前缀 ${p}`,
-        hint: "仓库里没有任何文件匹配这个前缀 (改名或删除后残留)。它会让该 lane 静默失效 —— 以为跑了, 其实没跑。",
+        hint: "仓库里没有任何文件匹配这个前缀 (改名或删除后残留)。它会让该 lane 静默失效  以为跑了, 其实没跑。",
       });
     }
   }
@@ -109,7 +113,7 @@ for (const e of NO_GATE_ENTRIES) {
     violations.push({
       rule: "stale-exemption",
       where: `NO_GATE_ENTRIES 的 ${e.prefix}`,
-      hint: "这条免检声明的目标已不存在, 删掉它 —— 名单只该缩小, 靠自觉的名单一定会长。",
+      hint: "这条免检声明的目标已不存在, 删掉它  名单只该缩小, 靠自觉的名单一定会长。",
     });
   }
 }

@@ -23,13 +23,13 @@ import { graphMatchesRegistry } from "@hx/ui";
  *
  * 内嵌全屏做到头也只是"画布变大": 文档站的侧栏、顶栏、内容区滚动容器
  * 都还在, 而且画布尺寸受限于内容区。独立页面给的是**整屏归蓝图**,
- * 还能白拿浏览器原生的窗口管理 —— 新标签页、独立窗口、左右分屏。
+ * 还能白拿浏览器原生的窗口管理  新标签页、独立窗口、左右分屏。
  *
  * ## 数据从哪来 (三路, 按优先级)
  *
- *   1. URL 里的 `#graph=<base64>`   直接内联, 打开就有内容, 不等同步
- *   2. BroadcastChannel 同步        同源其它页面正在编辑的同一张图
- *   3. 内置的 dsh / demo 图         都没拿到时的兜底
+ * 1. URL 里的 `#graph=<base64>`   直接内联, 打开就有内容, 不等同步
+ * 2. BroadcastChannel 同步        同源其它页面正在编辑的同一张图
+ * 3. 内置的 dsh / demo 图         都没拿到时的兜底
  *
  * 顺序有讲究: 先内联再同步。只靠同步的话新页面会先白一下再跳变,
  * 那个跳变很难看, 而且会让用户以为"没打开成功"。
@@ -54,13 +54,13 @@ const REGISTRIES: Record<Source, () => ReturnType<typeof createRegistry>> = {
  * 从 hash 里读一个参数。
  *
  * ⚠️ 分隔符必须同时认 `#` / `&` / `?`, 不能只写 `(?:^|&)`:
- *   `location.hash` 是 **带 `#` 的** (`"#src=demo"`), 而 `^` 匹配的是
- *   `"src"` 那个位置之前的开头 —— 那里是 `#` 不是行首, 于是匹配不上。
- *   实测三个 source 全都返回同一张图就是这个原因: src 从来没生效过,
- *   页面一直用默认的 dsh。
+ * `location.hash` 是 **带 `#` 的** (`"#src=demo"`), 而 `^` 匹配的是
+ * `"src"` 那个位置之前的开头  那里是 `#` 不是行首, 于是匹配不上。
+ * 实测三个 source 全都返回同一张图就是这个原因: src 从来没生效过,
+ * 页面一直用默认的 dsh。
  *
- *   同一个坑 sync.ts 的 graphFromUrl 里已经踩过并修了 (注释也在那儿),
- *   这里漏修会造成"文档说支持 #src=, 实际不支持"这种静默失效。
+ * 同一个坑 sync.ts 的 graphFromUrl 里已经踩过并修了 (注释也在那儿),
+ * 这里漏修会造成"文档说支持 #src=, 实际不支持"这种静默失效。
  */
 function readHashParam(key: string): string | null {
   const m = new RegExp(`(?:^|[&#?])${key}=([^&]+)`).exec(window.location.hash);
@@ -80,7 +80,7 @@ function readSource(): Source {
  * 为什么: buildRootGraph() 每次返回**新的**节点 id 与对象。在模块顶层直接
  * 求值的话, 三个 source 的图会在 import 时就全部构造一遍 (浪费), 而且
  * dshAgentLoopGraph 那份是模块级常量、被多处共享, 一旦被编辑过就会带着
- * 改动污染下一次打开 —— 表现是"我明明刷新了, 怎么还是改过的样子"。
+ * 改动污染下一次打开  表现是"我明明刷新了, 怎么还是改过的样子"。
  */
 function defaultGraph(source: Source): BlueprintGraph {
   switch (source) {
@@ -99,7 +99,7 @@ function BlueprintApp(): JSX.Element {
   /**
    * 默认走 React Flow 版画布。
    *
-   * 手写版已下线, 但保留 `&rf=0` 以便对照回归 —— 并行期结束后删掉。
+   * 手写版已下线, 但保留 `&rf=0` 以便对照回归  并行期结束后删掉。
    */
   const useRF = useMemo(() => !/[&#?]rf=0/.test(window.location.hash), []);
   const channel = useMemo(() => readChannel(), []);
@@ -115,7 +115,7 @@ function BlueprintApp(): JSX.Element {
    * 同步通道。
    *
    * `onRequest` 返回当前图, 让后开的页面能立刻拿到状态, 而不是白屏等。
-   * 用 ref 读最新图 —— 回调是在构造时注册的, 闭包会读到旧值。
+   * 用 ref 读最新图  回调是在构造时注册的, 闭包会读到旧值。
    */
   const graphRef = useRef(graph);
   graphRef.current = graph;
@@ -129,7 +129,7 @@ function BlueprintApp(): JSX.Element {
       /**
        * 只接受"当前注册表认识的类型"的图。
        *
-       * 频道只是一个名字 —— 谁都可以用同名频道开一个**别的源**的页面
+       * 频道只是一个名字  谁都可以用同名频道开一个**别的源**的页面
        * (例如源码层 33 节点的图)。无条件接受就会让整张图变成"未注册":
        * 架构层注册表不认识源码层的类型名, 实测一拖就 85 个错误。
        * 所以收到先校验, 不认识的丢弃 (本地图保持不动)。
@@ -178,7 +178,7 @@ function BlueprintApp(): JSX.Element {
 
   return (
     <div className="flex h-dvh flex-col bg-background text-foreground">
-      {/* 顶栏。刻意很矮 —— 这一页的主角是画布。 */}
+      {/* 顶栏。刻意很矮  这一页的主角是画布。 */}
       <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-1.5">
         <span className="text-[13px] font-medium">蓝图</span>
 

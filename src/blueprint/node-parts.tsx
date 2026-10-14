@@ -13,16 +13,16 @@ import { PinShape } from "./PinShape";
 /**
  * 节点卡片的零件: 引脚行 + 参数字段。
  *
- * 单独成文件是为了行预算 (BlueprintNode.tsx 上限 250), 但拆得也合理 ——
+ * 单独成文件是为了行预算 (BlueprintNode.tsx 上限 250), 但拆得也合理 
  * 这两块各自内聚, 与"卡片整体怎么摆"没有纠缠。
  */
 
 /**
- * 引脚行高 —— **从 geometry 导入, 不重新声明**。
+ * 引脚行高  **从 geometry 导入, 不重新声明**。
  *
  * 之前这里写死字面量 20, 与 geometry.PORT_ROW 构成两份真相。连线端点由
  * portPos 按 PORT_ROW 算, 卡片按 PORT_ROW_H 画, 两者一旦不等, 表现就是
- * "每根线都偏出圆点" —— 而且不报错、tsc 全绿。
+ * "每根线都偏出圆点"  而且不报错、tsc 全绿。
  *
  * 现在从同一处导出, 改一处两边同时变; 另有 check-blueprint 的一条断言
  * 守着 CSS 变量与常量的相等关系。
@@ -71,7 +71,7 @@ export function PortRow({
           <PinShape kind="data" filled invalid={invalid} color={color} size={9} />
         )}
       </span>
-      {/* 执行引脚不带文字 —— UE5 里它靠形状与位置自解释, 加标签反而挤 */}
+      {/* 执行引脚不带文字  UE5 里它靠形状与位置自解释, 加标签反而挤 */}
       {!isExec && (
         <span className={cn("min-w-0 truncate text-[11px] text-muted-foreground", dir === "out" && "text-right")}>
           {port.label ?? port.id}
@@ -94,7 +94,7 @@ export function ParamField({
      * 参数区**必须恢复文本选中**。
      *
      * 画布为了拖节点时不选中文字, 整体设了 user-select: none。但这个输入框
-     * 就在画布里面 —— 继承下来之后, 用户没法用鼠标选/拖选里面的数值,
+     * 就在画布里面  继承下来之后, 用户没法用鼠标选/拖选里面的数值,
      * 改参数变成只能靠键盘。所以这里显式恢复。
      *
      * 放在蓝图侧而不是改 primitives 的 Input: 那个组件全库共用,

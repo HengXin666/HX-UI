@@ -11,9 +11,9 @@ import type { RfNode } from "./rf-adapter";
  *
  * ## UE5 的三类右键
  *
- *   空白 -> 加注释 / 粘贴 / 全选 / 整理 / 适应
- *   节点 -> 重命名 / 复制 / 删除 / 进子图 / 断开此节点的线
- *   连线 -> 删除这条线
+ * 空白 -> 加注释 / 粘贴 / 全选 / 整理 / 适应
+ * 节点 -> 重命名 / 复制 / 删除 / 进子图 / 断开此节点的线
+ * 连线 -> 删除这条线
  *
  * ## 坐标为什么要换算
  *
@@ -68,7 +68,7 @@ export function useContextMenu(o: {
   const onNodeContextMenu = useCallback(
     (e: { clientX: number; clientY: number; preventDefault: () => void }, node: RfNode) => {
       e.preventDefault();
-      // 右键一个未选中的节点时先选中它 —— 否则"删除"会删到别的东西上
+      // 右键一个未选中的节点时先选中它  否则"删除"会删到别的东西上
       const id = String(node.data?.bpId ?? node.id);
       if (!(selected ?? []).includes(id)) onSelect?.([id]);
       openMenuAt(e.clientX, e.clientY, nodeMenuItems({

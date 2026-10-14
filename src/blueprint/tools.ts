@@ -19,12 +19,12 @@ import { serializeGraph, parseGraph, toPseudoCode } from "./serialize";
  *
  * ## 三条约定
  *
- *   1. **每个工具都返回文本摘要 + 结构化结果**。Agent 读文本, 程序读结构。
- *      只给 JSON 的话 Agent 要在一堆 id 里猜; 只给文本的话程序没法接。
- *   2. **失败不抛, 返回 ok:false 加原因**。抛异常会让整个 MCP 调用挂掉,
- *      而很多时候错误只是"这条边连不上", 其余部分仍然有效。
- *   3. **工具是纯函数**。不持有状态 —— 图由调用方保管, 工具只做变换。
- *      这样它能在后端、在 worker、在浏览器里跑, 也能并发。
+ * 1. **每个工具都返回文本摘要 + 结构化结果**。Agent 读文本, 程序读结构。
+ * 只给 JSON 的话 Agent 要在一堆 id 里猜; 只给文本的话程序没法接。
+ * 2. **失败不抛, 返回 ok:false 加原因**。抛异常会让整个 MCP 调用挂掉,
+ * 而很多时候错误只是"这条边连不上", 其余部分仍然有效。
+ * 3. **工具是纯函数**。不持有状态  图由调用方保管, 工具只做变换。
+ * 这样它能在后端、在 worker、在浏览器里跑, 也能并发。
  */
 
 export interface ToolResult {
@@ -43,7 +43,7 @@ export interface ToolDef {
   readonly run: (input: Record<string, unknown>) => Promise<ToolResult> | ToolResult;
 }
 
-/** 工具运行所需的上下文。注册表由宿主提供 —— 工具自己不知道有哪些节点。 */
+/** 工具运行所需的上下文。注册表由宿主提供  工具自己不知道有哪些节点。 */
 export interface ToolContext {
   readonly registry: BlueprintRegistry;
   /** 当前正在编辑的图。可变操作需要它。 */
@@ -62,7 +62,7 @@ export function createBlueprintTools(ctx: ToolContext): ToolDef[] {
   const { registry } = ctx;
 
   /**
-   * 取当前图。判别用 `"text" in` —— 本仓 strict 关着, 判别式窄化不生效,
+   * 取当前图。判别用 `"text" in`  本仓 strict 关着, 判别式窄化不生效,
    * 写 `if (!g.ok)` 在 else 分支里取 .text 会报 TS2339。见 connect.ts 里同一条。
    */
   const needGraph = (): { graph?: BlueprintGraph; text: string } => {
@@ -90,7 +90,7 @@ export function createBlueprintTools(ctx: ToolContext): ToolDef[] {
       name: "build_graph",
       title: "构建一张图",
       description:
-        "按节点与连线描述构建一张图。**不需要给坐标** —— 会自动做分层布局, " +
+        "按节点与连线描述构建一张图。**不需要给坐标**  会自动做分层布局, " +
         "保证节点不重叠、连线尽量少交叉。返回每个 key 对应的节点 id, 便于后续精确修改。" +
         "连线可以只写节点 key (自动推断端口), 也可以写 key.port 指名端口。",
       inputSchema: {
@@ -144,7 +144,7 @@ export function createBlueprintTools(ctx: ToolContext): ToolDef[] {
         /**
          * 建完就落到当前图上。
          *
-         * 第一版只返回不写入 —— 于是 Agent 调完 build_graph, 编辑器里
+         * 第一版只返回不写入  于是 Agent 调完 build_graph, 编辑器里
          * 还是空的, 而它从 text 里看到"建好 7 个节点", 以为成功了。
          * 这种"说成功但实际没生效"是最难查的一类失败。
          */
@@ -339,7 +339,7 @@ export function toolManifest(tools: readonly ToolDef[]): unknown[] {
   }));
 }
 
-/** 按名字派发。找不到就返回失败 —— 不抛, 免得整个调用挂掉。 */
+/** 按名字派发。找不到就返回失败  不抛, 免得整个调用挂掉。 */
 export async function dispatchTool(
   tools: readonly ToolDef[],
   name: string,
@@ -359,7 +359,7 @@ export async function dispatchTool(
   }
 }
 
-/** countCrossings 需要显式坐标 —— 从图里取。 */
+/** countCrossings 需要显式坐标  从图里取。 */
 function posOf_(g: BlueprintGraph): ReadonlyMap<string, { x: number; y: number }> {
   return new Map(g.nodes.map((n) => [n.id, { x: n.x, y: n.y }]));
 }

@@ -8,20 +8,20 @@ import { cn } from "./utils";
  * 加载指示器。44 种形态来自 UI Ball 的 LDRS (MIT), 支持三种播放模式。
  *
  * 为什么用 LDRS 而不是自己画:
- *   这些形态是逐帧手调出来的 —— 每个关键帧各自的插值曲线、每个元素各自的延迟。
- *   手写复刻只能得到"看起来像但没那个劲"的东西。
+ * 这些形态是逐帧手调出来的  每个关键帧各自的插值曲线、每个元素各自的延迟。
+ * 手写复刻只能得到"看起来像但没那个劲"的东西。
  *
  * 三种模式:
- *   fixed    固定一个形态。用在需要稳定预期的位置 (按钮内的加载态不该每两秒换个样子)。
- *   rotate   每隔 interval 毫秒随机换一个, 带交叉淡入淡出。
- *            用在整页加载、长任务等待 —— 停留时间长的地方, 换形态能让等待不那么难熬。
- *   random   每次挂载随机挑一个, 之后不再变。用在只出现一瞬间的地方 (按钮点击反馈)。
+ * fixed    固定一个形态。用在需要稳定预期的位置 (按钮内的加载态不该每两秒换个样子)。
+ * rotate   每隔 interval 毫秒随机换一个, 带交叉淡入淡出。
+ * 用在整页加载、长任务等待  停留时间长的地方, 换形态能让等待不那么难熬。
+ * random   每次挂载随机挑一个, 之后不再变。用在只出现一瞬间的地方 (按钮点击反馈)。
  *
  * 为什么默认用 fixed 而不是 rotate:
- *   加载指示器最不该出现的是"界面里同时有五种转圈"。rotate 只在明确传了才生效,
- *   避免每个使用方无意中把界面变成转盘。
+ * 加载指示器最不该出现的是"界面里同时有五种转圈"。rotate 只在明确传了才生效,
+ * 避免每个使用方无意中把界面变成转盘。
  *
- * 「播几次换一个」是按时间实现的, 不是按轮数 ——
+ * 「播几次换一个」是按时间实现的, 不是按轮数 
  * 44 个形态的周期从 0.5s 到 1.8s 不等, 按轮数换算会得到不一致的停留时长,
  * 看起来像随机抽搐。按时间则无论形态周期多长, 都稳定停留 interval 那么久。
  */
@@ -76,9 +76,9 @@ export interface SpinProps extends Omit<ComponentProps<"span">, "color"> {
   size?: SpinSize;
   /** 固定播放时的形态。mode 为 rotate / random 时作为初始值。 */
   variant?: SpinVariant;
-  /** 播放模式。默认 fixed —— 见文件顶部关于"界面里不该同时有五种转圈"的说明。 */
+  /** 播放模式。默认 fixed  见文件顶部关于"界面里不该同时有五种转圈"的说明。 */
   mode?: SpinMode;
-  /** 轮播间隔 (毫秒)。默认 2200 —— 短于 1.5s 会让人来不及看清形态, 长于 4s 又失去轮播的意义。 */
+  /** 轮播间隔 (毫秒)。默认 2200  短于 1.5s 会让人来不及看清形态, 长于 4s 又失去轮播的意义。 */
   interval?: number;
   /** 轮播候选池。默认用 DEFAULT_ROTATE_POOL。 */
   rotatePool?: readonly SpinVariant[];
@@ -87,7 +87,9 @@ export interface SpinProps extends Omit<ComponentProps<"span">, "color"> {
   label?: string;
 }
 
-/** 随机挑一个, 但排除 avoid —— 避免连续两次抽到同一个。 */
+/** 随机挑一个, 但排除 avoid  避免连续两次抽到同一个。 
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+ */
 function pickRandom(pool: readonly SpinVariant[], avoid?: SpinVariant): SpinVariant {
   if (pool.length === 0) return "quantum";
   if (pool.length === 1) return pool[0];
@@ -126,7 +128,7 @@ function Spin({
    * 当前与上一个形态。
    *
    * 用两层叠着做交叉淡入: 新形态一进来就在底下开始播, 旧形态在上面淡出。
-   * 若直接替换, 新形态会从动画的第 0 帧开始 —— 看起来像"卡了一下又重新开始",
+   * 若直接替换, 新形态会从动画的第 0 帧开始  看起来像"卡了一下又重新开始",
    * 叠着则两边的动画都在连续运行, 只有不透明度在变。
    */
   const [current, setCurrent] = useState<SpinVariant>(() =>
@@ -178,7 +180,7 @@ function Spin({
       ) : null}
       {/*
         淡入层: 当前的形态。它是唯一参与布局的一层, 尺寸由它决定。
-        key 必须是 current —— React 会复用同一个 DOM 节点, 而复用意味着
+        key 必须是 current  React 会复用同一个 DOM 节点, 而复用意味着
         CSS animation 不会重新触发 (它只在元素新插入时跑一次)。
         没有 key 时"淡入"这一半永远不生效, 看起来就是新图形瞬间出现。
       */}

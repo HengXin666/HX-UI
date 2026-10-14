@@ -10,7 +10,7 @@ import { cn } from "./utils";
  * 与 Accordion 的分工: Accordion 管"一组互斥的条目", Collapsible 管"一个能收起的块"。
  * 只有一个可折叠块时套 Accordion 会多出一层 item 语义与一套 roving 焦点, 没必要。
  *
- * 高度动画的取舍同 Accordion —— 关键帧而非 transition, 见 src/motion.css。
+ * 高度动画的取舍同 Accordion  关键帧而非 transition, 见 src/motion.css。
  */
 function Collapsible(
 	props: React.ComponentProps<typeof CollapsiblePrimitive.Root>,

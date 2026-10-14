@@ -6,14 +6,14 @@ export function AppFramePage(): JSX.Element {
   return (
     <>
       <P>
-        应用外壳是"像应用"与"像网页"的分界线。它不是简单的全屏容器 —— 它在外层留 8px 白边,
+        应用外壳是"像应用"与"像网页"的分界线。它不是简单的全屏容器  它在外层留 8px 白边,
         让侧栏与主区各自成为一块圆角面板, 中间才有那条缝。省掉这条缝, 界面会顶满窗口四边。
       </P>
 
       <H2>结构</H2>
       <P>
         <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">AppFrame</code> 只负责最外层。
-        两个面板与中间的间隙由使用方在 children 里给出 —— 因为不同产品的分栏数不一样。
+        两个面板与中间的间隙由使用方在 children 里给出  因为不同产品的分栏数不一样。
       </P>
       <Preview
         align="stretch"

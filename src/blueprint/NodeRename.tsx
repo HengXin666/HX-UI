@@ -8,14 +8,14 @@ import { useEffect, useRef, useState, type JSX } from "react";
  * ## 为什么单独做而不是复用 Input
  *
  * 它要有**一整套编辑器的行为**, 而 Input 一个都不提供:
- *   - 挂载即聚焦并全选 (F2 的语义就是"改这个名字", 不该再点一下)
- *   - 失焦提交 / Enter 提交 / Esc 取消
- *   - 空值不提交 (把名字改没了, 节点会显示成 type, 那不是用户想要的)
+ * - 挂载即聚焦并全选 (F2 的语义就是"改这个名字", 不该再点一下)
+ * - 失焦提交 / Enter 提交 / Esc 取消
+ * - 空值不提交 (把名字改没了, 节点会显示成 type, 那不是用户想要的)
  *
  * ## 为什么 Esc 在这里自己处理
  *
  * 重命名时按 Esc 要**取消这次改名**, 不是"清空画布选择"。而全局的 Esc
- * 不知道当前有没有重命名在进行 —— 局部的按键意图必须局部拦, 靠全局去猜
+ * 不知道当前有没有重命名在进行  局部的按键意图必须局部拦, 靠全局去猜
  * 迟早猜错 (这也是为什么全局 escape 必须知道"重命名中"这个状态)。
  */
 
@@ -30,7 +30,7 @@ export function NodeRenameInput({
   const ref = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    // 挂载即聚焦全选 —— F2 的语义就是"我要改这个"
+    // 挂载即聚焦全选  F2 的语义就是"我要改这个"
     const el = ref.current;
     if (el) {
       el.focus();

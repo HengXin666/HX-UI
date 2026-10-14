@@ -27,18 +27,22 @@ const CSS_SAMPLE = `@import "tailwindcss";
   --color-primary: var(--primary);
 }`;
 
+/**
+ * 代码块用 shiki 加 One Dark Pro, 外壳色与语法色的来源是分开的
+ * .agents/notes/implemented/feature/2026-09-28-ui-codeblock-one-dark-pro.md
+ */
 export function CodeBlockPage(): JSX.Element {
   return (
     <>
       <P>
-        代码高亮用 <Code>shiki</Code> —— VS Code 同款的 TextMate 语法引擎, 主题固定为{" "}
+        代码高亮用 <Code>shiki</Code>  VS Code 同款的 TextMate 语法引擎, 主题固定为{" "}
         <Code>One Dark Pro</Code>。不用 highlight.js / prism 是因为它们是正则近似匹配, 遇到嵌套与边缘写法会错色;
         shiki 跑的是真语法, 与编辑器里看到的一致。
       </P>
 
       <Callout title="主题为什么固定">
         One Dark Pro 是这个组件的外观契约。允许调用方换主题, 等于允许每个使用方各自发明配色,
-        那正是这套设计系统要避免的。亮色页面里也用深色代码块 —— 这是常见且被接受的对照手法。
+        那正是这套设计系统要避免的。亮色页面里也用深色代码块  这是常见且被接受的对照手法。
       </Callout>
 
       <H2>基础</H2>
@@ -113,7 +117,7 @@ export function CodeBlockPage(): JSX.Element {
 
       <H2>约束</H2>
       <P>
-        超过 30000 字符、单行超 2000 字符或超 1000 行的代码**不跑高亮**, 直接退回纯文本 ——
+        超过 30000 字符、单行超 2000 字符或超 1000 行的代码**不跑高亮**, 直接退回纯文本 
         完整内容仍可读可复制。这比让一次超大粘贴把界面卡住要好。
       </P>
       <P>

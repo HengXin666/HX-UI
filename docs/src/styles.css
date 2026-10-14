@@ -3,7 +3,7 @@
 /**
  * 引库的**完整样式入口**, 而不是只引 tokens.css。
  *
- * 组件自带的 CSS (例如 Spin 的动画) 挂在库入口下 —— 只引 tokens 会静默漏掉它们,
+ * 组件自带的 CSS (例如 Spin 的动画) 挂在库入口下  只引 tokens 会静默漏掉它们,
  * 表现是"组件渲染出来了但不动", 而且没有任何报错。
  * 库入口已经含 tokens.css、@theme inline 桥接与基础层, 所以这里不重复定义它们。
  */
@@ -15,7 +15,7 @@
 @source "../../src/**/*.{ts,tsx}";
 @source "./**/*.{ts,tsx}";
 
-/* 图标名在数据字符串里时 Tailwind 扫不到, 必须显式登记 —— 少了它图标是空位且不报错。 */
+/* 图标名在数据字符串里时 Tailwind 扫不到, 必须显式登记  少了它图标是空位且不报错。 */
 @source inline("icon-[solar--settings-linear]");
 @source inline("icon-[solar--monitor-linear]");
 @source inline("icon-[solar--palette-linear]");

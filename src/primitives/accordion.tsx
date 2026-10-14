@@ -9,7 +9,7 @@ import { cn } from "./utils";
  *
  * 高度动画走**关键帧 + radix 的高度变量**, 不走 CSS transition。
  * 原因是硬约束而不是偏好: radix 的 Presence 靠 getComputedStyle 判定"还能不能卸",
- * CSS transition 在部分路径上不被识别, 收起时会直接卸载 —— 表现是展开有动画、
+ * CSS transition 在部分路径上不被识别, 收起时会直接卸载  表现是展开有动画、
  * 收起瞬间消失。关键帧每次都能被认定, 于是两端都有动画。
  * 关键帧定义在 src/motion.css。
  *

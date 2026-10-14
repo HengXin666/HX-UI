@@ -15,6 +15,10 @@ import { DATA_EVENT, DIST_DIR, HTTP_OK, IGNORE, INDEX_HTML, JS_MIME, MIN_TOC_ITE
 const ROOT = process.env.CHECK_UI_ROOT
   ? path.resolve(process.env.CHECK_UI_ROOT)
   : path.resolve(import.meta.dirname, "..");
+/**
+ * HX-UI 接入 Agent Notes v2
+ * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+ */
 const DIST = process.env[BUILD_ENV]
   ? path.join(process.env[BUILD_ENV], DOCS_DIST)
   : path.join(ROOT, DOCS_DIR, DIST_DIR);

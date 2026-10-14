@@ -52,7 +52,7 @@ export interface BlueprintEditorProps {
   readonly standaloneHref?: string;
   /**
    * 独立整页画布的 URL。给了它, 画布上的"独立页面"按钮会把**当前图**编码
-   * 进链接并在新标签页打开 —— 而不是去调那个在文档站里必然失败的
+   * 进链接并在新标签页打开  而不是去调那个在文档站里必然失败的
    * Fullscreen API。
    */
   readonly standalonePageHref?: string;
@@ -69,7 +69,7 @@ export function BlueprintEditor({
   /**
    * 当前所在的层级。null = 最外层。
    *
-   * 进入子图时**不是换一张图**, 而是改这个路径 —— 编辑的始终是同一张根图,
+   * 进入子图时**不是换一张图**, 而是改这个路径  编辑的始终是同一张根图,
    * 子图内容写回 graph.subgraphs。这样"在子图里改动"对外层立即可见,
    * 也无需维护两份状态和它们之间的同步。
    */
@@ -86,11 +86,11 @@ export function BlueprintEditor({
    * 把当前层级的改动写回根图, 并记一步历史。
    *
    * @param tag 同类连续改动的标识。拖动传 "move", 参数连续输入传 "param",
-   *            结构改动传 null (每一步都单独可撤)。
+   * 结构改动传 null (每一步都单独可撤)。
    */
   /**
    * 历史: 监听 graph 引用变化, 变了就记一步。
-   * 不用"命令后手动 push" —— 受控模式下命令返回时 graph 还没更新,
+   * 不用"命令后手动 push"  受控模式下命令返回时 graph 还没更新,
    * push 的前后是同一份, 历史栈会一直是空的。
    */
   useEffect(() => {
@@ -103,7 +103,7 @@ export function BlueprintEditor({
    * 点面板时把节点放在**当前视口的中心**。
    *
    * 写死一个坐标在两种情况下都会错: 图被平移过、
-   * 或缩放过之后, 那个固定的点可能在视口外 —— 用户点了没看见任何东西,
+   * 或缩放过之后, 那个固定的点可能在视口外  用户点了没看见任何东西,
    * 只能以为"添加坏了"。所以向画布要它当前的视口中心。
    */
   const viewportCenterRef = useRef<() => { x: number; y: number }>(() => ({ x: 140, y: 120 }));
@@ -121,7 +121,7 @@ export function BlueprintEditor({
 
   /**
    * 快捷键要读**最新**的当前图与选区, 而键盘监听器只在挂载时绑定一次。
-   * 直接用 editing 会让处理器永远读到注册那一刻的旧值 —— 在受控模式下
+   * 直接用 editing 会让处理器永远读到注册那一刻的旧值  在受控模式下
    * 那等于把旧图提交回去, 表现为"按了快捷键毫无反应"。
    */
   const editingRef = useRef(editing);
@@ -131,7 +131,7 @@ export function BlueprintEditor({
    * 画布把"缩放 / 重置 / 适应"这几个能力交上来。
    *
    * 视口状态只存在于画布内部 (平移与缩放随手势每帧变), 编辑器拿不到也
-   * 不该自己存一份 —— 存了就是两份真相, 必然漂移。所以让画布注册一个
+   * 不该自己存一份  存了就是两份真相, 必然漂移。所以让画布注册一个
    * 命令对象, 快捷键只是转发。
    */
   const canvasViewportRef = useRef<CanvasViewportApi | null>(null);
