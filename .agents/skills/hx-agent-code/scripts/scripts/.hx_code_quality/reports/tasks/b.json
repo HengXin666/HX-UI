@@ -1,0 +1,12 @@
+{
+    "task": "b",
+    "command": [
+        "/usr/bin/node",
+        "-e",
+        "process.exit(2)"
+    ],
+    "status": 2,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+}

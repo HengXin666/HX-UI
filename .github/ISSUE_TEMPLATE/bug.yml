@@ -1,0 +1,29 @@
+name: Bug 报告
+description: 报告可复现的组件或文档站异常行为
+labels: [bug]
+body:
+    - type: textarea
+      id: reproduce
+      attributes:
+          label: 复现步骤与最小输入
+          description: 组件名, props, 最小代码片段或文档站页面 (例如 #/data-table)
+      validations:
+          required: true
+    - type: textarea
+      id: expected
+      attributes:
+          label: 预期行为
+      validations:
+          required: true
+    - type: textarea
+      id: actual
+      attributes:
+          label: 实际行为与日志 (去掉密钥等敏感信息)
+      validations:
+          required: true
+    - type: input
+      id: environment
+      attributes:
+          label: 版本, 浏览器, 操作系统与 Node 版本
+      validations:
+          required: true

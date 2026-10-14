@@ -1,39 +1,27 @@
-#!/usr/bin/env node
 /**
- * 文档站外壳交互检查。
- *
- * ## 为什么与 check-smoke.mjs 分开
- *
- * check-smoke 只回答一个问题: "页面渲染出来了吗"。而"渲染正常但功能不对"这类问题它抓不到:
- *   1. 生成物缺失 —— 页内目录在、但标题没有 id, 于是目录点不动 (已用负样本验证本脚本能抓到);
- *   2. 交互没接上 —— 按钮在、点了没反应。
- * 两者都"渲染正常、控制台零报错"。所以这一层单独做, 断言的是**行为**而不是存在性。
- *
- * ⚠️ 诚实说明本层的边界: 它不是万能的。我最初以为"主题切换状态脱节"是真 bug,
- * 实际是探针在 React 提交前读值造成的误判 —— 把副作用搬回 updater 的**负样本**跑本脚本
- * 依然通过。也就是说: 本脚本能稳定抓到"元素/属性缺失"类故障, 但抓不到
- * "不纯 updater"这类在开发模式才显形的写法问题。不要把它当成交互的全面保障。
- *
- * ## 测量纪律 (踩过的坑)
- *
- * 读 React 更新后的 DOM **必须等一次提交**。第一版探针在 click() 之后立刻读,
- * 拿到的是变更前的值, 于是把"功能正常"误判成"按钮没反应"。这里统一用 setTimeout 轮询。
- *
- * 用法: node scripts/check-shell.mjs [--strict]
+ * 文档站外壳交互检查: 主题三态, Ctrl/Cmd+K 搜索, 页内目录锚点与标题 id
+ * 断言行为而不是存在性; 只能稳定抓到元素/属性缺失类故障, 边界见 docs/reference/quality/browser-checks.md
+ * 读 React 更新后的 DOM 必须等一次提交, 探针统一用 setTimeout 轮询
+ * 产物目录: 设置 HX_QUALITY_BUILD 时读其中的 docs-dist, 否则读 docs/dist
+ * 用法: node scripts/check-shell.ts [--strict]
  */
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, statSync, writeFileSync, unlinkSync, createReadStream } from "node:fs";
 import path from "node:path";
+import { BUILD_ENV, DOCS_DIR, DOCS_DIST, UTF8 } from "./constants/quality.ts";
+import { DATA_EVENT, DIST_DIR, HTTP_OK, IGNORE, INDEX_HTML, JS_MIME, MIN_TOC_ITEMS, PIPE, URL_ROOT } from "./constants/browser.ts";
 
 const ROOT = process.env.CHECK_UI_ROOT
   ? path.resolve(process.env.CHECK_UI_ROOT)
   : path.resolve(import.meta.dirname, "..");
-const DIST = path.join(ROOT, "docs", "dist");
+const DIST = process.env[BUILD_ENV]
+  ? path.join(process.env[BUILD_ENV], DOCS_DIST)
+  : path.join(ROOT, DOCS_DIR, DIST_DIR);
 const STRICT = process.argv.includes("--strict");
 
 function which(cmd) {
-  for (const dir of (process.env.PATH ?? "/usr/bin:/bin").split(":")) {
+  for (const dir of (process.env.PATH ?? "").split(":")) {
     const p = path.join(dir, cmd);
     try { if (statSync(p).isFile()) return p; } catch { /* 不存在 */ }
   }
@@ -47,24 +35,24 @@ if (!chromium) {
   console.log(msg + " (未验证)");
   process.exit(0);
 }
-if (!existsSync(path.join(DIST, "index.html"))) {
+if (!existsSync(path.join(DIST, INDEX_HTML))) {
   console.error("check-shell: docs/dist 不存在, 先跑 docs 的 build");
   process.exit(1);
 }
 
-const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json", ".svg": "image/svg+xml" };
+const MIME = { ".html": "text/html; charset=utf-8", ".js": JS_MIME, ".css": "text/css; charset=utf-8", ".json": "application/json", ".svg": "image/svg+xml" };
 const server = createServer((req, res) => {
-  const url = (req.url ?? "/").split("?")[0];
+  const url = (req.url ?? URL_ROOT).split("?")[0];
   let file = path.join(DIST, decodeURIComponent(url));
-  try { if (statSync(file).isDirectory()) file = path.join(file, "index.html"); }
-  catch { file = path.join(DIST, "index.html"); }
-  res.writeHead(200, { "content-type": MIME[path.extname(file)] ?? "application/octet-stream" });
+  try { if (statSync(file).isDirectory()) file = path.join(file, INDEX_HTML); }
+  catch { file = path.join(DIST, INDEX_HTML); }
+  res.writeHead(HTTP_OK, { "content-type": MIME[path.extname(file)] ?? "application/octet-stream" });
   createReadStream(file).pipe(res);
 });
 await new Promise((r) => server.listen(0, "127.0.0.1", r));
 const port = server.address().port;
 
-/** 把探针注入 index.html, 返回临时页面的文件名。 */
+/** 把探针注入 index.html, 返回临时页面的文件名 */
 const PROBE = `window.addEventListener("load", function () {
   var out = {};
   var log = [];
@@ -131,13 +119,13 @@ const PROBE = `window.addEventListener("load", function () {
   setTimeout(themeStep, 1500);
 });`;
 
-writeFileSync(path.join(DIST, "__shell_probe.html"), readFileSync(path.join(DIST, "index.html"), "utf8").replace("</head>", "<script>" + PROBE + "</script></head>"));
+writeFileSync(path.join(DIST, "__shell_probe.html"), readFileSync(path.join(DIST, INDEX_HTML), UTF8).replace("</head>", "<script>" + PROBE + "</script></head>"));
 
 function run(url, width = 1400) {
   return new Promise((resolve) => {
-    const child = spawn(chromium, ["--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=15000", `--window-size=${width},900`, "--dump-dom", url], { stdio: ["ignore", "pipe", "ignore"] });
+    const child = spawn(chromium, ["--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=15000", `--window-size=${width},900`, "--dump-dom", url], { stdio: [IGNORE, PIPE, IGNORE] });
     let out = "";
-    child.stdout.on("data", (d) => (out += d));
+    child.stdout.on(DATA_EVENT, (d) => (out += d));
     child.on("close", () => resolve(out));
     child.on("error", () => resolve(""));
   });
@@ -146,7 +134,7 @@ function run(url, width = 1400) {
 const url = `http://127.0.0.1:${port}/__shell_probe.html#/data-table`;
 const [dom, mobileDom] = await Promise.all([run(url), run(url, 500)]);
 server.close();
-// 探针页面是注入到 dist 里的临时文件, 用完立刻删 —— 留在产物里会被当成真的静态页
+// 探针页面是注入到 dist 里的临时文件, 用完立刻删 - 留在产物里会被当成真的静态页
 try { unlinkSync(path.join(DIST, "__shell_probe.html")); } catch { /* 已经不在 */ }
 
 const m = dom.match(/SHELLRESULT (\{[^<]*\})/);
@@ -166,8 +154,8 @@ if (r.theme !== expectedTheme) {
 }
 if (!r.search) failures.push("⌘K 没有打开搜索面板");
 else if (!(r.hits > 0)) failures.push(`搜索 'table' 返回 0 条 (应 >=1)`);
-if (!(r.tocAnchors >= 2)) failures.push(`页内目录锚点不足 (${r.tocAnchors} 个, 应 >=2)`);
-if (!(r.headingIds >= 2)) failures.push(`标题没有生成 id (${r.headingIds} 个), 目录会点不动`);
+if (!(r.tocAnchors >= MIN_TOC_ITEMS)) failures.push(`页内目录锚点不足 (${r.tocAnchors} 个, 应 >=2)`);
+if (!(r.headingIds >= MIN_TOC_ITEMS)) failures.push(`标题没有生成 id (${r.headingIds} 个), 目录会点不动`);
 if (!r.linkKeptRow || !r.rowClicked) failures.push("表格链接与行点击的事件边界异常");
 if (!mobile || !mobile.mobileNav || mobile.mobileWidth < mobile.mobileViewport - 40 || mobile.mobileWidth > mobile.mobileViewport) {
   failures.push(`窄屏主区或导航异常: ${JSON.stringify(mobile?.mobileWidth ?? null)} / ${JSON.stringify(mobile?.mobileViewport ?? null)}`);

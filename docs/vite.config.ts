@@ -2,6 +2,13 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "node:path";
+import { existsSync } from "node:fs";
+
+// 兄弟目录 HX-Blueprint-Demo 是父仓的普通目录, 单独 clone 本仓时不存在; 此时退到仓内替身, 构建不因外部目录缺席而失败
+const blueprintDemo = path.resolve(import.meta.dirname, "../../HX-Blueprint-Demo/src/index.ts");
+const blueprintDemoEntry = existsSync(blueprintDemo)
+  ? blueprintDemo
+  : path.resolve(import.meta.dirname, "src/blueprint-demo-fallback/index.tsx");
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -9,7 +16,7 @@ export default defineConfig({
     alias: {
       // 直接指向源码, 改库能立即在文档里看到, 不必先 pack
       "@hx/ui": path.resolve(import.meta.dirname, "../src/index.ts"),
-      "@hx/blueprint-demo": path.resolve(import.meta.dirname, "../../HX-Blueprint-Demo/src/index.ts"),
+      "@hx/blueprint-demo": blueprintDemoEntry,
     },
     /**
      * 关键: 强制单一 React 实例。

@@ -29,6 +29,7 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 
 const HERE = import.meta.dirname;
 const ROOT = process.env.CHECK_UI_ROOT ? path.resolve(process.env.CHECK_UI_ROOT) : path.resolve(HERE, "..", "..", "..");
@@ -81,6 +82,54 @@ function thresholdsOf(script) {
     out.push(text.replace(/\/\/.*$/gm, "").replace(/\s+/g, " ").trim());
   }
   return out.length > 0 ? out.join("\n") : "(无大写常量声明 —— 抽取器没读到任何严格度字段)";
+}
+
+/**
+ * 设计规约在 scripts/quality/checks/ui.ts: 判据写在规则对象数组里, 不是行首大写常量,
+ * thresholdsOf 抽不全, 所以对去掉注释与空白后的整份代码求哈希 (宁可多抽).
+ * 共享阈值与例外 (UI_ROOT / UI_COLOR_EXEMPT 等) 在 scripts/constants/quality.ts, 一并纳入.
+ * 规则的实际扫描范围与 findings 还取决于 ast.ts (注释 / AST), finding.ts (指纹与范围过滤) 和 snapshot.ts (读哪些文件), 它们也算严格度的一部分.
+ */
+const UI_RULE_SOURCES = [
+  "scripts/quality/checks/ui.ts",
+  "scripts/constants/quality.ts",
+  "scripts/quality/runtime/ast.ts",
+  "scripts/quality/runtime/finding.ts",
+  "scripts/quality/checks/snapshot.ts",
+];
+const BROWSER_CONSTANTS = "scripts/constants/browser.ts";
+
+/**
+ * 去注释后的 token 序列加语法树括号, token 之间只留一个空格, token 内部 (字符串 / 正则 / 模板字面量) 原样保留。
+ * 这样改注释, 换行, 缩进不动指纹, 而 `曾经用 ` 与 `曾经用  ` 这种只差字面量内空白的放松必须动指纹。
+ * 括号记录节点的嵌套结构: 换行只有在改变解析结果时才会体现 (`return\nx;` 与 `return x;` 的树不同, 指纹也就不同)。
+ */
+function tokensOf(src) {
+  const sourceFile = ts.createSourceFile("fingerprint.ts", src, ts.ScriptTarget.Latest, true);
+  const tokens = [];
+  const walk = (node) => {
+    if (node.kind >= ts.SyntaxKind.FirstJSDocNode && node.kind <= ts.SyntaxKind.LastJSDocNode) return;
+    const children = node.getChildren(sourceFile);
+    if (children.length === 0) {
+      tokens.push(node.getText(sourceFile));
+      return;
+    }
+    tokens.push("(");
+    children.forEach(walk);
+    tokens.push(")");
+  };
+  walk(sourceFile);
+  return tokens.filter(Boolean).join(" ");
+}
+
+function codeOf(files) {
+  return files
+    .map((file) => {
+      const src = read(path.join(ROOT, file));
+      if (src === null) return `(缺文件 ${file})`;
+      return `${file}:\n${tokensOf(src)}`;
+    })
+    .join("\n");
 }
 
 /** 白名单条目集: 去注释与空行后排序 (顺序变化不该改指纹, 条目增删必须改)。 */
@@ -159,14 +208,17 @@ function wiringOf() {
   } catch {
     parts.push("package.json scripts: (无法解析)");
   }
-  // 2. git hooks (.git/hooks —— 不在版本控制里, 所以要显式登记它的存在与内容 hash)
-  const hookNames = ["pre-commit", "pre-push"];
+  // 2. git hooks: 取仓库里受版本控制的钩子源文件 (scripts/gates/hooks 与 .githooks),
+  //    不读本机 .git/hooks: 那是安装状态, CI 的干净 checkout 里永远是"未安装",
+  //    以它为指纹会让同一提交在本地与 CI 上算出不同的值
   const hooks = [];
-  for (const h of hookNames) {
-    const src = read(path.join(ROOT, ".git", "hooks", h));
-    hooks.push(`  ${h} = ${src === null ? "(未安装)" : `sha256:${sha(src)}`}`);
+  for (const dir of ["scripts/gates/hooks", ".githooks"]) {
+    for (const h of ["pre-commit", "pre-push", "post-commit"]) {
+      const src = read(path.join(ROOT, dir, h));
+      if (src !== null) hooks.push(`  ${dir}/${h} = sha256:${sha(src)}`);
+    }
   }
-  parts.push("git hooks:\n" + hooks.join("\n"));
+  parts.push("git hooks:\n" + (hooks.length ? hooks.join("\n") : "  (仓库内无钩子源文件)"));
   // 3. CI workflow (注册了哪些 job + 跑了什么命令)
   const wfDir = path.join(ROOT, ".github", "workflows");
   if (fs.existsSync(wfDir)) {
@@ -184,9 +236,9 @@ function wiringOf() {
 
 /** 指纹来源清单 —— 每条都是"决定严格度或接线"的东西, 删掉某条来源本身也会触发 FAIL。 */
 const SOURCES = [
-  { name: "thresholds:check-ui-rules", group: "strictness", extract: () => thresholdsOf("scripts/check-ui-rules.mjs") },
-  { name: "thresholds:check-smoke", group: "strictness", extract: () => thresholdsOf("scripts/check-smoke.mjs") },
-  { name: "thresholds:check-shell", group: "strictness", extract: () => thresholdsOf("scripts/check-shell.mjs") },
+  { name: "thresholds:check-ui-rules", group: "strictness", extract: () => codeOf(UI_RULE_SOURCES) },
+  { name: "thresholds:check-smoke", group: "strictness", extract: () => thresholdsOf("scripts/check-smoke.ts") + "\n" + codeOf([BROWSER_CONSTANTS]) },
+  { name: "thresholds:check-shell", group: "strictness", extract: () => thresholdsOf("scripts/check-shell.ts") + "\n" + codeOf([BROWSER_CONSTANTS]) },
   { name: "thresholds:check-blueprint", group: "strictness", extract: () => thresholdsOf("scripts/check-blueprint.mjs") },
   { name: "thresholds:check-docs-registry", group: "strictness", extract: () => thresholdsOf("scripts/gates/frontend/check-docs-registry.mjs") },
   { name: "whitelists:docs-registry-allow", group: "strictness", extract: () => entriesOf("scripts/gates/frontend/docs-registry-allow.json") },

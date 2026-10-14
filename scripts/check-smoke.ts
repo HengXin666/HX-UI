@@ -1,54 +1,38 @@
-#!/usr/bin/env node
 /**
- * 文档站冒烟: 逐页渲染, 抓"渲染出来但是空的"这类静默失效。
- *
- * ## 为什么需要它 (这条是实测逼出来的, 不是想当然)
- *
- * 本次补组件时, 有两个页面渲染成全白: Tooltip 页因为 radix 在 Provider 之外会抛
- * \`must be used within TooltipProvider\`, TimePicker 页因为我误用了 SettingSection 的 API。
- * 两者都满足下面每一条"看起来没问题":
- *   - \`tsc --noEmit\` 通过 (类型是对的, 只是运行时崩了)
- *   - \`vite build\` 通过 (构建期不执行组件)
- *   - 设计规约门禁通过
- *   - ESLint / 图标门禁通过
- * 唯一能抓住它的手段是**真的在浏览器里打开一次, 然后看 DOM 里有没有内容**。
- *
- * ## 判据 (两条同时看, 避免单条误判)
- *   1. 渲染后的 DOM 里存在 \`<h1>\` —— 每个文档页都有标题, 白屏时没有。
- *   2. DOM 体积不低于阈值 —— 正常页最少 31KB (app-frame), 白屏是 5.5KB。
- * 另外收集 uncaught 错误作为报告信息 (不单独作为失败判据: 有些第三方库会打
- * 无伤大雅的警告, 而我们没有能力区分, 所以只报不管)。
- *
- * ## 无浏览器时的行为
- * 默认**降级跳过**并打印明确警告 (exit 0), 因为把本地开发卡在"没装 chromium"上
- * 是负收益。CI 里用 \`--strict\`, 那时无浏览器 = 验证没做 = 失败。
- *
- * 用法:
- *   node scripts/check-smoke.mjs [--strict] [--concurrency=4] [--page=button]
- *
- * 扫描根: CHECK_UI_ROOT (默认上一级目录) —— 负向探针靠它把夹具指到临时目录。
+ * 文档站冒烟: 逐页用 headless chromium 渲染, 抓 "渲染出来但是空的" 静默失效
+ * 判据: DOM 含 <h1> 且体积不低于 MIN_DOM_BYTES; uncaught 错误只报告不判失败
+ * 无浏览器时默认跳过 (exit 0), --strict 下视为失败; 背景见 docs/reference/quality/browser-checks.md
+ * 产物目录: 设置 HX_QUALITY_BUILD 时读其中的 docs-dist, 否则读 <扫描根>/docs/dist
+ * 扫描根: CHECK_UI_ROOT (默认上一级目录), 负向探针靠它把夹具指到临时目录
+ * 用法: node scripts/check-smoke.ts [--strict] [--concurrency=4] [--page=button]
  */
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, statSync, createReadStream } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { BUILD_ENV, DOCS_DIR, DOCS_DIST, UTF8 } from "./constants/quality.ts";
+import {
+  DATA_EVENT, DIST_DIR, HTTP_OK, IGNORE, INDEX_HTML, JS_MIME, PIPE, SHOWN_ERRORS, URL_ROOT, USER_ARGS_START,
+} from "./constants/browser.ts";
 
 const ROOT = process.env.CHECK_UI_ROOT
   ? path.resolve(process.env.CHECK_UI_ROOT)
   : path.resolve(import.meta.dirname, "..");
-const DIST = path.join(ROOT, "docs", "dist");
-const NAV = path.join(ROOT, "docs", "src", "nav.ts");
+const DIST = process.env[BUILD_ENV]
+  ? path.join(process.env[BUILD_ENV], DOCS_DIST)
+  : path.join(ROOT, DOCS_DIR, DIST_DIR);
+const NAV = path.join(ROOT, DOCS_DIR, "src", "nav.ts");
 
-const argv = process.argv.slice(2);
+const argv = process.argv.slice(USER_ARGS_START);
 const STRICT = argv.includes("--strict");
 const ONLY = (argv.find((a) => a.startsWith("--page=")) ?? "").split("=")[1];
 const CONCURRENCY = Number((argv.find((a) => a.startsWith("--concurrency=")) ?? "").split("=")[1]) || 4;
 
-/** DOM 体积下限。正常页最小 31KB, 白屏 5.5KB, 20KB 两边都留了余量。 */
+/** DOM 体积下限. 正常页最小 31KB, 白屏 5.5KB, 20KB 两边都留了余量 */
 const MIN_DOM_BYTES = 20000;
 
-/** chromium 可能的位置。系统包、Snap、以及 Playwright 的下载目录都试一遍。 */
+/** chromium 可能的位置. 系统包, Snap, 以及 Playwright 的下载目录都试一遍 */
 function findChromium() {
   const explicit = process.env.CHROMIUM_PATH;
   const candidates = [
@@ -57,13 +41,9 @@ function findChromium() {
     "chromium-browser",
     "google-chrome",
     "google-chrome-stable",
-    "/usr/bin/chromium",
-    "/usr/bin/chromium-browser",
-    "/usr/bin/google-chrome",
-    "/snap/bin/chromium",
   ].filter(Boolean);
   for (const c of candidates) {
-    if (c.includes("/")) {
+    if (c.includes(URL_ROOT)) {
       if (existsSync(c)) return c;
       continue;
     }
@@ -75,7 +55,7 @@ function findChromium() {
 }
 
 function which(cmd) {
-  for (const dir of (process.env.PATH ?? "/usr/bin:/bin").split(":")) {
+  for (const dir of (process.env.PATH ?? "").split(":")) {
     const p = path.join(dir, cmd);
     try {
       if (statSync(p).isFile()) return p;
@@ -86,17 +66,17 @@ function which(cmd) {
   return null;
 }
 
-/** 文档页清单从 nav.ts 提取, 而不是在脚本里抄一遍 —— 抄的那份一定会过时。 */
+/** 文档页清单从 nav.ts 提取, 而不是在脚本里抄一遍 - 抄的那份一定会过时 */
 function readPages() {
-  const src = readFileSync(NAV, "utf8");
+  const src = readFileSync(NAV, UTF8);
   const ids = [...src.matchAll(/\{\s*id:\s*"([a-z0-9-]+)"/g)].map((m) => m[1]);
   return [...new Set(ids)];
 }
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".mjs": "text/javascript; charset=utf-8",
+  ".js": JS_MIME,
+  ".mjs": JS_MIME,
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".svg": "image/svg+xml",
@@ -107,19 +87,19 @@ const MIME = {
 function serveDist() {
   return new Promise((resolve) => {
     const server = createServer((req, res) => {
-      const url = (req.url ?? "/").split("?")[0];
+      const url = (req.url ?? URL_ROOT).split("?")[0];
       let file = path.join(DIST, decodeURIComponent(url));
       // 目录与不存在的一律回 index.html (hash 路由不依赖服务端, 这里只为兜底)
       try {
-        if (statSync(file).isDirectory()) file = path.join(file, "index.html");
+        if (statSync(file).isDirectory()) file = path.join(file, INDEX_HTML);
       } catch {
-        file = path.join(DIST, "index.html");
+        file = path.join(DIST, INDEX_HTML);
         if (!existsSync(file)) {
           res.writeHead(404).end("not found");
           return;
         }
       }
-      res.writeHead(200, { "content-type": MIME[path.extname(file)] ?? "application/octet-stream" });
+      res.writeHead(HTTP_OK, { "content-type": MIME[path.extname(file)] ?? "application/octet-stream" });
       createReadStream(file).pipe(res);
     });
     server.listen(0, "127.0.0.1", () => resolve({ server, port: server.address().port }));
@@ -140,22 +120,22 @@ function render(chromium, url) {
       "--dump-dom",
       url,
     ];
-    const child = spawn(chromium, args, { stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(chromium, args, { stdio: [IGNORE, PIPE, PIPE] });
     let out = "";
     let err = "";
-    child.stdout.on("data", (d) => (out += d));
-    child.stderr.on("data", (d) => (err += d));
+    child.stdout.on(DATA_EVENT, (d) => (out += d));
+    child.stderr.on(DATA_EVENT, (d) => (err += d));
     child.on("close", () => {
       const errors = [...err.matchAll(/CONSOLE:\d+\] "(.*?)", source:/g)]
         .map((m) => m[1])
         .filter((m) => /uncaught|error/i.test(m));
-      resolve({ dom: out, bytes: Buffer.byteLength(out, "utf8"), errors });
+      resolve({ dom: out, bytes: Buffer.byteLength(out, UTF8), errors });
     });
     child.on("error", () => resolve({ dom: "", bytes: 0, errors: [], spawnFailed: true }));
   });
 }
 
-/** 小并发池: chromium 每个进程上百 MB, 全量并行会把内存打满。 */
+/** 小并发池: chromium 每个进程上百 MB, 全量并行会把内存打满 */
 async function pool(items, limit, fn) {
   const results = new Array(items.length);
   let cursor = 0;
@@ -181,7 +161,7 @@ if (!chromium) {
   process.exit(0);
 }
 
-if (!existsSync(path.join(DIST, "index.html"))) {
+if (!existsSync(path.join(DIST, INDEX_HTML))) {
   console.error("check-smoke: docs/dist 不存在, 先跑 \`npm run build\` (在 docs/ 下)");
   process.exit(1);
 }
@@ -225,7 +205,7 @@ console.error(`\ncheck-smoke: ${bad.length}/${pages.length} 页有问题\n`);
 for (const b of bad) {
   console.error(`  ${b.page}`);
   for (const f of b.failures) console.error(`    → ${f}`);
-  for (const e of b.errors.slice(0, 3)) console.error(`    ! ${e}`);
+  for (const e of b.errors.slice(0, SHOWN_ERRORS)) console.error(`    ! ${e}`);
   console.error("");
 }
 process.exit(1);

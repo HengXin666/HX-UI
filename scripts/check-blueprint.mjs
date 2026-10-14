@@ -36,6 +36,14 @@ const DOCS = path.join(ROOT, "docs");
 const PROBE = path.join(DOCS, ".bpprobe");
 const OUT = path.join(PROBE, "out", "bp.js");
 const STRICT = process.argv.includes("--strict");
+/**
+ * 使用方演示包 HX-Blueprint-Demo 是父仓的普通目录, 单独 clone 本仓 (CI 也是) 时不存在.
+ * 缺席时: 本地降级为跳过 dsh 实体图那几组断言; --strict 下必须由 HX_BLUEPRINT_DEMO_OPTIONAL=1
+ * 显式声明"这次不验证跨组件契约"才放行, 并在输出里逐组写明跳过, 不静默变绿.
+ */
+const SIBLING = path.resolve(ROOT, "..", "HX-Blueprint-Demo", "src", "dsh");
+const HAS_DSH = existsSync(SIBLING);
+const DSH_OPTIONAL = process.env.HX_BLUEPRINT_DEMO_OPTIONAL === "1";
 
 /** 只打包纯逻辑层。渲染层要 react/jsx, 不进这里。 */
 const ENTRY = `export * from "../../src/blueprint/registry";
@@ -58,8 +66,9 @@ export { COMMENT_TONE, COMMENT_TONES } from "../../src/blueprint/canvas-parts";
 export * from "../../src/blueprint/history";
 export * from "../../src/blueprint/subgraph";
 export * from "../../src/blueprint/comment";
-export * from "../../../HX-Blueprint-Demo/src/dsh/nodes";
-export * from "../../../HX-Blueprint-Demo/src/dsh/graph";
+${HAS_DSH
+  ? 'export * from "../../../HX-Blueprint-Demo/src/dsh/nodes";\nexport * from "../../../HX-Blueprint-Demo/src/dsh/graph";'
+  : 'export * from "../src/blueprint-demo-fallback/dsh";'}
 `;
 
 const VITE_CFG = `import { defineConfig } from "vite";
@@ -84,6 +93,14 @@ if (!existsSync(path.join(DOCS, "node_modules", "vite"))) {
   }
   console.log(msg);
   process.exit(0);
+}
+
+if (!HAS_DSH) {
+  const msg = "兄弟目录 HX-Blueprint-Demo 不存在 (" + SIBLING + "), dsh 实体图相关断言组将被跳过";
+  if (STRICT && !DSH_OPTIONAL) {
+    fail(msg + "\n  (--strict 下视为失败; 确认本次不验证跨组件契约时设置 HX_BLUEPRINT_DEMO_OPTIONAL=1)");
+  }
+  console.log("check-blueprint: " + msg);
 }
 
 mkdirSync(PROBE, { recursive: true });
@@ -127,6 +144,8 @@ import {
 
 let pass = 0, fail = 0;
 const ok = (name, cond) => { if (cond) pass++; else { fail++; console.log("  FAIL: " + name); } };
+const HAS_DSH = ${JSON.stringify(HAS_DSH)};
+const skipDsh = (group) => { console.log("  SKIP: " + group + " (需要兄弟目录 HX-Blueprint-Demo 的 dsh 实体图)"); return false; };
 
 // ── 1. 类型相容 (协变) ──
 {
@@ -431,7 +450,7 @@ const G0 = {
 }
 
 // ── 10. dsh agent loop 图 (使用方演示包的实体图) ──
-{
+if (HAS_DSH || skipDsh("10. dsh agent loop 图")) {
   const dsh = createSourceRegistry();
   registerTunnels(dsh);
 
@@ -523,7 +542,7 @@ const G0 = {
 }
 
 // ── 11. 自动布局 ──
-{
+if (HAS_DSH || skipDsh("11. 自动布局")) {
   const dsh = createSourceRegistry();
   registerTunnels(dsh);
 
@@ -782,7 +801,7 @@ const G0 = {
 }
 
 // ── 13. Agent API: 输入宽松, 输出必须人类可读 ──
-{
+if (HAS_DSH || skipDsh("13. Agent API")) {
   const dsh = createSourceRegistry();
   registerTunnels(dsh);
 
@@ -931,7 +950,7 @@ const G0 = {
 }
 
 // ── 14. MCP 风格工具面 ──
-{
+if (HAS_DSH || skipDsh("14. MCP 风格工具面")) {
   const dsh = createSourceRegistry();
   registerTunnels(dsh);
 

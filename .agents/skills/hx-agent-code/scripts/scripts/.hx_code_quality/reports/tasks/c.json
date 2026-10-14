@@ -1,0 +1,12 @@
+{
+    "task": "c",
+    "command": [
+        "/usr/bin/node",
+        "-e",
+        "process.stdout.write('not json')"
+    ],
+    "status": 0,
+    "signal": null,
+    "stdout": "not json",
+    "stderr": ""
+}

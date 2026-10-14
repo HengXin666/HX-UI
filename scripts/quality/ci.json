@@ -1,0 +1,36 @@
+{
+    "timeoutMs": 900000,
+    "setup": [
+        { "id": "setup:root", "command": ["npm", "ci", "--no-audit", "--no-fund"], "format": "exit" },
+        { "id": "setup:docs", "command": ["npm", "--prefix", "docs", "ci", "--no-audit", "--no-fund"], "format": "exit" }
+    ],
+    "groups": {
+        "code": {
+            "tasks": [
+                { "id": "quality:code", "command": ["node", "scripts/quality/index.ts", "check", "--group", "code", "--format", "findings"], "format": "findings" }
+            ]
+        },
+        "docs": {
+            "tasks": [
+                { "id": "quality:docs", "command": ["node", "scripts/quality/index.ts", "check", "--group", "docs", "--format", "findings"], "format": "findings" }
+            ]
+        },
+        "build": {
+            "tasks": [
+                { "id": "build:lib-types", "command": ["npm", "run", "typecheck"], "format": "exit" },
+                { "id": "build:docs-site", "command": ["node", "scripts/quality/index.ts", "build"], "format": "exit" }
+            ]
+        },
+        "compatibility": {
+            "tasks": [],
+            "notApplicable": "HX-UI is published as TypeScript source through package exports and has no container, server deployment, database schema or upgrade migration"
+        }
+    },
+    "impact": { "id": "impact", "command": ["node", "scripts/quality/index.ts", "graph"], "format": "exit" },
+    "tests": [
+        { "id": "quality:probes", "command": ["node", "scripts/quality/checks/probes.ts"], "format": "exit" },
+        { "id": "docs:icons", "command": ["node", "docs/scripts/check-icons.ts"], "format": "exit" },
+        { "id": "docs:smoke", "command": ["node", "scripts/check-smoke.ts", "--strict"], "format": "exit" },
+        { "id": "docs:shell", "command": ["node", "scripts/check-shell.ts", "--strict"], "format": "exit" }
+    ]
+}

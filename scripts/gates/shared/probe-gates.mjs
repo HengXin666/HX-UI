@@ -66,8 +66,8 @@ function writeFiles(base, files) {
  * 把仓库复制一份到临时目录 (排除 node_modules/.git/dist/.bpprobe)。
  * 接线探针要真的去改注册表和检查点配置, 只能在副本上改 —— 绝不碰真实仓库。
  *
- * `.git/hooks` 单独复制过来: 指纹第二组要读"hook 装没装"这个事实,
- * 不复制它的话所有副本都会算成「未安装」, 指纹控制组就永远不 PASS。
+ * 指纹第二组读的是仓库内受版本控制的钩子源文件 (scripts/gates/hooks 与 .githooks),
+ * 不读本机 .git/hooks 安装状态, 所以副本无需额外复制 .git/hooks, 干净 CI checkout 上也能跑。
  */
 function repoCopy(label) {
   const dir = path.join(tmpRoot, label);
@@ -77,10 +77,6 @@ function repoCopy(label) {
     filter: (src) =>
       !["node_modules", ".git", "dist", ".vite", ".bpprobe"].includes(path.basename(src)),
   });
-  const hooksSrc = path.join(ROOT, ".git", "hooks");
-  if (fs.existsSync(hooksSrc)) {
-    fs.cpSync(hooksSrc, path.join(dir, ".git", "hooks"), { recursive: true });
-  }
   created.push(dir);
   return dir;
 }
@@ -98,8 +94,22 @@ function run(script, args, env, cwd) {
 }
 
 const G = (rel) => path.join(ROOT, rel);
+/** 与 package.json 的 check:ui 同一组规则; 质量入口按 git ls-files 取文件, 夹具要先 git init。 */
+const UI_RULES = [
+  "PROJECT-UI-PALETTE", "PROJECT-UI-HEX", "PROJECT-UI-RGB", "PROJECT-UI-LINE-1PX", "PROJECT-UI-BW",
+  "PROJECT-UI-TRANSITION-ALL", "PROJECT-UI-BUTTON-TYPE", "PROJECT-UI-ICON-DECLARED",
+  "PROJECT-UI-DEV-DIARY", "PROJECT-UI-JSX-COMMENT-LEAK",
+].join(",");
+
+function runUiRules(dir) {
+  const init = spawnSync("git", ["init", "-q", dir], { encoding: "utf8" });
+  if (init.status !== 0) return { status: -1, output: `夹具失败: git init ${init.stderr}` };
+  const [script, args] = CHECK.uiRules;
+  return run(script, [...args, "--root", dir], {}, dir);
+}
 const CHECK = {
-  uiRules: [G("scripts/check-ui-rules.mjs"), ["src"]],
+  // 设计规约已并入 scripts/quality; --baseline none 让夹具里的每条违规都算新增
+  uiRules: [G("scripts/quality/index.ts"), ["check", "--mode", "all", "--rule", UI_RULES, "--baseline", "none", "--format", "findings"]],
   registry: [G("scripts/gates/frontend/check-docs-registry.mjs"), []],
   lineBudget: [G("scripts/gates/frontend/check-line-budget.mjs"), []],
   lanes: [G("scripts/gates/shared/check-lanes.mjs"), []],
@@ -141,6 +151,10 @@ export function renderPage(page: string) {
 `,
     // 让 lane 前缀都有活目标 (否则会额外报 dead-lane-prefix, 混淆探针意图)
     ".github/workflows/x.yml": "name: x\n",
+    ".githooks/pre-commit": "",
+    ".agents/x.txt": "",
+    "AGENTS.md": "",
+    "CONTRIBUTING.md": "",
     "scripts/x.txt": "",
     "README.md": "",
     ".gitignore": "",
@@ -167,9 +181,9 @@ const budgetBase = (frozen, limits = { ts: 450, tsx: 250 }) =>
 /** ── 探针定义 ──────────────────────────────────────────────────── */
 
 const probes = [
-  // ───── 设计规约 (check-ui-rules) ─────
+  // ───── 设计规约 (scripts/quality 的 PROJECT-UI-*) ─────
   {
-    name: "ui-rules 违规组: 硬编调色盘 + 非 1px 边框 + 漏写 type 的 button",
+    name: "ui-rules 违规组: 硬编调色盘 + 非 1px 边框 + 漏写 type 的 button + 开发日记注释 + JSX 裸块注释",
     gate: "check-ui-rules",
     expect: "fail",
     reason: "正则或扫描根被改坏时, 这套库会慢慢长回随机颜色, 而没有任何东西报错",
@@ -177,10 +191,12 @@ const probes = [
       const dir = fixture("ui-rules-bad");
       writeFiles(dir, {
         "src/bad.tsx": `export const X = () => <button className="bg-slate-500 border-2">hi</button>;\n`,
+        "src/diary.ts": `// 上一版这里写成了 2px\nexport const D = 1;\n`,
+        "src/leak.tsx": `export const L = () => (\n  <div>\n    /* 说明 */\n  </div>\n);\n`,
       });
-      return run(...CHECK.uiRules, { CHECK_UI_ROOT: dir });
+      return runUiRules(dir);
     },
-    expectIn: ["no-palette", "border-1px", "button-type"],
+    expectIn: ["PROJECT-UI-PALETTE", "PROJECT-UI-LINE-1PX", "PROJECT-UI-BUTTON-TYPE", "PROJECT-UI-DEV-DIARY", "PROJECT-UI-JSX-COMMENT-LEAK"],
   },
   {
     name: "ui-rules 控制组: 语义 token + type=button",
@@ -191,8 +207,9 @@ const probes = [
       const dir = fixture("ui-rules-ok");
       writeFiles(dir, {
         "src/ok.tsx": `export const Y = () => <button type="button" className="bg-primary border-border">hi</button>;\n`,
+        "src/note.tsx": `// 默认间距取 16\nexport const N = () => (\n  <div>\n    {/* 说明 */}\n    上一版\n  </div>\n);\n`,
       });
-      return run(...CHECK.uiRules, { CHECK_UI_ROOT: dir });
+      return runUiRules(dir);
     },
   },
 
@@ -405,7 +422,7 @@ const probes = [
       const p = path.join(dir, "package.json");
       const pkg = JSON.parse(fs.readFileSync(p, "utf8"));
       pkg.scripts = pkg.scripts ?? {};
-      const cur = pkg.scripts["check:ui"] ?? "node scripts/check-ui-rules.mjs src";
+      const cur = pkg.scripts["check:ui"] ?? "node scripts/quality/index.ts check --mode all";
       pkg.scripts["check:ui"] = `${cur} || true`;
       fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + "\n");
       return run(...CHECK.fingerprint, { CHECK_UI_ROOT: dir });
@@ -413,14 +430,14 @@ const probes = [
     expectIn: ["wiring:checkpoints"],
   },
   {
-    name: "接线: 摘掉 .git/hooks/pre-commit → 指纹必须 FAIL",
+    name: "接线: 摘掉仓库内 pre-commit 钩子源文件 → 指纹必须 FAIL",
     gate: "check-fingerprint",
     expect: "fail",
     reason: "hook 被摘掉后提交流程里一条门禁都不跑, 而所有门禁脚本本身完好无损",
     run: () => {
       const dir = repoCopy("fp-drop-hook");
-      const h = path.join(dir, ".git/hooks/pre-commit");
-      if (!fs.existsSync(h)) return { status: -1, output: "夹具失败: 真仓库未安装 pre-commit, 无法验证「摘掉后必须 FAIL」" };
+      const h = path.join(dir, "scripts/gates/hooks/pre-commit");
+      if (!fs.existsSync(h)) return { status: -1, output: "夹具失败: 仓库内没有 scripts/gates/hooks/pre-commit, 无法验证「摘掉后必须 FAIL」" };
       fs.rmSync(h);
       return run(...CHECK.fingerprint, { CHECK_UI_ROOT: dir });
     },
@@ -453,11 +470,11 @@ const probes = [
       "于是三条门禁的指纹哈希完全相同, 它却照样打印「通过」。哈希相同就是抽取器瞎了的判据。",
     run: () => {
       const dir = repoCopy("fp-regex");
-      const p = path.join(dir, "scripts/check-ui-rules.mjs");
+      const p = path.join(dir, "scripts/quality/checks/ui.ts");
       const src = fs.readFileSync(p, "utf8");
-      // 把禁令正则改宽 (加入 emerald 允许色被移除的效果): 这是真放松, 必须被看见
-      const next = src.replace(/const PALETTE_BAN\s*=[\s\S]*?;/, "const PALETTE_BAN = /\\bnever-matches-[a-z]*-[0-9]{2,3}\\b/;");
-      if (next === src) return { status: -1, output: "夹具失败: check-ui-rules.mjs 里没匹配到 PALETTE_BAN" };
+      // 把调色盘禁令正则改成永不命中: 这是真放松, 必须被看见
+      const next = src.replace(/(id: "PROJECT-UI-PALETTE"[\s\S]*?pattern: )\/[^\n]*?\/g,/, "$1/\\bnever-matches-[a-z]*-[0-9]{2,3}\\b/g,");
+      if (next === src) return { status: -1, output: "夹具失败: ui.ts 里没匹配到 PROJECT-UI-PALETTE 的 pattern" };
       fs.writeFileSync(p, next);
       return run(...CHECK.fingerprint, { CHECK_UI_ROOT: dir });
     },
