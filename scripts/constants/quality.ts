@@ -3,6 +3,11 @@
  * Every threshold, path and exception lives here once, see docs/reference/quality/rules.md.
  */
 
+/**
+ * 质量门禁的路径, 阈值与退出码一处定义, 消费方见 note.
+ *
+ * .agents/notes/implemented/architecture/2026-10-15-gate-constant-pool.md
+ */
 export const UTF8 = "utf8";
 export const ERROR = "error";
 export const WARNING = "warning";

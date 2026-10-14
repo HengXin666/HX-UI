@@ -108,6 +108,11 @@ function build(root: string): number {
     return result.status ?? EXIT_TOOL;
 }
 
+/**
+ * 质量门禁唯一入口: 钩子, npm scripts 与 CI 都调它, 命令与检查点在这里解析.
+ *
+ * .agents/notes/implemented/process/2026-10-15-quality-single-entry.md
+ */
 export function main(argv: string[]): number {
     const [command, ...rest] = argv;
     const flags = parse(command, rest);

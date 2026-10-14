@@ -35,4 +35,4 @@ PR 3 的四个 workflow 全红. 原因不在单条违规: (1) 基线只从可信
 
 ## Consequences
 
-四个 workflow 在干净 checkout 上可运行, 引入基线的 PR 不再自己判自己, 接线指纹只覆盖受版本控制的钩子源文件. 代价是首次推送必须能算出 merge-base, 兄弟目录缺席时文档站与 check-blueprint 退到仓内替身, 那几组断言只能打印 SKIP, 强度低于真实实体图; --strict 下还要靠 HX_BLUEPRINT_DEMO_OPTIONAL=1 显式放行.
+四个 workflow 在干净 checkout 上可运行, 引入基线的 PR 不再自己判自己, 接线指纹只覆盖受版本控制的钩子源文件. 代价是首次推送必须能算出 merge-base, 兄弟目录缺席时文档站与 check-blueprint 退到仓内替身, 那几组断言只能打印 SKIP, 强度低于真实实体图; --strict 下还要靠 HX_BLUEPRINT_DEMO_OPTIONAL=1 显式放行. 本次落地 Agent Notes v2 时把接线指纹快照刷到当前接线 (check-fingerprint.mjs --update), 干净 checkout 上该门禁恢复为绿; 严格度组的哈希未变, 只有 wiring:checkpoints 一条跟着接线走.
