@@ -71,7 +71,7 @@ export function SegmentedControl<T extends string>({
 						onClick={() => onChange(key)}
 						{...rippleProps}
 						className={cn(
-							"relative flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-[6px] px-2.5 py-[3px] text-[11px] font-medium leading-[16px] transition-colors duration-150 select-none",
+							"relative flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-[6px] px-2.5 py-[3px] text-[11px] font-medium leading-[16px] transition-colors duration-150 select-none overflow-visible",
 							active ? "text-foreground" : "text-muted-foreground hover:text-foreground/70",
 						)}
 					>
