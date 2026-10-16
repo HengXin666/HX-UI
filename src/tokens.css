@@ -30,7 +30,7 @@
   --secondary-foreground: rgb(173, 186, 199);  /* #adbac7 */
   /* muted 是内嵌层 (输入框底 / 代码块底), 比页面更深一档 */
   --muted: rgb(28, 33, 40);  /* #1c2128 */
-  --muted-foreground: rgb(118, 131, 144);  /* #768390 */
+  --muted-foreground: rgb(173, 186, 199);  /* #adbac7 */
   /* accent 是悬停层 */
   --accent: rgb(45, 51, 59);  /* #2d333b */
   --accent-foreground: rgb(205, 217, 229);  /* #cdd9e5 */
