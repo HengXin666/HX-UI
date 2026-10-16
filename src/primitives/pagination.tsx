@@ -24,7 +24,10 @@ function range(from: number, to: number): number[] {
  * 省略位只在它省掉了至少两页时出现, 只省一页时直接显示那一页.
  */
 function paginationRange(page: number, pageCount: number, siblings = 1): PageItem[] {
-	const total = Math.max(FIRST_PAGE, pageCount);
+	if (pageCount <= 0) {
+		return [];
+	}
+	const total = pageCount;
 	const slots = siblings * PAGINATION.sides + PAGINATION.fixedSlots;
 	if (total <= slots) {
 		return range(FIRST_PAGE, total);
