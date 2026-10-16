@@ -77,7 +77,7 @@ function spawnRipple(host: HTMLElement, clientX: number, clientY: number): void 
  * 系统要求减弱动效时不产生波纹. 调用方自己的 onPointerDown / onKeyDown
  * 先执行, 其中 preventDefault 会同时取消波纹.
  *
- * .agents/notes/implemented/feature/2026-10-17-dark-dimmed-retheme.md
+ * .agents/notes/implemented/feature/2026-10-16-dark-dimmed-retheme.md
  */
 function useRipple<T extends HTMLElement>({
 	enabled = true,

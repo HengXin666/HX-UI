@@ -61,7 +61,7 @@ export {
 } from "./primitives/confirm-dialog";
 /**
  * 管理页常用基础件与点按水波纹
- * .agents/notes/implemented/feature/2026-10-17-dark-dimmed-retheme.md
+ * .agents/notes/implemented/feature/2026-10-16-dark-dimmed-retheme.md
  */
 export { Checkbox } from "./primitives/checkbox";
 export { RadioGroup, RadioGroupItem } from "./primitives/radio-group";

@@ -41,7 +41,7 @@ export interface NavTabsProps {
  * 顶栏导航: 选中态走 `aria-current`, 纯视觉的 active class 对辅助技术不可见.
  * 导航项默认带点按水波纹, ripple={false} 关闭.
  *
- * .agents/notes/implemented/feature/2026-10-17-dark-dimmed-retheme.md
+ * .agents/notes/implemented/feature/2026-10-16-dark-dimmed-retheme.md
  */
 export function NavTabs({ items, value, onChange, className, ripple = true }: NavTabsProps): ReactNode {
   const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple });
