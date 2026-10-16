@@ -696,7 +696,7 @@ export function BlueprintCanvas({
                 link?.verdict == null
                   ? "stroke-muted-foreground"
                   : link.verdict.ok
-                    ? "stroke-emerald-400"
+                    ? "stroke-success"
                     : "stroke-destructive"
               )}
             />

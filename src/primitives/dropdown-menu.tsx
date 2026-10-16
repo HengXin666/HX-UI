@@ -3,6 +3,7 @@
 import * as React from "react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui";
 import { CheckIcon } from "lucide-react";
+import { useRipple } from "./ripple";
 import { cn } from "./utils";
 
 function DropdownMenu(props: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
@@ -36,9 +37,27 @@ function DropdownMenuContent({
 const ITEM_CLASS =
 	"relative flex cursor-default select-none items-center gap-2 rounded-lg px-3 py-2 text-[13px] outline-hidden transition-colors focus:bg-accent/60 data-highlighted:bg-accent/60 data-disabled:pointer-events-none data-disabled:opacity-50";
 
-function DropdownMenuItem({ className, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Item>) {
+/** 菜单项与单选项共用的水波纹开关. */
+type RippleToggle = {
+	/** 点按水波纹. 默认 true. */
+	ripple?: boolean;
+};
+
+function DropdownMenuItem({
+	className,
+	ripple = true,
+	onPointerDown,
+	onKeyDown,
+	...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Item> & RippleToggle) {
+	const rippleProps = useRipple<HTMLDivElement>({ enabled: ripple, onPointerDown, onKeyDown });
 	return (
-		<DropdownMenuPrimitive.Item data-slot="dropdown-menu-item" className={cn(ITEM_CLASS, className)} {...props} />
+		<DropdownMenuPrimitive.Item
+			data-slot="dropdown-menu-item"
+			className={cn(ITEM_CLASS, className)}
+			{...props}
+			{...rippleProps}
+		/>
 	);
 }
 
@@ -49,13 +68,18 @@ function DropdownMenuRadioGroup(props: React.ComponentProps<typeof DropdownMenuP
 function DropdownMenuRadioItem({
 	className,
 	children,
+	ripple = true,
+	onPointerDown,
+	onKeyDown,
 	...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem> & RippleToggle) {
+	const rippleProps = useRipple<HTMLDivElement>({ enabled: ripple, onPointerDown, onKeyDown });
 	return (
 		<DropdownMenuPrimitive.RadioItem
 			data-slot="dropdown-menu-radio-item"
 			className={cn(ITEM_CLASS, "pr-8", className)}
 			{...props}
+			{...rippleProps}
 		>
 			<span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center text-primary">
 				<DropdownMenuPrimitive.ItemIndicator>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { IconSlot, type IconSource } from "./Icon";
+import { useRipple } from "../primitives/ripple";
 import { cn } from "../primitives/utils";
 
 /**
@@ -32,12 +33,18 @@ export interface NavTabsProps {
   readonly value: string;
   readonly onChange: (id: string) => void;
   readonly className?: string;
+  /** 点按水波纹. 默认 true. */
+  readonly ripple?: boolean;
 }
 
 /**
  * 顶栏导航: 选中态走 `aria-current`, 纯视觉的 active class 对辅助技术不可见.
+ * 导航项默认带点按水波纹, ripple={false} 关闭.
+ *
+ * .agents/notes/implemented/feature/2026-10-17-dark-dimmed-retheme.md
  */
-export function NavTabs({ items, value, onChange, className }: NavTabsProps): ReactNode {
+export function NavTabs({ items, value, onChange, className, ripple = true }: NavTabsProps): ReactNode {
+  const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple });
   return (
     <nav
       role="tablist"
@@ -55,6 +62,7 @@ export function NavTabs({ items, value, onChange, className }: NavTabsProps): Re
             aria-current={active ? "page" : undefined}
             title={item.title ?? item.label}
             onClick={() => onChange(item.id)}
+            {...rippleProps}
             className={cn(
               "flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors",
               active

@@ -24,7 +24,7 @@ const KIND_TONE: Record<EmptyKind, string> = {
   empty: "text-muted-foreground/45",
   error: "text-destructive/60",
   loading: "text-muted-foreground/45",
-  denied: "text-amber-500/60",
+  denied: "text-warning/60",
 };
 
 export interface EmptyStateProps {

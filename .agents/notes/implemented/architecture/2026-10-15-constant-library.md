@@ -14,7 +14,7 @@ PROJECT-CONST-DUP 要求同一字面量在 src 与 docs/src 里出现三次以�
 
 ## Decision
 
-`src/constants/index.ts` 是库与文档站唯一的字面量来源: 值用 `export const` 导出 (`USER`, `ERROR`, `PAD_WIDTH`, `PAD_CHAR`, `STICK_TOLERANCE`, `CLASSES`), 需要收窄的判据用 type guard 导出 (`isString`)。文档站只经 `@hx/ui` 入口引用, 所以 `src/index.ts` 转发 `USER`。常量池无副作用, 不 import 任何模块。
+`src/constants/index.ts` 是库与文档站唯一的字面量来源: 值用 `export const` 导出 (`USER`, `ERROR`, `PAD_WIDTH`, `PAD_CHAR`, `STICK_TOLERANCE`, `CLASSES`, 状态文字色 `TONE`, 组件变体名 `VARIANT`, `ARIA`, `KEY`, `HALF_DIVISOR`, 水波纹 `RIPPLE`, 分页形状 `PAGINATION`), 需要收窄的判据用 type guard 导出 (`isString`)。文档站只经 `@hx/ui` 入口引用, 所以 `src/index.ts` 转发 `USER` 与 `TONE`。常量池无副作用, 不 import 任何模块。
 
 ## Alternatives considered
 

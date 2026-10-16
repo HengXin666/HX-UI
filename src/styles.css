@@ -40,6 +40,28 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-link: var(--link);
+  --color-heading: var(--heading);
+  --color-border-muted: var(--border-muted);
+  --color-control-hover: var(--control-hover);
+
+  /* 语义状态色桥接: text-success / bg-warning/15 / border-danger/40 这类类名
+     由此生成, 组件里不再出现 emerald / amber / red 这类调色盘色.
+     -fg 是可读文字色, -emphasis 是实底色. */
+  --color-success: var(--success);
+  --color-success-emphasis: var(--success-emphasis);
+  --color-success-fg: var(--success-fg);
+  --color-warning: var(--warning);
+  --color-warning-emphasis: var(--warning-emphasis);
+  --color-warning-fg: var(--warning-fg);
+  --color-danger: var(--danger);
+  --color-danger-emphasis: var(--danger-emphasis);
+  --color-danger-fg: var(--danger-fg);
+  --color-done: var(--done);
+
+  /* 动效令牌桥接: duration-(--duration-fast) 之外, ease-out 工具类也指向同一条曲线 */
+  --ease-out: var(--ease-out);
+  --ease-in: var(--ease-in);
 
   /* 字体: 把 token 桥接成 font-sans / font-mono 两个工具类。
      上游原样保留这两行; 漏掉它们会让代码块悄悄用上 Tailwind 的默认等宽栈。 */

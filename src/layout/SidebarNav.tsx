@@ -1,4 +1,5 @@
 import { forwardRef, type ComponentPropsWithoutRef, type JSX, type ReactNode } from "react";
+import { useRipple } from "../primitives/ripple";
 import { cn } from "../primitives/utils";
 import { IconSlot, type IconSource } from "./Icon";
 
@@ -95,6 +96,8 @@ export interface SidebarNavItemButtonProps extends Omit<ComponentPropsWithoutRef
   readonly item: SidebarNavItem;
   readonly classNames?: { badge?: string; icon?: string; label?: string };
   readonly children?: ReactNode;
+  /** 点按水波纹. 默认 true. */
+  readonly ripple?: boolean;
 }
 
 /**
@@ -102,7 +105,8 @@ export interface SidebarNavItemButtonProps extends Omit<ComponentPropsWithoutRef
  * 这是上游的做法, 好处是移动高亮块时按钮本身不用重绘。
  */
 export const SidebarNavItemButton = forwardRef<HTMLButtonElement, SidebarNavItemButtonProps>(
-  function SidebarNavItemButton({ className, classNames, item, onClick, ...props }, ref): JSX.Element {
+  function SidebarNavItemButton({ className, classNames, item, onClick, ripple = true, onPointerDown, onKeyDown, ...props }, ref): JSX.Element {
+    const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple, onPointerDown, onKeyDown });
     const label = item.label ?? "";
     const title = item.title ?? label;
 
@@ -118,6 +122,7 @@ export const SidebarNavItemButton = forwardRef<HTMLButtonElement, SidebarNavItem
           className,
         )}
         {...props}
+        {...rippleProps}
       >
         <SidebarNavIcon icon={item.icon} iconUrl={item.iconUrl} className={cn("relative z-10", classNames?.icon)} />
         {/* min-w-0 flex-1 truncate: label 占满中间并在过长时省略, 右侧角标才不会被顶出按钮 */}

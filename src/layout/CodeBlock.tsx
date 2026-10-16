@@ -128,7 +128,7 @@ function CopyButton({ text }: { text: string }): JSX.Element {
       className={cn(
         "rounded-md border px-2 py-1 text-[11px] transition-colors",
         copied
-          ? "border-emerald-500/40 text-emerald-400"
+          ? "border-success/40 text-success-fg"
           : "border-white/15 text-[#abb2bf] hover:border-white/30 hover:text-white",
       )}
       style={{ background: copied ? undefined : "transparent" }}

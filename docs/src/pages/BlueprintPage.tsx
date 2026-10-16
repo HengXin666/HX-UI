@@ -1,5 +1,5 @@
 import { useMemo, useState, type JSX } from "react";
-import type { BlueprintGraph } from "@hx/ui";
+import { TONE, type BlueprintGraph } from "@hx/ui";
 import {
   BlueprintEditor, BlueprintCanvas, BlueprintPalette,
   demoRegistry, createDemoRegistry, demoGraph,
@@ -316,7 +316,7 @@ function TypeDemo(): JSX.Element {
                 <td className="py-1.5 pr-3 font-mono text-[11px]">{c.from}</td>
                 <td className="py-1.5 pr-3 font-mono text-[11px]">{c.to}</td>
                 <td className="py-1.5 pr-3">
-                  <span className={cn("font-mono text-[11px]", ok ? "text-emerald-400" : "text-destructive")}>
+                  <span className={cn("font-mono text-[11px]", ok ? TONE.successFg : TONE.dangerFg)}>
                     {ok ? "可连" : "不可连"}
                   </span>
                 </td>
@@ -367,7 +367,7 @@ function CycleDemo(): JSX.Element {
       </div>
       <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-[12px]">
         {cycles.length === 0 ? (
-          <span className="text-emerald-400">无环。校验: {v.ok ? "通过" : "有其它错误"}</span>
+          <span className={TONE.successFg}>无环。校验: {v.ok ? "通过" : "有其它错误"}</span>
         ) : (
           <div className="space-y-1">
             <div className="text-destructive">检出 {cycles.length} 个环: {cycles.map((c) => c.join(" → ")).join(" ｜ ")}</div>

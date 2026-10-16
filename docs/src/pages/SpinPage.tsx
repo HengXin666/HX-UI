@@ -1,5 +1,5 @@
 import { useState, type JSX } from "react";
-import { Spin, SPIN_VARIANTS, type SpinVariant, Card, Badge, Button } from "@hx/ui";
+import { Spin, SPIN_VARIANTS, TONE, type SpinVariant, Card, Badge, Button } from "@hx/ui";
 import { H2, P, Preview, PropsTable, Callout, Code } from "../components/DocKit";
 
 /**
@@ -95,9 +95,9 @@ export function SpinPage(): JSX.Element {
 <Spin mode="random" size={24} />`}
       >
         <Spin mode="rotate" size={56} className="text-primary" />
-        <Spin mode="rotate" interval={1200} size={40} rotatePool={["quantum", "helix", "trefoil"]} className="text-emerald-400" />
+        <Spin mode="rotate" interval={1200} size={40} rotatePool={["quantum", "helix", "trefoil"]} className={TONE.success} />
         <Spin mode="random" size={24} />
-        <Spin mode="rotate" interval={3000} size={32} rotatePool={["miyagi", "zoomies", "wobble", "pinwheel"]} className="text-amber-400" />
+        <Spin mode="rotate" interval={3000} size={32} rotatePool={["miyagi", "zoomies", "wobble", "pinwheel"]} className={TONE.warning} />
       </Preview>
       <Callout kind="warning" title="默认是 fixed, 不是 rotate">
         加载指示器最不该出现的是「界面里同时有五种转圈」。<Code>rotate</Code> 只在明确传了才生效，
@@ -137,12 +137,12 @@ export function SpinPage(): JSX.Element {
         code={`<Spin className="text-primary" />
 <Spin className="text-muted-foreground" />
 <Spin className="text-destructive" />
-<Spin className="text-emerald-400" />`}
+<Spin className={TONE.success} />`}
       >
         <Spin size={36} className="text-primary" />
         <Spin size={36} className="text-muted-foreground" />
         <Spin size={36} className="text-destructive" />
-        <Spin size={36} className="text-emerald-400" />
+        <Spin size={36} className={TONE.success} />
       </Preview>
 
       <H2>放进界面</H2>

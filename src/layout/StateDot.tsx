@@ -1,6 +1,7 @@
 "use client";
 
 import type { JSX } from "react";
+import { TONE } from "../constants";
 import { cn } from "../primitives/utils";
 
 /**
@@ -51,8 +52,8 @@ export interface StateDotProps {
  * 同行的说明文字天然同色, 不会出现"点是一个色、文字是另一个色"。
  */
 const TONE_CLASS: Record<StateTone, string> = {
-  ok: "text-emerald-500",
-  warn: "text-amber-500",
+  ok: TONE.success,
+  warn: TONE.warning,
   error: "text-destructive",
   idle: "text-muted-foreground/50",
   busy: "text-primary",

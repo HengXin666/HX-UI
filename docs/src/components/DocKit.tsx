@@ -206,7 +206,7 @@ export function Callout({
   children: ReactNode;
 }): JSX.Element {
   return (
-    <Card variant={kind === "warning" ? "default" : "muted"} className={cn("my-4", kind === "warning" && "border-amber-500/40")}>
+    <Card variant={kind === "warning" ? "default" : "muted"} className={cn("my-4", kind === "warning" && "border-warning/40")}>
       <CardHeader className="flex-row items-center gap-2 pb-0">
         <Badge variant={kind === "warning" ? "warning" : "default"}>{kind === "warning" ? "注意" : "提示"}</Badge>
         <CardTitle className="text-[13px]">{title}</CardTitle>

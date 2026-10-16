@@ -59,6 +59,16 @@ export {
   ConfirmDialog, ConfirmDialogHost, confirmDialog, ConfirmContext, useConfirmPending,
   type ConfirmDialogOptions, type ConfirmDialogProps,
 } from "./primitives/confirm-dialog";
+/**
+ * 管理页常用基础件与点按水波纹
+ * .agents/notes/implemented/feature/2026-10-17-dark-dimmed-retheme.md
+ */
+export { Checkbox } from "./primitives/checkbox";
+export { RadioGroup, RadioGroupItem } from "./primitives/radio-group";
+export { Pagination, paginationRange, type PageItem, type PaginationLabels, type PaginationProps } from "./primitives/pagination";
+export { Kbd, KbdGroup } from "./primitives/kbd";
+export { Alert, AlertDescription, AlertTitle, alertVariants, type AlertVariant } from "./primitives/alert";
+export { Ripple, spawnRipple, useRipple, type RippleComponentProps, type RippleSize, type UseRippleOptions } from "./primitives/ripple";
 export { type ClassValue, cn } from "./primitives/utils";
 
 // ── 蓝图 ──
@@ -271,5 +281,5 @@ export {
 } from "./layout/SettingsSidebarView";
 
 // ── 常量 ──
-// 库与文档站共用同一份字面量 (PROJECT-CONST-DUP), 目前文档站的表格列用到 USER.
-export { USER } from "./constants";
+// 库与文档站共用同一份字面量 (PROJECT-CONST-DUP), 目前文档站的表格列用到 USER, 状态色示例用到 TONE.
+export { TONE, USER } from "./constants";

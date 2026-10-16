@@ -1,5 +1,6 @@
 import type { JSX, ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { TONE } from "../constants";
 import { cn } from "../primitives/utils";
 import { Card, CardContent } from "./Card";
 
@@ -16,8 +17,8 @@ const statValueVariants = cva("mt-0.5 text-[length:var(--fs-3xl)] font-semibold 
   variants: {
     tone: {
       default: "text-foreground",
-      good: "text-emerald-400",
-      bad: "text-destructive",
+      good: TONE.successFg,
+      bad: TONE.dangerFg,
       muted: "text-muted-foreground",
       accent: "text-primary",
     },

@@ -94,15 +94,15 @@ export function SessionStatusDot({ status, label, className }: SessionStatusDotP
       {status === "running" ? (
         <span aria-hidden className={cn(RING, DOT, "size-3.5 text-primary animate-spin")} />
       ) : null}
-      {status === "unread" ? <span aria-hidden className={cn(DOT, "size-2 bg-emerald-500")} /> : null}
+      {status === "unread" ? <span aria-hidden className={cn(DOT, "size-2 bg-success")} /> : null}
       {status === "pending-input" ? (
         <>
           {/*
             呼吸层是独立的一层, 不是给圆点本体加动画: 本体 ping 会周期性消失,
             而"正在等待输入"恰恰是最需要它保持可见的时刻。与 StateDot 的 pulse 同构。
           */}
-          <span aria-hidden className={cn(DOT, "absolute size-2 bg-amber-500 opacity-60 animate-ping")} />
-          <span aria-hidden className={cn(DOT, "relative size-2 bg-amber-500")} />
+          <span aria-hidden className={cn(DOT, "absolute size-2 bg-warning opacity-60 animate-ping")} />
+          <span aria-hidden className={cn(DOT, "relative size-2 bg-warning")} />
         </>
       ) : null}
       <span className="sr-only">{label ?? DEFAULT_LABEL[status]}</span>

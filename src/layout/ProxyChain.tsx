@@ -61,12 +61,12 @@ const KIND_META: Record<ProxyLayer["kind"], { label: string; hint: string; dot: 
   group: {
     label: "策略",
     hint: "虚拟选择器  本身不持有服务器",
-    dot: "bg-amber-400",
+    dot: "bg-warning",
   },
   node: {
     label: "实体",
     hint: "真实上游服务器",
-    dot: "bg-emerald-400",
+    dot: "bg-success",
   },
 };
 

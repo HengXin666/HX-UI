@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { useId, type JSX, type SetStateAction } from "react";
+import { useRipple } from "../primitives/ripple";
 
 function cn(...parts: Array<string | false | null | undefined>): string {
 	return parts.filter(Boolean).join(" ");
@@ -39,6 +40,8 @@ export interface SegmentedControlProps<T extends string> {
 	className?: string;
 	/** 容器尺寸正在变化时设为 true，禁用指示器的 layout 动画，避免抖动 */
 	suppressLayoutAnimation?: boolean;
+	/** 点按水波纹. 默认 true. */
+	ripple?: boolean;
 }
 
 export function SegmentedControl<T extends string>({
@@ -47,8 +50,10 @@ export function SegmentedControl<T extends string>({
 	onChange,
 	className,
 	suppressLayoutAnimation = false,
+	ripple = true,
 }: SegmentedControlProps<T>): JSX.Element {
 	const layoutId = useId();
+	const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple });
 
 	return (
 		<div
@@ -64,6 +69,7 @@ export function SegmentedControl<T extends string>({
 						key={key}
 						type="button"
 						onClick={() => onChange(key)}
+						{...rippleProps}
 						className={cn(
 							"relative flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-[6px] px-2.5 py-[3px] text-[11px] font-medium leading-[16px] transition-colors duration-150 select-none",
 							active ? "text-foreground" : "text-muted-foreground hover:text-foreground/70",
@@ -88,7 +94,7 @@ export function SegmentedControl<T extends string>({
 							{icon && <span className={cn(icon, "h-3 w-3")} />}
 							{label}
 							{badge && badge > 0 ? (
-								<span className="ml-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-semibold leading-none text-white">
+								<span className="ml-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-danger-emphasis px-1 text-[9px] font-semibold leading-none text-destructive-foreground">
 									{badge > 99 ? "99+" : badge}
 								</span>
 							) : null}

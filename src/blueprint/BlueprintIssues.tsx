@@ -53,7 +53,7 @@ export function BlueprintIssues({
         <ul className="max-h-28 overflow-y-auto px-3 py-1.5">
           {[...errors, ...warnings].map((i, idx) => (
             <li key={idx} className="flex items-start gap-2 py-0.5 text-[11px]">
-              <span className={cn("shrink-0", i.level === "error" ? "text-destructive" : "text-amber-400")}>
+              <span className={cn("shrink-0", i.level === "error" ? "text-destructive" : "text-warning-fg")}>
                 {i.level === "error" ? "✕" : "!"}
               </span>
               <span className="text-foreground">{i.message}</span>

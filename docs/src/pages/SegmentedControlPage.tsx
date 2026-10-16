@@ -63,8 +63,8 @@ const items = [
       <H2>角标</H2>
       <P>
         <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">badge</code> 是未读数, 大于 99 显示 99+,
-        为 0 或 undefined 时不渲染。它只用红色实底  用的是 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">bg-red-500</code>,
-        因为红点是通用约定, 不走 token 反而更稳。文字角标请改用 Badge 组件。
+        为 0 或 undefined 时不渲染。它只用红色实底  用的是语义 token <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">bg-danger-emphasis</code>,
+        红点是通用约定, 走 token 是为了跟随换肤。文字角标请改用 Badge 组件。
       </P>
       <Preview
         align="start"
