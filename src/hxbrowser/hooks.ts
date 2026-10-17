@@ -101,6 +101,14 @@ export function useHxBrowserLiveEnvs(options: UseHxBrowserLiveEnvsOptions): HxBr
 	latest.current = options;
 	const inflight = useRef<AbortController | null>(null);
 
+	// A changed transport must not expose the previous service's environments while loading.
+	useEffect(() => {
+		setEnvs([]);
+		setError("");
+		setLoaded(false);
+		setLoading(true);
+	}, [baseUrl, apiKey]);
+
 	const reload = useCallback(() => {
 		inflight.current?.abort();
 		const ctl = new AbortController();

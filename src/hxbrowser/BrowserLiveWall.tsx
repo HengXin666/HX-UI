@@ -63,7 +63,7 @@ export function BrowserLiveWall({
 	const focused = view === FOCUS ? findFocused(envs, focusId) : null;
 
 	useEffect(() => {
-		if (view !== FOCUS || !focusedGone(envs, focusId, loaded, error)) return;
+		if (view !== FOCUS || focused || (!focusedGone(envs, focusId, loaded, error) && loaded)) return;
 		setView(GRID);
 		setFocusId("");
 		setNotice(L.focusedGone);
