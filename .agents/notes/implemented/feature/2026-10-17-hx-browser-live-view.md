@@ -28,7 +28,7 @@ hx-browser (HX-Jungle services/hx-browser) 提供多副本实时预览与远程�
 - 聚焦视图在页面转入后台时暂停推流, 瓦片在滚出视口或页面转入后台时暂停. 瓦片画面 object-contain, 不裁切.
 - 鼠标按下后在 window 上接管 move / up, 拖出画面松开也转发 up (坐标由服务端夹回); move 带按下时记录的按钮, 右键拖动不会变成左键拖动. 已转发 keydown 的键在失焦, 窗口失焦, 关闭捕获和卸载时补发 keyUp.
 - 视觉只用库内组件与语义 token, 图标用 lucide; 水波纹只在按钮, 标签条与分段控件上 (沿用这些组件的默认), 画面容器与瓦片画面不加.
-- 单测在 `scripts/tests/hxbrowser/`, node:test 加假 WebSocket 与手动时钟驱动 core; resolve 钩子只给无扩展名相对导入补 .ts. 接入 ci.json 的 tests 与影响图, src 改动会选中它.
+- 单测在 `scripts/tests/hxbrowser/`, node:test 加假 WebSocket 与手动时钟驱动 core; resolve 钩子在相对导入首次解析失败后依次尝试补 `.ts` 和 `/index.ts`，当前实现不限制输入必须无扩展名. 接入 ci.json 的 tests 与影响图, src 改动会选中它.
 
 ## Alternatives considered
 
