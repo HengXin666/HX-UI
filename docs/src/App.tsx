@@ -20,6 +20,7 @@ import { useHashRoute } from "./router";
 import { CardPage } from "./pages/CardPage";
 import { CodeBlockPage } from "./pages/CodeBlockPage";
 import { BadgePage } from "./pages/BadgePage";
+import { BrowserLivePage } from "./pages/BrowserLivePage";
 import { SidebarNavPage } from "./pages/SidebarNavPage";
 import { SelectPage } from "./pages/SelectPage";
 import { DialogPage } from "./pages/DialogPage";
@@ -54,6 +55,7 @@ import { BlueprintDshPage } from "./pages/BlueprintDshPage";
  * 文档站本身就是这套库的第一个使用方, 它长什么样就是库长什么样。
  * 加一个组件 = nav.ts 加一行 + 下面 switch 加一个分支。
  * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
+ * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
  */
 function renderPage(entry: DocEntry): JSX.Element {
   switch (entry.id) {
@@ -95,6 +97,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "stat-card": return <DataTablePage />;
     case "empty-state":
     case "page-header": return <ChromePage />;
+    case "browser-live": return <BrowserLivePage />;
     case "blueprint": return <BlueprintPage />;
     case "blueprint-dsh": return <BlueprintDshPage />;
     default: return <PlaceholderPage label={entry.label} desc={entry.desc} />;

@@ -48,8 +48,9 @@ export const DOCS: readonly DocEntry[] = [
   { id: "stat-card", label: "StatCard / StatGrid", group: "版式件", desc: "指标卡与栅格, 数字等宽不抖" },
   { id: "empty-state", label: "EmptyState / DataBoundary", group: "版式件", desc: "空/错误/加载三态, 顺序固定" },
   { id: "page-header", label: "PageHeader", group: "版式件", desc: "页头: 标题 + 说明 + 右侧操作位" },
+  { id: "browser-live", label: "BrowserLive", group: "集成", desc: "hx-browser 多副本实时预览与远程操作" },
   { id: "blueprint", label: "Blueprint", group: "蓝图", desc: "节点图编辑器: 自定义节点 / 连接合法性判定 / 执行流" },
   { id: "blueprint-dsh", label: "dsh agent loop", group: "蓝图", desc: "把 dsh 的整个 agent loop 画成一张蓝图 (使用方演示包)" },
 ];
 
-export const GROUPS: readonly string[] = ["基础", "示例", "基础件", "版式件", "蓝图"];
+export const GROUPS: readonly string[] = ["基础", "示例", "基础件", "版式件", "集成", "蓝图"];
