@@ -56,7 +56,8 @@ export function liveSessionUrl(
 	const query = new URLSearchParams({ [QUERY_PRESET]: preset });
 	if (transport.apiKey) query.set(QUERY_KEY, transport.apiKey);
 	if (transport.wsUrlBuilder) return transport.wsUrlBuilder(path, query);
-	const url = new URL(transport.baseUrl + path, currentOrigin(transport));
+	const baseUrl = transport.baseUrl.replace(/\/+$/, "");
+	const url = new URL(baseUrl + path, currentOrigin(transport));
 	url.protocol = url.protocol === HTTPS ? SECURE_WS : PLAIN_WS;
 	url.search = query.toString();
 	return url.toString();
@@ -64,7 +65,7 @@ export function liveSessionUrl(
 
 /** 在跑副本列表的 HTTP 地址 (相对 baseUrl 原样保留为相对地址). */
 export function liveEnvsUrl(transport: HxBrowserTransport): string {
-	return transport.baseUrl + LIVE_ENVS_PATH;
+	return transport.baseUrl.replace(/\/+$/, "") + LIVE_ENVS_PATH;
 }
 
 interface Envelope {
