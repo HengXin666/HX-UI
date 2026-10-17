@@ -81,7 +81,7 @@ function DropdownMenuRadioItem({
 			{...props}
 			{...rippleProps}
 		>
-			<span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center text-primary">
+			<span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center text-link">
 				<DropdownMenuPrimitive.ItemIndicator>
 					<CheckIcon className="size-3.5" />
 				</DropdownMenuPrimitive.ItemIndicator>

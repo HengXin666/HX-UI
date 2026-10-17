@@ -58,6 +58,8 @@
   --color-danger-emphasis: var(--danger-emphasis);
   --color-danger-fg: var(--danger-fg);
   --color-done: var(--done);
+  /* 固定深底代码块上的成功色, 不随主题切换 */
+  --color-code-success: var(--code-success);
 
   /* 动效令牌桥接: duration-(--duration-fast) 之外, ease-out 工具类也指向同一条曲线 */
   --ease-out: var(--ease-out);

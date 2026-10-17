@@ -30,13 +30,19 @@
   --secondary-foreground: rgb(173, 186, 199);  /* #adbac7 */
   /* muted 是内嵌层 (输入框底 / 代码块底), 比页面更深一档 */
   --muted: rgb(28, 33, 40);  /* #1c2128 */
-  --muted-foreground: rgb(118, 131, 144);  /* #768390 */
+  /* 说明文字: 取 Dimmed 灰阶上一档 #909dab 而不是 Primer 的 fg.muted #768390,
+     后者在页面底上只有 3.9:1, 达不到正文 4.5:1; #909dab 在页面 / 内嵌 / 弹层底上都过 4.5:1 */
+  --muted-foreground: rgb(144, 157, 171);  /* #909dab */
   /* accent 是悬停层 */
   --accent: rgb(45, 51, 59);  /* #2d333b */
   --accent-foreground: rgb(205, 217, 229);  /* #cdd9e5 */
   /* 标题与强调文字: 比正文亮一档 */
   --heading: rgb(205, 217, 229);  /* #cdd9e5 */
-  --destructive: rgb(229, 83, 75);  /* #e5534b */
+  /* destructive 主要当文字 / 图标 / 描边用 (text-destructive), 取 danger-fg 的亮红,
+     页面底上 5.3:1; #e5534b 做文字只有 4.1:1.
+     destructive-foreground 是红色实底上的白字, 搭配的实底是 bg-danger-emphasis (5.0:1),
+     不要拿它配 bg-destructive: 亮红实底上的白字对比不够 */
+  --destructive: rgb(244, 112, 103);  /* #f47067 */
   --destructive-foreground: rgb(255, 255, 255);  /* #ffffff */
   /* 控件悬停: 比 secondary 亮一档, 默认按钮与次级按钮的 hover 底 */
   --control-hover: rgb(55, 62, 71);  /* #373e47 */
@@ -133,6 +139,13 @@
   --segment-3: oklch(0.62 0.14 165);
   --segment-4: oklch(0.62 0.14 95);
   --segment-5: oklch(0.62 0.14 25);
+}
+
+/* 代码块外壳固定用 One Dark Pro 深底 (CodeBlock 的 ONE_DARK_PRO), 不随主题切换,
+   画在它上面的状态色也必须固定: 随主题变化的 success-fg 在亮色下是深绿, 落在深底上读不清.
+   取 One Dark Pro 的字符串绿, 只在 :root 定义一次, 亮色不覆盖. */
+:root {
+  --code-success: rgb(152, 195, 121);  /* #98c379 */
 }
 
 /* ============================================================================

@@ -196,7 +196,7 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: strin
           <button
             type="button"
             onClick={() => { item.action?.onClick(); onDismiss(item.id); }}
-            className="mt-1.5 text-[12px] font-medium text-primary transition-colors hover:text-primary/80"
+            className="mt-1.5 text-[12px] font-medium text-link transition-colors hover:text-link/80"
           >
             {item.action.label}
           </button>

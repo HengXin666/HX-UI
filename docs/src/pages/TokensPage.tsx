@@ -119,7 +119,7 @@ export function TokensPage(): JSX.Element {
         ].map(([use, cls]) => (
           <div key={cls} className="flex items-center justify-between border-b border-border/40 px-3 py-2 last:border-0">
             <span className="text-muted-foreground">{use}</span>
-            <code className="font-mono text-primary">{cls}</code>
+            <code className="font-mono text-link">{cls}</code>
           </div>
         ))}
       </div>

@@ -281,5 +281,8 @@ export {
 } from "./layout/SettingsSidebarView";
 
 // ── 常量 ──
-// 库与文档站共用同一份字面量 (PROJECT-CONST-DUP), 目前文档站的表格列用到 USER, 状态色示例用到 TONE.
+/**
+ * 库与文档站共用同一份字面量 (PROJECT-CONST-DUP), 目前文档站的表格列用到 USER, 状态色示例用到 TONE.
+ * .agents/notes/implemented/architecture/2026-10-15-constant-library.md
+ */
 export { TONE, USER } from "./constants";

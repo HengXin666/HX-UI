@@ -139,14 +139,14 @@ function AppearancePanel(): JSX.Element {
                 (active ? "border-primary/50 bg-primary/10" : "border-border/60 hover:border-primary/40 hover:bg-accent/40")
               }
             >
-              <span className={(active ? "text-primary " : "text-muted-foreground ") + m.icon + " size-4 shrink-0"} />
+              <span className={(active ? "text-link " : "text-muted-foreground ") + m.icon + " size-4 shrink-0"} />
               <div className="min-w-0 flex-1 pr-5">
                 <div className="text-[12px] font-medium text-foreground">{m.label}</div>
                 <div className="truncate text-[11px] text-muted-foreground">{m.hint}</div>
               </div>
               {active && (
                 <span className="absolute right-2 top-2 grid size-5 place-items-center rounded-full bg-background/85 shadow-sm backdrop-blur-sm">
-                  <span className="icon-[solar--check-circle-linear] size-3.5 text-primary" />
+                  <span className="icon-[solar--check-circle-linear] size-3.5 text-link" />
                 </span>
               )}
             </button>
@@ -215,7 +215,7 @@ export function SettingsPageDemo(): JSX.Element {
                           : "text-foreground hover:bg-accent/50")
                       }
                     >
-                      <span className={(n.key === "settings" ? "text-primary " : "text-muted-foreground ") + n.icon + " size-4 shrink-0"} />
+                      <span className={(n.key === "settings" ? "text-link " : "text-muted-foreground ") + n.icon + " size-4 shrink-0"} />
                       <span className="min-w-0 flex-1 truncate">{n.label}</span>
                     </button>
                   ))}

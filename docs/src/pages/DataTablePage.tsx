@@ -38,7 +38,7 @@ const COLUMNS: readonly DataTableColumn<Acct>[] = [
         href={"https://github.com/" + r.user}
         target="_blank"
         rel="noreferrer noopener"
-        className="font-mono text-[12px] text-foreground underline-offset-2 hover:text-primary hover:underline"
+        className="font-mono text-[12px] text-foreground underline-offset-2 hover:text-link hover:underline"
       >
         {r.user}
       </a>

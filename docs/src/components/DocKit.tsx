@@ -183,7 +183,7 @@ export function PropsTable({
         <tbody>
           {rows.map((r) => (
             <tr key={r.name} className="border-b border-border/40 last:border-0">
-              <td className="px-3 py-2 font-mono text-primary">{r.name}</td>
+              <td className="px-3 py-2 font-mono text-link">{r.name}</td>
               <td className="px-3 py-2 font-mono text-muted-foreground/90">{r.type}</td>
               <td className="px-3 py-2 font-mono text-muted-foreground/70">{r.default ?? "-"}</td>
               <td className="px-3 py-2 text-foreground/85">{r.desc}</td>

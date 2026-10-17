@@ -62,7 +62,7 @@ const STATUS_DOT: Record<StepStatus, string> = {
   done: "bg-primary text-primary-foreground",
   active: "bg-primary text-primary-foreground",
   pending: "bg-muted-foreground/20 text-muted-foreground",
-  error: "bg-destructive text-destructive-foreground",
+  error: "bg-danger-emphasis text-destructive-foreground",
 };
 
 /** 自动推断状态: current 之前是 done, 等于 current 是 active, 之后是 pending。 */

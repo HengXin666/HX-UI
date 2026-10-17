@@ -20,7 +20,7 @@ const buttonVariants = cva(
 				ghost: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
 				destructive:
 					"border-danger/40 bg-danger/10 text-danger-fg hover:border-danger/60 hover:bg-danger/20",
-				link: "text-primary underline-offset-4 hover:underline",
+				link: "text-link underline-offset-4 hover:underline",
 			},
 			size: {
 				default:

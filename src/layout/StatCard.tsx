@@ -20,7 +20,7 @@ const statValueVariants = cva("mt-0.5 text-[length:var(--fs-3xl)] font-semibold 
       good: TONE.successFg,
       bad: TONE.dangerFg,
       muted: "text-muted-foreground",
-      accent: "text-primary",
+      accent: "text-link",
     },
   },
   defaultVariants: { tone: "default" },

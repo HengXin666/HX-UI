@@ -2,7 +2,7 @@
 
 import { motion } from "motion/react";
 import { useId, type JSX, type SetStateAction } from "react";
-import { useRipple } from "../primitives/ripple";
+import { rippleAttribute, useRipple } from "../primitives/ripple";
 
 function cn(...parts: Array<string | false | null | undefined>): string {
 	return parts.filter(Boolean).join(" ");
@@ -44,6 +44,9 @@ export interface SegmentedControlProps<T extends string> {
 	ripple?: boolean;
 }
 
+/** 分段按钮里的波纹裁剪层; 只认按钮的直接子节点. */
+const RIPPLE_LAYER_SELECTOR = ":scope > [data-ripple]";
+
 export function SegmentedControl<T extends string>({
 	items,
 	value,
@@ -53,7 +56,15 @@ export function SegmentedControl<T extends string>({
 	ripple = true,
 }: SegmentedControlProps<T>): JSX.Element {
 	const layoutId = useId();
-	const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple });
+	/*
+	 * 波纹插进按钮里铺满的裁剪层, 而不是按钮本身: 按钮挂 data-ripple 会被加上
+	 * overflow: hidden, 选中滑块 (layoutId 共享布局) 从旧分段滑过来的途中落在新按钮
+	 * 外的部分会被裁掉, 只剩新分段边缘里冒出的半截.
+	 */
+	const rippleProps = useRipple<HTMLButtonElement>({
+		enabled: ripple,
+		container: (host) => host.querySelector<HTMLElement>(RIPPLE_LAYER_SELECTOR),
+	});
 
 	return (
 		<div
@@ -84,6 +95,13 @@ export function SegmentedControl<T extends string>({
 										? { duration: 0 }
 										: { type: "spring", stiffness: 480, damping: 32, mass: 0.8 }
 								}
+							/>
+						)}
+						{ripple && (
+							<span
+								aria-hidden
+								data-ripple={rippleAttribute()}
+								className="pointer-events-none absolute inset-0 rounded-[6px]"
 							/>
 						)}
 						<motion.span

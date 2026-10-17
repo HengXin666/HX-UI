@@ -7,13 +7,14 @@ import { cn } from "./utils";
  * 提示条 (页内常驻的说明 / 警告 / 错误, 不是 Toast 那种会消失的消息).
  *
  * 正文保持前景色, 只有边框, 浅色底与图标带语义色: 整块文字都染色会让长说明难读.
- * 第一个子元素是 svg 时自动排成"图标 | 标题 + 描述"两列, 没有图标则单列.
+ * 有 svg 直接子元素时才切成 grid, 排成"图标 | 标题 + 描述"两列; 没有图标时是单列 flex,
+ * 纯文本子节点直接占满宽度 (不能用一个 0 宽首列的 grid 兜底, 文字会被挤进 0 宽列竖排溢出).
  * danger 与 warning 用 role="alert" 让读屏立即播报, 其余用 role="status".
  */
 const alertVariants = cva(
 	[
-		"relative grid w-full grid-cols-[0_1fr] items-start gap-y-0.5 rounded-lg border px-3 py-2.5 text-[13px] text-foreground",
-		"has-[>svg]:grid-cols-[16px_1fr] has-[>svg]:gap-x-2.5 [&>svg]:size-4 [&>svg]:translate-y-0.5",
+		"relative flex w-full flex-col gap-y-0.5 rounded-lg border px-3 py-2.5 text-[13px] text-foreground",
+		"has-[>svg]:grid has-[>svg]:grid-cols-[16px_1fr] has-[>svg]:items-start has-[>svg]:gap-x-2.5 [&>svg]:size-4 [&>svg]:translate-y-0.5",
 	],
 	{
 		variants: {

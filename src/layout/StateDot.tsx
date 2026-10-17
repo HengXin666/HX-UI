@@ -44,9 +44,10 @@ export interface StateDotProps {
 /**
  * 五档语气对应的颜色。
  *
- * ok / warn / error 用原色 (emerald / amber / red), 因为它们是**语义色**而不是
- * 调色板色: 绿=正常、黄=注意、红=故障是跨产品的共识, 换主题时也不该改。
- * idle / busy 用中性 token: 它们表达的是"没有状态"与"过渡中", 不该抢注意力。
+ * ok / warn / error 用语义状态 token (success / warning / destructive), 不用调色盘色:
+ * 绿=正常、黄=注意、红=故障是跨产品的共识, 色相不变, 但明度要随主题调到底色上可读.
+ * idle 用中性 token, busy 用 link 蓝: 它们表达的是"没有状态"与"过渡中", 不该抢注意力;
+ * busy 不用 primary, 因为暗色 primary 是实底蓝, 在深灰底上做前景对比不够.
  *
  * `bg-current` 配 `text-*`: 颜色只由一个 text 类决定, 圆点、呼吸圈、以及将来
  * 同行的说明文字天然同色, 不会出现"点是一个色、文字是另一个色"。
@@ -56,7 +57,7 @@ const TONE_CLASS: Record<StateTone, string> = {
   warn: TONE.warning,
   error: "text-destructive",
   idle: "text-muted-foreground/50",
-  busy: "text-primary",
+  busy: "text-link",
 };
 
 export function StateDot({ tone, label, pulse, className }: StateDotProps): JSX.Element {

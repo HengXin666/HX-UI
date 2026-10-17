@@ -75,7 +75,7 @@ export function SidebarNavBadgeView({ badge, className }: {
   if (badge.variant === "text") {
     return (
       <span className={cn(
-        "shrink-0 rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-semibold uppercase leading-tight tracking-wide text-primary",
+        "shrink-0 rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-semibold uppercase leading-tight tracking-wide text-link",
         className,
       )}>
         {badge.text}
@@ -84,7 +84,7 @@ export function SidebarNavBadgeView({ badge, className }: {
   }
   return (
     <span className={cn(
-      "grid min-w-4 shrink-0 place-items-center rounded-full bg-primary/15 px-1 text-[10px] font-medium leading-4 text-primary",
+      "grid min-w-4 shrink-0 place-items-center rounded-full bg-primary/15 px-1 text-[10px] font-medium leading-4 text-link",
       className,
     )}>
       {badge.text}

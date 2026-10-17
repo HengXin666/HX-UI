@@ -19,6 +19,12 @@ interface UseRippleOptions<T extends HTMLElement> {
 	onPointerDown?: React.PointerEventHandler<T>;
 	/** 调用方自己的按键回调, 会先于波纹执行. */
 	onKeyDown?: React.KeyboardEventHandler<T>;
+	/**
+	 * 波纹插入的裁剪层. 省略时插进宿主自身, 宿主挂 data-ripple 并被 overflow: hidden 裁剪.
+	 * 宿主里有需要越界显示的内容 (例如 layoutId 共享布局的滑块) 时, 传一个找到铺满宿主的
+	 * 子层的函数: 宿主不再挂 data-ripple, 由调用方给那个子层挂 data-ripple, 裁剪只作用于波纹.
+	 */
+	container?: (host: T) => HTMLElement | null;
 }
 
 type RippleProps<T extends HTMLElement> = RippleAttribute & {
@@ -29,6 +35,11 @@ type RippleProps<T extends HTMLElement> = RippleAttribute & {
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 const KEYS_THAT_ACTIVATE: ReadonlyArray<string> = [KEY.enter, KEY.space];
 const PRIMARY_BUTTON = 0;
+
+/** 宿主或裁剪层上 data-ripple 的取值: 图标尺寸用更淡的一档. */
+function rippleAttribute(size: RippleSize = VARIANT.default): string {
+	return size === VARIANT.icon ? RIPPLE.icon : RIPPLE.on;
+}
 
 /** 只在事件回调里调用, 此时一定在浏览器; matchMedia 缺失 (旧测试环境) 时按未开启处理. */
 function prefersReducedMotion(): boolean {
@@ -49,13 +60,14 @@ function isInert(host: HTMLElement): boolean {
  *
  * 直接操作 DOM 而不是放进 React state: 波纹是纯装饰, 不参与渲染结果,
  * 走 state 会让每次点击都多一次宿主重渲染, 且 asChild 时没有地方放子节点.
- * 坐标相对宿主的 border box, 所以宿主必须是定位容器 (data-ripple 的 CSS 负责).
+ * 坐标相对 layer 的 border box, 所以 layer 必须是定位容器 (data-ripple 的 CSS 负责).
+ * layer 默认是宿主自身; 禁用态始终按宿主判断.
  */
-function spawnRipple(host: HTMLElement, clientX: number, clientY: number): void {
+function spawnRipple(host: HTMLElement, clientX: number, clientY: number, layer: HTMLElement = host): void {
 	if (isInert(host) || prefersReducedMotion()) {
 		return;
 	}
-	const rect = host.getBoundingClientRect();
+	const rect = layer.getBoundingClientRect();
 	const diameter = Math.hypot(rect.width, rect.height) * RIPPLE.diameterFactor;
 	const span = document.createElement("span");
 	span.className = RIPPLE.className;
@@ -67,7 +79,7 @@ function spawnRipple(host: HTMLElement, clientX: number, clientY: number): void 
 	const remove = (): void => span.remove();
 	span.addEventListener("animationend", remove, { once: true });
 	span.addEventListener("animationcancel", remove, { once: true });
-	host.appendChild(span);
+	layer.appendChild(span);
 }
 
 /**
@@ -84,18 +96,20 @@ function useRipple<T extends HTMLElement>({
 	size = VARIANT.default,
 	onPointerDown,
 	onKeyDown,
+	container,
 }: UseRippleOptions<T> = {}): RippleProps<T> {
 	if (!enabled) {
 		return { onPointerDown, onKeyDown };
 	}
+	const layerOf = (host: T): HTMLElement => container?.(host) ?? host;
 	return {
-		"data-ripple": size === VARIANT.icon ? RIPPLE.icon : RIPPLE.on,
+		"data-ripple": container === undefined ? rippleAttribute(size) : undefined,
 		onPointerDown: (event) => {
 			onPointerDown?.(event);
 			if (event.defaultPrevented || event.button !== PRIMARY_BUTTON) {
 				return;
 			}
-			spawnRipple(event.currentTarget, event.clientX, event.clientY);
+			spawnRipple(event.currentTarget, event.clientX, event.clientY, layerOf(event.currentTarget));
 		},
 		onKeyDown: (event) => {
 			onKeyDown?.(event);
@@ -103,7 +117,12 @@ function useRipple<T extends HTMLElement>({
 				return;
 			}
 			const rect = event.currentTarget.getBoundingClientRect();
-			spawnRipple(event.currentTarget, rect.left + rect.width / HALF_DIVISOR, rect.top + rect.height / HALF_DIVISOR);
+			spawnRipple(
+				event.currentTarget,
+				rect.left + rect.width / HALF_DIVISOR,
+				rect.top + rect.height / HALF_DIVISOR,
+				layerOf(event.currentTarget),
+			);
 		},
 	};
 }
@@ -123,5 +142,5 @@ function Ripple({ ripple = true, size, onPointerDown, onKeyDown, ...props }: Rip
 	return <Slot.Root {...props} {...rippleProps} />;
 }
 
-export { Ripple, spawnRipple, useRipple };
+export { Ripple, rippleAttribute, spawnRipple, useRipple };
 export type { RippleComponentProps, RippleSize, UseRippleOptions };

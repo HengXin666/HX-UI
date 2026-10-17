@@ -77,6 +77,9 @@ export const KEY = {
   space: " ",
 } as const;
 
+/** 按钮的 type: 显式写 button, 放进 form 里点击不会触发提交. */
+export const BUTTON_TYPE = "button";
+
 /** 求中心点时的除数. */
 export const HALF_DIVISOR = 2;
 

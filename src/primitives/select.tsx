@@ -139,7 +139,7 @@ function SelectItem({
 			{...props}
 			{...rippleProps}
 		>
-			<span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center text-primary">
+			<span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center text-link">
 				<SelectPrimitive.ItemIndicator>
 					<CheckIcon className="pointer-events-none size-3.5" />
 				</SelectPrimitive.ItemIndicator>

@@ -75,7 +75,7 @@ function Avatar({ role }: { readonly role: ChatRole }): JSX.Element {
         "flex size-7 shrink-0 items-center justify-center rounded-full border text-[11px] font-medium",
         role === USER
           ? "border-border bg-accent/60 text-foreground"
-          : "border-border bg-primary/10 text-primary",
+          : "border-border bg-primary/10 text-link",
       )}
     >
       {role === USER ? "U" : role === "assistant" ? "H" : "S"}
