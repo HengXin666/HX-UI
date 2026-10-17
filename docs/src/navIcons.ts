@@ -48,6 +48,7 @@ export const NAV_ICONS: Record<string, string> = {
   "stat-card": "icon-[solar--chart-square-linear]",
   "empty-state": "icon-[solar--inbox-linear]",
   "page-header": "icon-[solar--align-left-linear]",
+  "browser-live": "icon-[solar--screencast-linear]",
   blueprint: "icon-[solar--mask-happy-linear]",
   "blueprint-dsh": "icon-[solar--graph-linear]",
 };

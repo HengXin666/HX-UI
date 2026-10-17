@@ -29,6 +29,7 @@
     "impact": { "id": "impact", "command": ["node", "scripts/quality/index.ts", "graph"], "format": "exit" },
     "tests": [
         { "id": "quality:probes", "command": ["node", "scripts/quality/checks/probes.ts"], "format": "exit" },
+        { "id": "hxbrowser:unit", "command": ["node", "--import", "./scripts/tests/hxbrowser/register.ts", "--test", "scripts/tests/hxbrowser/*.test.ts"], "format": "exit" },
         { "id": "docs:icons", "command": ["node", "docs/scripts/check-icons.ts"], "format": "exit" },
         { "id": "docs:smoke", "command": ["node", "scripts/check-smoke.ts", "--strict"], "format": "exit" },
         { "id": "docs:shell", "command": ["node", "scripts/check-shell.ts", "--strict"], "format": "exit" }

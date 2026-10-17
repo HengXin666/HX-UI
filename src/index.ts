@@ -280,6 +280,14 @@ export {
   type SettingsSidebarChildItem,
 } from "./layout/SettingsSidebarView";
 
+// ── hx-browser 实时预览 ──
+/**
+ * hx-browser 多副本实时预览与远程操作: 协议客户端, 钩子与平铺墙 / 聚焦视图组件.
+ *
+ * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
+ */
+export * from "./hxbrowser";
+
 // ── 常量 ──
 /**
  * 库与文档站共用同一份字面量 (PROJECT-CONST-DUP), 目前文档站的表格列用到 USER, 状态色示例用到 TONE.

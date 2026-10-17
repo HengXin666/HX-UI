@@ -155,7 +155,12 @@ const typecheck: Rule = {
 
 export const graphRules: Rule[] = [cycle, typecheck];
 
-/** Impact graph for the vendored selector: AST import edges plus module to test mapping. */
+/**
+ * Impact graph for the vendored selector: AST import edges plus module to test mapping.
+ * src 与 scripts/tests 的改动都会选中 hxbrowser:unit (假 WebSocket 单测, 不需要浏览器).
+ *
+ * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
+ */
 export function impactGraph(snapshot: Snapshot): Graph {
     const graph = importGraph(snapshot);
     const inputs: Record<string, string[]> = {};
@@ -163,11 +168,13 @@ export function impactGraph(snapshot: Snapshot): Graph {
         inputs[path] = targets;
     }
     const smoke = ["docs:smoke", "docs:shell"];
+    const unit = "hxbrowser:unit";
     return {
         complete: graph.unresolved.length === 0,
         inputs,
         modules: {
-            lib: { paths: ["src"], tests: smoke, dependsOn: [], contracts: [] },
+            lib: { paths: ["src"], tests: [unit, ...smoke], dependsOn: [], contracts: [] },
+            unit: { paths: ["scripts/tests"], tests: [unit], dependsOn: ["lib"], contracts: [] },
             docs: { paths: ["docs/src", "docs/scripts"], tests: ["docs:icons", ...smoke], dependsOn: ["lib"], contracts: [] },
             e2e: { paths: ["scripts/check-smoke.ts", "scripts/check-shell.ts", "scripts/constants"], tests: smoke, dependsOn: [], contracts: [] },
             quality: {
