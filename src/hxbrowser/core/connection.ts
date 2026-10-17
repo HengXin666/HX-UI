@@ -141,6 +141,11 @@ export class LiveConnection {
 		this.opts.onChange(this.snap);
 	}
 
+	private clearSession(): void {
+		this.snap = { ...this.snap, frame: "", meta: null, tabs: [] };
+		this.opts.onChange(this.snap);
+	}
+
 	private clearTimers(): void {
 		if (this.retryTimer !== null) this.timers.clear(this.retryTimer);
 		if (this.stableTimer !== null) this.timers.clear(this.stableTimer);
@@ -151,6 +156,7 @@ export class LiveConnection {
 	private open(): void {
 		const { transport, envId, preset } = this.opts;
 		const Impl = transport.WebSocketImpl ?? WebSocket;
+		this.clearSession();
 		this.update({ status: LIVE_STATUS.connecting });
 		const ws = new Impl(liveSessionUrl(transport, envId, preset));
 		this.ws = ws;
@@ -191,6 +197,7 @@ export class LiveConnection {
 		if (ws !== this.ws) return;
 		this.ws = null;
 		this.clearTimers();
+		this.clearSession();
 		if (this.disposed) return;
 		if (NO_RETRY_CLOSE_CODES.has(code)) {
 			this.update({ status: LIVE_STATUS.refused });
