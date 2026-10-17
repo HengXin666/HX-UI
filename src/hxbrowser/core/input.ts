@@ -77,12 +77,12 @@ const NO_MODIFIERS: ModifierState = { altKey: false, ctrlKey: false, metaKey: fa
  * 对应的释放事件, 由 releaseAll 一次补齐.
  */
 export class HeldInputs {
-	private button: MouseButtonName | null = null;
+	private readonly buttons = new Set<MouseButtonName>();
 	private lastPointer: PointerSample | null = null;
 	private readonly keys = new Map<string, KeySample>();
 
 	get pressedButton(): MouseButtonName | null {
-		return this.button;
+		return this.buttons.values().next().value ?? null;
 	}
 
 	get heldKeyCount(): number {
@@ -90,7 +90,7 @@ export class HeldInputs {
 	}
 
 	pressButton(button: MouseButtonName, at: PointerSample): void {
-		this.button = button;
+		this.buttons.add(button);
 		this.lastPointer = at;
 	}
 
@@ -98,11 +98,10 @@ export class HeldInputs {
 		this.lastPointer = at;
 	}
 
-	/** 释放鼠标; 返回被释放的按钮 (之前没有按下则为 null, 调用方不发 up). */
-	releaseButton(): MouseButtonName | null {
-		const b = this.button;
-		this.button = null;
-		return b;
+	/** 释放指定鼠标按钮; 未按下则返回 null. */
+	releaseButton(button: MouseButtonName): MouseButtonName | null {
+		if (!this.buttons.delete(button)) return null;
+		return button;
 	}
 
 	pressKey(k: KeySample): void {
@@ -117,12 +116,14 @@ export class HeldInputs {
 	/** 为所有仍按着的输入生成释放消息, 并清空记账. rect 为空时只补按键, 鼠标按下态保留. */
 	releaseAll(rect: SurfaceRect | null): Array<LiveMouseMessage | LiveKeyMessage> {
 		const out: Array<LiveMouseMessage | LiveKeyMessage> = [];
-		const button = rect === null ? null : this.releaseButton();
-		if (button !== null && rect !== null && this.lastPointer !== null) {
-			out.push(
-				mouseMessage(MOUSE_ACTION.up, rect, { ...this.lastPointer, ...NO_MODIFIERS }, { button, clickCount: 1 }),
-			);
+		if (rect !== null && this.lastPointer !== null) {
+			for (const button of this.buttons) {
+				out.push(
+					mouseMessage(MOUSE_ACTION.up, rect, { ...this.lastPointer, ...NO_MODIFIERS }, { button, clickCount: 1 }),
+				);
+			}
 		}
+		if (rect !== null) this.buttons.clear();
 		for (const k of this.keys.values()) {
 			out.push(keyMessage(KEY_ACTION.up, { ...k, ...NO_MODIFIERS }));
 		}
