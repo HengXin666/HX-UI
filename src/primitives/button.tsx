@@ -3,22 +3,24 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
+import { VARIANT } from "../constants";
+import { useRipple } from "./ripple";
 import { cn } from "./utils";
 
 const buttonVariants = cva(
-	"group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+	"group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,opacity,transform] duration-(--duration-fast) ease-out outline-none select-none focus-visible:border-ring active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 	{
 		variants: {
 			variant: {
-				default: "bg-foreground text-background hover:opacity-85",
+				default: "border-border bg-secondary text-foreground hover:bg-control-hover aria-expanded:bg-control-hover",
 				primary: "bg-primary text-primary-foreground hover:bg-primary/90",
 				outline:
 					"border-border bg-transparent text-foreground hover:bg-accent/50 aria-expanded:bg-accent/50",
-				secondary: "bg-secondary text-foreground hover:bg-accent",
+				secondary: "bg-secondary text-foreground hover:bg-control-hover",
 				ghost: "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
 				destructive:
-					"bg-red-500/10 text-red-500 hover:bg-red-500/20 dark:bg-red-500/20 dark:hover:bg-red-500/30",
-				link: "text-primary underline-offset-4 hover:underline",
+					"border-danger/40 bg-danger/10 text-danger-fg hover:border-danger/60 hover:bg-danger/20",
+				link: "text-link underline-offset-4 hover:underline",
 			},
 			size: {
 				default:
@@ -41,17 +43,36 @@ const buttonVariants = cva(
 	},
 );
 
+/** 不出波纹的变体: link 的视觉是一段文字, 波纹会让它看起来像按钮. */
+const NO_RIPPLE_VARIANTS: ReadonlyArray<string> = [VARIANT.link];
+
+/**
+ * 按钮.
+ *
+ * ripple 默认开启 (link 变体除外), 传 ripple={false} 关闭; 图标尺寸自动用更淡的波纹.
+ */
 function Button({
 	className,
 	variant = "default",
 	size = "default",
 	asChild = false,
+	ripple = true,
+	onPointerDown,
+	onKeyDown,
 	...props
 }: React.ComponentProps<"button"> &
 	VariantProps<typeof buttonVariants> & {
 		asChild?: boolean;
+		/** 点按水波纹. 默认 true. */
+		ripple?: boolean;
 	}) {
 	const Comp = asChild ? Slot.Root : "button";
+	const rippleProps = useRipple<HTMLButtonElement>({
+		enabled: ripple && !NO_RIPPLE_VARIANTS.includes(variant ?? ""),
+		size: size?.startsWith(VARIANT.icon) ? VARIANT.icon : VARIANT.default,
+		onPointerDown,
+		onKeyDown,
+	});
 
 	return (
 		<Comp
@@ -60,6 +81,7 @@ function Button({
 			data-size={size}
 			className={cn(buttonVariants({ variant, size, className }))}
 			{...props}
+			{...rippleProps}
 		/>
 	);
 }

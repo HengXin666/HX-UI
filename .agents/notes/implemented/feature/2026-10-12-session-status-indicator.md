@@ -38,10 +38,13 @@ export type SessionStatus = "running" | "unread" | "idle" | "pending-input";
 
 | status | 视觉 | 语义 |
 |---|---|---|
-| `running` | 主色弧线 + `animate-spin` | 正在执行 |
-| `unread` | `bg-emerald-500` 实心点 | 已完成, 结果未查看 |
-| `pending-input` | `bg-amber-500` 脉冲点 | 等待输入 |
+| `running` | `text-link` 弧线 + `animate-spin` | 正在执行 |
+| `unread` | `bg-success` 实心点 | 已完成, 结果未查看 |
+| `pending-input` | `bg-warning` 脉冲点 | 等待输入 |
 | `idle` | 返回 `null` | 无状态, 不渲染也不占位 |
+
+颜色只取语义 token, 换肤时随主题变化; 弧线用 `link` 而不是 `primary`, 因为暗色 primary
+是实底蓝, 在深灰底上做前景对比不够。
 
 三条关键取舍:
 

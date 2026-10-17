@@ -1,4 +1,5 @@
 import { forwardRef, type ComponentPropsWithoutRef, type JSX, type ReactNode } from "react";
+import { useRipple } from "../primitives/ripple";
 import { cn } from "../primitives/utils";
 import { IconSlot, type IconSource } from "./Icon";
 
@@ -74,7 +75,7 @@ export function SidebarNavBadgeView({ badge, className }: {
   if (badge.variant === "text") {
     return (
       <span className={cn(
-        "shrink-0 rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-semibold uppercase leading-tight tracking-wide text-primary",
+        "shrink-0 rounded-full border border-primary/40 px-1.5 py-px text-[9px] font-semibold uppercase leading-tight tracking-wide text-link",
         className,
       )}>
         {badge.text}
@@ -83,7 +84,7 @@ export function SidebarNavBadgeView({ badge, className }: {
   }
   return (
     <span className={cn(
-      "grid min-w-4 shrink-0 place-items-center rounded-full bg-primary/15 px-1 text-[10px] font-medium leading-4 text-primary",
+      "grid min-w-4 shrink-0 place-items-center rounded-full bg-primary/15 px-1 text-[10px] font-medium leading-4 text-link",
       className,
     )}>
       {badge.text}
@@ -95,6 +96,8 @@ export interface SidebarNavItemButtonProps extends Omit<ComponentPropsWithoutRef
   readonly item: SidebarNavItem;
   readonly classNames?: { badge?: string; icon?: string; label?: string };
   readonly children?: ReactNode;
+  /** 点按水波纹. 默认 true. */
+  readonly ripple?: boolean;
 }
 
 /**
@@ -102,7 +105,8 @@ export interface SidebarNavItemButtonProps extends Omit<ComponentPropsWithoutRef
  * 这是上游的做法, 好处是移动高亮块时按钮本身不用重绘。
  */
 export const SidebarNavItemButton = forwardRef<HTMLButtonElement, SidebarNavItemButtonProps>(
-  function SidebarNavItemButton({ className, classNames, item, onClick, ...props }, ref): JSX.Element {
+  function SidebarNavItemButton({ className, classNames, item, onClick, ripple = true, onPointerDown, onKeyDown, ...props }, ref): JSX.Element {
+    const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple, onPointerDown, onKeyDown });
     const label = item.label ?? "";
     const title = item.title ?? label;
 
@@ -118,6 +122,7 @@ export const SidebarNavItemButton = forwardRef<HTMLButtonElement, SidebarNavItem
           className,
         )}
         {...props}
+        {...rippleProps}
       >
         <SidebarNavIcon icon={item.icon} iconUrl={item.iconUrl} className={cn("relative z-10", classNames?.icon)} />
         {/* min-w-0 flex-1 truncate: label 占满中间并在过长时省略, 右侧角标才不会被顶出按钮 */}

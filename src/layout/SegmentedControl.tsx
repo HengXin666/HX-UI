@@ -2,6 +2,7 @@
 
 import { motion } from "motion/react";
 import { useId, type JSX, type SetStateAction } from "react";
+import { rippleAttribute, useRipple } from "../primitives/ripple";
 
 function cn(...parts: Array<string | false | null | undefined>): string {
 	return parts.filter(Boolean).join(" ");
@@ -39,7 +40,12 @@ export interface SegmentedControlProps<T extends string> {
 	className?: string;
 	/** 容器尺寸正在变化时设为 true，禁用指示器的 layout 动画，避免抖动 */
 	suppressLayoutAnimation?: boolean;
+	/** 点按水波纹. 默认 true. */
+	ripple?: boolean;
 }
+
+/** 分段按钮里的波纹裁剪层; 只认按钮的直接子节点. */
+const RIPPLE_LAYER_SELECTOR = ":scope > [data-ripple]";
 
 export function SegmentedControl<T extends string>({
 	items,
@@ -47,8 +53,18 @@ export function SegmentedControl<T extends string>({
 	onChange,
 	className,
 	suppressLayoutAnimation = false,
+	ripple = true,
 }: SegmentedControlProps<T>): JSX.Element {
 	const layoutId = useId();
+	/*
+	 * 波纹插进按钮里铺满的裁剪层, 而不是按钮本身: 按钮挂 data-ripple 会被加上
+	 * overflow: hidden, 选中滑块 (layoutId 共享布局) 从旧分段滑过来的途中落在新按钮
+	 * 外的部分会被裁掉, 只剩新分段边缘里冒出的半截.
+	 */
+	const rippleProps = useRipple<HTMLButtonElement>({
+		enabled: ripple,
+		container: (host) => host.querySelector<HTMLElement>(RIPPLE_LAYER_SELECTOR),
+	});
 
 	return (
 		<div
@@ -64,6 +80,7 @@ export function SegmentedControl<T extends string>({
 						key={key}
 						type="button"
 						onClick={() => onChange(key)}
+						{...rippleProps}
 						className={cn(
 							"relative flex shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-[6px] px-2.5 py-[3px] text-[11px] font-medium leading-[16px] transition-colors duration-150 select-none",
 							active ? "text-foreground" : "text-muted-foreground hover:text-foreground/70",
@@ -80,6 +97,13 @@ export function SegmentedControl<T extends string>({
 								}
 							/>
 						)}
+						{ripple && (
+							<span
+								aria-hidden
+								data-ripple={rippleAttribute()}
+								className="pointer-events-none absolute inset-0 rounded-[6px]"
+							/>
+						)}
 						<motion.span
 							className="relative z-10 flex items-center gap-1"
 							whileTap={{ scale: 0.93 }}
@@ -88,7 +112,7 @@ export function SegmentedControl<T extends string>({
 							{icon && <span className={cn(icon, "h-3 w-3")} />}
 							{label}
 							{badge && badge > 0 ? (
-								<span className="ml-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-semibold leading-none text-white">
+								<span className="ml-0.5 inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-danger-emphasis px-1 text-[9px] font-semibold leading-none text-destructive-foreground">
 									{badge > 99 ? "99+" : badge}
 								</span>
 							) : null}

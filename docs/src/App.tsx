@@ -148,7 +148,7 @@ export function App(): JSX.Element {
         {/* 侧栏: 链接保留原生新标签与复制地址行为 */}
         <aside id="docs-navigation" className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-2 left-2 z-30 w-60 flex-col overflow-hidden rounded-xl border border-border/40 bg-card shadow-lg md:static md:flex md:bg-card/25 md:shadow-none`}>
           <div className="flex h-11 shrink-0 items-center gap-2 px-3">
-            <span className="grid size-6 shrink-0 place-items-center rounded-md bg-primary/15 text-[11px] font-semibold text-primary">
+            <span className="grid size-6 shrink-0 place-items-center rounded-md bg-primary/15 text-[11px] font-semibold text-link">
               HX
             </span>
             <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">HX UI</span>
@@ -216,7 +216,7 @@ export function App(): JSX.Element {
             >
               <article className="w-full min-w-0 flex-1">
                 {/* 标题区: 组名做小标签 + 标题 + 说明。比原来光秃秃一个 h1 更容易定位 */}
-                <div className="mb-1 text-[11px] font-medium text-primary/80">{entry.group}</div>
+                <div className="mb-1 text-[11px] font-medium text-link/80">{entry.group}</div>
                 <h1 className="text-[26px] font-bold leading-tight tracking-[-0.02em] text-foreground md:text-[30px]">
                   {entry.label}
                 </h1>

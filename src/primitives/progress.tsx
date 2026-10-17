@@ -27,8 +27,8 @@ function Progress({
 	const clamped = Math.min(100, Math.max(0, value ?? 0));
 	const toneClass = {
 		primary: "bg-primary",
-		success: "bg-emerald-500",
-		warning: "bg-amber-500",
+		success: "bg-success",
+		warning: "bg-warning",
 		destructive: "bg-destructive",
 	}[tone];
 

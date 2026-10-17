@@ -3,6 +3,7 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Tabs as TabsPrimitive } from "radix-ui";
+import { useRipple } from "./ripple";
 import { cn } from "./utils";
 
 /**
@@ -77,18 +78,25 @@ function TabsList({
 function TabsTrigger({
 	className,
 	variant,
+	ripple = true,
+	onPointerDown,
+	onKeyDown,
 	...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger> & {
 	variant?: TabsVariant;
+	/** 点按水波纹. 默认 true. */
+	ripple?: boolean;
 }): React.JSX.Element {
 	const inherited = React.useContext(TabsVariantContext);
 	const resolved = variant ?? inherited;
+	const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple, onPointerDown, onKeyDown });
 	return (
 		<TabsPrimitive.Trigger
 			data-slot="tabs-trigger"
 			data-variant={resolved}
 			className={cn(tabsTriggerVariants({ variant: resolved }), className)}
 			{...props}
+			{...rippleProps}
 		/>
 	);
 }

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, type JSX } from "react";
 import { AnimatePresence, motion, type TargetAndTransition } from "motion/react";
+import { TONE } from "../constants";
 import { cn } from "../primitives/utils";
 
 /**
@@ -152,8 +153,8 @@ export const toast = {
  */
 const VARIANT_STYLES: Record<ToastVariant, { ring: string; icon: string; iconColor: string }> = {
   info: { ring: "ring-border", icon: "icon-[solar--info-circle-linear]", iconColor: "text-foreground/70" },
-  success: { ring: "ring-emerald-500/30", icon: "icon-[solar--check-circle-linear]", iconColor: "text-emerald-500" },
-  warning: { ring: "ring-amber-500/30", icon: "icon-[solar--danger-triangle-linear]", iconColor: "text-amber-500" },
+  success: { ring: "ring-success/30", icon: "icon-[solar--check-circle-linear]", iconColor: TONE.success },
+  warning: { ring: "ring-warning/30", icon: "icon-[solar--danger-triangle-linear]", iconColor: TONE.warning },
   error: { ring: "ring-destructive/40", icon: "icon-[solar--close-circle-linear]", iconColor: "text-destructive" },
 };
 
@@ -195,7 +196,7 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: strin
           <button
             type="button"
             onClick={() => { item.action?.onClick(); onDismiss(item.id); }}
-            className="mt-1.5 text-[12px] font-medium text-primary transition-colors hover:text-primary/80"
+            className="mt-1.5 text-[12px] font-medium text-link transition-colors hover:text-link/80"
           >
             {item.action.label}
           </button>

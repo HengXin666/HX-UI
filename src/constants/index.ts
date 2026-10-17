@@ -32,4 +32,76 @@ export const CLASSES = {
   meta: "text-[11px] text-muted-foreground",
   /** 纵向堆叠容器. */
   stack: "flex flex-col gap-2",
+  /** 表单控件的禁用态: 不可点的指针 + 半透明. */
+  disabled: "disabled:cursor-not-allowed disabled:opacity-50",
+} as const;
+
+/**
+ * 语义状态文字色 (对应 tokens.css 的 --success / --warning / --danger).
+ * 无后缀用于图标与圆点, Fg 后缀是深灰底上可读的正文色.
+ */
+export const TONE = {
+  success: "text-success",
+  warning: "text-warning",
+  successFg: "text-success-fg",
+  warningFg: "text-warning-fg",
+  dangerFg: "text-danger-fg",
+} as const;
+
+/** 组件变体与尺寸的取值 (Button / Alert / 水波纹共用), as const 保留字面量类型供 cva 推断. */
+export const VARIANT = {
+  default: "default",
+  primary: "primary",
+  ghost: "ghost",
+  link: "link",
+  icon: "icon",
+  iconSm: "icon-sm",
+  sm: "sm",
+  warning: "warning",
+  danger: "danger",
+} as const;
+
+/** ARIA 角色与属性取值. */
+export const ARIA = {
+  alert: "alert",
+  status: "status",
+  page: "page",
+  true: "true",
+  hidden: "aria-hidden",
+  disabled: "aria-disabled",
+} as const;
+
+/** 键盘事件的 key 值. */
+export const KEY = {
+  enter: "Enter",
+  space: " ",
+} as const;
+
+/** 按钮的 type: 显式写 button, 放进 form 里点击不会触发提交. */
+export const BUTTON_TYPE = "button";
+
+/** 求中心点时的除数. */
+export const HALF_DIVISOR = 2;
+
+/**
+ * 水波纹宿主属性的取值与波纹 span 的类名 (keyframes 在 motion.css).
+ * on 是常规尺寸, icon 是图标尺寸 (更低的不透明度).
+ */
+export const RIPPLE = {
+  on: "on",
+  icon: "icon",
+  className: "hx-ripple",
+  /** 直径取宿主对角线的倍数: 2 倍保证从任意一点按下都能盖满宿主. */
+  diameterFactor: 2,
+} as const;
+
+/**
+ * 分页器页码序列的形状: 首页 + 末页 + 当前页 + 两个省略位共 5 个固定位,
+ * 当前页两侧各 siblings 个; 省略位至少要省掉 2 页才出现.
+ */
+export const PAGINATION = {
+  fixedSlots: 5,
+  sides: 2,
+  edgeSlots: 2,
+  minGap: 2,
 } as const;

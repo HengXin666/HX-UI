@@ -114,7 +114,7 @@ export interface CodeBlockProps {
   readonly className?: string;
 }
 
-/** 复制按钮。两态反馈, 1.2 秒后复位。 */
+/** 复制按钮, 1.2 秒后复位. 成功色用固定的 code-success: 外壳永远是 One Dark Pro 深底, 随主题变的 success-fg 在亮色下读不清. */
 function CopyButton({ text }: { text: string }): JSX.Element {
   const [copied, setCopied] = useState(false);
   return (
@@ -128,7 +128,7 @@ function CopyButton({ text }: { text: string }): JSX.Element {
       className={cn(
         "rounded-md border px-2 py-1 text-[11px] transition-colors",
         copied
-          ? "border-emerald-500/40 text-emerald-400"
+          ? "border-code-success/40 text-code-success"
           : "border-white/15 text-[#abb2bf] hover:border-white/30 hover:text-white",
       )}
       style={{ background: copied ? undefined : "transparent" }}
@@ -232,7 +232,7 @@ export function CodeBlock({
                 // shiki 自带 pre/code 的底色与内边距, 这里统一压平, 由外壳决定观感
                 "[&_pre]:!m-0 [&_pre]:!bg-transparent [&_pre]:!p-3 [&_code]:!bg-transparent [&_code]:!font-mono",
                 // 高亮行: 用半透明白叠在 One Dark Pro 的当前行色上。
-                // 选择器逐个生成而不是拼一个逗号列表  后者在模板串里容易出错, 也难读。
+                // 选择器逐个生成而不是拼一个逗号列表  后者在模板串里容易出错, 也难读.
                 ...(highlightLines ?? []).map(
                   (n) => `[&_.line:nth-child(${n})]:!bg-white/[0.05]`,
                 ),

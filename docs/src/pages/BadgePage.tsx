@@ -5,9 +5,9 @@ import { H2, P, Preview, PropsTable, Callout, Code } from "../components/DocKit"
 export function BadgePage(): JSX.Element {
   return (
     <>
-      <P>标签。颜色白名单只有三种语义原色, 业务标签一律降级为 token 叠色。</P>
+      <P>标签。颜色只有三种语义状态色 (success / warning / danger), 业务标签一律降级为 token 叠色。</P>
       <Callout kind="warning" title="不要引入第四种颜色">
-        成功/运行用 emerald, 警告/可更新用 amber, 错误走 <Code>destructive</Code> token (不用 <Code>red-*</Code>)。
+        成功/运行走 <Code>success</Code> token, 警告/可更新走 <Code>warning</Code> token, 错误走 <Code>danger</Code> token, 组件里不写调色盘色。
         「自定义」「实验」「Beta」这类业务标签不能自带颜色, 用 default 或 secondary 变体。
       </Callout>
 

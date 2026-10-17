@@ -47,12 +47,13 @@ export type SessionStatus = "running" | "unread" | "idle" | "pending-input";
  * 各状态的几何与配色。
  *
  * 颜色直接写在各元素上而不是让圆点继承外层文字色: 三态的色相**本身就是信息**
- * (主色=进行中 / 绿=已完成待看 / 琥珀=等待输入), 与"可被外层文字色统一改色"的
+ * (蓝=进行中 / 绿=已完成待看 / 琥珀=等待输入), 与"可被外层文字色统一改色"的
  * 通用圆点不是一类东西。写在这里而不是调用点, 是为了让"同一状态到哪都是同一个
  * 样子"成为类型可查的事实。
  *
- * `emerald-*` 与 `amber-*` 是设计规约明确放行的语义原色 (成功 / 警告), 其余
- * 调色盘一律禁止  见 scripts/check-ui-rules.mjs 的 PALETTE_BAN。
+ * 三态颜色全部取语义 token: 进行中 `text-link` (弧线), 待看 `bg-success`, 等待输入
+ * `bg-warning`; 不写任何调色盘色, 换肤时随主题一起变. 进行中不用 `text-primary`:
+ * 暗色 primary 是实底蓝, 在深灰底上做前景对比不够.
  */
 const RING = "border border-current border-t-transparent";
 const DOT = "block rounded-full";
@@ -92,17 +93,17 @@ export function SessionStatusDot({ status, label, className }: SessionStatusDotP
   return (
     <span className={cn("relative inline-flex size-3.5 shrink-0 items-center justify-center", className)}>
       {status === "running" ? (
-        <span aria-hidden className={cn(RING, DOT, "size-3.5 text-primary animate-spin")} />
+        <span aria-hidden className={cn(RING, DOT, "size-3.5 text-link animate-spin")} />
       ) : null}
-      {status === "unread" ? <span aria-hidden className={cn(DOT, "size-2 bg-emerald-500")} /> : null}
+      {status === "unread" ? <span aria-hidden className={cn(DOT, "size-2 bg-success")} /> : null}
       {status === "pending-input" ? (
         <>
           {/*
             呼吸层是独立的一层, 不是给圆点本体加动画: 本体 ping 会周期性消失,
-            而"正在等待输入"恰恰是最需要它保持可见的时刻。与 StateDot 的 pulse 同构。
+            而"正在等待输入"恰恰是最需要它保持可见的时刻. 与 StateDot 的 pulse 同构.
           */}
-          <span aria-hidden className={cn(DOT, "absolute size-2 bg-amber-500 opacity-60 animate-ping")} />
-          <span aria-hidden className={cn(DOT, "relative size-2 bg-amber-500")} />
+          <span aria-hidden className={cn(DOT, "absolute size-2 bg-warning opacity-60 animate-ping")} />
+          <span aria-hidden className={cn(DOT, "relative size-2 bg-warning")} />
         </>
       ) : null}
       <span className="sr-only">{label ?? DEFAULT_LABEL[status]}</span>

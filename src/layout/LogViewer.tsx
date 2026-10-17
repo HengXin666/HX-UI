@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
+import { TONE } from "../constants";
 import { cn } from "../primitives/utils";
 
 /**
@@ -53,9 +54,9 @@ export interface LogViewerProps {
 const LEVEL_STYLE: Record<LogLevel, { text: string; label: string }> = {
   debug: { text: "text-muted-foreground/70", label: "DEBUG" },
   info: { text: "text-foreground/85", label: "INFO" },
-  warn: { text: "text-amber-500", label: "WARN" },
-  error: { text: "text-destructive", label: "ERROR" },
-  success: { text: "text-emerald-500", label: "OK" },
+  warn: { text: TONE.warningFg, label: "WARN" },
+  error: { text: TONE.dangerFg, label: "ERROR" },
+  success: { text: TONE.successFg, label: "OK" },
 };
 
 const LEVELS: readonly LogLevel[] = ["debug", "info", "warn", "error", "success"];

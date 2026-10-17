@@ -11,25 +11,60 @@
 :root, [data-mode="dark"] {
   color-scheme: dark;
 
-  --background: rgb(20, 22, 30);
-  --foreground: rgb(220, 224, 234);
-  --card: rgb(26, 28, 36);
-  --card-foreground: rgb(220, 224, 234);
-  --popover: rgb(50, 53, 67);
-  --popover-foreground: rgb(220, 224, 234);
-  --primary: rgb(99, 102, 241);
-  --primary-foreground: rgb(255, 255, 255);
-  --secondary: rgb(38, 38, 40);
-  --secondary-foreground: rgb(220, 224, 234);
-  --muted: rgb(30, 30, 32);
-  --muted-foreground: rgb(138, 144, 160);
-  --accent: rgb(41, 41, 43);
-  --accent-foreground: rgb(220, 224, 234);
-  --destructive: rgb(255, 91, 91);
-  --destructive-foreground: rgb(0, 0, 0);
-  --border: rgb(42, 45, 56);
-  --input: rgb(48, 51, 64);
-  --ring: rgb(129, 132, 248);
+  /* 暗色取 GitHub Dark Dimmed: 灰底而不是纯黑.
+     纯黑底上 1px 灰线与文字的对比过硬, 长时间看控制台类界面会累;
+     Dimmed 把底色抬到深灰, 层级改由"底 / 内嵌 / 悬停"三档灰与 1px 边框区分.
+     行尾注释里的十六进制是 GitHub Primer 的原值, 便于对照. */
+  --background: rgb(34, 39, 46);  /* #22272e */
+  --foreground: rgb(173, 186, 199);  /* #adbac7 */
+  /* 卡片与页面同底, 靠 1px 边框分层, 不靠底色差 */
+  --card: rgb(34, 39, 46);  /* #22272e */
+  --card-foreground: rgb(173, 186, 199);  /* #adbac7 */
+  --popover: rgb(45, 51, 59);  /* #2d333b */
+  --popover-foreground: rgb(173, 186, 199);  /* #adbac7 */
+  /* primary 是实底用的强调蓝; 文字/链接用更亮的 --link, 深灰底上实底蓝做文字对比不够 */
+  --primary: rgb(49, 109, 202);  /* #316dca */
+  --primary-foreground: rgb(255, 255, 255);  /* #ffffff */
+  --link: rgb(83, 155, 245);  /* #539bf5 */
+  --secondary: rgb(45, 51, 59);  /* #2d333b */
+  --secondary-foreground: rgb(173, 186, 199);  /* #adbac7 */
+  /* muted 是内嵌层 (输入框底 / 代码块底), 比页面更深一档 */
+  --muted: rgb(28, 33, 40);  /* #1c2128 */
+  /* 说明文字: 取 Dimmed 灰阶上一档 #909dab 而不是 Primer 的 fg.muted #768390,
+     后者在页面底上只有 3.9:1, 达不到正文 4.5:1; #909dab 在页面 / 内嵌 / 弹层底上都过 4.5:1 */
+  --muted-foreground: rgb(144, 157, 171);  /* #909dab */
+  /* accent 是悬停层 */
+  --accent: rgb(45, 51, 59);  /* #2d333b */
+  --accent-foreground: rgb(205, 217, 229);  /* #cdd9e5 */
+  /* 标题与强调文字: 比正文亮一档 */
+  --heading: rgb(205, 217, 229);  /* #cdd9e5 */
+  /* destructive 主要当文字 / 图标 / 描边用 (text-destructive), 取 danger-fg 的亮红,
+     页面底上 5.3:1; #e5534b 做文字只有 4.1:1.
+     destructive-foreground 是红色实底上的白字, 搭配的实底是 bg-danger-emphasis (5.0:1),
+     不要拿它配 bg-destructive: 亮红实底上的白字对比不够 */
+  --destructive: rgb(244, 112, 103);  /* #f47067 */
+  --destructive-foreground: rgb(255, 255, 255);  /* #ffffff */
+  /* 控件悬停: 比 secondary 亮一档, 默认按钮与次级按钮的 hover 底 */
+  --control-hover: rgb(55, 62, 71);  /* #373e47 */
+  --border: rgb(68, 76, 86);  /* #444c56 */
+  /* 次级分隔线: 列表行之间, 卡片内部 */
+  --border-muted: rgb(55, 62, 71);  /* #373e47 */
+  --input: rgb(68, 76, 86);  /* #444c56 */
+  --ring: rgb(83, 155, 245);  /* #539bf5 */
+
+  /* 语义状态色.base 用于图标/圆点/描边/浅色底 (bg-success/15),
+     emphasis 用于实底, fg 是深灰底上可读的文字色. */
+  --success: rgb(87, 171, 90);  /* #57ab5a */
+  --success-emphasis: rgb(52, 125, 57);  /* #347d39 */
+  --success-fg: rgb(107, 196, 109);  /* #6bc46d */
+  --warning: rgb(198, 144, 38);  /* #c69026 */
+  --warning-emphasis: rgb(150, 102, 0);  /* #966600 */
+  --warning-fg: rgb(218, 170, 63);  /* #daaa3f */
+  --danger: rgb(229, 83, 75);  /* #e5534b */
+  --danger-emphasis: rgb(201, 60, 55);  /* #c93c37 */
+  --danger-fg: rgb(244, 112, 103);  /* #f47067 */
+  /* done: 已完成 / Agent 身份的紫 */
+  --done: rgb(152, 110, 226);  /* #986ee2 */
 
   /* 多分段图表: 等亮度等饱和, 只靠色相区分。
      明度差会让读者把并列构成误读成大小对比。 */
@@ -63,31 +98,54 @@
 [data-mode="light"] {
   color-scheme: light;
 
-  --background: rgb(255, 255, 255);
-  --foreground: rgb(0, 0, 0);
-  --card: rgb(250, 250, 250);
-  --card-foreground: rgb(0, 0, 0);
-  --popover: rgb(255, 255, 255);
-  --popover-foreground: rgb(0, 0, 0);
-  --primary: rgb(79, 70, 229);          /* 压暗过, 纯 #6366f1 在白底上对比度不够 */
-  --primary-foreground: rgb(255, 255, 255);
-  --secondary: rgb(235, 235, 235);
-  --secondary-foreground: rgb(0, 0, 0);
-  --muted: rgb(242, 242, 242);
-  --muted-foreground: rgb(82, 82, 82);
-  --accent: rgb(235, 235, 235);
-  --accent-foreground: rgb(0, 0, 0);
-  --destructive: rgb(229, 75, 79);
-  --destructive-foreground: rgb(255, 255, 255);
-  --border: rgb(230, 230, 230);
-  --input: rgb(230, 230, 230);
-  --ring: rgb(79, 70, 229);
+  /* 亮色取 GitHub Light 的对应档位, 语义与暗色一一对应 */
+  --background: rgb(255, 255, 255);  /* #ffffff */
+  --foreground: rgb(31, 35, 40);  /* #1f2328 */
+  --card: rgb(255, 255, 255);  /* #ffffff */
+  --card-foreground: rgb(31, 35, 40);  /* #1f2328 */
+  --popover: rgb(255, 255, 255);  /* #ffffff */
+  --popover-foreground: rgb(31, 35, 40);  /* #1f2328 */
+  --primary: rgb(9, 105, 218);  /* #0969da */
+  --primary-foreground: rgb(255, 255, 255);  /* #ffffff */
+  --link: rgb(9, 105, 218);  /* #0969da */
+  --secondary: rgb(246, 248, 250);  /* #f6f8fa */
+  --secondary-foreground: rgb(31, 35, 40);  /* #1f2328 */
+  --muted: rgb(246, 248, 250);  /* #f6f8fa */
+  --muted-foreground: rgb(89, 99, 110);  /* #59636e */
+  --accent: rgb(239, 242, 245);  /* #eff2f5 */
+  --accent-foreground: rgb(31, 35, 40);  /* #1f2328 */
+  --heading: rgb(31, 35, 40);  /* #1f2328 */
+  --destructive: rgb(207, 34, 46);  /* #cf222e */
+  --destructive-foreground: rgb(255, 255, 255);  /* #ffffff */
+  --control-hover: rgb(234, 238, 242);  /* #eaeef2 */
+  --border: rgb(209, 217, 224);  /* #d1d9e0 */
+  --border-muted: rgb(216, 222, 228);  /* #d8dee4 */
+  --input: rgb(209, 217, 224);  /* #d1d9e0 */
+  --ring: rgb(9, 105, 218);  /* #0969da */
+
+  --success: rgb(26, 127, 55);  /* #1a7f37 */
+  --success-emphasis: rgb(31, 136, 61);  /* #1f883d */
+  --success-fg: rgb(26, 127, 55);  /* #1a7f37 */
+  --warning: rgb(191, 135, 0);  /* #bf8700 */
+  --warning-emphasis: rgb(154, 103, 0);  /* #9a6700 */
+  --warning-fg: rgb(154, 103, 0);  /* #9a6700 */
+  --danger: rgb(207, 34, 46);  /* #cf222e */
+  --danger-emphasis: rgb(207, 34, 46);  /* #cf222e */
+  --danger-fg: rgb(209, 36, 47);  /* #d1242f */
+  --done: rgb(130, 80, 223);  /* #8250df */
 
   --segment-1: oklch(0.62 0.14 268);
   --segment-2: oklch(0.62 0.14 215);
   --segment-3: oklch(0.62 0.14 165);
   --segment-4: oklch(0.62 0.14 95);
   --segment-5: oklch(0.62 0.14 25);
+}
+
+/* 代码块外壳固定用 One Dark Pro 深底 (CodeBlock 的 ONE_DARK_PRO), 不随主题切换,
+   画在它上面的状态色也必须固定: 随主题变化的 success-fg 在亮色下是深绿, 落在深底上读不清.
+   取 One Dark Pro 的字符串绿, 只在 :root 定义一次, 亮色不覆盖. */
+:root {
+  --code-success: rgb(152, 195, 121);  /* #98c379 */
 }
 
 /* ============================================================================
@@ -337,15 +395,21 @@ body {
   --fs-3xl: 22px;
   --fs-4xl: 26px;
 
-  /* 动效时长: 只三档  反馈 / 常规 / 强调。
-     超过 300ms 的进入动画在工具型界面里会被感知成"卡"。 */
-  --dur-fast: 100ms;
-  --dur-base: 200ms;
-  --dur-slow: 300ms;
+  /* 动效时长: 三档 + 水波纹专用一档.
+     超过 300ms 的进入动画在工具型界面里会被感知成"卡";
+     水波纹是扩散后淡出的反馈, 不挡操作, 所以单独放宽到 500ms. */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 300ms;
+  --duration-ripple: 500ms;
+  /* 旧名保留为别名, 存量组件与下游不用改 */
+  --dur-fast: var(--duration-fast);
+  --dur-base: var(--duration-base);
+  --dur-slow: var(--duration-slow);
 
-  /* 缓动: ease-out 用于进入 (起步快收尾稳), ease-in 用于退出 
-     用户已经决定离开了, 拖长只会挡住下一步操作。 */
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* 缓动: ease-out 用于进入与反馈 (起步快收尾稳, 取 GitHub Primer 的标准曲线),
+     ease-in 用于退出  用户已经决定离开了, 拖长只会挡住下一步操作. */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
   --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
 
   /* 层级: 写在各组件里的 z-50 没人知道全貌, 改一处就撞另一处 */
@@ -358,3 +422,13 @@ body {
   --z-tooltip: 70;
 }
 
+/* 系统要求减弱动效时, 所有走令牌的时长归零: 状态仍然切换, 只是不再有过程.
+   写在令牌层而不是逐个组件判断, 新组件只要用令牌就自动遵守. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --duration-ripple: 0ms;
+  }
+}

@@ -183,7 +183,7 @@ export function PropsTable({
         <tbody>
           {rows.map((r) => (
             <tr key={r.name} className="border-b border-border/40 last:border-0">
-              <td className="px-3 py-2 font-mono text-primary">{r.name}</td>
+              <td className="px-3 py-2 font-mono text-link">{r.name}</td>
               <td className="px-3 py-2 font-mono text-muted-foreground/90">{r.type}</td>
               <td className="px-3 py-2 font-mono text-muted-foreground/70">{r.default ?? "-"}</td>
               <td className="px-3 py-2 text-foreground/85">{r.desc}</td>
@@ -206,7 +206,7 @@ export function Callout({
   children: ReactNode;
 }): JSX.Element {
   return (
-    <Card variant={kind === "warning" ? "default" : "muted"} className={cn("my-4", kind === "warning" && "border-amber-500/40")}>
+    <Card variant={kind === "warning" ? "default" : "muted"} className={cn("my-4", kind === "warning" && "border-warning/40")}>
       <CardHeader className="flex-row items-center gap-2 pb-0">
         <Badge variant={kind === "warning" ? "warning" : "default"}>{kind === "warning" ? "注意" : "提示"}</Badge>
         <CardTitle className="text-[13px]">{title}</CardTitle>

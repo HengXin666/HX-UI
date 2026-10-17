@@ -48,3 +48,54 @@
 .hx-progress-indeterminate {
   animation: hx-progress-indeterminate 1.4s ease-in-out infinite;
 }
+
+/* ============================================================================
+ * 水波纹 (Ripple)
+ * ----------------------------------------------------------------------------
+ * 宿主元素带 data-ripple 属性, 波纹 span 由 primitives/ripple.tsx 在按下位置插入,
+ * animationend 后移除.颜色取 currentColor: 任何变体上都跟着文字色走,
+ * 不需要每个变体单独配一份波纹色.
+ *
+ * 宿主样式放在 @layer base 并用 :where() 归零优先级: 宿主自己写的 absolute /
+ * overflow-visible 这类工具类仍然能覆盖它.
+ * ==========================================================================*/
+
+@layer base {
+  :where([data-ripple]) {
+    position: relative;
+    overflow: hidden;
+    --ripple-opacity: 0.14;
+  }
+
+  /* 图标按钮面积小, 同样的不透明度会显得整块闪一下 */
+  :where([data-ripple="icon"]) {
+    --ripple-opacity: 0.1;
+  }
+}
+
+@keyframes hx-ripple {
+  from {
+    transform: scale(0);
+    opacity: var(--ripple-opacity, 0.14);
+  }
+  to {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* 只动 transform 与 opacity, 走合成器, 不触发布局 */
+.hx-ripple {
+  position: absolute;
+  border-radius: 9999px;
+  background: currentColor;
+  pointer-events: none;
+  opacity: 0;
+  animation: hx-ripple var(--duration-ripple, 500ms) var(--ease-out, ease-out) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-ripple {
+    display: none;
+  }
+}
