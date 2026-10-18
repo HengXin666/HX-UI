@@ -43,7 +43,9 @@ import { TimePickerPage } from "./pages/TimePickerPage";
 import { ConfirmDialogPage } from "./pages/ConfirmDialogPage";
 import { TabsPage } from "./pages/TabsPage";
 import { AccordionPage } from "./pages/AccordionPage";
-import { FeedbackPage } from "./pages/FeedbackPage";
+import { ProgressPage } from "./pages/ProgressPage";
+import { SkeletonPage } from "./pages/SkeletonPage";
+import { ScrollAreaPage } from "./pages/ScrollAreaPage";
 import { DataTablePage } from "./pages/DataTablePage";
 import { ChromePage } from "./pages/ChromePage";
 import { BlueprintPage } from "./pages/BlueprintPage";
@@ -95,8 +97,8 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "confirm-dialog": return <ConfirmDialogPage />;
     case "tabs": return <TabsPage />;
     case "accordion": return <AccordionPage />;
-    case "scroll-area":
-    case "progress": return <FeedbackPage />;
+    case "progress": return <ProgressPage />;
+    case "scroll-area": return <ScrollAreaPage />;
     case "data-table":
     case "stat-card": return <DataTablePage />;
     case "empty-state":
