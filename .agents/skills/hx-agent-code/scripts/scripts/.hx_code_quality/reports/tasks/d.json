@@ -1,9 +1,0 @@
-{
-    "task": "d",
-    "command": [
-        "/missing/hc-checker"
-    ],
-    "status": null,
-    "signal": null,
-    "error": "spawnSync /missing/hc-checker ENOENT"
-}
