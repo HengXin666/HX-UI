@@ -1,13 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { PanelLeftIcon } from "lucide-react";
-import { Button } from "./button";
-import { Input } from "./input";
-import { Separator } from "./separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./sheet";
+import { TooltipProvider } from "./tooltip";
 import { cn } from "./utils";
-import { ARIA, BUTTON_TYPE, EVENT, OPEN_STATE, SIDE, SIDEBAR_SHORTCUT, SLOT, STEP_BACK, TONE_VARIANT, UI_CLASSES, VARIANT } from "../constants";
+import { ARIA, EVENT, OPEN_STATE, SIDE, SIDEBAR_SHORTCUT, SLOT, TONE_VARIANT, UI_CLASSES } from "../constants";
 
 /** 侧栏展开宽度, 收成图标条时的宽度, 移动端抽屉宽度. */
 const SIDEBAR_WIDTH = "16rem";
@@ -112,6 +109,8 @@ function SidebarProvider({
 
 	return (
 		<SidebarContext.Provider value={value}>
+			{/* 菜单项收成图标条时靠 tooltip 显示文字, Provider 在这里挂一次, 调用方不必再包 */}
+			<TooltipProvider>
 			<div
 				data-slot="sidebar-wrapper"
 				style={{ "--sidebar-width": SIDEBAR_WIDTH, "--sidebar-width-icon": SIDEBAR_WIDTH_ICON, ...style } as React.CSSProperties}
@@ -120,6 +119,7 @@ function SidebarProvider({
 			>
 				{children}
 			</div>
+			</TooltipProvider>
 		</SidebarContext.Provider>
 	);
 }
@@ -215,105 +215,9 @@ function Sidebar({
 	);
 }
 
-function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>): React.JSX.Element {
-	const { toggleSidebar } = useSidebar();
-	return (
-		<Button
-			data-sidebar={SLOT.trigger}
-			data-slot="sidebar-trigger"
-			variant={VARIANT.ghost}
-			size={VARIANT.iconSm}
-			className={className}
-			onClick={(event) => {
-				onClick?.(event);
-				toggleSidebar();
-			}}
-			{...props}
-		>
-			<PanelLeftIcon />
-			<span className={UI_CLASSES.srOnly}>切换侧栏</span>
-		</Button>
-	);
-}
-
-/** 侧栏边缘的细长拖拽区: 点击切换开合, 悬停显示 1px 提示线. */
-function SidebarRail({ className, ...props }: React.ComponentProps<"button">): React.JSX.Element {
-	const { toggleSidebar } = useSidebar();
-	return (
-		<button
-			type={BUTTON_TYPE}
-			data-sidebar="rail"
-			data-slot="sidebar-rail"
-			aria-label="切换侧栏"
-			tabIndex={STEP_BACK}
-			onClick={toggleSidebar}
-			title="切换侧栏"
-			className={cn(
-				"absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-colors duration-(--duration-fast) sm:flex",
-				"after:absolute after:inset-y-0 after:left-1/2 after:w-px hover:after:bg-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0",
-				"in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize",
-				"[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize",
-				className,
-			)}
-			{...props}
-		/>
-	);
-}
-
-/** 侧栏旁边的主内容区. variant="inset" 时它是一块圆角面板. */
-function SidebarInset({ className, ...props }: React.ComponentProps<"main">): React.JSX.Element {
-	return (
-		<main
-			data-slot="sidebar-inset"
-			className={cn(
-				"relative flex w-full flex-1 flex-col bg-background",
-				"md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:border-border",
-				"md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
-				className,
-			)}
-			{...props}
-		/>
-	);
-}
-
-function SidebarInput({ className, ...props }: React.ComponentProps<typeof Input>): React.JSX.Element {
-	return <Input data-slot="sidebar-input" data-sidebar={SLOT.input} className={cn("h-8 w-full bg-background", className)} {...props} />;
-}
-
-function SidebarHeader({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-	return <div data-slot="sidebar-header" data-sidebar="header" className={cn("flex flex-col gap-2 p-2", className)} {...props} />;
-}
-
-function SidebarFooter({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-	return <div data-slot="sidebar-footer" data-sidebar="footer" className={cn("flex flex-col gap-2 p-2", className)} {...props} />;
-}
-
-function SidebarSeparator({ className, ...props }: React.ComponentProps<typeof Separator>): React.JSX.Element {
-	return <Separator data-slot="sidebar-separator" data-sidebar={SLOT.separator} className={cn("mx-2 w-auto bg-border", className)} {...props} />;
-}
-
-function SidebarContent({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-	return (
-		<div
-			data-slot="sidebar-content"
-			data-sidebar="content"
-			className={cn("flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden", className)}
-			{...props}
-		/>
-	);
-}
-
 export {
 	Sidebar,
-	SidebarContent,
-	SidebarFooter,
-	SidebarHeader,
-	SidebarInput,
-	SidebarInset,
 	SidebarProvider,
-	SidebarRail,
-	SidebarSeparator,
-	SidebarTrigger,
 	useIsMobile,
 	useSidebar,
 };

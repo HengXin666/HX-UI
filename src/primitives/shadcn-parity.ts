@@ -78,12 +78,12 @@ export {
 export { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "./empty";
 export { Spinner } from "./spinner";
 /** 组合式应用侧栏: 与 SidebarNavItemButton / CollapsibleRail / AppFrame 并存. */
+export { Sidebar, SidebarProvider, useIsMobile, useSidebar } from "./sidebar";
 export {
-  Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarInput, SidebarInset,
-  SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, useIsMobile, useSidebar,
-} from "./sidebar";
+  SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel,
+  SidebarHeader, SidebarInput, SidebarInset, SidebarRail, SidebarSeparator, SidebarTrigger,
+} from "./sidebar-parts";
 export {
-  SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarMenu,
-  SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton,
+  SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton,
   SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, sidebarMenuButtonVariants,
 } from "./sidebar-menu";

@@ -8,64 +8,14 @@ import { useSidebar } from "./sidebar";
 import { Skeleton } from "./skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 import { cn } from "./utils";
-import { ALIGN, OPEN_STATE, ROLE, SIDE, SIZE, SPACE, TAG, UI_CLASSES, UI_NUMBERS, VARIANT, isString } from "../constants";
+import { ALIGN, OPEN_STATE, SIDE, SIZE, SPACE, TAG, UI_CLASSES, UI_NUMBERS, VARIANT, isString } from "../constants";
 
 /**
- * 侧栏里的分组与菜单项 (对标 shadcn SidebarGroup / SidebarMenu).
+ * 侧栏里的菜单项 (对标 shadcn SidebarMenu); 分组 SidebarGroup* 在 sidebar-parts.tsx.
  *
  * 收成图标条 (collapsible="icon") 时: 分组标题淡出, 菜单项只剩图标, 文字改由 tooltip 显示,
  * 角标与子菜单隐藏. 菜单项默认带水波纹, 当前页用 isActive 标记.
  */
-function SidebarGroup({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-	return <div data-slot="sidebar-group" data-sidebar={ROLE.group} className={cn("relative flex w-full min-w-0 flex-col p-2", className)} {...props} />;
-}
-
-function SidebarGroupLabel({
-	className,
-	asChild = false,
-	...props
-}: React.ComponentProps<"div"> & { asChild?: boolean }): React.JSX.Element {
-	const Comp = asChild ? Slot.Root : TAG.div;
-	return (
-		<Comp
-			data-slot="sidebar-group-label"
-			data-sidebar="group-label"
-			className={cn(
-				"flex h-8 shrink-0 items-center rounded-md px-2 text-[11px] font-medium text-muted-foreground outline-hidden",
-				"transition-[margin,opacity] duration-(--duration-base) ease-out group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0",
-				"[&>svg]:size-4 [&>svg]:shrink-0",
-				className,
-			)}
-			{...props}
-		/>
-	);
-}
-
-function SidebarGroupAction({
-	className,
-	asChild = false,
-	...props
-}: React.ComponentProps<"button"> & { asChild?: boolean }): React.JSX.Element {
-	const Comp = asChild ? Slot.Root : TAG.button;
-	return (
-		<Comp
-			data-slot="sidebar-group-action"
-			data-sidebar="group-action"
-			className={cn(
-				"absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 text-muted-foreground outline-hidden",
-				"transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring/60 [&>svg]:size-4 [&>svg]:shrink-0",
-				UI_CLASSES.iconHidden,
-				className,
-			)}
-			{...props}
-		/>
-	);
-}
-
-function SidebarGroupContent({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-	return <div data-slot="sidebar-group-content" data-sidebar="group-content" className={cn("w-full text-[13px]", className)} {...props} />;
-}
-
 function SidebarMenu({ className, ...props }: React.ComponentProps<"ul">): React.JSX.Element {
 	return <ul data-slot="sidebar-menu" data-sidebar="menu" className={cn("flex w-full min-w-0 flex-col gap-px", className)} {...props} />;
 }
@@ -243,10 +193,6 @@ function SidebarMenuSubButton({
 }
 
 export {
-	SidebarGroup,
-	SidebarGroupAction,
-	SidebarGroupContent,
-	SidebarGroupLabel,
 	SidebarMenu,
 	SidebarMenuAction,
 	SidebarMenuBadge,
