@@ -8,6 +8,8 @@
 @import "./spin-variants.css";
 /* 组件必需的关键帧 (折叠高度 / 不定长进度)。同样必须显式引, 漏了组件不动。 */
 @import "./motion.css";
+/* 原生 select 的菜单在支持 base-select 时改用语义 token 绘制 (见文件内注释). */
+@import "./native-select.css";
 
 /* 暗色绑定在 data-mode 属性而不是 prefers-color-scheme:
    主题由界面控制, 不该跟着系统走。 */

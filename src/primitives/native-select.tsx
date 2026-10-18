@@ -9,6 +9,8 @@ import { ARIA, VARIANT } from "../constants";
  * 用浏览器自己的 select: 移动端弹系统滚轮, 表单原生提交, 选项上千也不卡.
  * 外观与 SelectTrigger 对齐 (同高, 同边框, 同箭头), 箭头是叠在上面的 svg,
  * 原生箭头用 appearance-none 去掉. 需要搜索 / 自定义选项渲染时用 Select 或 Combobox.
+ * 菜单: 支持 appearance: base-select 的浏览器由 native-select.css 用语义 token 绘制,
+ * 与 SelectContent 同面板; 不支持的浏览器回退系统菜单, 原生行为不变.
  * 粗指针设备 (触屏) 上字号提到 16px: iOS Safari 聚焦字号小于 16px 的控件会自动放大页面.
  */
 function NativeSelect({

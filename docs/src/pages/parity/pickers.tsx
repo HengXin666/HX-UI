@@ -54,7 +54,7 @@ onComplete ~ (value) => void ~ - ~ 填满时回调
 export function NativeSelectPage(): JSX.Element {
   return (
     <>
-      <P>浏览器原生 select: 移动端弹系统滚轮, 表单原生提交, 选项上千也不卡. 外观与 SelectTrigger 对齐. 需要搜索或自定义选项渲染时用 Select 或 Combobox.</P>
+      <P>浏览器原生 select: 移动端弹系统滚轮, 表单原生提交, 选项上千也不卡. 触发器外观与 SelectTrigger 对齐; 菜单在支持 customizable select 的浏览器 (Chrome 135+) 里由语义 token 绘制成与 Select 一致的面板, 不支持的浏览器回退系统菜单, 行为不变. 需要搜索或完全自定义选项渲染时用 Select 或 Combobox.</P>
       <Usage names={["NativeSelect", "NativeSelectOption", "NativeSelectOptGroup"]} />
       <H2>示例</H2>
       <Preview align={ALIGN.center} code={`<NativeSelect defaultValue="sin">
