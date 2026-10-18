@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import { BUTTON_TYPE, DOC } from "@hx/ui";
 import type { DocEntry } from "../nav";
 
 /**
@@ -10,22 +11,22 @@ export function PageNav({ prev, next, onGo }: { prev?: DocEntry; next?: DocEntry
     <nav className="mt-14 grid grid-cols-2 gap-3" aria-label="页面导航">
       {prev ? (
         <button
-          type="button"
+          type={BUTTON_TYPE}
           onClick={() => onGo(prev.id)}
           className="group flex flex-col gap-0.5 rounded-xl border border-border/50 px-4 py-3 text-left transition-colors hover:border-primary/40 hover:bg-card/40"
         >
-          <span className="text-[11px] text-muted-foreground">上一页</span>
-          <span className="truncate text-[13px] font-medium text-foreground">← {prev.label}</span>
+          <span className={DOC.caption}>上一页</span>
+          <span className={DOC.strongLine}>← {prev.label}</span>
         </button>
       ) : <span />}
       {next ? (
         <button
-          type="button"
+          type={BUTTON_TYPE}
           onClick={() => onGo(next.id)}
           className="group flex flex-col items-end gap-0.5 rounded-xl border border-border/50 px-4 py-3 text-right transition-colors hover:border-primary/40 hover:bg-card/40"
         >
-          <span className="text-[11px] text-muted-foreground">下一页</span>
-          <span className="truncate text-[13px] font-medium text-foreground">{next.label} →</span>
+          <span className={DOC.caption}>下一页</span>
+          <span className={DOC.strongLine}>{next.label} →</span>
         </button>
       ) : <span />}
     </nav>

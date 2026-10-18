@@ -8,9 +8,11 @@ import { ORIENTATION, SPACE, TAG, UI_CLASSES, VARIANT } from "../constants";
 /**
  * 列表条目: 左侧媒体 (图标 / 头像 / 图片), 中间标题与说明, 右侧操作.
  *
- * 一个条目就是一行, 多行放进 ItemGroup. 整行可点时用 asChild 包一个 a (a 可容纳块级子部件),
- * 悬停底色与焦点框由 Item 自己给. 整行已是可点宿主时不要再在 ItemActions 里放按钮, 避免嵌套交互控件;
- * button 宿主只能容纳 phrasing content, 不适合本组合结构.
+ * 一个条目就是一行, 多行放进 ItemGroup. 整行可点时用 asChild 包一个 a: a 能容纳块级内容,
+ * 组合结构里的 div / p 与嵌套按钮才合法. 悬停底色与焦点框由 Item 自己给.
+ * asChild 只适合 a 这类可容纳块级内容的宿主; button 宿主不支持 (它只收 phrasing content,
+ * 而 Item 内部是 div / p 与嵌套按钮), 需要整行按钮时改用带 onClick 的 Item 或自行包一层.
+ * 整行已是可点宿主时不要再在 ItemActions 里放按钮, 避免嵌套交互控件.
  * ItemGroup 不声明 list 语义 (条目不是 listitem); 需要列表语义时由调用方用 ul / li 组合.
  */
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {

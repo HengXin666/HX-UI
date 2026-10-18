@@ -107,7 +107,7 @@ function readParityIds() {
 const parityIds = readParityIds();
 const caseIds = [...switchIds, ...parityIds];
 /** App.tsx: import { XPage } from "./pages/XPage" (或页面组目录 "./pages/parity") */
-const importedPages = [...appSrc.matchAll(/from "\.\/pages\/(\w+)"/g)].map((m) => m[1]);
+const importedPages = [...appSrc.matchAll(/from "\.\/pages\/([\w-]+)"/g)].map((m) => m[1]);
 /**
  * navIcons.ts: `"x": "icon-[..."` 或 `x: "icon-[..."`。
  * **两种键写法都要匹配**  第一版只写了带引号的那种, 于是 40 个键里只读到 16 个,

@@ -8,6 +8,7 @@ Decision-ID: pr-gif-demo
 
 - `scripts/pr-gif/rule.ts`
 - `scripts/tests/pr-gif/rule.test.ts`
+- `scripts/quality/runtime/graph.ts`
 
 ## Problem
 
@@ -18,7 +19,7 @@ HX-UI 的组件改动主要是交互与动效 (弹层进出场, 轮播, 命令�
 - 技能: `.agents/skills/record-browser-gif/` 改编自 deepseek-harness 的同名技能 (MIT, 上游提交 2e08462). `encode_gif.py` 与它的单测原样保留, 便于对照上游; `SKILL.md` 改写为 HX-UI 流程: 从 PR 头部 commit 构建 `docs/dist`, 在组件各自的文档页上演示, 用仓库根声明的 playwright 在全新 headless 上下文里录制 (CHROMIUM_PATH 约定与 test:e2e 一致), 去掉 dsh 服务器, 模型与 API key 步骤. 新增 `scripts/record_docs.ts`: 按 JSON 分镜驱动文档站, 自带只读静态服务, 工作区不干净时拒绝录制, 写出 capture.json (commit, 视口, 浏览器来源, 时间线). MIT 许可全文放在技能目录 `LICENSE`, 仓库 `NOTICE` 登记来源.
 - 产物目录 `.playwright-gif/` 加入 `.gitignore`. 发布: GIF 推到孤儿分支 `pr-assets` 的 `pr-<编号>/` 下 (只追加, 不删除, 不强推, 不发 PR, 不合并), PR 正文用 `raw.githubusercontent.com` 地址嵌入, 旁边写演示的 commit SHA, 内容与截图间隔 / 播放倍速.
 - 规则: 改动 `src/**/*.tsx`, `src/**/*.css` 或 `docs/src/**` 的 PR 必须在正文嵌入 GIF, 写进 AGENTS.md, CONTRIBUTING.md 与 PR 模板的 "演示" 一节 (已有的 `.github/PULL_REQUEST_TEMPLATE.md` 原地追加, 不另建小写同名模板, 避免两份模板并存).
-- CI: `.github/workflows/pr-gif.yml` 只在 pull_request 事件运行 (opened, edited, reopened, synchronize, labeled, unlabeled), 只读权限, checkout 不保留凭据; 正文与标签经环境变量传入 `scripts/pr-gif/check.ts`, 不拼进 shell. 判定在 `scripts/pr-gif/rule.ts`: 改动文件命中前端路径且正文 (去掉 HTML 注释后) 没有 GIF 图片 (markdown 图片或 img 标签, 地址以 .gif 结尾或是 GitHub 上传附件地址) 时失败; 普通链接不算; 带 `no-gif` 标签时豁免. 与 agent-notes 报告类工作流不同, 这是一个真正会失败的检查, 因为缺 GIF 是 PR 作者能立即补上的. 判定的单测注册为 `pr-gif:unit`. CLI 与判定同放 `scripts/pr-gif/` (代表文件是 `rule.ts`), 不放 `scripts/` 根目录: 根目录已由 smoke / shell / blueprint 检查各自的决策占用, 新增兄弟文件会让三篇无关 note 被判为待审核.
+- CI: `.github/workflows/pr-gif.yml` 只在 pull_request 事件运行 (opened, edited, reopened, synchronize, labeled, unlabeled), 只读权限, 两次 checkout 都不保留凭据; 判定脚本从 base 提交检出的 `.pr-base/scripts/pr-gif/check.ts` 运行 (PR 改自己分支里的脚本绕不过检查), PR 头部检出只用于 `git diff` 算改动清单; 正文与标签经环境变量传入, 不拼进 shell. base 还没有该脚本时 (本检查首次引入的那个 PR) 打 warning 跳过. 判定在 `scripts/pr-gif/rule.ts`: 改动文件命中前端路径且正文 (去掉 HTML 注释与围栏代码块后) 没有 GIF 图片 (markdown 图片或 img 标签, 地址以 .gif 结尾或是 GitHub 上传附件地址) 时失败; 普通链接不算; 带 `no-gif` 标签时豁免, 但正文必须写一节 `## 理由` 或一行 `理由: ...` 说明, 没写理由同样失败. 围栏标记与理由标题的字面量在 `scripts/constants/quality.ts`. 与 agent-notes 报告类工作流不同, 这是一个真正会失败的检查, 因为缺 GIF 是 PR 作者能立即补上的. 判定的单测注册为 `pr-gif:unit`. CLI 与判定同放 `scripts/pr-gif/` (代表文件是 `rule.ts`), 不放 `scripts/` 根目录: 根目录已由 smoke / shell / blueprint 检查各自的决策占用, 新增兄弟文件会让三篇无关 note 被判为待审核.
 - 新增工作流改变了 CI 接线清单, 门禁指纹 `wiring:checkpoints` 随之有意更新; 没有摘掉或放松任何已有门禁.
 
 ## Alternatives considered

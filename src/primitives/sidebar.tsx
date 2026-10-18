@@ -53,7 +53,7 @@ function useIsMobile(): boolean {
  * 侧栏 (组合式, 对标 shadcn Sidebar).
  *
  * SidebarProvider 持有开合状态 (受控 open / onOpenChange 或非受控 defaultOpen),
- * 并注册 Cmd/Ctrl+B 快捷键; 移动端宽度下 Sidebar 自动改为 Sheet 抽屉.
+ * 并注册 Cmd/Ctrl+B 快捷键 (带 Shift / Alt 的组合不接管, 留给浏览器与调用方); 移动端宽度下 Sidebar 自动改为 Sheet 抽屉.
  * 库里已有的 SidebarNavItemButton / CollapsibleRail / AppFrame 是固定版式的快捷件, 继续可用;
  * 这一组用于需要 "可收成图标条 + 分组 + 子菜单 + 移动端抽屉" 的应用外壳.
  */
@@ -96,7 +96,8 @@ function SidebarProvider({
 			if (event.defaultPrevented || event.isComposing || isEditableTarget(event.target)) {
 				return;
 			}
-			if (event.key.toLowerCase() === SIDEBAR_SHORTCUT && (event.metaKey || event.ctrlKey)) {
+			/** 只认不带 Shift / Alt 的组合: Ctrl+Shift+B 等留给浏览器与调用方自己的快捷键. */
+			if (event.key.toLowerCase() === SIDEBAR_SHORTCUT && (event.metaKey || event.ctrlKey) && !event.shiftKey && !event.altKey) {
 				event.preventDefault();
 				toggleSidebar();
 			}

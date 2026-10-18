@@ -151,3 +151,10 @@ export const SAMPLE_LIMIT = 5;
 /** 仓库根说明文档 (测试夹具里的非前端文件). */
 export const README_FILE = "README.md";
 export const EMPTY_JSON_OBJECT = "{}";
+
+/** PR 正文里围栏代码块的开头与结束标记 (CommonMark 的反引号围栏). */
+export const FENCE_BACKTICKS = "```";
+/** 围栏代码块的波浪号变体. */
+export const FENCE_TILDES = "~~~";
+/** 豁免理由的标题: 正文里写一节 "## 理由" 即视为写明. */
+export const REASON_HEADING = "## 理由";

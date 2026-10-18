@@ -1,6 +1,6 @@
 ---
 name: record-browser-gif
-description: 为 HX-UI 录制前端交互演示 GIF: 从 PR 头部的确切 commit 构建文档站, 用仓库声明的 playwright 在隔离 headless 浏览器里按分镜操作组件文档页, 用 encode_gif.py 确定性编码并校验, 再推到专用孤儿分支 pr-assets 并嵌入 PR 正文. 凡是改动前端功能的 PR (src/**/*.tsx, src/**/*.css, docs/src/**) 都必须附 GIF; 被要求 "录个 GIF / 做个演示动图" 时也用本技能.
+description: "为 HX-UI 录制前端交互演示 GIF: 从 PR 头部的确切 commit 构建文档站, 用仓库声明的 playwright 在隔离 headless 浏览器里按分镜操作组件文档页, 用 encode_gif.py 确定性编码并校验, 再推到专用孤儿分支 pr-assets 并嵌入 PR 正文. 凡是改动前端功能的 PR (src/**/*.tsx, src/**/*.css, docs/src/**) 都必须附 GIF; 被要求 \"录个 GIF / 做个演示动图\" 时也用本技能."
 ---
 
 # 录制浏览器 GIF (HX-UI 版)

@@ -59,7 +59,8 @@ const DEFAULT_LABELS: QuestionnaireLabels = {
  *
  * 一次一题, 顶部进度条; 单选点选即前进 (最后一题只选中, 由 "提交" 按钮提交), 多选与文本题按 "下一步" 前进, skippable 的题可跳过.
  * 切题时按方向左右滑入 (motion), 系统要求减弱动效时只淡入淡出.
- * 最后一题提交时调用一次 onSubmit(answers), 提交后不再响应选择与提交. 数字键 1 到 9 选择对应选项.
+ * 最后一题提交时调用一次 onSubmit(answers), 提交后不再响应选择与提交, 自由文本输入框同时禁用.
+ * 数字键 1 到 9 选择对应选项.
  */
 function Questionnaire({
 	questions,
@@ -166,7 +167,13 @@ function Questionnaire({
 						<Textarea
 							value={isString(answer) ? answer : ""}
 							placeholder={question.placeholder}
-							onChange={(event) => setAnswers({ ...answers, [question.id]: event.target.value })}
+							disabled={submitted}
+							onChange={(event) => {
+								if (submitted) {
+									return;
+								}
+								setAnswers({ ...answers, [question.id]: event.target.value });
+							}}
 						/>
 					) : (
 						<div role={single ? ROLE.radiogroup : ROLE.group} className="flex flex-col gap-2">

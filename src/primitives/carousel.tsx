@@ -45,7 +45,8 @@ function useCarousel(): CarouselContextValue {
 /**
  * 轮播 (embla-carousel).
  *
- * 拖拽 / 触控滑动带惯性, 左右方向键切换; 系统要求减弱动效时 embla 的 duration 置 0, 直接跳转.
+ * 拖拽 / 触控滑动带惯性, 左右方向键切换; 方向键在冒泡阶段处理, 内部控件先 preventDefault 就不再翻页;
+ * 系统要求减弱动效时 embla 的 duration 置 0, 直接跳转.
  * 结构: Carousel > CarouselContent > CarouselItem, 加上 CarouselPrevious / CarouselNext / CarouselDots.
  */
 function Carousel({
@@ -124,7 +125,7 @@ function Carousel({
 			}}
 		>
 			<div
-				onKeyDownCapture={handleKeyDown}
+				onKeyDown={handleKeyDown}
 				className={cn(UI_CLASSES.relative, className)}
 				role={ROLE.region}
 				aria-roledescription="carousel"

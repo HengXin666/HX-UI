@@ -26,9 +26,9 @@ const markerVariants = cva("flex w-full items-center gap-2 text-[12px] text-mute
  * 会话里的行内标记 (对标 shadcn Marker): 系统提示, 状态行, 带边框的说明行, 或带文字的分隔线.
  *
  * variant: default 普通一行, border 带边框的说明块, separator 两侧分隔线中间文字 (例如日期).
- * tone 用语义状态色. shimmer 让文字带一道扫光, 用于 "正在思考..." 这类进行中状态;
- * 扫光只作用于 MarkerContent 包住的文字 (直接写在 Marker 下的文字不扫光), 扫光颜色跟随 tone;
- * 系统要求减弱动效时扫光不动.
+ * tone 用语义状态色. shimmer 让文字带一道扫光, 用于 "正在思考..." 这类进行中状态.
+ * 扫光只作用于 MarkerContent 包住的文字: 写在 Marker 下的其他子节点 (图标, 直接放的文字) 不扫光,
+ * 需要扫光的文字要放进 MarkerContent. 扫光颜色跟随 tone; 系统要求减弱动效时不动, 文字保持 tone 本色.
  */
 function Marker({
 	className,

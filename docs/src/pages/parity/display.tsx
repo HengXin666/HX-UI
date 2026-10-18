@@ -60,7 +60,7 @@ const SLIDES = ["Dark Dimmed", "语义状态色", "动效令牌", "水波纹", "
 export function CarouselPage(): JSX.Element {
   return (
     <>
-      <P>轮播 (embla-carousel). 拖拽与触控滑动带惯性, 左右方向键切换; 系统要求减弱动效时直接跳转. CarouselDots 的当前圆点拉长成胶囊.</P>
+      <P>轮播 (embla-carousel). 拖拽与触控滑动带惯性, 左右方向键切换; 在输入框等可编辑元素里打字时方向键不翻页, 内部控件先 preventDefault 时也不翻页; 系统要求减弱动效时直接跳转. CarouselDots 的当前圆点拉长成胶囊.</P>
       <Usage names={["Carousel", "CarouselContent", "CarouselItem", "CarouselPrevious", "CarouselNext", "CarouselDots", "useCarousel"]} deps={["embla-carousel-react"]} />
       <H2>示例</H2>
       <Preview align={ALIGN.center} code={`<Carousel className="w-full max-w-xs" opts={{ loop: true }}>

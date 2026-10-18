@@ -67,6 +67,19 @@ def parse_durations(value: str, frame_count: int) -> list[float]:
     return durations
 
 
+def frame_order(path: Path) -> tuple[int, str]:
+    """Order screenshot frames by their numeric prefix, falling back to the plain name."""
+    stem = path.stem
+    digits = ""
+    for char in stem:
+        if not char.isdigit():
+            break
+        digits += char
+    if digits:
+        return (int(digits), stem)
+    return (-1, stem)
+
+
 def require_binary(name: str) -> str:
     """Resolve a required media binary or fail without attempting installation."""
     path = shutil.which(name)
@@ -151,6 +164,12 @@ def write_concat_manifest(path: Path, frames: list[Path], durations: list[float]
         lines.append(f"duration {duration:.6f}")
     lines.append(f"file {ffconcat_quote(frames[-1])}")
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def cleanup_failed_output(output: Path, written: bool) -> None:
+    """Remove the GIF this run wrote, so a failed encode never blocks the next attempt."""
+    if written and output.exists():
+        output.unlink()
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -240,7 +259,11 @@ def main() -> None:
         pattern = args.pattern if args.pattern is not None else "*.png"
         if not pattern:
             fail("--pattern must not be empty")
-        frames = sorted(path.resolve() for path in source.glob(pattern) if path.is_file())
+        # 按数字前缀排序: 字典序会把 100 排在 99 前面, 超过 99 帧的录制就会乱序
+        frames = sorted(
+            (path.resolve() for path in source.glob(pattern) if path.is_file()),
+            key=frame_order,
+        )
         if len(frames) < 2:
             fail(f"expected at least two frames in {source}")
         if output in frames:
@@ -257,6 +280,8 @@ def main() -> None:
         details = {"sourceFrames": len(frames)}
 
     output.parent.mkdir(parents=True, exist_ok=True)
+    # 运行前是否已有 output: ffmpeg 失败时只清理由本次运行新建的文件, 不动 --force 之前的既有文件
+    existed_before = output.exists()
     with tempfile.TemporaryDirectory(prefix="record-browser-gif-") as temporary:
         if is_video:
             inputs = ["-i", str(source)]
@@ -293,27 +318,36 @@ def main() -> None:
         try:
             subprocess.run(command, check=True)
         except subprocess.CalledProcessError as error:
+            # ffmpeg 可能已经写出半个文件: 没 --force 时它不会碰既有文件, 有 --force 时旧内容已被截断
+            cleanup_failed_output(output, not existed_before or args.force)
             fail(f"ffmpeg failed with exit code {error.returncode}")
 
-    stream = probe_stream(ffprobe, output)
-    width = stream_int(stream, "width", output)
-    height = stream_int(stream, "height", output)
-    encoded_frames = stream_int(stream, "nb_frames", output)
+    # 编码之后的每一步校验都包在同一个清理里: 留下一个不合规的 GIF 会让下次运行撞上
+    # "output already exists", 而那个文件正是上次失败留下的
     try:
-        actual_duration = float(stream["duration"])
-    except (KeyError, TypeError, ValueError):
-        fail(f"missing duration in media probe for {output}")
-    tolerance = max(0.2, 2 / args.fps)
-    if abs(actual_duration - expected_duration) > tolerance:
-        fail(f"expected about {expected_duration:.3f}s, encoded {actual_duration:.3f}s")
-    if width > args.max_width:
-        fail(f"expected width at most {args.max_width}, encoded {width}")
-    if encoded_frames < 2:
-        fail(f"expected an animated GIF, encoded {encoded_frames} frame")
-
-    byte_size = output.stat().st_size
-    if byte_size > args.max_bytes:
-        fail(f"output is {byte_size} bytes, above --max-bytes {args.max_bytes}")
+        stream = probe_stream(ffprobe, output)
+        width = stream_int(stream, "width", output)
+        height = stream_int(stream, "height", output)
+        encoded_frames = stream_int(stream, "nb_frames", output)
+        try:
+            actual_duration = float(stream["duration"])
+        except (KeyError, TypeError, ValueError):
+            fail(f"missing duration in media probe for {output}")
+        tolerance = max(0.2, 2 / args.fps)
+        if abs(actual_duration - expected_duration) > tolerance:
+            fail(f"expected about {expected_duration:.3f}s, encoded {actual_duration:.3f}s")
+        if width > args.max_width:
+            fail(f"expected width at most {args.max_width}, encoded {width}")
+        if encoded_frames < 2:
+            fail(f"expected an animated GIF, encoded {encoded_frames} frame")
+        byte_size = output.stat().st_size
+        if byte_size > args.max_bytes:
+            fail(f"output is {byte_size} bytes, above --max-bytes {args.max_bytes}")
+    except BaseException:
+        # 走到这里说明 output 是本次刚编码出来的: 无论新建还是 --force 覆盖, 都要删掉,
+        # 否则下次运行会被 "output already exists" 卡住, 而那个文件正是上次失败留下的
+        cleanup_failed_output(output, True)
+        raise
 
     print(
         json.dumps(

@@ -28,6 +28,10 @@ export const DOC = {
 	/** 示例里的通用文案. */
 	settings: "设置",
 	copy: "复制",
+	/** 小一号的说明文字 (上一页 / 下一页的标题行). */
+	caption: "text-[11px] text-muted-foreground",
+	/** 可截断的一行强调文字 (页面导航的目标名). */
+	strongLine: "truncate text-[13px] font-medium text-foreground",
 	/** 安装页的路由 (面包屑, 导航菜单与链接示例都指向它). */
 	installHref: "#/install",
 	/** 规格清单每行的列数: 属性表 (名字 ~ 类型 ~ 默认 ~ 说明), 导航清单 (id ~ 标签 ~ 说明). */

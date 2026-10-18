@@ -16,6 +16,7 @@ import { BUTTON_TYPE, ROLE, SLOT, STEP_BACK, TAG, UI_CLASSES, VARIANT } from "..
  * 状态与 Provider 仍在 sidebar.tsx, 菜单项仍在 sidebar-menu.tsx.
  */
 
+/** 开合按钮: 先跑调用方 onClick, 未 preventDefault 时才切换, 调用方可以借此拦下开合. */
 function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<typeof Button>): React.JSX.Element {
 	const { toggleSidebar } = useSidebar();
 	return (
@@ -28,7 +29,9 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
 			className={className}
 			onClick={(event) => {
 				onClick?.(event);
-				toggleSidebar();
+				if (!event.defaultPrevented) {
+					toggleSidebar();
+				}
 			}}
 			{...props}
 		>

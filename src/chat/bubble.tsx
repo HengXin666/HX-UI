@@ -75,7 +75,8 @@ function BubbleReactions({ className, ...props }: React.ComponentProps<"div">): 
 /**
  * 可折叠气泡: 超长内容默认收起到 collapsedHeight, 底部渐隐, 点击展开.
  * open / defaultOpen / onOpenChange 与 Radix Collapsible 同义, 受控与非受控都可用.
- * 展开高度按内容实测像素过渡 (max-height 不能在像素与 none 之间补间), 内容变化时跟随更新.
+ * 展开高度按内容实测像素过渡 (max-height 不能在像素与 none 之间补间), 内容变化时跟随更新;
+ * 环境没有 ResizeObserver 时只在挂载时量一次, 不跟随后续变化.
  */
 function BubbleCollapsible({
 	className,
@@ -110,6 +111,10 @@ function BubbleCollapsible({
 		}
 		const measure = (): void => setFullHeight(node.scrollHeight);
 		measure();
+		/** 老浏览器与部分 SSR 环境没有 ResizeObserver: 退化成只在挂载时量一次, 不做跟随. */
+		if (!("ResizeObserver" in globalThis)) {
+			return;
+		}
 		const observer = new ResizeObserver(measure);
 		observer.observe(node);
 		return () => observer.disconnect();

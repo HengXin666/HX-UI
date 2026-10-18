@@ -37,9 +37,9 @@
 ## PR 演示 GIF
 
 - 改动前端功能 (`src/**/*.tsx`, `src/**/*.css`, `docs/src/**`) 的 PR 必须在正文 "演示" 一节嵌入 GIF, 展示改动涉及的组件在文档站对应页面上的真实交互
-- 录制: 按 `.agents/skills/record-browser-gif/SKILL.md`, 从 PR 头部的确切 commit 构建文档站 (`npm --prefix docs run build`), 用根 devDependency 里的 playwright 跑分镜 (`scripts/record_docs.ts`), 产物放在已 gitignore 的 `.playwright-gif/`, 用 `scripts/encode_gif.py` 编码并校验 (需要 python3, ffmpeg, ffprobe; 浏览器可用 `CHROMIUM_PATH` 指定)
+- 录制: 按 `.agents/skills/record-browser-gif/SKILL.md`, 从 PR 头部的确切 commit 构建文档站 (`npm --prefix docs run build`), 用根 devDependency 里的 playwright 跑分镜 (`.agents/skills/record-browser-gif/scripts/record_docs.ts`), 产物放在已 gitignore 的 `.playwright-gif/`, 用 `.agents/skills/record-browser-gif/scripts/encode_gif.py` 编码并校验 (需要 python3, ffmpeg, ffprobe; 浏览器可用 `CHROMIUM_PATH` 指定)
 - 发布: GIF 推到孤儿分支 `pr-assets` 的 `pr-<编号>/` 下 (只追加, 不合并, 不强推), 用 `https://raw.githubusercontent.com/<owner>/<repo>/pr-assets/...` 嵌入; 旁边写明演示的 commit SHA, 演示内容, 截图间隔或播放倍速. 不要把 GIF 提交到 PR 分支
-- CI 工作流 `pr-gif` (pull_request 事件, 正文编辑与加减标签都会重跑) 在前端路径有改动而正文没有 GIF 图片链接时失败; HTML 注释里的示例不算. 纯重构等没有可见变化的改动由维护者加 `no-gif` 标签豁免, 并在正文写明理由
+- CI 工作流 `pr-gif` (pull_request 事件, 正文编辑与加减标签都会重跑) 在前端路径有改动而正文没有 GIF 图片链接时失败; HTML 注释与围栏代码块里的示例都不算. 纯重构等没有可见变化的改动由维护者加 `no-gif` 标签豁免, 且正文必须写一节 `## 理由` 或一行 `理由: ...` 说明, 没写理由同样失败. 判定脚本取自 base 提交, 改 PR 里的脚本绕不过检查
 - 本地自查: `CHANGED_FILES="$(git diff --name-only origin/main...HEAD)" PR_BODY="$(cat body.md)" node scripts/pr-gif/check.ts`
 
 ## 决策与例外

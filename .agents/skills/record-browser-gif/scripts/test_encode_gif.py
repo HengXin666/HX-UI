@@ -41,6 +41,20 @@ class EncodeGifTest(unittest.TestCase):
         self.assertGreater(pixel[channel], 200)
         self.assertTrue(all(value < 40 for index, value in enumerate(pixel) if index != channel))
 
+    def write_frames(self, count, first=None, last=None):
+        """Write numbered PPM frames, with an optional distinct first and last color."""
+        frames = self.root / 'frames'
+        frames.mkdir(exist_ok=True)
+        colors = [(0xff, 0x00, 0x00)] * count
+        if first is not None:
+            colors[0] = first
+        if last is not None:
+            colors[-1] = last
+        for index, color in enumerate(colors):
+            body = bytes(color) * (64 * 48)
+            (frames / f'{index}.ppm').write_bytes(b'P6\n64 48\n255\n' + body)
+        return frames
+
     def test_video_trim_speed_final_hold_and_palette_order(self):
         result = self.encode(None, '--start', '1', '--end', '5', '--speed', '2',
                              '--final-hold', '1', '--max-width', '32')
@@ -71,10 +85,7 @@ class EncodeGifTest(unittest.TestCase):
                 self.assertFalse(self.output.exists())
 
     def test_screenshot_durations_and_video_flag_rejection(self):
-        frames = self.root / 'frames'
-        frames.mkdir()
-        for index, color in enumerate([b'\xff\x00\x00', b'\x00\x00\xff']):
-            (frames / f'{index}.ppm').write_bytes(b'P6\n64 48\n255\n' + color * (64 * 48))
+        frames = self.write_frames(2, first=(0xff, 0x00, 0x00), last=(0x00, 0x00, 0xff))
         rejected = self.encode(frames, '--speed', '1')
         self.assertNotEqual(rejected.returncode, 0)
         self.assertIn('require a video file', rejected.stderr)
@@ -89,14 +100,38 @@ class EncodeGifTest(unittest.TestCase):
         self.assert_color(0.1, 0)
         self.assert_color(1.8, 2)
 
+    def test_more_than_ninety_nine_frames_keep_numeric_order(self):
+        """字典序会把 100 排到 99 前面, 帧数过百的录制必须按数字前缀排序."""
+        frames = self.write_frames(101, first=(0x00, 0x00, 0xff), last=(0x00, 0xff, 0x00))
+        result = self.encode(frames, '--pattern', '*.ppm', '--durations', '0.1',
+                             '--fps', '10', '--max-width', '32')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['sourceFrames'], 101)
+        # 首帧是蓝色, 末帧是绿色: 若 100 被排到 1 之前, 首帧与末帧的颜色就会对不上
+        self.assert_color(0.0, 2)
+        self.assert_color(10.0, 1)
+
+    def test_failed_validation_removes_the_written_output(self):
+        """校验失败时必须删掉刚写出的 GIF, 否则下次运行会被 output already exists 卡住."""
+        failed = self.encode(None, '--max-bytes', '1', '--final-hold', '0.0')
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertIn('above --max-bytes', failed.stderr)
+        self.assertFalse(self.output.exists())
+        retried = self.encode()
+        self.assertEqual(retried.returncode, 0, retried.stderr)
+
     def test_overwrite_and_size_limit(self):
         self.output.write_bytes(b'keep')
         rejected = self.encode()
         self.assertNotEqual(rejected.returncode, 0)
         self.assertEqual(self.output.read_bytes(), b'keep')
+        # --force 覆盖之后校验失败: 旧内容已经没了, 留下不合规的新文件只会卡住下一次运行
         oversized = self.encode(None, '--force', '--max-bytes', '1', '--final-hold', '0.0')
         self.assertNotEqual(oversized.returncode, 0)
         self.assertIn('above --max-bytes', oversized.stderr)
+        self.assertFalse(self.output.exists())
+        retried = self.encode(None, '--force')
+        self.assertEqual(retried.returncode, 0, retried.stderr)
 
 
 if __name__ == '__main__':

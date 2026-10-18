@@ -45,6 +45,6 @@ for (const url of verdict.gifs) {
 }
 if (!verdict.ok) {
 	console.log("  按 .agents/skills/record-browser-gif/SKILL.md 录制 GIF, 推到 pr-assets 分支并嵌入 PR 正文的 \"演示\" 一节;");
-	console.log(`  确实没有可见变化时由维护者加 ${NO_GIF_LABEL} 标签并在正文写明理由.`);
+	console.log(`  确实没有可见变化时由维护者加 ${NO_GIF_LABEL} 标签, 并在正文写一节 "## 理由" 或一行 "理由: ..."`);
 	process.exit(1);
 }

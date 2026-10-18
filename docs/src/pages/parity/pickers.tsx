@@ -100,7 +100,17 @@ export function ComboboxPage(): JSX.Element {
       <P>可搜索下拉: Popover + Command. 输入即过滤 (keywords 参与搜索但不显示), 单选时再点已选项会取消; multiple 时选中项以标签显示在触发器里.</P>
       <Usage names={["Combobox"]} deps={["cmdk"]} />
       <H2>示例</H2>
-      <Preview code={`const FRAMEWORKS = [{ value: "react", label: "React", keywords: ["前端"] }, ...];
+      <Preview code={`const FRAMEWORKS = [
+  { value: "react", label: "React", keywords: ["前端"] },
+  { value: "vue", label: "Vue" },
+  { value: "svelte", label: "Svelte" },
+  { value: "solidjs", label: "Solid" },
+  { value: "angular", label: "Angular", disabled: true },
+  { value: "qt", label: "Qt (C++)", keywords: ["桌面"] },
+];
+
+const [value, setValue] = useState(FRAMEWORKS[0].value);
+const [many, setMany] = useState([FRAMEWORKS[0].value, "qt"]);
 
 <Combobox options={FRAMEWORKS} value={value} onValueChange={setValue} placeholder="选择框架" />
 <Combobox multiple options={FRAMEWORKS} value={many} onValueChange={setMany} placeholder="可多选" />`}>

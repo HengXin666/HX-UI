@@ -62,7 +62,7 @@ export function MenubarPage(): JSX.Element {
   const [panel, setPanel] = useState("panel-files");
   return (
     <>
-      <P>桌面应用式的菜单栏. 打开一个菜单后, 左右方向键与鼠标横扫会直接切到相邻菜单, 这是它与一排 DropdownMenu 的区别. 菜单项默认带水波纹.</P>
+      <P>桌面应用式的菜单栏. 打开一个菜单后, 左右方向键与鼠标横扫会直接切到相邻菜单, 这是它与一排 DropdownMenu 的区别. 菜单项默认带水波纹. MenubarSubTrigger 固定渲染内容加右侧箭头, 所以不开 asChild, 只接受普通子节点.</P>
       <Usage names={["Menubar", "MenubarMenu", "MenubarTrigger", "MenubarContent", "MenubarItem", "MenubarSeparator", "MenubarShortcut", "MenubarCheckboxItem", "MenubarRadioGroup", "MenubarRadioItem", "MenubarSub", "MenubarSubTrigger", "MenubarSubContent"]} />
       <H2>示例</H2>
       <Preview code={`<Menubar>

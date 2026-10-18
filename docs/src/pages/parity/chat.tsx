@@ -12,7 +12,9 @@ export function AttachmentPage(): JSX.Element {
       <P>文件 / 图片附件: 缩略图或图标, 文件名, 大小或状态, 操作. uploading 时底部出现进度条 (不传 progress 为不定长), error 时边框与说明转危险色. 进场时缩放淡入.</P>
       <Usage names={["Attachment", "AttachmentMedia", "AttachmentContent", "AttachmentTitle", "AttachmentDescription", "AttachmentActions", "AttachmentAction", "AttachmentGroup"]} />
       <H2>示例</H2>
-      <Preview code={`<AttachmentGroup>
+      <Preview code={`const [progress, setProgress] = useState(42);
+
+<AttachmentGroup>
   <Attachment>
     <AttachmentMedia><FileTextIcon /></AttachmentMedia>
     <AttachmentContent>
@@ -20,11 +22,33 @@ export function AttachmentPage(): JSX.Element {
       <AttachmentDescription>2.4 MB</AttachmentDescription>
     </AttachmentContent>
     <AttachmentActions>
-      <AttachmentAction asChild><Button size={SIZE.iconXs} variant="ghost" aria-label="移除"><XIcon /></Button></AttachmentAction>
+      <AttachmentAction asChild><Button size="icon-xs" variant="ghost" aria-label="移除"><XIcon /></Button></AttachmentAction>
     </AttachmentActions>
   </Attachment>
-  <Attachment state="uploading" progress={42}>...</Attachment>
-  <Attachment state={TASK_STATUS.error}>...</Attachment>
+  <Attachment state="uploading" progress={progress}>
+    <AttachmentMedia />
+    <AttachmentContent>
+      <AttachmentTitle>日志.zip</AttachmentTitle>
+      <AttachmentDescription>上传中 {Math.min(progress, 100)}%</AttachmentDescription>
+    </AttachmentContent>
+    <AttachmentActions>
+      <AttachmentAction asChild>
+        <Button size="xs" variant="ghost" onClick={() => setProgress((value) => (value >= 100 ? 0 : value + 19))}>
+          推进
+        </Button>
+      </AttachmentAction>
+    </AttachmentActions>
+  </Attachment>
+  <Attachment state="error">
+    <AttachmentMedia />
+    <AttachmentContent>
+      <AttachmentTitle>超大视频.mov</AttachmentTitle>
+      <AttachmentDescription>超过 100 MB 上限</AttachmentDescription>
+    </AttachmentContent>
+    <AttachmentActions>
+      <AttachmentAction asChild><Button size="icon-xs" variant="ghost" aria-label="重试"><RefreshCwIcon /></Button></AttachmentAction>
+    </AttachmentActions>
+  </Attachment>
 </AttachmentGroup>`}>
         <AttachmentGroup>
           <Attachment>

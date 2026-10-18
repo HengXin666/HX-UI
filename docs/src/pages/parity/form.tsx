@@ -1,4 +1,4 @@
-import { type JSX } from "react";
+import { useState, type JSX } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -156,60 +156,78 @@ const form = useForm({ resolver: zodResolver(schema), defaultValues: { username:
 }
 
 export function InputGroupPage(): JSX.Element {
+  /** 复制按钮取输入框里实际输入的内容, 不是写死的示例地址. */
+  const [url, setUrl] = useState("example.com");
+  /**
+   * 先建一条已完成的 Promise 再写剪贴板: 浏览器不给 clipboard (非安全上下文, 旧版 Safari) 时
+   * navigator.clipboard 为 undefined, 同步抛出的 TypeError 也落进失败回调, 与 "用户拒绝授权" 走同一条提示.
+   */
+  const copyUrl = (): void => {
+    void Promise.resolve()
+      .then(() => navigator.clipboard.writeText("https://" + url))
+      .then(
+        () => toast.info("链接已复制"),
+        () => toast.error("复制失败: 浏览器未授权剪贴板"),
+      );
+  };
   return (
     <>
       <P>一个输入框加前后缀 (图标, 文字, 按钮, 快捷键), 外观是一个整体. 聚焦反馈落到外层边框; 点击前后缀区域把焦点交给输入框.</P>
       <Usage names={["InputGroup", "InputGroupAddon", "InputGroupInput", "InputGroupText", "InputGroupButton", "InputGroupTextarea"]} />
       <H2>示例</H2>
-      <Preview code={`<InputGroup>
+      <Preview code={`const [url, setUrl] = useState("example.com");
+
+/** 先建一条已完成的 Promise 再写剪贴板: 浏览器不给 clipboard 时同步抛出的错误也进失败回调. */
+const copyUrl = (): void => {
+  void Promise.resolve()
+    .then(() => navigator.clipboard.writeText("https://" + url))
+    .then(
+      () => toast.info("链接已复制"),
+      () => toast.error("复制失败: 浏览器未授权剪贴板"),
+    );
+};
+
+<InputGroup>
   <InputGroupAddon><SearchIcon /></InputGroupAddon>
   <InputGroupInput placeholder="搜索文档" />
-  <InputGroupAddon align={ALIGN.inlineEnd}><Kbd>⌘K</Kbd></InputGroupAddon>
+  <InputGroupAddon align="inline-end"><Kbd>Ctrl K</Kbd></InputGroupAddon>
 </InputGroup>
 <InputGroup>
   <InputGroupAddon><InputGroupText>https://</InputGroupText></InputGroupAddon>
-  <InputGroupInput placeholder="example.com" />
-  <InputGroupAddon align={ALIGN.inlineEnd}>
-    <InputGroupButton size="icon-xs" aria-label="复制" onClick={() => navigator.clipboard.writeText(url)}>
+  <InputGroupInput value={url} onChange={(event) => setUrl(event.target.value)} />
+  <InputGroupAddon align="inline-end">
+    <InputGroupButton size="icon-xs" aria-label="复制" onClick={copyUrl}>
       <CopyIcon />
     </InputGroupButton>
+  </InputGroupAddon>
+</InputGroup>
+<InputGroup>
+  <InputGroupInput placeholder="正在校验用户名" defaultValue="hengxin" />
+  <InputGroupAddon align="inline-end"><Spinner /></InputGroupAddon>
+</InputGroup>
+<InputGroup>
+  <InputGroupTextarea placeholder="给 Agent 的指令..." />
+  <InputGroupAddon align="block-end" className="justify-between">
+    <InputGroupText>0 / 2000</InputGroupText>
+    <InputGroupButton variant="primary" size="sm">发送</InputGroupButton>
   </InputGroupAddon>
 </InputGroup>`}>
         <div className="grid w-full max-w-sm gap-3">
           <InputGroup>
-            <InputGroupAddon>
-              <SearchIcon />
-            </InputGroupAddon>
+            <InputGroupAddon><SearchIcon /></InputGroupAddon>
             <InputGroupInput placeholder="搜索文档" />
-            <InputGroupAddon align={ALIGN.inlineEnd}>
-              <Kbd>Ctrl K</Kbd>
-            </InputGroupAddon>
+            <InputGroupAddon align={ALIGN.inlineEnd}><Kbd>Ctrl K</Kbd></InputGroupAddon>
           </InputGroup>
           <InputGroup>
-            <InputGroupAddon>
-              <InputGroupText>https://</InputGroupText>
-            </InputGroupAddon>
-            <InputGroupInput placeholder="example.com" />
+            <InputGroupAddon><InputGroupText>https://</InputGroupText></InputGroupAddon>
+            <InputGroupInput value={url} onChange={(event) => setUrl(event.target.value)} />
             <InputGroupAddon align={ALIGN.inlineEnd}>
-              <InputGroupButton
-                size={SIZE.iconXs}
-                aria-label={DOC.copy}
-                onClick={() => {
-                  void navigator.clipboard.writeText("https://example.com").then(
-                    () => toast.info("链接已复制"),
-                    () => toast.error("复制失败: 浏览器未授权剪贴板"),
-                  );
-                }}
-              >
-                <CopyIcon />
-              </InputGroupButton>
+              <InputGroupButton size={SIZE.iconXs} aria-label={DOC.copy} onClick={copyUrl}><CopyIcon /></InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
           <InputGroup>
             <InputGroupInput placeholder="正在校验用户名" defaultValue="hengxin" />
-            <InputGroupAddon align={ALIGN.inlineEnd}>
-              <Spinner />
-            </InputGroupAddon>
+            <InputGroupAddon align={ALIGN.inlineEnd}><Spinner /></InputGroupAddon>
           </InputGroup>
           <InputGroup>
             <InputGroupTextarea placeholder="给 Agent 的指令..." />

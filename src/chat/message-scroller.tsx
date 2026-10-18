@@ -39,6 +39,7 @@ function scrollBehavior(smooth: boolean): ScrollBehavior {
  * 贴底跟随: 用户停在底部时, 新消息或流式增长的内容会把视口一直带到底;
  * 用户往上翻看历史时不再跟随, 并出现 "回到最新" 按钮. 在顶部插入历史消息时
  * 保持当前可见内容不跳动 (按插入前后的滚动高度差补偿). 打开已有会话时直接定位到底部.
+ * scrollToItem 是一次性定位, 不重新开启贴底跟随; 滚轮, 触摸, 按键与拖动滚动条都会取消程序化滚动.
  */
 function MessageScroller({
 	className,
@@ -71,6 +72,9 @@ function MessageScroller({
 		}
 		const offset = target.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
 		const top = viewport.scrollTop + offset - (viewport.clientHeight - target.offsetHeight) / HALF_DIVISOR;
+		/** 定位是一次性跳转, 不是贴底跟随: 先取消未完成的贴底滚动, 再让 scroll 事件按实际位置重新判定. */
+		pendingRef.current = false;
+		stickRef.current = false;
 		viewport.scrollTo({ top, behavior: scrollBehavior(true) });
 	}, []);
 
@@ -113,7 +117,7 @@ function MessageScroller({
 		setAtBottom(bottom);
 	};
 
-	/** 用户滚轮, 触摸或按键介入时取消程序化滚动, 回到按位置判定贴底. */
+	/** 用户滚轮, 触摸, 按键或拖动滚动条时取消程序化滚动, 回到按位置判定贴底. */
 	const interrupt = (): void => {
 		pendingRef.current = false;
 	};
@@ -129,6 +133,7 @@ function MessageScroller({
 					onWheel={interrupt}
 					onTouchStart={interrupt}
 					onKeyDown={interrupt}
+					onPointerDown={interrupt}
 					data-slot="message-scroller-viewport"
 					className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
 				>

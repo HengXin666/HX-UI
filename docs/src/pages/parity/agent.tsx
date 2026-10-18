@@ -24,7 +24,7 @@ export function MessageScrollerPage(): JSX.Element {
   };
   return (
     <>
-      <P>会话滚动容器. 打开时直接定位到底部; 停在底部时新消息与流式内容自动跟随; 用户往上翻时不跟随并出现 "回到最新"; 在顶部插入历史消息时保持当前可见内容不跳动.</P>
+      <P>会话滚动容器. 打开时直接定位到底部; 停在底部时新消息与流式内容自动跟随; 用户往上翻时不跟随并出现 "回到最新"; 在顶部插入历史消息时保持当前可见内容不跳动. 滚轮, 触摸, 按键与拖动滚动条都会取消程序化滚动; scrollToItem 是一次性定位, 不会重新打开贴底跟随.</P>
       <Usage names={["MessageScroller", "MessageScrollerContent", "MessageScrollerItem", "MessageScrollerButton", "useMessageScroller"]} />
       <H2>示例</H2>
       <Preview code={`<MessageScroller className="h-72">
@@ -96,16 +96,37 @@ const QUESTIONS: readonly QuestionnaireQuestion[] = [
 export function QuestionnairePage(): JSX.Element {
   return (
     <>
-      <P>多步问卷: 一次一题, 顶部进度条; 单选点选即前进, 多选与文本题按 "下一步" 前进, skippable 的题可跳过. 切题时按方向左右滑入 (motion), 系统要求减弱动效时只淡入淡出. 数字键 1 到 9 选择对应选项.</P>
+      <P>多步问卷: 一次一题, 顶部进度条; 单选点选即前进 (最后一题只选中, 由 "提交" 按钮提交, onSubmit 只调用一次), 多选与文本题按 "下一步" 前进, skippable 的题可跳过. 切题时按方向左右滑入 (motion), 系统要求减弱动效时只淡入淡出. 数字键 1 到 9 选择对应选项.</P>
       <Usage names={["Questionnaire", "type QuestionnaireQuestion", "type QuestionnaireAnswers"]} deps={["motion"]} />
       <H2>示例</H2>
-      <Preview code={`<Questionnaire
-  questions={[
-    { id: "scope", title: "这次要覆盖哪些组件?", type: "single", choices: [...] },
-    { id: "motion", title: "需要哪些动效?", type: "multiple", choices: [...] },
-    { id: "note", title: "还有什么要补充的?", type: QUESTION_TYPE.freeform, skippable: true },
-  ]}
-  onSubmit={(answers) => console.log(answers)}
+      <Preview code={`const QUESTIONS = [
+  {
+    id: "scope",
+    title: "这次要覆盖哪些组件?",
+    type: "single",
+    choices: [
+      { value: "every", label: "全部", description: "shadcn 清单里的每一个" },
+      { value: "missing", label: "只补缺的" },
+    ],
+  },
+  {
+    id: "motion",
+    title: "需要哪些动效?",
+    description: "可多选",
+    type: "multiple",
+    choices: [
+      { value: "enter", label: "弹层进出场" },
+      { value: "ripple", label: "点按水波纹" },
+      { value: "layout", label: "布局过渡" },
+    ],
+  },
+  { id: "note", title: "还有什么要补充的?", type: "freeform", skippable: true, placeholder: "可以跳过" },
+];
+
+<Questionnaire
+  className="max-w-md"
+  questions={QUESTIONS}
+  onSubmit={(answers) => toast.success("已提交: " + JSON.stringify(answers))}
 />`}>
         <Questionnaire className="max-w-md" questions={QUESTIONS} onSubmit={(answers) => toast.success(`已提交: ${JSON.stringify(answers)}`)} />
       </Preview>
