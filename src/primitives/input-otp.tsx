@@ -46,6 +46,11 @@ function InputOTPSlot({
 				"relative flex size-9 items-center justify-center border-y border-r border-border/60 bg-muted/40 font-mono text-[15px] text-foreground",
 				"transition-[border-color,background-color] duration-(--duration-fast) first:rounded-l-lg first:border-l last:rounded-r-lg",
 				"data-[active=true]:z-10 data-[active=true]:border-ring data-[active=true]:bg-transparent",
+				/*
+				 * 格子只在右侧画分隔线, 左边那条属于前一格. 当前格若只染自己的边框,
+				 * 左边缘仍是前一格的 muted 色, 高亮缺一条边. 让前一格在下一格激活时把右边线染成 ring 色.
+				 */
+				"[&:has(+[data-active=true])]:border-r-ring",
 				"aria-invalid:border-destructive",
 				className,
 			)}
