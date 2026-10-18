@@ -66,10 +66,17 @@ function which(cmd) {
   return null;
 }
 
-/** 文档页清单从 nav.ts 提取, 而不是在脚本里抄一遍 - 抄的那份一定会过时 */
+/**
+ * 文档页清单从 nav.ts 提取, 而不是在脚本里抄一遍 - 抄的那份一定会过时.
+ * 两种写法都认: 对象字面量 { id: "x" } 与多行清单里的 "x ~ 标签 ~ 说明".
+ * .agents/notes/implemented/feature/2026-10-18-docs-shadcn-site-pages.md
+ */
 function readPages() {
   const src = readFileSync(NAV, UTF8);
-  const ids = [...src.matchAll(/\{\s*id:\s*"([a-z0-9-]+)"/g)].map((m) => m[1]);
+  const ids = [
+    ...src.matchAll(/\{\s*id:\s*"([a-z0-9-]+)"/g),
+    ...src.matchAll(/^([a-z0-9-]+) ~ /gm),
+  ].map((m) => m[1]);
   return [...new Set(ids)];
 }
 

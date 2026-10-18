@@ -107,3 +107,4 @@ export const PAGINATION = {
 } as const;
 
 export * from "./ui";
+export * from "./docs";

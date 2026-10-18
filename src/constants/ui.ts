@@ -26,11 +26,20 @@ export const ALIGN = {
 	start: "start",
 	center: "center",
 	end: "end",
+	/** 输入组前后缀位置. */
+	inlineEnd: "inline-end",
+} as const;
+
+/** 单选 / 多选 (ToggleGroup, Accordion 等 radix 组件的 type). */
+export const SELECT_MODE = {
+	single: "single",
+	multiple: "multiple",
 } as const;
 
 /** 组件尺寸与变体的补充取值 (基础取值见 VARIANT). */
 export const SIZE = {
 	xs: "xs",
+	iconXs: "icon-xs",
 	lg: "lg",
 	md: "md",
 } as const;

@@ -1,8 +1,5 @@
 import { Fragment, useState, type JSX, type ReactNode } from "react";
-import {
-  Badge, Button, Card, CardContent, CardHeader, CardTitle,
-  CodeBlock as LibCodeBlock, cn,
-} from "@hx/ui";
+import { Badge, Card, CardContent, CardHeader, CardTitle, CodeBlock as LibCodeBlock, DOC_TAB, Tabs, TabsContent, TabsList, TabsTrigger, cn } from "@hx/ui";
 
 /**
  * 文档站自己的壳。
@@ -11,7 +8,14 @@ import {
  * 只有"预览框"这类文档专有的容器才允许写自有的类串, 因为它们是文档的排版, 不是产品界面。
  */
 
-/** 一块可预览区域: 上面是活的实例, 下面是源码。 */
+/** 切换标签页时内容淡入. */
+const TAB_FADE = "animate-in fade-in-0 duration-(--duration-base)";
+
+/**
+ * 一块可预览区域: "预览 / 代码" 两个标签页, 与 shadcn 文档同一交互.
+ * 默认停在预览; 没有 code 时只显示预览, 不出标签条.
+ * .agents/notes/implemented/feature/2026-10-18-docs-shadcn-site-pages.md
+ */
 export function Preview({
   children,
   code,
@@ -25,19 +29,34 @@ export function Preview({
   align?: "start" | "center" | "stretch";
   className?: string;
 }): JSX.Element {
+  const stage = (
+    <div
+      className={cn(
+        "flex min-h-[120px] min-w-0 flex-wrap gap-3 p-4 md:p-5",
+        align === "center" && "items-center justify-center",
+        align === "start" && "items-start",
+        align === "stretch" && "items-stretch",
+      )}
+    >
+      {children}
+    </div>
+  );
   return (
     <Card variant="default" className={cn("max-w-full overflow-hidden", className)}>
-      <div
-        className={cn(
-          "flex min-h-[120px] min-w-0 flex-wrap gap-3 p-4 md:p-5",
-          align === "center" && "items-center justify-center",
-          align === "start" && "items-start",
-          align === "stretch" && "items-stretch",
-        )}
-      >
-        {children}
-      </div>
-      {code ? <CodeBlock code={code} lang={lang} /> : null}
+      {code ? (
+        <Tabs defaultValue={DOC_TAB.preview}>
+          <div className="flex h-10 items-center border-b border-border/60 px-2">
+            <TabsList variant="pill">
+              <TabsTrigger value={DOC_TAB.preview}>预览</TabsTrigger>
+              <TabsTrigger value={DOC_TAB.code}>代码</TabsTrigger>
+            </TabsList>
+          </div>
+          <TabsContent value={DOC_TAB.preview} className={TAB_FADE}>{stage}</TabsContent>
+          <TabsContent value={DOC_TAB.code} className={TAB_FADE}>
+            <CodeBlock code={code} lang={lang} />
+          </TabsContent>
+        </Tabs>
+      ) : stage}
     </Card>
   );
 }

@@ -1,6 +1,10 @@
 import type { JSX } from "react";
 import { H2, P, CodeBlock } from "../components/DocKit";
 
+/**
+ * 安装, 接入样式, 本地预览与 GitHub Pages 部署说明.
+ * .agents/notes/implemented/feature/2026-10-18-docs-shadcn-site-pages.md
+ */
 export function InstallPage(): JSX.Element {
   return (
     <>
@@ -41,6 +45,16 @@ export function SettingsPage() {
 
       <H2>换肤</H2>
       <P>改 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">tokens.css</code> 里的 CSS 变量即可, 组件代码一行不动。暗色是默认, 亮色靠根元素的 <code className="rounded-md bg-muted/60 px-1.5 py-0.5 font-mono text-[11.5px]">data-mode="light"</code>。</P>
+
+      <H2>本地预览文档站</H2>
+      <P>文档站直接引用库的源码, 先装根目录依赖, 再装文档站依赖.</P>
+      <CodeBlock code={`npm ci
+npm --prefix docs ci
+npm --prefix docs run dev        # 开发预览
+npm --prefix docs run build      # 产物在 docs/dist`} />
+
+      <H2>部署到 GitHub Pages</H2>
+      <P>仓库自带 .github/workflows/pages.yml: 推送到 main 时构建 docs 并用 actions/deploy-pages 发布. 首次使用前到仓库 Settings, Pages, Build and deployment, 把 Source 设为 GitHub Actions. 产物用相对路径加 hash 路由, 放在仓库名子路径下也能直接打开, 刷新不会 404; 需要固定前缀时构建前设置环境变量 HX_DOCS_BASE.</P>
 
       <H2>同步上游</H2>
       <P>上游更新后跑同步脚本重新拉源码。脚本只改包名引用, 不动视觉类名。</P>

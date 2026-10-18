@@ -16,9 +16,11 @@
     "gates:install-hooks": "bash ../scripts/gates/hooks/install.sh"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.2",
     "@hx/ui": "file:..",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@iconify-json/mdi": "^1.2.3",

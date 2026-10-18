@@ -29,6 +29,14 @@
  *
  * 读 CHECK_UI_ROOT (默认仓库根)  负向探针靠它把夹具指到临时目录。
  *
+ * ## 两种页面登记写法 (2026-10-18 起并存)
+ *
+ *   nav.ts   旧写法 `{ id: "x" }` 与新写法 多行清单里的 `x ~ 标签 ~ 说明` (docs/src/spec.ts 解析)
+ *   路由     App.tsx 的 `case "x":` 与 docs/src/pages/parity/index.ts 的 PARITY_PAGES 键 (default 分支查表)
+ *   页面文件 docs/src/pages/*.tsx 由 App.tsx 引用; 带 index.ts 的子目录 (parity/) 里的 *.tsx 由该 index.ts 引用
+ *
+ * 同一个 id 同时出现在 case 与 PARITY_PAGES = 违规 (查表那份永远走不到)。
+ *
  * 用法: node scripts/gates/frontend/check-docs-registry.mjs
  * 退出码: 0=通过 / 1=有违规 / 2=扫描根或输入坏了 (区别于"内容违规")
  */
@@ -43,6 +51,10 @@ const APP = path.join(ROOT, "docs", "src", "App.tsx");
 const ICONS = path.join(ROOT, "docs", "src", "navIcons.ts");
 const PAGES = path.join(ROOT, "docs", "src", "pages");
 const INDEX = path.join(ROOT, "src", "index.ts");
+const UTF8 = "utf8";
+/** 子目录页面组的入口文件名 (pages/parity/index.ts 之类)。 */
+const GROUP_ENTRY = "index.ts";
+const PARITY_INDEX = path.join(PAGES, "parity", GROUP_ENTRY);
 
 function die(msg, code = 2) {
   console.error(`check-docs-registry: ${msg}`);
@@ -54,10 +66,10 @@ for (const f of [NAV, APP, ICONS, INDEX]) {
 }
 if (!fs.existsSync(PAGES)) die(`找不到页面目录 docs/src/pages (扫描根 = ${ROOT})`);
 
-const navSrc = fs.readFileSync(NAV, "utf8");
-const appSrc = fs.readFileSync(APP, "utf8");
-const iconSrc = fs.readFileSync(ICONS, "utf8");
-const indexSrc = fs.readFileSync(INDEX, "utf8");
+const navSrc = fs.readFileSync(NAV, UTF8);
+const appSrc = fs.readFileSync(APP, UTF8);
+const iconSrc = fs.readFileSync(ICONS, UTF8);
+const indexSrc = fs.readFileSync(INDEX, UTF8);
 
 /**
  * 豁免: 少数页面的"页面 id 与图标表键名不同"之类的历史差异。
@@ -67,18 +79,34 @@ const WHITELIST = path.join(ROOT, "scripts", "gates", "frontend", "docs-registry
 let allow = { navWithoutIcon: [], navWithoutCase: [], unexportedModules: [] };
 if (fs.existsSync(WHITELIST)) {
   try {
-    allow = { ...allow, ...JSON.parse(fs.readFileSync(WHITELIST, "utf8")).allow };
+    allow = { ...allow, ...JSON.parse(fs.readFileSync(WHITELIST, UTF8)).allow };
   } catch (err) {
     die(`豁免文件无法解析: ${err.message}`);
   }
 }
 
 // ── 解析四张表 ────────────────────────────────────────────────────
-/** nav.ts: `{ id: "x", ... }` */
-const navIds = [...navSrc.matchAll(/\{\s*id:\s*"([a-z0-9-]+)"/g)].map((m) => m[1]);
+/** nav.ts: `{ id: "x", ... }` 或多行清单里的 `x ~ 标签 ~ 说明` (与 scripts/check-smoke.ts 的 readPages 同一判据) */
+const navIds = [
+  ...navSrc.matchAll(/\{\s*id:\s*"([a-z0-9-]+)"/g),
+  ...navSrc.matchAll(/^([a-z0-9-]+) ~ /gm),
+].map((m) => m[1]);
 /** App.tsx: case "x": (允许 fallthrough, 所以顺序收集) */
-const caseIds = [...appSrc.matchAll(/case\s+"([a-z0-9-]+)":/g)].map((m) => m[1]);
-/** App.tsx: import { XPage } from "./pages/XPage" */
+const switchIds = [...appSrc.matchAll(/case\s+"([a-z0-9-]+)":/g)].map((m) => m[1]);
+/**
+ * PARITY_PAGES 的键: `"x": XPage` 或 `x: XPage`。只取 `PARITY_PAGES ... = {` 到第一个 `};` 之间,
+ * 免得把文件里别的对象字面量当成路由。App.tsx 没引用 PARITY_PAGES 时这张表视为空。
+ * .agents/notes/implemented/feature/2026-10-18-docs-shadcn-site-pages.md
+ */
+function readParityIds() {
+  if (!/\bPARITY_PAGES\b/.test(appSrc) || !fs.existsSync(PARITY_INDEX)) return [];
+  const body = fs.readFileSync(PARITY_INDEX, UTF8).match(/PARITY_PAGES[^{]*\{([\s\S]*?)\n\};/);
+  if (!body) die(`找不到 PARITY_PAGES 对象字面量 (${path.relative(ROOT, PARITY_INDEX)})`);
+  return [...body[1].matchAll(/^\s*(?:"([a-z0-9-]+)"|([a-z][a-z0-9]*))\s*:/gm)].map((m) => m[1] ?? m[2]);
+}
+const parityIds = readParityIds();
+const caseIds = [...switchIds, ...parityIds];
+/** App.tsx: import { XPage } from "./pages/XPage" (或页面组目录 "./pages/parity") */
 const importedPages = [...appSrc.matchAll(/from "\.\/pages\/(\w+)"/g)].map((m) => m[1]);
 /**
  * navIcons.ts: `"x": "icon-[..."` 或 `x: "icon-[..."`。
@@ -93,6 +121,11 @@ const iconKeys = [...iconSrc.matchAll(/(?:"([a-z0-9-]+)"|(?<![\w-])([a-z][a-z0-9
 const pageFiles = fs.existsSync(PAGES)
   ? fs.readdirSync(PAGES).filter((f) => f.endsWith(".tsx")).map((f) => f.replace(/\.tsx$/, ""))
   : [];
+/** 带入口文件的子目录 = 页面组, 整组由 App.tsx 以目录名引用。 */
+const pageGroups = fs
+  .readdirSync(PAGES, { withFileTypes: true })
+  .filter((e) => e.isDirectory() && fs.existsSync(path.join(PAGES, e.name, GROUP_ENTRY)))
+  .map((e) => e.name);
 
 /** src/index.ts 里被 export 的模块路径 (相对 src/) */
 const exportedModules = [...indexSrc.matchAll(/from\s+"\.\/([^"]+)"/g)].map((m) => m[1]);
@@ -117,13 +150,27 @@ for (const id of navWithoutCase) {
 for (const id of caseIds.filter((i) => !navIds.includes(i))) {
   violations.push({ rule: "case-without-nav", where: `docs/src/App.tsx 的 case "${id}"`, hint: "分支永远走不到 (页面清单里没有这个 id), 是死代码。" });
 }
+for (const id of parityIds.filter((i) => switchIds.includes(i))) {
+  violations.push({ rule: "case-and-parity", where: `PARITY_PAGES 的 ${id}`, hint: "App.tsx 的 switch 已有这个 case, 查表永远走不到, 删掉其中一处。" });
+}
 
 // ── R2: 页面组件 ↔ 文件 双向对账 ──────────────────────────────────
-for (const p of importedPages.filter((i) => !pageFiles.includes(i))) {
+for (const p of importedPages.filter((i) => !pageFiles.includes(i) && !pageGroups.includes(i))) {
   violations.push({ rule: "import-without-file", where: `docs/src/App.tsx 引用 ./pages/${p}`, hint: "文件不存在 (改名或删除后忘了同步 import)。" });
 }
 for (const f of pageFiles.filter((f) => !importedPages.includes(f))) {
   violations.push({ rule: "page-file-unused", where: `docs/src/pages/${f}.tsx`, hint: "没有任何页面引用这个文件, 它既不渲染也不被检查, 是死文件。" });
+}
+
+for (const g of pageGroups) {
+  const dir = path.join(PAGES, g);
+  const entrySrc = fs.readFileSync(path.join(dir, GROUP_ENTRY), UTF8);
+  const used = [...entrySrc.matchAll(/from "\.\/(\w+)"/g)].map((m) => m[1]);
+  for (const f of fs.readdirSync(dir).filter((f) => f.endsWith(".tsx")).map((f) => f.replace(/\.tsx$/, ""))) {
+    if (!used.includes(f)) {
+      violations.push({ rule: "page-file-unused", where: `docs/src/pages/${g}/${f}.tsx`, hint: `${g}/${GROUP_ENTRY} 没有引用这个文件, 它既不渲染也不被检查, 是死文件。` });
+    }
+  }
 }
 
 // ── R3: 图标表 ────────────────────────────────────────────────────
@@ -149,7 +196,7 @@ for (const k of iconOrphans) {
 // ⚠️ 引用检测是**文本级**的 (匹配 `from "...<模块名>"`), 不是 AST。
 // 代价: 只在注释里提到模块名会被误判为"被引用"。收益: 不需要 TS 编译器 API。
 // 这是刻意的取舍  报错信息里写清了判据, 误判时可以一眼看出原因。
-const COMPONENT_DIRS = ["primitives", "layout", "charts", "blueprint"];
+const COMPONENT_DIRS = ["primitives", "layout", "charts", "blueprint", "chat"];
 const allSources = [];
 for (const d of COMPONENT_DIRS) {
   const abs = path.join(ROOT, "src", d);
@@ -174,7 +221,7 @@ function isReferencedBySiblings(mod) {
       if (!/\.tsx?$/.test(e.name)) continue;
       const rel = path.relative(path.join(ROOT, "src"), full).replace(/\.tsx?$/, "");
       if (rel === mod) continue;
-      const text = fs.readFileSync(full, "utf8");
+      const text = fs.readFileSync(full, UTF8);
       if (new RegExp(`from\\s+"[^"]*\\b${esc}"`).test(text)) hits.push(rel);
     }
   };
@@ -185,6 +232,8 @@ function isReferencedBySiblings(mod) {
 const unexported = [];
 for (const m of allSources) {
   if (exportedModules.includes(m) || allow.unexportedModules.includes(m)) continue;
+  // 目录入口 (src/chat/index.ts) 以目录名导出: `export * from "./chat"`
+  if (m.endsWith("/index") && exportedModules.includes(m.slice(0, -"/index".length))) continue;
   if (isReferencedBySiblings(m).length > 0) continue;
   unexported.push(m);
 }

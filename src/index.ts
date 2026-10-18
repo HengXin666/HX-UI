@@ -293,7 +293,8 @@ export * from "./hxbrowser";
 
 // ── 常量 ──
 /**
- * 库与文档站共用同一份字面量 (PROJECT-CONST-DUP), 目前文档站的表格列用到 USER, 状态色示例用到 TONE.
+ * 库与文档站共用同一份字面量 (PROJECT-CONST-DUP): 表格列 USER, 状态色 TONE, 以及 shadcn 对标组件文档示例用到的取值.
  * .agents/notes/implemented/architecture/2026-10-15-constant-library.md
  */
-export { TONE, USER } from "./constants";
+export { ALIGN, BUTTON_TYPE, DOC, DOC_SAMPLE, DOC_TAB, EVENT, OPEN_STATE, ORIENTATION, QUESTION_TYPE, SELECT_MODE } from "./constants";
+export { SIDE, SIZE, TASK_STATUS, TONE, TONE_VARIANT, UI_CLASSES, USER, VARIANT } from "./constants";
