@@ -636,8 +636,8 @@
                 "npm --prefix docs run build"
             ]
         },
-        "status": "approved",
-        "approvedBy": "HengXin666",
-        "authorization": "仓库所有者 2026-10-18 要求 HX-UI 全量覆盖 shadcn/ui 组件清单, 任务说明列出了这批依赖并允许按需加入 package.json"
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-10-18 的任务要求全量覆盖 shadcn/ui 组件清单, 这批依赖由代理按 shadcn 官方选型引入, 所有者尚未逐项签字"
     }
 ]
