@@ -15,6 +15,7 @@
 - 组件颜色只来自语义 token, 线条只用 1px, 不写 transition-all, 原生 button 必须写 type
 - 脚本只写 .ts, 由 Node 22.18+ 直接运行, 不新增 .js/.mjs/.cjs
 - 组件视觉类名沿用上游 open-vetta, 不在门禁类改动中顺手修改组件视觉或行为
+- 改动前端功能 (src/**/*.tsx, src/**/*.css, docs/src/**) 的 PR 必须在正文嵌入 GIF 演示: 按 .agents/skills/record-browser-gif/SKILL.md 从 PR 头部 commit 构建文档站录制, 推到孤儿分支 pr-assets 的 pr-<编号>/ 下, 写明演示的 commit SHA, 内容与间隔 / 倍速; GIF 永不提交到 PR 分支. CI 工作流 pr-gif 检查, 没有可见变化时由维护者加 no-gif 标签豁免
 
 <!-- agent-notes:start -->
 ## Agent Notes 红线

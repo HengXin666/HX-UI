@@ -144,4 +144,10 @@ export const GIT_WORKTREE = "worktree";
 export const GIT_ADD = "add";
 export const STDIO_INHERIT = "inherit";
 export const LIST_SEPARATOR = ", ";
+/** git 的当前提交引用. */
+export const GIT_HEAD = "HEAD";
+/** 终端里示例列表最多列出的条目数. */
+export const SAMPLE_LIMIT = 5;
+/** 仓库根说明文档 (测试夹具里的非前端文件). */
+export const README_FILE = "README.md";
 export const EMPTY_JSON_OBJECT = "{}";

@@ -1,0 +1,32 @@
+name: pr-gif
+# 改了前端功能 (src/**/*.tsx, src/**/*.css, docs/src/**) 的 PR, 正文必须嵌入 GIF 演示图片.
+# 录制与发布流程见 .agents/skills/record-browser-gif/SKILL.md; 没有可见变化时由维护者加 no-gif 标签豁免.
+# 正文编辑, 加减标签与新推送都会重跑. 正文与标签经环境变量传入, 不拼进 shell.
+on:
+    pull_request:
+        types: [opened, edited, reopened, synchronize, labeled, unlabeled]
+permissions:
+    contents: read
+concurrency:
+    group: pr-gif-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+jobs:
+    gif:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  ref: ${{ github.event.pull_request.head.sha }}
+                  persist-credentials: false
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+            - name: Require a GIF demo for front-end changes
+              env:
+                  PR_BODY: ${{ github.event.pull_request.body }}
+                  PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+              run: node scripts/pr-gif/check.ts

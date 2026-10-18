@@ -11,6 +11,9 @@ docs/.bpprobe/
 # git 会给它们加引号, 而引号路径会被 lanes 门禁切成 "scripts 这种伪顶层条目。
 scripts/e2e/shots/
 
+# record-browser-gif 的录制产物 (分镜, 截图, 视频, GIF): GIF 发布到 pr-assets 分支, 永不进 PR 分支
+.playwright-gif/
+
 # >>> hx-agent-code quality state >>>
 scripts/.hx_code_quality/
 # <<< hx-agent-code quality state <<<

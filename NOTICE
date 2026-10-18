@@ -120,6 +120,20 @@ The plugin at `packages/plugins/externals/cowart-vetta` is adapted from Cowart.
 It resides under `externals/` and is NOT bundled with the application; it
 exists in this repository as a source example only.
 
+--------------------------------------------------------------------------------
+deepseek-harness: record-browser-gif skill
+--------------------------------------------------------------------------------
+Copyright (c) 2026 DeepSeek
+Source:  https://github.com/deepseek-ai/deepseek-harness/tree/master/.agents/skills/record-browser-gif
+         (upstream commit 2e084623423ecbddc4e0c3a4f5578d4382db884c)
+License: MIT
+
+`.agents/skills/record-browser-gif/scripts/encode_gif.py` and
+`scripts/test_encode_gif.py` are included unmodified; `SKILL.md` is adapted to
+HX-UI (docs-site staging, repository-declared Playwright, pr-assets publication)
+and `scripts/record_docs.ts` is new. The full MIT license text is in
+`.agents/skills/record-browser-gif/LICENSE`.
+
 ================================================================================
 
 This product also builds on the Model Context Protocol specification
