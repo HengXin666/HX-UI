@@ -4,18 +4,15 @@ import { join } from "node:path";
 import { record, string } from "../core/model.ts";
 
 function files(directory: string, prefix = ""): Record<string, string> {
-    const result: Record<string, string> = Object.create(null);
+    const result: Record<string, string> = {};
     for (const name of readdirSync(directory).sort()) {
+        if (!prefix && name === "quality-artifact.json") {
+            continue;
+        }
         const file = join(directory, name);
         const stat = lstatSync(file);
         if (stat.isSymbolicLink()) {
             throw new Error("Build artifacts must not contain symlinks");
-        }
-        if (!prefix && name === "quality-artifact.json") {
-            if (!stat.isFile()) {
-                throw new Error("Unsupported artifact manifest entry: " + file);
-            }
-            continue;
         }
         if (stat.isDirectory()) {
             Object.assign(result, files(file, prefix + name + "/"));
