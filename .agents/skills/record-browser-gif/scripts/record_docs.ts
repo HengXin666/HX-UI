@@ -144,7 +144,7 @@ function distProvenance(repo: string, dist: string, head: string): { source: str
     if (marked.commit !== head) {
       fail(`docs/dist 的构建标记是 commit ${marked.commit ?? "(空)"}, 但当前 HEAD 是 ${head}: 先重新构建再录`);
     }
-    return { source: "marker", builtAt: statSync(marker).toISOString() };
+    return { source: "marker", builtAt: new Date(statSync(marker).mtimeMs).toISOString() };
   }
   const index = path.join(dist, "index.html");
   const builtAt = statSync(index).mtimeMs;
