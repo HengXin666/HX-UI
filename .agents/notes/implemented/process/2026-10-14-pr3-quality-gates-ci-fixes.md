@@ -24,6 +24,7 @@ PR 3 的四个 workflow 全红. 原因不在单条违规: (1) 基线只从可信
 - 删除悬空的 ChatStream 导出. 兄弟目录缺席时文档站与 check-blueprint 退到仓内替身; --strict 下必须由 HX_BLUEPRINT_DEMO_OPTIONAL=1 显式放行, 并逐组打印 SKIP
 - 钩子指纹改为仓库内受版本控制的钩子源文件
 - HC-COMMENT-SPACE 的块注释续行与规则表一致: * 后恰好一个空格. HC-DEPS 补上仅 lockfile 的传递依赖变化 (review-only)
+- PROJECT-UI-BUTTON-TYPE 除字面量 `<button>` 外, 还按作用域就近解析 JSX 的动态标签名: 变量初始化为 `"button"`, 或 `TAG.button` / 从 `src/constants` 导入的标签表上的 `.button`, 或条件表达式任一分支是它们时视同原生 button, 必须写 type; 其它对象的 `.button` 属性 (如 `Icons.button`) 是自定义组件, 不算, 避免误报 (asChild 分支可写 `type={asChild ? undefined : BUTTON_TYPE}`). 只认字面量会放过 `const Comp = asChild ? Slot.Root : TAG.button` 这类常量化写法, 门禁与它要防的 "表单内意外提交" 脱节. 这是收紧不是放松, 门禁指纹 `thresholds:check-ui-rules` 随之有意更新
 - 推送检查的 affected tests 在待推送提交的独立工作树里建图, 构建与执行
 
 ## Alternatives considered

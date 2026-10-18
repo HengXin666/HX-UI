@@ -119,7 +119,8 @@ function DropdownMenuSubTrigger({
 	className,
 	children,
 	...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger>) {
+}: Omit<React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger>, "asChild">) {
+	/** 不开放 asChild: 这里固定渲染内容与箭头两个子节点, Slot 只接受单一子节点. */
 	return (
 		<DropdownMenuPrimitive.SubTrigger
 			data-slot="dropdown-menu-sub-trigger"

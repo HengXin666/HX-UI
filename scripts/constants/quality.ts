@@ -121,6 +121,7 @@ export const CMD_CHECK = "check";
 export const CMD_AUDIT = "audit";
 export const CMD_PUSH = "push";
 export const RULE_CI = "HC-CI";
+export const RULE_BUTTON_TYPE = "PROJECT-UI-BUTTON-TYPE";
 export const CMD_BASELINE = "baseline";
 export const FLAG_ROOT = "root";
 export const FLAG_MODE = "mode";
@@ -143,4 +144,17 @@ export const GIT_WORKTREE = "worktree";
 export const GIT_ADD = "add";
 export const STDIO_INHERIT = "inherit";
 export const LIST_SEPARATOR = ", ";
+/** git 的当前提交引用. */
+export const GIT_HEAD = "HEAD";
+/** 终端里示例列表最多列出的条目数. */
+export const SAMPLE_LIMIT = 5;
+/** 仓库根说明文档 (测试夹具里的非前端文件). */
+export const README_FILE = "README.md";
 export const EMPTY_JSON_OBJECT = "{}";
+
+/** PR 正文里围栏代码块的开头与结束标记 (CommonMark 的反引号围栏). */
+export const FENCE_BACKTICKS = "```";
+/** 围栏代码块的波浪号变体. */
+export const FENCE_TILDES = "~~~";
+/** 豁免理由的标题: 正文里写一节 "## 理由" 即视为写明. */
+export const REASON_HEADING = "## 理由";

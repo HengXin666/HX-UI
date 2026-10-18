@@ -1,0 +1,62 @@
+name: pr-gif
+# 改了前端功能 (src/**/*.tsx, src/**/*.css, docs/src/**) 的 PR, 正文必须嵌入 GIF 演示图片.
+# 录制与发布流程见 .agents/skills/record-browser-gif/SKILL.md; 没有可见变化时由维护者加 no-gif 标签豁免.
+# 正文编辑, 加减标签与新推送都会重跑. 正文与标签经环境变量传入, 不拼进 shell.
+#
+# 判定脚本必须来自 base 提交: PR 可以在自己的分支里改 scripts/pr-gif/**, 若直接跑检出内容, 改一行
+# 判据就能自我豁免. 所以这里把 base sha 单独检出到 .pr-base 并只跑其中的 scripts/pr-gif/check.ts;
+# 另一次检出 (PR 头部) 只用来算 git diff 的改动文件清单, 是数据不是代码.
+# base 还没有 scripts/pr-gif/check.ts 时 (本检查首次引入的那个 PR) 打印 warning 跳过: PR 改不动 base,
+# 合并之后所有 PR 都用 base 里的检查器判定.
+on:
+    pull_request:
+        types: [opened, edited, reopened, synchronize, labeled, unlabeled]
+permissions:
+    contents: read
+concurrency:
+    group: pr-gif-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+jobs:
+    gif:
+        runs-on: ubuntu-latest
+        timeout-minutes: 5
+        steps:
+            # 只用来算改动文件清单: fetch-depth 0 才能从 base 提交算三点 diff
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  ref: ${{ github.event.pull_request.head.sha }}
+                  persist-credentials: false
+            # 受信任的判定脚本: base 提交的内容, PR 改不到
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 1
+                  ref: ${{ github.event.pull_request.base.sha }}
+                  path: .pr-base
+                  persist-credentials: false
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+            - name: Locate the trusted checker in the base commit
+              id: checker
+              env:
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+              run: |
+                  if [ -f .pr-base/scripts/pr-gif/check.ts ]; then
+                      echo "path=.pr-base/scripts/pr-gif/check.ts" >> "$GITHUB_OUTPUT"
+                  else
+                      echo "path=" >> "$GITHUB_OUTPUT"
+                      echo "::warning::base 提交 $BASE_SHA 还没有 scripts/pr-gif/check.ts, 本检查在此 PR 首次引入, 本次跳过"
+                  fi
+            - name: Require a GIF demo for front-end changes
+              if: steps.checker.outputs.path != ''
+              env:
+                  PR_BODY: ${{ github.event.pull_request.body }}
+                  PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+                  CHECKER: ${{ steps.checker.outputs.path }}
+              run: |
+                  CHANGED_FILES="$(git diff --name-only "$BASE_SHA...$HEAD_SHA")"
+                  export CHANGED_FILES
+                  node "$CHECKER"

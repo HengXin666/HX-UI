@@ -1,0 +1,63 @@
+name: pages
+# 构建文档站 (docs/) 并发布到 GitHub Pages.
+# 首次使用前在仓库 Settings > Pages > Build and deployment > Source 选 GitHub Actions.
+# 产物用相对路径 (vite base "./") 加 hash 路由, 放在 /<仓库名>/ 子路径下无需额外配置.
+#
+# 权限: 顶层只给 contents: read. pages: write 与 id-token: write 只挂在 deploy 作业上,
+# 所以 build 作业里的依赖安装与构建脚本既拿不到 Pages 写权限, 也申请不到 OIDC 令牌.
+# 注意 checkout 的 persist-credentials: false 只挡 .git/config 里的 Git 凭据, 不是权限隔离的手段;
+# 真正的隔离来自作业级 permissions (作业不能申请顶层没有的权限, 顶层也不能替作业预先放开).
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+permissions:
+    contents: read
+concurrency:
+    group: pages
+    cancel-in-progress: false
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        permissions:
+            contents: read
+        steps:
+            # 不把 GITHUB_TOKEN 留在 .git/config: 依赖安装与构建脚本读不到 Git 凭据 (权限隔离靠上面的作业级 permissions)
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: '22'
+                  cache: npm
+                  cache-dependency-path: |
+                      package-lock.json
+                      docs/package-lock.json
+            # 文档站直接引用 ../src 的源码, 库的依赖要先装在根目录
+            - name: Install library dependencies
+              run: npm ci
+            - name: Install docs dependencies
+              run: npm --prefix docs ci
+            # 兄弟目录 HX-Blueprint-Demo 在 CI 里不存在, vite.config.ts 会自动退到 docs/src/blueprint-demo-fallback
+            - name: Build docs
+              run: npm --prefix docs run build
+            - uses: actions/configure-pages@v5
+            - uses: actions/upload-pages-artifact@v3
+              with:
+                  path: docs/dist
+    deploy:
+        needs: build
+        # workflow_dispatch 可选任意分支, 只允许 main 覆盖公开文档站; 其他分支的手动运行只构建不发布
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        # 只有真正发布的那一步需要写 Pages 与 OIDC 令牌
+        permissions:
+            pages: write
+            id-token: write
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - id: deployment
+              uses: actions/deploy-pages@v4

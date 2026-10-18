@@ -50,6 +50,10 @@ const NO_RIPPLE_VARIANTS: ReadonlyArray<string> = [VARIANT.link];
  * 按钮.
  *
  * ripple 默认开启 (link 变体除外), 传 ripple={false} 关闭; 图标尺寸自动用更淡的波纹.
+ *
+ * type 原样透传给原生 button, 不补默认值: 下游表单里不写 type 的 Button 仍是 submit, 这是有意保留的
+ * 原生语义 (改掉会静默改变已有表单的提交行为). 因此本组件是 PROJECT-UI-BUTTON-TYPE 的豁免点,
+ * 不提交表单的部件在各自调用处显式传 type={BUTTON_TYPE}.
  */
 function Button({
 	className,
@@ -59,6 +63,7 @@ function Button({
 	ripple = true,
 	onPointerDown,
 	onKeyDown,
+	type,
 	...props
 }: React.ComponentProps<"button"> &
 	VariantProps<typeof buttonVariants> & {
@@ -76,6 +81,8 @@ function Button({
 
 	return (
 		<Comp
+			// type 原样透传: 不改原生默认值 (下游表单里不写 type 的 Button 仍是 submit); 不提交表单的部件自己传 BUTTON_TYPE
+			type={type}
 			data-slot="button"
 			data-variant={variant}
 			data-size={size}

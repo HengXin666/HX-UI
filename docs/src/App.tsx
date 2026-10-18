@@ -3,9 +3,10 @@ import {
   AppFrame, Badge, ConfirmDialogHost, SidebarNavIcon, Toaster,
 } from "@hx/ui";
 import { SearchDialog, useSearchHotkey } from "./components/SearchDialog";
+import { PageNav } from "./components/PageNav";
 import { TableOfContents } from "./components/TableOfContents";
 import { ThemeToggle } from "./components/ThemeToggle";
-import { DOCS, GROUPS, type DocEntry } from "./nav";
+import { DOCS, GROUPS, WIDE_GROUP, type DocEntry } from "./nav";
 import { ButtonPage } from "./pages/ButtonPage";
 import { InputPage } from "./pages/InputPage";
 import { SwitchPage } from "./pages/SwitchPage";
@@ -47,6 +48,7 @@ import { DataTablePage } from "./pages/DataTablePage";
 import { ChromePage } from "./pages/ChromePage";
 import { BlueprintPage } from "./pages/BlueprintPage";
 import { BlueprintDshPage } from "./pages/BlueprintDshPage";
+import { PARITY_PAGES } from "./pages/parity";
 
 /**
  * 组件文档站。
@@ -54,8 +56,10 @@ import { BlueprintDshPage } from "./pages/BlueprintDshPage";
  * 外壳刻意用 @hx/ui 自己的 AppFrame 与 SidebarNavItemButton 搭 
  * 文档站本身就是这套库的第一个使用方, 它长什么样就是库长什么样。
  * 加一个组件 = nav.ts 加一行 + 下面 switch 加一个分支。
+ * 对标 shadcn 补齐的页面不进 switch, 由 PARITY_PAGES 按 id 查表.
  * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
  * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
+ * .agents/notes/implemented/feature/2026-10-18-docs-shadcn-site-pages.md
  */
 function renderPage(entry: DocEntry): JSX.Element {
   switch (entry.id) {
@@ -100,7 +104,10 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "browser-live": return <BrowserLivePage />;
     case "blueprint": return <BlueprintPage />;
     case "blueprint-dsh": return <BlueprintDshPage />;
-    default: return <PlaceholderPage label={entry.label} desc={entry.desc} />;
+    default: {
+      const Page = PARITY_PAGES[entry.id];
+      return Page ? <Page /> : <PlaceholderPage label={entry.label} desc={entry.desc} />;
+    }
   }
 }
 
@@ -214,7 +221,7 @@ export function App(): JSX.Element {
             <div
               className={
                 "mx-auto flex w-full gap-10 px-4 py-6 md:px-8 md:py-8 " +
-                (entry.group === "示例" ? "max-w-[1720px]" : wide ? "max-w-[1100px]" : "max-w-[880px]")
+                (entry.group === WIDE_GROUP ? "max-w-[1720px]" : wide ? "max-w-[1100px]" : "max-w-[880px]")
               }
             >
               <article className="w-full min-w-0 flex-1">
@@ -229,29 +236,7 @@ export function App(): JSX.Element {
 
                 <div className="mt-8">{renderPage(entry)}</div>
 
-                {/* 上一页 / 下一页: 38 页靠侧栏点很累, 顺序阅读时的基本配置 */}
-                <nav className="mt-14 grid grid-cols-2 gap-3" aria-label="页面导航">
-                  {prev ? (
-                    <button
-                      type="button"
-                      onClick={() => go(prev.id)}
-                      className="group flex flex-col gap-0.5 rounded-xl border border-border/50 px-4 py-3 text-left transition-colors hover:border-primary/40 hover:bg-card/40"
-                    >
-                      <span className="text-[11px] text-muted-foreground">上一页</span>
-                      <span className="truncate text-[13px] font-medium text-foreground">← {prev.label}</span>
-                    </button>
-                  ) : <span />}
-                  {next ? (
-                    <button
-                      type="button"
-                      onClick={() => go(next.id)}
-                      className="group flex flex-col items-end gap-0.5 rounded-xl border border-border/50 px-4 py-3 text-right transition-colors hover:border-primary/40 hover:bg-card/40"
-                    >
-                      <span className="text-[11px] text-muted-foreground">下一页</span>
-                      <span className="truncate text-[13px] font-medium text-foreground">{next.label} →</span>
-                    </button>
-                  ) : <span />}
-                </nav>
+                <PageNav prev={prev} next={next} onGo={go} />
 
                 <footer className="mt-10 border-t border-border pt-4 text-[11px] text-muted-foreground">
                   组件源码整份取自 open-vetta (Apache-2.0), 视觉类名未改动。

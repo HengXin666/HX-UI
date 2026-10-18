@@ -517,5 +517,127 @@
         "status": "approved",
         "approvedBy": "HengXin666",
         "authorization": "仓库所有者在 main 提交 1f23399 中引入, 门禁迁移到 65f8e76 时按既成事实登记"
+    },
+    {
+        "id": "APR-dependency-shadcn-parity",
+        "kind": "dependency",
+        "subject": "cmdk@^1.1.1, input-otp@^1.5.0, embla-carousel-react@^8.6.0, react-resizable-panels@^4.14.5, react-hook-form@^7.90.0, zod@^4.6.7, @hookform/resolvers@^5.9.2 (zod 与 resolvers 只在 docs/package.json)",
+        "need": "对标 shadcn/ui 全量组件: Command / Combobox 需要命令面板过滤与键盘导航, InputOTP 需要透明真实输入框投影, Carousel 需要带惯性的拖拽滚动, Resizable 需要可拖拽分栏与键盘调整, Form 需要表单状态绑定; zod 与 @hookform/resolvers 只用于文档站 Form 示例的校验",
+        "reuse": {
+            "project": "库里没有命令面板, 验证码输入, 轮播, 分栏与表单状态管理的实现",
+            "stdlib": "浏览器与 React 不提供这些交互; radix-ui 的 unstable_OneTimePasswordField 仍是 unstable",
+            "existing": "radix-ui 已覆盖其余组件, 只为这五类交互引入依赖, 均是 shadcn 官方选用的同一批库"
+        },
+        "candidates": [
+            {
+                "name": "cmdk",
+                "version": "1.1.1",
+                "license": "MIT",
+                "lastRelease": "2025-08-28",
+                "activity": "npm registry time.modified 2025-08-28",
+                "size": "未实测",
+                "advisories": "npm install 报告 found 0 vulnerabilities (2026-10-18)",
+                "compat": "React 18/19 peer, shadcn Command 官方实现",
+                "source": "https://registry.npmjs.org/cmdk",
+                "checkedAt": "2026-10-18"
+            },
+            {
+                "name": "input-otp",
+                "version": "1.5.0",
+                "license": "MIT",
+                "lastRelease": "2026-08-18",
+                "activity": "npm registry time.modified 2026-08-18",
+                "size": "未实测",
+                "advisories": "npm install 报告 found 0 vulnerabilities (2026-10-18)",
+                "compat": "React 16.8 到 19 peer",
+                "source": "https://registry.npmjs.org/input-otp",
+                "checkedAt": "2026-10-18"
+            },
+            {
+                "name": "embla-carousel-react",
+                "version": "8.6.0",
+                "license": "MIT",
+                "lastRelease": "2026-10-08",
+                "activity": "npm registry time.modified 2026-10-08",
+                "size": "未实测",
+                "advisories": "npm install 报告 found 0 vulnerabilities (2026-10-18)",
+                "compat": "React 16.8 到 19 peer",
+                "source": "https://registry.npmjs.org/embla-carousel-react",
+                "checkedAt": "2026-10-18"
+            },
+            {
+                "name": "react-resizable-panels",
+                "version": "4.14.5",
+                "license": "MIT",
+                "lastRelease": "2026-10-13",
+                "activity": "npm registry time.modified 2026-10-13",
+                "size": "未实测",
+                "advisories": "npm install 报告 found 0 vulnerabilities (2026-10-18)",
+                "compat": "React 18/19 peer, v4 的 API 为 Group / Panel / Separator",
+                "source": "https://registry.npmjs.org/react-resizable-panels",
+                "checkedAt": "2026-10-18"
+            },
+            {
+                "name": "react-hook-form",
+                "version": "7.90.0",
+                "license": "MIT",
+                "lastRelease": "2026-10-11",
+                "activity": "npm registry time.modified 2026-10-11",
+                "size": "未实测",
+                "advisories": "npm install 报告 found 0 vulnerabilities (2026-10-18)",
+                "compat": "React 16.8 到 19 peer",
+                "source": "https://registry.npmjs.org/react-hook-form",
+                "checkedAt": "2026-10-18"
+            },
+            {
+                "name": "zod",
+                "version": "4.6.7",
+                "license": "MIT",
+                "lastRelease": "2026-10-13",
+                "activity": "npm registry time.modified 2026-10-13",
+                "size": "未实测",
+                "advisories": "npm install 报告 found 0 vulnerabilities (2026-10-18)",
+                "compat": "无 peer, 只在文档站",
+                "source": "https://registry.npmjs.org/zod",
+                "checkedAt": "2026-10-18"
+            },
+            {
+                "name": "@hookform/resolvers",
+                "version": "5.9.2",
+                "license": "MIT",
+                "lastRelease": "2026-10-17",
+                "activity": "npm registry time.modified 2026-10-17",
+                "size": "未实测",
+                "advisories": "npm install 报告 found 0 vulnerabilities (2026-10-18)",
+                "compat": "react-hook-form ^7.55 与 zod ^3.25 / ^4 peer, 只在文档站",
+                "source": "https://registry.npmjs.org/@hookform/resolvers",
+                "checkedAt": "2026-10-18"
+            }
+        ],
+        "choice": {
+            "pick": "cmdk + input-otp + embla-carousel-react + react-resizable-panels + react-hook-form; 文档站另加 zod + @hookform/resolvers",
+            "reason": "与 shadcn 官方组件选用同一批库, API 与文档可直接对照; 每个只服务一个组件, 体积可控",
+            "rollback": "删除对应组件文件与 src/primitives/shadcn-parity.ts 中的导出, 再移除依赖"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "docs/package.json",
+                "docs/package-lock.json",
+                "src/primitives/"
+            ],
+            "steps": [
+                "npm install cmdk input-otp embla-carousel-react react-resizable-panels react-hook-form",
+                "npm --prefix docs install zod @hookform/resolvers"
+            ],
+            "tests": [
+                "npm run typecheck",
+                "npm --prefix docs run build"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-10-18 的任务要求全量覆盖 shadcn/ui 组件清单, 这批依赖由代理按 shadcn 官方选型引入, 所有者尚未逐项签字"
     }
 ]

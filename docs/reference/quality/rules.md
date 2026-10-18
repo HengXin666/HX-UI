@@ -45,7 +45,7 @@
 | PROJECT-UI-LINE-1PX | Error | code | border/ring/outline/divide 线宽只允许 1px, 禁止 -2/-4/-8 与 [0.5px] 等任意值 |
 | PROJECT-UI-BW | Error | code | 禁止 black/white 原色类 (bg-black/50, bg-white, text-white 等), 改用语义 token |
 | PROJECT-UI-TRANSITION-ALL | Error | code | 禁止 transition-all 与 transition: all, 必须列出具体属性 |
-| PROJECT-UI-BUTTON-TYPE | Error | code | 原生 <button> 必须显式写 type, AST 判定, 不受换行与箭头函数影响 |
+| PROJECT-UI-BUTTON-TYPE | Error | code | 原生 <button> (含绑定到 button 的动态标签, 如 asChild ? Slot.Root : TAG.button) 必须显式写 type, AST 判定, 不受换行与箭头函数影响 |
 | PROJECT-UI-ICON-DECLARED | Error | code | src 中的 icon-[<set>--<name>] 图标类, 其 @iconify-json/<set> 必须在根 package.json 的 dependencies 或 peerDependencies 声明 |
 | PROJECT-UI-DEV-DIARY | Error | code | src 注释里不许写开发日记 (实测踩到 / 上一版 / 用户报 等调试经过), 只扫注释, 不扫字符串 |
 | PROJECT-UI-JSX-COMMENT-LEAK | Error | code | src 的 .tsx 中 JSX 子节点位置不许写裸块注释 (会渲染成文字), 必须写成 {/* ... */} |
