@@ -72,13 +72,18 @@ function Questionnaire({
 	const [index, setIndex] = React.useState(0);
 	const [direction, setDirection] = React.useState(1);
 	const [answers, setAnswers] = React.useState<QuestionnaireAnswers>(defaultAnswers ?? {});
+	const [submitted, setSubmitted] = React.useState(false);
 	const question = questions[index];
 	const last = index === questions.length - 1;
 	const answer = question ? answers[question.id] : undefined;
 	const answered = Array.isArray(answer) ? answer.length > 0 : Boolean(answer && answer.trim());
 
 	const go = (step: number, next: QuestionnaireAnswers = answers): void => {
+		if (submitted) {
+			return;
+		}
 		if (step > 0 && last) {
+			setSubmitted(true);
 			onSubmit?.(next);
 			return;
 		}
@@ -87,7 +92,7 @@ function Questionnaire({
 	};
 
 	const choose = (value: string): void => {
-		if (!question) {
+		if (submitted || !question) {
 			return;
 		}
 		if (question.type === "multiple") {
@@ -97,11 +102,13 @@ function Questionnaire({
 		}
 		const next = { ...answers, [question.id]: value };
 		setAnswers(next);
-		go(1, next);
+		if (!last) {
+			go(1, next);
+		}
 	};
 
 	const skip = (): void => {
-		if (!question) {
+		if (submitted || !question) {
 			return;
 		}
 		const next = { ...answers };
@@ -192,7 +199,7 @@ function Questionnaire({
 						</Button>
 					)}
 					{(!single || last) && (
-						<Button variant={VARIANT.primary} size={VARIANT.sm} disabled={!answered && !question.skippable} onClick={() => go(1)}>
+						<Button variant={VARIANT.primary} size={VARIANT.sm} disabled={submitted || (!answered && !question.skippable)} onClick={() => go(1)}>
 							{last ? labels.submit : labels.next}
 						</Button>
 					)}
