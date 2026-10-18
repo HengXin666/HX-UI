@@ -92,6 +92,14 @@ function SidebarProvider({
 
 	React.useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent): void => {
+			const target = event.target as HTMLElement | null;
+			if (
+				event.defaultPrevented ||
+				event.isComposing ||
+				target?.matches("input, textarea, select, [contenteditable]")
+			) {
+				return;
+			}
 			if (event.key === SIDEBAR_SHORTCUT && (event.metaKey || event.ctrlKey)) {
 				event.preventDefault();
 				toggleSidebar();
@@ -159,6 +167,7 @@ function Sidebar({
 					className="w-(--sidebar-width) bg-card p-0 text-foreground [&>button]:hidden"
 					style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties}
 					side={side}
+					{...props}
 				>
 					<SheetHeader className={UI_CLASSES.srOnly}>
 						<SheetTitle>侧栏</SheetTitle>
