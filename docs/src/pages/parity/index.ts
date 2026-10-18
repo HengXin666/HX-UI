@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { AccordionPage } from "../AccordionPage";
 import { CalendarPage } from "../CalendarPage";
-import { FeedbackPage } from "../FeedbackPage";
+import { SkeletonPage } from "../SkeletonPage";
 import { AttachmentPage, BubblePage, MarkerPage, MessagePage } from "./chat";
 import { MessageScrollerPage, QuestionnairePage, TracePage } from "./agent";
 import { CheckboxPage, KbdPage, LabelPage, RadioGroupPage, SeparatorPage, SpinnerPage } from "./basics";
@@ -17,7 +17,7 @@ import { ContextMenuPage } from "./context-menu";
 import { AlertDialogPage, CommandPage, HoverCardPage, SheetPage } from "./overlay";
 
 /**
- * 对标 shadcn 补齐的文档页, 按导航 id 查表. 与已有页面共用一页的别名 (collapsible / date-picker / skeleton) 也登记在这里.
+ * 对标 shadcn 补齐的文档页, 按导航 id 查表. 与已有页面共用一页的别名 (collapsible / date-picker) 也登记在这里.
  */
 export const PARITY_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   alert: AlertPage,
@@ -58,7 +58,7 @@ export const PARITY_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   separator: SeparatorPage,
   sheet: SheetPage,
   sidebar: SidebarPage,
-  skeleton: FeedbackPage,
+  skeleton: SkeletonPage,
   spinner: SpinnerPage,
   table: TablePage,
   toggle: TogglePage,

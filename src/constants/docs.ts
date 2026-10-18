@@ -20,6 +20,10 @@ export const DOC = {
 	stack: "flex w-full flex-col gap-3",
 	stackMd: "flex w-full max-w-md flex-col gap-3",
 	widthMd: "w-full max-w-md",
+	/** 进度条示例的宽度. */
+	barWidth: "w-64",
+	/** 进度计量器示例的宽度 (右侧还有一列数值). */
+	barWidthWide: "w-72",
 	wrap: "flex flex-wrap gap-2",
 	tight: "flex flex-col gap-1",
 	dangerText: "text-danger-fg",
@@ -46,16 +50,22 @@ export const DOC_SAMPLE = {
 	streamInterval: 40,
 	progress: 42,
 	progressStep: 19,
+	/** 失败 / 警告色进度条的演示值. */
+	progressFail: 18,
 	full: 100,
 	collapsedHeight: 64,
 	slider: 30,
 	page: 4,
 	pageCount: 20,
+	/** 滚动容器示例里渲染的行数. */
+	scrollRows: 20,
 	nameMin: 2,
 	nameMax: 16,
 	bioMax: 80,
 	otpLength: 6,
 	otpHalf: 3,
+	/** 多行骨架的演示行数. */
+	skeletonLines: 3,
 	wideRatio: 16 / 9,
 	invoiceLabelSpan: 3,
 } as const;

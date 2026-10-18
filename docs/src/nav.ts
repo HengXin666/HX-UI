@@ -73,7 +73,7 @@ native-select ~ Native Select ~ 原生下拉, 菜单跟随主题
 navigation-menu ~ Navigation Menu ~ 站点导航菜单, 视口平滑插值
 pagination ~ Pagination ~ 分页器, 翻页时整排不跳
 popover ~ Popover ~ 浮层
-progress ~ Progress ~ 进度条 (含不定长), 与 Skeleton / ScrollArea 同页
+progress ~ Progress ~ 进度条 (含不定长), 带标题与数值的 ProgressMeter
 questionnaire ~ Questionnaire ~ 多步问卷, 切题滑动
 radio-group ~ Radio Group ~ 单选组
 resizable ~ Resizable ~ 可拖拽调整大小的分栏
@@ -82,7 +82,7 @@ select ~ Select ~ 下拉选择
 separator ~ Separator ~ 分隔线, 全局 1px
 sheet ~ Sheet ~ 从四边滑入的面板
 sidebar ~ Sidebar ~ 组合式应用侧栏, 可收成图标条
-skeleton ~ Skeleton ~ 骨架屏, 与 Progress 同页
+skeleton ~ Skeleton ~ 骨架屏, 方块占位与多行 SkeletonText
 slider ~ Slider ~ 滑块
 spinner ~ Spinner ~ 行内旋转指示, 另有多形态的 Spin
 switch ~ Switch ~ 开关, 两档尺寸
