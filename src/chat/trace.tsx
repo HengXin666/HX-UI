@@ -46,6 +46,11 @@ function TraceStep({
 }): React.JSX.Element {
 	const hasDetail = React.Children.count(children) > 0;
 	const [open, setOpen] = React.useState(defaultOpen ?? (status === TASK_STATUS.running || status === TASK_STATUS.error));
+	React.useEffect(() => {
+		if (defaultOpen === undefined && (status === TASK_STATUS.running || status === TASK_STATUS.error)) {
+			setOpen(true);
+		}
+	}, [defaultOpen, status]);
 	return (
 		<li data-slot="trace-step" data-status={status} className={cn("group/trace-step relative flex gap-2.5 pb-3 last:pb-0", className)} {...props}>
 			<span
