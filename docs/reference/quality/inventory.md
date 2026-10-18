@@ -96,7 +96,9 @@ HC-TYPE 目前覆盖 src 与 docs/src; scripts 缺 Node 类型定义, 待 APR-de
 
 main 上由仓库所有者直接引入的依赖按既成事实登记为 approved: APR-dependency-xyflow-react (@xyflow/react ^12.12.0, 提交 48448b9) 与 APR-dependency-playwright (playwright ^1.63.0, 提交 1f23399). HC-DEPS 之后遇到它们跨大版本时会显示对应批准记录.
 
-版本与许可证取自 npm registry, 查证日期 2026-10-11; 安全公告未逐项查询, 安装前需 npm audit.
+对标 shadcn/ui 全量组件时 (2026-10-18) 新增 APR-dependency-shadcn-parity, 状态 approved: 运行时依赖 cmdk, input-otp, embla-carousel-react, react-resizable-panels, react-hook-form 各服务一个组件 (Command / Combobox, InputOTP, Carousel, Resizable, Form), 均为 shadcn 官方选用的同一批库; zod 与 @hookform/resolvers 只进 docs/package.json, 用于 Form 示例. 其余组件全部复用已有的 radix-ui, motion 与 lucide-react.
+
+版本与许可证取自 npm registry, 查证日期 2026-10-11 (shadcn 对标批次为 2026-10-18); 安全公告未逐项查询, 安装前需 npm audit.
 
 ## 验收命令
 
