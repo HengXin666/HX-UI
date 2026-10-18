@@ -69,7 +69,7 @@ marker ~ Marker ~ 会话里的系统提示, 状态行与分隔线
 menubar ~ Menubar ~ 桌面应用式菜单栏
 message ~ Message ~ 会话消息: 头像, 头部, 正文, 底部
 message-scroller ~ Message Scroller ~ 会话滚动容器, 贴底跟随与回到最新
-native-select ~ Native Select ~ 原生下拉, 移动端友好
+native-select ~ Native Select ~ 原生下拉, 菜单跟随主题
 navigation-menu ~ Navigation Menu ~ 站点导航菜单, 视口平滑插值
 pagination ~ Pagination ~ 分页器, 翻页时整排不跳
 popover ~ Popover ~ 浮层

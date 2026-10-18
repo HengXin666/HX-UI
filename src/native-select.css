@@ -1,0 +1,55 @@
+/* ============================================================================
+ * 原生 select 的弹出菜单 (customizable select)
+ * ----------------------------------------------------------------------------
+ * 原生 select 的菜单由浏览器绘制, 普通 CSS 碰不到; 暗色主题下它会是系统白底,
+ * 和页面里的 Select 面板完全不是一套观感.
+ *
+ * 支持 appearance: base-select 的浏览器 (Chrome 135+) 可以给 ::picker(select) 上样式,
+ * 于是菜单与 SelectContent 用同一套 token; 不支持的浏览器走 @supports 外的原生菜单,
+ * select 自身的 appearance-none / 自绘箭头照旧, 行为不变.
+ *
+ * 颜色只取语义 token, 线宽 1px; 弹出层与 Select 面板保持同一档圆角与阴影.
+ * ==========================================================================*/
+
+@supports (appearance: base-select) {
+  [data-slot="native-select"] {
+    appearance: base-select;
+  }
+
+  /* 箭头由组件自己的 ChevronDownIcon 画, 原生 picker 图标不重复显示 */
+  [data-slot="native-select"]::picker-icon {
+    display: none;
+  }
+
+  [data-slot="native-select"]::picker(select) {
+    appearance: base-select;
+    margin-top: 6px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--popover);
+    color: var(--popover-foreground);
+    box-shadow: var(--shadow-md);
+    font: inherit;
+  }
+
+  [data-slot="native-select"] option {
+    padding: 5px 8px;
+    border-radius: calc(var(--radius) - 4px);
+    background: transparent;
+    color: var(--popover-foreground);
+  }
+
+  [data-slot="native-select"] option:hover,
+  [data-slot="native-select"] option:focus {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  [data-slot="native-select"] optgroup {
+    padding: 4px 8px 2px;
+    color: var(--muted-foreground);
+    font-size: 11px;
+    font-weight: 500;
+  }
+}
