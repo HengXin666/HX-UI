@@ -172,9 +172,14 @@ function CarouselArrow({
 }: React.ComponentProps<typeof Button> & { previous?: boolean }): React.JSX.Element {
 	const { orientation, scrollPrev, scrollNext, canScrollPrev, canScrollNext } = useCarousel();
 	const horizontal = orientation === ORIENTATION.horizontal;
+	/*
+	 * 居中不用 translate: Button 的按下效果是 active:translate-y-px, 它写的是同一个
+	 * --tw-translate-y, 会把 -translate-y-1/2 顶掉, 按下瞬间按钮跳半格, 指针落到按钮外,
+	 * click 就丢了 (表现为"箭头有时点不到"). 改用 inset + auto margin 居中, 按下只挪 1px.
+	 */
 	const placement = previous
-		? horizontal ? "top-1/2 -left-10 -translate-y-1/2" : "-top-10 left-1/2 -translate-x-1/2 rotate-90"
-		: horizontal ? "top-1/2 -right-10 -translate-y-1/2" : "-bottom-10 left-1/2 -translate-x-1/2 rotate-90";
+		? horizontal ? "-left-10 inset-y-0 my-auto" : "-top-10 inset-x-0 mx-auto rotate-90"
+		: horizontal ? "-right-10 inset-y-0 my-auto" : "-bottom-10 inset-x-0 mx-auto rotate-90";
 	return (
 		<Button
 			data-slot={previous ? "carousel-previous" : "carousel-next"}
