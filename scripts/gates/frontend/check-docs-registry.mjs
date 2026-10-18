@@ -165,7 +165,7 @@ for (const f of pageFiles.filter((f) => !importedPages.includes(f))) {
 for (const g of pageGroups) {
   const dir = path.join(PAGES, g);
   const entrySrc = fs.readFileSync(path.join(dir, GROUP_ENTRY), UTF8);
-  const used = [...entrySrc.matchAll(/from "\.\/(\w+)"/g)].map((m) => m[1]);
+  const used = [...entrySrc.matchAll(/from "\.\/([\w-]+)"/g)].map((m) => m[1]);
   for (const f of fs.readdirSync(dir).filter((f) => f.endsWith(".tsx")).map((f) => f.replace(/\.tsx$/, ""))) {
     if (!used.includes(f)) {
       violations.push({ rule: "page-file-unused", where: `docs/src/pages/${g}/${f}.tsx`, hint: `${g}/${GROUP_ENTRY} 没有引用这个文件, 它既不渲染也不被检查, 是死文件。` });

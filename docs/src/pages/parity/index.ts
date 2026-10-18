@@ -5,11 +5,15 @@ import { FeedbackPage } from "../FeedbackPage";
 import { AttachmentPage, BubblePage, MarkerPage, MessagePage } from "./chat";
 import { MessageScrollerPage, QuestionnairePage, TracePage } from "./agent";
 import { CheckboxPage, KbdPage, LabelPage, RadioGroupPage, SeparatorPage, SpinnerPage } from "./basics";
-import { CarouselPage, DirectionPage, ResizablePage, SidebarPage } from "./display";
+import { CarouselPage, DirectionPage, ResizablePage } from "./display";
+import { SidebarPage } from "./sidebar";
 import { AlertPage, EmptyPage, PaginationPage, TypographyPage } from "./feedback";
-import { ComboboxPage, FieldPage, FormPage, InputGroupPage, InputOTPPage, NativeSelectPage } from "./form";
-import { AspectRatioPage, AvatarPage, ButtonGroupPage, ItemPage, TablePage, ToggleGroupPage, TogglePage } from "./layout";
-import { BreadcrumbDocPage, ContextMenuPage, MenubarPage, NavigationMenuPage } from "./navigation";
+import { FieldPage, FormPage, InputGroupPage } from "./form";
+import { ComboboxPage, InputOTPPage, NativeSelectPage } from "./pickers";
+import { AspectRatioPage, AvatarPage, ButtonGroupPage, ToggleGroupPage, TogglePage } from "./layout";
+import { ItemPage, TablePage } from "./listing";
+import { BreadcrumbDocPage, MenubarPage, NavigationMenuPage } from "./navigation";
+import { ContextMenuPage } from "./context-menu";
 import { AlertDialogPage, CommandPage, HoverCardPage, SheetPage } from "./overlay";
 
 /**
