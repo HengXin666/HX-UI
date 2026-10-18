@@ -39,4 +39,4 @@ hx-browser (HX-Jungle services/hx-browser) 提供多副本实时预览与远程�
 
 ## Consequences
 
-下游只需 `<BrowserLiveWall transport={{ baseUrl: "/hxbr" }} />`. 协议字段改名必须同时改 HX-Jungle 服务端与 `core/protocol.ts`. api_key 走 WS 查询串会进代理日志, 推荐由代理注入 x-api-key 并在 transport 里留空. 没有真浏览器的环境只验证到 core 单测与类型检查, 组件交互要在有 Chromium 的机器上手测.
+下游只需 `<BrowserLiveWall transport={{ baseUrl: "/hxbr" }} />`. 协议字段改名必须同时改 HX-Jungle 服务端与 `core/protocol.ts`. api_key 走 WS 查询串会进代理日志, 推荐由代理注入 x-api-key 并在 transport 里留空. 没有真浏览器的环境只验证到 core 单测与类型检查, 组件交互要在有 Chromium 的机器上手测. 文档入口链接使用构建时 base URL, 不假设站点部署在域名根路径.
