@@ -28,7 +28,9 @@ function ToggleGroup({
 	style,
 	...props
 }: React.ComponentProps<typeof ToggleGroupPrimitive.Root> & ToggleGroupStyle): React.JSX.Element {
+	/** Provider 在 Root 外层: asChild 时 Root 的直接子节点仍是调用方的宿主元素, 组样式与语义合并到它上面. */
 	return (
+		<ToggleGroupContext.Provider value={{ variant, size, spacing }}>
 		<ToggleGroupPrimitive.Root
 			data-slot="toggle-group"
 			data-variant={variant}
@@ -42,8 +44,9 @@ function ToggleGroup({
 			)}
 			{...props}
 		>
-			<ToggleGroupContext.Provider value={{ variant, size, spacing }}>{children}</ToggleGroupContext.Provider>
+			{children}
 		</ToggleGroupPrimitive.Root>
+		</ToggleGroupContext.Provider>
 	);
 }
 

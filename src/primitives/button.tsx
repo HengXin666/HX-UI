@@ -59,6 +59,7 @@ function Button({
 	ripple = true,
 	onPointerDown,
 	onKeyDown,
+	type,
 	...props
 }: React.ComponentProps<"button"> &
 	VariantProps<typeof buttonVariants> & {
@@ -76,6 +77,8 @@ function Button({
 
 	return (
 		<Comp
+			// type 原样透传: 不改原生默认值 (下游表单里不写 type 的 Button 仍是 submit); 不提交表单的部件自己传 BUTTON_TYPE
+			type={type}
 			data-slot="button"
 			data-variant={variant}
 			data-size={size}

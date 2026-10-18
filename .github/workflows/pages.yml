@@ -18,7 +18,10 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 20
         steps:
+            # 不把 GITHUB_TOKEN 留在 .git/config: 依赖安装与构建脚本读不到部署期令牌
             - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
             - uses: actions/setup-node@v4
               with:
                   node-version: '22'
@@ -40,6 +43,8 @@ jobs:
                   path: docs/dist
     deploy:
         needs: build
+        # workflow_dispatch 可选任意分支, 只允许 main 覆盖公开文档站; 其他分支的手动运行只构建不发布
+        if: github.ref == 'refs/heads/main'
         runs-on: ubuntu-latest
         environment:
             name: github-pages

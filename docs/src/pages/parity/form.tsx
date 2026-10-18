@@ -170,7 +170,9 @@ export function InputGroupPage(): JSX.Element {
   <InputGroupAddon><InputGroupText>https://</InputGroupText></InputGroupAddon>
   <InputGroupInput placeholder="example.com" />
   <InputGroupAddon align={ALIGN.inlineEnd}>
-    <InputGroupButton size="icon-xs"><CopyIcon /></InputGroupButton>
+    <InputGroupButton size="icon-xs" aria-label="复制" onClick={() => navigator.clipboard.writeText(url)}>
+      <CopyIcon />
+    </InputGroupButton>
   </InputGroupAddon>
 </InputGroup>`}>
         <div className="grid w-full max-w-sm gap-3">
@@ -189,7 +191,16 @@ export function InputGroupPage(): JSX.Element {
             </InputGroupAddon>
             <InputGroupInput placeholder="example.com" />
             <InputGroupAddon align={ALIGN.inlineEnd}>
-              <InputGroupButton size={SIZE.iconXs} aria-label={DOC.copy} onClick={() => toast.info("链接已复制")}>
+              <InputGroupButton
+                size={SIZE.iconXs}
+                aria-label={DOC.copy}
+                onClick={() => {
+                  void navigator.clipboard.writeText("https://example.com").then(
+                    () => toast.info("链接已复制"),
+                    () => toast.error("复制失败: 浏览器未授权剪贴板"),
+                  );
+                }}
+              >
                 <CopyIcon />
               </InputGroupButton>
             </InputGroupAddon>

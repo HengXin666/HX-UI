@@ -76,12 +76,10 @@ function BreadcrumbEllipsis({ className, ...props }: React.ComponentProps<"span"
 	return (
 		<span
 			data-slot="breadcrumb-ellipsis"
-			role={ROLE.presentation}
-			aria-hidden={ARIA.true}
 			className={cn("flex size-6 items-center justify-center [&>svg]:size-4", className)}
 			{...props}
 		>
-			<MoreHorizontalIcon />
+			<MoreHorizontalIcon aria-hidden={ARIA.true} />
 			<span className={UI_CLASSES.srOnly}>更多</span>
 		</span>
 	);

@@ -104,7 +104,8 @@
  * 扫光 (shimmer)
  * ----------------------------------------------------------------------------
  * 会话标记 (Marker shimmer) 与 Trace 运行中步骤的文字扫光: 用渐变裁剪到文字,
- * 只动 background-position. 渐变两端取 muted-foreground, 中间一道 foreground 高光.
+ * 只动 background-position. Trace 渐变两端取 muted-foreground, 中间一道 foreground 高光;
+ * Marker 两端取当前文字色 (tone) 的淡化, 高光取当前文字色, 文字色本身不被覆盖.
  * 系统要求减弱动效时不动, 文字保持可读.
  * ==========================================================================*/
 
@@ -119,12 +120,23 @@
 
 .hx-shimmer,
 [data-shimmer] [data-slot="marker-content"] {
-  background-image: linear-gradient(90deg, var(--muted-foreground) 40%, var(--foreground) 50%, var(--muted-foreground) 60%);
+  background-image: linear-gradient(90deg, var(--hx-shimmer-base) 40%, var(--hx-shimmer-peak) 50%, var(--hx-shimmer-base) 60%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;
+  -webkit-text-fill-color: transparent;
   animation: hx-shimmer 2s linear infinite;
+}
+
+.hx-shimmer {
+  --hx-shimmer-base: var(--muted-foreground);
+  --hx-shimmer-peak: var(--foreground);
+}
+
+/* Marker 保留 tone 的语义色: 渐变两端取当前文字色的淡化, 高光取当前文字色本身 */
+[data-shimmer] [data-slot="marker-content"] {
+  --hx-shimmer-base: color-mix(in oklab, currentColor 55%, transparent);
+  --hx-shimmer-peak: currentColor;
 }
 
 @media (prefers-reduced-motion: reduce) {

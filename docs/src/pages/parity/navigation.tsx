@@ -1,6 +1,6 @@
 import { useState, type JSX } from "react";
 import { BookOpenIcon, BoxIcon, LayersIcon } from "lucide-react";
-import { ALIGN, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, ContextMenu, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Menubar, MenubarCheckboxItem, MenubarContent, MenubarItem, MenubarMenu, MenubarRadioGroup, MenubarRadioItem, MenubarSeparator, MenubarShortcut, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, TONE_VARIANT, UI_CLASSES, navigationMenuTriggerStyle, toast } from "@hx/ui";
+import { ALIGN, Breadcrumb, DOC, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, ContextMenu, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Menubar, MenubarCheckboxItem, MenubarContent, MenubarItem, MenubarMenu, MenubarRadioGroup, MenubarRadioItem, MenubarSeparator, MenubarShortcut, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger, NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, TONE_VARIANT, UI_CLASSES, navigationMenuTriggerStyle, toast } from "@hx/ui";
 import { H2, P, Preview } from "../../components/DocKit";
 import { Usage } from "../../components/DocSpec";
 
@@ -28,7 +28,7 @@ export function BreadcrumbDocPage(): JSX.Element {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="#/install">首页</BreadcrumbLink>
+              <BreadcrumbLink href={DOC.installHref}>首页</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -120,9 +120,9 @@ export function MenubarPage(): JSX.Element {
 }
 
 const NAV_LINKS = [
-  { title: "基础件", desc: "按钮, 输入, 弹层, 菜单", icon: <BoxIcon /> },
-  { title: "版式件", desc: "应用外壳, 设置页, 数据表", icon: <LayersIcon /> },
-  { title: "文档", desc: "每个组件的预览与代码", icon: <BookOpenIcon /> },
+  { title: "基础件", desc: "按钮, 输入, 弹层, 菜单", icon: <BoxIcon />, href: "#/button" },
+  { title: "版式件", desc: "应用外壳, 设置页, 数据表", icon: <LayersIcon />, href: "#/app-frame" },
+  { title: "文档", desc: "每个组件的预览与代码", icon: <BookOpenIcon />, href: DOC.installHref },
 ];
 
 export function NavigationMenuPage(): JSX.Element {
@@ -141,7 +141,7 @@ export function NavigationMenuPage(): JSX.Element {
     </NavigationMenuItem>
     <NavigationMenuItem>
       <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-        <a href="#/install">文档</a>
+        <a href={DOC.installHref}>文档</a>
       </NavigationMenuLink>
     </NavigationMenuItem>
   </NavigationMenuList>
@@ -154,7 +154,7 @@ export function NavigationMenuPage(): JSX.Element {
                 <ul className="grid w-[420px] gap-1 md:grid-cols-2">
                   {NAV_LINKS.map((link) => (
                     <li key={link.title}>
-                      <NavigationMenuLink href="#/navigation-menu">
+                      <NavigationMenuLink href={link.href}>
                         <div className="flex items-center gap-2 font-medium text-foreground">{link.icon}{link.title}</div>
                         <div className={UI_CLASSES.mutedSm}>{link.desc}</div>
                       </NavigationMenuLink>
@@ -177,7 +177,7 @@ export function NavigationMenuPage(): JSX.Element {
             </NavigationMenuItem>
             <NavigationMenuItem>
               <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                <a href="#/install">文档</a>
+                <a href={DOC.installHref}>文档</a>
               </NavigationMenuLink>
             </NavigationMenuItem>
           </NavigationMenuList>

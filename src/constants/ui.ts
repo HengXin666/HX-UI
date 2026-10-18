@@ -192,6 +192,12 @@ export const UI_NUMBERS = {
 	skeletonSpread: 40,
 } as const;
 
+/** 问卷切题动画的三个 motion variant 名. */
+export const SLIDE_STATE = { enter: "enter", center: "center", exit: "exit" } as const;
+
+/** 由字符串派生稳定伪随机数时的乘数 (取质数, 字符分布更均匀). */
+export const HASH_MULTIPLIER = 31;
+
 /** embla 轮播的滚动轴. */
 export const EMBLA_AXIS = { x: "x", y: "y" } as const;
 

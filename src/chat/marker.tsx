@@ -27,6 +27,7 @@ const markerVariants = cva("flex w-full items-center gap-2 text-[12px] text-mute
  *
  * variant: default 普通一行, border 带边框的说明块, separator 两侧分隔线中间文字 (例如日期).
  * tone 用语义状态色. shimmer 让文字带一道扫光, 用于 "正在思考..." 这类进行中状态;
+ * 扫光只作用于 MarkerContent 包住的文字 (直接写在 Marker 下的文字不扫光), 扫光颜色跟随 tone;
  * 系统要求减弱动效时扫光不动.
  */
 function Marker({

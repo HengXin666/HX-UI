@@ -44,8 +44,18 @@ function TraceStep({
 	icon?: React.ReactNode;
 	defaultOpen?: boolean;
 }): React.JSX.Element {
-	const hasDetail = React.Children.count(children) > 0;
-	const [open, setOpen] = React.useState(defaultOpen ?? (status === TASK_STATUS.running || status === TASK_STATUS.error));
+	/** toArray 会滤掉条件渲染留下的 false / null, 没有真实详情时不显示展开箭头. */
+	const hasDetail = React.Children.toArray(children).length > 0;
+	const active = status === TASK_STATUS.running || status === TASK_STATUS.error;
+	const [open, setOpen] = React.useState(defaultOpen ?? active);
+	/** 未显式给 defaultOpen 时, 状态转为进行中或失败的那一刻自动展开; 之后用户可自行收起. */
+	const [prevStatus, setPrevStatus] = React.useState(status);
+	if (prevStatus !== status) {
+		setPrevStatus(status);
+		if (defaultOpen === undefined && active) {
+			setOpen(true);
+		}
+	}
 	return (
 		<li data-slot="trace-step" data-status={status} className={cn("group/trace-step relative flex gap-2.5 pb-3 last:pb-0", className)} {...props}>
 			<span

@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 import { AlertCircleIcon, FileIcon } from "lucide-react";
 import { cn } from "../primitives/utils";
-import { ARIA, PERCENT, ROLE, TASK_STATUS, VARIANT } from "../constants";
+import { PERCENT, ROLE, TASK_STATUS, VARIANT } from "../constants";
 
 /** 附件的上传状态. */
 type AttachmentState = "idle" | "uploading" | "done" | "error";
@@ -53,7 +53,14 @@ function Attachment({
 		>
 			{children}
 			{state === "uploading" && (
-				<div className="absolute inset-x-0 bottom-0 h-0.5 bg-muted" aria-hidden={ARIA.true}>
+				<div
+					role="progressbar"
+					aria-label="上传进度"
+					aria-valuemin={0}
+					aria-valuemax={PERCENT}
+					aria-valuenow={progress === undefined ? undefined : Math.round(Math.min(PERCENT, Math.max(0, progress)))}
+					className="absolute inset-x-0 bottom-0 h-0.5 bg-muted"
+				>
 					{progress === undefined ? (
 						<div className="hx-progress-indeterminate h-full w-1/3 bg-link" />
 					) : (
@@ -120,7 +127,7 @@ function AttachmentAction({ asChild = false, className, ...props }: React.Compon
 
 /** 一排附件: 横向排列, 超出时换行. */
 function AttachmentGroup({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-	return <div data-slot="attachment-group" role={ROLE.list} className={cn("flex flex-wrap gap-1.5", className)} {...props} />;
+	return <div data-slot="attachment-group" role={ROLE.group} className={cn("flex flex-wrap gap-1.5", className)} {...props} />;
 }
 
 export {

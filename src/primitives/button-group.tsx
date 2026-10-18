@@ -31,7 +31,7 @@ const buttonGroupVariants = cva(
  */
 function ButtonGroup({
 	className,
-	orientation,
+	orientation = ORIENTATION.horizontal,
 	...props
 }: React.ComponentProps<"div"> & VariantProps<typeof buttonGroupVariants>): React.JSX.Element {
 	return (

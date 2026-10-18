@@ -124,6 +124,10 @@ function Combobox(props: ComboboxProps): React.JSX.Element {
 											event.stopPropagation();
 											toggle(value);
 										}}
+										onClick={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+										}}
 									/>
 								</span>
 							))}

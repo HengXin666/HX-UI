@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { ArrowDownIcon } from "lucide-react";
-import { ALIGN, SCROLL_BEHAVIOR, STICK_TOLERANCE, VARIANT } from "../constants";
+import { BUTTON_TYPE, HALF_DIVISOR, SCROLL_BEHAVIOR, STICK_TOLERANCE, VARIANT } from "../constants";
 import { Button } from "../primitives/button";
 import { prefersReducedMotion } from "../primitives/motion";
 import { cn } from "../primitives/utils";
@@ -49,17 +49,29 @@ function MessageScroller({
 	const [atBottom, setAtBottom] = React.useState(true);
 	const stickRef = React.useRef(true);
 	const heightRef = React.useRef(0);
+	const trackRef = React.useRef<HTMLDivElement | null>(null);
+	/** 程序化平滑滚到底的途中: 中间的 scroll 事件不改贴底判定, 到底或用户介入后结束. */
+	const pendingRef = React.useRef(false);
 
 	const scrollToBottom = React.useCallback((smooth = true) => {
 		const viewport = viewportRef.current;
 		if (viewport) {
+			stickRef.current = true;
+			pendingRef.current = true;
 			viewport.scrollTo({ top: viewport.scrollHeight, behavior: scrollBehavior(smooth) });
 		}
 	}, []);
 
+	/** 只滚动视口自身: 按目标相对视口的偏移居中, 不带动 window 等外层滚动容器. */
 	const scrollToItem = React.useCallback((id: string) => {
-		const target = viewportRef.current?.querySelector<HTMLElement>(`[data-message-id="${CSS.escape(id)}"]`);
-		target?.scrollIntoView({ block: ALIGN.center, behavior: scrollBehavior(true) });
+		const viewport = viewportRef.current;
+		const target = viewport?.querySelector<HTMLElement>(`[data-message-id="${CSS.escape(id)}"]`);
+		if (!viewport || !target) {
+			return;
+		}
+		const offset = target.getBoundingClientRect().top - viewport.getBoundingClientRect().top;
+		const top = viewport.scrollTop + offset - (viewport.clientHeight - target.offsetHeight) / HALF_DIVISOR;
+		viewport.scrollTo({ top, behavior: scrollBehavior(true) });
 	}, []);
 
 	React.useLayoutEffect(() => {
@@ -69,7 +81,8 @@ function MessageScroller({
 		}
 		viewport.scrollTop = viewport.scrollHeight;
 		heightRef.current = viewport.scrollHeight;
-		const content = viewport.firstElementChild;
+		/** 观察固定存在的轨道节点: 空会话先挂载, 消息稍后异步加入时同样能跟随. */
+		const content = trackRef.current;
 		if (!content) {
 			return;
 		}
@@ -92,8 +105,17 @@ function MessageScroller({
 			return;
 		}
 		const bottom = viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <= STICK_TOLERANCE;
-		stickRef.current = bottom;
+		if (pendingRef.current) {
+			pendingRef.current = !bottom;
+		} else {
+			stickRef.current = bottom;
+		}
 		setAtBottom(bottom);
+	};
+
+	/** 用户滚轮, 触摸或按键介入时取消程序化滚动, 回到按位置判定贴底. */
+	const interrupt = (): void => {
+		pendingRef.current = false;
 	};
 
 	const value = React.useMemo(() => ({ atBottom, scrollToBottom, scrollToItem, viewportRef }), [atBottom, scrollToBottom, scrollToItem]);
@@ -101,8 +123,18 @@ function MessageScroller({
 	return (
 		<MessageScrollerContext.Provider value={value}>
 			<div data-slot="message-scroller" className={cn("relative flex min-h-0 flex-col", className)} {...props}>
-				<div ref={viewportRef} onScroll={onScroll} data-slot="message-scroller-viewport" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-					{children}
+				<div
+					ref={viewportRef}
+					onScroll={onScroll}
+					onWheel={interrupt}
+					onTouchStart={interrupt}
+					onKeyDown={interrupt}
+					data-slot="message-scroller-viewport"
+					className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+				>
+					<div ref={trackRef} data-slot="message-scroller-track">
+						{children}
+					</div>
 				</div>
 			</div>
 		</MessageScrollerContext.Provider>
@@ -123,7 +155,7 @@ function MessageScrollerItem({
 }
 
 /** "回到最新" 浮动按钮: 只在用户离开底部时出现, 进出带缩放淡入. */
-function MessageScrollerButton({ className, children, ...props }: React.ComponentProps<typeof Button>): React.JSX.Element | null {
+function MessageScrollerButton({ className, children, onClick, ...props }: React.ComponentProps<typeof Button>): React.JSX.Element | null {
 	const { atBottom, scrollToBottom } = useMessageScroller();
 	if (atBottom) {
 		return null;
@@ -138,8 +170,14 @@ function MessageScrollerButton({ className, children, ...props }: React.Componen
 				"animate-in fade-in-0 zoom-in-90 slide-in-from-bottom-2 duration-(--duration-base)",
 				className,
 			)}
-			onClick={() => scrollToBottom(true)}
+			type={BUTTON_TYPE}
 			{...props}
+			onClick={(event) => {
+				onClick?.(event);
+				if (!event.defaultPrevented) {
+					scrollToBottom(true);
+				}
+			}}
 		>
 			{children ?? (
 				<>

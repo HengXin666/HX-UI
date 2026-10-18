@@ -48,6 +48,7 @@ function SheetOverlay({ className, ...props }: React.ComponentProps<typeof Sheet
  *
  * 建在 radix Dialog 上, 有焦点陷阱与 Esc 关闭; 与 Drawer 的区别: Drawer 是 vaul 的
  * 可拖拽底部抽屉 (移动端手势), Sheet 是桌面端从四边滑入的面板 (设置 / 详情 / 筛选).
+ * 面板高度不超过视口, 超长内容在面板内纵向滚动, 底部操作始终可达.
  */
 function SheetContent({
 	className,
@@ -68,7 +69,7 @@ function SheetContent({
 				data-slot="sheet-content"
 				data-side={side}
 				className={cn(
-					"no-drag fixed z-50 flex flex-col gap-4 border-border bg-popover text-sm text-popover-foreground shadow-lg outline-none",
+					"no-drag fixed z-50 flex max-h-svh flex-col gap-4 overflow-y-auto overscroll-contain border-border bg-popover text-sm text-popover-foreground shadow-lg outline-none",
 					"duration-(--duration-slow) ease-out data-closed:duration-(--duration-base) data-closed:ease-in",
 					"data-open:animate-in data-closed:animate-out",
 					SIDE_CLASS[side],

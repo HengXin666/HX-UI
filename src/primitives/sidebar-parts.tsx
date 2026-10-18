@@ -20,6 +20,7 @@ function SidebarTrigger({ className, onClick, ...props }: React.ComponentProps<t
 	const { toggleSidebar } = useSidebar();
 	return (
 		<Button
+			type={BUTTON_TYPE}
 			data-sidebar={SLOT.trigger}
 			data-slot="sidebar-trigger"
 			variant={VARIANT.ghost}
@@ -137,6 +138,7 @@ function SidebarGroupAction({
 	const Comp = asChild ? Slot.Root : TAG.button;
 	return (
 		<Comp
+			type={asChild ? undefined : BUTTON_TYPE}
 			data-slot="sidebar-group-action"
 			data-sidebar="group-action"
 			className={cn(

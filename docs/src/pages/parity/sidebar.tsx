@@ -20,7 +20,7 @@ export function SidebarPage(): JSX.Element {
         组合式应用侧栏, 对标 shadcn Sidebar. SidebarProvider 持有开合状态并注册 Ctrl/Cmd+B; collapsible=icon 时收成图标条,
         文字改由 tooltip 显示; 移动端宽度自动改为 Sheet 抽屉. 库里原有的 SidebarNavItemButton, CollapsibleRail, AppFrame 继续可用 (见 HX 扩展).
       </P>
-      <Usage names={["SidebarProvider", "Sidebar", "SidebarHeader", "SidebarContent", "SidebarFooter", "SidebarGroup", "SidebarGroupLabel", "SidebarGroupContent", "SidebarMenu", "SidebarMenuItem", "SidebarMenuButton", "SidebarMenuBadge", "SidebarMenuSub", "SidebarTrigger", "SidebarRail", "SidebarInset", "useSidebar"]} />
+      <Usage names={["SidebarProvider", "Sidebar", "SidebarHeader", "SidebarContent", "SidebarFooter", "SidebarGroup", "SidebarGroupLabel", "SidebarGroupContent", "SidebarMenu", "SidebarMenuItem", "SidebarMenuButton", "SidebarMenuBadge", "SidebarMenuSub", "SidebarMenuSubItem", "SidebarMenuSubButton", "SidebarTrigger", "SidebarRail", "SidebarInset", "useSidebar"]} />
       <H2>示例</H2>
       <P>为了嵌在文档里, 示例把 Sidebar 的 fixed 定位改成 absolute (传 className); 真实应用里直接铺满视口.</P>
       <Preview code={`<SidebarProvider>

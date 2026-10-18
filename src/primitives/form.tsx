@@ -41,7 +41,8 @@ function FormField<TFieldValues extends FieldValues = FieldValues, TName extends
 	);
 }
 
-type FormItemContextValue = { id: string };
+/** messageShown: FormMessage 实际渲染时登记, FormControl 据此把消息 id 加进 aria-describedby. */
+type FormItemContextValue = { id: string; messageShown: boolean; setMessageShown: (shown: boolean) => void };
 
 const FormItemContext = React.createContext<FormItemContextValue | null>(null);
 
@@ -54,6 +55,8 @@ function useFormField(): {
 	formItemId: string;
 	formDescriptionId: string;
 	formMessageId: string;
+	messageShown: boolean;
+	setMessageShown: (shown: boolean) => void;
 	invalid: boolean;
 	isDirty: boolean;
 	isTouched: boolean;
@@ -67,9 +70,11 @@ function useFormField(): {
 		throw new Error("useFormField 必须在 <FormField> 与 <FormItem> 内使用");
 	}
 	const fieldState = getFieldState(fieldContext.name, formState);
-	const { id } = itemContext;
+	const { id, messageShown, setMessageShown } = itemContext;
 	return {
 		id,
+		messageShown,
+		setMessageShown,
 		name: fieldContext.name,
 		formItemId: `${id}-form-item`,
 		formDescriptionId: `${id}-form-item-description`,
@@ -80,8 +85,10 @@ function useFormField(): {
 
 function FormItem({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
 	const id = React.useId();
+	const [messageShown, setMessageShown] = React.useState(false);
+	const value = React.useMemo(() => ({ id, messageShown, setMessageShown }), [id, messageShown]);
 	return (
-		<FormItemContext.Provider value={{ id }}>
+		<FormItemContext.Provider value={value}>
 			<div data-slot="form-item" className={cn(UI_CLASSES.grid, className)} {...props} />
 		</FormItemContext.Provider>
 	);
@@ -102,12 +109,12 @@ function FormLabel({ className, ...props }: React.ComponentProps<typeof Label>):
 
 /** 把 id / aria-describedby / aria-invalid 写到唯一子控件上. */
 function FormControl(props: React.ComponentProps<typeof Slot.Root>): React.JSX.Element {
-	const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+	const { error, formItemId, formDescriptionId, formMessageId, messageShown } = useFormField();
 	return (
 		<Slot.Root
 			data-slot="form-control"
 			id={formItemId}
-			aria-describedby={error ? `${formDescriptionId} ${formMessageId}` : formDescriptionId}
+			aria-describedby={error || messageShown ? `${formDescriptionId} ${formMessageId}` : formDescriptionId}
 			aria-invalid={!!error}
 			{...props}
 		/>
@@ -121,8 +128,13 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">): Re
 
 /** 字段错误; 没有错误时显示 children (可作为默认提示), 都没有时不渲染. */
 function FormMessage({ className, children, ...props }: React.ComponentProps<"p">): React.JSX.Element | null {
-	const { error, formMessageId } = useFormField();
+	const { error, formMessageId, setMessageShown } = useFormField();
 	const body = error ? String(error.message ?? "") : children;
+	const shown = Boolean(body);
+	React.useLayoutEffect(() => {
+		setMessageShown(shown);
+		return () => setMessageShown(false);
+	}, [shown, setMessageShown]);
 	if (!body) {
 		return null;
 	}

@@ -28,6 +28,11 @@ export const DOC = {
 	/** 示例里的通用文案. */
 	settings: "设置",
 	copy: "复制",
+	/** 安装页的路由 (面包屑, 导航菜单与链接示例都指向它). */
+	installHref: "#/install",
+	/** 规格清单每行的列数: 属性表 (名字 ~ 类型 ~ 默认 ~ 说明), 导航清单 (id ~ 标签 ~ 说明). */
+	propsColumns: 4,
+	navColumns: 3,
 } as const;
 
 /** 文档站示例里的演示数据 (页码, 进度, 长度限制等). */

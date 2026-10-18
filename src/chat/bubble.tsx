@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
 import { ChevronDownIcon } from "lucide-react";
 import { cn } from "../primitives/utils";
-import { ALIGN, OPEN_STATE, UI_CLASSES, UI_NUMBERS, VARIANT } from "../constants";
+import { ALIGN, UI_CLASSES, UI_NUMBERS, VARIANT } from "../constants";
 
 const bubbleVariants = cva(
 	"relative w-fit max-w-full rounded-2xl px-3.5 py-2 text-[13.5px] leading-relaxed break-words [&_a]:text-link [&_a]:underline-offset-4 [&_a:hover]:underline",
@@ -74,6 +74,8 @@ function BubbleReactions({ className, ...props }: React.ComponentProps<"div">): 
 
 /**
  * 可折叠气泡: 超长内容默认收起到 collapsedHeight, 底部渐隐, 点击展开.
+ * open / defaultOpen / onOpenChange 与 Radix Collapsible 同义, 受控与非受控都可用.
+ * 展开高度按内容实测像素过渡 (max-height 不能在像素与 none 之间补间), 内容变化时跟随更新.
  */
 function BubbleCollapsible({
 	className,
@@ -81,22 +83,50 @@ function BubbleCollapsible({
 	collapsedHeight = UI_NUMBERS.bubbleCollapsedHeight,
 	moreLabel = "展开全部",
 	lessLabel = "收起内容",
+	open: openProp,
+	defaultOpen = false,
+	onOpenChange,
 	...props
 }: React.ComponentProps<typeof CollapsiblePrimitive.Root> & {
 	collapsedHeight?: number;
 	moreLabel?: string;
 	lessLabel?: string;
 }): React.JSX.Element {
-	const [open, setOpen] = React.useState(false);
+	const [uncontrolled, setUncontrolled] = React.useState(defaultOpen);
+	const open = openProp ?? uncontrolled;
+	const setOpen = (next: boolean): void => {
+		if (openProp === undefined) {
+			setUncontrolled(next);
+		}
+		onOpenChange?.(next);
+	};
+	const contentId = React.useId();
+	const contentRef = React.useRef<HTMLDivElement | null>(null);
+	const [fullHeight, setFullHeight] = React.useState<number | undefined>(undefined);
+	React.useLayoutEffect(() => {
+		const node = contentRef.current;
+		if (!node) {
+			return;
+		}
+		const measure = (): void => setFullHeight(node.scrollHeight);
+		measure();
+		const observer = new ResizeObserver(measure);
+		observer.observe(node);
+		return () => observer.disconnect();
+	}, []);
 	return (
-		<CollapsiblePrimitive.Root open={open} onOpenChange={setOpen} data-slot="bubble-collapsible" className={cn(UI_CLASSES.col, className)} {...props}>
+		<CollapsiblePrimitive.Root {...props} open={open} onOpenChange={setOpen} data-slot="bubble-collapsible" className={cn(UI_CLASSES.col, className)}>
 			<div
+				id={contentId}
 				className={cn("relative overflow-hidden transition-[max-height] duration-(--duration-slow) ease-out", !open && "mask-b-from-60%")}
-				style={{ maxHeight: open ? OPEN_STATE.none : collapsedHeight }}
+				style={{ maxHeight: open ? fullHeight : collapsedHeight }}
 			>
-				{children}
+				<div ref={contentRef}>{children}</div>
 			</div>
-			<CollapsiblePrimitive.Trigger className="mt-1 inline-flex w-fit items-center gap-1 text-[12px] text-link outline-none hover:underline focus-visible:underline">
+			<CollapsiblePrimitive.Trigger
+				aria-controls={contentId}
+				className="mt-1 inline-flex w-fit items-center gap-1 text-[12px] text-link outline-none hover:underline focus-visible:underline"
+			>
 				{open ? lessLabel : moreLabel}
 				<ChevronDownIcon className={cn("size-3.5 transition-transform duration-(--duration-base)", open && "rotate-180")} />
 			</CollapsiblePrimitive.Trigger>

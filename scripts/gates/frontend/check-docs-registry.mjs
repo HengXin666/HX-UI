@@ -163,6 +163,10 @@ for (const f of pageFiles.filter((f) => !importedPages.includes(f))) {
 }
 
 for (const g of pageGroups) {
+  if (!importedPages.includes(g)) {
+    violations.push({ rule: "page-group-unused", where: `docs/src/pages/${g}/${GROUP_ENTRY}`, hint: "App.tsx 没有引用这个页面组入口, 整组页面都不会渲染, 是死代码。" });
+    continue;
+  }
   const dir = path.join(PAGES, g);
   const entrySrc = fs.readFileSync(path.join(dir, GROUP_ENTRY), UTF8);
   const used = [...entrySrc.matchAll(/from "\.\/([\w-]+)"/g)].map((m) => m[1]);

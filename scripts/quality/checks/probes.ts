@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-    CI_FILE, COVERAGE_FILE, ENTRY_FILE, RULE_CI, ERROR, EXIT_ERROR, EXIT_OK, EXIT_TOOL, FIXTURES_FILE, GIT, JSON_INDENT, NEWLINE, NODE,
+    CI_FILE, COVERAGE_FILE, ENTRY_FILE, RULE_CI, RULE_BUTTON_TYPE, ERROR, EXIT_ERROR, EXIT_OK, EXIT_TOOL, FIXTURES_FILE, GIT, JSON_INDENT, NEWLINE, NODE,
     REPORT_DIR, UTF8, VENDOR_SKILL, CMD_AUDIT, CMD_BASELINE, CMD_CHECK, COLON_SPACE, FLAG_BASE, GIT_CONFIG, GIT_DIR_OPTION, JSON_EXT, MODE_ALL, MODE_STAGED, MODE_WORKTREE, NODE_MODULES, SLASH, SPACE, STRING_TYPE, EVIDENCE_LIMIT,
 } from "../../constants/quality.ts";
 import { RULES } from "../runtime/registry.ts";
@@ -127,8 +127,19 @@ function integration(fixtures: Record<string, Fixture>): void {
     record("unknown group is a tool error", run(dir, [CMD_CHECK, GROUP_OPTION, "nope"]).status === EXIT_TOOL, TOOL_ERROR_DETAIL);
 
     writeAll(dir, { "src/c.tsx": 'export const C = () => <button type="text">x</button>;\n' });
-    const invalidType = run(dir, [CMD_CHECK, MODE_OPTION, MODE_ALL, RULE_OPTION, "PROJECT-UI-BUTTON-TYPE", FORMAT_OPTION, FINDINGS]);
+    const invalidType = run(dir, [CMD_CHECK, MODE_OPTION, MODE_ALL, RULE_OPTION, RULE_BUTTON_TYPE, FORMAT_OPTION, FINDINGS]);
     record("button with an invalid static type is reported", invalidType.parsed && invalidType.findings.length === 1, String(invalidType.findings.length));
+
+    rmSync(join(dir, "src/c.tsx"));
+    writeAll(dir, { "src/d.tsx": [
+        "const TAG = { button: \"button\", div: \"div\" };",
+        "export const D = ({ asChild }: { asChild?: boolean }) => { const Comp = asChild ? \"span\" : TAG.button; return <Comp>x</Comp>; };",
+        "export const E = () => { const Comp = TAG.div; return <Comp>y</Comp>; };",
+        "export const F = ({ asChild }: { asChild?: boolean }) => { const Comp = asChild ? \"span\" : TAG.button; return <Comp type={asChild ? undefined : \"button\"}>z</Comp>; };",
+    ].join("\n") + "\n" });
+    const dynamicTag = run(dir, [CMD_CHECK, MODE_OPTION, MODE_ALL, RULE_OPTION, RULE_BUTTON_TYPE, FORMAT_OPTION, FINDINGS]);
+    record("dynamic tag bound to TAG.button without type is reported, scoped per function", dynamicTag.parsed && dynamicTag.findings.length === 1, String(dynamicTag.findings.length));
+    rmSync(join(dir, "src/d.tsx"));
 
     sh(dir, ["add", FIXTURE_FILE]);
     writeFileSync(join(dir, FIXTURE_FILE), "export const A = 1;\n");

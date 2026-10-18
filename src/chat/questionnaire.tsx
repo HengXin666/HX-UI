@@ -7,7 +7,7 @@ import { Button } from "../primitives/button";
 import { Progress } from "../primitives/progress";
 import { Textarea } from "../primitives/textarea";
 import { cn } from "../primitives/utils";
-import { BUTTON_TYPE, PERCENT, QUESTION_TYPE, ROLE, STEP_BACK, UI_CLASSES, UI_NUMBERS, VARIANT, isString } from "../constants";
+import { BUTTON_TYPE, PERCENT, QUESTION_TYPE, ROLE, SLIDE_STATE, STEP_BACK, UI_CLASSES, UI_NUMBERS, VARIANT, isString } from "../constants";
 
 /** 选项. */
 interface QuestionnaireChoice {
@@ -38,6 +38,13 @@ interface QuestionnaireLabels {
 	progress: (current: number, total: number) => string;
 }
 
+/** 切题动画: 入场与退场都读 AnimatePresence 传入的 custom (当前位移), 退场方向随最新一次切题. */
+const SLIDE_VARIANTS = {
+	[SLIDE_STATE.enter]: (offset: number) => ({ opacity: 0, x: offset }),
+	[SLIDE_STATE.center]: { opacity: 1, x: 0 },
+	[SLIDE_STATE.exit]: (offset: number) => ({ opacity: 0, x: -offset }),
+};
+
 const DEFAULT_LABELS: QuestionnaireLabels = {
 	previous: "上一步",
 	next: "下一步",
@@ -50,9 +57,9 @@ const DEFAULT_LABELS: QuestionnaireLabels = {
 /**
  * 多步问卷 (对标 shadcn Questionnaire).
  *
- * 一次一题, 顶部进度条; 单选点选即前进, 多选与文本题按 "下一步" 前进, skippable 的题可跳过.
+ * 一次一题, 顶部进度条; 单选点选即前进 (最后一题只选中, 由 "提交" 按钮提交), 多选与文本题按 "下一步" 前进, skippable 的题可跳过.
  * 切题时按方向左右滑入 (motion), 系统要求减弱动效时只淡入淡出.
- * 最后一题提交时调用 onSubmit(answers). 数字键 1 到 9 选择对应选项.
+ * 最后一题提交时调用一次 onSubmit(answers), 提交后不再响应选择与提交. 数字键 1 到 9 选择对应选项.
  */
 function Questionnaire({
 	questions,
@@ -72,13 +79,21 @@ function Questionnaire({
 	const [index, setIndex] = React.useState(0);
 	const [direction, setDirection] = React.useState(1);
 	const [answers, setAnswers] = React.useState<QuestionnaireAnswers>(defaultAnswers ?? {});
+	const [submitted, setSubmitted] = React.useState(false);
+	/** 同一帧内的连续点击还看不到新 state, 用 ref 保证 onSubmit 只调用一次. */
+	const submittedRef = React.useRef(false);
 	const question = questions[index];
 	const last = index === questions.length - 1;
 	const answer = question ? answers[question.id] : undefined;
 	const answered = Array.isArray(answer) ? answer.length > 0 : Boolean(answer && answer.trim());
 
 	const go = (step: number, next: QuestionnaireAnswers = answers): void => {
+		if (submittedRef.current) {
+			return;
+		}
 		if (step > 0 && last) {
+			submittedRef.current = true;
+			setSubmitted(true);
 			onSubmit?.(next);
 			return;
 		}
@@ -87,7 +102,7 @@ function Questionnaire({
 	};
 
 	const choose = (value: string): void => {
-		if (!question) {
+		if (submitted || !question) {
 			return;
 		}
 		if (question.type === "multiple") {
@@ -97,11 +112,13 @@ function Questionnaire({
 		}
 		const next = { ...answers, [question.id]: value };
 		setAnswers(next);
-		go(1, next);
+		if (!last) {
+			go(1, next);
+		}
 	};
 
 	const skip = (): void => {
-		if (!question) {
+		if (submitted || !question) {
 			return;
 		}
 		const next = { ...answers };
@@ -133,9 +150,11 @@ function Questionnaire({
 			<AnimatePresence mode="wait" initial={false} custom={offset}>
 				<motion.div
 					key={question.id}
-					initial={{ opacity: 0, x: offset }}
-					animate={{ opacity: 1, x: 0 }}
-					exit={{ opacity: 0, x: -offset }}
+					custom={offset}
+					variants={SLIDE_VARIANTS}
+					initial={SLIDE_STATE.enter}
+					animate={SLIDE_STATE.center}
+					exit={SLIDE_STATE.exit}
 					transition={{ duration: reduced ? 0 : 0.2, ease: [0.2, 0, 0, 1] }}
 					className="flex flex-col gap-3"
 				>
@@ -182,17 +201,17 @@ function Questionnaire({
 				</motion.div>
 			</AnimatePresence>
 			<div className={UI_CLASSES.row}>
-				<Button variant={VARIANT.ghost} size={VARIANT.sm} disabled={index === 0} onClick={() => go(STEP_BACK)}>
+				<Button type={BUTTON_TYPE} variant={VARIANT.ghost} size={VARIANT.sm} disabled={submitted || index === 0} onClick={() => go(STEP_BACK)}>
 					{labels.previous}
 				</Button>
 				<div className="ml-auto flex items-center gap-1.5">
 					{question.skippable && (
-						<Button variant={VARIANT.ghost} size={VARIANT.sm} onClick={skip}>
+						<Button type={BUTTON_TYPE} variant={VARIANT.ghost} size={VARIANT.sm} disabled={submitted} onClick={skip}>
 							{labels.skip}
 						</Button>
 					)}
 					{(!single || last) && (
-						<Button variant={VARIANT.primary} size={VARIANT.sm} disabled={!answered && !question.skippable} onClick={() => go(1)}>
+						<Button type={BUTTON_TYPE} variant={VARIANT.primary} size={VARIANT.sm} disabled={submitted || (!answered && !question.skippable)} onClick={() => go(1)}>
 							{last ? labels.submit : labels.next}
 						</Button>
 					)}

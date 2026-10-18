@@ -10,25 +10,25 @@ import { UI_CLASSES } from "../constants";
  * 文档 / 设置说明 / 空态长文案直接用这些, 不要各自手写一套字号.
  */
 function TypographyH1({ className, ...props }: React.ComponentProps<"h1">): React.JSX.Element {
-	return <h1 data-slot="typography-h1" className={cn("scroll-m-20 text-[30px] font-bold tracking-tight text-balance text-heading", className)} {...props} />;
+	return <h1 data-slot="typography-h1" className={cn("scroll-m-20 text-(length:--fs-5xl) font-bold tracking-tight text-balance text-heading", className)} {...props} />;
 }
 
 function TypographyH2({ className, ...props }: React.ComponentProps<"h2">): React.JSX.Element {
 	return (
 		<h2
 			data-slot="typography-h2"
-			className={cn("scroll-m-20 border-b border-border pb-2 text-[22px] font-semibold tracking-tight text-heading first:mt-0", className)}
+			className={cn("scroll-m-20 border-b border-border pb-2 text-(length:--fs-3xl) font-semibold tracking-tight text-heading first:mt-0", className)}
 			{...props}
 		/>
 	);
 }
 
 function TypographyH3({ className, ...props }: React.ComponentProps<"h3">): React.JSX.Element {
-	return <h3 data-slot="typography-h3" className={cn("scroll-m-20 text-[19px] font-semibold tracking-tight text-heading", className)} {...props} />;
+	return <h3 data-slot="typography-h3" className={cn("scroll-m-20 text-(length:--fs-xl) font-semibold tracking-tight text-heading", className)} {...props} />;
 }
 
 function TypographyH4({ className, ...props }: React.ComponentProps<"h4">): React.JSX.Element {
-	return <h4 data-slot="typography-h4" className={cn("scroll-m-20 text-[15px] font-semibold tracking-tight text-heading", className)} {...props} />;
+	return <h4 data-slot="typography-h4" className={cn("scroll-m-20 text-(length:--fs-lg) font-semibold tracking-tight text-heading", className)} {...props} />;
 }
 
 function TypographyP({ className, ...props }: React.ComponentProps<"p">): React.JSX.Element {
@@ -47,7 +47,7 @@ function TypographyInlineCode({ className, ...props }: React.ComponentProps<"cod
 	return (
 		<code
 			data-slot="typography-inline-code"
-			className={cn("relative rounded-md bg-muted px-1.5 py-0.5 font-mono text-[12px] font-medium text-foreground", className)}
+			className={cn("relative rounded-md bg-muted px-1.5 py-0.5 font-mono text-(length:--fs-sm) font-medium text-foreground", className)}
 			{...props}
 		/>
 	);
@@ -55,15 +55,15 @@ function TypographyInlineCode({ className, ...props }: React.ComponentProps<"cod
 
 /** 导语: 标题下的一段放大说明文字. */
 function TypographyLead({ className, ...props }: React.ComponentProps<"p">): React.JSX.Element {
-	return <p data-slot="typography-lead" className={cn("text-[17px] text-muted-foreground", className)} {...props} />;
+	return <p data-slot="typography-lead" className={cn("text-(length:--fs-lead) text-muted-foreground", className)} {...props} />;
 }
 
 function TypographyLarge({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-	return <div data-slot="typography-large" className={cn("text-[15px] font-semibold text-heading", className)} {...props} />;
+	return <div data-slot="typography-large" className={cn("text-(length:--fs-lg) font-semibold text-heading", className)} {...props} />;
 }
 
 function TypographySmall({ className, ...props }: React.ComponentProps<"small">): React.JSX.Element {
-	return <small data-slot="typography-small" className={cn("text-[12px] leading-none font-medium", className)} {...props} />;
+	return <small data-slot="typography-small" className={cn("text-(length:--fs-sm) leading-none font-medium", className)} {...props} />;
 }
 
 function TypographyMuted({ className, ...props }: React.ComponentProps<"p">): React.JSX.Element {

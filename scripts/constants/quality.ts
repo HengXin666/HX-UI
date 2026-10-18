@@ -121,6 +121,7 @@ export const CMD_CHECK = "check";
 export const CMD_AUDIT = "audit";
 export const CMD_PUSH = "push";
 export const RULE_CI = "HC-CI";
+export const RULE_BUTTON_TYPE = "PROJECT-UI-BUTTON-TYPE";
 export const CMD_BASELINE = "baseline";
 export const FLAG_ROOT = "root";
 export const FLAG_MODE = "mode";

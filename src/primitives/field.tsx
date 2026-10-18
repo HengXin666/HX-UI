@@ -153,16 +153,17 @@ function FieldError({
 		if (children) {
 			return children;
 		}
-		const messages = [...new Map((errors ?? []).filter(Boolean).map((error) => [error?.message, error])).values()];
+		/** 先滤掉没有 message 的项再去重, 避免渲染空的 role="alert". */
+		const messages = [...new Set((errors ?? []).map((error) => error?.message).filter((message): message is string => Boolean(message)))];
 		if (messages.length === 0) {
 			return null;
 		}
 		if (messages.length === 1) {
-			return messages[0]?.message;
+			return messages[0];
 		}
 		return (
 			<ul className="ml-4 flex list-disc flex-col gap-1">
-				{messages.map((error, index) => error?.message && <li key={index}>{error.message}</li>)}
+				{messages.map((message) => <li key={message}>{message}</li>)}
 			</ul>
 		);
 	}, [children, errors]);

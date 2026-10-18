@@ -158,7 +158,7 @@
             "positive": "scripts/quality/fixtures.json#rules.PROJECT-UI-BUTTON-TYPE.positive",
             "negative": "scripts/quality/fixtures.json#rules.PROJECT-UI-BUTTON-TYPE.negative"
         },
-        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 原生 <button> 必须显式写 type, AST 判定, 不受换行与箭头函数影响"
+        "evidence": "scripts/.hx_code_quality/reports/probes.json (npm run quality:probes); 原生 <button> (含绑定到 button 的动态标签, 如 asChild ? Slot.Root : TAG.button) 必须显式写 type, AST 判定, 不受换行与箭头函数影响"
     },
     {
         "id": "PROJECT-UI-ICON-DECLARED",

@@ -8,7 +8,7 @@ import { useSidebar } from "./sidebar";
 import { Skeleton } from "./skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./tooltip";
 import { cn } from "./utils";
-import { ALIGN, OPEN_STATE, SIDE, SIZE, SPACE, TAG, UI_CLASSES, UI_NUMBERS, VARIANT, isString } from "../constants";
+import { ALIGN, BUTTON_TYPE, HASH_MULTIPLIER, OPEN_STATE, SIDE, SIZE, SPACE, TAG, UI_CLASSES, UI_NUMBERS, VARIANT, isString } from "../constants";
 
 /**
  * 侧栏里的菜单项 (对标 shadcn SidebarMenu); 分组 SidebarGroup* 在 sidebar-parts.tsx.
@@ -75,6 +75,7 @@ function SidebarMenuButton({
 	const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple, onPointerDown, onKeyDown });
 	const button = (
 		<Comp
+			type={asChild ? undefined : BUTTON_TYPE}
 			data-slot="sidebar-menu-button"
 			data-sidebar="menu-button"
 			data-size={size}
@@ -105,6 +106,7 @@ function SidebarMenuAction({
 	const Comp = asChild ? Slot.Root : TAG.button;
 	return (
 		<Comp
+			type={asChild ? undefined : BUTTON_TYPE}
 			data-slot="sidebar-menu-action"
 			data-sidebar="menu-action"
 			className={cn(
@@ -139,7 +141,15 @@ function SidebarMenuSkeleton({
 	showIcon = false,
 	...props
 }: React.ComponentProps<"div"> & { showIcon?: boolean }): React.JSX.Element {
-	const width = React.useMemo(() => `${Math.floor(Math.random() * UI_NUMBERS.skeletonSpread) + UI_NUMBERS.skeletonMin}%`, []);
+	/** 宽度由 useId 派生: 服务端与客户端算出同一个值, hydration 不会因随机数不一致而报错. */
+	const id = React.useId();
+	const width = React.useMemo(() => {
+		let hash = 0;
+		for (const char of id) {
+			hash = (hash * HASH_MULTIPLIER + char.charCodeAt(0)) % UI_NUMBERS.skeletonSpread;
+		}
+		return `${hash + UI_NUMBERS.skeletonMin}%`;
+	}, [id]);
 	return (
 		<div data-slot="sidebar-menu-skeleton" data-sidebar="menu-skeleton" className={cn("flex h-8 items-center gap-2 rounded-md px-2", className)} {...props}>
 			{showIcon && <Skeleton className="size-4 rounded-md" data-sidebar="menu-skeleton-icon" />}

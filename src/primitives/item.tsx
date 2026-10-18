@@ -3,16 +3,18 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 import { Separator } from "./separator";
 import { cn } from "./utils";
-import { ORIENTATION, ROLE, SPACE, TAG, UI_CLASSES, VARIANT } from "../constants";
+import { ORIENTATION, SPACE, TAG, UI_CLASSES, VARIANT } from "../constants";
 
 /**
  * 列表条目: 左侧媒体 (图标 / 头像 / 图片), 中间标题与说明, 右侧操作.
  *
- * 一个条目就是一行, 多行放进 ItemGroup. 整行可点时用 asChild 包一个 a / button,
- * 悬停底色与焦点框由 Item 自己给.
+ * 一个条目就是一行, 多行放进 ItemGroup. 整行可点时用 asChild 包一个 a (a 可容纳块级子部件),
+ * 悬停底色与焦点框由 Item 自己给. 整行已是可点宿主时不要再在 ItemActions 里放按钮, 避免嵌套交互控件;
+ * button 宿主只能容纳 phrasing content, 不适合本组合结构.
+ * ItemGroup 不声明 list 语义 (条目不是 listitem); 需要列表语义时由调用方用 ul / li 组合.
  */
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">): React.JSX.Element {
-	return <div role={ROLE.list} data-slot="item-group" className={cn("group/item-group flex flex-col", className)} {...props} />;
+	return <div data-slot="item-group" className={cn("group/item-group flex flex-col", className)} {...props} />;
 }
 
 function ItemSeparator({ className, ...props }: React.ComponentProps<typeof Separator>): React.JSX.Element {

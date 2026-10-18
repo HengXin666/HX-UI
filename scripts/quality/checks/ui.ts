@@ -1,6 +1,6 @@
 import ts from "typescript";
 import {
-    ERROR, ICON_DECLARATION_FIELDS, ICON_PACKAGE_PREFIX, PACKAGE_FILE, UI_COLOR_EXEMPT, UI_ROOT, GROUP_CODE, NEWLINE, NOT_FOUND, REGEX_GLOBAL, SLASH, TSX_EXT, COLON,
+    ERROR, ICON_DECLARATION_FIELDS, ICON_PACKAGE_PREFIX, PACKAGE_FILE, UI_COLOR_EXEMPT, UI_ROOT, GROUP_CODE, NEWLINE, NOT_FOUND, REGEX_GLOBAL, SLASH, TSX_EXT, COLON, RULE_BUTTON_TYPE,
 } from "../../constants/quality.ts";
 import { codeFiles, comments, line, parse, visit, withoutComments } from "../runtime/ast.ts";
 import { Collector } from "../runtime/finding.ts";
@@ -86,9 +86,46 @@ function staticType(attribute: ts.JsxAttribute): string | undefined {
     return expression && ts.isStringLiteralLike(expression) ? expression.text : undefined;
 }
 
+/** `TAG.button` 这类常量引用: 属性名是 button 的属性访问表达式. */
+function isButtonTag(expression: ts.Expression): boolean {
+    if (ts.isStringLiteralLike(expression)) {
+        return expression.text === BUTTON;
+    }
+    if (ts.isPropertyAccessExpression(expression)) {
+        return expression.name.text === BUTTON;
+    }
+    if (ts.isConditionalExpression(expression)) {
+        return isButtonTag(expression.whenTrue) || isButtonTag(expression.whenFalse);
+    }
+    return ts.isParenthesizedExpression(expression) && isButtonTag(expression.expression);
+}
+
+/**
+ * 动态标签名是否绑定到原生 button: `const Comp = asChild ? Slot.Root : TAG.button` 或 `const Comp = "button"`.
+ * 这类标签在 JSX 里写成 <Comp>, 字面量匹配看不到, 但运行时同样渲染原生 button, 同样必须写 type.
+ * 按作用域就近解析: 从 JSX 节点向外逐层找同名的变量声明, 同一文件里别的函数的同名 Comp 不串用.
+ */
+function boundToButton(name: string, node: ts.Node): boolean {
+    for (let scope: ts.Node | undefined = node.parent; scope; scope = scope.parent) {
+        if (!ts.isBlock(scope) && !ts.isSourceFile(scope)) {
+            continue;
+        }
+        for (const statement of scope.statements) {
+            if (!ts.isVariableStatement(statement)) {
+                continue;
+            }
+            const declaration = statement.declarationList.declarations.find((item) => ts.isIdentifier(item.name) && item.name.text === name);
+            if (declaration) {
+                return declaration.initializer !== undefined && isButtonTag(declaration.initializer);
+            }
+        }
+    }
+    return false;
+}
+
 const buttonType: Rule = {
-    id: "PROJECT-UI-BUTTON-TYPE", severity: ERROR, group: CODE,
-    summary: "原生 <button> 必须显式写 type, AST 判定, 不受换行与箭头函数影响",
+    id: RULE_BUTTON_TYPE, severity: ERROR, group: CODE,
+    summary: "原生 <button> (含绑定到 button 的动态标签, 如 asChild ? Slot.Root : TAG.button) 必须显式写 type, AST 判定, 不受换行与箭头函数影响",
     run: (snapshot) => {
         const out = new Collector(buttonType);
         for (const [path, text] of codeFiles(snapshot)) {
@@ -100,7 +137,8 @@ const buttonType: Rule = {
                 if (!ts.isJsxOpeningElement(node) && !ts.isJsxSelfClosingElement(node)) {
                     return;
                 }
-                if (node.tagName.getText(source) !== BUTTON) {
+                const tag = node.tagName.getText(source);
+                if (tag !== BUTTON && !(ts.isIdentifier(node.tagName) && boundToButton(tag, node))) {
                     return;
                 }
                 const attribute = node.attributes.properties.find((item): item is ts.JsxAttribute => {

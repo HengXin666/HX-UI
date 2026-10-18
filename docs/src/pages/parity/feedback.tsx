@@ -136,7 +136,7 @@ export function EmptyPage(): JSX.Element {
       <Preview code={`<EmptyState kind={TASK_STATUS.error} />`}>
         <EmptyState kind={TASK_STATUS.error} />
       </Preview>
-      <Callout title="与 EmptyState 的分工">组合式 Empty 用于自定义排版; EmptyState 用于列表与表格的固定三态, 二者可以同时存在.</Callout>
+      <Callout title="与 EmptyState 的分工">组合式 Empty 用于自定义排版; EmptyState 用于列表与表格的固定四态 (empty / error / loading / denied), 二者可以同时存在.</Callout>
     </>
   );
 }

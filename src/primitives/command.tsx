@@ -37,9 +37,19 @@ function CommandDialog({
 	className?: string;
 	showCloseButton?: boolean;
 }): React.JSX.Element {
+	const contentRef = React.useRef<HTMLDivElement | null>(null);
 	return (
 		<Dialog {...props}>
-			<DialogContent className={cn("max-w-[min(32rem,calc(100%-2rem))] overflow-hidden p-0", className)} showCloseButton={showCloseButton}>
+			<DialogContent
+				ref={contentRef}
+				className={cn("max-w-[min(32rem,calc(100%-2rem))] overflow-hidden p-0", className)}
+				showCloseButton={showCloseButton}
+				onOpenAutoFocus={(event) => {
+					/** DialogContent 默认阻止自动聚焦; 命令面板打开即可输入, 所以主动聚焦搜索框. */
+					event.preventDefault();
+					contentRef.current?.querySelector<HTMLInputElement>("[cmdk-input]")?.focus();
+				}}
+			>
 				<DialogHeader className={UI_CLASSES.srOnly}>
 					<DialogTitle>{title}</DialogTitle>
 					<DialogDescription>{description}</DialogDescription>

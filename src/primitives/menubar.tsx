@@ -164,7 +164,8 @@ function MenubarSubTrigger({
 	inset,
 	children,
 	...props
-}: React.ComponentProps<typeof MenubarPrimitive.SubTrigger> & { inset?: boolean }): React.JSX.Element {
+}: Omit<React.ComponentProps<typeof MenubarPrimitive.SubTrigger>, "asChild"> & { inset?: boolean }): React.JSX.Element {
+	/** 不开放 asChild: 这里固定渲染内容与箭头两个子节点, Slot 只接受单一子节点. */
 	return (
 		<MenubarPrimitive.SubTrigger
 			data-slot="menubar-sub-trigger"

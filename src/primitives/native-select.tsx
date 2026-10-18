@@ -9,6 +9,7 @@ import { ARIA, VARIANT } from "../constants";
  * 用浏览器自己的 select: 移动端弹系统滚轮, 表单原生提交, 选项上千也不卡.
  * 外观与 SelectTrigger 对齐 (同高, 同边框, 同箭头), 箭头是叠在上面的 svg,
  * 原生箭头用 appearance-none 去掉. 需要搜索 / 自定义选项渲染时用 Select 或 Combobox.
+ * 粗指针设备 (触屏) 上字号提到 16px: iOS Safari 聚焦字号小于 16px 的控件会自动放大页面.
  */
 function NativeSelect({
 	className,
@@ -21,7 +22,7 @@ function NativeSelect({
 				data-slot="native-select"
 				data-size={size}
 				className={cn(
-					"h-8 w-full min-w-0 appearance-none rounded-lg border border-border bg-card py-1 pr-8 pl-2.5 text-[12px] font-medium text-foreground outline-none",
+					"h-8 w-full min-w-0 appearance-none rounded-lg border border-border bg-card py-1 pr-8 pl-2.5 text-[12px] font-medium pointer-coarse:text-base text-foreground outline-none",
 					"transition-[border-color,background-color] duration-(--duration-fast) hover:bg-accent focus-visible:border-primary/50",
 					"disabled:pointer-events-none disabled:cursor-not-allowed aria-invalid:border-destructive data-[size=sm]:h-7",
 					className,

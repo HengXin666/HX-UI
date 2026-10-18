@@ -7,7 +7,7 @@ import { cn } from "./utils";
 import { VARIANT } from "../constants";
 
 const avatarVariants = cva(
-	"group/avatar relative flex shrink-0 overflow-hidden rounded-full border border-border/60 bg-muted select-none",
+	"group/avatar relative flex shrink-0 rounded-full border border-border/60 bg-muted select-none",
 	{
 		variants: {
 			size: {
@@ -25,6 +25,7 @@ const avatarVariants = cva(
  *
  * 图片加载成功前显示 AvatarFallback (首字母或图标); 图片到达后淡入, 不闪白.
  * size 三档, 组合进 AvatarGroup 时自动叠放并加一圈页面底色描边.
+ * 根节点不裁剪溢出 (AvatarBadge 要完整露出), 圆形裁剪由 AvatarImage / AvatarFallback 各自的 rounded-full 完成.
  */
 function Avatar({
 	className,
@@ -46,7 +47,7 @@ function AvatarImage({ className, ...props }: React.ComponentProps<typeof Avatar
 		<AvatarPrimitive.Image
 			data-slot="avatar-image"
 			className={cn(
-				"aspect-square size-full object-cover animate-in fade-in-0 duration-(--duration-base)",
+				"aspect-square size-full rounded-full object-cover animate-in fade-in-0 duration-(--duration-base)",
 				className,
 			)}
 			{...props}

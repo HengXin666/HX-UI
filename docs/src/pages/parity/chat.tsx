@@ -20,7 +20,7 @@ export function AttachmentPage(): JSX.Element {
       <AttachmentDescription>2.4 MB</AttachmentDescription>
     </AttachmentContent>
     <AttachmentActions>
-      <AttachmentAction asChild><Button size={SIZE.iconXs} variant="ghost"><XIcon /></Button></AttachmentAction>
+      <AttachmentAction asChild><Button size={SIZE.iconXs} variant="ghost" aria-label="移除"><XIcon /></Button></AttachmentAction>
     </AttachmentActions>
   </Attachment>
   <Attachment state="uploading" progress={42}>...</Attachment>
@@ -39,12 +39,19 @@ export function AttachmentPage(): JSX.Element {
               </AttachmentAction>
             </AttachmentActions>
           </Attachment>
-          <Attachment state="uploading" progress={progress} onClick={() => setProgress((value) => (value >= DOC_SAMPLE.full ? 0 : value + DOC_SAMPLE.progressStep))}>
+          <Attachment state="uploading" progress={progress}>
             <AttachmentMedia />
             <AttachmentContent>
               <AttachmentTitle>日志.zip</AttachmentTitle>
-              <AttachmentDescription>上传中 {Math.min(progress, DOC_SAMPLE.full)}% (点击推进)</AttachmentDescription>
+              <AttachmentDescription>上传中 {Math.min(progress, DOC_SAMPLE.full)}%</AttachmentDescription>
             </AttachmentContent>
+            <AttachmentActions>
+              <AttachmentAction asChild>
+                <Button size={SIZE.xs} variant={VARIANT.ghost} onClick={() => setProgress((value) => (value >= DOC_SAMPLE.full ? 0 : value + DOC_SAMPLE.progressStep))}>
+                  推进
+                </Button>
+              </AttachmentAction>
+            </AttachmentActions>
           </Attachment>
           <Attachment state={TASK_STATUS.error}>
             <AttachmentMedia />

@@ -58,10 +58,10 @@ export function RadioGroupPage(): JSX.Element {
       <Usage names={["RadioGroup", "RadioGroupItem"]} />
       <H2>示例</H2>
       <Preview
-        code={`<RadioGroup defaultValue="comfortable">
+        code={`<RadioGroup defaultValue="cozy">
   <div className={UI_CLASSES.row}>
-    <RadioGroupItem value="default" id="r1" />
-    <Label htmlFor="r1">默认</Label>
+    <RadioGroupItem value="cozy" id="r1" />
+    <Label htmlFor="r1">舒适</Label>
   </div>
   ...
 </RadioGroup>`}
@@ -174,7 +174,7 @@ export function SpinnerPage(): JSX.Element {
   return (
     <>
       <P>
-        <code>Spinner</code> 是一个 lucide 图标加旋转, 尺寸随字号, 适合放进按钮与输入组; 系统要求减弱动效时改为缓慢呼吸.
+        <code>Spinner</code> 是一个 lucide 图标加旋转, 默认 16px (size-4), 可用 className 覆盖尺寸, 适合放进按钮与输入组; 系统要求减弱动效时改为缓慢呼吸.
         需要多种形态与尺寸档的加载指示用 Spin (见 Spin 页).
       </P>
       <Usage names={["Spinner"]} />

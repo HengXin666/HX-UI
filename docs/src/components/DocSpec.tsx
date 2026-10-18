@@ -34,7 +34,7 @@ export function Usage({ names, deps, usage }: { names: readonly string[]; deps?:
  * 一张表是一段模板字符串, 比逐行写对象更好读, 也不会让 "boolean" 这类类型名到处重复.
  */
 export function Props({ spec }: { spec: string }): JSX.Element {
-  const rows = parseSpec(spec).map(([name, type, fallback, desc]) => ({
+  const rows = parseSpec(spec, DOC.propsColumns).map(([name, type, fallback, desc]) => ({
     name, type, default: fallback === DOC.none ? undefined : fallback, desc,
   }));
   return <PropsTable rows={rows} />;

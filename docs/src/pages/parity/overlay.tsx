@@ -173,7 +173,7 @@ export function CommandPage(): JSX.Element {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key === "j" && (event.metaKey || event.ctrlKey)) {
+      if (event.key.toLowerCase() === "j" && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setOpen((value) => !value);
       }

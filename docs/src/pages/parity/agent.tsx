@@ -27,7 +27,7 @@ export function MessageScrollerPage(): JSX.Element {
       <P>会话滚动容器. 打开时直接定位到底部; 停在底部时新消息与流式内容自动跟随; 用户往上翻时不跟随并出现 "回到最新"; 在顶部插入历史消息时保持当前可见内容不跳动.</P>
       <Usage names={["MessageScroller", "MessageScrollerContent", "MessageScrollerItem", "MessageScrollerButton", "useMessageScroller"]} />
       <H2>示例</H2>
-      <Preview code={`<MessageScroller className="h-80">
+      <Preview code={`<MessageScroller className="h-72">
   <MessageScrollerContent>
     {messages.map((m) => (
       <MessageScrollerItem key={m.id} messageId={m.id}>...</MessageScrollerItem>

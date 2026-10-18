@@ -57,10 +57,13 @@ export function NativeSelectPage(): JSX.Element {
       <P>浏览器原生 select: 移动端弹系统滚轮, 表单原生提交, 选项上千也不卡. 外观与 SelectTrigger 对齐. 需要搜索或自定义选项渲染时用 Select 或 Combobox.</P>
       <Usage names={["NativeSelect", "NativeSelectOption", "NativeSelectOptGroup"]} />
       <H2>示例</H2>
-      <Preview align={ALIGN.center} code={`<NativeSelect defaultValue="sg">
+      <Preview align={ALIGN.center} code={`<NativeSelect defaultValue="sin">
   <NativeSelectOptGroup label="亚洲">
-    <NativeSelectOption value="sg">新加坡</NativeSelectOption>
+    <NativeSelectOption value="sin">新加坡</NativeSelectOption>
     <NativeSelectOption value="tokyo">东京</NativeSelectOption>
+  </NativeSelectOptGroup>
+  <NativeSelectOptGroup label="欧洲">
+    <NativeSelectOption value="fra">法兰克福</NativeSelectOption>
   </NativeSelectOptGroup>
 </NativeSelect>`}>
         <NativeSelect defaultValue="sin">
@@ -97,8 +100,10 @@ export function ComboboxPage(): JSX.Element {
       <P>可搜索下拉: Popover + Command. 输入即过滤 (keywords 参与搜索但不显示), 单选时再点已选项会取消; multiple 时选中项以标签显示在触发器里.</P>
       <Usage names={["Combobox"]} deps={["cmdk"]} />
       <H2>示例</H2>
-      <Preview code={`<Combobox options={frameworks} value={value} onValueChange={setValue} />
-<Combobox multiple options={frameworks} value={many} onValueChange={setMany} />`}>
+      <Preview code={`const FRAMEWORKS = [{ value: "react", label: "React", keywords: ["前端"] }, ...];
+
+<Combobox options={FRAMEWORKS} value={value} onValueChange={setValue} placeholder="选择框架" />
+<Combobox multiple options={FRAMEWORKS} value={many} onValueChange={setMany} placeholder="可多选" />`}>
         <Combobox options={FRAMEWORKS} value={value} onValueChange={setValue} placeholder="选择框架" />
         <Combobox multiple options={FRAMEWORKS} value={many} onValueChange={setMany} placeholder="可多选" className="w-80" />
       </Preview>

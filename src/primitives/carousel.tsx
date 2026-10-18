@@ -5,7 +5,7 @@ import useEmblaCarousel, { type UseEmblaCarouselType } from "embla-carousel-reac
 import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
 import { Button } from "./button";
 import { prefersReducedMotion } from "./motion";
-import { cn } from "./utils";
+import { cn, isEditableTarget } from "./utils";
 import { ARROW_KEY, BUTTON_TYPE, EMBLA_AXIS, EVENT, ORIENTATION, ROLE, TONE_VARIANT, UI_CLASSES, VARIANT } from "../constants";
 
 type CarouselApi = UseEmblaCarouselType[1];
@@ -83,6 +83,9 @@ function Carousel({
 
 	const handleKeyDown = React.useCallback(
 		(event: React.KeyboardEvent<HTMLDivElement>) => {
+			if (event.defaultPrevented || isEditableTarget(event.target)) {
+				return;
+			}
 			if (event.key === ARROW_KEY.left) {
 				event.preventDefault();
 				scrollPrev();
@@ -157,58 +160,48 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">): Rea
 	);
 }
 
-function CarouselPrevious({
+/** 上一张 / 下一张的共用实现: type 固定为 button, 调用方 onClick 先执行, 未 preventDefault 时再翻页. */
+function CarouselArrow({
+	previous = false,
 	className,
 	variant = TONE_VARIANT.outline,
 	size = VARIANT.iconSm,
+	onClick,
 	...props
-}: React.ComponentProps<typeof Button>): React.JSX.Element {
-	const { orientation, scrollPrev, canScrollPrev } = useCarousel();
+}: React.ComponentProps<typeof Button> & { previous?: boolean }): React.JSX.Element {
+	const { orientation, scrollPrev, scrollNext, canScrollPrev, canScrollNext } = useCarousel();
+	const horizontal = orientation === ORIENTATION.horizontal;
+	const placement = previous
+		? horizontal ? "top-1/2 -left-10 -translate-y-1/2" : "-top-10 left-1/2 -translate-x-1/2 rotate-90"
+		: horizontal ? "top-1/2 -right-10 -translate-y-1/2" : "-bottom-10 left-1/2 -translate-x-1/2 rotate-90";
 	return (
 		<Button
-			data-slot="carousel-previous"
+			data-slot={previous ? "carousel-previous" : "carousel-next"}
 			variant={variant}
 			size={size}
-			className={cn(
-				"absolute rounded-full",
-				orientation === ORIENTATION.horizontal ? "top-1/2 -left-10 -translate-y-1/2" : "-top-10 left-1/2 -translate-x-1/2 rotate-90",
-				className,
-			)}
-			disabled={!canScrollPrev}
-			onClick={scrollPrev}
+			className={cn("absolute rounded-full", placement, className)}
+			disabled={previous ? !canScrollPrev : !canScrollNext}
 			{...props}
+			type={BUTTON_TYPE}
+			onClick={(event) => {
+				onClick?.(event);
+				if (!event.defaultPrevented) {
+					(previous ? scrollPrev : scrollNext)();
+				}
+			}}
 		>
-			<ArrowLeftIcon />
-			<span className={UI_CLASSES.srOnly}>上一张</span>
+			{previous ? <ArrowLeftIcon /> : <ArrowRightIcon />}
+			<span className={UI_CLASSES.srOnly}>{previous ? "上一张" : "下一张"}</span>
 		</Button>
 	);
 }
 
-function CarouselNext({
-	className,
-	variant = TONE_VARIANT.outline,
-	size = VARIANT.iconSm,
-	...props
-}: React.ComponentProps<typeof Button>): React.JSX.Element {
-	const { orientation, scrollNext, canScrollNext } = useCarousel();
-	return (
-		<Button
-			data-slot="carousel-next"
-			variant={variant}
-			size={size}
-			className={cn(
-				"absolute rounded-full",
-				orientation === ORIENTATION.horizontal ? "top-1/2 -right-10 -translate-y-1/2" : "-bottom-10 left-1/2 -translate-x-1/2 rotate-90",
-				className,
-			)}
-			disabled={!canScrollNext}
-			onClick={scrollNext}
-			{...props}
-		>
-			<ArrowRightIcon />
-			<span className={UI_CLASSES.srOnly}>下一张</span>
-		</Button>
-	);
+function CarouselPrevious(props: React.ComponentProps<typeof Button>): React.JSX.Element {
+	return <CarouselArrow previous {...props} />;
+}
+
+function CarouselNext(props: React.ComponentProps<typeof Button>): React.JSX.Element {
+	return <CarouselArrow {...props} />;
 }
 
 /** 分页圆点: 当前页拉长成胶囊, 宽度变化走过渡. */

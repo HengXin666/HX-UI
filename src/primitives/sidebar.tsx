@@ -3,14 +3,15 @@
 import * as React from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "./sheet";
 import { TooltipProvider } from "./tooltip";
-import { cn } from "./utils";
+import { cn, isEditableTarget } from "./utils";
 import { ARIA, EVENT, OPEN_STATE, SIDE, SIDEBAR_SHORTCUT, SLOT, TONE_VARIANT, UI_CLASSES } from "../constants";
 
 /** 侧栏展开宽度, 收成图标条时的宽度, 移动端抽屉宽度. */
 const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
-const MOBILE_QUERY = "(max-width: 767px)";
+/** 与 Tailwind md 断点 (48rem) 同单位, 根字号变化时移动端分支与 md:block 不错位. */
+const MOBILE_QUERY = "(max-width: 47.99rem)";
 
 type SidebarState = "expanded" | "collapsed";
 
@@ -92,7 +93,10 @@ function SidebarProvider({
 
 	React.useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent): void => {
-			if (event.key === SIDEBAR_SHORTCUT && (event.metaKey || event.ctrlKey)) {
+			if (event.defaultPrevented || event.isComposing || isEditableTarget(event.target)) {
+				return;
+			}
+			if (event.key.toLowerCase() === SIDEBAR_SHORTCUT && (event.metaKey || event.ctrlKey)) {
 				event.preventDefault();
 				toggleSidebar();
 			}
@@ -156,9 +160,10 @@ function Sidebar({
 					data-slot={SLOT.sidebar}
 					data-mobile={ARIA.true}
 					showCloseButton={false}
-					className="w-(--sidebar-width) bg-card p-0 text-foreground [&>button]:hidden"
-					style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties}
 					side={side}
+					{...props}
+					className={cn("w-(--sidebar-width) bg-card p-0 text-foreground [&>button]:hidden", className)}
+					style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE, ...props.style } as React.CSSProperties}
 				>
 					<SheetHeader className={UI_CLASSES.srOnly}>
 						<SheetTitle>侧栏</SheetTitle>

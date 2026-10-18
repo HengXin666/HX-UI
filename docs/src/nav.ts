@@ -3,6 +3,7 @@
  * 组件分组按 shadcn/ui 的组件清单 (https://ui.shadcn.com/docs/components) 字母序排列, 一个不少;
  * HX 自有, shadcn 没有的组件放在 "HX 扩展".
  */
+import { DOC } from "@hx/ui";
 import { parseSpec } from "./spec";
 
 export interface DocEntry {
@@ -124,7 +125,7 @@ blueprint-dsh ~ dsh agent loop ~ 把 dsh 的整个 agent loop 画成一张蓝图
 
 /** 把一段 "id ~ 标签 ~ 说明" 清单解析成导航条目. */
 function section(group: string, list: string): DocEntry[] {
-  return parseSpec(list).map(([id, label, desc]) => ({ id, label, desc, group }));
+  return parseSpec(list, DOC.navColumns).map(([id, label, desc]) => ({ id, label, desc, group }));
 }
 
 export const DOCS: readonly DocEntry[] = [
