@@ -1,0 +1,36 @@
+# Agent Note: 对标 shadcn/ui 补齐全部组件, 组合式版本与已有组件并存
+
+Status: implemented
+
+Decision-ID: shadcn-parity-components
+
+## Code
+
+- `src/primitives/styles.ts`
+- `src/chat/message.tsx`
+- `src/constants/ui.ts`
+- `src/index.ts`
+
+## Problem
+
+用户要求 HX-UI 覆盖 https://ui.shadcn.com/docs/components 列出的全部组件 (2026-10-18 实时清单 67 个), 外观沿用当前的 Dark Dimmed 令牌, 语义状态色, 动效令牌与水波纹, 并支持现代动效. 盘点 main 时约 33 个已覆盖, 约 20 个完全缺失 (Label, Avatar, Toggle, Sheet, Breadcrumb, ButtonGroup, InputGroup, NativeSelect, AspectRatio, HoverCard, Command, Combobox, InputOTP, Menubar, NavigationMenu, Resizable, Carousel, Item, Form, Typography), 另有 AI 会话类的 Attachment, Bubble, Marker, Message, MessageScroller, Questionnaire, Trace 与 Direction 是 shadcn 新增的. 还有几个只有部分能力: Sidebar, ContextMenu, ToggleGroup, Field, Table, AlertDialog, Empty, Spinner 在库里是别的 API (SidebarNavItemButton, 传 MenuAction[] 的 ContextMenu, SegmentedControl, SettingsFormFields, DataTable, ConfirmDialog, EmptyState, Spin), 下游 HXLoLis / HX-Jungle 正在用这些导出, 不能改名或改行为.
+
+## Decision
+
+- 新组件放在 `src/primitives/` (基础件) 与新目录 `src/chat/` (会话组合件), 结构, 部件名与 data-slot 对齐 shadcn, 便于对照文档和让 AI 按 shadcn 的写法直接使用. 弹层与菜单共用的类名 (进出场动效, 浮层外观, 菜单项, 遮罩, 焦点环) 收在 `src/primitives/styles.ts`, ContextMenu / Menubar / HoverCard / Sheet / AlertDialog 共用一份, 新组件之间不会漂移.
+- 部分覆盖的组件只做加法: 组合式右键菜单的根叫 `ContextMenuRoot` (声明式 `ContextMenu` 名字不让出), 组合式 Sidebar 系列, `Table*` 原语, `Field*`, `ToggleGroup`, `AlertDialog*`, `Empty*`, `Spinner` 与原有导出并存, 原有导出与行为不变.
+- 外观: 颜色只用语义令牌, 线条 1px (焦点环用 ring-1 而不是 shadcn 的 3px), 遮罩用 bg-background/60 加模糊而不是黑色原色; Dialog 的遮罩同步换成这份遮罩. 水波纹按组件类型接入: Toggle, ToggleGroupItem, ContextMenuItem, MenubarItem, SidebarMenuButton 带 (可用 ripple={false} 关闭), 输入类, 勾选类, 链接, 表格行不带.
+- 动效: 弹层统一 fade + zoom + 按弹出方向 slide, 时长取 --duration-* 令牌 (减弱动效时令牌归零); Sheet 按侧滑入, 退出用 ease-in 且更短; Dialog 居中改用 translate 属性, 让缩放关键帧能叠加, 从而补上进出场动画; NavigationMenu 视口宽高插值并按方向滑入内容; Command 列表高度过渡; Carousel 当前圆点拉长; 问卷切题用 motion 按方向滑动; Trace 的运行中步骤与 Marker 的 shimmer 用 motion.css 的 hx-shimmer 扫光. JS 驱动的动效 (embla 滚动时长, 平滑滚动, motion 位移) 经 `src/primitives/motion.ts` 的 prefersReducedMotion 或 motion 的 useReducedMotion 判断, 减弱动效时直接跳转.
+- 新依赖只加组件必需的: cmdk (Command / Combobox), input-otp, embla-carousel-react, react-resizable-panels (v4 的 Group / Panel / Separator API), react-hook-form (Form); zod 与 @hookform/resolvers 只用于文档站示例, 放在 docs/package.json. 都已在 scripts/quality/approvals.json 登记.
+- 字面量按 PROJECT-CONST-DUP 收进 `src/constants/ui.ts` (ORIENTATION, SIDE, ALIGN, ROLE, TAG, OPEN_STATE, TASK_STATUS, UI_CLASSES, UI_NUMBERS 等), 新组件里不留 3 次以上的字面量. 导出数超过入口文件行数上限, 所以基础件经 `src/primitives/shadcn-parity.ts`, 会话件经 `src/chat/index.ts` 汇总后由 `src/index.ts` 整体导出.
+
+## Alternatives considered
+
+- 什么都不做 / 复用现有: 最强理由是现有的 SegmentedControl, ConfirmDialog, DataTable, EmptyState 已能满足大部分页面, 少维护一批组件. 否决: 用户明确要全量覆盖 shadcn 清单, 且 AI 按 shadcn 写法生成的代码在缺组件时只能手搓, 正是协作约定禁止的.
+- 直接 `npx shadcn add` 拷入官方源码: 最快, 与上游逐字一致. 否决: 官方样式依赖 3px ring, 黑色遮罩, oklch 颜色和 sidebar-* 一组令牌, 全部违反 PROJECT-UI-* 门禁与当前 Dark Dimmed 观感, 改完等于重写.
+- 把部分覆盖的组件改成 shadcn API (例如把 ContextMenu 换成组合式): API 统一. 否决: 下游正在用旧导出, 改名会让子模块升级时白屏.
+- 会话组件放进 `src/layout/` 与 ChatStream 一起: 少一个目录. 否决: layout 已有 30 多个文件, 会话件是一组互相组合的部件, 独立目录更容易整体查找与替换.
+
+## Consequences
+
+组件数量对齐 shadcn 当前清单, AI 与人都可以按 shadcn 文档的组合写法使用. 代价是同一能力有两套入口 (声明式快捷件与组合式部件), 文档站里每个这样的页面都写明两者的分工. 依赖多了 5 个运行时包. 视觉上与 shadcn 不完全一致 (1px 焦点环, 灰底遮罩, 语义令牌配色), 这是有意的. Dialog 的遮罩与进出场动画随之改变, 依赖旧遮罩颜色的截图需要更新.

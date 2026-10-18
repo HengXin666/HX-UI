@@ -1,12 +1,5 @@
 /**
- * @hx/ui  自维护 UI 库。
- *
- * 视觉沿用 open-vetta 那套设计语言: 组件源码整份取自上游, **视觉类名一个字没改**,
- * 只把包名引用改成相对路径。这就是"看起来一样"的唯一可靠来源  类名组合没法靠描述复现。
- *
- * 分两层:
- * - primitives/ 基础件 (按钮 / 输入 / 开关 / 弹层 / 下拉 ...), 建在 radix-ui 之上
- * - layout/ 版式件 (应用外壳 / 设置页一行式卡片 / 分段控件 ...), 决定页面长什么样
+ * @hx/ui 自维护 UI 库: primitives/ 基础件建在 radix-ui 之上, layout/ 版式件决定页面版式, 视觉沿用 open-vetta.
  */
 
 // ── 基础件 ──
@@ -70,6 +63,12 @@ export { Kbd, KbdGroup } from "./primitives/kbd";
 export { Alert, AlertDescription, AlertTitle, alertVariants, type AlertVariant } from "./primitives/alert";
 export { Ripple, spawnRipple, useRipple, type RippleComponentProps, type RippleSize, type UseRippleOptions } from "./primitives/ripple";
 export { type ClassValue, cn } from "./primitives/utils";
+/**
+ * 对标 shadcn/ui 补齐的基础件, 名单见 primitives/shadcn-parity.ts; 已有同名能力的组件 (ConfirmDialog,
+ * 声明式 ContextMenu, EmptyState, Spin, DataTable, SidebarNavItemButton) 原导出不变, 组合式版本与之并存.
+ * .agents/notes/implemented/feature/2026-10-18-shadcn-parity-components.md
+ */
+export * from "./primitives/shadcn-parity";
 
 // ── 蓝图 ──
 export {
@@ -219,7 +218,7 @@ export { EmptyState, DataBoundary, type EmptyStateProps, type EmptyKind } from "
 export { PageHeader, type PageHeaderProps } from "./layout/PageHeader";
 // ChatStream: 消费方 (HX-Jungle 的 console/hark) 一直在 import 它, 组件文件在
 // src/layout/ 里, 但 index.ts 少了这一行导出, 于是 dev server 一重启就
-// "does not provide an export named 'ChatStream'" 白屏 (实测 2026-10-15)。
+// "does not provide an export named 'ChatStream'" 白屏 (实测 2026-10-15).
 export {
   ChatStream, type ChatStreamProps, type ChatMessage, type ChatRole, type ChatStatus,
 } from "./layout/ChatStream";
@@ -240,14 +239,14 @@ export {
 export { InlineRename, type InlineRenameProps } from "./layout/InlineRename";
 export { StateDot, type StateTone, type StateDotProps } from "./layout/StateDot";
 /**
- * 行首状态指示 (执行中 / 待查看 / 等待输入) 与树的行尾附加位。
+ * 行首状态指示 (执行中 / 待查看 / 等待输入) 与树的行尾附加位.
  * .agents/notes/implemented/feature/2026-10-12-session-status-indicator.md
  */
 export {
   SessionStatusDot, type SessionStatus, type SessionStatusDotProps,
 } from "./layout/SessionStatusDot";
 /**
- * 可收起侧栏与顶栏导航。
+ * 可收起侧栏与顶栏导航.
  *
  * .agents/notes/implemented/feature/2026-10-12-collapsible-rail.md
  */
@@ -279,6 +278,10 @@ export {
   type SettingsSidebarTabItem,
   type SettingsSidebarChildItem,
 } from "./layout/SettingsSidebarView";
+
+// ── 会话 (AUI) ──
+/** 会话组合件 (附件 / 气泡 / 标记 / 消息 / 滚动容器 / 问卷 / 推理轨迹), 对标 shadcn 同名组件; 整面板仍用 ChatStream. */
+export * from "./chat";
 
 // ── hx-browser 实时预览 ──
 /**

@@ -15,7 +15,7 @@ PROJECT-CONST-DUP 要求同一字面量在 src 与 docs/src 里出现三次以�
 
 ## Decision
 
-`src/constants/index.ts` 是库与文档站唯一的字面量来源: 值用 `export const` 导出 (`USER`, `ERROR`, `PAD_WIDTH`, `PAD_CHAR`, `STICK_TOLERANCE`, `CLASSES`, 状态文字色 `TONE`, 组件变体名 `VARIANT`, `ARIA`, `KEY`, 按钮 type `BUTTON_TYPE`, `HALF_DIVISOR`, 水波纹 `RIPPLE`, 分页形状 `PAGINATION`), 需要收窄的判据用 type guard 导出 (`isString`)。文档站只经 `@hx/ui` 入口引用, 所以 `src/index.ts` 转发 `USER` 与 `TONE`。常量池无副作用, 不 import 任何模块。
+`src/constants/index.ts` 是库与文档站唯一的字面量来源: 值用 `export const` 导出 (`USER`, `ERROR`, `PAD_WIDTH`, `PAD_CHAR`, `STICK_TOLERANCE`, `CLASSES`, 状态文字色 `TONE`, 组件变体名 `VARIANT`, `ARIA`, `KEY`, 按钮 type `BUTTON_TYPE`, `HALF_DIVISOR`, 水波纹 `RIPPLE`, 分页形状 `PAGINATION`), 需要收窄的判据用 type guard 导出 (`isString`)。对标 shadcn/ui 的组件与文档站新增的取值 (方向 `ORIENTATION`, 方位 `SIDE`, 对齐 `ALIGN`, 角色 `ROLE`, 标签名 `TAG`, 状态名, 尺寸与时长 `UI_NUMBERS`, 常用类名 `UI_CLASSES` 等) 按主题放在 `src/constants/ui.ts`, 文档站专用的取值放在 `src/constants/docs.ts`, 都由 `src/constants/index.ts` 汇总。文档站只经 `@hx/ui` 入口引用, 所以 `src/index.ts` 转发 `USER`, `TONE` 与文档站示例用到的那几组取值。常量池无副作用, 不 import 任何模块。
 
 ## Alternatives considered
 

@@ -105,3 +105,5 @@ export const PAGINATION = {
   edgeSlots: 2,
   minGap: 2,
 } as const;
+
+export * from "./ui";

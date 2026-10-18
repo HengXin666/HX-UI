@@ -5,6 +5,8 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { XIcon } from "lucide-react";
 import { cn } from "./utils";
 import { Button } from "./button";
+import { MODAL_MOTION, MODAL_OVERLAY } from "./styles";
+import { TONE_VARIANT, UI_CLASSES, VARIANT } from "../constants";
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
 	return <DialogPrimitive.Root data-slot="dialog" {...props} />;
@@ -29,10 +31,7 @@ function DialogOverlay({
 	return (
 		<DialogPrimitive.Overlay
 			data-slot="dialog-overlay"
-			className={cn(
-				"no-drag fixed inset-0 isolate z-50 bg-black/20 supports-backdrop-filter:backdrop-blur-xs",
-				className,
-			)}
+			className={cn("isolate", MODAL_OVERLAY, className)}
 			{...props}
 		/>
 	);
@@ -57,7 +56,9 @@ function DialogContent({
 				className={cn(
 					// Single max-width (not max-w + sm:max-w-sm): avoids twMerge leaving
 					// sm:max-w-sm that overrides consumer max-w-lg at the sm breakpoint.
-					"no-drag fixed top-1/2 left-1/2 z-50 grid w-full max-w-[min(24rem,calc(100%-2rem))] [transform:translate(-50%,-50%)] gap-4 rounded-xl border border-border bg-popover p-4 text-sm text-popover-foreground outline-none",
+					"no-drag fixed top-1/2 left-1/2 z-50 grid w-full max-w-[min(24rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-border bg-popover p-4 text-sm text-popover-foreground outline-none",
+					// 居中用 translate 属性而不是 transform: 进出场的缩放关键帧写的是 transform, 两者才能叠加
+					MODAL_MOTION,
 					className,
 				)}
 				{...props}
@@ -65,9 +66,9 @@ function DialogContent({
 				{children}
 				{showCloseButton && (
 					<DialogPrimitive.Close data-slot="dialog-close" asChild>
-						<Button variant="ghost" className="absolute top-2 right-2" size="icon-sm">
+						<Button variant={VARIANT.ghost} className="absolute top-2 right-2" size={VARIANT.iconSm}>
 							<XIcon />
-							<span className="sr-only">Close</span>
+							<span className={UI_CLASSES.srOnly}>Close</span>
 						</Button>
 					</DialogPrimitive.Close>
 				)}
@@ -100,7 +101,7 @@ function DialogFooter({
 			{children}
 			{showCloseButton && (
 				<DialogPrimitive.Close asChild>
-					<Button variant="outline">Close</Button>
+					<Button variant={TONE_VARIANT.outline}>Close</Button>
 				</DialogPrimitive.Close>
 			)}
 		</div>

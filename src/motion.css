@@ -2,14 +2,14 @@
  * 组件用到的关键帧  只放"必须存在, 否则组件不动"的那些
  * ----------------------------------------------------------------------------
  * 为什么不写在组件里: Tailwind 的任意值只生成 animation 声明, @keyframes 本身
- * 得由 CSS 提供。漏了这个文件的表现是"组件渲染出来了但不动", 且不报错。
+ * 得由 CSS 提供.漏了这个文件的表现是"组件渲染出来了但不动", 且不报错.
  *
  * 为什么是关键帧而不是 transition: radix 的 Presence 用 getComputedStyle 判定
- * 元素还能不能卸载, CSS transition 在部分路径上不被识别  收起时会直接卸载。
- * 关键帧每次都被认定, 于是展开与收起都有动画。
+ * 元素还能不能卸载, CSS transition 在部分路径上不被识别  收起时会直接卸载.
+ * 关键帧每次都被认定, 于是展开与收起都有动画.
  *
  * 高度取 radix 的实测变量 (--radix-accordion-content-height /
- * --radix-collapsible-content-height), 不用 height: auto  auto 不可插值。
+ * --radix-collapsible-content-height), 不用 height: auto  auto 不可插值.
  * ==========================================================================*/
 
 @keyframes hx-collapse-down {
@@ -34,8 +34,8 @@
   }
 }
 
-/* 不定长进度: radix 在 value=null 时不给宽度, 由这条自己扫。
-   只改 transform, 走合成器。 */
+/* 不定长进度: radix 在 value=null 时不给宽度, 由这条自己扫.
+   只改 transform, 走合成器. */
 @keyframes hx-progress-indeterminate {
   from {
     transform: translateX(-100%);
@@ -97,5 +97,39 @@
 @media (prefers-reduced-motion: reduce) {
   .hx-ripple {
     display: none;
+  }
+}
+
+/* ============================================================================
+ * 扫光 (shimmer)
+ * ----------------------------------------------------------------------------
+ * 会话标记 (Marker shimmer) 与 Trace 运行中步骤的文字扫光: 用渐变裁剪到文字,
+ * 只动 background-position. 渐变两端取 muted-foreground, 中间一道 foreground 高光.
+ * 系统要求减弱动效时不动, 文字保持可读.
+ * ==========================================================================*/
+
+@keyframes hx-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.hx-shimmer,
+[data-shimmer] [data-slot="marker-content"] {
+  background-image: linear-gradient(90deg, var(--muted-foreground) 40%, var(--foreground) 50%, var(--muted-foreground) 60%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hx-shimmer 2s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-shimmer,
+  [data-shimmer] [data-slot="marker-content"] {
+    animation: none;
   }
 }
