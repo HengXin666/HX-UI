@@ -291,6 +291,10 @@ export * from "./chat";
  */
 export * from "./hxbrowser";
 
+// ── AI 交互 (agent) ──
+/** Agent 交互过程组件: 工具调用卡, 流式文本, 用量计量, 变更对比. */
+export * from "./agent";
+
 // ── 常量 ──
 /**
  * 库与文档站共用同一份字面量 (PROJECT-CONST-DUP): 表格列 USER, 状态色 TONE, 以及 shadcn 对标组件文档示例用到的取值.

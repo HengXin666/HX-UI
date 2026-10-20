@@ -52,6 +52,9 @@ import { BlueprintPage } from "./pages/BlueprintPage";
 import { BlueprintDshPage } from "./pages/BlueprintDshPage";
 import { PARITY_PAGES } from "./pages/parity";
 import { AgentOverviewPage } from "./pages/AgentOverviewPage";
+import { StreamingTextPage } from "./pages/agent/StreamingTextPage";
+import { ToolCallCardPage } from "./pages/agent/ToolCallCardPage";
+import { UsageMeterPage } from "./pages/agent/UsageMeterPage";
 
 /**
  * 组件文档站。
@@ -108,6 +111,10 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "blueprint": return <BlueprintPage />;
     case "blueprint-dsh": return <BlueprintDshPage />;
     case "agent-overview": return <AgentOverviewPage />;
+    case "agent-toolcall": return <ToolCallCardPage />;
+    case "agent-stream": return <StreamingTextPage />;
+    case "agent-usage":
+    case "agent-diff": return <UsageMeterPage />;
     default: {
       const Page = PARITY_PAGES[entry.id];
       return Page ? <Page /> : <PlaceholderPage label={entry.label} desc={entry.desc} />;

@@ -119,17 +119,11 @@ charts ~ 图表 ~ 折线, 面积, 柱状, 饼与雷达图
 `;
 
 const AGENT = `
-agent-overview ~ 交互总览 ~ 发消息, 工具调用, 流式回复, 确认与变更预览
-agent-chat ~ 对话 ~ 多轮会话与消息流
-agent-toolcall ~ 工具调用 ~ 调用卡片, 参数与结果
-agent-trace ~ 执行轨迹 ~ 推理与工具步骤时间线
-agent-approval ~ 审批确认 ~ 高风险操作的人工确认
-agent-stream ~ 流式回复 ~ 逐字输出与停止生成
-agent-usage ~ 用量统计 ~ token 与费用用量
-agent-diff ~ 变更对比 ~ 代码差异预览
-agent-log ~ 运行日志 ~ 运行日志与过滤
-agent-model ~ 模型选择 ~ 模型与参数切换
-agent-prompt ~ 提示词 ~ 提示词编辑与版本
+agent-overview ~ 交互总览 ~ 发消息, 工具调用, 流式回复与变更预览串成一个完整示例
+agent-toolcall ~ 工具调用卡 ~ 调用状态, 入参与结果可折叠
+agent-stream ~ 流式回复 ~ 逐字输出与中断
+agent-usage ~ 用量计量 ~ 已用 / 上限 / 速率
+agent-diff ~ 变更对比 ~ 逐行增删, 行首带符号
 `;
 
 const BLUEPRINT = `
