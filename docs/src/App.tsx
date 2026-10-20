@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import {
-  AppFrame, Badge, ConfirmDialogHost, SidebarNavIcon, Toaster,
+  AppFrame, Badge, BUTTON_TYPE, ConfirmDialogHost, SidebarNavIcon, Toaster,
 } from "@hx/ui";
 import { SearchDialog, useSearchHotkey } from "./components/SearchDialog";
 import { PageNav } from "./components/PageNav";
 import { TableOfContents } from "./components/TableOfContents";
 import { ThemeToggle } from "./components/ThemeToggle";
-import { DOCS, GROUPS, WIDE_GROUP, type DocEntry } from "./nav";
+import { DOCS, GROUPS, WIDE_PAGES, type DocEntry } from "./nav";
 import { ButtonPage } from "./pages/ButtonPage";
 import { InputPage } from "./pages/InputPage";
 import { SwitchPage } from "./pages/SwitchPage";
@@ -51,6 +51,7 @@ import { ChromePage } from "./pages/ChromePage";
 import { BlueprintPage } from "./pages/BlueprintPage";
 import { BlueprintDshPage } from "./pages/BlueprintDshPage";
 import { PARITY_PAGES } from "./pages/parity";
+import { AgentOverviewPage } from "./pages/AgentOverviewPage";
 
 /**
  * 组件文档站。
@@ -106,6 +107,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "browser-live": return <BrowserLivePage />;
     case "blueprint": return <BlueprintPage />;
     case "blueprint-dsh": return <BlueprintDshPage />;
+    case "agent-overview": return <AgentOverviewPage />;
     default: {
       const Page = PARITY_PAGES[entry.id];
       return Page ? <Page /> : <PlaceholderPage label={entry.label} desc={entry.desc} />;
@@ -118,10 +120,19 @@ export function App(): JSX.Element {
   const [active, navigate] = useHashRoute();
   const entry = DOCS.find((d) => d.id === active) ?? DOCS[0];
   const search = useSearchHotkey();
+  const [openGroups, setOpenGroups] = useState<readonly string[]>(() => [GROUPS[0], entry.group]);
   // TOC 从渲染后的 DOM 里读标题, 所以需要内容容器的引用
   const contentRef = useRef<HTMLDivElement>(null);
   const [wide, setWide] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  useEffect(() => {
+    setOpenGroups((prev) => (prev.includes(entry.group) ? prev : [...prev, entry.group]));
+  }, [entry.group]);
+
+  const toggleGroup = (group: string): void => {
+    setOpenGroups((prev) => (prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]));
+  };
 
   useEffect(() => {
     if (!mobileNavOpen) return;
@@ -183,30 +194,44 @@ export function App(): JSX.Element {
             </button>
           </div>
 
-          <nav className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-2.5 pb-2.5">
-            {GROUPS.map((g) => (
-              <div key={g}>
-                <div className="px-2 pb-1 pt-1.5 text-[11px] font-medium text-muted-foreground/80">{g}</div>
-                <div className="flex flex-col gap-px">
-                  {DOCS.filter((d) => d.group === g).map((d) => (
-                    <a
-                      key={d.id}
-                      href={`#/${d.id}`}
-                      aria-current={d.id === active ? "page" : undefined}
-                      onClick={(e) => {
-                        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-                        e.preventDefault();
-                        go(d.id);
-                      }}
-                      className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-primary ${d.id === active ? "bg-primary/10 font-semibold text-foreground ring-1 ring-inset ring-primary/25" : "text-foreground hover:bg-accent/50"}`}
-                    >
-                      <SidebarNavIcon icon={NAV_ICONS[d.id] ?? DEFAULT_NAV_ICON} />
-                      <span className="min-w-0 flex-1 truncate">{d.label}</span>
-                    </a>
-                  ))}
+          <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2.5 pb-2.5">
+            {GROUPS.map((g) => {
+              const open = openGroups.includes(g);
+              const list = DOCS.filter((d) => d.group === g);
+              return (
+                <div key={g}>
+                  <button
+                    type={BUTTON_TYPE}
+                    aria-expanded={open}
+                    aria-controls={`docs-group-${g}`}
+                    onClick={() => toggleGroup(g)}
+                    className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground/80 transition-colors hover:bg-accent/40 hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
+                  >
+                    <span className="min-w-0 flex-1 truncate text-left">{g}</span>
+                    <span className="text-[10px] tabular-nums text-muted-foreground/50">{list.length}</span>
+                    <span aria-hidden className={`icon-[solar--alt-arrow-down-linear] size-3 shrink-0 bg-current transition-transform ${open ? "" : "-rotate-90"}`} />
+                  </button>
+                  <div id={`docs-group-${g}`} className={`${open ? "flex" : "hidden"} mt-0.5 flex-col gap-px`}>
+                    {list.map((d) => (
+                      <a
+                        key={d.id}
+                        href={`#/${d.id}`}
+                        aria-current={d.id === active ? "page" : undefined}
+                        onClick={(e) => {
+                          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                          e.preventDefault();
+                          go(d.id);
+                        }}
+                        className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-primary ${d.id === active ? "bg-primary/10 font-semibold text-foreground ring-1 ring-inset ring-primary/25" : "text-foreground hover:bg-accent/50"}`}
+                      >
+                        <SidebarNavIcon icon={NAV_ICONS[d.id] ?? DEFAULT_NAV_ICON} />
+                        <span className="min-w-0 flex-1 truncate">{d.label}</span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </nav>
         </aside>
 
@@ -223,7 +248,7 @@ export function App(): JSX.Element {
             <div
               className={
                 "mx-auto flex w-full gap-10 px-4 py-6 md:px-8 md:py-8 " +
-                (entry.group === WIDE_GROUP ? "max-w-[1720px]" : wide ? "max-w-[1100px]" : "max-w-[880px]")
+                (WIDE_PAGES.has(entry.id) ? "max-w-[1720px]" : wide ? "max-w-[1100px]" : "max-w-[880px]")
               }
             >
               <article className="w-full min-w-0 flex-1">
