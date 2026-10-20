@@ -17,3 +17,4 @@ scripts/e2e/shots/
 # >>> hx-agent-code quality state >>>
 scripts/.hx_code_quality/
 # <<< hx-agent-code quality state <<<
+*.tgz
