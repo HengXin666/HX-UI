@@ -3,13 +3,13 @@ import {
   Badge, Button, BUTTON_TYPE, Card, MessageScroller, MessageScrollerContent,
   MessageScrollerItem, Textarea,
 } from "@hx/ui";
+import { AGENT_AUTO_RIGHT } from "@hx/ui";
 import { H2, P, PropsTable } from "../components/DocKit";
 import {
   DEMO_PROMPT, INITIAL_EVENTS, KIND, STATUS, STREAM_TEXT, type EventItem,
 } from "./agent/agent-overview-copy";
 import { AgentEventView } from "./agent/AgentOverviewTimeline";
 
-const PUSH = "ml-auto";
 const STREAM_TICK_MS = 24;
 const STREAM_STEP = 2;
 const TOOL_DELAY_MS = 500;
@@ -115,7 +115,7 @@ function AgentDemo(): JSX.Element {
         <span aria-hidden className="icon-[solar--chat-round-dots-linear] size-4 text-link" />
         <span className="text-[13px] font-semibold">Agent 交互演示</span>
         <Badge variant="secondary">本地模拟</Badge>
-        <Button type={BUTTON_TYPE} size="xs" variant="ghost" className={PUSH} onClick={reset} disabled={busy}>
+        <Button type={BUTTON_TYPE} size="xs" variant="ghost" className={AGENT_AUTO_RIGHT} onClick={reset} disabled={busy}>
           <span aria-hidden className="icon-[solar--refresh-linear] size-3.5" />
           重置
         </Button>

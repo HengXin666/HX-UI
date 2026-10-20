@@ -1,3 +1,4 @@
+import { AGENT_STREAMING_LABEL } from "@hx/ui";
 import { useEffect, useRef, useState, type JSX } from "react";
 import { Button, StreamingText } from "@hx/ui";
 import { H2, P, Preview, PropsTable } from "../../components/DocKit";
@@ -99,12 +100,12 @@ const start = (): void => {
       <H2>光标控制</H2>
       <P>cursor 为 false 时保留流式状态但不显示光标, 用于已有独立状态指示的场景</P>
       <Preview
-        code={`<StreamingText text="正在生成" streaming />
-<StreamingText text="正在生成" streaming cursor={false} />`}
+        code={`<StreamingText text={AGENT_STREAMING_LABEL} streaming />
+<StreamingText text={AGENT_STREAMING_LABEL} streaming cursor={false} />`}
       >
         <div className="flex w-full max-w-md flex-col gap-3">
-          <StreamingText text="正在生成" streaming />
-          <StreamingText text="正在生成" streaming cursor={false} />
+          <StreamingText text={AGENT_STREAMING_LABEL} streaming />
+          <StreamingText text={AGENT_STREAMING_LABEL} streaming cursor={false} />
         </div>
       </Preview>
 
