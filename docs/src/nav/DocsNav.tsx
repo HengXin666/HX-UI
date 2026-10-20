@@ -1,6 +1,6 @@
 import { type JSX } from "react";
 import { BUTTON_TYPE, SidebarNavIcon } from "@hx/ui";
-import type { DocEntry } from "../nav";
+import type { DocEntry } from "../nav.ts";
 import { DEFAULT_NAV_ICON, NAV_ICONS } from "../navIcons";
 
 export interface DocsNavProps {

@@ -5,7 +5,7 @@ import {
 import { SearchDialog, useSearchHotkey } from "./components/SearchDialog";
 import { PageNav } from "./components/PageNav";
 import { TableOfContents } from "./components/TableOfContents";
-import { DocsNav } from "./components/DocsNav";
+import { DocsNav } from "./nav/DocsNav";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { DOCS, GROUPS, WIDE_PAGES, type DocEntry } from "./nav";
 import { ButtonPage } from "./pages/ButtonPage";
