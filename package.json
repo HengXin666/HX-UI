@@ -67,7 +67,7 @@
     "verify-notes": "uv run scripts/redlines/agent_notes.py --diff",
     "verify-notes:all": "uv run scripts/redlines/agent_notes.py --all",
     "verify-notes:staged": "uv run scripts/redlines/agent_notes.py --staged",
-    "build:lib": "node scripts/build-lib.mjs",
+    "build:lib": "tsc -p tsconfig.build.json && cp src/tokens.css src/styles.css src/motion.css src/spin-variants.css src/native-select.css dist/ && cp LICENSE NOTICE dist/",
     "prepare": "npm run build:lib"
   },
   "dependencies": {
