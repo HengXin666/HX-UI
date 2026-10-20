@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type JSX } from "react";
-import { StreamingText } from "../../../../src/agent/streaming-text";
-import { Button } from "../../../../src/primitives/button";
+import { Button, StreamingText } from "@hx/ui";
 import { H2, P, Preview, PropsTable } from "../../components/DocKit";
 
 const SAMPLE =
@@ -55,12 +54,27 @@ export function StreamingTextPage(): JSX.Element {
       <Preview
         code={`const [text, setText] = useState("");
 const [streaming, setStreaming] = useState(false);
+const timer = useRef<number | undefined>(undefined);
 
-const timer = window.setInterval(() => {
-  index += 1;
-  setText(SAMPLE.slice(0, index));
-  if (index >= SAMPLE.length) window.clearInterval(timer);
-}, 40);
+useEffect(() => () => window.clearInterval(timer.current), []);
+
+const stop = (): void => {
+  window.clearInterval(timer.current);
+  timer.current = undefined;
+  setStreaming(false);
+};
+
+const start = (): void => {
+  stop();
+  setText("");
+  setStreaming(true);
+  let index = 0;
+  timer.current = window.setInterval(() => {
+    index += 1;
+    setText(SAMPLE.slice(0, index));
+    if (index >= SAMPLE.length) stop();
+  }, 40);
+};
 
 <StreamingText text={text} streaming={streaming} />`}
       >
