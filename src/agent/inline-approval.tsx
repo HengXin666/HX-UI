@@ -44,7 +44,7 @@ export function InlineApproval({
 	return (
 		<Card variant="default" className="max-w-[540px] border-warning/40" data-slot="inline-approval">
 			<CardHeader className="flex items-center gap-2 py-2">
-				<span aria-hidden className="icon-[solar--shield-warning-linear] size-4 text-warning-fg" />
+				<span aria-hidden className="size-1.5 rounded-full bg-warning-fg" />
 				<CardTitle>{title}</CardTitle>
 				<Badge variant={tone} className="ml-auto">
 					{pending ? "等待确认" : verdict === "approved" ? "已允许" : "已拒绝"}
