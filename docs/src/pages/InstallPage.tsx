@@ -14,12 +14,12 @@ export function InstallPage(): JSX.Element {
       <CodeBlock code={`npm i @hx/ui`} />
 
       <H2>接入样式</H2>
-      <P>项目样式入口引入库的完整样式文件，并让 Tailwind 扫描库源码。完整入口已包含令牌、主题映射、弹层动画和 Spin 样式；只引入令牌会漏掉组件样式。</P>
+      <P>项目样式入口引入库的完整样式文件，并让 Tailwind 扫描库的编译产物。完整入口已包含令牌、主题映射、弹层动画和 Spin 样式；只引入令牌会漏掉组件样式。</P>
       <CodeBlock code={`/* src/styles.css  项目的样式入口 */
 @import "@hx/ui/styles.css";
 
 /* 路径相对于本 CSS 文件；按项目目录层级调整 */
-@source "../node_modules/@hx/ui/src/**/*.{ts,tsx}";`} />
+@source "../node_modules/@hx/ui/dist/**/*.js";`} />
 
       <H2>用起来</H2>
       <CodeBlock code={`import { AppFrame, SettingSection, SettingRow, Input } from "@hx/ui";

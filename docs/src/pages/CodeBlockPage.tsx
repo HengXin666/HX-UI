@@ -21,7 +21,7 @@ const CSS_SAMPLE = `@import "tailwindcss";
 @import "@hx/ui/tokens.css";
 
 /* 库的类名不在这个工程里, 不显式声明 Tailwind 扫不到 */
-@source "../node_modules/@hx/ui/src/**/*.{ts,tsx}";
+@source "../node_modules/@hx/ui/dist/**/*.js";
 
 @theme inline {
   --color-primary: var(--primary);
