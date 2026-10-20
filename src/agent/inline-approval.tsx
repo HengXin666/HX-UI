@@ -29,13 +29,15 @@ export function InlineApproval({
 	const pending = verdict === "idle";
 
 	function approve(): void {
+		if (!onApprove) return;
+		onApprove();
 		setVerdict("approved");
-		onApprove?.();
 	}
 
 	function reject(): void {
+		if (!onReject) return;
+		onReject();
 		setVerdict("rejected");
-		onReject?.();
 	}
 
 	const tone = pending ? "warning" : verdict === "approved" ? "success" : "destructive";
@@ -43,7 +45,13 @@ export function InlineApproval({
 	return (
 		<Card variant="default" className="max-w-[540px] border-warning/40" data-slot="inline-approval">
 			<CardHeader className="flex items-center gap-2 py-2">
-				<span aria-hidden className="size-1.5 rounded-full bg-warning-fg" />
+				<span
+					aria-hidden
+					className={
+						"size-1.5 rounded-full " +
+						(pending ? "bg-warning-fg" : verdict === "approved" ? "bg-success-fg" : "bg-danger-fg")
+					}
+				/>
 				<CardTitle>{title}</CardTitle>
 				<Badge variant={tone} className={AGENT_AUTO_RIGHT}>
 					{pending ? "等待确认" : verdict === "approved" ? "已允许" : "已拒绝"}

@@ -5,6 +5,7 @@ import {
 import { SearchDialog, useSearchHotkey } from "./components/SearchDialog";
 import { PageNav } from "./components/PageNav";
 import { TableOfContents } from "./components/TableOfContents";
+import { DocsNav } from "./components/DocsNav";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { DOCS, GROUPS, WIDE_PAGES, type DocEntry } from "./nav";
 import { ButtonPage } from "./pages/ButtonPage";
@@ -62,7 +63,8 @@ import { DiffViewPage } from "./pages/agent/DiffViewPage";
  *
  * 外壳刻意用 @hx/ui 自己的 AppFrame 与 SidebarNavItemButton 搭 
  * 文档站本身就是这套库的第一个使用方, 它长什么样就是库长什么样。
- * 加一个组件 = nav.ts 加一行 + 下面 switch 加一个分支。
+ * 加一个组件 = nav.ts 加一行 + 下面 switch 加一个分支; 分组导航在 components/DocsNav.tsx。
+ * AI 交互页 (agent-*) 复用 src/agent 的组件, 过程件不在这里重写。
  * 对标 shadcn 补齐的页面不进 switch, 由 PARITY_PAGES 按 id 查表.
  * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
  * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
@@ -202,45 +204,14 @@ export function App(): JSX.Element {
             </button>
           </div>
 
-          <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2.5 pb-2.5">
-            {GROUPS.map((g) => {
-              const open = openGroups.includes(g);
-              const list = DOCS.filter((d) => d.group === g);
-              return (
-                <div key={g}>
-                  <button
-                    type={BUTTON_TYPE}
-                    aria-expanded={open}
-                    aria-controls={`docs-group-${g}`}
-                    onClick={() => toggleGroup(g)}
-                    className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-[11px] font-medium text-muted-foreground/80 transition-colors hover:bg-accent/40 hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
-                  >
-                    <span className="min-w-0 flex-1 truncate text-left">{g}</span>
-                    <span className="text-[10px] tabular-nums text-muted-foreground/50">{list.length}</span>
-                    <span aria-hidden className={`icon-[solar--alt-arrow-down-linear] size-3 shrink-0 bg-current transition-transform ${open ? "" : "-rotate-90"}`} />
-                  </button>
-                  <div id={`docs-group-${g}`} className={`${open ? "flex" : "hidden"} mt-0.5 flex-col gap-px`}>
-                    {list.map((d) => (
-                      <a
-                        key={d.id}
-                        href={`#/${d.id}`}
-                        aria-current={d.id === active ? "page" : undefined}
-                        onClick={(e) => {
-                          if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-                          e.preventDefault();
-                          go(d.id);
-                        }}
-                        className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-[13px] transition-colors focus-visible:outline-2 focus-visible:outline-primary ${d.id === active ? "bg-primary/10 font-semibold text-foreground ring-1 ring-inset ring-primary/25" : "text-foreground hover:bg-accent/50"}`}
-                      >
-                        <SidebarNavIcon icon={NAV_ICONS[d.id] ?? DEFAULT_NAV_ICON} />
-                        <span className="min-w-0 flex-1 truncate">{d.label}</span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </nav>
+          <DocsNav
+            groups={GROUPS}
+            docs={DOCS}
+            active={active}
+            openGroups={openGroups}
+            onToggle={toggleGroup}
+            onGo={go}
+          />
         </aside>
 
         {/* 主区: 面板容器手写 (不加 bg-card, 它该是页面底色) */}
