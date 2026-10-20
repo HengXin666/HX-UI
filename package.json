@@ -5,21 +5,21 @@
   "description": "HX 自维护 UI 库: 视觉沿用 open-vetta 那套设计语言",
   "license": "Apache-2.0",
   "files": [
-    "src",
+    "dist",
     "LICENSE",
     "NOTICE"
   ],
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
-    "./styles.css": "./src/styles.css",
-    "./tokens.css": "./src/tokens.css",
-    "./spin-variants.css": "./src/spin-variants.css",
-    "./motion.css": "./src/motion.css",
+    "./styles.css": "./dist/styles.css",
+    "./tokens.css": "./dist/tokens.css",
+    "./spin-variants.css": "./dist/spin-variants.css",
+    "./motion.css": "./dist/motion.css",
     "./hxbrowser": {
       "types": "./src/hxbrowser/index.ts",
       "import": "./src/hxbrowser/index.ts"
@@ -27,7 +27,9 @@
     "./hxbrowser/protocol": {
       "types": "./src/hxbrowser/core/protocol.ts",
       "import": "./src/hxbrowser/core/protocol.ts"
-    }
+    },
+    "./native-select.css": "./dist/native-select.css",
+    "./src/*": "./src/*"
   },
   "scripts": {
     "sync-upstream": "bash scripts/sync-upstream.sh",
@@ -64,7 +66,9 @@
     "test:perf": "node scripts/quality/index.ts layer --name perf",
     "verify-notes": "uv run scripts/redlines/agent_notes.py --diff",
     "verify-notes:all": "uv run scripts/redlines/agent_notes.py --all",
-    "verify-notes:staged": "uv run scripts/redlines/agent_notes.py --staged"
+    "verify-notes:staged": "uv run scripts/redlines/agent_notes.py --staged",
+    "build:lib": "node scripts/build-lib.mjs",
+    "prepare": "npm run build:lib"
   },
   "dependencies": {
     "@xyflow/react": "^12.12.0",
@@ -104,5 +108,11 @@
     "tailwindcss": {
       "optional": true
     }
+  },
+  "sideEffects": [
+    "*.css"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -1,0 +1,34 @@
+name: release
+
+# 打 tag 时构建库并把 tarball 挂到 GitHub Release: 使用者无需 npm 账号,
+# pnpm add https://github.com/HengXin666/HX-UI/releases/download/<tag>/hx-ui-<version>.tgz
+on:
+    push:
+        tags: ["v*"]
+    workflow_dispatch:
+
+permissions:
+    contents: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+            - name: install
+              run: npm ci
+            - name: build library
+              run: npm run build:lib
+            - name: pack
+              run: npm pack
+            - name: publish release asset
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  tag="${GITHUB_REF_NAME}"
+                  tgz=$(ls hx-ui-*.tgz | head -1)
+                  gh release create "$tag" "$tgz" --title "$tag" --notes "HX-UI $tag" || gh release upload "$tag" "$tgz" --clobber
+                  echo "install: pnpm add https://github.com/HengXin666/HX-UI/releases/download/$tag/$tgz"
