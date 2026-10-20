@@ -59,12 +59,12 @@ import { UsageMeterPage } from "./pages/agent/UsageMeterPage";
 import { DiffViewPage } from "./pages/agent/DiffViewPage";
 
 /**
- * 组件文档站。
+ * 组件文档站,
  *
  * 外壳刻意用 @hx/ui 自己的 AppFrame 与 SidebarNavItemButton 搭 
- * 文档站本身就是这套库的第一个使用方, 它长什么样就是库长什么样。
- * 加一个组件 = nav.ts 加一行 + 下面 switch 加一个分支; 分组导航在 components/DocsNav.tsx。
- * AI 交互页 (agent-*) 复用 src/agent 的组件, 过程件不在这里重写。
+ * 文档站本身就是这套库的第一个使用方, 它长什么样就是库长什么样,
+ * 加一个组件 = nav.ts 加一行 + 下面 switch 加一个分支; 分组导航在 components/DocsNav.tsx,
+ * AI 交互页 (agent-*) 复用 src/agent 的组件, 过程件不在这里重写,
  * 对标 shadcn 补齐的页面不进 switch, 由 PARITY_PAGES 按 id 查表.
  * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
  * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
@@ -126,7 +126,7 @@ function renderPage(entry: DocEntry): JSX.Element {
 }
 
 export function App(): JSX.Element {
-  // 页面 id 的唯一事实源是 URL  组件里不存 currentPage, 否则刷新与后退都会失效。
+  // 页面 id 的唯一事实源是 URL  组件里不存 currentPage, 否则刷新与后退都会失效,
   const [active, navigate] = useHashRoute();
   const entry = DOCS.find((d) => d.id === active) ?? DOCS[0];
   const search = useSearchHotkey();
@@ -162,7 +162,7 @@ export function App(): JSX.Element {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  // 切页后回到顶部。不做这件事时, 从长页面跳到短页面会停在半空的滚动位置。
+  // 切页后回到顶部,不做这件事时, 从长页面跳到短页面会停在半空的滚动位置,
   const go = useCallback((id: string) => {
     navigate(id);
     setMobileNavOpen(false);
@@ -231,7 +231,7 @@ export function App(): JSX.Element {
               }
             >
               <article className="w-full min-w-0 flex-1">
-                {/* 标题区: 组名做小标签 + 标题 + 说明。比原来光秃秃一个 h1 更容易定位 */}
+                {/* 标题区: 组名做小标签 + 标题 + 说明,比原来光秃秃一个 h1 更容易定位 */}
                 <div className="mb-1 text-[11px] font-medium text-link/80">{entry.group}</div>
                 <h1 className="text-[26px] font-bold leading-tight tracking-[-0.02em] text-foreground md:text-[30px]">
                   {entry.label}
@@ -245,7 +245,7 @@ export function App(): JSX.Element {
                 <PageNav prev={prev} next={next} onGo={go} />
 
                 <footer className="mt-10 border-t border-border pt-4 text-[11px] text-muted-foreground">
-                  组件源码整份取自 open-vetta (Apache-2.0), 视觉类名未改动。
+                  组件源码整份取自 open-vetta (Apache-2.0), 视觉类名未改动,
                 </footer>
               </article>
 
@@ -256,10 +256,10 @@ export function App(): JSX.Element {
         </main>
       </div>
       {/* 提醒容器整个应用只挂一次, 放在最外层 
-          每个页面各挂一个的话, 切页时正在显示的提醒会跟着页面卸载一起消失。 */}
+          每个页面各挂一个的话, 切页时正在显示的提醒会跟着页面卸载一起消失, */}
       <Toaster position="bottom-right" maxVisible={3} />
-      {/* 命令式 confirmDialog() 的宿主。整个应用挂一次  少了它, confirmDialog()
-          返回的 Promise 永远不会 settle, await 它的代码会静默停住。 */}
+      {/* 命令式 confirmDialog() 的宿主,整个应用挂一次  少了它, confirmDialog()
+          返回的 Promise 永远不会 settle, await 它的代码会静默停住, */}
       <ConfirmDialogHost />
       {/* 搜索面板: 与 Toaster 同理, 整个应用挂一次 */}
       <SearchDialog open={search.open} onClose={() => search.setOpen(false)} onPick={go} />
