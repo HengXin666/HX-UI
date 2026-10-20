@@ -1,10 +1,6 @@
 import { useState, type JSX } from "react";
 import { Button } from "../../../../src/primitives/button";
-import {
-  TOOL_CALL_STATUS,
-  ToolCallCard,
-  type ToolCallStatus,
-} from "../../../../src/agent/tool-call-card";
+import { TOOL_CALL_STATUS, ToolCallCard, type ToolCallStatus } from "@hx/ui";
 import { H2, P, Preview, PropsTable } from "../../components/DocKit";
 
 interface Sample {

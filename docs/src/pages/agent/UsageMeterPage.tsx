@@ -1,22 +1,10 @@
 import type { JSX } from "react";
 import { useState } from "react";
-import { DiffView, UsageMeter, type DiffLine } from "../../../../src/agent/usage-meter";
+import { UsageMeter } from "@hx/ui";
 import { Slider } from "../../../../src/primitives/slider";
 import { Code, H2, P, Preview, PropsTable } from "../../components/DocKit";
 
 const LIMIT = 200000;
-
-const DIFF_SAMPLE: DiffLine[] = [
-  { type: "ctx", text: "export function formatQuota(value: number, unit = 'tokens') {" },
-  { type: "del", text: "  const safe = Math.max(0, value);" },
-  { type: "add", text: "  const safe = Number.isFinite(value) ? Math.max(0, value) : 0;" },
-  { type: "ctx", text: "  return safe + ' ' + unit;" },
-  { type: "ctx", text: "}" },
-  { type: "ctx", text: "" },
-  { type: "add", text: "export function percentOf(used: number, limit: number): number {" },
-  { type: "add", text: "  return limit > 0 ? (used / limit) * 100 : 0;" },
-  { type: "add", text: "}" },
-];
 
 export function UsageMeterPage(): JSX.Element {
   const [used, setUsed] = useState(118000);
@@ -73,25 +61,6 @@ export function UsageMeterPage(): JSX.Element {
         <div className="w-64"><UsageMeter used={98} limit={100} unit="req" rate={12.4} /></div>
       </Preview>
 
-      <H2>DiffView</H2>
-      <P>逐行渲染变更, 新增行绿底, 删除行红底, 上下文行灰字, 行首给符号, 整体等宽字体</P>
-      <Preview
-        align="stretch"
-        code={`const hunks = [
-  { type: "ctx", text: "export function formatQuota(value: number, unit = 'tokens') {" },
-  { type: "del", text: "  const safe = Math.max(0, value);" },
-  { type: "add", text: "  const safe = Number.isFinite(value) ? Math.max(0, value) : 0;" },
-  { type: "ctx", text: "  return safe + ' ' + unit;" },
-  { type: "ctx", text: "}" },
-];
-
-<DiffView hunks={hunks} filename="src/format-quota.ts" />`}
-      >
-        <div className="w-full max-w-2xl">
-          <DiffView hunks={DIFF_SAMPLE} filename="src/format-quota.ts" />
-        </div>
-      </Preview>
-
       <H2>UsageMeter 属性</H2>
       <PropsTable
         rows={[
@@ -102,13 +71,6 @@ export function UsageMeterPage(): JSX.Element {
         ]}
       />
 
-      <H2>DiffView 属性</H2>
-      <PropsTable
-        rows={[
-          { name: "hunks", type: 'Array<{ type: "add" | "del" | "ctx", text: string }>', desc: "逐行变更数据" },
-          { name: "filename", type: "string", default: "-", desc: "顶部文件名与增删行数, 省略时不出表头" },
-        ]}
-      />
     </>
   );
 }
