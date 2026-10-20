@@ -24,12 +24,9 @@ pnpm add https://github.com/HengXin666/HX-UI/releases/download/v0.1.0/hx-ui-0.1.
 
 pmpm 安装 git 依赖时会执行 `prepare` 脚本 (= `build:lib`), 由本仓库的 tsc 现构建产物。
 
-### 方式三: 源码别名 (做主题定制时)
+### 方式三: 源码别名 (仓库开发时)
 
-```ts
-// vite.config.ts
-resolve: { alias: [{ find: /^@hx\/ui$/, replacement: resolve(uiSrc(), "index.ts") }] }
-```
+源码别名仅适用于直接检出本仓库的开发环境；Release tarball 只包含编译后的 `dist` 产物。
 
 ### 关于 npmjs
 
@@ -44,7 +41,7 @@ resolve: { alias: [{ find: /^@hx\/ui$/, replacement: resolve(uiSrc(), "index.ts"
 | 令牌 (零依赖) | `@hx/ui/tokens.css` |
 | Tailwind 4 桥接 | `@hx/ui/styles.css` |
 | 动效 / 自旋 / 原生下拉 | `@hx/ui/motion.css`, `spin-variants.css`, `native-select.css` |
-| 源码 | `@hx/ui/src/*` (给别名方式用) |
+| 浏览器协议 | `@hx/ui/hxbrowser` / `@hx/ui/hxbrowser/protocol` |
 
 ## 这套东西是什么
 

@@ -21,15 +21,14 @@
     "./spin-variants.css": "./dist/spin-variants.css",
     "./motion.css": "./dist/motion.css",
     "./hxbrowser": {
-      "types": "./src/hxbrowser/index.ts",
-      "import": "./src/hxbrowser/index.ts"
+      "types": "./dist/hxbrowser/index.d.ts",
+      "import": "./dist/hxbrowser/index.js"
     },
     "./hxbrowser/protocol": {
-      "types": "./src/hxbrowser/core/protocol.ts",
-      "import": "./src/hxbrowser/core/protocol.ts"
+      "types": "./dist/hxbrowser/core/protocol.d.ts",
+      "import": "./dist/hxbrowser/core/protocol.js"
     },
-    "./native-select.css": "./dist/native-select.css",
-    "./src/*": "./src/*"
+    "./native-select.css": "./dist/native-select.css"
   },
   "scripts": {
     "sync-upstream": "bash scripts/sync-upstream.sh",
