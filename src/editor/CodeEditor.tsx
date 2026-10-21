@@ -39,42 +39,31 @@ export interface CodeEditorProps {
   readonly lineNumbers?: boolean;
   /** 打开的文件名 (决定 monaco 的模型语言与 id). */
   readonly path?: string;
+  /** worker 工厂. Vite: () => new EditorWorker() (?worker 导入). 不给时退回主线程. */
+  readonly createWorker?: (label: string) => Worker;
   readonly className?: string;
 }
 
-/**
- * worker 入口. 用 new URL 交给打包器解析, 不让它进库的类型检查。
- *
- * 拿不到 worker 时返回 undefined: monaco 会自己退回主线程, 功能不受影响,
- * 只是大文件的语言服务会卡一点。
- */
-function workerFor(): Worker | undefined {
-  if (typeof Worker === "undefined") {
-    return undefined;
-  }
-  try {
-    return new Worker(
-      new URL("monaco-editor/esm/vs/editor/editor.worker.js", import.meta.url),
-      { type: "module" },
-    );
-  } catch {
-    return undefined;
-  }
-}
-
 interface MonacoEnvironmentShape {
-  getWorker?: () => Worker;
+  getWorker?: (moduleId: string, label: string) => Worker;
 }
 
-/** monaco 在主世界找 worker 的钩子. 只在还没有别人装过的时候装一次。 */
-function installEnvironment(): void {
+/**
+ * 装 monaco 的 worker 钩子 (只在还没有别人装过时装).
+ *
+ * worker 必须由使用方提供: 它依赖具体打包器的语法 (Vite 的 ?worker, webpack 的
+ * worker-loader), 库自己 new URL 一个裸包名在构建期解析不了。没有 worker 时 monaco
+ * 退回主线程计算, 编辑与着色都正常, 只有大文件的语言服务慢一点。
+ */
+function installEnvironment(createWorker?: (label: string) => Worker): void {
+  if (!createWorker) {
+    return;
+  }
   const globalObject = self as unknown as { MonacoEnvironment?: MonacoEnvironmentShape };
   if (globalObject.MonacoEnvironment?.getWorker) {
     return;
   }
-  globalObject.MonacoEnvironment = {
-    getWorker: () => workerFor() ?? (null as unknown as Worker),
-  };
+  globalObject.MonacoEnvironment = { getWorker: (_moduleId: string, label: string) => createWorker(label) };
 }
 
 /**
@@ -89,6 +78,7 @@ export function CodeEditor({
   minimap = false,
   lineNumbers = true,
   path,
+  createWorker,
   className,
 }: CodeEditorProps): JSX.Element {
   const [ready, setReady] = useState(false);
@@ -101,7 +91,7 @@ export function CodeEditor({
         return;
       }
       monacoRef.current = monaco;
-      installEnvironment();
+      installEnvironment(createWorker);
       loader.config({ monaco });
       setReady(true);
     });

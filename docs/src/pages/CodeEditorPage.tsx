@@ -1,7 +1,21 @@
 import { useState, type JSX } from "react";
+import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import TsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
+import JsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
 import { Button, CodeEditor, VARIANT } from "@hx/ui";
 import { H2, P, Preview } from "../components/DocKit";
 import { Props } from "../components/DocSpec";
+
+/**
+ * monaco 的 worker 工厂: 语言服务与编辑器内核是两个 worker, 用错会报
+ * "Missing requestHandler or method: doValidation"。按 label 分发。
+ */
+function createWorker(label: string): Worker {
+  if (label === "typescript" || label === "javascript") {
+    return new TsWorker();
+  }
+  return label === "json" ? new JsonWorker() : new EditorWorker();
+}
 
 const SAMPLE = `import { useCallback, useState } from "react";
 
@@ -55,7 +69,7 @@ export function CodeEditorPage(): JSX.Element {
 
 const [code, setCode] = useState(SAMPLE);
 
-<CodeEditor value={code} onChange={setCode} language="typescript" height={320} />`}
+<CodeEditor value={code} onChange={setCode} language="typescript" height={320} createWorker={createWorker} />`}
       >
         <div className="flex w-full min-w-0 flex-col gap-2">
           <CodeEditor value={code} onChange={setCode} language="typescript" height={320} />
@@ -72,7 +86,7 @@ const [code, setCode] = useState(SAMPLE);
         code={`<CodeEditor value={json} language="json" height={220} minimap={false} />`}
       >
         <div className="w-full min-w-0">
-          <CodeEditor value={JSON_SAMPLE} language="json" height={220} readOnly />
+          <CodeEditor value={JSON_SAMPLE} language="json" height={220} readOnly createWorker={createWorker} />
         </div>
       </Preview>
 
