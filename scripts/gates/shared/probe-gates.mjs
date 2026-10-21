@@ -163,6 +163,7 @@ export function renderPage(page: string) {
     "UPSTREAM_COMMIT": "",
     "package.json": "{}\n",
     "tsconfig.json": "{}\n",
+    "tsconfig.build.json": "{}\n",
     "package-lock.json": "{}\n",
     ...overrides,
   };
