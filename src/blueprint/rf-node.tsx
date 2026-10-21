@@ -83,7 +83,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
           type="target"
           id={handleId("exec-in", "in")}
           position={Position.Left}
-          style={{ top: headerPinTop(PIN.exec), left: HANDLE_EDGE, width: PIN.exec, height: PIN.exec, transform: "none" }}
+          style={{ top: headerPinTop(PIN.exec), left: HANDLE_EDGE, width: PIN.exec, height: PIN.exec, transform: "none", zIndex: 2 }}
           className="!border-0 !bg-transparent !opacity-0"
         />
         {/* 视觉引脚与上面的 Handle 用同一组偏移, 两个盒子完全重合; 引脚脱离文档流,
@@ -109,7 +109,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
                     type="target"
                     id={handleId(p.id, "in")}
                     position={Position.Left}
-                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none" }}
+                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
                     className="!border-0 !bg-transparent !opacity-0"
                   />
                   <PortRow
@@ -129,7 +129,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
                     type="source"
                     id={handleId(p.id, "out")}
                     position={Position.Right}
-                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none" }}
+                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
                     className="!border-0 !bg-transparent !opacity-0"
                   />
                   <PortRow dir="out" port={p} {...(p.color ? { color: p.color } : {})} filled />

@@ -105,7 +105,7 @@ export function PortRow({
         ref={(el) => portRef?.(port.id, dir, el)}
         data-port={port.id}
         data-dir={dir}
-        className="absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
+        className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
         style={{ [dir === "in" ? "left" : "right"]: offset - edgeInset } as CSSProperties}
       >
         {isExec ? (
@@ -116,7 +116,7 @@ export function PortRow({
       </span>
       {/* 执行引脚不带文字  UE5 里它靠形状与位置自解释, 加标签反而挤 */}
       {!isExec && (
-        <span className={cn("min-w-0 truncate text-[11px] text-muted-foreground", dir === "out" && "text-right")}>
+        <span className={cn("pointer-events-none min-w-0 truncate text-[11px] text-muted-foreground", dir === "out" && "text-right")}>
           {port.label ?? port.id}
         </span>
       )}
