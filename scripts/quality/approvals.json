@@ -639,5 +639,80 @@
         "status": "proposed",
         "approvedBy": "",
         "authorization": "待仓库所有者确认: 2026-10-18 的任务要求全量覆盖 shadcn/ui 组件清单, 这批依赖由代理按 shadcn 官方选型引入, 所有者尚未逐项签字"
+    },
+    {
+        "id": "APR-dependency-ai-stream-editor",
+        "kind": "dependency",
+        "subject": "markstream-react@^2.0.20, monaco-editor@^0.57.0, @monaco-editor/react@^4.7.0",
+        "need": "AI 交互需要真正的流式 Markdown 渲染 (半截代码块 / 未闭合表格 / 增量 AST 都不能靠一次性 markdown 转 HTML 顶住); 代码展示需要可编辑的 VS Code 同款编辑器与 One Dark Pro Darker 主题",
+        "reuse": {
+            "project": "现有 StreamingText 只做纯文本逐字追加, 不解析 Markdown; CodeBlock 是只读 shiki 高亮, 没有编辑与光标",
+            "stdlib": "浏览器与 React 不提供增量 Markdown 解析, 也不提供代码编辑器的语法树与 worker",
+            "existing": "已装的 shiki 只做静态高亮; markstream-react 与它同属 Simon-He95 的 markstream 家族, 用户点名要求 (https://github.com/Simon-He95/markstream-vue); monaco-editor 即 VS Code 内核"
+        },
+        "candidates": [
+            {
+                "name": "markstream-react",
+                "version": "2.0.20",
+                "license": "MIT",
+                "lastRelease": "2026-10-18",
+                "activity": "npm registry time.modified 2026-10-18",
+                "size": "未实测",
+                "advisories": "npm install 报告 2 low severity (根依赖树, 2026-10-21), 未逐项定位",
+                "compat": "React 18/19 peer, 纯 ESM, CSS 需显式 import markstream-react/index.css",
+                "source": "https://registry.npmjs.org/markstream-react",
+                "checkedAt": "2026-10-21"
+            },
+            {
+                "name": "monaco-editor",
+                "version": "0.57.0",
+                "license": "MIT",
+                "lastRelease": "2026-09-24",
+                "activity": "npm registry time.modified 2026-09-24",
+                "size": "未实测",
+                "advisories": "npm install 报告 2 low severity (根依赖树, 2026-10-21), 未逐项定位",
+                "compat": "VS Code 内核, ESM 入口 + worker, 与 Vite 的 ?worker 导入配合",
+                "source": "https://registry.npmjs.org/monaco-editor",
+                "checkedAt": "2026-10-21"
+            },
+            {
+                "name": "@monaco-editor/react",
+                "version": "4.7.0",
+                "license": "MIT",
+                "lastRelease": "2025-11-21",
+                "activity": "npm registry time.modified 2025-11-21",
+                "size": "未实测",
+                "advisories": "npm install 报告 2 low severity (根依赖树, 2026-10-21), 未逐项定位",
+                "compat": "React 16.8 到 19, loader 可指向本地 monaco 实例, 默认 CDN 需关掉",
+                "source": "https://registry.npmjs.org/@monaco-editor/react",
+                "checkedAt": "2026-10-21"
+            }
+        ],
+        "choice": {
+            "pick": "markstream-react + monaco-editor + @monaco-editor/react",
+            "reason": "用户明确指定 markstream (https://github.com/Simon-He95/markstream-vue) 解决流式输出; 代码编辑器要求 VS Code 与 One Dark Pro Darker, monaco 是唯一同源实现",
+            "rollback": "删除 src/agent/streaming-markdown.tsx 与 src/editor/, 移除三个依赖与对应文档页"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "src/agent/",
+                "src/editor/",
+                "docs/src/pages/"
+            ],
+            "steps": [
+                "npm install markstream-react monaco-editor @monaco-editor/react",
+                "文档站显式 import 'markstream-react/index.css'; monaco 由组件内部按需加载"
+            ],
+            "tests": [
+                "npm run typecheck",
+                "npm --prefix docs run typecheck",
+                "npm --prefix docs run build"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-10-21 的任务点名要求 markstream 流式渲染与 VS Code + One Dark Pro Darker 代码编辑器"
     }
 ]

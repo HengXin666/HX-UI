@@ -7,7 +7,6 @@ import {
   ReactFlowProvider, useReactFlow,
   type Connection, type OnSelectionChangeFunc,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import type { BlueprintGraph, BlueprintRegistry, ValidationIssue } from "./types";
 import { makeId } from "./useBlueprint";
 import {

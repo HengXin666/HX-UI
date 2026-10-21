@@ -1,6 +1,9 @@
 /**
  * 文档导航. 加一个页面 = 在对应分组的清单里加一行 "id ~ 标签 ~ 说明".
  * 标签一律用中文, 不写尖括号形式; 分组顺序即侧栏顺序.
+ *
+ * 分组按"用户找东西的方式"切, 不按源码目录切: 组件目录里的 primitives/ 与 layout/
+ * 与读者无关, 一个表单控件和一个浮层混在同一组里才是真的难找.
  */
 import { DOC } from "@hx/ui";
 import { parseSpec } from "./spec";
@@ -13,12 +16,25 @@ export interface DocEntry {
 }
 
 /** 侧栏分组名, 也是 GROUPS 的显示顺序. */
+/**
+ * .agents/notes/implemented/feature/2026-10-22-docs-nav-groups-and-templates.md
+ */
 const GROUP = {
   start: "上手",
-  basics: "基础件",
-  layout: "版式",
+  actions: "按钮与操作",
+  form: "表单输入",
+  picker: "选择器",
+  overlay: "浮层与菜单",
+  feedback: "反馈与状态",
+  data: "数据展示",
+  navigation: "导航",
+  box: "布局容器",
+  type: "排版",
+  conversation: "会话",
+  layout: "页面版式",
   charts: "图表",
   agent: "AI 交互",
+  templates: "模板",
   blueprint: "蓝图",
 } as const;
 
@@ -27,12 +43,15 @@ install ~ 安装与使用 ~ 引入组件, 接入样式, 切换主题, 部署文�
 tokens ~ 设计令牌 ~ 颜色, 圆角, 阴影, 字号, 间距与动效
 `;
 
-const BASICS = `
+const ACTIONS = `
 button ~ 按钮 ~ 七种语义样式与八档尺寸, 自带点按波纹
 button-group ~ 按钮组 ~ 相邻边框合并成一条
 toggle ~ 两态按钮 ~ 按下与弹起两种状态
 toggle-group ~ 两态按钮组 ~ 一组两态按钮, 单选或多选
 segmented-control ~ 分段控件 ~ 指示器滑动, 单选分段
+`;
+
+const FORM = `
 input ~ 输入框 ~ 反馈全部落在边框颜色上
 textarea ~ 多行输入 ~ 随内容长高
 input-group ~ 输入组 ~ 输入框加前后缀图标, 文字与按钮
@@ -44,12 +63,18 @@ checkbox ~ 复选框 ~ 支持半选
 radio-group ~ 单选组 ~ 一组互斥选项
 switch ~ 开关 ~ 两档尺寸
 slider ~ 滑块 ~ 单值与区间
+`;
+
+const PICKER = `
 select ~ 下拉选择 ~ 单选与分组
 native-select ~ 原生下拉 ~ 菜单跟随主题
 combobox ~ 组合框 ~ 可搜索下拉, 单选与多选
 calendar ~ 日历 ~ 单日与区间选择
 date-picker ~ 日期选择 ~ 与日历同页
 time-picker ~ 时间选择 ~ 时与分输入, 受控但中间态不卡手
+`;
+
+const OVERLAY = `
 dialog ~ 对话框 ~ 模态对话框, 缩放淡入
 alert-dialog ~ 警示对话框 ~ 必须二选一, 用于不可撤销的操作
 confirm-dialog ~ 确认框 ~ 命令式等待与声明式两用
@@ -63,43 +88,62 @@ context-menu ~ 右键菜单 ~ 组合式与声明式并存
 menubar ~ 菜单栏 ~ 桌面应用式菜单栏
 navigation-menu ~ 导航菜单 ~ 站点导航, 视口平滑插值
 command ~ 命令面板 ~ 内嵌与对话框两种
-table ~ 表格 ~ 表格原语
+`;
+
+const FEEDBACK = `
+alert ~ 提示条 ~ 五种语义色, 危险与警告会被读屏播报
+toast ~ 消息提醒 ~ 右下角堆叠与顶部居中
 badge ~ 徽标 ~ 三种语义色
-avatar ~ 头像 ~ 图片淡入, 叠放与状态点
-kbd ~ 按键 ~ 键盘按键标记
-separator ~ 分隔线 ~ 全局 1px
 skeleton ~ 骨架屏 ~ 方块占位与多行
 spinner ~ 旋转指示 ~ 行内加载
 spin ~ 多形态加载 ~ 多种加载指示
 progress ~ 进度条 ~ 含不定长, 带标题与数值
+empty ~ 空状态 ~ 组合式空状态
+`;
+
+const DATA = `
+table ~ 表格 ~ 表格原语
+avatar ~ 头像 ~ 图片淡入, 叠放与状态点
+item ~ 列表条目 ~ 媒体, 标题, 说明与操作
 pagination ~ 分页器 ~ 翻页时整排不跳
+`;
+
+const NAVIGATION = `
 breadcrumb ~ 面包屑 ~ 可折叠中间层级
 tabs ~ 标签页 ~ 下划线或药丸两种形态
 accordion ~ 折叠面板 ~ 折叠组, 双向都有高度动画
 collapsible ~ 折叠块 ~ 单块折叠
 collapse-panel ~ 可折叠面板 ~ 面板折叠
+`;
+
+const BOX = `
+separator ~ 分隔线 ~ 全局 1px
 carousel ~ 轮播 ~ 惯性拖拽与方向键切换
 resizable ~ 可调整分栏 ~ 拖拽调整大小
 scroll-area ~ 滚动区域 ~ 细滚动条容器
 aspect-ratio ~ 宽高比 ~ 固定宽高比容器
 direction ~ 文字方向 ~ 支持从右到左
+`;
+
+const TYPE = `
 typography ~ 排版 ~ 标题, 正文, 引用与列表
-empty ~ 空状态 ~ 组合式空状态
+kbd ~ 按键 ~ 键盘按键标记
+`;
+
+const CONVERSATION = `
 attachment ~ 附件 ~ 文件与图片附件, 带上传进度与错误态
-item ~ 列表条目 ~ 媒体, 标题, 说明与操作
 bubble ~ 气泡 ~ 消息气泡, 四种底色, 可折叠长内容
 message ~ 消息 ~ 头像, 头部, 正文与底部
 message-scroller ~ 消息滚动 ~ 贴底跟随与回到最新
 marker ~ 标记行 ~ 系统提示, 状态行与分隔线
 trace ~ 轨迹 ~ 推理与工具调用轨迹
 questionnaire ~ 问卷 ~ 多步问卷, 切题滑动
-alert ~ 提示条 ~ 五种语义色, 危险与警告会被读屏播报
-toast ~ 消息提醒 ~ 右下角堆叠与顶部居中
 `;
 
 const LAYOUT = `
 card ~ 卡片 ~ 内容容器
 code-block ~ 代码块 ~ 语法高亮与复制
+code-editor ~ 代码编辑器 ~ Monaco + One Dark Pro Darker, 本地 worker 无 CDN
 stat-card ~ 指标卡 ~ 指标卡与栅格, 数字等宽不抖
 data-table ~ 数据表 ~ 粘性表头, 空态, 加载态与行点击
 empty-state ~ 空态页 ~ 空, 错误与加载三态
@@ -126,6 +170,13 @@ agent-usage ~ 用量计量 ~ 已用 / 上限 / 速率
 agent-diff ~ 变更对比 ~ 逐行增删, 行首带符号
 `;
 
+const TEMPLATES = `
+templates-chat ~ AI 对话工作台 ~ 会话列表 + 流式回复 + 轨迹 + 输入框, 整页可复制
+templates-settings ~ 设置页 ~ 二级设置栏 + 一行一个设置项, 整页可复制
+templates-dashboard ~ 数据看板 ~ 指标卡 + 面积图 + 数据表, 整页可复制
+templates-console ~ 链路控制台 ~ 代理链路 + 步骤条 + 日志框, 整页可复制
+`;
+
 const BLUEPRINT = `
 blueprint ~ 蓝图编辑器 ~ 节点图编辑器: 自定义节点, 连接判定与执行流
 blueprint-dsh ~ 智能体循环蓝图 ~ 把智能体循环画成一张蓝图
@@ -138,10 +189,20 @@ function section(group: string, list: string): DocEntry[] {
 
 export const DOCS: readonly DocEntry[] = [
   ...section(GROUP.start, START),
-  ...section(GROUP.basics, BASICS),
+  ...section(GROUP.actions, ACTIONS),
+  ...section(GROUP.form, FORM),
+  ...section(GROUP.picker, PICKER),
+  ...section(GROUP.overlay, OVERLAY),
+  ...section(GROUP.feedback, FEEDBACK),
+  ...section(GROUP.data, DATA),
+  ...section(GROUP.navigation, NAVIGATION),
+  ...section(GROUP.box, BOX),
+  ...section(GROUP.type, TYPE),
+  ...section(GROUP.conversation, CONVERSATION),
   ...section(GROUP.layout, LAYOUT),
   ...section(GROUP.charts, CHARTS),
   ...section(GROUP.agent, AGENT),
+  ...section(GROUP.templates, TEMPLATES),
   ...section(GROUP.blueprint, BLUEPRINT),
 ];
 
@@ -150,5 +211,14 @@ export const GROUPS: readonly string[] = Object.values(GROUP);
 /** AI 交互分组名, 供路由判断页面是否由 agent 页面集提供. */
 export const AGENT_GROUP: string = GROUP.agent;
 
+/** 模板分组名, 顶栏的 "模板" 入口用它定位. */
+export const TEMPLATE_GROUP: string = GROUP.templates;
+
 /** 整页示例所在页面, 内容区放宽到 1720px. */
-export const WIDE_PAGES: ReadonlySet<string> = new Set(["settings-demo"]);
+export const WIDE_PAGES: ReadonlySet<string> = new Set([
+  "settings-demo",
+  "templates-chat",
+  "templates-settings",
+  "templates-dashboard",
+  "templates-console",
+]);

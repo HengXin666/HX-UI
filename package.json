@@ -7,7 +7,8 @@
   "files": [
     "dist",
     "LICENSE",
-    "NOTICE"
+    "NOTICE",
+    "src"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,12 +22,12 @@
     "./spin-variants.css": "./dist/spin-variants.css",
     "./motion.css": "./dist/motion.css",
     "./hxbrowser": {
-      "types": "./src/hxbrowser/index.ts",
-      "import": "./src/hxbrowser/index.ts"
+      "types": "./dist/hxbrowser/index.d.ts",
+      "import": "./dist/hxbrowser/index.js"
     },
     "./hxbrowser/protocol": {
-      "types": "./src/hxbrowser/core/protocol.ts",
-      "import": "./src/hxbrowser/core/protocol.ts"
+      "types": "./dist/hxbrowser/core/protocol.d.ts",
+      "import": "./dist/hxbrowser/core/protocol.js"
     },
     "./native-select.css": "./dist/native-select.css",
     "./src/*": "./src/*"
@@ -67,10 +68,11 @@
     "verify-notes": "uv run scripts/redlines/agent_notes.py --diff",
     "verify-notes:all": "uv run scripts/redlines/agent_notes.py --all",
     "verify-notes:staged": "uv run scripts/redlines/agent_notes.py --staged",
-    "build:lib": "tsc -p tsconfig.build.json && cp src/tokens.css src/styles.css src/motion.css src/spin-variants.css src/native-select.css dist/ && cp LICENSE NOTICE dist/",
+    "build:lib": "node scripts/build-lib.ts",
     "prepare": "npm run build:lib"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "@xyflow/react": "^12.12.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -79,6 +81,8 @@
     "input-otp": "^1.5.0",
     "ldrs": "^1.1.9",
     "lucide-react": "^1.48.0",
+    "markstream-react": "^2.0.20",
+    "monaco-editor": "^0.57.0",
     "motion": "^12.34.0",
     "radix-ui": "^1.6.7",
     "react-day-picker": "^9.14.0",

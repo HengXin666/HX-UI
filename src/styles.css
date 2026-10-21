@@ -10,6 +10,10 @@
 @import "./motion.css";
 /* 原生 select 的菜单在支持 base-select 时改用语义 token 绘制 (见文件内注释). */
 @import "./native-select.css";
+/* 蓝图画布 (React Flow) 的骨架样式.
+   放在样式入口而不是组件里: 组件里的 CSS import 会让库在 Node 侧不可导入
+   (Node 不认 .css), 而画布的尺寸规则本来就属于"引了样式才生效"的那一类. */
+@import "@xyflow/react/dist/style.css";
 
 /* 暗色绑定在 data-mode 属性而不是 prefers-color-scheme:
    主题由界面控制, 不该跟着系统走。 */

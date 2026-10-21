@@ -435,3 +435,39 @@ body {
     --duration-ripple: 0ms;
   }
 }
+
+/* ============================================================================
+ * One Dark Pro Darker 调色板 (代码编辑器与代码展示共用)
+ * ----------------------------------------------------------------------------
+ * 取值来自 One Dark Pro 官方主题的 Darker 变体 (Atom One Dark theme 的
+ * Darker 配色): 背景 #23272E, 前景 #ABB2BF; 语法色与标准 One Dark Pro 相同,
+ * 只有背景/行高亮/选区的亮度整体压暗一档 -- 这正是 "Darker" 这个名字的由来。
+ *
+ * 为什么放在令牌层: src 下的 .ts/.tsx 禁止写 hex 色值 (PROJECT-UI-HEX), 颜色只能
+ * 从 tokens.css 来。monaco 的主题是运行期注册的 JS 对象, 所以由组件读这些变量,
+ * 再交给 monaco.registerTheme, 而不是在组件里抄一份色板。
+ * .agents/notes/implemented/feature/2026-10-22-code-editor-one-dark-pro-darker.md
+ * ==========================================================================*/
+:root {
+  --code-odp-background: #23272e;
+  --code-odp-foreground: #abb2bf;
+  --code-odp-line-highlight: #2c313a;
+  --code-odp-selection: #3e4451;
+  --code-odp-line-number: #495162;
+  --code-odp-comment: #7f848e;
+  --code-odp-keyword: #c678dd;
+  --code-odp-string: #98c379;
+  --code-odp-number: #d19a66;
+  --code-odp-function: #61afef;
+  --code-odp-variable: #e06c75;
+  --code-odp-type: #e5c07b;
+  --code-odp-operator: #56b6c2;
+  --code-odp-constant: #d19a66;
+  --code-odp-tag: #e06c75;
+  --code-odp-widget: #21252b;
+  --code-odp-border: #181a1f;
+}
+
+/* 亮色下也保持同一套深色代码底: 与 CodeBlock 的取舍一致 -- 深色代码块在浅色页面里
+   是常见且被接受的对照手法, 换主题只换页面, 不换语法色. */
+

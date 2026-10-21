@@ -141,35 +141,82 @@ labels ~ Partial<QuestionnaireLabels> ~ - ~ 覆盖按钮与进度文案
   );
 }
 
-const STEPS: ReadonlyArray<{ title: string; status: TraceStatus }> = [
-  { title: "读取仓库 AGENTS.md", status: TASK_STATUS.done },
-  { title: "搜索 shadcn 组件清单", status: TASK_STATUS.done },
-  { title: "生成组件与文档页", status: TASK_STATUS.running },
-  { title: "运行质量门禁", status: "pending" },
+const STEPS: readonly string[] = [
+  "读取仓库 AGENTS.md",
+  "搜索 shadcn 组件清单",
+  "生成组件与文档页",
+  "运行质量门禁",
 ];
+
+/** 播放时的换步间隔 (ms): 比进场动画长, 每一步的状态切换都看得清. */
+const STEP_INTERVAL = 900;
+
+/**
+ * 播放位置: cursor 是"已经开始的步数", 前 cursor-1 步已完成, 第 cursor 步进行中, 其余等待.
+ * 走完最后一步后停止播放, 不自动回到开头.
+ */
+function useStepPlayback(total: number): { cursor: number; playing: boolean; play: () => void } {
+  const [cursor, setCursor] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    if (!playing) {
+      return undefined;
+    }
+    const timer = window.setInterval(() => {
+      setCursor((value) => {
+        const next = value + 1;
+        if (next >= total) {
+          setPlaying(false);
+        }
+        return next;
+      });
+    }, STEP_INTERVAL);
+    return () => window.clearInterval(timer);
+  }, [playing, total]);
+  const play = (): void => {
+    setCursor(0);
+    setPlaying(true);
+  };
+  return { cursor, playing, play };
+}
 
 export function TracePage(): JSX.Element {
   const [failed, setFailed] = useState(false);
+  const { cursor, playing, play } = useStepPlayback(STEPS.length);
+  /** 已经走过的步全部 done, 当前这一步 running (失败态时 error), 其余等待. */
+  const statusOf = (index: number): TraceStatus => {
+    if (cursor >= STEPS.length || index < cursor - 1) {
+      return TASK_STATUS.done;
+    }
+    if (index === cursor - 1) {
+      return failed ? TASK_STATUS.error : TASK_STATUS.running;
+    }
+    return TASK_STATUS.pending;
+  };
   return (
     <>
-      <P>推理 / 工具调用轨迹: 一条竖向时间线, 每步有状态图标, 标题, 说明与可折叠详情 (工具入参与输出, 思考过程, 引用来源). 运行中的标题带扫光, 状态切换时图标缩放进场; 默认展开进行中与失败的步骤.</P>
+      <P>推理 / 工具调用轨迹: 一条竖向时间线, 每步有状态图标, 标题, 说明与可折叠详情 (工具入参与输出, 思考过程, 引用来源). 步骤逐条错开进场, 连接线随状态生长 (完成填满, 进行中填一半并呼吸), 运行中的标题带扫光, 状态切换时图标缩放进场; 默认展开进行中与失败的步骤. 系统要求减弱动效时这些动画全部停用, 状态仍然可读.</P>
       <Usage names={["Trace", "TraceStep", "TraceSources"]} />
       <H2>示例</H2>
+      <P>点开始播放看逐步推进: 每一步从等待变成进行中, 再变成完成; 连接线跟着状态生长</P>
       <Preview code={`<Trace>
   <TraceStep status="done" title="读取仓库 AGENTS.md" />
-  <TraceStep status="running" title="生成组件与文档页" description="已完成 31 / 42">
+  <TraceStep status="running" title="搜索 shadcn 组件清单" description="已完成 31 / 42">
     <pre>...</pre>
   </TraceStep>
+  <TraceStep status="pending" title="生成组件与文档页" />
   <TraceStep status="pending" title="运行质量门禁" />
 </Trace>`}>
         <div className={DOC.stackMd}>
           <Trace>
-            {STEPS.map((step) => {
-              const running = step.status === TASK_STATUS.running;
+            {STEPS.map((title, index) => {
+              const status = statusOf(index);
               return (
-              <TraceStep key={step.title} status={failed && running ? TASK_STATUS.error : step.status} title={step.title}>
-                {running ? <pre className="font-mono text-[11.5px] whitespace-pre-wrap">{`src/primitives/sheet.tsx\nsrc/primitives/command.tsx`}</pre> : null}
-              </TraceStep>
+                <TraceStep key={title} status={status} title={title}>
+                  {status === TASK_STATUS.running || status === TASK_STATUS.error ? (
+                    <pre className="font-mono text-[11.5px] whitespace-pre-wrap">{`src/primitives/sheet.tsx\nsrc/primitives/command.tsx`}</pre>
+                  ) : null}
+                </TraceStep>
               );
             })}
             <TraceStep status={TASK_STATUS.done} icon={<GlobeIcon />} title="引用来源" description="2 个网页">
@@ -180,7 +227,12 @@ export function TracePage(): JSX.Element {
             </TraceStep>
             <TraceStep icon={<TerminalIcon />} title="npm run typecheck" description="退出码 0" />
           </Trace>
-          <Button size={VARIANT.sm} className="self-start" onClick={() => setFailed((value) => !value)}>{failed ? "恢复运行中" : "模拟失败"}</Button>
+          <div className={DOC.wrap}>
+            <Button size={VARIANT.sm} variant={VARIANT.primary} onClick={play} disabled={playing}>
+              {playing ? "播放中" : "播放轨迹"}
+            </Button>
+            <Button size={VARIANT.sm} onClick={() => setFailed((value) => !value)} disabled={cursor === 0}>{failed ? "恢复运行中" : "模拟失败"}</Button>
+          </div>
         </div>
       </Preview>
       <H2>属性</H2>

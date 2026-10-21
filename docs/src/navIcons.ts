@@ -97,6 +97,13 @@ export const NAV_ICONS: Record<string, string> = {
   "toggle-group": "icon-[solar--checklist-linear]",
   trace: "icon-[solar--route-linear]",
   typography: "icon-[solar--text-bold-linear]",
+  // 版式件 (2026-10-21 补): 代码编辑器与模板
+  "code-editor": "icon-[solar--code-2-linear]",
+  // 模板组: 每个整页模板一个图标, 与页面内容对应
+  "templates-chat": "icon-[solar--chat-round-code-linear]",
+  "templates-settings": "icon-[solar--settings-linear]",
+  "templates-dashboard": "icon-[solar--chart-2-linear]",
+  "templates-console": "icon-[solar--server-square-linear]",
 };
 
 export const DEFAULT_NAV_ICON = "icon-[solar--widget-2-linear]";
