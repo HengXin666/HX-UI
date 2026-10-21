@@ -52,6 +52,10 @@ import { ChromePage } from "./pages/ChromePage";
 import { BlueprintPage } from "./pages/BlueprintPage";
 import { BlueprintDshPage } from "./pages/BlueprintDshPage";
 import { PARITY_PAGES } from "./pages/parity";
+import { TEMPLATE_PAGES } from "./pages/templates";
+import { CodeEditorPage } from "./pages/CodeEditorPage";
+import { TopBar } from "./components/TopBar";
+import { BrandLogo } from "./components/BrandLogo";
 import { AgentOverviewPage } from "./pages/AgentOverviewPage";
 import { StreamingTextPage } from "./pages/agent/StreamingTextPage";
 import { ToolCallCardPage } from "./pages/agent/ToolCallCardPage";
@@ -80,6 +84,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "switch": return <SwitchPage />;
     case "card": return <CardPage />;
     case "code-block": return <CodeBlockPage />;
+    case "code-editor": return <CodeEditorPage />;
     case "badge": return <BadgePage />;
     case "setting-chrome": return <SettingChromePage />;
     case "app-frame": return <AppFramePage />;
@@ -119,7 +124,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "agent-usage": return <UsageMeterPage />;
     case "agent-diff": return <DiffViewPage />;
     default: {
-      const Page = PARITY_PAGES[entry.id];
+      const Page = PARITY_PAGES[entry.id] ?? TEMPLATE_PAGES[entry.id];
       return Page ? <Page /> : <PlaceholderPage label={entry.label} desc={entry.desc} />;
     }
   }
@@ -181,9 +186,7 @@ export function App(): JSX.Element {
         {/* 侧栏: 链接保留原生新标签与复制地址行为 */}
         <aside id="docs-navigation" className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-2 left-2 z-30 w-60 flex-col overflow-hidden rounded-xl border border-border/40 bg-card shadow-lg md:static md:flex md:bg-card/25 md:shadow-none`}>
           <div className="flex h-11 shrink-0 items-center gap-2 px-3">
-            <span className="grid size-6 shrink-0 place-items-center rounded-md bg-primary/15 text-[11px] font-semibold text-link">
-              HX
-            </span>
+            <BrandLogo size={22} />
             <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">HX UI</span>
             <ThemeToggle />
             <button type="button" aria-label="关闭导航" className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-accent md:hidden" onClick={() => setMobileNavOpen(false)}>
@@ -223,6 +226,7 @@ export function App(): JSX.Element {
             <span className="truncate text-[13px] font-semibold">HX UI / {entry.label}</span>
             <div className="ml-auto"><ThemeToggle /></div>
           </div>
+          <TopBar onGo={go} />
           <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
             <div
               className={

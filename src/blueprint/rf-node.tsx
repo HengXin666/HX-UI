@@ -4,10 +4,13 @@ import type { JSX } from "react";
 import { Handle, Position, type NodeProps, type EdgeProps, getBezierPath } from "@xyflow/react";
 import { cn } from "../primitives/utils";
 import { PinShape } from "./PinShape";
-import { PortRow, ParamField } from "./node-parts";
+import {
+  BODY_PAD_X, CARD_BORDER, PIN_SIZE, PortRow, ParamField, headerPinTop, pinOffset,
+} from "./node-parts";
 import { NODE_KIND_TITLE } from "./types";
 import type { RfNode } from "./rf-adapter";
 import { handleId } from "./rf-adapter";
+import { BODY_TOP, HEADER_H, PORT_ROW } from "./geometry";
 
 /**
  * React Flow 的自定义节点 / 连线  **UE5 外观在这一层**, 不在别处。
@@ -26,13 +29,27 @@ import { handleId } from "./rf-adapter";
  * 差 1px 线就会离开圆点。
  */
 
-const PORT_ROW = 20;
-const HEADER_H = 30;
-const BODY_TOP = HEADER_H + 8;
+/**
+ * 端口行高与标题条高度**从 geometry 取**, 不在这里重新声明: 连线端点由 React Flow
+ * 读 Handle 的矩形算, 落点由下面几个常量推出, 两处各写一份就必然漂移。
+ */
+const PIN = PIN_SIZE;
 
-/** 端口在图坐标里相对节点顶部的 y  必须与 geometry.portPos 的公式一致。 */
-function portY(index: number): number {
-  return BODY_TOP + index * PORT_ROW + PORT_ROW / 2;
+/**
+ * Handle 的水平落点。
+ *
+ * React Flow 算连线端点时取的是 Handle 面向节点的那条边 (左侧 Handle 取左边缘,
+ * 右侧 Handle 取右边缘), 不是矩形中心。所以要让那条边正好压在卡片外边界上:
+ * 行容器的左右边缘在卡片内边距的内沿, 先减内边距, 再减一个边框宽 (绝对定位的
+ * 参照是内边距盒)。
+ *
+ * 实测: 少减这一个边框宽, 每根线整体偏 1px, 端点落在圆点边上而不是圆心。
+ */
+const HANDLE_EDGE = -(BODY_PAD_X + CARD_BORDER);
+
+/** Handle 在行内纵向居中 (React Flow 取中心, 所以给出中心点)。 */
+function handleTop(size: number): number {
+  return PORT_ROW / 2 - size / 2;
 }
 
 export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
@@ -42,7 +59,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
   return (
     <div
       data-node-kind={data.kind}
-      className={cn("overflow-hidden border border-bp-node-border bg-bp-node-bg text-foreground")}
+      className={cn("relative overflow-hidden border border-bp-node-border bg-bp-node-bg text-foreground")}
       style={{
         borderRadius: "var(--bp-node-radius)",
         boxShadow: selected
@@ -66,17 +83,24 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
           type="target"
           id={handleId("exec-in", "in")}
           position={Position.Left}
-          style={{ top: HEADER_H / 2, left: -3, width: 11, height: 11 }}
+          style={{ top: headerPinTop(PIN.exec), left: HANDLE_EDGE, width: PIN.exec, height: PIN.exec, transform: "none", zIndex: 2 }}
           className="!border-0 !bg-transparent !opacity-0"
         />
-        <span className="pointer-events-none">
-          <PinShape kind="exec" filled color="text-bp-title-foreground" size={11} />
+        {/* 视觉引脚与上面的 Handle 用同一组偏移, 两个盒子完全重合; 引脚脱离文档流,
+            标题前面那一小段留白由右下角的占位元素让出 */}
+        <span
+          aria-hidden
+          className="pointer-events-none absolute flex items-center justify-center"
+          style={{ top: headerPinTop(PIN.exec), left: pinOffset(PIN.exec), width: PIN.exec, height: PIN.exec }}
+        >
+          <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN.exec} />
         </span>
+        <span aria-hidden className="shrink-0" style={{ width: PIN.exec / 2 }} />
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
       </div>
 
       {!data.collapsed && (
-        <div className="px-2 py-1.5">
+        <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
           <div className="flex gap-2">
             <div className="min-w-0 flex-1">
               {(data.inputs ?? []).map((p, i) => (
@@ -85,7 +109,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
                     type="target"
                     id={handleId(p.id, "in")}
                     position={Position.Left}
-                    style={{ top: portY(i), left: -7, width: 12, height: 12 }}
+                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
                     className="!border-0 !bg-transparent !opacity-0"
                   />
                   <PortRow
@@ -105,7 +129,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
                     type="source"
                     id={handleId(p.id, "out")}
                     position={Position.Right}
-                    style={{ top: portY(i), right: -7, width: 12, height: 12 }}
+                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
                     className="!border-0 !bg-transparent !opacity-0"
                   />
                   <PortRow dir="out" port={p} {...(p.color ? { color: p.color } : {})} filled />

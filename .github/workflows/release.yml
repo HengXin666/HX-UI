@@ -1,7 +1,7 @@
 name: release
 
-# 打 tag 时构建库并把 tarball 挂到 GitHub Release: 使用者无需 npm 账号,
-# pnpm add https://github.com/HengXin666/HX-UI/releases/download/<tag>/hx-ui-<version>.tgz
+# 打 tag 时构建库并把 tarball 挂到 GitHub Release: 使用者无需 npm 账号.
+# 安装: pnpm add https://github.com/HengXin666/HX-UI/releases/download/<tag>/hx-ui-<版本>.tgz
 on:
     push:
         tags: ["v*"]
@@ -20,15 +20,28 @@ jobs:
                   node-version: 22
             - name: install
               run: npm ci
+            - name: tag 与 package.json 版本必须一致
+              run: |
+                  version=$(node -p "require('./package.json').version")
+                  tag="${GITHUB_REF_NAME#v}"
+                  if [ "$tag" != "$version" ]; then
+                      echo "tag v$tag 与 package.json 的 $version 不一致, 先改版本再打 tag" >&2
+                      exit 1
+                  fi
             - name: build library
               run: npm run build:lib
             - name: pack
-              run: npm pack
+              id: pack
+              run: |
+                  npm pack --json > pack.json
+                  node -e "const [p]=require('./pack.json'); console.log('file='+p.filename)" >> "$GITHUB_OUTPUT"
+            - name: 产物自检
+              run: node scripts/verify-pack.ts
             - name: publish release asset
               env:
                   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  TGZ: ${{ steps.pack.outputs.file }}
               run: |
-                  tag="${GITHUB_REF_NAME}"
-                  tgz=$(ls hx-ui-*.tgz | head -1)
-                  gh release create "$tag" "$tgz" --title "$tag" --notes "HX-UI $tag" || gh release upload "$tag" "$tgz" --clobber
-                  echo "install: pnpm add https://github.com/HengXin666/HX-UI/releases/download/$tag/$tgz"
+                  tag="$GITHUB_REF_NAME"
+                  gh release create "$tag" "$TGZ" --title "$tag" --notes "HX-UI $tag" || gh release upload "$tag" "$TGZ" --clobber
+                  echo "install: pnpm add https://github.com/HengXin666/HX-UI/releases/download/$tag/$TGZ"

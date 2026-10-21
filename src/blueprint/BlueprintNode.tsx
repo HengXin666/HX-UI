@@ -3,11 +3,11 @@
 import type { JSX } from "react";
 import { cn } from "../primitives/utils";
 import type { BlueprintRegistry, BlueprintNode } from "./types";
-import { PortRow, ParamField } from "./node-parts";
+import { CARD_BORDER, PortRow, ParamField, PIN_SIZE, headerPinTop, pinOffset } from "./node-parts";
 import { NodeRenameInput } from "./NodeRename";
 import { execOutIds, execOutLabel } from "./connect";
 import { EXEC } from "./types";
-import { NODE_WIDTH } from "./geometry";
+import { BODY_TOP, HEADER_H, NODE_WIDTH } from "./geometry";
 import { nodeKindOf, titleStyle } from "./node-style";
 import { PinShape } from "./PinShape";
 
@@ -88,7 +88,7 @@ export function BlueprintNodeCard({
     <div
       data-node-kind={kind}
       className={cn(
-        "overflow-hidden border text-foreground",
+        "relative overflow-hidden border text-foreground",
         // UE5 的节点体是深色块 + 近黑描边 + 阴影; 圆角比卡片小 (6px)
         "border-bp-node-border bg-bp-node-bg",
         hasError && "border-destructive/70",
@@ -113,11 +113,14 @@ export function BlueprintNodeCard({
             ref={(el) => portRef?.("exec-in", "in", el)}
             data-port="exec-in"
             data-dir="in"
-            className="flex shrink-0 items-center"
+            className="absolute flex items-center justify-center"
+            style={{ left: pinOffset(PIN_SIZE.exec), top: headerPinTop(PIN_SIZE.exec), width: PIN_SIZE.exec, height: PIN_SIZE.exec }}
           >
-            <PinShape kind="exec" filled color="text-bp-title-foreground" size={11} />
+            <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN_SIZE.exec} />
           </span>
         )}
+        {/* 引脚脱离文档流后, 标题要让出半个引脚的位置, 否则文字会压在楔形上 */}
+        {def.execIn && <span aria-hidden className="shrink-0" style={{ width: PIN_SIZE.exec / 2 }} />}
         {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
         {renaming ? (
           <NodeRenameInput
@@ -139,9 +142,10 @@ export function BlueprintNodeCard({
             ref={(el) => portRef?.(execOuts[execOuts.length - 1], "out", el)}
             data-port={execOuts[execOuts.length - 1]}
             data-dir="out"
-            className="flex shrink-0 items-center"
+            className="absolute flex items-center justify-center"
+            style={{ right: pinOffset(PIN_SIZE.exec), top: headerPinTop(PIN_SIZE.exec), width: PIN_SIZE.exec, height: PIN_SIZE.exec }}
           >
-            <PinShape kind="exec" filled color="text-bp-title-foreground" size={11} />
+            <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN_SIZE.exec} />
           </span>
         )}
 
@@ -157,8 +161,12 @@ export function BlueprintNodeCard({
         )}
       </div>
 
+      {/*
+        pt 取 BODY_TOP - HEADER_H - CARD_BORDER: 端口行必须从 geometry.portPos 假设的
+        高度开始, 差 1px 每个端口就整体偏 1px, 表现是线擦着圆点过去。
+      */}
       {!isCollapsed && (
-        <div className="px-2 py-1.5">
+        <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
           <div className="flex gap-2">
             <div className="min-w-0 flex-1">
               {(def.inputs ?? []).map((p) => (

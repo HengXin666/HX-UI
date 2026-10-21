@@ -166,6 +166,9 @@ export {
   type LayoutOptions, type LayoutResult,
 } from "./blueprint/layout";
 
+// ── 代码编辑器 (monaco + One Dark Pro Darker) ──
+export * from "./editor";
+
 // ── 版式件 ──
 export { AppFrame, type AppFrameProps } from "./layout/AppFrame";
 export {
