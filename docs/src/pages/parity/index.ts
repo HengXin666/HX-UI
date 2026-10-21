@@ -15,6 +15,10 @@ import { ItemPage, TablePage } from "./listing";
 import { BreadcrumbDocPage, MenubarPage, NavigationMenuPage } from "./navigation";
 import { ContextMenuPage } from "./context-menu";
 import { AlertDialogPage, CommandPage, HoverCardPage, SheetPage } from "./overlay";
+import { TemplateChatPage } from "../templates/chat";
+import { TemplateConsolePage } from "../templates/console";
+import { TemplateDashboardPage } from "../templates/dashboard";
+import { TemplateSettingsPage } from "../templates/settings";
 
 /**
  * 对标 shadcn 补齐的文档页, 按导航 id 查表. 与已有页面共用一页的别名 (collapsible / date-picker) 也登记在这里.
@@ -65,4 +69,8 @@ export const PARITY_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   "toggle-group": ToggleGroupPage,
   trace: TracePage,
   typography: TypographyPage,
+  "templates-chat": TemplateChatPage,
+  "templates-settings": TemplateSettingsPage,
+  "templates-dashboard": TemplateDashboardPage,
+  "templates-console": TemplateConsolePage,
 };

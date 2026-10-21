@@ -52,9 +52,7 @@ import { ChromePage } from "./pages/ChromePage";
 import { BlueprintPage } from "./pages/BlueprintPage";
 import { BlueprintDshPage } from "./pages/BlueprintDshPage";
 import { PARITY_PAGES } from "./pages/parity";
-import {
-  TemplateChatPage, TemplateConsolePage, TemplateDashboardPage, TemplateSettingsPage,
-} from "./pages/templates";
+import { TEMPLATE_PAGES } from "./pages/templates";
 import { CodeEditorPage } from "./pages/CodeEditorPage";
 import { TopBar } from "./components/TopBar";
 import { BrandLogo } from "./components/BrandLogo";
@@ -87,10 +85,6 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "card": return <CardPage />;
     case "code-block": return <CodeBlockPage />;
     case "code-editor": return <CodeEditorPage />;
-    case "templates-chat": return <TemplateChatPage />;
-    case "templates-settings": return <TemplateSettingsPage />;
-    case "templates-dashboard": return <TemplateDashboardPage />;
-    case "templates-console": return <TemplateConsolePage />;
     case "badge": return <BadgePage />;
     case "setting-chrome": return <SettingChromePage />;
     case "app-frame": return <AppFramePage />;
@@ -130,7 +124,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "agent-usage": return <UsageMeterPage />;
     case "agent-diff": return <DiffViewPage />;
     default: {
-      const Page = PARITY_PAGES[entry.id];
+      const Page = PARITY_PAGES[entry.id] ?? TEMPLATE_PAGES[entry.id];
       return Page ? <Page /> : <PlaceholderPage label={entry.label} desc={entry.desc} />;
     }
   }
