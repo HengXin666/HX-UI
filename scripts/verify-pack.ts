@@ -1,16 +1,8 @@
 /**
- * 发布产物自检: 把当前工作区打成 tarball, 装进临时目录, 逐个入口验证.
+ * 发布产物自检: 打包 -> 装进临时目录 -> 逐个 exports 入口解析.
  *
- * ## 为什么必须真装一遍
- *
- * dist 里缺扩展名, exports 指向没被打包的 src, 这两种错误都不会让 tsc 或门禁变红:
- * 它们只在别人真的把它当包用的时候才炸, 而官方发布路径 (GitHub Release) 没有 registry
- * 的安装反馈. 所以发布前在 CI 里装一遍, 比事后看 issue 便宜得多.
- *
- * 判据:
- *   1. node 能 import 包根 (验证 dist 的相对导入都带了扩展名)
- *   2. exports 里每个子入口都能被 import.meta.resolve 解析到 tarball 内的真实文件
- *   3. CSS 入口文件存在
+ * 缺扩展名, exports 指向未打包目录这类问题在 tsc 与门禁里都是绿的, 只有真装一遍才暴露.
+ * 决策与取舍见 .agents/notes/implemented/architecture/2026-10-22-release-tarball-packaging.md
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";

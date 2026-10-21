@@ -1,19 +1,9 @@
 /**
- * 构建库产物 (dist/) 并把相对导入补上扩展名.
+ * 构建 dist 并给相对导入补扩展名.
  *
- * ## 为什么需要补扩展名
- *
- * 包是 type: module, Node 在 ESM 下不会替我们补全 "./primitives/button" 的 .js 后缀,
- * 也不会找目录下的 index.js. tsc 按 Bundler 分辨率产出的是无扩展名的相对导入, 于是
- * node -e "import('@hx/ui')" 直接报 ERR_MODULE_NOT_FOUND -- 打包工具会自动补, 所以这个
- * 缺口只在"直接用 Node 跑"与部分 SSR 场景暴露, 很容易漏测.
- *
- * 这里在 tsc 出完 .js 与 .d.ts 之后统一改写三类说明符:
- *   1. 指向目录的: "./chat" -> "./chat/index.js" (存在 index 时)
- *   2. 指向文件的: "./connect" -> "./connect.js"
- *   3. 已经带扩展名的原样保留
- *
- * 只改相对说明符: 裸包名由消费方解析, 动它没有意义而且会改错.
+ * Node 在 ESM 下不会补 "./x" 的 .js 后缀, tsc 的产物因此无法被 node 直接 import.
+ * 这里在 tsc 之后统一改写相对说明符 (目录的补 /index.js), 再拷 CSS 与许可证.
+ * 决策与取舍见 .agents/notes/implemented/architecture/2026-10-22-release-tarball-packaging.md
  */
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
