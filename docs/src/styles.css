@@ -97,3 +97,22 @@
 @source inline("icon-[solar--sun-linear]");
 @source inline("icon-[solar--magnifier-linear]");
 @source inline("icon-[solar--menu-dots-bold]");
+/* 流式 Markdown 的表格与兜底代码块: markstream 的预编译样式只给内边距, 不画线.
+   放在文档站自己的样式里: 库样式入口里同名规则会被 markstream 的层叠顺序盖掉. */
+[data-slot="streaming-markdown"] table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border) !important;
+}
+
+[data-slot="streaming-markdown"] th,
+[data-slot="streaming-markdown"] td {
+  border-bottom: 1px solid var(--border) !important;
+  padding: 0.375rem 0.625rem;
+}
+
+[data-slot="streaming-markdown"] th {
+  background-color: var(--muted) !important;
+  font-weight: 500;
+}
+

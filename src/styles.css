@@ -167,7 +167,7 @@
  * 深浅两套皮肤下都像是"没有样式". 这里用状态属性选择器接管: 状态类属性是稳定
  * 契约 (data-slot), 比依赖对方的内部类名可靠.
  * ==========================================================================*/
-[data-slot="streaming-markdown"] pre {
+[data-slot="streaming-markdown"] .markstream-react pre {
   margin-block: 0.75rem;
   padding: 0.75rem 0.875rem;
   border: 1px solid var(--code-odp-border);
@@ -179,7 +179,7 @@
   overflow-x: auto;
 }
 
-[data-slot="streaming-markdown"] pre code {
+[data-slot="streaming-markdown"] .markstream-react pre code {
   padding: 0;
   background: transparent;
   color: inherit;
@@ -187,19 +187,19 @@
 }
 
 /* 表格: markstream 只画单元格内边距, 不画线; 1px 分隔线与表头底色由这里补 */
-[data-slot="streaming-markdown"] table {
+[data-slot="streaming-markdown"] .markstream-react table.table-node {
   width: 100%;
   border-collapse: collapse;
   border: 1px solid var(--border);
 }
 
-[data-slot="streaming-markdown"] th,
-[data-slot="streaming-markdown"] td {
+[data-slot="streaming-markdown"] .markstream-react table.table-node th,
+[data-slot="streaming-markdown"] .markstream-react table.table-node td {
   border-bottom: 1px solid var(--border);
   padding: 0.375rem 0.625rem;
 }
 
-[data-slot="streaming-markdown"] th {
+[data-slot="streaming-markdown"] .markstream-react table.table-node th {
   background-color: var(--muted);
   font-weight: 500;
 }
