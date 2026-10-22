@@ -83,6 +83,7 @@ export interface StreamingMarkdownProps {
  *     import "markstream-react/index.css";
  *
  * 漏了这一行不会有任何报错, 表现是"内容渲染出来了但没有排版".
+ * 代码块按 renderCodeBlocksAsPre 渲染成 <pre>, 不走 stream-diffs 的 diffs-container:
  * fade 关闭: 逐节点淡入会和调用方自己的逐字追加叠成两层节奏, 看起来像抖动;
  * 光标由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪.
  */
@@ -110,6 +111,7 @@ export function StreamingMarkdown({
         smoothStreaming={false}
         isDark={dark}
         customId={customId}
+        renderCodeBlocksAsPre
       />
     </div>
   );

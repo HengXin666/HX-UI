@@ -24,12 +24,6 @@ export default defineConfig({
     alias: {
       // 直接指向源码, 改库能立即在文档里看到, 不必先 pack
       "@hx/ui": path.resolve(import.meta.dirname, "../src/index.ts"),
-      /**
-       * monaco 装在仓库根 (库的依赖), 文档站自己没装: 编辑器组件从 ../src 被解析时
-       * 它的 import "monaco-editor" 要指回根目录那一份, 否则会各带一份实例,
-       * worker 与主线程的语言服务对不上。
-       */
-      "monaco-editor": path.resolve(import.meta.dirname, "../node_modules/monaco-editor"),
       "@hx/blueprint-demo": blueprintDemoEntry,
     },
     /**

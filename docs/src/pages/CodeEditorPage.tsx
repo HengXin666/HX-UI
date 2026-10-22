@@ -1,7 +1,7 @@
 import { useState, type JSX } from "react";
-import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import TsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
-import JsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
+import EditorWorker from "monaco-editor/editor/editor.worker.js?worker";
+import TsWorker from "monaco-editor/language/typescript/ts.worker.js?worker";
+import JsonWorker from "monaco-editor/language/json/json.worker.js?worker";
 import { Button, CodeEditor, VARIANT } from "@hx/ui";
 import { H2, P, Preview } from "../components/DocKit";
 import { Props } from "../components/DocSpec";

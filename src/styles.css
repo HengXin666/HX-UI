@@ -14,6 +14,9 @@
    放在样式入口而不是组件里: 组件里的 CSS import 会让库在 Node 侧不可导入
    (Node 不认 .css), 而画布的尺寸规则本来就属于"引了样式才生效"的那一类. */
 @import "@xyflow/react/dist/style.css";
+/* 流式 Markdown 渲染器的样式 (markstream-react 不自动注入 CSS).
+   放在库入口: 使用方引一次 @hx/ui/styles.css 就同时拿到对话与代码块的外观. */
+@import "markstream-react/index.css";
 
 /* 暗色绑定在 data-mode 属性而不是 prefers-color-scheme:
    主题由界面控制, 不该跟着系统走。 */
@@ -156,3 +159,48 @@
     outline-color: color-mix(in srgb, var(--ring) 50%, transparent);
   }
 }
+/* ============================================================================
+ * 流式 Markdown 的代码块
+ * ----------------------------------------------------------------------------
+ * markstream 用 renderCodeBlocksAsPre 把围栏代码块渲染成 <pre>. 它的样式表是
+ * node_modules 里的预编译 CSS (选择器包在 :where() 里), 只给容器定了极浅的底色,
+ * 深浅两套皮肤下都像是"没有样式". 这里用状态属性选择器接管: 状态类属性是稳定
+ * 契约 (data-slot), 比依赖对方的内部类名可靠.
+ * ==========================================================================*/
+[data-slot="streaming-markdown"] pre {
+  margin-block: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--code-odp-border);
+  border-radius: var(--radius-lg, 0.5rem);
+  background-color: var(--code-odp-background);
+  color: var(--code-odp-foreground);
+  font-size: 12.5px;
+  line-height: 1.65;
+  overflow-x: auto;
+}
+
+[data-slot="streaming-markdown"] pre code {
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+}
+
+/* 表格: markstream 只画单元格内边距, 不画线; 1px 分隔线与表头底色由这里补 */
+[data-slot="streaming-markdown"] table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+}
+
+[data-slot="streaming-markdown"] th,
+[data-slot="streaming-markdown"] td {
+  border-bottom: 1px solid var(--border);
+  padding: 0.375rem 0.625rem;
+}
+
+[data-slot="streaming-markdown"] th {
+  background-color: var(--muted);
+  font-weight: 500;
+}
+

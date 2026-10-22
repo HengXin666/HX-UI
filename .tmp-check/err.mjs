@@ -1,0 +1,11 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage();
+const logs = [];
+p.on('pageerror', (e) => logs.push('pageerror: ' + e.message));
+p.on('console', (m) => logs.push(m.type() + ': ' + m.text().slice(0, 200)));
+p.on('requestfailed', (r) => logs.push('reqfail: ' + r.url().slice(-60) + ' ' + r.failure()?.errorText));
+await p.goto('http://127.0.0.1:5600/#/agent-stream', { waitUntil: 'domcontentloaded' });
+await p.waitForTimeout(5000);
+console.log(logs.slice(0, 12).join('\n'));
+await b.close();
