@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { DOC_SAMPLE } from "@hx/ui";
 
 /** 逐字流式的节奏: 每次追加的字符数与间隔 (ms). */
 const STEP = 1;
-const INTERVAL = 40;
+const INTERVAL = DOC_SAMPLE.streamInterval;
 
 export interface Typewriter {
   /** 当前已到达的前缀. */

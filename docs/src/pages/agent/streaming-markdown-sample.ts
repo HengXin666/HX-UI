@@ -1,3 +1,5 @@
+import { DOC } from "@hx/ui";
+
 /**
  * 流式 Markdown 演示用的原文: 一段同时含标题, 列表, 表格, 代码块与链接的模型输出.
  * 逐字追加时, 未闭合的标题与表格由 markstream 按半成品渲染, 结束后再收尾.
@@ -24,4 +26,4 @@ export const STREAMING_MARKDOWN_SAMPLE = [
   "```",
   "",
   "详见 [markstream 文档](https://markstream.simonhe.me/frameworks/react).",
-].join("\n");
+].join(DOC.newline);
