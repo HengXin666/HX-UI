@@ -121,9 +121,7 @@ function useThrottledCode(code: string, open: boolean): string {
   return open ? shown : code;
 }
 
-/**
- * .agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
- */
+/** 一个围栏代码块: 流式中途按节流后的代码渲染, 闭合后一次性收尾. 决策见 streaming-markdown.tsx 的锚点. */
 export function FenceBlock({ code, lang, open }: { readonly code: string; readonly lang?: string; readonly open: boolean }): JSX.Element {
   const shown = useThrottledCode(code, open);
   return <CodeBlock className="my-3" code={shown} {...(lang ? { lang } : {})} showLineNumbers />;
