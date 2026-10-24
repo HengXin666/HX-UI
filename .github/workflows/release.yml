@@ -33,7 +33,7 @@ jobs:
             - name: pack
               id: pack
               run: |
-                  npm pack --json > pack.json
+                  npm pack --json --ignore-scripts > pack.json
                   node -e "const [p]=require('./pack.json'); console.log('file='+p.filename)" >> "$GITHUB_OUTPUT"
             - name: 产物自检
               run: node scripts/verify-pack.ts
