@@ -14,7 +14,7 @@ const TILE_SIZE = "17";
  * 语义 token (fill-link / fill-muted-foreground), 不写死色值.
  *
  * 装饰性用法传 aria-hidden (侧栏标题旁边), 独立出现时给 title 作为可读名.
- * 纯静态图标另见 docs/public/logo.svg 与 docs/public/favicon.svg.
+ * 纯静态图标另见 docs/src/public/logo.svg 与 docs/src/public/favicon.svg.
  */
 export function BrandLogo({
   size = BRAND_LOGO_SIZE.base,

@@ -2,7 +2,7 @@ import { useState, type JSX } from "react";
 import EditorWorker from "monaco-editor/editor/editor.worker.js?worker";
 import TsWorker from "monaco-editor/language/typescript/ts.worker.js?worker";
 import JsonWorker from "monaco-editor/language/json/json.worker.js?worker";
-import { Button, CodeEditor, VARIANT } from "@hx/ui";
+import { ALIGN, Button, CodeEditor, DOC, DOC_SAMPLE, VARIANT } from "@hx/ui";
 import { H2, P, Preview } from "../components/DocKit";
 import { Props } from "../components/DocSpec";
 
@@ -14,7 +14,7 @@ function createWorker(label: string): Worker {
   if (label === "typescript" || label === "javascript") {
     return new TsWorker();
   }
-  return label === "json" ? new JsonWorker() : new EditorWorker();
+  return label === DOC.jsonLang ? new JsonWorker() : new EditorWorker();
 }
 
 const SAMPLE = `import { useCallback, useState } from "react";
@@ -64,7 +64,7 @@ export function CodeEditorPage(): JSX.Element {
 
       <H2>可编辑示例</H2>
       <Preview
-        align="stretch"
+        align={ALIGN.stretch}
         code={`import { CodeEditor } from "@hx/ui";
 
 const [code, setCode] = useState(SAMPLE);
@@ -72,9 +72,9 @@ const [code, setCode] = useState(SAMPLE);
 <CodeEditor value={code} onChange={setCode} language="typescript" height={320} createWorker={createWorker} />`}
       >
         <div className="flex w-full min-w-0 flex-col gap-2">
-          <CodeEditor value={code} onChange={setCode} language="typescript" height={320} />
+          <CodeEditor value={code} onChange={setCode} language="typescript" height={DOC_SAMPLE.editorHeight} />
           <div className="flex items-center gap-2 text-[12px] text-muted-foreground">
-            <span>当前 {code.split("\n").length} 行</span>
+            <span>当前 {code.split(DOC.newline).length} 行</span>
             <Button size={VARIANT.sm} variant={VARIANT.ghost} onClick={() => setCode(SAMPLE)}>恢复示例</Button>
           </div>
         </div>
@@ -82,11 +82,11 @@ const [code, setCode] = useState(SAMPLE);
 
       <H2>其它语言</H2>
       <Preview
-        align="stretch"
+        align={ALIGN.stretch}
         code={`<CodeEditor value={json} language="json" height={220} minimap={false} />`}
       >
         <div className="w-full min-w-0">
-          <CodeEditor value={JSON_SAMPLE} language="json" height={220} readOnly createWorker={createWorker} />
+          <CodeEditor value={JSON_SAMPLE} language={DOC.jsonLang} height={DOC_SAMPLE.editorHeightSmall} readOnly createWorker={createWorker} />
         </div>
       </Preview>
 

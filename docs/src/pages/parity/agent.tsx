@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type JSX } from "react";
-import { ALIGN, Bubble, Button, DOC, DOC_SAMPLE, Marker, MarkerContent, Message, MessageContent, MessageScroller, MessageScrollerButton, MessageScrollerContent, MessageScrollerItem, QUESTION_TYPE, Questionnaire, VARIANT, toast, type QuestionnaireQuestion } from "@hx/ui";
+import { ALIGN, Bubble, Button, DOC, DOC_SAMPLE, Marker, MarkerContent, Message, MessageContent, MessageScroller, MessageScrollerButton, MessageScrollerContent, MessageScrollerItem, QUESTION_TYPE, Questionnaire, TONE_VARIANT, VARIANT, toast, type QuestionnaireQuestion } from "@hx/ui";
 import { H2, P, Preview } from "../../components/DocKit";
 import { Props, Usage } from "../../components/DocSpec";
 
@@ -42,7 +42,7 @@ export function MessageScrollerPage(): JSX.Element {
           </div>
           <MessageScroller className="h-72 rounded-xl border border-border">
             <MessageScrollerContent>
-              <Marker variant="separator"><MarkerContent>会话开始</MarkerContent></Marker>
+              <Marker variant={TONE_VARIANT.separator}><MarkerContent>会话开始</MarkerContent></Marker>
               {turns.map((text, index) => (
                 <MessageScrollerItem key={text} messageId={text}>
                   <Message align={index & 1 ? ALIGN.end : ALIGN.start}>

@@ -173,7 +173,7 @@ export function TracePage(): JSX.Element {
         "TraceStep.icon ~ ReactNode ~ - ~ 覆盖默认状态图标 (例如工具自己的图标)",
         "TraceStep.defaultOpen ~ boolean ~ - ~ 覆盖默认展开规则",
         "TraceStep.collapseWhenDone ~ boolean ~ false ~ 完成后自动收起 (实时态用)",
-      ].join("\n")} />
+      ].join(DOC.newline)} />
       <P>TraceLive</P>
       <Props spec={[
         "items ~ readonly TraceLiveItem[] ~ - ~ 已到达的步骤, 按到达顺序",
@@ -181,7 +181,7 @@ export function TracePage(): JSX.Element {
         "items[].status ~ 同 TraceStep.status ~ \"done\" ~ 省略时按已完成处理",
         "streaming ~ boolean ~ false ~ 末尾显示 \"正在生成下一步\" 占位行",
         "",
-      ].join("\n")} />
+      ].join(DOC.newline)} />
       <Callout title="与 Stepper 的区别">
         Stepper 是预先知道全部步骤的流程条; Trace 是 Agent 运行时逐步推进的轨迹, TraceLive 是"连有几步都还不知道"的那种.
       </Callout>

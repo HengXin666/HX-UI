@@ -38,6 +38,8 @@ export default defineConfig({
     // react-hook-form 同理: 库的 Form 与文档示例的 useForm 必须是同一份, 否则表单上下文取不到
     dedupe: ["react", "react-dom", "react-hook-form"],
   },
+  // 静态资源 (favicon / logo) 放在 src/public: docs/ 根下的非 Markdown 文件会被 HC-DOCS 当成文档树
+  publicDir: path.resolve(import.meta.dirname, "src/public"),
   server: { host: "127.0.0.1", port: 5600 },
   /**
    * 多入口: 蓝图是一个**真正独立的 HTML 页面**, 不是文档站的一个路由。

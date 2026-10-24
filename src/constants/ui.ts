@@ -28,6 +28,8 @@ export const ALIGN = {
 	end: "end",
 	/** 输入组前后缀位置. */
 	inlineEnd: "inline-end",
+	/** 文档预览框撑满宽度. */
+	stretch: "stretch",
 } as const;
 
 /** 单选 / 多选 (ToggleGroup, Accordion 等 radix 组件的 type). */
