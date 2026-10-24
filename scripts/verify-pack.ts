@@ -12,6 +12,8 @@ import { DOT, NODE_MODULES, UTF8 } from "./constants/quality.ts";
 
 const ROOT = process.cwd();
 const CSS_ENTRIES = ["styles.css", "tokens.css", "motion.css", "spin-variants.css", "native-select.css"];
+/** exports 里的通配符; 出现多次所以提成常量. */
+const WILDCARD = "*";
 const manifest = JSON.parse(readFileSync(join(ROOT, "package.json"), UTF8)) as {
   name: string;
   exports: Record<string, unknown>;
@@ -35,7 +37,7 @@ run(work, ["install", tarball, "react@19", "react-dom@19", "--ignore-scripts", "
 const specs = [
   manifest.name,
   ...Object.keys(manifest.exports)
-    .filter((key) => key !== DOT && !key.includes("*"))
+    .filter((key) => key !== DOT && !key.includes(WILDCARD))
     .map((key) => manifest.name + key.slice(1)),
 ];
 /**
@@ -43,8 +45,8 @@ const specs = [
  * `./src/*` 取 src/index.ts, 验证这条映射确实指到了打包进去的源码目录.
  */
 const wildcardSpecs = Object.keys(manifest.exports)
-  .filter((key) => key.includes("*"))
-  .map((key) => manifest.name + key.slice(1).replace("*", "index.ts"));
+  .filter((key) => key.includes(WILDCARD))
+  .map((key) => manifest.name + key.slice(1).replace(WILDCARD, "index.ts"));
 const allSpecs = [...specs, ...wildcardSpecs];
 
 /** 在临时工程里跑一段解析脚本: 只有真的装过包, import.meta.resolve 才有意义. */
