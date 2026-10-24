@@ -100,7 +100,7 @@ export const DOC_STREAMING_PROPS: { readonly markdown: DocPropRow[]; readonly te
 		{ name: "content", type: "string", desc: "已到达的 Markdown 原文, 不完整的语法按半成品渲染" },
 		{ name: "streaming", type: "boolean", default: "true", desc: "仍在生成, 为 true 时保留流式光标" },
 		{ name: "final", type: "boolean", desc: "流已结束, 与 streaming 同时给时以它为准" },
-		{ name: "customId", type: "string", desc: "每条消息一个解析器 id, 同页多个实例的代码块 DOM id 不撞车" },
+		{ name: "customId", type: "string", desc: "每条消息一个 id, 作为节点 key 的前缀" },
 		{ name: "isDark", type: "boolean", desc: "明暗主题, 缺省跟随根元素的 data-mode" },
 		{ name: "className", type: "string", desc: "追加到外层容器的类名" },
 	],

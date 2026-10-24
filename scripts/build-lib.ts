@@ -3,7 +3,7 @@
  *
  * Node 在 ESM 下不会补 "./x" 的 .js 后缀, tsc 的产物因此无法被 node 直接 import.
  * 这里在 tsc 之后统一改写相对说明符 (目录的补 /index.js), 再拷 CSS 与许可证.
- * 决策与取舍见 .agents/notes/implemented/architecture/2026-10-22-release-tarball-packaging.md
+ * 决策与取舍见 release-tarball-packaging 决策记录 (锚点在 rewrite 上方).
  */
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";

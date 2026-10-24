@@ -166,10 +166,10 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
 }
 
 /**
- * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows")。
+ * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows").
  *
  * 用 getBezierPath 拿 React Flow 自己算的路径  不自己算, 否则缩放/平移
- * 时端点会漂。
+ * 时端点会漂.
  */
 export function BpExecEdge({
   sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected,
