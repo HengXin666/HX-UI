@@ -7,7 +7,7 @@ import { CONSOLE_STEP, LOG_ID, LOG_LEVEL, TEMPLATE_PAGE } from "../../constants/
 const STEPS = [
   { id: "pull", title: "拉取镜像", description: "60.2 MB" },
   { id: "build", title: "构建配置", description: "2 个服务" },
-  { id: "up", title: "启动容器", description: CONSOLE_STEP.running },
+  { id: "up", title: "启动容器", description: CONSOLE_STEP.running, status: "error" as const },
   { id: "check", title: "健康检查" },
 ];
 

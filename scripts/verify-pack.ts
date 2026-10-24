@@ -34,16 +34,43 @@ run(work, ["install", tarball, "react@19", "react-dom@19", "--ignore-scripts", "
 
 const specs = [
   manifest.name,
-  ...Object.keys(manifest.exports).filter((key) => key !== DOT).map((key) => manifest.name + key.slice(1)),
+  ...Object.keys(manifest.exports)
+    .filter((key) => key !== DOT && !key.includes("*"))
+    .map((key) => manifest.name + key.slice(1)),
 ];
+/**
+ * 通配导出没法整条解析, 用 tarball 里真实存在的样本代替:
+ * `./src/*` 取 src/index.ts, 验证这条映射确实指到了打包进去的源码目录.
+ */
+const wildcardSpecs = Object.keys(manifest.exports)
+  .filter((key) => key.includes("*"))
+  .map((key) => manifest.name + key.slice(1).replace("*", "index.ts"));
+const allSpecs = [...specs, ...wildcardSpecs];
 
 /** 在临时工程里跑一段解析脚本: 只有真的装过包, import.meta.resolve 才有意义. */
-const PROBE = "const specs = JSON.parse(process.argv[1]);\nlet bad = 0;\nfor (const spec of specs) {\n  try { process.stdout.write(spec + ' -> ' + import.meta.resolve(spec) + '\\n'); }\n  catch (error) { bad += 1; process.stdout.write('FAIL ' + spec + ' ' + error.code + '\\n'); }\n}\ntry { await import(specs[0]); } catch (error) { bad += 1; process.stdout.write('FAIL root-import ' + error.code + '\\n'); }\nprocess.exit(bad === 0 ? 0 : 1);";
+const PROBE = [
+  "import { existsSync } from 'node:fs';",
+  "import { fileURLToPath } from 'node:url';",
+  "const specs = JSON.parse(process.argv[1]);",
+  "let bad = 0;",
+  "for (const spec of specs) {",
+  "  try {",
+  "    const url = import.meta.resolve(spec);",
+  // import.meta.resolve 只看 exports 映射, 不保证文件真在包里, 所以再查一次磁盘.
+  "    if (!existsSync(fileURLToPath(url))) { bad += 1; process.stdout.write('FAIL ' + spec + ' missing-file\\n'); continue; }",
+  // CSS 与 ./src/* 样本只校验文件落地: 前者是样式, 后者是 TS 源码 (node_modules 里不能类型剥离), 都不 import.
+  "    if (!spec.endsWith('.css') && !spec.includes('/src/')) await import(url);",
+  "    process.stdout.write(spec + ' -> ' + url + '\\n');",
+  "  } catch (error) { bad += 1; process.stdout.write('FAIL ' + spec + ' ' + (error.code ?? error.message) + '\\n'); }",
+  "}",
+  "try { await import(specs[0]); } catch (error) { bad += 1; process.stdout.write('FAIL root-import ' + error.code + '\\n'); }",
+  "process.exit(bad === 0 ? 0 : 1);",
+].join("\n");
 
 let report = "";
 let failed = false;
 try {
-  report = execFileSync(process.execPath, ["--input-type=module", "-e", PROBE, JSON.stringify(specs)], {
+  report = execFileSync(process.execPath, ["--input-type=module", "-e", PROBE, JSON.stringify(allSpecs)], {
     cwd: work,
     encoding: UTF8,
   });
@@ -69,4 +96,4 @@ if (failures.length > 0 || failed) {
   process.exit(1);
 }
 console.log(report.trim());
-console.log("verify-pack: 通过 (包根 + " + (specs.length - 1) + " 个子入口 + " + CSS_ENTRIES.length + " 个 CSS 全部可解析)");
+console.log("verify-pack: 通过 (包根 + " + (allSpecs.length - 1) + " 个子入口 + " + CSS_ENTRIES.length + " 个 CSS 全部可解析)");

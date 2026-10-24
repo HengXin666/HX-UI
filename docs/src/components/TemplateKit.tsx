@@ -48,7 +48,7 @@ export function TemplateFrame({
 }): JSX.Element {
   return (
     <div
-      className="overflow-hidden rounded-xl border border-border/60 bg-background"
+      className="overflow-y-hidden overflow-x-auto rounded-xl border border-border/60 bg-background"
       style={{ height }}
     >
       {children}

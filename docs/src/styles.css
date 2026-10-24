@@ -14,10 +14,10 @@
 /* 扫库源码: 它的类名不在这个工程里, 不显式声明 Tailwind 就不会生成 */
 @source "../../src/**/*.{ts,tsx}";
 @source "./**/*.{ts,tsx}";
-/* 流式 Markdown 的代码块由 stream-diffs 渲染, 它的类名在依赖包里, 不显式扫就全部失效
-   (表现是代码块只剩标题栏, 正文零高度). */
-@source "../node_modules/stream-diffs/dist/**/*.mjs";
-@source "../node_modules/markstream-react/dist/**/*.js";
+/* 流式 Markdown 的节点类名在依赖包里 (仓库根安装, 不在 docs/node_modules), 不显式扫就全部失效
+   (表现是代码块只剩标题栏, 正文零高度). 路径相对本文件, 所以要先回 docs 再回仓库根. */
+@source "../../node_modules/stream-diffs/dist/**/*.mjs";
+@source "../../node_modules/markstream-react/dist/**/*.js";
 
 /* 图标名在数据字符串里时 Tailwind 扫不到, 必须显式登记  少了它图标是空位且不报错。 */
 @source inline("icon-[solar--settings-linear]");

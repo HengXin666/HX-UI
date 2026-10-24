@@ -6,7 +6,7 @@
  * 决策与取舍见 release-tarball-packaging 决策记录 (锚点在 rewrite 上方).
  */
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { LICENSE_FILE, SRC_DIR } from "./constants/pack.ts";
 import { NODE_MODULES, STDIO_INHERIT, UTF8 } from "./constants/quality.ts";
@@ -69,6 +69,8 @@ function rewrite(): number {
   return changed;
 }
 
+/** 复用旧 dist 会把已删除或已改名的模块继续打进 tarball, 所以每次构建前先清空输出目录. */
+rmSync(DIST, { recursive: true, force: true });
 execFileSync(process.execPath, [join(ROOT, NODE_MODULES, "typescript", "bin", "tsc"), "-p", "tsconfig.build.json"], {
   stdio: STDIO_INHERIT,
 });

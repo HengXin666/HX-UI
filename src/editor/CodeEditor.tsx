@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type JSX } from "react";
-import Editor, { loader, type OnMount } from "@monaco-editor/react";
+import Editor, { loader } from "@monaco-editor/react";
 import { cn } from "../primitives/utils";
 import { CODE_THEME_ID, defineTheme, type Monaco } from "./monaco-theme";
 import { CODE_EDITOR_DEFAULTS, CODE_EDITOR_FILL, CODE_EDITOR_OPTIONS } from "../constants/editor";
@@ -56,15 +56,16 @@ interface MonacoEnvironmentShape {
  * worker-loader), 库自己 new URL 一个裸包名在构建期解析不了. 没有 worker 时 monaco
  * 退回主线程计算, 编辑与着色都正常, 只有大文件的语言服务慢一点.
  */
-function installEnvironment(createWorker?: (label: string) => Worker): void {
-  if (!createWorker) {
+function installEnvironment(readFactory: () => ((label: string) => Worker) | undefined): void {
+  if (!readFactory()) {
     return;
   }
   const globalObject = self as unknown as { MonacoEnvironment?: MonacoEnvironmentShape };
   if (globalObject.MonacoEnvironment?.getWorker) {
     return;
   }
-  globalObject.MonacoEnvironment = { getWorker: (_moduleId: string, label: string) => createWorker(label) };
+  /** 每次 getWorker 调用时才读工厂, 所以调用方后续新增或替换 createWorker 都能生效. */
+  globalObject.MonacoEnvironment = { getWorker: (_moduleId: string, label: string) => readFactory()!(label) };
 }
 
 /**
@@ -84,6 +85,11 @@ export function CodeEditor({
 }: CodeEditorProps): JSX.Element {
   const [ready, setReady] = useState(false);
   const monacoRef = useRef<Monaco | null>(null);
+  /** 记住最后一次非空的 worker 工厂: getWorker 在调用时读它, 换工厂不需要重新装环境. */
+  const workerFactory = useRef(createWorker);
+  if (createWorker) {
+    workerFactory.current = createWorker;
+  }
 
   useEffect(() => {
     let alive = true;
@@ -92,7 +98,7 @@ export function CodeEditor({
         return;
       }
       monacoRef.current = monaco;
-      installEnvironment(createWorker);
+      installEnvironment(() => workerFactory.current);
       loader.config({ monaco });
       setReady(true);
     });
@@ -101,9 +107,6 @@ export function CodeEditor({
     };
   }, []);
 
-  const onMount: OnMount = (editor) => {
-    editor.updateOptions({ readOnly, readOnlyMessage: { value: "只读示例" } });
-  };
 
   return (
     <div
@@ -119,9 +122,10 @@ export function CodeEditor({
           {...(path ? { path } : {})}
           theme={CODE_THEME_ID}
           beforeMount={(monaco) => defineTheme(monaco as Monaco)}
-          onMount={onMount}
           onChange={(next) => onChange?.(next ?? "")}
           options={{
+            readOnly: readOnly || !onChange,
+            readOnlyMessage: { value: "只读示例" },
             minimap: { enabled: minimap },
             lineNumbers: lineNumbers ? "on" : "off",
             fontSize: 12.5,
