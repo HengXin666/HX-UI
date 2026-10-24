@@ -186,9 +186,9 @@ export interface TraceLiveItem {
  * ## 两种用法怎么选
  *
  * - **预先规划**: 步骤在开始时已知 (例如"拉镜像 -> 构建 -> 启动 -> 健康检查"),
- *   用 Trace + TraceStep 直接列出来, 当前步给 running.
+ * 用 Trace + TraceStep 直接列出来, 当前步给 running.
  * - **实时生成**: 步骤由 Agent 运行时决定 (调用一次工具才知道下一步是什么),
- *   用 TraceLive 把已到达的步骤喂进来, 每来一条就多一行.
+ * 用 TraceLive 把已到达的步骤喂进来, 每来一条就多一行.
  *
  * ## 它与规划态的差别不只是数据源
  *

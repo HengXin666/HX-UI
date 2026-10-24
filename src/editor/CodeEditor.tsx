@@ -17,11 +17,11 @@ import { CODE_THEME_ID, defineTheme, type Monaco } from "./monaco-theme";
  * ## 三条实现上的硬约束
  *
  * 1. **不走 CDN**。@monaco-editor/react 默认从 jsdelivr 拉 monaco, 离线环境与
- *    内网部署都会失败; 这里用 loader.config 指到本地包, 由使用方的打包器处理。
+ * 内网部署都会失败; 这里用 loader.config 指到本地包, 由使用方的打包器处理。
  * 2. **懒加载**。monaco 体积大, 不能进首屏。组件挂载后才动态 import, 编辑区
- *    先渲染一个等高骨架。
+ * 先渲染一个等高骨架。
  * 3. **主题从令牌读**。颜色只在 tokens.css 的 --code-odp-* 里, 这里读出来注册,
- *    不在组件里抄色板 (那也是门禁 PROJECT-UI-HEX 的要求)。
+ * 不在组件里抄色板 (那也是门禁 PROJECT-UI-HEX 的要求)。
  *
  * worker 由使用方的打包器提供: Vite 下用 new URL(...) 建立 editor.worker,
  * webpack 下用 worker-loader。拿不到时 monaco 会退化成主线程计算, 编辑仍可用。
