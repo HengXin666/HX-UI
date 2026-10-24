@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type JSX, type ReactNode } from "react";
 import { codeToHtml } from "shiki";
+import { UI_NUMBERS } from "../constants/ui";
 import { cn } from "../primitives/utils";
 
 /**
@@ -86,13 +87,13 @@ function putCache(key: string, html: string): void {
  * 这比让一次超大粘贴把界面卡住要好。
  */
 function withinBudget(code: string, lang: string): boolean {
-  if (code.length > 30000 || lang.length > 128) return false;
+  if (code.length > UI_NUMBERS.codeMaxLength || lang.length > 128) return false;
   let lineLength = 0;
   let lines = 1;
   for (const ch of code) {
     if (ch === "\n") { lineLength = 0; lines++; }
     else lineLength++;
-    if (lineLength > 2000 || lines > 1000) return false;
+    if (lineLength > UI_NUMBERS.codeMaxLineLength || lines > UI_NUMBERS.codeMaxLines) return false;
   }
   return true;
 }

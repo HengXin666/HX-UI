@@ -192,6 +192,10 @@ export const UI_NUMBERS = {
 	/** 侧栏骨架条宽度在 min 到 min + spread 百分比之间随机. */
 	skeletonMin: 50,
 	skeletonSpread: 40,
+	/** 代码高亮的规模上限: 超过就不跑 shiki, 直接退回纯文本. */
+	codeMaxLength: 30000,
+	codeMaxLineLength: 2000,
+	codeMaxLines: 1000,
 } as const;
 
 /** 问卷切题动画的三个 motion variant 名. */
