@@ -2,22 +2,23 @@
  * 发布产物自检: 打包 -> 装进临时目录 -> 逐个 exports 入口解析.
  *
  * 缺扩展名, exports 指向未打包目录这类问题在 tsc 与门禁里都是绿的, 只有真装一遍才暴露.
- * 决策与取舍见 .agents/notes/implemented/architecture/2026-10-22-release-tarball-packaging.md
+ * 决策与取舍见 release-tarball-packaging 决策记录 (锚点在 scripts/build-lib.ts).
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { DOT, NODE_MODULES, UTF8 } from "./constants/quality.ts";
 
 const ROOT = process.cwd();
 const CSS_ENTRIES = ["styles.css", "tokens.css", "motion.css", "spin-variants.css", "native-select.css"];
-const manifest = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
+const manifest = JSON.parse(readFileSync(join(ROOT, "package.json"), UTF8)) as {
   name: string;
   exports: Record<string, unknown>;
 };
 
 function run(cwd: string, args: string[]): string {
-  return execFileSync("npm", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  return execFileSync("npm", args, { cwd, encoding: UTF8, stdio: ["ignore", "pipe", "pipe"] });
 }
 
 /** --ignore-scripts: 否则 prepare 会在 pack 时构建一遍, 它的日志会污染 --json 输出. */
@@ -33,7 +34,7 @@ run(work, ["install", tarball, "react@19", "react-dom@19", "--ignore-scripts", "
 
 const specs = [
   manifest.name,
-  ...Object.keys(manifest.exports).filter((key) => key !== ".").map((key) => manifest.name + key.slice(1)),
+  ...Object.keys(manifest.exports).filter((key) => key !== DOT).map((key) => manifest.name + key.slice(1)),
 ];
 
 /** 在临时工程里跑一段解析脚本: 只有真的装过包, import.meta.resolve 才有意义. */
@@ -44,7 +45,7 @@ let failed = false;
 try {
   report = execFileSync(process.execPath, ["--input-type=module", "-e", PROBE, JSON.stringify(specs)], {
     cwd: work,
-    encoding: "utf8",
+    encoding: UTF8,
   });
 } catch (error) {
   const failure = error as { stdout?: string; stderr?: string };
@@ -53,7 +54,7 @@ try {
 }
 
 const failures = report.split("\n").filter((line) => line.startsWith("FAIL ") || /Error/.test(line));
-const installed = join(work, "node_modules", manifest.name);
+const installed = join(work, NODE_MODULES, manifest.name);
 for (const css of CSS_ENTRIES) {
   if (!existsSync(join(installed, "dist", css))) {
     failures.push("缺少 CSS 入口: dist/" + css);

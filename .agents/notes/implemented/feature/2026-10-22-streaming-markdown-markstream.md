@@ -9,6 +9,7 @@ Decision-ID: streaming-markdown-markstream
 - `src/agent/streaming-markdown.tsx`
 - `src/chat/trace.tsx`
 - `docs/src/pages/agent/StreamingTextPage.tsx`
+- `docs/src/pages/parity/trace.tsx`
 
 ## Problem
 
@@ -18,6 +19,10 @@ AI 回复是逐 token 到达的, 内容里混着未闭合的代码块, 表格与
 
 - 新增 StreamingMarkdown, 内部用 markstream-react (markstream-vue 同仓的 React 渲染器): 它按增量 AST 渲染, 半截的围栏代码块与未闭合表格在流式中途也能正确显示。CSS 由使用方显式 import markstream-react/index.css, 组件不自动注入。
 - 配色不出另一套: 组件用 SKIN 一组父级任意变体把 markstream 的链接, 表格边框, 引用线, 行内代码拉回本库的语义 token; 明暗跟随根元素的 data-mode, 也允许调用方显式传 isDark。
+- 代码块不走 markstream 默认的 stream-diffs 容器 (可选 peer 缺失时只画标题栏, 正文空白), 而是用 setCustomComponents 在本组件专属作用域里把 code_block 节点换成本库 CodeBlock。整篇仍由 markstream 解析, 列表项与引用里的代码块保留原 AST 的嵌套关系, 不再按物理行切段。围栏 info string 只取第一个语言 token (`ts title="a.ts"` 按 ts 高亮)。
+- 未闭合的围栏期间, 交给 CodeBlock 的代码按固定间隔节流, 闭合后立即放行; 避免每个 token 跑一次完整 shiki。
+- streaming 的契约是保留光标: markstream 的光标只跟随文本节点, 内容为空或以代码块结束时, 组件自己在末尾补一个 1px 光标。
+- TraceLive 的最后一步在 pending -> running 时也要自动展开: TraceStep 在状态转为进行中或失败时, 只要 defaultOpen 不是显式 false 就展开。
 - StreamingText 保留原样 (纯文本逐字追加), 因为它仍是"拼接日志式输出"的正确工具, 两者并存而不是替换。
 - Trace 增加三步动画: 步骤按 stagger 逐条进场, 连接竖线按序号生长, 状态切换 (pending -> running -> done/error) 时图标缩放进场; 全部用已有关键帧与 Tailwind 类实现, 尊重 prefers-reduced-motion (motion-reduce 关闭)。
 

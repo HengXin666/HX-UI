@@ -7,7 +7,7 @@ Decision-ID: src-constants
 ## Code
 
 - `src/constants/index.ts`
-- `src/index.ts`
+- `src/public-constants.ts`
 
 ## Problem
 

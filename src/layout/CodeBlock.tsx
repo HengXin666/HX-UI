@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type JSX, type ReactNode } from "react";
 import { codeToHtml } from "shiki";
 import { cn } from "../primitives/utils";
+import { UI_NUMBERS } from "../constants";
 
 /**
  * 代码块  VS Code 同款语法引擎 (shiki), 主题固定为 One Dark Pro。
@@ -92,7 +93,7 @@ function withinBudget(code: string, lang: string): boolean {
   for (const ch of code) {
     if (ch === "\n") { lineLength = 0; lines++; }
     else lineLength++;
-    if (lineLength > 2000 || lines > 1000) return false;
+    if (lineLength > 2000 || lines > UI_NUMBERS.codeMaxLines) return false;
   }
   return true;
 }
@@ -154,13 +155,11 @@ export function CodeBlock({
     () => (eligible ? JSON.stringify([CODE_THEME, language, code]) : ""),
     [eligible, language, code],
   );
-
   const [html, setHtml] = useState<string | null>(() => HTML_CACHE.get(cacheKey) ?? null);
   const [failed, setFailed] = useState(false);
-  const cancelled = useRef(false);
-
   useEffect(() => {
-    cancelled.current = false;
+    /** 每次 effect 独立的取消标记: 共享 ref 会被下一次 effect 复位, 旧请求晚到时就盖掉新内容. */
+    let cancelled = false;
     if (!eligible) { setHtml(null); return; }
 
     const cached = HTML_CACHE.get(cacheKey);
@@ -169,15 +168,15 @@ export function CodeBlock({
     setHtml(null);
     void codeToHtml(code, { lang: language, theme: CODE_THEME })
       .then((result) => {
-        if (cancelled.current) return;
+        if (cancelled) return;
         putCache(cacheKey, result);
         setHtml(result);
       })
       .catch(() => {
-        if (!cancelled.current) setFailed(true);
+        if (!cancelled) setFailed(true);
       });
 
-    return () => { cancelled.current = true; };
+    return () => { cancelled = true; };
   }, [cacheKey, code, language, eligible]);
 
   const lineCount = useMemo(() => code.replace(/\n$/, "").split("\n").length, [code]);

@@ -1,0 +1,502 @@
+From 4332caf9c3a0d8686fadfd63e5037eb812dbe253 Mon Sep 17 00:00:00 2001
+From: hark <hark@local>
+Date: Sat, 24 Oct 2026 07:21:52 +0000
+Subject: [PATCH] =?UTF-8?q?fix(review):=20=E6=B5=81=E5=BC=8F=20Markdown=20?=
+ =?UTF-8?q?=E4=BB=A3=E7=A0=81=E5=9D=97=E7=95=99=E5=9C=A8=20AST=20=E5=86=85?=
+ =?UTF-8?q?/=E8=AF=AD=E8=A8=80=20token/=E8=8A=82=E6=B5=81=E9=AB=98?=
+ =?UTF-8?q?=E4=BA=AE/=E7=8B=AC=E7=AB=8B=E5=8F=96=E6=B6=88=E6=A0=87?=
+ =?UTF-8?q?=E8=AE=B0/=E5=B0=BE=E9=83=A8=E5=85=89=E6=A0=87,=20TraceLive=20?=
+ =?UTF-8?q?=E6=9C=AB=E6=AD=A5=E8=87=AA=E5=8A=A8=E5=B1=95=E5=BC=80=20(P2,?=
+ =?UTF-8?q?=20hark=20j-20261024-011)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ .../2026-10-15-constant-library.md            |   2 +-
+ .../2026-09-28-ui-codeblock-one-dark-pro.md   |   2 +
+ ...026-10-22-streaming-markdown-markstream.md |   5 +
+ scripts/build-lib.ts                          |   2 +-
+ scripts/verify-pack.ts                        |   2 +-
+ src/agent/streaming-markdown.tsx              | 185 ++++++++++--------
+ src/blueprint/rf-node.tsx                     |   4 +-
+ src/chat/trace.tsx                            |   4 +-
+ src/constants/docs.ts                         |   2 +-
+ src/constants/markdown.ts                     |  11 +-
+ src/constants/ui.ts                           |   2 +
+ src/layout/CodeBlock.tsx                      |  17 +-
+ 12 files changed, 129 insertions(+), 109 deletions(-)
+
+diff --git a/.agents/notes/implemented/architecture/2026-10-15-constant-library.md b/.agents/notes/implemented/architecture/2026-10-15-constant-library.md
+index d52fc78..fd7bef0 100644
+--- a/.agents/notes/implemented/architecture/2026-10-15-constant-library.md
++++ b/.agents/notes/implemented/architecture/2026-10-15-constant-library.md
+@@ -7,7 +7,7 @@ Decision-ID: src-constants
+ ## Code
+ 
+ - `src/constants/index.ts`
+-- `src/index.ts`
++- `src/public-constants.ts`
+ 
+ ## Problem
+ 
+diff --git a/.agents/notes/implemented/feature/2026-09-28-ui-codeblock-one-dark-pro.md b/.agents/notes/implemented/feature/2026-09-28-ui-codeblock-one-dark-pro.md
+index abdff42..06533ea 100644
+--- a/.agents/notes/implemented/feature/2026-09-28-ui-codeblock-one-dark-pro.md
++++ b/.agents/notes/implemented/feature/2026-09-28-ui-codeblock-one-dark-pro.md
+@@ -100,3 +100,5 @@ Decision-ID: ui-codeblock-one-dark-pro
+   想换变体不能只改 `CODE_THEME`，darker 与默认之间有 22 个 UI 键的差异。
+ - 核实结论与实测数据写在 `CodeBlock.tsx` 的注释里，紧挨着会被误改的那两个常量 
+   这是它们唯一被引用的位置。
++- 异步高亮的取消标记放在每次 effect 的闭包里, 不用组件级共享 ref: 代码连续变化 (流式写入) 时
++  多个 codeToHtml 会并发, 共享 ref 会被下一次 effect 复位, 旧请求晚到就会盖掉新内容.
+diff --git a/.agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md b/.agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
+index e277a59..7231b23 100644
+--- a/.agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
++++ b/.agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
+@@ -9,6 +9,7 @@ Decision-ID: streaming-markdown-markstream
+ - `src/agent/streaming-markdown.tsx`
+ - `src/chat/trace.tsx`
+ - `docs/src/pages/agent/StreamingTextPage.tsx`
++- `docs/src/pages/parity/trace.tsx`
+ 
+ ## Problem
+ 
+@@ -18,6 +19,10 @@ AI 回复是逐 token 到达的, 内容里混着未闭合的代码块, 表格与
+ 
+ - 新增 StreamingMarkdown, 内部用 markstream-react (markstream-vue 同仓的 React 渲染器): 它按增量 AST 渲染, 半截的围栏代码块与未闭合表格在流式中途也能正确显示。CSS 由使用方显式 import markstream-react/index.css, 组件不自动注入。
+ - 配色不出另一套: 组件用 SKIN 一组父级任意变体把 markstream 的链接, 表格边框, 引用线, 行内代码拉回本库的语义 token; 明暗跟随根元素的 data-mode, 也允许调用方显式传 isDark。
++- 代码块不走 markstream 默认的 stream-diffs 容器 (可选 peer 缺失时只画标题栏, 正文空白), 而是用 setCustomComponents 在本组件专属作用域里把 code_block 节点换成本库 CodeBlock。整篇仍由 markstream 解析, 列表项与引用里的代码块保留原 AST 的嵌套关系, 不再按物理行切段。围栏 info string 只取第一个语言 token (`ts title="a.ts"` 按 ts 高亮)。
++- 未闭合的围栏期间, 交给 CodeBlock 的代码按固定间隔节流, 闭合后立即放行; 避免每个 token 跑一次完整 shiki。
++- streaming 的契约是保留光标: markstream 的光标只跟随文本节点, 内容为空或以代码块结束时, 组件自己在末尾补一个 1px 光标。
++- TraceLive 的最后一步在 pending -> running 时也要自动展开: TraceStep 在状态转为进行中或失败时, 只要 defaultOpen 不是显式 false 就展开。
+ - StreamingText 保留原样 (纯文本逐字追加), 因为它仍是"拼接日志式输出"的正确工具, 两者并存而不是替换。
+ - Trace 增加三步动画: 步骤按 stagger 逐条进场, 连接竖线按序号生长, 状态切换 (pending -> running -> done/error) 时图标缩放进场; 全部用已有关键帧与 Tailwind 类实现, 尊重 prefers-reduced-motion (motion-reduce 关闭)。
+ 
+diff --git a/scripts/build-lib.ts b/scripts/build-lib.ts
+index f3f94c6..686b496 100644
+--- a/scripts/build-lib.ts
++++ b/scripts/build-lib.ts
+@@ -3,7 +3,7 @@
+  *
+  * Node 在 ESM 下不会补 "./x" 的 .js 后缀, tsc 的产物因此无法被 node 直接 import.
+  * 这里在 tsc 之后统一改写相对说明符 (目录的补 /index.js), 再拷 CSS 与许可证.
+- * 决策与取舍见 .agents/notes/implemented/architecture/2026-10-22-release-tarball-packaging.md
++ * 决策与取舍见 release-tarball-packaging 决策记录 (锚点在 rewrite 上方).
+  */
+ import { execFileSync } from "node:child_process";
+ import { cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+diff --git a/scripts/verify-pack.ts b/scripts/verify-pack.ts
+index f1983c0..9d8303d 100644
+--- a/scripts/verify-pack.ts
++++ b/scripts/verify-pack.ts
+@@ -2,7 +2,7 @@
+  * 发布产物自检: 打包 -> 装进临时目录 -> 逐个 exports 入口解析.
+  *
+  * 缺扩展名, exports 指向未打包目录这类问题在 tsc 与门禁里都是绿的, 只有真装一遍才暴露.
+- * 决策与取舍见 .agents/notes/implemented/architecture/2026-10-22-release-tarball-packaging.md
++ * 决策与取舍见 release-tarball-packaging 决策记录 (锚点在 scripts/build-lib.ts).
+  */
+ import { execFileSync } from "node:child_process";
+ import { existsSync, mkdtempSync, readFileSync } from "node:fs";
+diff --git a/src/agent/streaming-markdown.tsx b/src/agent/streaming-markdown.tsx
+index 0dd5ecd..484872a 100644
+--- a/src/agent/streaming-markdown.tsx
++++ b/src/agent/streaming-markdown.tsx
+@@ -1,16 +1,19 @@
+ "use client";
+ 
+-import { useEffect, useMemo, useState, type JSX } from "react";
+-import MarkdownRender from "markstream-react";
++import { useEffect, useMemo, useRef, useState, type JSX } from "react";
++import MarkdownRender, { setCustomComponents, type CustomComponentMap } from "markstream-react";
+ import { CodeBlock } from "../layout/CodeBlock";
+ import { cn } from "../primitives/utils";
+-import { SPACE } from "../constants";
++import { ARIA, SPACE } from "../constants";
+ import {
+-  MD_NEWLINE, MODE_ATTRIBUTE, MODE_LIGHT, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED,
++  LIVE_HIGHLIGHT_MS, MD_NEWLINE, MODE_ATTRIBUTE, MODE_LIGHT, STREAMING_ATTR, TYPEOF_UNDEFINED,
+ } from "../constants/markdown";
+ 
+-/** 围栏标记. 三个反引号单独一行即是开/闭. */
+-const FENCE = "```";
++/** 围栏行: 可缩进 (列表项内), 反引号或波浪线至少三个. */
++const FENCE_LINE = /^\s*(`{3,}|~{3,})/;
++
++/** 本组件注册代码块渲染器的 markstream 作用域; 模块加载时注册一次, 渲染期不再写全局表. */
++const RENDER_SCOPE = "hx-streaming-markdown";
+ 
+ /**
+  * 把 markstream 自带的配色与线条拉回本库的语义 token.
+@@ -67,65 +70,84 @@ function useIsDark(override?: boolean): boolean {
+   return override ?? dark;
+ }
+ 
+-/** 一段内容: 普通 Markdown, 或者一个围栏代码块. */
+-interface Segment {
+-  readonly kind: "markdown" | "code";
+-  readonly text: string;
+-  readonly lang?: string;
+-  /** 流式期间最后一段代码块可能还没闭合. */
+-  readonly open?: boolean;
++/** markstream 交给代码块渲染器的节点 (stream-markdown-parser 的 CodeBlockNode 子集). */
++interface FenceNode {
++  readonly code: string;
++  readonly language?: string;
++  /** 围栏还没闭合: 流式中途仍在写入. */
++  readonly loading?: boolean;
++}
++
++/** info string 只取第一个语言 token: `ts title="a.ts"` 与 `ts{1,3}` 都按 ts 高亮. */
++function fenceLang(info: string | undefined): string | undefined {
++  return info?.trim().match(/^[^\s{:]+/)?.[0];
+ }
+ 
+ /**
+- * 按围栏把 Markdown 切成段落.
+- *
+- * 为什么要自己切: markstream 的代码块默认交给 stream-diffs 的 <diffs-container>,
+- * 那个 web component 在可选 peer 缺失或初始化失败时只画标题栏, 正文空白且不报错;
+- * 而它的公开 props 里没有"把代码块换成自定义组件"的入口 (renderNode 只在内部类型上).
+- * 把围栏切出来自己渲染, 代码块就能稳定用本库的 CodeBlock (shiki + One Dark Pro).
++ * 未闭合期间把代码节流后再交给 CodeBlock: 每个 token 都跑一次完整 shiki 会让长回复卡顿.
++ * 定时器从上一次放行算起, 所以持续写入时也按固定间隔刷新, 而不是一直等到停顿.
++ * 闭合后立即放行最终代码.
++ */
++function useLiveCode(code: string, live: boolean): string {
++  const [shown, setShown] = useState(code);
++  const flushedAt = useRef(0);
++  useEffect(() => {
++    if (!live) {
++      return undefined;
++    }
++    const wait = Math.max(0, flushedAt.current + LIVE_HIGHLIGHT_MS - Date.now());
++    const timer = setTimeout(() => {
++      flushedAt.current = Date.now();
++      setShown(code);
++    }, wait);
++    return () => clearTimeout(timer);
++  }, [code, live]);
++  return live ? shown : code;
++}
++
++/**
++ * 代码块渲染器, 挂在 markstream 自己的 AST 上.
+  *
+- * 未闭合的围栏按"仍在写入的代码块"处理: 流式中途也能看到正确的代码底色.
++ * 为什么不用它默认的代码块: 默认交给 stream-diffs 的 <diffs-container>, 那个 web component
++ * 在可选 peer 缺失或初始化失败时只画标题栏, 正文空白且不报错. 用 setCustomComponents 按节点
++ * 类型替换, 代码块仍留在原来的容器里 (列表项, 引用), 嵌套关系与 markstream 解析结果一致.
+  */
+-function splitSegments(markdown: string): Segment[] {
+-  const lines = markdown.split(MD_NEWLINE);
+-  const out: Segment[] = [];
+-  let buffer: string[] = [];
+-  let code: string[] | null = null;
+-  let lang = "";
++function FenceBlock({ node }: { readonly node: FenceNode }): JSX.Element {
++  const code = useLiveCode(node.code.replace(/\n$/, ""), Boolean(node.loading));
++  const lang = fenceLang(node.language);
++  return <CodeBlock className="my-3" code={code} {...(lang ? { lang } : {})} showLineNumbers />;
++}
+ 
+-  const flushMarkdown = (): void => {
+-    const text = buffer.join(MD_NEWLINE);
+-    if (text.trim()) {
+-      out.push({ kind: SEGMENT_KIND.markdown, text });
+-    }
+-    buffer = [];
+-  };
++/** 图表类语言也走 CodeBlock, 与之前"所有围栏都是代码块"的行为一致. */
++setCustomComponents(RENDER_SCOPE, {
++  code_block: FenceBlock,
++  mermaid: FenceBlock,
++  infographic: FenceBlock,
++  d2: FenceBlock,
++  d2lang: FenceBlock,
++} as CustomComponentMap);
+ 
+-  for (const line of lines) {
+-    if (code === null) {
+-      if (line.trimStart().startsWith(FENCE)) {
+-        flushMarkdown();
+-        lang = line.trim().slice(FENCE.length).trim();
+-        code = [];
+-      } else {
+-        buffer.push(line);
++/**
++ * 内容是否以代码块结束 (含未闭合的围栏). markstream 的光标只跟随文本节点,
++ * 结尾是代码块时它找不到落点, 由组件自己在末尾补一个光标.
++ */
++function endsWithFence(markdown: string): boolean {
++  let fence: string | null = null;
++  let lastIsFence = false;
++  for (const line of markdown.split(MD_NEWLINE)) {
++    const marker = FENCE_LINE.exec(line)?.[1];
++    if (fence === null) {
++      if (marker) {
++        fence = marker;
++        lastIsFence = true;
++      } else if (line.trim()) {
++        lastIsFence = false;
+       }
+-      continue;
+-    }
+-    if (line.trim() === FENCE) {
+-      out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang });
+-      code = null;
+-      lang = "";
+-      continue;
++    } else if (marker && marker[0] === fence[0] && marker.length >= fence.length && !line.trim().slice(marker.length).trim()) {
++      fence = null;
+     }
+-    code.push(line);
+-  }
+-
+-  if (code !== null) {
+-    out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang, open: true });
+   }
+-  flushMarkdown();
+-  return out;
++  return fence !== null || lastIsFence;
+ }
+ 
+ /**
+@@ -139,7 +161,7 @@ export interface StreamingMarkdownProps {
+   /** 流已结束. 与 streaming 同时给时以 final 为准, 便于直接接 SSE 的结束事件. */
+   readonly final?: boolean;
+   readonly className?: string;
+-  /** 每条消息一个解析器 id, 让同一页里多个实例的代码块 DOM id 不撞车. */
++  /** 每条消息一个 id, 作为节点 key 的前缀. 代码块由本库渲染, 不再需要它区分 DOM id. */
+   readonly customId?: string;
+   /** 明暗主题. 缺省跟随根元素的 data-mode, 也可以由调用方显式指定. */
+   readonly isDark?: boolean;
+@@ -151,10 +173,11 @@ export interface StreamingMarkdownProps {
+  * 样式不由本组件注入, 使用方 (或文档站) 必须引入一次 markstream-react/index.css,
+  * 库的样式入口 src/styles.css 已经带上它, 引了 @hx/ui/styles.css 就不用再引.
+  *
+- * 代码块由本库的 CodeBlock 渲染 (见 splitSegments 的说明), 其余节点交给 markstream:
++ * 整篇交给 markstream 解析, 只有代码块节点换成本库的 CodeBlock (见 FenceBlock 的说明):
+  * 未闭合的标题, 列表, 表格与引用在流式中途都能按半成品渲染.
+  * fade 关闭: 逐节点淡入会和调用方自己的逐字追加叠成两层节奏, 看起来像抖动;
+- * 光标由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪.
++ * 光标平时由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪;
++ * 结尾没有文本可跟随时由组件自己补一个.
+  */
+ export function StreamingMarkdown({
+   content,
+@@ -166,7 +189,8 @@ export function StreamingMarkdown({
+ }: StreamingMarkdownProps): JSX.Element {
+   const done = final ?? !streaming;
+   const dark = useIsDark(isDark);
+-  const segments = useMemo(() => splitSegments(content), [content]);
++  /** 还没有首个字符, 或以代码块结束: markstream 的光标没有文本落点, 改由这里补在末尾. */
++  const ownCursor = useMemo(() => !done && (!content.trim() || endsWithFence(content)), [content, done]);
+ 
+   return (
+     <div
+@@ -174,32 +198,23 @@ export function StreamingMarkdown({
+       data-streaming={done ? STREAMING_ATTR.done : STREAMING_ATTR.live}
+       className={cn("min-w-0 text-[13.5px] leading-relaxed text-foreground", SKIN, className)}
+     >
+-      {segments.map((segment, index) => {
+-        const key = `${index}-${segment.kind}`;
+-        if (segment.kind === SEGMENT_KIND.code) {
+-          return (
+-            <CodeBlock
+-              key={key}
+-              className="my-3"
+-              code={segment.text}
+-              {...(segment.lang ? { lang: segment.lang } : {})}
+-              showLineNumbers
+-            />
+-          );
+-        }
+-        return (
+-          <MarkdownRender
+-            key={key}
+-            content={segment.text}
+-            final={done}
+-            fade={false}
+-            typewriter={!done && index === segments.length - 1}
+-            smoothStreaming={false}
+-            isDark={dark}
+-            {...(customId ? { customId } : {})}
+-          />
+-        );
+-      })}
++      <MarkdownRender
++        content={content}
++        final={done}
++        fade={false}
++        typewriter={!done && !ownCursor}
++        smoothStreaming={false}
++        isDark={dark}
++        customId={RENDER_SCOPE}
++        {...(customId ? { indexKey: customId } : {})}
++      />
++      {ownCursor ? (
++        <span
++          aria-hidden={ARIA.true}
++          data-slot="streaming-markdown-cursor"
++          className="inline-block h-[1em] w-px animate-pulse bg-foreground/70 align-baseline motion-reduce:animate-none"
++        />
++      ) : null}
+     </div>
+   );
+ }
+diff --git a/src/blueprint/rf-node.tsx b/src/blueprint/rf-node.tsx
+index cd4ce3b..3272447 100644
+--- a/src/blueprint/rf-node.tsx
++++ b/src/blueprint/rf-node.tsx
+@@ -166,10 +166,10 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
+ }
+ 
+ /**
+- * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows")。
++ * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows").
+  *
+  * 用 getBezierPath 拿 React Flow 自己算的路径  不自己算, 否则缩放/平移
+- * 时端点会漂。
++ * 时端点会漂.
+  */
+ export function BpExecEdge({
+   sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected,
+diff --git a/src/chat/trace.tsx b/src/chat/trace.tsx
+index 928b038..66d10cb 100644
+--- a/src/chat/trace.tsx
++++ b/src/chat/trace.tsx
+@@ -85,13 +85,13 @@ function TraceStep({
+ 	const hasDetail = React.Children.toArray(children).length > 0;
+ 	const active = status === TASK_STATUS.running || status === TASK_STATUS.error;
+ 	const [open, setOpen] = React.useState(defaultOpen ?? active);
+-	/** 未显式给 defaultOpen 时, 状态转为进行中或失败的那一刻自动展开; 之后用户可自行收起. */
++	/** 状态转为进行中或失败的那一刻自动展开 (显式 defaultOpen={false} 除外); 之后用户可自行收起. */
+ 	const [prevStatus, setPrevStatus] = React.useState(status);
+ 	if (prevStatus !== status) {
+ 		setPrevStatus(status);
+ 		if (collapseWhenDone && status === TASK_STATUS.done) {
+ 			setOpen(false);
+-		} else if (defaultOpen === undefined && active) {
++		} else if (defaultOpen !== false && active) {
+ 			setOpen(true);
+ 		}
+ 	}
+diff --git a/src/constants/docs.ts b/src/constants/docs.ts
+index 243c2a1..b670ca2 100644
+--- a/src/constants/docs.ts
++++ b/src/constants/docs.ts
+@@ -100,7 +100,7 @@ export const DOC_STREAMING_PROPS: { readonly markdown: DocPropRow[]; readonly te
+ 		{ name: "content", type: "string", desc: "已到达的 Markdown 原文, 不完整的语法按半成品渲染" },
+ 		{ name: "streaming", type: "boolean", default: "true", desc: "仍在生成, 为 true 时保留流式光标" },
+ 		{ name: "final", type: "boolean", desc: "流已结束, 与 streaming 同时给时以它为准" },
+-		{ name: "customId", type: "string", desc: "每条消息一个解析器 id, 同页多个实例的代码块 DOM id 不撞车" },
++		{ name: "customId", type: "string", desc: "每条消息一个 id, 作为节点 key 的前缀" },
+ 		{ name: "isDark", type: "boolean", desc: "明暗主题, 缺省跟随根元素的 data-mode" },
+ 		{ name: "className", type: "string", desc: "追加到外层容器的类名" },
+ 	],
+diff --git a/src/constants/markdown.ts b/src/constants/markdown.ts
+index 796495a..00548eb 100644
+--- a/src/constants/markdown.ts
++++ b/src/constants/markdown.ts
+@@ -9,20 +9,17 @@
+ export const MODE_ATTRIBUTE = "data-mode";
+ export const MODE_LIGHT = "light";
+ 
+-/** 切段与拼段用的行分隔. */
++/** 按行扫描围栏用的行分隔. */
+ export const MD_NEWLINE = "\n";
+ 
+ /** typeof 判断宿主全局 (document / MutationObserver) 是否存在时的比较值; SSR 下它们未声明, 只能用 typeof 探测. */
+ export const TYPEOF_UNDEFINED = "undefined";
+ 
+-/** 段落种类: 普通 Markdown 或围栏代码块. */
+-export const SEGMENT_KIND = {
+-  markdown: "markdown",
+-  code: "code",
+-} as const;
+-
+ /** data-streaming 属性的两个取值. */
+ export const STREAMING_ATTR = {
+   done: "false",
+   live: "true",
+ } as const;
++
++/** 未闭合围栏期间, 交给 shiki 的代码最多每这么多毫秒更新一次. */
++export const LIVE_HIGHLIGHT_MS = 300;
+diff --git a/src/constants/ui.ts b/src/constants/ui.ts
+index afe300c..8eedd25 100644
+--- a/src/constants/ui.ts
++++ b/src/constants/ui.ts
+@@ -192,6 +192,8 @@ export const UI_NUMBERS = {
+ 	/** 侧栏骨架条宽度在 min 到 min + spread 百分比之间随机. */
+ 	skeletonMin: 50,
+ 	skeletonSpread: 40,
++	/** 代码块超过这么多行就不跑 shiki, 退回纯文本. */
++	codeMaxLines: 1000,
+ } as const;
+ 
+ /** 问卷切题动画的三个 motion variant 名. */
+diff --git a/src/layout/CodeBlock.tsx b/src/layout/CodeBlock.tsx
+index 82fd4d1..810b4a0 100644
+--- a/src/layout/CodeBlock.tsx
++++ b/src/layout/CodeBlock.tsx
+@@ -1,8 +1,9 @@
+ "use client";
+ 
+-import { useEffect, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
++import { useEffect, useMemo, useState, type JSX, type ReactNode } from "react";
+ import { codeToHtml } from "shiki";
+ import { cn } from "../primitives/utils";
++import { UI_NUMBERS } from "../constants";
+ 
+ /**
+  * 代码块  VS Code 同款语法引擎 (shiki), 主题固定为 One Dark Pro。
+@@ -92,7 +93,7 @@ function withinBudget(code: string, lang: string): boolean {
+   for (const ch of code) {
+     if (ch === "\n") { lineLength = 0; lines++; }
+     else lineLength++;
+-    if (lineLength > 2000 || lines > 1000) return false;
++    if (lineLength > 2000 || lines > UI_NUMBERS.codeMaxLines) return false;
+   }
+   return true;
+ }
+@@ -154,13 +155,11 @@ export function CodeBlock({
+     () => (eligible ? JSON.stringify([CODE_THEME, language, code]) : ""),
+     [eligible, language, code],
+   );
+-
+   const [html, setHtml] = useState<string | null>(() => HTML_CACHE.get(cacheKey) ?? null);
+   const [failed, setFailed] = useState(false);
+-  const cancelled = useRef(false);
+-
+   useEffect(() => {
+-    cancelled.current = false;
++    /** 每次 effect 独立的取消标记: 共享 ref 会被下一次 effect 复位, 旧请求晚到时就盖掉新内容. */
++    let cancelled = false;
+     if (!eligible) { setHtml(null); return; }
+ 
+     const cached = HTML_CACHE.get(cacheKey);
+@@ -169,15 +168,15 @@ export function CodeBlock({
+     setHtml(null);
+     void codeToHtml(code, { lang: language, theme: CODE_THEME })
+       .then((result) => {
+-        if (cancelled.current) return;
++        if (cancelled) return;
+         putCache(cacheKey, result);
+         setHtml(result);
+       })
+       .catch(() => {
+-        if (!cancelled.current) setFailed(true);
++        if (!cancelled) setFailed(true);
+       });
+ 
+-    return () => { cancelled.current = true; };
++    return () => { cancelled = true; };
+   }, [cacheKey, code, language, eligible]);
+ 
+   const lineCount = useMemo(() => code.replace(/\n$/, "").split("\n").length, [code]);
+-- 
+2.47.3
+
