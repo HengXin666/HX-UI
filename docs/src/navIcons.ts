@@ -1,3 +1,6 @@
+/** 设置类页面 (示例与模板) 共用的导航图标. */
+const SETTINGS_ICON = "icon-[solar--settings-linear]";
+
 /**
  * 每个文档页的导航图标。
  *
@@ -9,7 +12,7 @@ export const NAV_ICONS: Record<string, string> = {
   install: "icon-[solar--download-minimalistic-linear]",
   tokens: "icon-[solar--palette-linear]",
   // 示例
-  "settings-demo": "icon-[solar--settings-linear]",
+  "settings-demo": SETTINGS_ICON,
   // 基础件
   button: "icon-[solar--cursor-square-linear]",
   input: "icon-[solar--text-field-linear]",
@@ -101,7 +104,7 @@ export const NAV_ICONS: Record<string, string> = {
   "code-editor": "icon-[solar--code-2-linear]",
   // 模板组: 每个整页模板一个图标, 与页面内容对应
   "templates-chat": "icon-[solar--chat-round-code-linear]",
-  "templates-settings": "icon-[solar--settings-linear]",
+  "templates-settings": SETTINGS_ICON,
   "templates-dashboard": "icon-[solar--chart-2-linear]",
   "templates-console": "icon-[solar--server-square-linear]",
 };

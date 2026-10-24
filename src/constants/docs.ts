@@ -41,6 +41,13 @@ export const DOC = {
 	/** 规格清单每行的列数: 属性表 (名字 ~ 类型 ~ 默认 ~ 说明), 导航清单 (id ~ 标签 ~ 说明). */
 	propsColumns: 4,
 	navColumns: 3,
+	/** 文档站外壳 (品牌标, 顶栏外链, 模板页) 的类名与属性值, 经 docs/src/constants/shell.ts 按用途取用. */
+	shrink: "shrink-0",
+	grow: "min-w-0 flex-1",
+	stackSnug: "flex flex-col gap-1.5",
+	space: " ",
+	noReferrer: "noreferrer",
+	focusableOff: "false",
 } as const;
 
 /** 文档站示例里的演示数据 (页码, 进度, 长度限制等). */
@@ -68,4 +75,8 @@ export const DOC_SAMPLE = {
 	skeletonLines: 3,
 	wideRatio: 16 / 9,
 	invoiceLabelSpan: 3,
+	/** 品牌标的边长: 默认, 侧栏标题, 顶栏. */
+	logoSize: 24,
+	logoSidebar: 22,
+	logoTopBar: 16,
 } as const;
