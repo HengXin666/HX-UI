@@ -1,0 +1,257 @@
+diff --git a/docs/src/components/TopBar.tsx b/docs/src/components/TopBar.tsx
+index 0ee3a80..8d7d3e0 100644
+--- a/docs/src/components/TopBar.tsx
++++ b/docs/src/components/TopBar.tsx
+@@ -8,13 +8,13 @@ import { REPO_LABEL, REPO_URL, TEMPLATE_ENTRY } from "./site";
+  *
+  * 为什么要有它: 侧栏里全是组件页, 而"源码在哪"和"整页模板在哪"不属于任何一组.
+  * 塞进侧栏底部会被 96 个条目淹没, 塞进正文会被当成某一页的内容. 顶栏是唯一
+- * 位置固定、又不必和导航分组争地方的地方.
++ * 位置固定, 又不必和导航分组争地方的地方.
+  *
+  * 样式只用语义 token: 底色透明, 靠一条 1px 的 border 与正文分层, 于是亮暗两套
+  * 皮肤都不用改这里. 链接用 Button 的 ghost/outline 变体而不是手写 <a> 样式,
+  * 点按反馈与焦点环跟着库走.
+  *
+- * 接线: App.tsx 的 <main> 内、内容滚动区之上放一行
++ * 接线: App.tsx 的 <main> 内, 内容滚动区之上放一行
+  * `<TopBar onGo={go} />`, go 是已有的切页函数.
+  */
+ /**
+diff --git a/docs/src/pages/CodeEditorPage.tsx b/docs/src/pages/CodeEditorPage.tsx
+index de6418d..7e8f3bb 100644
+--- a/docs/src/pages/CodeEditorPage.tsx
++++ b/docs/src/pages/CodeEditorPage.tsx
+@@ -8,7 +8,7 @@ import { Props } from "../components/DocSpec";
+ 
+ /**
+  * monaco 的 worker 工厂: 语言服务与编辑器内核是两个 worker, 用错会报
+- * "Missing requestHandler or method: doValidation"。按 label 分发。
++ * "Missing requestHandler or method: doValidation". 按 label 分发.
+  */
+ function createWorker(label: string): Worker {
+   if (label === "typescript" || label === "javascript") {
+diff --git a/docs/src/pages/templates/chat.tsx b/docs/src/pages/templates/chat.tsx
+index c64f015..ac0837f 100644
+--- a/docs/src/pages/templates/chat.tsx
++++ b/docs/src/pages/templates/chat.tsx
+@@ -68,7 +68,7 @@ export const layout = "two-column" as const;
+  * AI 对话工作台模板.
+  *
+  * 这一页不是组件文档, 是一份**能直接搬走的整页骨架**: 左侧会话流 (含流式回答与
+- * 工具轨迹) 加底部输入框。组件页讲单个 API, 模板页讲它们怎么拼在一起。
++ * 工具轨迹) 加底部输入框. 组件页讲单个 API, 模板页讲它们怎么拼在一起.
+  */
+ export function TemplateChatPage(): JSX.Element {
+   const [draft, setDraft] = useState("");
+diff --git a/docs/src/pages/templates/index.ts b/docs/src/pages/templates/index.ts
+index b24fd85..4dc51da 100644
+--- a/docs/src/pages/templates/index.ts
++++ b/docs/src/pages/templates/index.ts
+@@ -8,8 +8,8 @@ import { TemplateConsolePage } from "./console";
+  * 现成实例页面模板, 按导航 id 查表.
+  *
+  * 模板页与组件页的区别只在**读者要什么**: 组件页回答"这个 props 怎么用",
+- * 模板页回答"整页怎么搭, 抄哪一段"。所以模板页固定给出三步套用说明,
+- * 再按真实窗口尺寸画框, 并提供一份可以直接粘进项目的代码。
++ * 模板页回答"整页怎么搭, 抄哪一段". 所以模板页固定给出三步套用说明,
++ * 再按真实窗口尺寸画框, 并提供一份可以直接粘进项目的代码.
+  */
+ export { TemplateChatPage, TemplateConsolePage, TemplateDashboardPage, TemplateSettingsPage };
+ 
+diff --git a/src/agent/streaming-markdown.tsx b/src/agent/streaming-markdown.tsx
+index a9d5c51..e43a118 100644
+--- a/src/agent/streaming-markdown.tsx
++++ b/src/agent/streaming-markdown.tsx
+@@ -83,7 +83,7 @@ interface Segment {
+  * 按围栏把 Markdown 切成段落.
+  *
+  * 为什么要自己切: markstream 的代码块默认交给 stream-diffs 的 <diffs-container>,
+- * 那个 web component 在可选 peer 缺失或初始化失败时只画标题栏、正文空白且不报错;
++ * 那个 web component 在可选 peer 缺失或初始化失败时只画标题栏, 正文空白且不报错;
+  * 而它的公开 props 里没有"把代码块换成自定义组件"的入口 (renderNode 只在内部类型上).
+  * 把围栏切出来自己渲染, 代码块就能稳定用本库的 CodeBlock (shiki + One Dark Pro).
+  *
+diff --git a/src/blueprint/BlueprintNode.tsx b/src/blueprint/BlueprintNode.tsx
+index 1fa258a..d514077 100644
+--- a/src/blueprint/BlueprintNode.tsx
++++ b/src/blueprint/BlueprintNode.tsx
+@@ -226,7 +226,7 @@ export function BlueprintNodeCard({
+       {/*
+         UE5 节点的底部有一条**略深于节点体**的横条  它不承载信息,
+         只是给节点一个"收尾", 让卡片看起来是压在画布上的一块实体,
+-        而不是一个开口的框。缺了它, 节点底部会显得散。
++        而不是一个开口的框. 缺了它, 节点底部会显得散.
+       */}
+       {!isCollapsed && (
+         <div
+diff --git a/src/blueprint/node-parts.tsx b/src/blueprint/node-parts.tsx
+index a18002c..59f9df6 100644
+--- a/src/blueprint/node-parts.tsx
++++ b/src/blueprint/node-parts.tsx
+@@ -66,7 +66,7 @@ export function pinOffset(size: number): number {
+  * 标题条中线上引脚的 top (相对卡片内边距盒)。
+  *
+  * geometry.portPos 把执行入口放在 node.y + HEADER_H / 2, 也就是离卡片**外边**
+- * 半个标题条; 绝对定位的参照是内边距盒, 少了一个边框宽, 这里补回来。
++ * 半个标题条; 绝对定位的参照是内边距盒, 少了一个边框宽, 这里补回来.
+  */
+ export function headerPinTop(size: number): number {
+   return HEADER_H / 2 - CARD_BORDER - size / 2;
+@@ -78,19 +78,19 @@ export function PortRow({
+   readonly dir: "in" | "out";
+   readonly port: Pick<PortDef, "id" | "label" | "type">;
+   /**
+-   * 引脚颜色类名 (bg-*)。
++   * 引脚颜色类名 (bg-*).
+    *
+    * 改成直接收颜色而不是收 registry: 节点组件拿不到 registry (它含函数,
+-   * 塞进 React Flow 的 data 会让节点 data 不可序列化且每帧换引用)。
+-   * 颜色在适配层预先算好带过来。
++   * 塞进 React Flow 的 data 会让节点 data 不可序列化且每帧换引用).
++   * 颜色在适配层预先算好带过来.
+    */
+   readonly color?: string;
+   readonly filled?: boolean;
+   readonly invalid?: boolean;
+   readonly portRef?: (portId: string, dir: "in" | "out", el: HTMLElement | null) => void;
+-  /** 拖线悬停在这个口上且合法。 */
++  /** 拖线悬停在这个口上且合法. */
+   readonly hot?: boolean;
+-  /** 行左/右边缘到卡片边界的距离, 默认等于卡片内边距。 */
++  /** 行左/右边缘到卡片边界的距离, 默认等于卡片内边距. */
+   readonly edgeInset?: number;
+ }): JSX.Element {
+   const isExec = port.type === EXEC;
+@@ -124,7 +124,7 @@ export function PortRow({
+   );
+ }
+ 
+-/** 节点内的一个可编辑字段。声明式: 照 ParamDef.kind 渲染对应控件。 */
++/** 节点内的一个可编辑字段. 声明式: 照 ParamDef.kind 渲染对应控件. */
+ export function ParamField({
+   def, value, onChange,
+ }: {
+@@ -134,14 +134,14 @@ export function ParamField({
+ }): JSX.Element {
+   return (
+     /**
+-     * 参数区**必须恢复文本选中**。
++     * 参数区**必须恢复文本选中**.
+      *
+-     * 画布为了拖节点时不选中文字, 整体设了 user-select: none。但这个输入框
++     * 画布为了拖节点时不选中文字, 整体设了 user-select: none. 但这个输入框
+      * 就在画布里面  继承下来之后, 用户没法用鼠标选/拖选里面的数值,
+-     * 改参数变成只能靠键盘。所以这里显式恢复。
++     * 改参数变成只能靠键盘. 所以这里显式恢复.
+      *
+      * 放在蓝图侧而不是改 primitives 的 Input: 那个组件全库共用,
+-     * 不该为画布这一个场景背上 select-text。
++     * 不该为画布这一个场景背上 select-text.
+      */
+     <div className="flex select-text items-center gap-2">
+       <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">{def.label ?? def.id}</span>
+diff --git a/src/blueprint/rf-node.tsx b/src/blueprint/rf-node.tsx
+index 7217b24..3d3af0d 100644
+--- a/src/blueprint/rf-node.tsx
++++ b/src/blueprint/rf-node.tsx
+@@ -180,7 +180,7 @@ export function BpExecEdge({
+   );
+ }
+ 
+-/** 数据连线: 细、按类型着色。 */
++/** 数据连线: 细, 按类型着色. */
+ export function BpDataEdge({
+   sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, selected,
+ }: EdgeProps): JSX.Element {
+@@ -194,12 +194,12 @@ export function BpDataEdge({
+ }
+ 
+ /**
+- * 执行线箭头的 marker 定义。
++ * 执行线箭头的 marker 定义.
+  *
+  * ⚠️ marker/defs/path 只能在 **<svg> 内部**  放到别处会被当成 HTML
+- * 未知标签, 箭头不生效。所以这里渲染一个 0 尺寸的 svg 专门装 defs。
++ * 未知标签, 箭头不生效. 所以这里渲染一个 0 尺寸的 svg 专门装 defs.
+  *
+- * 所以这里渲染一个自己的 <svg> (0 尺寸、绝对定位、不挡事), 只用来装 defs。
++ * 所以这里渲染一个自己的 <svg> (0 尺寸, 绝对定位, 不挡事), 只用来装 defs.
+  */
+ export function ExecArrowMarker(): JSX.Element {
+   return (
+diff --git a/src/editor/CodeEditor.tsx b/src/editor/CodeEditor.tsx
+index 014b411..8528e08 100644
+--- a/src/editor/CodeEditor.tsx
++++ b/src/editor/CodeEditor.tsx
+@@ -6,25 +6,25 @@ import { cn } from "../primitives/utils";
+ import { CODE_THEME_ID, defineTheme, type Monaco } from "./monaco-theme";
+ 
+ /**
+- * 代码编辑器  VS Code 的内核 (monaco) 加 One Dark Pro Darker 主题。
++ * 代码编辑器  VS Code 的内核 (monaco) 加 One Dark Pro Darker 主题.
+  *
+  * ## 为什么是 monaco 而不是 textarea 或 CodeMirror
+  *
+  * 需求是"和 VS Code 一样": 同一套语法引擎, 同一套快捷键 (多光标, 行移动, 查找替换),
+- * 同一套折叠。monaco 就是 VS Code 的那份内核, 用它等于直接复用编辑器本体;
+- * 换别的库只能做到"看起来像", 做不到"用起来一样"。
++ * 同一套折叠. monaco 就是 VS Code 的那份内核, 用它等于直接复用编辑器本体;
++ * 换别的库只能做到"看起来像", 做不到"用起来一样".
+  *
+  * ## 三条实现上的硬约束
+  *
+- * 1. **不走 CDN**。@monaco-editor/react 默认从 jsdelivr 拉 monaco, 离线环境与
+- * 内网部署都会失败; 这里用 loader.config 指到本地包, 由使用方的打包器处理。
+- * 2. **懒加载**。monaco 体积大, 不能进首屏。组件挂载后才动态 import, 编辑区
+- * 先渲染一个等高骨架。
+- * 3. **主题从令牌读**。颜色只在 tokens.css 的 --code-odp-* 里, 这里读出来注册,
+- * 不在组件里抄色板 (那也是门禁 PROJECT-UI-HEX 的要求)。
++ * 1. **不走 CDN**. @monaco-editor/react 默认从 jsdelivr 拉 monaco, 离线环境与
++ * 内网部署都会失败; 这里用 loader.config 指到本地包, 由使用方的打包器处理.
++ * 2. **懒加载**. monaco 体积大, 不能进首屏. 组件挂载后才动态 import, 编辑区
++ * 先渲染一个等高骨架.
++ * 3. **主题从令牌读**. 颜色只在 tokens.css 的 --code-odp-* 里, 这里读出来注册,
++ * 不在组件里抄色板 (那也是门禁 PROJECT-UI-HEX 的要求).
+  *
+  * worker 由使用方的打包器提供: Vite 下用 new URL(...) 建立 editor.worker,
+- * webpack 下用 worker-loader。拿不到时 monaco 会退化成主线程计算, 编辑仍可用。
++ * webpack 下用 worker-loader. 拿不到时 monaco 会退化成主线程计算, 编辑仍可用.
+  */
+ export interface CodeEditorProps {
+   /** 受控值. 不给 onChange 时按只读展示. */
+@@ -52,8 +52,8 @@ interface MonacoEnvironmentShape {
+  * 装 monaco 的 worker 钩子 (只在还没有别人装过时装).
+  *
+  * worker 必须由使用方提供: 它依赖具体打包器的语法 (Vite 的 ?worker, webpack 的
+- * worker-loader), 库自己 new URL 一个裸包名在构建期解析不了。没有 worker 时 monaco
+- * 退回主线程计算, 编辑与着色都正常, 只有大文件的语言服务慢一点。
++ * worker-loader), 库自己 new URL 一个裸包名在构建期解析不了. 没有 worker 时 monaco
++ * 退回主线程计算, 编辑与着色都正常, 只有大文件的语言服务慢一点.
+  */
+ function installEnvironment(createWorker?: (label: string) => Worker): void {
+   if (!createWorker) {
+diff --git a/src/editor/monaco-theme.ts b/src/editor/monaco-theme.ts
+index 9fe547c..41150ce 100644
+--- a/src/editor/monaco-theme.ts
++++ b/src/editor/monaco-theme.ts
+@@ -14,8 +14,8 @@ function token(style: CSSStyleDeclaration, name: string): string {
+  * 把 monaco 主题的取值**全部**指向 tokens.css 的令牌.
+  *
+  * 为什么不在组件里写死色板: 颜色只允许来自令牌层 (PROJECT-UI-HEX), 换成别的深色
+- * 变体时只改 CSS 一处。取不到值时宁可留空让 monaco 用默认主题, 也不在代码里兜一份
+- * 色板, 否则两处颜色迟早不一致。
++ * 变体时只改 CSS 一处. 取不到值时宁可留空让 monaco 用默认主题, 也不在代码里兜一份
++ * 色板, 否则两处颜色迟早不一致.
+  */
+ export function readPalette(): Record<string, string> {
+   const style = getComputedStyle(document.documentElement);
+@@ -40,7 +40,7 @@ export function readPalette(): Record<string, string> {
+ 
+ /**
+  * 注册主题. 幂等: monaco 允许重复注册同名主题, 后一次覆盖前一次,
+- * 所以每次编辑器挂载前都调一次是安全的, 也顺带支持运行期换肤。
++ * 所以每次编辑器挂载前都调一次是安全的, 也顺带支持运行期换肤.
+  */
+ export function defineTheme(monaco: typeof import("monaco-editor")): void {
+   const p = readPalette();

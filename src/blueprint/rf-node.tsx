@@ -180,7 +180,7 @@ export function BpExecEdge({
   );
 }
 
-/** 数据连线: 细、按类型着色。 */
+/** 数据连线: 细, 按类型着色. */
 export function BpDataEdge({
   sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, selected,
 }: EdgeProps): JSX.Element {
@@ -194,12 +194,12 @@ export function BpDataEdge({
 }
 
 /**
- * 执行线箭头的 marker 定义。
+ * 执行线箭头的 marker 定义.
  *
  * ⚠️ marker/defs/path 只能在 **<svg> 内部**  放到别处会被当成 HTML
- * 未知标签, 箭头不生效。所以这里渲染一个 0 尺寸的 svg 专门装 defs。
+ * 未知标签, 箭头不生效. 所以这里渲染一个 0 尺寸的 svg 专门装 defs.
  *
- * 所以这里渲染一个自己的 <svg> (0 尺寸、绝对定位、不挡事), 只用来装 defs。
+ * 所以这里渲染一个自己的 <svg> (0 尺寸, 绝对定位, 不挡事), 只用来装 defs.
  */
 export function ExecArrowMarker(): JSX.Element {
   return (
