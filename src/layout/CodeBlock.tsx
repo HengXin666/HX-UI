@@ -167,6 +167,9 @@ export function CodeBlock({
     if (cached !== undefined) { setHtml(cached); return; }
 
     setHtml(null);
+    // 每次重新高亮都先清掉上一次的失败态: 流式期间语言名可能是半截的 "t",
+    // 那一次失败不能把后续正确的 "tsx" 一直按在纯文本上.
+    setFailed(false);
     void codeToHtml(code, { lang: language, theme: CODE_THEME })
       .then((result) => {
         if (cancelled) return;

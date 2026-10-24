@@ -2,15 +2,10 @@
 
 import { useEffect, useMemo, useState, type JSX } from "react";
 import MarkdownRender from "markstream-react";
-import { CodeBlock } from "../layout/CodeBlock";
 import { cn } from "../primitives/utils";
 import { SPACE } from "../constants";
-import {
-  MD_NEWLINE, MODE_ATTRIBUTE, MODE_LIGHT, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED,
-} from "../constants/markdown";
-
-/** 围栏标记. 三个反引号单独一行即是开/闭. */
-const FENCE = "```";
+import { MODE_ATTRIBUTE, MODE_LIGHT, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED } from "../constants/markdown";
+import { FenceBlock, needsTailCursor, splitSegments } from "./streaming-markdown-parts";
 
 /**
  * 把 markstream 自带的配色与线条拉回本库的语义 token.
@@ -67,67 +62,6 @@ function useIsDark(override?: boolean): boolean {
   return override ?? dark;
 }
 
-/** 一段内容: 普通 Markdown, 或者一个围栏代码块. */
-interface Segment {
-  readonly kind: "markdown" | "code";
-  readonly text: string;
-  readonly lang?: string;
-  /** 流式期间最后一段代码块可能还没闭合. */
-  readonly open?: boolean;
-}
-
-/**
- * 按围栏把 Markdown 切成段落.
- *
- * 为什么要自己切: markstream 的代码块默认交给 stream-diffs 的 <diffs-container>,
- * 那个 web component 在可选 peer 缺失或初始化失败时只画标题栏, 正文空白且不报错;
- * 而它的公开 props 里没有"把代码块换成自定义组件"的入口 (renderNode 只在内部类型上).
- * 把围栏切出来自己渲染, 代码块就能稳定用本库的 CodeBlock (shiki + One Dark Pro).
- *
- * 未闭合的围栏按"仍在写入的代码块"处理: 流式中途也能看到正确的代码底色.
- */
-function splitSegments(markdown: string): Segment[] {
-  const lines = markdown.split(MD_NEWLINE);
-  const out: Segment[] = [];
-  let buffer: string[] = [];
-  let code: string[] | null = null;
-  let lang = "";
-
-  const flushMarkdown = (): void => {
-    const text = buffer.join(MD_NEWLINE);
-    if (text.trim()) {
-      out.push({ kind: SEGMENT_KIND.markdown, text });
-    }
-    buffer = [];
-  };
-
-  for (const line of lines) {
-    if (code === null) {
-      if (line.trimStart().startsWith(FENCE)) {
-        flushMarkdown();
-        lang = line.trim().slice(FENCE.length).trim();
-        code = [];
-      } else {
-        buffer.push(line);
-      }
-      continue;
-    }
-    if (line.trim() === FENCE) {
-      out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang });
-      code = null;
-      lang = "";
-      continue;
-    }
-    code.push(line);
-  }
-
-  if (code !== null) {
-    out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang, open: true });
-  }
-  flushMarkdown();
-  return out;
-}
-
 /**
  * .agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
  */
@@ -151,10 +85,11 @@ export interface StreamingMarkdownProps {
  * 样式不由本组件注入, 使用方 (或文档站) 必须引入一次 markstream-react/index.css,
  * 库的样式入口 src/styles.css 已经带上它, 引了 @hx/ui/styles.css 就不用再引.
  *
- * 代码块由本库的 CodeBlock 渲染 (见 splitSegments 的说明), 其余节点交给 markstream:
- * 未闭合的标题, 列表, 表格与引用在流式中途都能按半成品渲染.
+ * 代码块由本库的 CodeBlock 渲染 (见 streaming-markdown-parts 的 splitSegments 说明),
+ * 其余节点交给 markstream: 未闭合的标题, 列表, 表格与引用在流式中途都能按半成品渲染.
  * fade 关闭: 逐节点淡入会和调用方自己的逐字追加叠成两层节奏, 看起来像抖动;
- * 光标由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪.
+ * 光标由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪;
+ * 内容为空或以代码块结束时 typewriter 没有文本可跟, 这里补一个自己的光标.
  */
 export function StreamingMarkdown({
   content,
@@ -167,6 +102,7 @@ export function StreamingMarkdown({
   const done = final ?? !streaming;
   const dark = useIsDark(isDark);
   const segments = useMemo(() => splitSegments(content), [content]);
+  const tailCursor = !done && needsTailCursor(content);
 
   return (
     <div
@@ -177,15 +113,7 @@ export function StreamingMarkdown({
       {segments.map((segment, index) => {
         const key = `${index}-${segment.kind}`;
         if (segment.kind === SEGMENT_KIND.code) {
-          return (
-            <CodeBlock
-              key={key}
-              className="my-3"
-              code={segment.text}
-              {...(segment.lang ? { lang: segment.lang } : {})}
-              showLineNumbers
-            />
-          );
+          return <FenceBlock key={key} code={segment.text} open={segment.open === true} {...(segment.lang ? { lang: segment.lang } : {})} />;
         }
         return (
           <MarkdownRender
@@ -200,6 +128,13 @@ export function StreamingMarkdown({
           />
         );
       })}
+      {tailCursor ? (
+        <span
+          data-slot="stream-cursor"
+          aria-hidden
+          className="ml-0.5 inline-block h-[1em] w-px animate-caret-blink bg-foreground/70 align-text-bottom motion-reduce:animate-none"
+        />
+      ) : null}
     </div>
   );
 }

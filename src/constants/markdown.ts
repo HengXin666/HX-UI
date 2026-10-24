@@ -21,6 +21,9 @@ export const SEGMENT_KIND = {
   code: "code",
 } as const;
 
+/** 流式代码块重跑高亮的间隔 (ms): 围栏未闭合时按这个节奏刷新, 避免每个 token 跑一次 shiki. */
+export const LIVE_HIGHLIGHT_MS = 300;
+
 /** data-streaming 属性的两个取值. */
 export const STREAMING_ATTR = {
   done: "false",
