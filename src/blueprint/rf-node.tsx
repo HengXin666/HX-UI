@@ -49,6 +49,13 @@ const PIN = PIN_SIZE;
  */
 const HANDLE_EDGE = -(BODY_PAD_X + CARD_BORDER);
 
+/**
+ * 标题栏执行 Handle 的水平落点: 它的定位参照是根节点 (relative) 的内边距盒,
+ * 没有体区 px-2 那段内边距, 只扣一个边框宽, 左边缘就压在卡片外边界上,
+ * 与视觉引脚 (pinOffset) 的圆心重合。复用 HANDLE_EDGE 会多扣 BODY_PAD_X, 偏 8px。
+ */
+const HEADER_HANDLE_EDGE = -CARD_BORDER;
+
 /** Handle 在行内纵向居中 (React Flow 取中心, 所以给出中心点)。 */
 function handleTop(size: number): number {
   return PORT_ROW / HALF_DIVISOR - size / HALF_DIVISOR;
@@ -85,7 +92,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
           type="target"
           id={handleId("exec-in", "in")}
           position={Position.Left}
-          style={{ top: headerPinTop(PIN.exec), left: HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
+          style={{ top: headerPinTop(PIN.exec), left: HEADER_HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
           className="!border-0 !bg-transparent !opacity-0"
         />
         {/* 视觉引脚与上面的 Handle 用同一组偏移, 两个盒子完全重合; 引脚脱离文档流,
