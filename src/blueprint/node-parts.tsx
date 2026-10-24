@@ -9,6 +9,8 @@ import type { BlueprintRegistry, ParamDef, PortDef } from "./types";
 import { EXEC } from "./types";
 import { HEADER_H, PORT_ROW } from "./geometry";
 import { PinShape } from "./PinShape";
+import { HALF_DIVISOR, SIDE } from "../constants";
+import { BP_BODY_PAD_X } from "../constants/blueprint";
 
 /**
  * 节点卡片的零件: 引脚行 + 参数字段。
@@ -52,24 +54,24 @@ export const CARD_BORDER = 1;
  * 边界上, 所以偏移量里必须先扣掉卡片内边距这一段。改卡片内边距时必须同步这里,
  * 否则线会整体偏若干像素 -- 与 --bp-pin-row 那类常量是同一类陷阱。
  */
-export const BODY_PAD_X = 8;
+export const BODY_PAD_X = BP_BODY_PAD_X;
 
 /**
  * 引脚圆心落在边界上时的水平偏移 (向内为负)。
  * .agents/notes/implemented/feature/2026-10-22-blueprint-pin-alignment.md
  */
 export function pinOffset(size: number): number {
-  return -(size / 2) - CARD_BORDER;
+  return -(size / HALF_DIVISOR) - CARD_BORDER;
 }
 
 /**
  * 标题条中线上引脚的 top (相对卡片内边距盒)。
  *
  * geometry.portPos 把执行入口放在 node.y + HEADER_H / 2, 也就是离卡片**外边**
- * 半个标题条; 绝对定位的参照是内边距盒, 少了一个边框宽, 这里补回来。
+ * 半个标题条; 绝对定位的参照是内边距盒, 少了一个边框宽, 这里补回来.
  */
 export function headerPinTop(size: number): number {
-  return HEADER_H / 2 - CARD_BORDER - size / 2;
+  return HEADER_H / HALF_DIVISOR - CARD_BORDER - size / HALF_DIVISOR;
 }
 
 export function PortRow({
@@ -78,19 +80,19 @@ export function PortRow({
   readonly dir: "in" | "out";
   readonly port: Pick<PortDef, "id" | "label" | "type">;
   /**
-   * 引脚颜色类名 (bg-*)。
+   * 引脚颜色类名 (bg-*).
    *
    * 改成直接收颜色而不是收 registry: 节点组件拿不到 registry (它含函数,
-   * 塞进 React Flow 的 data 会让节点 data 不可序列化且每帧换引用)。
-   * 颜色在适配层预先算好带过来。
+   * 塞进 React Flow 的 data 会让节点 data 不可序列化且每帧换引用).
+   * 颜色在适配层预先算好带过来.
    */
   readonly color?: string;
   readonly filled?: boolean;
   readonly invalid?: boolean;
   readonly portRef?: (portId: string, dir: "in" | "out", el: HTMLElement | null) => void;
-  /** 拖线悬停在这个口上且合法。 */
+  /** 拖线悬停在这个口上且合法. */
   readonly hot?: boolean;
-  /** 行左/右边缘到卡片边界的距离, 默认等于卡片内边距。 */
+  /** 行左/右边缘到卡片边界的距离, 默认等于卡片内边距. */
   readonly edgeInset?: number;
 }): JSX.Element {
   const isExec = port.type === EXEC;
@@ -106,7 +108,7 @@ export function PortRow({
         data-port={port.id}
         data-dir={dir}
         className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
-        style={{ [dir === "in" ? "left" : "right"]: offset - edgeInset } as CSSProperties}
+        style={{ [dir === "in" ? SIDE.left : SIDE.right]: offset - edgeInset } as CSSProperties}
       >
         {isExec ? (
           <PinShape kind="exec" filled invalid={invalid} color="text-bp-title-foreground" size={size} />
@@ -124,7 +126,7 @@ export function PortRow({
   );
 }
 
-/** 节点内的一个可编辑字段。声明式: 照 ParamDef.kind 渲染对应控件。 */
+/** 节点内的一个可编辑字段. 声明式: 照 ParamDef.kind 渲染对应控件. */
 export function ParamField({
   def, value, onChange,
 }: {
@@ -134,14 +136,14 @@ export function ParamField({
 }): JSX.Element {
   return (
     /**
-     * 参数区**必须恢复文本选中**。
+     * 参数区**必须恢复文本选中**.
      *
-     * 画布为了拖节点时不选中文字, 整体设了 user-select: none。但这个输入框
+     * 画布为了拖节点时不选中文字, 整体设了 user-select: none. 但这个输入框
      * 就在画布里面  继承下来之后, 用户没法用鼠标选/拖选里面的数值,
-     * 改参数变成只能靠键盘。所以这里显式恢复。
+     * 改参数变成只能靠键盘. 所以这里显式恢复.
      *
      * 放在蓝图侧而不是改 primitives 的 Input: 那个组件全库共用,
-     * 不该为画布这一个场景背上 select-text。
+     * 不该为画布这一个场景背上 select-text.
      */
     <div className="flex select-text items-center gap-2">
       <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">{def.label ?? def.id}</span>

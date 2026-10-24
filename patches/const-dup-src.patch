@@ -1,0 +1,605 @@
+diff --git a/scripts/build-lib.ts b/scripts/build-lib.ts
+index 43484a8..f3f94c6 100644
+--- a/scripts/build-lib.ts
++++ b/scripts/build-lib.ts
+@@ -8,12 +8,14 @@
+ import { execFileSync } from "node:child_process";
+ import { cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+ import { join, relative } from "node:path";
++import { LICENSE_FILE, SRC_DIR } from "./constants/pack.ts";
++import { NODE_MODULES, STDIO_INHERIT, UTF8 } from "./constants/quality.ts";
+ 
+ const ROOT = process.cwd();
+ const DIST = join(ROOT, "dist");
+-const SRC = join(ROOT, "src");
++const SRC = join(ROOT, SRC_DIR);
+ const CSS_FILES = ["tokens.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css"];
+-const EXTRA_FILES = ["LICENSE", "NOTICE"];
++const EXTRA_FILES = [LICENSE_FILE, "NOTICE"];
+ const SPECIFIER = /((?:from|import)\s*["'])(\.{1,2}\/[^"']+)(["'])/g;
+ 
+ /** 递归列出目录下的文件 (不跟随符号链接). */
+@@ -55,7 +57,7 @@ function rewrite(): number {
+     if (!/\.(?:js|d\.ts)$/.test(file)) {
+       continue;
+     }
+-    const before = readFileSync(file, "utf8");
++    const before = readFileSync(file, UTF8);
+     const after = before.replace(SPECIFIER, (_all: string, head: string, spec: string, tail: string) => {
+       return head + resolveSpecifier(spec, file) + tail;
+     });
+@@ -67,8 +69,8 @@ function rewrite(): number {
+   return changed;
+ }
+ 
+-execFileSync(process.execPath, [join(ROOT, "node_modules", "typescript", "bin", "tsc"), "-p", "tsconfig.build.json"], {
+-  stdio: "inherit",
++execFileSync(process.execPath, [join(ROOT, NODE_MODULES, "typescript", "bin", "tsc"), "-p", "tsconfig.build.json"], {
++  stdio: STDIO_INHERIT,
+ });
+ for (const name of CSS_FILES) {
+   cpSync(join(SRC, name), join(DIST, name));
+diff --git a/scripts/constants/pack.ts b/scripts/constants/pack.ts
+new file mode 100644
+index 0000000..0baa0f4
+--- /dev/null
++++ b/scripts/constants/pack.ts
+@@ -0,0 +1,10 @@
++/**
++ * 发布产物脚本 (build-lib.ts, verify-pack.ts) 专用的路径与文件名.
++ * 通用的编码, stdio 与包根导出键复用 quality.ts 里的 UTF8 / STDIO_INHERIT / DOT / NODE_MODULES.
++ */
++
++/** 源码目录: CSS 入口从这里拷进 dist. */
++export const SRC_DIR = "src";
++
++/** 随包分发的许可证文件. */
++export const LICENSE_FILE = "LICENSE";
+diff --git a/scripts/verify-pack.ts b/scripts/verify-pack.ts
+index ca50258..f1983c0 100644
+--- a/scripts/verify-pack.ts
++++ b/scripts/verify-pack.ts
+@@ -8,16 +8,17 @@ import { execFileSync } from "node:child_process";
+ import { existsSync, mkdtempSync, readFileSync } from "node:fs";
+ import { tmpdir } from "node:os";
+ import { join } from "node:path";
++import { DOT, NODE_MODULES, UTF8 } from "./constants/quality.ts";
+ 
+ const ROOT = process.cwd();
+ const CSS_ENTRIES = ["styles.css", "tokens.css", "motion.css", "spin-variants.css", "native-select.css"];
+-const manifest = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as {
++const manifest = JSON.parse(readFileSync(join(ROOT, "package.json"), UTF8)) as {
+   name: string;
+   exports: Record<string, unknown>;
+ };
+ 
+ function run(cwd: string, args: string[]): string {
+-  return execFileSync("npm", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
++  return execFileSync("npm", args, { cwd, encoding: UTF8, stdio: ["ignore", "pipe", "pipe"] });
+ }
+ 
+ /** --ignore-scripts: 否则 prepare 会在 pack 时构建一遍, 它的日志会污染 --json 输出. */
+@@ -33,7 +34,7 @@ run(work, ["install", tarball, "react@19", "react-dom@19", "--ignore-scripts", "
+ 
+ const specs = [
+   manifest.name,
+-  ...Object.keys(manifest.exports).filter((key) => key !== ".").map((key) => manifest.name + key.slice(1)),
++  ...Object.keys(manifest.exports).filter((key) => key !== DOT).map((key) => manifest.name + key.slice(1)),
+ ];
+ 
+ /** 在临时工程里跑一段解析脚本: 只有真的装过包, import.meta.resolve 才有意义. */
+@@ -44,7 +45,7 @@ let failed = false;
+ try {
+   report = execFileSync(process.execPath, ["--input-type=module", "-e", PROBE, JSON.stringify(specs)], {
+     cwd: work,
+-    encoding: "utf8",
++    encoding: UTF8,
+   });
+ } catch (error) {
+   const failure = error as { stdout?: string; stderr?: string };
+@@ -53,7 +54,7 @@ try {
+ }
+ 
+ const failures = report.split("\n").filter((line) => line.startsWith("FAIL ") || /Error/.test(line));
+-const installed = join(work, "node_modules", manifest.name);
++const installed = join(work, NODE_MODULES, manifest.name);
+ for (const css of CSS_ENTRIES) {
+   if (!existsSync(join(installed, "dist", css))) {
+     failures.push("缺少 CSS 入口: dist/" + css);
+diff --git a/src/agent/streaming-markdown.tsx b/src/agent/streaming-markdown.tsx
+index e43a118..0dd5ecd 100644
+--- a/src/agent/streaming-markdown.tsx
++++ b/src/agent/streaming-markdown.tsx
+@@ -4,13 +4,10 @@ import { useEffect, useMemo, useState, type JSX } from "react";
+ import MarkdownRender from "markstream-react";
+ import { CodeBlock } from "../layout/CodeBlock";
+ import { cn } from "../primitives/utils";
+-
+-/**
+- * 根元素上的主题属性与取值 (tokens.css 用 data-mode 区分明暗).
+- * 读不到时按暗色处理: 库的默认皮肤是暗色, 文档站首屏也是暗色.
+- */
+-const MODE_ATTRIBUTE = "data-mode";
+-const MODE_LIGHT = "light";
++import { SPACE } from "../constants";
++import {
++  MD_NEWLINE, MODE_ATTRIBUTE, MODE_LIGHT, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED,
++} from "../constants/markdown";
+ 
+ /** 围栏标记. 三个反引号单独一行即是开/闭. */
+ const FENCE = "```";
+@@ -44,10 +41,10 @@ const SKIN = [
+   "[&_th]:!bg-muted",
+   "[&_td]:!border-b",
+   "[&_td]:!border-border",
+-].join(" ");
++].join(SPACE);
+ 
+ function readDark(): boolean {
+-  if (typeof document === "undefined") {
++  if (typeof document === TYPEOF_UNDEFINED) {
+     return true;
+   }
+   return document.documentElement.getAttribute(MODE_ATTRIBUTE) !== MODE_LIGHT;
+@@ -60,7 +57,7 @@ function readDark(): boolean {
+ function useIsDark(override?: boolean): boolean {
+   const [dark, setDark] = useState(readDark);
+   useEffect(() => {
+-    if (override !== undefined || typeof MutationObserver === "undefined") {
++    if (override !== undefined || typeof MutationObserver === TYPEOF_UNDEFINED) {
+       return undefined;
+     }
+     const observer = new MutationObserver(() => setDark(readDark()));
+@@ -90,16 +87,16 @@ interface Segment {
+  * 未闭合的围栏按"仍在写入的代码块"处理: 流式中途也能看到正确的代码底色.
+  */
+ function splitSegments(markdown: string): Segment[] {
+-  const lines = markdown.split("\n");
++  const lines = markdown.split(MD_NEWLINE);
+   const out: Segment[] = [];
+   let buffer: string[] = [];
+   let code: string[] | null = null;
+   let lang = "";
+ 
+   const flushMarkdown = (): void => {
+-    const text = buffer.join("\n");
++    const text = buffer.join(MD_NEWLINE);
+     if (text.trim()) {
+-      out.push({ kind: "markdown", text });
++      out.push({ kind: SEGMENT_KIND.markdown, text });
+     }
+     buffer = [];
+   };
+@@ -116,7 +113,7 @@ function splitSegments(markdown: string): Segment[] {
+       continue;
+     }
+     if (line.trim() === FENCE) {
+-      out.push({ kind: "code", text: code.join("\n"), lang });
++      out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang });
+       code = null;
+       lang = "";
+       continue;
+@@ -125,7 +122,7 @@ function splitSegments(markdown: string): Segment[] {
+   }
+ 
+   if (code !== null) {
+-    out.push({ kind: "code", text: code.join("\n"), lang, open: true });
++    out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang, open: true });
+   }
+   flushMarkdown();
+   return out;
+@@ -174,12 +171,12 @@ export function StreamingMarkdown({
+   return (
+     <div
+       data-slot="streaming-markdown"
+-      data-streaming={done ? "false" : "true"}
++      data-streaming={done ? STREAMING_ATTR.done : STREAMING_ATTR.live}
+       className={cn("min-w-0 text-[13.5px] leading-relaxed text-foreground", SKIN, className)}
+     >
+       {segments.map((segment, index) => {
+         const key = `${index}-${segment.kind}`;
+-        if (segment.kind === "code") {
++        if (segment.kind === SEGMENT_KIND.code) {
+           return (
+             <CodeBlock
+               key={key}
+diff --git a/src/blueprint/BlueprintNode.tsx b/src/blueprint/BlueprintNode.tsx
+index d514077..1aa2756 100644
+--- a/src/blueprint/BlueprintNode.tsx
++++ b/src/blueprint/BlueprintNode.tsx
+@@ -10,6 +10,8 @@ import { EXEC } from "./types";
+ import { BODY_TOP, HEADER_H, NODE_WIDTH } from "./geometry";
+ import { nodeKindOf, titleStyle } from "./node-style";
+ import { PinShape } from "./PinShape";
++import { HALF_DIVISOR } from "../constants";
++import { BP_COLLAPSE_GLYPH, BP_PIN_SPACER_CLASS } from "../constants/blueprint";
+ 
+ /**
+  * 节点卡片  外观对齐 UE5。
+@@ -120,7 +122,7 @@ export function BlueprintNodeCard({
+           </span>
+         )}
+         {/* 引脚脱离文档流后, 标题要让出半个引脚的位置, 否则文字会压在楔形上 */}
+-        {def.execIn && <span aria-hidden className="shrink-0" style={{ width: PIN_SIZE.exec / 2 }} />}
++        {def.execIn && <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN_SIZE.exec / HALF_DIVISOR }} />}
+         {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
+         {renaming ? (
+           <NodeRenameInput
+@@ -156,7 +158,7 @@ export function BlueprintNodeCard({
+             className="shrink-0 rounded px-1 text-[11px] opacity-70 transition-opacity hover:opacity-100"
+             aria-label={isCollapsed ? "展开" : "折叠"}
+           >
+-            {isCollapsed ? "+" : "−"}
++            {isCollapsed ? BP_COLLAPSE_GLYPH.collapsed : BP_COLLAPSE_GLYPH.expanded}
+           </button>
+         )}
+       </div>
+diff --git a/src/blueprint/node-parts.tsx b/src/blueprint/node-parts.tsx
+index 59f9df6..52e7bc6 100644
+--- a/src/blueprint/node-parts.tsx
++++ b/src/blueprint/node-parts.tsx
+@@ -9,6 +9,8 @@ import type { BlueprintRegistry, ParamDef, PortDef } from "./types";
+ import { EXEC } from "./types";
+ import { HEADER_H, PORT_ROW } from "./geometry";
+ import { PinShape } from "./PinShape";
++import { HALF_DIVISOR, SIDE } from "../constants";
++import { BP_BODY_PAD_X } from "../constants/blueprint";
+ 
+ /**
+  * 节点卡片的零件: 引脚行 + 参数字段。
+@@ -52,14 +54,14 @@ export const CARD_BORDER = 1;
+  * 边界上, 所以偏移量里必须先扣掉卡片内边距这一段。改卡片内边距时必须同步这里,
+  * 否则线会整体偏若干像素 -- 与 --bp-pin-row 那类常量是同一类陷阱。
+  */
+-export const BODY_PAD_X = 8;
++export const BODY_PAD_X = BP_BODY_PAD_X;
+ 
+ /**
+  * 引脚圆心落在边界上时的水平偏移 (向内为负)。
+  * .agents/notes/implemented/feature/2026-10-22-blueprint-pin-alignment.md
+  */
+ export function pinOffset(size: number): number {
+-  return -(size / 2) - CARD_BORDER;
++  return -(size / HALF_DIVISOR) - CARD_BORDER;
+ }
+ 
+ /**
+@@ -69,7 +71,7 @@ export function pinOffset(size: number): number {
+  * 半个标题条; 绝对定位的参照是内边距盒, 少了一个边框宽, 这里补回来.
+  */
+ export function headerPinTop(size: number): number {
+-  return HEADER_H / 2 - CARD_BORDER - size / 2;
++  return HEADER_H / HALF_DIVISOR - CARD_BORDER - size / HALF_DIVISOR;
+ }
+ 
+ export function PortRow({
+@@ -106,7 +108,7 @@ export function PortRow({
+         data-port={port.id}
+         data-dir={dir}
+         className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
+-        style={{ [dir === "in" ? "left" : "right"]: offset - edgeInset } as CSSProperties}
++        style={{ [dir === "in" ? SIDE.left : SIDE.right]: offset - edgeInset } as CSSProperties}
+       >
+         {isExec ? (
+           <PinShape kind="exec" filled invalid={invalid} color="text-bp-title-foreground" size={size} />
+diff --git a/src/blueprint/rf-node.tsx b/src/blueprint/rf-node.tsx
+index 3d3af0d..f1326c5 100644
+--- a/src/blueprint/rf-node.tsx
++++ b/src/blueprint/rf-node.tsx
+@@ -11,6 +11,8 @@ import { NODE_KIND_TITLE } from "./types";
+ import type { RfNode } from "./rf-adapter";
+ import { handleId } from "./rf-adapter";
+ import { BODY_TOP, HEADER_H, PORT_ROW } from "./geometry";
++import { HALF_DIVISOR } from "../constants";
++import { BP_EDGE_FILL, BP_HANDLE_STYLE, BP_PIN_SPACER_CLASS } from "../constants/blueprint";
+ 
+ /**
+  * React Flow 的自定义节点 / 连线  **UE5 外观在这一层**, 不在别处。
+@@ -49,7 +51,7 @@ const HANDLE_EDGE = -(BODY_PAD_X + CARD_BORDER);
+ 
+ /** Handle 在行内纵向居中 (React Flow 取中心, 所以给出中心点)。 */
+ function handleTop(size: number): number {
+-  return PORT_ROW / 2 - size / 2;
++  return PORT_ROW / HALF_DIVISOR - size / HALF_DIVISOR;
+ }
+ 
+ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
+@@ -83,7 +85,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
+           type="target"
+           id={handleId("exec-in", "in")}
+           position={Position.Left}
+-          style={{ top: headerPinTop(PIN.exec), left: HANDLE_EDGE, width: PIN.exec, height: PIN.exec, transform: "none", zIndex: 2 }}
++          style={{ top: headerPinTop(PIN.exec), left: HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
+           className="!border-0 !bg-transparent !opacity-0"
+         />
+         {/* 视觉引脚与上面的 Handle 用同一组偏移, 两个盒子完全重合; 引脚脱离文档流,
+@@ -95,7 +97,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
+         >
+           <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN.exec} />
+         </span>
+-        <span aria-hidden className="shrink-0" style={{ width: PIN.exec / 2 }} />
++        <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN.exec / HALF_DIVISOR }} />
+         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
+       </div>
+ 
+@@ -109,7 +111,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
+                     type="target"
+                     id={handleId(p.id, "in")}
+                     position={Position.Left}
+-                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
++                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
+                     className="!border-0 !bg-transparent !opacity-0"
+                   />
+                   <PortRow
+@@ -129,7 +131,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
+                     type="source"
+                     id={handleId(p.id, "out")}
+                     position={Position.Right}
+-                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
++                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
+                     className="!border-0 !bg-transparent !opacity-0"
+                   />
+                   <PortRow dir="out" port={p} {...(p.color ? { color: p.color } : {})} filled />
+@@ -172,7 +174,7 @@ export function BpExecEdge({
+   return (
+     <path
+       d={path}
+-      fill="none"
++      fill={BP_EDGE_FILL}
+       strokeWidth={w}
+       className="stroke-foreground"
+       markerEnd="url(#bp-exec-arrow)"
+@@ -189,7 +191,7 @@ export function BpDataEdge({
+   });
+   const tint = (data as { tint?: string } | undefined)?.tint ?? "stroke-muted-foreground/70";
+   return (
+-    <path d={path} fill="none" strokeWidth={selected ? 2.2 : 1.4} className={tint} />
++    <path d={path} fill={BP_EDGE_FILL} strokeWidth={selected ? 2.2 : 1.4} className={tint} />
+   );
+ }
+ 
+diff --git a/src/chat/trace.tsx b/src/chat/trace.tsx
+index d0e9c5f..928b038 100644
+--- a/src/chat/trace.tsx
++++ b/src/chat/trace.tsx
+@@ -4,20 +4,17 @@ import * as React from "react";
+ import { Collapsible as CollapsiblePrimitive } from "radix-ui";
+ import { CheckIcon, ChevronRightIcon, CircleDashedIcon, Loader2Icon, XIcon } from "lucide-react";
+ import { cn } from "../primitives/utils";
+-import { ARIA, TASK_STATUS, UI_CLASSES } from "../constants";
++import { ARIA, TASK_STATUS, TONE, UI_CLASSES } from "../constants";
++import { TRACE_STAGGER_MAX_INDEX as STAGGER_MAX_INDEX, TRACE_STAGGER_STEP_MS as STAGGER_STEP_MS } from "../constants/chat";
+ 
+ /** 一步的状态: 等待, 进行中, 完成, 失败. */
+ type TraceStatus = "pending" | "running" | "done" | "error";
+ 
+-/** 相邻两步进场的时间差 (ms) 与最多叠加的步数: 更长的轨迹不再越拖越慢. */
+-const STAGGER_STEP_MS = 55;
+-const STAGGER_MAX_INDEX = 8;
+-
+ const STATUS_ICON: Record<TraceStatus, React.ReactNode> = {
+ 	pending: <CircleDashedIcon className={UI_CLASSES.muted} />,
+ 	running: <Loader2Icon className="animate-spin text-link motion-reduce:animate-none" />,
+-	done: <CheckIcon className="text-success-fg" />,
+-	error: <XIcon className="text-danger-fg" />,
++	done: <CheckIcon className={TONE.successFg} />,
++	error: <XIcon className={TONE.dangerFg} />,
+ };
+ 
+ /**
+diff --git a/src/constants/blueprint.ts b/src/constants/blueprint.ts
+new file mode 100644
+index 0000000..d9e3984
+--- /dev/null
++++ b/src/constants/blueprint.ts
+@@ -0,0 +1,24 @@
++/**
++ * 蓝图节点卡片 (BlueprintNode.tsx, node-parts.tsx, rf-node.tsx) 共用的取值.
++ */
++
++/** 卡片体的左右内边距 (px, 对应卡片上的 px-2), 说明见 node-parts.tsx 的 BODY_PAD_X. */
++export const BP_BODY_PAD_X = 8;
++
++/** 标题前给脱离文档流的执行引脚让位的占位元素类名. */
++export const BP_PIN_SPACER_CLASS = "shrink-0";
++
++/** 折叠按钮的字形: 折叠态显示加号, 展开态显示减号. */
++export const BP_COLLAPSE_GLYPH = {
++  collapsed: "+",
++  expanded: "−",
++} as const;
++
++/** React Flow Handle 的定位样式: 不做变换, 叠在引脚之上. */
++export const BP_HANDLE_STYLE = {
++  transform: "none",
++  zIndex: 2,
++} as const;
++
++/** 连线 path 不填充. */
++export const BP_EDGE_FILL = "none";
+diff --git a/src/constants/chat.ts b/src/constants/chat.ts
+new file mode 100644
+index 0000000..de74fc8
+--- /dev/null
++++ b/src/constants/chat.ts
+@@ -0,0 +1,7 @@
++/**
++ * 聊天组件族 (src/chat) 的取值.
++ */
++
++/** Trace 相邻两步进场的时间差 (ms) 与最多叠加的步数: 更长的轨迹不再越拖越慢. */
++export const TRACE_STAGGER_STEP_MS = 55;
++export const TRACE_STAGGER_MAX_INDEX = 8;
+diff --git a/src/constants/editor.ts b/src/constants/editor.ts
+new file mode 100644
+index 0000000..3ce63a8
+--- /dev/null
++++ b/src/constants/editor.ts
+@@ -0,0 +1,37 @@
++/**
++ * 代码编辑器 (editor/CodeEditor.tsx) 与它的 monaco 主题 (editor/monaco-theme.ts) 的取值.
++ */
++
++/** CodeEditor 的缺省语言与高度 (px). */
++export const CODE_EDITOR_DEFAULTS = {
++  language: "typescript",
++  height: 320,
++} as const;
++
++/** 编辑器填满外层容器: 高度由外层 style 决定. */
++export const CODE_EDITOR_FILL = "100%";
++
++/** 传给 monaco 的编辑器选项里的数值与枚举. */
++export const CODE_EDITOR_OPTIONS = {
++  /** 上下内边距 (px). */
++  padding: 12,
++  renderLineHighlight: "all",
++  tabSize: 2,
++  /** 横纵滚动条宽度 (px). */
++  scrollbarSize: 8,
++} as const;
++
++/** monaco 主题规则的 token 名. */
++export const MONACO_TOKEN = {
++  comment: "comment",
++  keyword: "keyword",
++  keywordOperator: "keyword.operator",
++  string: "string",
++  number: "number",
++  regexp: "regexp",
++  type: "type",
++  typeIdentifier: "type.identifier",
++  identifier: "identifier",
++  delimiter: "delimiter",
++  tag: "tag",
++} as const;
+diff --git a/src/constants/markdown.ts b/src/constants/markdown.ts
+new file mode 100644
+index 0000000..796495a
+--- /dev/null
++++ b/src/constants/markdown.ts
+@@ -0,0 +1,28 @@
++/**
++ * 流式 Markdown (agent/streaming-markdown.tsx) 用到的取值.
++ */
++
++/**
++ * 根元素上的主题属性与取值 (tokens.css 用 data-mode 区分明暗).
++ * 读不到时按暗色处理: 库的默认皮肤是暗色, 文档站首屏也是暗色.
++ */
++export const MODE_ATTRIBUTE = "data-mode";
++export const MODE_LIGHT = "light";
++
++/** 切段与拼段用的行分隔. */
++export const MD_NEWLINE = "\n";
++
++/** typeof 判断宿主全局 (document / MutationObserver) 是否存在时的比较值; SSR 下它们未声明, 只能用 typeof 探测. */
++export const TYPEOF_UNDEFINED = "undefined";
++
++/** 段落种类: 普通 Markdown 或围栏代码块. */
++export const SEGMENT_KIND = {
++  markdown: "markdown",
++  code: "code",
++} as const;
++
++/** data-streaming 属性的两个取值. */
++export const STREAMING_ATTR = {
++  done: "false",
++  live: "true",
++} as const;
+diff --git a/src/editor/CodeEditor.tsx b/src/editor/CodeEditor.tsx
+index 8528e08..ee90342 100644
+--- a/src/editor/CodeEditor.tsx
++++ b/src/editor/CodeEditor.tsx
+@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type JSX } from "react";
+ import Editor, { loader, type OnMount } from "@monaco-editor/react";
+ import { cn } from "../primitives/utils";
+ import { CODE_THEME_ID, defineTheme, type Monaco } from "./monaco-theme";
++import { CODE_EDITOR_DEFAULTS, CODE_EDITOR_FILL, CODE_EDITOR_OPTIONS } from "../constants/editor";
+ 
+ /**
+  * 代码编辑器  VS Code 的内核 (monaco) 加 One Dark Pro Darker 主题.
+@@ -72,8 +73,8 @@ function installEnvironment(createWorker?: (label: string) => Worker): void {
+ export function CodeEditor({
+   value,
+   onChange,
+-  language = "typescript",
+-  height = 320,
++  language = CODE_EDITOR_DEFAULTS.language,
++  height = CODE_EDITOR_DEFAULTS.height,
+   readOnly = false,
+   minimap = false,
+   lineNumbers = true,
+@@ -112,7 +113,7 @@ export function CodeEditor({
+     >
+       {ready ? (
+         <Editor
+-          height="100%"
++          height={CODE_EDITOR_FILL}
+           language={language}
+           value={value}
+           {...(path ? { path } : {})}
+@@ -126,15 +127,18 @@ export function CodeEditor({
+             fontSize: 12.5,
+             fontFamily: "var(--font-mono, ui-monospace), SFMono-Regular, Menlo, monospace",
+             fontLigatures: true,
+-            padding: { top: 12, bottom: 12 },
++            padding: { top: CODE_EDITOR_OPTIONS.padding, bottom: CODE_EDITOR_OPTIONS.padding },
+             scrollBeyondLastLine: false,
+             smoothScrolling: true,
+-            renderLineHighlight: "all",
++            renderLineHighlight: CODE_EDITOR_OPTIONS.renderLineHighlight,
+             automaticLayout: true,
+-            tabSize: 2,
++            tabSize: CODE_EDITOR_OPTIONS.tabSize,
+             wordWrap: "on",
+             guides: { indentation: true },
+-            scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
++            scrollbar: {
++              verticalScrollbarSize: CODE_EDITOR_OPTIONS.scrollbarSize,
++              horizontalScrollbarSize: CODE_EDITOR_OPTIONS.scrollbarSize,
++            },
+             overviewRulerLanes: 0,
+           }}
+         />
+diff --git a/src/editor/monaco-theme.ts b/src/editor/monaco-theme.ts
+index 41150ce..c7c731d 100644
+--- a/src/editor/monaco-theme.ts
++++ b/src/editor/monaco-theme.ts
+@@ -1,5 +1,7 @@
+ "use client";
+ 
++import { MONACO_TOKEN } from "../constants/editor";
++
+ /**
+  * One Dark Pro Darker 主题名. 与 tokens.css 里的 --code-odp-* 一一对应.
+  */
+@@ -49,17 +51,17 @@ export function defineTheme(monaco: typeof import("monaco-editor")): void {
+     inherit: true,
+     rules: [
+       { token: "", foreground: p.foreground, background: p.background },
+-      { token: "comment", foreground: p.comment, fontStyle: "italic" },
+-      { token: "keyword", foreground: p.keyword },
+-      { token: "keyword.operator", foreground: p.operator },
+-      { token: "string", foreground: p.string },
+-      { token: "number", foreground: p.number },
+-      { token: "regexp", foreground: p.string },
+-      { token: "type", foreground: p.type },
+-      { token: "type.identifier", foreground: p.type },
+-      { token: "identifier", foreground: p.variable },
+-      { token: "delimiter", foreground: p.foreground },
+-      { token: "tag", foreground: p.variable },
++      { token: MONACO_TOKEN.comment, foreground: p.comment, fontStyle: "italic" },
++      { token: MONACO_TOKEN.keyword, foreground: p.keyword },
++      { token: MONACO_TOKEN.keywordOperator, foreground: p.operator },
++      { token: MONACO_TOKEN.string, foreground: p.string },
++      { token: MONACO_TOKEN.number, foreground: p.number },
++      { token: MONACO_TOKEN.regexp, foreground: p.string },
++      { token: MONACO_TOKEN.type, foreground: p.type },
++      { token: MONACO_TOKEN.typeIdentifier, foreground: p.type },
++      { token: MONACO_TOKEN.identifier, foreground: p.variable },
++      { token: MONACO_TOKEN.delimiter, foreground: p.foreground },
++      { token: MONACO_TOKEN.tag, foreground: p.variable },
+     ],
+     colors: {
+       "editor.background": p.background,

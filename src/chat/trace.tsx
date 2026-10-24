@@ -4,20 +4,17 @@ import * as React from "react";
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
 import { CheckIcon, ChevronRightIcon, CircleDashedIcon, Loader2Icon, XIcon } from "lucide-react";
 import { cn } from "../primitives/utils";
-import { ARIA, TASK_STATUS, UI_CLASSES } from "../constants";
+import { ARIA, TASK_STATUS, TONE, UI_CLASSES } from "../constants";
+import { TRACE_STAGGER_MAX_INDEX as STAGGER_MAX_INDEX, TRACE_STAGGER_STEP_MS as STAGGER_STEP_MS } from "../constants/chat";
 
 /** 一步的状态: 等待, 进行中, 完成, 失败. */
 type TraceStatus = "pending" | "running" | "done" | "error";
 
-/** 相邻两步进场的时间差 (ms) 与最多叠加的步数: 更长的轨迹不再越拖越慢. */
-const STAGGER_STEP_MS = 55;
-const STAGGER_MAX_INDEX = 8;
-
 const STATUS_ICON: Record<TraceStatus, React.ReactNode> = {
 	pending: <CircleDashedIcon className={UI_CLASSES.muted} />,
 	running: <Loader2Icon className="animate-spin text-link motion-reduce:animate-none" />,
-	done: <CheckIcon className="text-success-fg" />,
-	error: <XIcon className="text-danger-fg" />,
+	done: <CheckIcon className={TONE.successFg} />,
+	error: <XIcon className={TONE.dangerFg} />,
 };
 
 /**
@@ -65,6 +62,7 @@ function TraceStep({
 	description,
 	icon,
 	defaultOpen,
+	collapseWhenDone = false,
 	className,
 	children,
 	...props
@@ -75,6 +73,13 @@ function TraceStep({
 	/** 覆盖默认的状态图标 (例如工具自己的图标). */
 	icon?: React.ReactNode;
 	defaultOpen?: boolean;
+	/**
+	 * 这一行完成后自动收起.
+	 *
+	 * 实时生成的轨迹里, 每一步完成的瞬间读者已经看完了它的详情; 若继续展开,
+	 * 轨迹会越滚越长, 正在跑的那一步反而被挤出视口.
+	 */
+	collapseWhenDone?: boolean;
 }): React.JSX.Element {
 	/** toArray 会滤掉条件渲染留下的 false / null, 没有真实详情时不显示展开箭头. */
 	const hasDetail = React.Children.toArray(children).length > 0;
@@ -84,7 +89,9 @@ function TraceStep({
 	const [prevStatus, setPrevStatus] = React.useState(status);
 	if (prevStatus !== status) {
 		setPrevStatus(status);
-		if (defaultOpen === undefined && active) {
+		if (collapseWhenDone && status === TASK_STATUS.done) {
+			setOpen(false);
+		} else if (defaultOpen === undefined && active) {
 			setOpen(true);
 		}
 	}
@@ -157,4 +164,67 @@ function TraceSources({ className, ...props }: React.ComponentProps<"ul">): Reac
 	return <ul data-slot="trace-sources" className={cn("flex flex-col gap-1 [&_a]:text-link [&_a]:underline-offset-4 [&_a:hover]:underline", className)} {...props} />;
 }
 
-export { Trace, TraceSources, TraceStep, type TraceStatus };
+/**
+ * 实时生成的一步. 与 TraceStep 的区别只是"谁决定它出现": 这里由数据到达决定.
+ */
+export interface TraceLiveItem {
+	readonly id: string;
+	readonly title: React.ReactNode;
+	readonly description?: React.ReactNode;
+	readonly status?: TraceStatus;
+	readonly icon?: React.ReactNode;
+	/** 展开后的详情: 工具入参与输出, 思考过程, 引用来源. */
+	readonly detail?: React.ReactNode;
+}
+
+/**
+ * 实时生成的轨迹: 步骤一条条到达, 而不是一开始就全部知道.
+ *
+ * ## 两种用法怎么选
+ *
+ * - **预先规划**: 步骤在开始时已知 (例如"拉镜像 -> 构建 -> 启动 -> 健康检查"),
+ * 用 Trace + TraceStep 直接列出来, 当前步给 running.
+ * - **实时生成**: 步骤由 Agent 运行时决定 (调用一次工具才知道下一步是什么),
+ * 用 TraceLive 把已到达的步骤喂进来, 每来一条就多一行.
+ *
+ * ## 它与规划态的差别不只是数据源
+ *
+ * 1. 已完成的步骤**自动收起**: 实时轨迹会越来越长, 全程展开会把正在跑的那步挤出视口.
+ * 2. 最后一步在跑时**自动展开**: 读者的注意力应该在"正在发生什么".
+ * 3. streaming 为 true 时末尾挂一条"仍在生成"的占位行, 让读者知道还没结束.
+ */
+function TraceLive({
+	items,
+	streaming = false,
+	className,
+	...props
+}: React.ComponentProps<"ol"> & {
+	readonly items: readonly TraceLiveItem[];
+	/** 仍在生成: 末尾显示一条进行中的占位行. */
+	readonly streaming?: boolean;
+}): React.JSX.Element {
+	const lastIndex = items.length - 1;
+	return (
+		<Trace className={className} {...props}>
+			{items.map((item, index) => {
+				const status = item.status ?? TASK_STATUS.done;
+				return (
+					<TraceStep
+						key={item.id}
+						status={status}
+						title={item.title}
+						collapseWhenDone
+						defaultOpen={index === lastIndex && status === TASK_STATUS.running}
+						{...(item.description !== undefined ? { description: item.description } : {})}
+						{...(item.icon !== undefined ? { icon: item.icon } : {})}
+					>
+						{item.detail}
+					</TraceStep>
+				);
+			})}
+			{streaming && <TraceStep status={TASK_STATUS.running} title="正在生成下一步..." />}
+		</Trace>
+	);
+}
+
+export { Trace, TraceLive, TraceSources, TraceStep, type TraceStatus };

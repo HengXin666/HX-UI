@@ -1,5 +1,7 @@
 "use client";
 
+import { MONACO_TOKEN } from "../constants/editor";
+
 /**
  * One Dark Pro Darker 主题名. 与 tokens.css 里的 --code-odp-* 一一对应.
  */
@@ -14,8 +16,8 @@ function token(style: CSSStyleDeclaration, name: string): string {
  * 把 monaco 主题的取值**全部**指向 tokens.css 的令牌.
  *
  * 为什么不在组件里写死色板: 颜色只允许来自令牌层 (PROJECT-UI-HEX), 换成别的深色
- * 变体时只改 CSS 一处。取不到值时宁可留空让 monaco 用默认主题, 也不在代码里兜一份
- * 色板, 否则两处颜色迟早不一致。
+ * 变体时只改 CSS 一处. 取不到值时宁可留空让 monaco 用默认主题, 也不在代码里兜一份
+ * 色板, 否则两处颜色迟早不一致.
  */
 export function readPalette(): Record<string, string> {
   const style = getComputedStyle(document.documentElement);
@@ -40,7 +42,7 @@ export function readPalette(): Record<string, string> {
 
 /**
  * 注册主题. 幂等: monaco 允许重复注册同名主题, 后一次覆盖前一次,
- * 所以每次编辑器挂载前都调一次是安全的, 也顺带支持运行期换肤。
+ * 所以每次编辑器挂载前都调一次是安全的, 也顺带支持运行期换肤.
  */
 export function defineTheme(monaco: typeof import("monaco-editor")): void {
   const p = readPalette();
@@ -49,17 +51,17 @@ export function defineTheme(monaco: typeof import("monaco-editor")): void {
     inherit: true,
     rules: [
       { token: "", foreground: p.foreground, background: p.background },
-      { token: "comment", foreground: p.comment, fontStyle: "italic" },
-      { token: "keyword", foreground: p.keyword },
-      { token: "keyword.operator", foreground: p.operator },
-      { token: "string", foreground: p.string },
-      { token: "number", foreground: p.number },
-      { token: "regexp", foreground: p.string },
-      { token: "type", foreground: p.type },
-      { token: "type.identifier", foreground: p.type },
-      { token: "identifier", foreground: p.variable },
-      { token: "delimiter", foreground: p.foreground },
-      { token: "tag", foreground: p.variable },
+      { token: MONACO_TOKEN.comment, foreground: p.comment, fontStyle: "italic" },
+      { token: MONACO_TOKEN.keyword, foreground: p.keyword },
+      { token: MONACO_TOKEN.keywordOperator, foreground: p.operator },
+      { token: MONACO_TOKEN.string, foreground: p.string },
+      { token: MONACO_TOKEN.number, foreground: p.number },
+      { token: MONACO_TOKEN.regexp, foreground: p.string },
+      { token: MONACO_TOKEN.type, foreground: p.type },
+      { token: MONACO_TOKEN.typeIdentifier, foreground: p.type },
+      { token: MONACO_TOKEN.identifier, foreground: p.variable },
+      { token: MONACO_TOKEN.delimiter, foreground: p.foreground },
+      { token: MONACO_TOKEN.tag, foreground: p.variable },
     ],
     colors: {
       "editor.background": p.background,
