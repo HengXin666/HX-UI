@@ -8,7 +8,7 @@ import { Props } from "../components/DocSpec";
 
 /**
  * monaco 的 worker 工厂: 语言服务与编辑器内核是两个 worker, 用错会报
- * "Missing requestHandler or method: doValidation"。按 label 分发。
+ * "Missing requestHandler or method: doValidation". 按 label 分发.
  */
 function createWorker(label: string): Worker {
   if (label === "typescript" || label === "javascript") {

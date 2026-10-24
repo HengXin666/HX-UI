@@ -68,7 +68,7 @@ export const layout = "two-column" as const;
  * AI 对话工作台模板.
  *
  * 这一页不是组件文档, 是一份**能直接搬走的整页骨架**: 左侧会话流 (含流式回答与
- * 工具轨迹) 加底部输入框。组件页讲单个 API, 模板页讲它们怎么拼在一起。
+ * 工具轨迹) 加底部输入框. 组件页讲单个 API, 模板页讲它们怎么拼在一起.
  */
 export function TemplateChatPage(): JSX.Element {
   const [draft, setDraft] = useState("");

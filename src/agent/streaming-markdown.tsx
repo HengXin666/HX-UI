@@ -83,7 +83,7 @@ interface Segment {
  * 按围栏把 Markdown 切成段落.
  *
  * 为什么要自己切: markstream 的代码块默认交给 stream-diffs 的 <diffs-container>,
- * 那个 web component 在可选 peer 缺失或初始化失败时只画标题栏、正文空白且不报错;
+ * 那个 web component 在可选 peer 缺失或初始化失败时只画标题栏, 正文空白且不报错;
  * 而它的公开 props 里没有"把代码块换成自定义组件"的入口 (renderNode 只在内部类型上).
  * 把围栏切出来自己渲染, 代码块就能稳定用本库的 CodeBlock (shiki + One Dark Pro).
  *
