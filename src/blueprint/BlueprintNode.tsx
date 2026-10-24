@@ -10,6 +10,8 @@ import { EXEC } from "./types";
 import { BODY_TOP, HEADER_H, NODE_WIDTH } from "./geometry";
 import { nodeKindOf, titleStyle } from "./node-style";
 import { PinShape } from "./PinShape";
+import { HALF_DIVISOR } from "../constants";
+import { BP_COLLAPSE_GLYPH, BP_PIN_SPACER_CLASS } from "../constants/blueprint";
 
 /**
  * 节点卡片  外观对齐 UE5。
@@ -120,7 +122,7 @@ export function BlueprintNodeCard({
           </span>
         )}
         {/* 引脚脱离文档流后, 标题要让出半个引脚的位置, 否则文字会压在楔形上 */}
-        {def.execIn && <span aria-hidden className="shrink-0" style={{ width: PIN_SIZE.exec / 2 }} />}
+        {def.execIn && <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN_SIZE.exec / HALF_DIVISOR }} />}
         {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
         {renaming ? (
           <NodeRenameInput
@@ -156,7 +158,7 @@ export function BlueprintNodeCard({
             className="shrink-0 rounded px-1 text-[11px] opacity-70 transition-opacity hover:opacity-100"
             aria-label={isCollapsed ? "展开" : "折叠"}
           >
-            {isCollapsed ? "+" : "−"}
+            {isCollapsed ? BP_COLLAPSE_GLYPH.collapsed : BP_COLLAPSE_GLYPH.expanded}
           </button>
         )}
       </div>

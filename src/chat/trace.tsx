@@ -4,20 +4,17 @@ import * as React from "react";
 import { Collapsible as CollapsiblePrimitive } from "radix-ui";
 import { CheckIcon, ChevronRightIcon, CircleDashedIcon, Loader2Icon, XIcon } from "lucide-react";
 import { cn } from "../primitives/utils";
-import { ARIA, TASK_STATUS, UI_CLASSES } from "../constants";
+import { ARIA, TASK_STATUS, TONE, UI_CLASSES } from "../constants";
+import { TRACE_STAGGER_MAX_INDEX as STAGGER_MAX_INDEX, TRACE_STAGGER_STEP_MS as STAGGER_STEP_MS } from "../constants/chat";
 
 /** 一步的状态: 等待, 进行中, 完成, 失败. */
 type TraceStatus = "pending" | "running" | "done" | "error";
 
-/** 相邻两步进场的时间差 (ms) 与最多叠加的步数: 更长的轨迹不再越拖越慢. */
-const STAGGER_STEP_MS = 55;
-const STAGGER_MAX_INDEX = 8;
-
 const STATUS_ICON: Record<TraceStatus, React.ReactNode> = {
 	pending: <CircleDashedIcon className={UI_CLASSES.muted} />,
 	running: <Loader2Icon className="animate-spin text-link motion-reduce:animate-none" />,
-	done: <CheckIcon className="text-success-fg" />,
-	error: <XIcon className="text-danger-fg" />,
+	done: <CheckIcon className={TONE.successFg} />,
+	error: <XIcon className={TONE.dangerFg} />,
 };
 
 /**

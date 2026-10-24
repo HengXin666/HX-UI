@@ -9,6 +9,8 @@ import type { BlueprintRegistry, ParamDef, PortDef } from "./types";
 import { EXEC } from "./types";
 import { HEADER_H, PORT_ROW } from "./geometry";
 import { PinShape } from "./PinShape";
+import { HALF_DIVISOR, SIDE } from "../constants";
+import { BP_BODY_PAD_X } from "../constants/blueprint";
 
 /**
  * 节点卡片的零件: 引脚行 + 参数字段。
@@ -52,14 +54,14 @@ export const CARD_BORDER = 1;
  * 边界上, 所以偏移量里必须先扣掉卡片内边距这一段。改卡片内边距时必须同步这里,
  * 否则线会整体偏若干像素 -- 与 --bp-pin-row 那类常量是同一类陷阱。
  */
-export const BODY_PAD_X = 8;
+export const BODY_PAD_X = BP_BODY_PAD_X;
 
 /**
  * 引脚圆心落在边界上时的水平偏移 (向内为负)。
  * .agents/notes/implemented/feature/2026-10-22-blueprint-pin-alignment.md
  */
 export function pinOffset(size: number): number {
-  return -(size / 2) - CARD_BORDER;
+  return -(size / HALF_DIVISOR) - CARD_BORDER;
 }
 
 /**
@@ -69,7 +71,7 @@ export function pinOffset(size: number): number {
  * 半个标题条; 绝对定位的参照是内边距盒, 少了一个边框宽, 这里补回来.
  */
 export function headerPinTop(size: number): number {
-  return HEADER_H / 2 - CARD_BORDER - size / 2;
+  return HEADER_H / HALF_DIVISOR - CARD_BORDER - size / HALF_DIVISOR;
 }
 
 export function PortRow({
@@ -106,7 +108,7 @@ export function PortRow({
         data-port={port.id}
         data-dir={dir}
         className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
-        style={{ [dir === "in" ? "left" : "right"]: offset - edgeInset } as CSSProperties}
+        style={{ [dir === "in" ? SIDE.left : SIDE.right]: offset - edgeInset } as CSSProperties}
       >
         {isExec ? (
           <PinShape kind="exec" filled invalid={invalid} color="text-bp-title-foreground" size={size} />

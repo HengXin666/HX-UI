@@ -1,5 +1,7 @@
 "use client";
 
+import { MONACO_TOKEN } from "../constants/editor";
+
 /**
  * One Dark Pro Darker 主题名. 与 tokens.css 里的 --code-odp-* 一一对应.
  */
@@ -49,17 +51,17 @@ export function defineTheme(monaco: typeof import("monaco-editor")): void {
     inherit: true,
     rules: [
       { token: "", foreground: p.foreground, background: p.background },
-      { token: "comment", foreground: p.comment, fontStyle: "italic" },
-      { token: "keyword", foreground: p.keyword },
-      { token: "keyword.operator", foreground: p.operator },
-      { token: "string", foreground: p.string },
-      { token: "number", foreground: p.number },
-      { token: "regexp", foreground: p.string },
-      { token: "type", foreground: p.type },
-      { token: "type.identifier", foreground: p.type },
-      { token: "identifier", foreground: p.variable },
-      { token: "delimiter", foreground: p.foreground },
-      { token: "tag", foreground: p.variable },
+      { token: MONACO_TOKEN.comment, foreground: p.comment, fontStyle: "italic" },
+      { token: MONACO_TOKEN.keyword, foreground: p.keyword },
+      { token: MONACO_TOKEN.keywordOperator, foreground: p.operator },
+      { token: MONACO_TOKEN.string, foreground: p.string },
+      { token: MONACO_TOKEN.number, foreground: p.number },
+      { token: MONACO_TOKEN.regexp, foreground: p.string },
+      { token: MONACO_TOKEN.type, foreground: p.type },
+      { token: MONACO_TOKEN.typeIdentifier, foreground: p.type },
+      { token: MONACO_TOKEN.identifier, foreground: p.variable },
+      { token: MONACO_TOKEN.delimiter, foreground: p.foreground },
+      { token: MONACO_TOKEN.tag, foreground: p.variable },
     ],
     colors: {
       "editor.background": p.background,

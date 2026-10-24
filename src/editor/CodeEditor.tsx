@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type JSX } from "react";
 import Editor, { loader, type OnMount } from "@monaco-editor/react";
 import { cn } from "../primitives/utils";
 import { CODE_THEME_ID, defineTheme, type Monaco } from "./monaco-theme";
+import { CODE_EDITOR_DEFAULTS, CODE_EDITOR_FILL, CODE_EDITOR_OPTIONS } from "../constants/editor";
 
 /**
  * 代码编辑器  VS Code 的内核 (monaco) 加 One Dark Pro Darker 主题.
@@ -72,8 +73,8 @@ function installEnvironment(createWorker?: (label: string) => Worker): void {
 export function CodeEditor({
   value,
   onChange,
-  language = "typescript",
-  height = 320,
+  language = CODE_EDITOR_DEFAULTS.language,
+  height = CODE_EDITOR_DEFAULTS.height,
   readOnly = false,
   minimap = false,
   lineNumbers = true,
@@ -112,7 +113,7 @@ export function CodeEditor({
     >
       {ready ? (
         <Editor
-          height="100%"
+          height={CODE_EDITOR_FILL}
           language={language}
           value={value}
           {...(path ? { path } : {})}
@@ -126,15 +127,18 @@ export function CodeEditor({
             fontSize: 12.5,
             fontFamily: "var(--font-mono, ui-monospace), SFMono-Regular, Menlo, monospace",
             fontLigatures: true,
-            padding: { top: 12, bottom: 12 },
+            padding: { top: CODE_EDITOR_OPTIONS.padding, bottom: CODE_EDITOR_OPTIONS.padding },
             scrollBeyondLastLine: false,
             smoothScrolling: true,
-            renderLineHighlight: "all",
+            renderLineHighlight: CODE_EDITOR_OPTIONS.renderLineHighlight,
             automaticLayout: true,
-            tabSize: 2,
+            tabSize: CODE_EDITOR_OPTIONS.tabSize,
             wordWrap: "on",
             guides: { indentation: true },
-            scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
+            scrollbar: {
+              verticalScrollbarSize: CODE_EDITOR_OPTIONS.scrollbarSize,
+              horizontalScrollbarSize: CODE_EDITOR_OPTIONS.scrollbarSize,
+            },
             overviewRulerLanes: 0,
           }}
         />

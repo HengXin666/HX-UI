@@ -4,13 +4,10 @@ import { useEffect, useMemo, useState, type JSX } from "react";
 import MarkdownRender from "markstream-react";
 import { CodeBlock } from "../layout/CodeBlock";
 import { cn } from "../primitives/utils";
-
-/**
- * 根元素上的主题属性与取值 (tokens.css 用 data-mode 区分明暗).
- * 读不到时按暗色处理: 库的默认皮肤是暗色, 文档站首屏也是暗色.
- */
-const MODE_ATTRIBUTE = "data-mode";
-const MODE_LIGHT = "light";
+import { SPACE } from "../constants";
+import {
+  MD_NEWLINE, MODE_ATTRIBUTE, MODE_LIGHT, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED,
+} from "../constants/markdown";
 
 /** 围栏标记. 三个反引号单独一行即是开/闭. */
 const FENCE = "```";
@@ -44,10 +41,10 @@ const SKIN = [
   "[&_th]:!bg-muted",
   "[&_td]:!border-b",
   "[&_td]:!border-border",
-].join(" ");
+].join(SPACE);
 
 function readDark(): boolean {
-  if (typeof document === "undefined") {
+  if (typeof document === TYPEOF_UNDEFINED) {
     return true;
   }
   return document.documentElement.getAttribute(MODE_ATTRIBUTE) !== MODE_LIGHT;
@@ -60,7 +57,7 @@ function readDark(): boolean {
 function useIsDark(override?: boolean): boolean {
   const [dark, setDark] = useState(readDark);
   useEffect(() => {
-    if (override !== undefined || typeof MutationObserver === "undefined") {
+    if (override !== undefined || typeof MutationObserver === TYPEOF_UNDEFINED) {
       return undefined;
     }
     const observer = new MutationObserver(() => setDark(readDark()));
@@ -90,16 +87,16 @@ interface Segment {
  * 未闭合的围栏按"仍在写入的代码块"处理: 流式中途也能看到正确的代码底色.
  */
 function splitSegments(markdown: string): Segment[] {
-  const lines = markdown.split("\n");
+  const lines = markdown.split(MD_NEWLINE);
   const out: Segment[] = [];
   let buffer: string[] = [];
   let code: string[] | null = null;
   let lang = "";
 
   const flushMarkdown = (): void => {
-    const text = buffer.join("\n");
+    const text = buffer.join(MD_NEWLINE);
     if (text.trim()) {
-      out.push({ kind: "markdown", text });
+      out.push({ kind: SEGMENT_KIND.markdown, text });
     }
     buffer = [];
   };
@@ -116,7 +113,7 @@ function splitSegments(markdown: string): Segment[] {
       continue;
     }
     if (line.trim() === FENCE) {
-      out.push({ kind: "code", text: code.join("\n"), lang });
+      out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang });
       code = null;
       lang = "";
       continue;
@@ -125,7 +122,7 @@ function splitSegments(markdown: string): Segment[] {
   }
 
   if (code !== null) {
-    out.push({ kind: "code", text: code.join("\n"), lang, open: true });
+    out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang, open: true });
   }
   flushMarkdown();
   return out;
@@ -174,12 +171,12 @@ export function StreamingMarkdown({
   return (
     <div
       data-slot="streaming-markdown"
-      data-streaming={done ? "false" : "true"}
+      data-streaming={done ? STREAMING_ATTR.done : STREAMING_ATTR.live}
       className={cn("min-w-0 text-[13.5px] leading-relaxed text-foreground", SKIN, className)}
     >
       {segments.map((segment, index) => {
         const key = `${index}-${segment.kind}`;
-        if (segment.kind === "code") {
+        if (segment.kind === SEGMENT_KIND.code) {
           return (
             <CodeBlock
               key={key}
