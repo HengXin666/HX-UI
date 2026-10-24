@@ -85,13 +85,13 @@ function TraceStep({
 	const hasDetail = React.Children.toArray(children).length > 0;
 	const active = status === TASK_STATUS.running || status === TASK_STATUS.error;
 	const [open, setOpen] = React.useState(defaultOpen ?? active);
-	/** 未显式给 defaultOpen 时, 状态转为进行中或失败的那一刻自动展开; 之后用户可自行收起. */
+	/** defaultOpen 未被显式设为 false 时, 状态转为进行中或失败的那一刻自动展开; 之后用户可自行收起. */
 	const [prevStatus, setPrevStatus] = React.useState(status);
 	if (prevStatus !== status) {
 		setPrevStatus(status);
 		if (collapseWhenDone && status === TASK_STATUS.done) {
 			setOpen(false);
-		} else if (defaultOpen === undefined && active) {
+		} else if (defaultOpen !== false && active) {
 			setOpen(true);
 		}
 	}

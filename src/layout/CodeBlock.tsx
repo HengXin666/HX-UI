@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type JSX, type ReactNode } from "react";
 import { codeToHtml } from "shiki";
 import { cn } from "../primitives/utils";
 
@@ -157,10 +157,9 @@ export function CodeBlock({
 
   const [html, setHtml] = useState<string | null>(() => HTML_CACHE.get(cacheKey) ?? null);
   const [failed, setFailed] = useState(false);
-  const cancelled = useRef(false);
-
   useEffect(() => {
-    cancelled.current = false;
+    /** 每次 effect 闭包独立的取消标记: 流式写入时多个 codeToHtml 并发, 共享 ref 会被下一次 effect 复位, 旧请求晚到会盖掉新内容. */
+    let cancelled = false;
     if (!eligible) { setHtml(null); return; }
 
     const cached = HTML_CACHE.get(cacheKey);
@@ -169,15 +168,15 @@ export function CodeBlock({
     setHtml(null);
     void codeToHtml(code, { lang: language, theme: CODE_THEME })
       .then((result) => {
-        if (cancelled.current) return;
+        if (cancelled) return;
         putCache(cacheKey, result);
         setHtml(result);
       })
       .catch(() => {
-        if (!cancelled.current) setFailed(true);
+        if (!cancelled) setFailed(true);
       });
 
-    return () => { cancelled.current = true; };
+    return () => { cancelled = true; };
   }, [cacheKey, code, language, eligible]);
 
   const lineCount = useMemo(() => code.replace(/\n$/, "").split("\n").length, [code]);
