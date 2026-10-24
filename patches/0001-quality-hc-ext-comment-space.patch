@@ -1,0 +1,510 @@
+diff --git a/.gitignore b/.gitignore
+index 3e446b3..6990739 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -18,3 +18,6 @@ scripts/e2e/shots/
+ scripts/.hx_code_quality/
+ # <<< hx-agent-code quality state <<<
+ *.tgz
++
++# 本地探针脚本 (playwright 调试用), 不进仓库
++.tmp-check/
+diff --git a/.tmp-check/cb.mjs b/.tmp-check/cb.mjs
+deleted file mode 100644
+index 685f202..0000000
+--- a/.tmp-check/cb.mjs
++++ /dev/null
+@@ -1,17 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
+-const logs = [];
+-p.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') logs.push(m.type() + ': ' + m.text().slice(0, 160)); });
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3000);
+-const out = await p.evaluate(() => {
+-  const host = document.querySelector('[data-slot="streaming-markdown"]');
+-  const block = host?.querySelector('.code-block-container');
+-  const pre = block?.querySelector('pre');
+-  const spans = block ? [...block.querySelectorAll('span')].slice(0, 6).map(s => ({ cls: s.className.slice(0, 50), color: getComputedStyle(s).color })) : [];
+-  return { hostText: (host?.textContent || '').slice(0, 400), blockTextFull: (block?.textContent || '').slice(0, 300), headerBtns: block ? [...block.querySelectorAll('button')].map(b => b.getAttribute('aria-pressed')) : [], spanCount: block ? block.querySelectorAll('span').length : 0, colored: block ? [...block.querySelectorAll('span')].filter(s => getComputedStyle(s).color !== getComputedStyle(block).color).length : 0, blockBg: block ? getComputedStyle(block).backgroundColor : null, blockColor: block ? getComputedStyle(block).color : null, pre: pre ? { cls: pre.className.slice(0, 60), bg: getComputedStyle(pre).backgroundColor, color: getComputedStyle(pre).color, font: getComputedStyle(pre).fontFamily.slice(0, 30) } : null, spans };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-console.log('logs:', logs.slice(0, 5));
+-await b.close();
+diff --git a/.tmp-check/cb2.mjs b/.tmp-check/cb2.mjs
+deleted file mode 100644
+index 1418b1d..0000000
+--- a/.tmp-check/cb2.mjs
++++ /dev/null
+@@ -1,15 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
+-const logs = [];
+-p.on('console', (m) => { if (m.type() !== 'debug') logs.push(m.type() + ': ' + m.text().slice(0, 200)); });
+-p.on('pageerror', (e) => logs.push('pageerror: ' + e.message.slice(0, 200)));
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(4000);
+-const out = await p.evaluate(() => {
+-  const block = document.querySelector('.code-block-container');
+-  return { htmlTail: (block?.outerHTML || '').slice(-800), text: (block?.textContent || '').slice(0, 120), h: block?.getBoundingClientRect().height };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-console.log('logs', logs.slice(0, 6));
+-await b.close();
+diff --git a/.tmp-check/cb3.mjs b/.tmp-check/cb3.mjs
+deleted file mode 100644
+index 8f13abb..0000000
+--- a/.tmp-check/cb3.mjs
++++ /dev/null
+@@ -1,22 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
+-const logs = [];
+-p.on('console', (m) => { if (m.type() === 'error') logs.push(m.text().slice(0, 200)); });
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3500);
+-const out = await p.evaluate(() => {
+-  const host = document.querySelector('[data-slot="streaming-markdown"]');
+-  const pre = host?.querySelector('pre');
+-  const code = host?.querySelector('pre code, pre');
+-  const colored = code ? [...code.querySelectorAll('span')].filter(s => getComputedStyle(s).color !== getComputedStyle(code).color).length : 0;
+-  return {
+-    hasCodeBlock: !!host?.querySelector('[data-slot="code-block"], .code-block, pre'),
+-    pre: pre ? { len: pre.textContent.length, bg: getComputedStyle(pre).backgroundColor, color: getComputedStyle(pre).color, font: getComputedStyle(pre).fontFamily.slice(0, 26) } : null,
+-    coloredSpans: colored,
+-    hostTextTail: (host?.textContent || '').slice(-80),
+-  };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-console.log('errors', logs.slice(0, 3));
+-await b.close();
+diff --git a/.tmp-check/cb4.mjs b/.tmp-check/cb4.mjs
+deleted file mode 100644
+index 34885c4..0000000
+--- a/.tmp-check/cb4.mjs
++++ /dev/null
+@@ -1,24 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3500);
+-const out = await p.evaluate(() => {
+-  const host = document.querySelector('[data-slot="streaming-markdown"]');
+-  const pre = host?.querySelector('pre');
+-  const spans = pre ? [...pre.querySelectorAll('span')] : [];
+-  const base = pre ? getComputedStyle(pre).color : null;
+-  const colors = [...new Set(spans.map(s => getComputedStyle(s).color))];
+-  return {
+-    codeText: pre?.textContent?.trim().slice(0, 60),
+-    codeLen: pre?.textContent?.length ?? 0,
+-    preBg: pre ? getComputedStyle(pre).backgroundColor : null,
+-    preColor: base,
+-    spanCount: spans.length,
+-    distinctColors: colors.length,
+-    sampleColors: colors.slice(0, 5),
+-    table: (() => { const t = host?.querySelector('table'); return t ? { border: getComputedStyle(t).borderTopWidth + ' ' + getComputedStyle(t).borderTopStyle } : null; })(),
+-  };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/.tmp-check/chat.mjs b/.tmp-check/chat.mjs
+deleted file mode 100644
+index aca1c05..0000000
+--- a/.tmp-check/chat.mjs
++++ /dev/null
+@@ -1,16 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3000);
+-const info = await p.evaluate(() => {
+-  const host = document.querySelector('[data-slot="streaming-markdown"]');
+-  const cs = (el) => el ? { tag: el.tagName, cls: String(el.className).slice(0, 110), bg: getComputedStyle(el).backgroundColor, color: getComputedStyle(el).color, pad: getComputedStyle(el).padding, radius: getComputedStyle(el).borderRadius, font: getComputedStyle(el).fontFamily.slice(0, 30) } : null;
+-  const pre = host?.querySelector('pre');
+-  const codeBlock = host?.querySelector('.code-block-node, [class*="code-block"]');
+-  const table = host?.querySelector('table');
+-  const h2 = host?.querySelector('h2');
+-  return { html: (host?.innerHTML || '').slice(0, 600), pre: cs(pre), codeBlock: cs(codeBlock), table: cs(table), h2: cs(h2), theme: document.documentElement.getAttribute('data-mode') };
+-});
+-console.log(JSON.stringify(info, null, 1));
+-await b.close();
+diff --git a/.tmp-check/css.mjs b/.tmp-check/css.mjs
+deleted file mode 100644
+index b22d6f0..0000000
+--- a/.tmp-check/css.mjs
++++ /dev/null
+@@ -1,17 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage();
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(2500);
+-const out = await p.evaluate(() => {
+-  const found = [];
+-  for (const sheet of document.styleSheets) {
+-    let rules; try { rules = sheet.cssRules; } catch { continue; }
+-    const walk = (list) => { for (const r of list) { if (r.cssRules) walk(r.cssRules); else if (r.selectorText && r.selectorText.includes('streaming-markdown')) found.push(r.selectorText.slice(0, 90)); } };
+-    walk(rules);
+-  }
+-  const th = document.querySelector('[data-slot="streaming-markdown"] th');
+-  return { ourRules: found.slice(0, 10), thBorder: th ? getComputedStyle(th).borderBottomWidth + ' ' + getComputedStyle(th).borderBottomColor : null, thBg: th ? getComputedStyle(th).backgroundColor : null };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/.tmp-check/dom2.mjs b/.tmp-check/dom2.mjs
+deleted file mode 100644
+index 6042e2b..0000000
+--- a/.tmp-check/dom2.mjs
++++ /dev/null
+@@ -1,14 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3500);
+-const out = await p.evaluate(() => {
+-  const host = document.querySelector('[data-slot="streaming-markdown"]');
+-  return {
+-    childTags: [...(host?.children || [])].map(c => c.tagName + '.' + String(c.className).slice(0, 40)),
+-    htmlHead: (host?.innerHTML || '').slice(0, 500),
+-  };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/.tmp-check/err.mjs b/.tmp-check/err.mjs
+deleted file mode 100644
+index 56ee1e8..0000000
+--- a/.tmp-check/err.mjs
++++ /dev/null
+@@ -1,11 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage();
+-const logs = [];
+-p.on('pageerror', (e) => logs.push('pageerror: ' + e.message));
+-p.on('console', (m) => logs.push(m.type() + ': ' + m.text().slice(0, 200)));
+-p.on('requestfailed', (r) => logs.push('reqfail: ' + r.url().slice(-60) + ' ' + r.failure()?.errorText));
+-await p.goto('http://127.0.0.1:5600/#/agent-stream', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(5000);
+-console.log(logs.slice(0, 12).join('\n'));
+-await b.close();
+diff --git a/.tmp-check/expand.mjs b/.tmp-check/expand.mjs
+deleted file mode 100644
+index 2f87721..0000000
+--- a/.tmp-check/expand.mjs
++++ /dev/null
+@@ -1,18 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(2500);
+-const host = p.locator('[data-slot="streaming-markdown"]');
+-const btns = host.locator('.code-block-container button');
+-const n = await btns.count();
+-console.log('buttons', n);
+-await btns.first().click();
+-await p.waitForTimeout(800);
+-const out = await p.evaluate(() => {
+-  const block = document.querySelector('.code-block-container');
+-  const pre = block?.querySelector('pre');
+-  return { text: (block?.textContent || '').slice(0, 200), pre: pre ? { text: pre.textContent.slice(0, 80), bg: getComputedStyle(pre).backgroundColor, color: getComputedStyle(pre).color } : null, h: block?.getBoundingClientRect().height };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/.tmp-check/imp.mjs b/.tmp-check/imp.mjs
+deleted file mode 100644
+index cdd7068..0000000
+--- a/.tmp-check/imp.mjs
++++ /dev/null
+@@ -1,18 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage();
+-p.on('console', (m) => console.log(m.type() + ': ' + m.text().slice(0, 300)));
+-p.on('pageerror', (e) => console.log('pageerror: ' + e.message.slice(0, 300)));
+-p.on('requestfailed', (r) => console.log('reqfail: ' + r.url().slice(-70) + ' ' + (r.failure()?.errorText || '')));
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3000);
+-const res = await p.evaluate(async () => {
+-  try {
+-    const m = await import('/node_modules/.vite/deps/stream-diffs_markstream.js');
+-    return { ok: true, keys: Object.keys(m).slice(0, 8) };
+-  } catch (e) { return { err: String(e).slice(0, 300) }; }
+-});
+-console.log('direct import:', JSON.stringify(res));
+-const has = await p.evaluate(() => !!customElements.get('diffs-container'));
+-console.log('diffs-container defined:', has);
+-await b.close();
+diff --git a/.tmp-check/inject.mjs b/.tmp-check/inject.mjs
+deleted file mode 100644
+index e7b2899..0000000
+--- a/.tmp-check/inject.mjs
++++ /dev/null
+@@ -1,21 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage();
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(2500);
+-const out = await p.evaluate(() => {
+-  const before = (() => { const t = document.querySelector('[data-slot="streaming-markdown"] table'); return getComputedStyle(t).borderTopWidth; })();
+-  const s = document.createElement('style');
+-  s.textContent = '[data-slot="streaming-markdown"] table { border: 3px solid red; }';
+-  document.head.appendChild(s);
+-  const after = (() => { const t = document.querySelector('[data-slot="streaming-markdown"] table'); return getComputedStyle(t).borderTopWidth + ' ' + getComputedStyle(t).borderTopStyle; })();
+-  // 再看我们已有的规则是否在样式表里可见
+-  let found = 0;
+-  for (const sheet of document.styleSheets) {
+-    let rules; try { rules = sheet.cssRules; } catch { continue; }
+-    for (const r of rules) if (r.selectorText && r.selectorText.includes('streaming-markdown')) found++;
+-  }
+-  return { before, after, foundTopLevel: found };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/.tmp-check/inline.mjs b/.tmp-check/inline.mjs
+deleted file mode 100644
+index 8dde1bd..0000000
+--- a/.tmp-check/inline.mjs
++++ /dev/null
+@@ -1,13 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage();
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3500);
+-const out = await p.evaluate(() => {
+-  const styles = [...document.querySelectorAll('style')];
+-  const hits = styles.filter(s => s.textContent.includes('code-odp-background'));
+-  const linkSheets = [...document.querySelectorAll('link[rel=stylesheet]')].map(l => l.href);
+-  return { styleCount: styles.length, hits: hits.length, sample: hits[0] ? hits[0].textContent.slice(0, 200) : null, links: linkSheets.slice(0, 5), totalCssLen: styles.reduce((n, s) => n + s.textContent.length, 0) };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/.tmp-check/parse.mjs b/.tmp-check/parse.mjs
+deleted file mode 100644
+index 70fc629..0000000
+--- a/.tmp-check/parse.mjs
++++ /dev/null
+@@ -1,22 +0,0 @@
+-import { getMarkdown, parseMarkdownToStructure } from 'stream-markdown-parser';
+-const ANSWER = [
+-  '## 已完成的改动',
+-  '',
+-  '- 把 `SettingsPageDemo` 的三级布局收成两栏',
+-  '',
+-  '| 区域 | 改动 |',
+-  '| --- | --- |',
+-  '| 左栏 | 分组标题 + 条目 |',
+-  '',
+-  '```ts',
+-  'export const layout = "two-column" as const;',
+-  '```',
+-].join('\n');
+-const md = getMarkdown('probe');
+-const nodes = parseMarkdownToStructure(ANSWER, md, { final: true });
+-const dump = (n, depth = 0) => {
+-  const pad = '  '.repeat(depth);
+-  console.log(pad + n.type + ' ' + JSON.stringify({ content: n.content?.slice?.(0, 40), code: n.code?.slice?.(0, 40), language: n.language, raw: n.raw?.slice?.(0, 30) }));
+-  (n.children || []).forEach((c) => dump(c, depth + 1));
+-};
+-nodes.forEach((n) => dump(n));
+diff --git a/.tmp-check/probe.mjs b/.tmp-check/probe.mjs
+deleted file mode 100644
+index cd3d7bd..0000000
+--- a/.tmp-check/probe.mjs
++++ /dev/null
+@@ -1,19 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1000 } });
+-const errs = [];
+-p.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
+-await p.goto('http://127.0.0.1:5600/#/agent-stream', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(4000);
+-const info = await p.evaluate(() => {
+-  const host = document.querySelector('[data-slot="streaming-markdown"]') || document.body;
+-  const pre = host.querySelector('pre');
+-  const code = host.querySelector('code');
+-  const table = host.querySelector('table');
+-  const h2 = host.querySelector('h2');
+-  const cs = (el) => el ? { tag: el.tagName, cls: (el.className || '').toString().slice(0, 80), bg: getComputedStyle(el).backgroundColor, color: getComputedStyle(el).color, font: getComputedStyle(el).fontFamily.slice(0, 40), pad: getComputedStyle(el).padding, border: getComputedStyle(el).borderTopWidth } : null;
+-  return { hasHost: !!document.querySelector('[data-slot="streaming-markdown"]'), pre: cs(pre), code: cs(code), table: cs(table), h2: cs(h2), html: (host.innerHTML || '').slice(0, 400) };
+-});
+-console.log(JSON.stringify(info, null, 1));
+-console.log('errors', errs.slice(0, 4));
+-await b.close();
+diff --git a/.tmp-check/styled.mjs b/.tmp-check/styled.mjs
+deleted file mode 100644
+index 7de3a91..0000000
+--- a/.tmp-check/styled.mjs
++++ /dev/null
+@@ -1,19 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1100 } });
+-await p.goto('http://127.0.0.1:5600/#/agent-stream', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(2500);
+-// 点第一个 "开始追加"
+-await p.getByRole('button', { name: '开始追加' }).first().click();
+-await p.waitForTimeout(16000);
+-const info = await p.evaluate(() => {
+-  const host = document.querySelector('[data-slot="streaming-markdown"]');
+-  const pre = host?.querySelector('pre');
+-  const code = host?.querySelector('code');
+-  const table = host?.querySelector('table');
+-  const th = host?.querySelector('th');
+-  const cs = (el) => el ? { tag: el.tagName, cls: String(el.className).slice(0, 90), bg: getComputedStyle(el).backgroundColor, color: getComputedStyle(el).color, pad: getComputedStyle(el).padding, border: getComputedStyle(el).borderTopWidth + ' ' + getComputedStyle(el).borderTopColor, fs: getComputedStyle(el).fontSize } : null;
+-  return { textLen: host?.textContent?.length ?? 0, html: (host?.innerHTML || '').slice(0, 300), pre: cs(pre), code: cs(code), table: cs(table), th: cs(th) };
+-});
+-console.log(JSON.stringify(info, null, 1));
+-await b.close();
+diff --git a/.tmp-check/tags.mjs b/.tmp-check/tags.mjs
+deleted file mode 100644
+index dd4817b..0000000
+--- a/.tmp-check/tags.mjs
++++ /dev/null
+@@ -1,15 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage();
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3000);
+-const out = await p.evaluate(() => {
+-  const pre = document.querySelector('[data-slot="streaming-markdown"] pre');
+-  const th = document.querySelector('[data-slot="streaming-markdown"] th');
+-  return {
+-    pre: pre ? { cls: pre.className, style: pre.getAttribute('style'), parentCls: pre.parentElement?.className } : null,
+-    th: th ? { cls: th.className, style: th.getAttribute('style'), tableCls: th.closest('table')?.className } : null,
+-  };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/.tmp-check/tbl.mjs b/.tmp-check/tbl.mjs
+deleted file mode 100644
+index b7a66d7..0000000
+--- a/.tmp-check/tbl.mjs
++++ /dev/null
+@@ -1,14 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage();
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3000);
+-const out = await p.evaluate(() => {
+-  const t = document.querySelector('[data-slot="streaming-markdown"] table');
+-  const th = t?.querySelector('th');
+-  const td = t?.querySelector('td');
+-  const cs = (el) => el ? { borderTop: getComputedStyle(el).borderTopWidth + ' ' + getComputedStyle(el).borderTopStyle, borderBottom: getComputedStyle(el).borderBottomWidth, bg: getComputedStyle(el).backgroundColor } : null;
+-  return { table: cs(t), th: cs(th), td: cs(td) };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/.tmp-check/trace.mjs b/.tmp-check/trace.mjs
+deleted file mode 100644
+index fd80350..0000000
+--- a/.tmp-check/trace.mjs
++++ /dev/null
+@@ -1,35 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage({ viewport: { width: 1440, height: 1200 } });
+-const errs = [];
+-p.on('pageerror', (e) => errs.push(e.message.slice(0, 120)));
+-await p.goto('http://127.0.0.1:5600/#/trace', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3000);
+-const before = await p.evaluate(() => ({
+-  h1: document.querySelector('h1')?.textContent,
+-  h2s: [...document.querySelectorAll('h2')].map((h) => h.textContent),
+-  steps: document.querySelectorAll('[data-slot="trace-step"]').length,
+-}));
+-await p.getByRole('button', { name: '开始生成' }).click();
+-await p.waitForTimeout(1200);
+-const mid = await p.evaluate(() => {
+-  const steps = [...document.querySelectorAll('[data-slot="trace-step"]')];
+-  return {
+-    count: steps.length,
+-    statuses: steps.map((s) => s.getAttribute('data-status')),
+-    titles: steps.map((s) => s.querySelector('[data-slot="trace-title"]')?.textContent?.slice(0, 20)),
+-    openStates: steps.map((s) => s.querySelector('[data-slot^="collapsible"], .radix-collapsible-content') ? 'x' : '-'),
+-  };
+-});
+-await p.waitForTimeout(3200);
+-const after = await p.evaluate(() => {
+-  const steps = [...document.querySelectorAll('[data-slot="trace-step"]')];
+-  return {
+-    count: steps.length,
+-    statuses: steps.map((s) => s.getAttribute('data-status')),
+-    hasPlaceholder: [...steps].some((s) => (s.textContent || '').includes('正在生成')),
+-    expanded: steps.filter((s) => s.querySelector('[data-slot="trace-content"]')).length,
+-  };
+-});
+-console.log(JSON.stringify({ before, mid, after, errs: errs.slice(0, 3) }, null, 1));
+-await b.close();
+diff --git a/.tmp-check/vars.mjs b/.tmp-check/vars.mjs
+deleted file mode 100644
+index 5a4a718..0000000
+--- a/.tmp-check/vars.mjs
++++ /dev/null
+@@ -1,20 +0,0 @@
+-import { chromium } from 'playwright';
+-const b = await chromium.launch();
+-const p = await b.newPage();
+-await p.goto('http://127.0.0.1:5600/#/templates-chat', { waitUntil: 'domcontentloaded' });
+-await p.waitForTimeout(3000);
+-const out = await p.evaluate(() => {
+-  const root = getComputedStyle(document.documentElement);
+-  const th = document.querySelector('[data-slot="streaming-markdown"] th');
+-  const pre = document.querySelector('[data-slot="streaming-markdown"] pre');
+-  return {
+-    codeOdpBg: root.getPropertyValue('--code-odp-background').trim(),
+-    border: root.getPropertyValue('--border').trim(),
+-    thMatched: th ? th.matches('[data-slot="streaming-markdown"] th') : null,
+-    thBorder: th ? getComputedStyle(th).borderBottom : null,
+-    preBg: pre ? getComputedStyle(pre).backgroundColor : null,
+-    preBorder: pre ? getComputedStyle(pre).borderTopWidth : null,
+-  };
+-});
+-console.log(JSON.stringify(out, null, 1));
+-await b.close();
+diff --git a/src/chat/trace.tsx b/src/chat/trace.tsx
+index 3022284..d0e9c5f 100644
+--- a/src/chat/trace.tsx
++++ b/src/chat/trace.tsx
+@@ -186,9 +186,9 @@ export interface TraceLiveItem {
+  * ## 两种用法怎么选
+  *
+  * - **预先规划**: 步骤在开始时已知 (例如"拉镜像 -> 构建 -> 启动 -> 健康检查"),
+- *   用 Trace + TraceStep 直接列出来, 当前步给 running.
++ * 用 Trace + TraceStep 直接列出来, 当前步给 running.
+  * - **实时生成**: 步骤由 Agent 运行时决定 (调用一次工具才知道下一步是什么),
+- *   用 TraceLive 把已到达的步骤喂进来, 每来一条就多一行.
++ * 用 TraceLive 把已到达的步骤喂进来, 每来一条就多一行.
+  *
+  * ## 它与规划态的差别不只是数据源
+  *
+diff --git a/src/editor/CodeEditor.tsx b/src/editor/CodeEditor.tsx
+index c062049..014b411 100644
+--- a/src/editor/CodeEditor.tsx
++++ b/src/editor/CodeEditor.tsx
+@@ -17,11 +17,11 @@ import { CODE_THEME_ID, defineTheme, type Monaco } from "./monaco-theme";
+  * ## 三条实现上的硬约束
+  *
+  * 1. **不走 CDN**。@monaco-editor/react 默认从 jsdelivr 拉 monaco, 离线环境与
+- *    内网部署都会失败; 这里用 loader.config 指到本地包, 由使用方的打包器处理。
++ * 内网部署都会失败; 这里用 loader.config 指到本地包, 由使用方的打包器处理。
+  * 2. **懒加载**。monaco 体积大, 不能进首屏。组件挂载后才动态 import, 编辑区
+- *    先渲染一个等高骨架。
++ * 先渲染一个等高骨架。
+  * 3. **主题从令牌读**。颜色只在 tokens.css 的 --code-odp-* 里, 这里读出来注册,
+- *    不在组件里抄色板 (那也是门禁 PROJECT-UI-HEX 的要求)。
++ * 不在组件里抄色板 (那也是门禁 PROJECT-UI-HEX 的要求)。
+  *
+  * worker 由使用方的打包器提供: Vite 下用 new URL(...) 建立 editor.worker,
+  * webpack 下用 worker-loader。拿不到时 monaco 会退化成主线程计算, 编辑仍可用。
