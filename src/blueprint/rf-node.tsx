@@ -11,6 +11,8 @@ import { NODE_KIND_TITLE } from "./types";
 import type { RfNode } from "./rf-adapter";
 import { handleId } from "./rf-adapter";
 import { BODY_TOP, HEADER_H, PORT_ROW } from "./geometry";
+import { HALF_DIVISOR } from "../constants";
+import { BP_EDGE_FILL, BP_HANDLE_STYLE, BP_PIN_SPACER_CLASS } from "../constants/blueprint";
 
 /**
  * React Flow 的自定义节点 / 连线  **UE5 外观在这一层**, 不在别处。
@@ -47,9 +49,16 @@ const PIN = PIN_SIZE;
  */
 const HANDLE_EDGE = -(BODY_PAD_X + CARD_BORDER);
 
+/**
+ * 标题栏执行 Handle 的水平落点: 它的定位参照是根节点 (relative) 的内边距盒,
+ * 没有体区 px-2 那段内边距, 只扣一个边框宽, 左边缘就压在卡片外边界上,
+ * 与视觉引脚 (pinOffset) 的圆心重合。复用 HANDLE_EDGE 会多扣 BODY_PAD_X, 偏 8px。
+ */
+const HEADER_HANDLE_EDGE = -CARD_BORDER;
+
 /** Handle 在行内纵向居中 (React Flow 取中心, 所以给出中心点)。 */
 function handleTop(size: number): number {
-  return PORT_ROW / 2 - size / 2;
+  return PORT_ROW / HALF_DIVISOR - size / HALF_DIVISOR;
 }
 
 export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
@@ -83,7 +92,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
           type="target"
           id={handleId("exec-in", "in")}
           position={Position.Left}
-          style={{ top: headerPinTop(PIN.exec), left: HANDLE_EDGE, width: PIN.exec, height: PIN.exec, transform: "none", zIndex: 2 }}
+          style={{ top: headerPinTop(PIN.exec), left: HEADER_HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
           className="!border-0 !bg-transparent !opacity-0"
         />
         {/* 视觉引脚与上面的 Handle 用同一组偏移, 两个盒子完全重合; 引脚脱离文档流,
@@ -95,7 +104,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
         >
           <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN.exec} />
         </span>
-        <span aria-hidden className="shrink-0" style={{ width: PIN.exec / 2 }} />
+        <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN.exec / HALF_DIVISOR }} />
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
       </div>
 
@@ -109,7 +118,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
                     type="target"
                     id={handleId(p.id, "in")}
                     position={Position.Left}
-                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
+                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
                     className="!border-0 !bg-transparent !opacity-0"
                   />
                   <PortRow
@@ -129,7 +138,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
                     type="source"
                     id={handleId(p.id, "out")}
                     position={Position.Right}
-                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
+                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
                     className="!border-0 !bg-transparent !opacity-0"
                   />
                   <PortRow dir="out" port={p} {...(p.color ? { color: p.color } : {})} filled />
@@ -157,10 +166,10 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
 }
 
 /**
- * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows")。
+ * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows").
  *
  * 用 getBezierPath 拿 React Flow 自己算的路径  不自己算, 否则缩放/平移
- * 时端点会漂。
+ * 时端点会漂.
  */
 export function BpExecEdge({
   sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected,
@@ -172,7 +181,7 @@ export function BpExecEdge({
   return (
     <path
       d={path}
-      fill="none"
+      fill={BP_EDGE_FILL}
       strokeWidth={w}
       className="stroke-foreground"
       markerEnd="url(#bp-exec-arrow)"
@@ -180,7 +189,7 @@ export function BpExecEdge({
   );
 }
 
-/** 数据连线: 细、按类型着色。 */
+/** 数据连线: 细, 按类型着色. */
 export function BpDataEdge({
   sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, selected,
 }: EdgeProps): JSX.Element {
@@ -189,17 +198,17 @@ export function BpDataEdge({
   });
   const tint = (data as { tint?: string } | undefined)?.tint ?? "stroke-muted-foreground/70";
   return (
-    <path d={path} fill="none" strokeWidth={selected ? 2.2 : 1.4} className={tint} />
+    <path d={path} fill={BP_EDGE_FILL} strokeWidth={selected ? 2.2 : 1.4} className={tint} />
   );
 }
 
 /**
- * 执行线箭头的 marker 定义。
+ * 执行线箭头的 marker 定义.
  *
  * ⚠️ marker/defs/path 只能在 **<svg> 内部**  放到别处会被当成 HTML
- * 未知标签, 箭头不生效。所以这里渲染一个 0 尺寸的 svg 专门装 defs。
+ * 未知标签, 箭头不生效. 所以这里渲染一个 0 尺寸的 svg 专门装 defs.
  *
- * 所以这里渲染一个自己的 <svg> (0 尺寸、绝对定位、不挡事), 只用来装 defs。
+ * 所以这里渲染一个自己的 <svg> (0 尺寸, 绝对定位, 不挡事), 只用来装 defs.
  */
 export function ExecArrowMarker(): JSX.Element {
   return (

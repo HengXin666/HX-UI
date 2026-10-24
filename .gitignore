@@ -18,3 +18,6 @@ scripts/e2e/shots/
 scripts/.hx_code_quality/
 # <<< hx-agent-code quality state <<<
 *.tgz
+
+# 本地探针脚本 (playwright 调试用), 不进仓库
+.tmp-check/

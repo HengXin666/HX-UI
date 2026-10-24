@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, useMemo, useState, type JSX } from "react";
 import MarkdownRender from "markstream-react";
 import { cn } from "../primitives/utils";
-
-/**
- * 根元素上的主题属性与取值 (tokens.css 用 data-mode 区分明暗).
- * 读不到时按暗色处理: 库的默认皮肤是暗色, 文档站首屏也是暗色.
- */
-const MODE_ATTRIBUTE = "data-mode";
-const MODE_LIGHT = "light";
+import { SPACE } from "../constants";
+import { MODE_ATTRIBUTE, MODE_LIGHT, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED } from "../constants/markdown";
+import { FenceBlock, needsTailCursor, splitSegments } from "./streaming-markdown-parts";
 
 /**
  * 把 markstream 自带的配色与线条拉回本库的语义 token.
@@ -30,11 +26,20 @@ const SKIN = [
   "[&_.typewriter-cursor]:border-r-[1px]",
   "[&_table]:text-[12.5px]",
   "[&_th]:font-medium",
-  "[&_th]:text-muted-foreground",
-].join(" ");
+  "[&_th]:text-muted-foreground]",
+  // 表格线: markstream 只给单元格内边距不画线, 这里用 !important 的 utilities 压过它
+  // 未分层的预编译规则 (分层里的 !important 胜过来分层的普通声明).
+  "[&_table.table-node]:!border",
+  "[&_table.table-node]:!border-border",
+  "[&_th]:!border-b",
+  "[&_th]:!border-border",
+  "[&_th]:!bg-muted",
+  "[&_td]:!border-b",
+  "[&_td]:!border-border",
+].join(SPACE);
 
 function readDark(): boolean {
-  if (typeof document === "undefined") {
+  if (typeof document === TYPEOF_UNDEFINED) {
     return true;
   }
   return document.documentElement.getAttribute(MODE_ATTRIBUTE) !== MODE_LIGHT;
@@ -47,7 +52,7 @@ function readDark(): boolean {
 function useIsDark(override?: boolean): boolean {
   const [dark, setDark] = useState(readDark);
   useEffect(() => {
-    if (override !== undefined || typeof MutationObserver === "undefined") {
+    if (override !== undefined || typeof MutationObserver === TYPEOF_UNDEFINED) {
       return undefined;
     }
     const observer = new MutationObserver(() => setDark(readDark()));
@@ -75,16 +80,16 @@ export interface StreamingMarkdownProps {
 }
 
 /**
- * 流式 Markdown 渲染: 把不断增长的 Markdown 原文交给 markstream-react,
- * 由它处理未闭合的标题, 列表, 表格与代码块.
+ * 流式 Markdown 渲染.
  *
- * 样式不由本组件注入. 使用方 (或文档站) 必须显式引入一次:
+ * 样式不由本组件注入, 使用方 (或文档站) 必须引入一次 markstream-react/index.css,
+ * 库的样式入口 src/styles.css 已经带上它, 引了 @hx/ui/styles.css 就不用再引.
  *
- *     import "markstream-react/index.css";
- *
- * 漏了这一行不会有任何报错, 表现是"内容渲染出来了但没有排版".
+ * 代码块由本库的 CodeBlock 渲染 (见 streaming-markdown-parts 的 splitSegments 说明),
+ * 其余节点交给 markstream: 未闭合的标题, 列表, 表格与引用在流式中途都能按半成品渲染.
  * fade 关闭: 逐节点淡入会和调用方自己的逐字追加叠成两层节奏, 看起来像抖动;
- * 光标由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪.
+ * 光标由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪;
+ * 内容为空或以代码块结束时 typewriter 没有文本可跟, 这里补一个自己的光标.
  */
 export function StreamingMarkdown({
   content,
@@ -96,21 +101,40 @@ export function StreamingMarkdown({
 }: StreamingMarkdownProps): JSX.Element {
   const done = final ?? !streaming;
   const dark = useIsDark(isDark);
+  const segments = useMemo(() => splitSegments(content), [content]);
+  const tailCursor = !done && needsTailCursor(content);
+
   return (
     <div
       data-slot="streaming-markdown"
-      data-streaming={done ? "false" : "true"}
+      data-streaming={done ? STREAMING_ATTR.done : STREAMING_ATTR.live}
       className={cn("min-w-0 text-[13.5px] leading-relaxed text-foreground", SKIN, className)}
     >
-      <MarkdownRender
-        content={content}
-        final={done}
-        fade={false}
-        typewriter={!done}
-        smoothStreaming={false}
-        isDark={dark}
-        customId={customId}
-      />
+      {segments.map((segment, index) => {
+        const key = `${index}-${segment.kind}`;
+        if (segment.kind === SEGMENT_KIND.code) {
+          return <FenceBlock key={key} code={segment.text} open={segment.open === true} {...(segment.lang ? { lang: segment.lang } : {})} />;
+        }
+        return (
+          <MarkdownRender
+            key={key}
+            content={segment.text}
+            final={done}
+            fade={false}
+            typewriter={!done && index === segments.length - 1}
+            smoothStreaming={false}
+            isDark={dark}
+            {...(customId ? { customId } : {})}
+          />
+        );
+      })}
+      {tailCursor ? (
+        <span
+          data-slot="stream-cursor"
+          aria-hidden
+          className="ml-0.5 inline-block h-[1em] w-px animate-caret-blink bg-foreground/70 align-text-bottom motion-reduce:animate-none"
+        />
+      ) : null}
     </div>
   );
 }

@@ -24,12 +24,6 @@ export default defineConfig({
     alias: {
       // 直接指向源码, 改库能立即在文档里看到, 不必先 pack
       "@hx/ui": path.resolve(import.meta.dirname, "../src/index.ts"),
-      /**
-       * monaco 装在仓库根 (库的依赖), 文档站自己没装: 编辑器组件从 ../src 被解析时
-       * 它的 import "monaco-editor" 要指回根目录那一份, 否则会各带一份实例,
-       * worker 与主线程的语言服务对不上。
-       */
-      "monaco-editor": path.resolve(import.meta.dirname, "../node_modules/monaco-editor"),
       "@hx/blueprint-demo": blueprintDemoEntry,
     },
     /**
@@ -44,6 +38,8 @@ export default defineConfig({
     // react-hook-form 同理: 库的 Form 与文档示例的 useForm 必须是同一份, 否则表单上下文取不到
     dedupe: ["react", "react-dom", "react-hook-form"],
   },
+  // 静态资源 (favicon / logo) 放在 src/public: docs/ 根下的非 Markdown 文件会被 HC-DOCS 当成文档树
+  publicDir: path.resolve(import.meta.dirname, "src/public"),
   server: { host: "127.0.0.1", port: 5600 },
   /**
    * 多入口: 蓝图是一个**真正独立的 HTML 页面**, 不是文档站的一个路由。

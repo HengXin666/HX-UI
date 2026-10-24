@@ -87,22 +87,16 @@ export {
   canConnect, applyConnect, resolvePort, execOutIds, execOutLabel, EXEC_IN_PORT,
   type ConnectResult, type ConnectFailReason,
 } from "./blueprint/connect";
-export {
-  validateGraph, findCycles, topoSort, upstreamOf, allPorts,
-} from "./blueprint/validate";
+export { validateGraph, findCycles, topoSort, upstreamOf, allPorts } from "./blueprint/validate";
 export {
   useBlueprint, useSelection, makeId,
   type BlueprintApi, type UseBlueprintOptions,
 } from "./blueprint/useBlueprint";
-export {
-  evaluateGraph, findEntries, type EvalResult,
-} from "./blueprint/evaluate";
+export { evaluateGraph, findEntries, type EvalResult } from "./blueprint/evaluate";
 export {
   serializeGraph, parseGraph, toPseudoCode, FORMAT_VERSION, type SerializedGraph,
 } from "./blueprint/serialize";
-export {
-  BlueprintCanvas, type BlueprintCanvasProps, type Viewport,
-} from "./blueprint/BlueprintCanvas";
+export { BlueprintCanvas, type BlueprintCanvasProps, type Viewport } from "./blueprint/BlueprintCanvas";
 export {
   BlueprintNodeCard, type BlueprintNodeCardProps,
 } from "./blueprint/BlueprintNode";
@@ -299,10 +293,5 @@ export * from "./hxbrowser";
 export * from "./agent";
 
 // ── 常量 ──
-/**
- * 库与文档站共用同一份字面量 (PROJECT-CONST-DUP): 表格列 USER, 状态色 TONE, 以及 shadcn 对标组件文档示例用到的取值.
- * .agents/notes/implemented/architecture/2026-10-15-constant-library.md
- */
-export { ALIGN, BUTTON_TYPE, DOC, DOC_SAMPLE, DOC_TAB, EVENT, OPEN_STATE, ORIENTATION, QUESTION_TYPE, SELECT_MODE } from "./constants";
-export { SIDE, SIZE, TASK_STATUS, TONE, TONE_VARIANT, UI_CLASSES, USER, VARIANT } from "./constants";
-export { AGENT_AUTO_RIGHT, AGENT_ROW, AGENT_STREAM_LABEL, AGENT_STREAMING_LABEL, AGENT_TEXT_MUTED } from "./constants";
+/** 库与文档站共用的字面量 (PROJECT-CONST-DUP), 导出清单见 public-constants.ts. */
+export * from "./public-constants";

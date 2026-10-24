@@ -2,7 +2,7 @@ import { AGENT_STREAMING_LABEL } from "@hx/ui";
 import type { JSX } from "react";
 import { Button, StreamingMarkdown, StreamingText, VARIANT } from "@hx/ui";
 import { Callout, Code, H2, P, Preview, PropsTable } from "../../components/DocKit";
-import { DOC } from "@hx/ui";
+import { DOC, DOC_STREAMING_PROPS } from "@hx/ui";
 import { STREAMING_MARKDOWN_SAMPLE } from "./streaming-markdown-sample";
 import { useTypewriter } from "./use-typewriter";
 
@@ -85,25 +85,9 @@ export function StreamingTextPage(): JSX.Element {
 
       <H2>属性</H2>
       <P>StreamingMarkdown</P>
-      <PropsTable
-        rows={[
-          { name: "content", type: "string", desc: "已到达的 Markdown 原文, 不完整的语法按半成品渲染" },
-          { name: "streaming", type: "boolean", default: "true", desc: "仍在生成, 为 true 时保留流式光标" },
-          { name: "final", type: "boolean", desc: "流已结束, 与 streaming 同时给时以它为准" },
-          { name: "customId", type: "string", desc: "每条消息一个解析器 id, 同页多个实例的代码块 DOM id 不撞车" },
-          { name: "isDark", type: "boolean", desc: "明暗主题, 缺省跟随根元素的 data-mode" },
-          { name: "className", type: "string", desc: "追加到外层容器的类名" },
-        ]}
-      />
+      <PropsTable rows={DOC_STREAMING_PROPS.markdown} />
       <P>StreamingText</P>
-      <PropsTable
-        rows={[
-          { name: "text", type: "string", desc: "当前已到达的文本, 原样渲染" },
-          { name: "streaming", type: "boolean", desc: "为 true 时显示光标, 表示仍在生成" },
-          { name: "cursor", type: "boolean", default: "true", desc: "是否显示光标, 只在 streaming 为 true 时生效" },
-          { name: "className", type: "string", desc: "追加到文本容器的类名" },
-        ]}
-      />
+      <PropsTable rows={DOC_STREAMING_PROPS.text} />
     </>
   );
 }

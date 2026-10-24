@@ -1,5 +1,6 @@
 import type { JSX, ReactNode } from "react";
-import { Badge, Card, CardContent } from "@hx/ui";
+import { Badge, Card, CardContent, TONE_VARIANT, UI_CLASSES, VARIANT } from "@hx/ui";
+import { INLINE_SPACE, SHELL_CLASSES } from "../constants/shell";
 import { Code, P } from "./DocKit";
 
 /**
@@ -11,19 +12,19 @@ import { Code, P } from "./DocKit";
  */
 export function ApplySteps({ steps }: { readonly steps: readonly string[] }): JSX.Element {
   return (
-    <Card variant="muted" className="my-4">
+    <Card variant={TONE_VARIANT.muted} className="my-4">
       <CardContent className="pt-3">
         <div className="mb-2 flex items-center gap-2">
-          <Badge variant="default">怎么套用</Badge>
-          <span className="text-[12px] text-muted-foreground">三步, 每步都可直接复制</span>
+          <Badge variant={VARIANT.default}>怎么套用</Badge>
+          <span className={UI_CLASSES.mutedSm}>三步, 每步都可直接复制</span>
         </div>
-        <ol className="flex flex-col gap-1.5">
+        <ol className={SHELL_CLASSES.stackSnug}>
           {steps.map((step, index) => (
             <li key={step} className="flex gap-2 text-[12.5px] leading-relaxed text-muted-foreground">
               <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-primary/15 text-[10px] font-semibold text-link">
                 {index + 1}
               </span>
-              <span className="min-w-0 flex-1">{step}</span>
+              <span className={SHELL_CLASSES.grow}>{step}</span>
             </li>
           ))}
         </ol>
@@ -47,7 +48,7 @@ export function TemplateFrame({
 }): JSX.Element {
   return (
     <div
-      className="overflow-hidden rounded-xl border border-border/60 bg-background"
+      className="overflow-y-hidden overflow-x-auto rounded-xl border border-border/60 bg-background"
       style={{ height }}
     >
       {children}
@@ -62,7 +63,7 @@ export function TemplateFiles({ files }: { readonly files: readonly string[] }):
       建议落点:
       {files.map((file, index) => (
         <span key={file}>
-          {index > 0 ? " / " : " "}
+          {index > 0 ? " / " : INLINE_SPACE}
           <Code>{file}</Code>
         </span>
       ))}
