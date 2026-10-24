@@ -7,7 +7,6 @@ Decision-ID: streaming-markdown-markstream
 ## Code
 
 - `src/agent/streaming-markdown.tsx`
-- `src/agent/streaming-markdown-parts.tsx`
 - `src/chat/trace.tsx`
 - `docs/src/pages/agent/StreamingTextPage.tsx`
 - `docs/src/pages/parity/trace.tsx`
