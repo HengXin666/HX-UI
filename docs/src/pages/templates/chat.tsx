@@ -3,10 +3,11 @@ import { useState } from "react";
 import {
   ALIGN, Bubble, Button, Message, MessageContent, MessageScroller, MessageScrollerButton,
   MessageScrollerContent, MessageScrollerItem, StreamingMarkdown, TASK_STATUS, Textarea,
-  Trace, TraceStep, VARIANT,
+  Trace, TraceStep, UI_CLASSES, VARIANT,
 } from "@hx/ui";
 import { H2, P, Preview } from "../../components/DocKit";
 import { ApplySteps, TemplateFiles, TemplateFrame } from "../../components/TemplateKit";
+import { TEMPLATE_PAGE } from "../../constants/templates";
 
 /** 示例会话: 一条用户消息, 一条流式回答, 一段工具轨迹. */
 const USER_TEXT = "把 settings 页的三级布局改成左右两栏, 顺便跑一次类型检查";
@@ -68,7 +69,7 @@ export const layout = "two-column" as const;
  * AI 对话工作台模板.
  *
  * 这一页不是组件文档, 是一份**能直接搬走的整页骨架**: 左侧会话流 (含流式回答与
- * 工具轨迹) 加底部输入框。组件页讲单个 API, 模板页讲它们怎么拼在一起。
+ * 工具轨迹) 加底部输入框. 组件页讲单个 API, 模板页讲它们怎么拼在一起.
  */
 export function TemplateChatPage(): JSX.Element {
   const [draft, setDraft] = useState("");
@@ -115,8 +116,8 @@ export function TemplateChatPage(): JSX.Element {
       </TemplateFrame>
       <H2>完整代码</H2>
       <TemplateFiles files={["src/pages/ChatWorkbench.tsx"]} />
-      <Preview code={CODE} lang="tsx">
-        <div className="text-[12.5px] text-muted-foreground">上面就是这一页的完整结构, 复制即用。</div>
+      <Preview code={CODE} lang={TEMPLATE_PAGE.lang}>
+        <div className={UI_CLASSES.mutedHalf}>上面就是这一页的完整结构, 复制即用。</div>
       </Preview>
     </>
   );

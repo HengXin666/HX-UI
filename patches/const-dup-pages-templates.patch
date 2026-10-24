@@ -1,0 +1,392 @@
+From abc6a9570f6f3379ece0574eff3acfe50ffa4544 Mon Sep 17 00:00:00 2001
+From: hark <hark@local>
+Date: Sat, 24 Oct 2026 06:22:49 +0000
+Subject: [PATCH] =?UTF-8?q?refactor(quality):=20=E6=A8=A1=E6=9D=BF?=
+ =?UTF-8?q?=E9=A1=B5=E9=87=8D=E5=A4=8D=E5=AD=97=E9=9D=A2=E9=87=8F=E6=8F=90?=
+ =?UTF-8?q?=E5=B8=B8=E9=87=8F,=20=E4=BF=AE=E6=8E=89=20docs/src/pages/templ?=
+ =?UTF-8?q?ates=20=E7=9A=84=20CONST-DUP=20(hark=20j-20261024-008)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ docs/src/constants/templates.ts        | 55 ++++++++++++++++++++++++++
+ docs/src/pages/templates/chat.tsx      |  7 ++--
+ docs/src/pages/templates/console.tsx   | 29 +++++++-------
+ docs/src/pages/templates/dashboard.tsx | 39 +++++++++---------
+ docs/src/pages/templates/settings.tsx  | 23 +++++------
+ src/constants/templates.ts             | 31 +++++++++++++++
+ 6 files changed, 137 insertions(+), 47 deletions(-)
+ create mode 100644 docs/src/constants/templates.ts
+ create mode 100644 src/constants/templates.ts
+
+diff --git a/docs/src/constants/templates.ts b/docs/src/constants/templates.ts
+new file mode 100644
+index 0000000..1f3c05f
+--- /dev/null
++++ b/docs/src/constants/templates.ts
+@@ -0,0 +1,55 @@
++import { TASK_STATUS, TONE_VARIANT } from "@hx/ui";
++import { TEMPLATE_SAMPLE } from "../../../src/constants/templates";
++
++/**
++ * 模板页 (docs/src/pages/templates/) 跨页复用的取值.
++ * 与库或其它文档页同值的原始字面量登记在 src/constants/templates.ts (PROJECT-CONST-DUP 认可的常量目录), 这里只按用途重新命名.
++ */
++
++/** 控制台, 看板, 设置三页共用的骨架: 第一步套用说明, 预览框高度, 预览框内容容器. 代码块语言四页共用. */
++export const TEMPLATE_PAGE = {
++  installStep: "安装 @hx/ui 并引入样式入口",
++  frameHeight: 430,
++  body: "flex h-full flex-col gap-4 overflow-y-auto p-5",
++  lang: TEMPLATE_SAMPLE.lang,
++} as const;
++
++/** 部署控制台: 当前步骤与进行中步骤的说明. */
++export const CONSOLE_STEP = {
++  current: TEMPLATE_SAMPLE.consoleCurrent,
++  running: TEMPLATE_SAMPLE.running,
++} as const;
++
++/** 部署控制台日志行的 id. */
++export const LOG_ID = {
++  first: TEMPLATE_SAMPLE.logFirst,
++  second: TEMPLATE_SAMPLE.logSecond,
++  third: TEMPLATE_SAMPLE.logThird,
++  fourth: TEMPLATE_SAMPLE.logFourth,
++} as const;
++
++/** 部署控制台日志行的级别 (LogLine.level). */
++export const LOG_LEVEL = {
++  info: TONE_VARIANT.info,
++  success: TONE_VARIANT.success,
++  warn: TEMPLATE_SAMPLE.warn,
++  error: TASK_STATUS.error,
++} as const;
++
++/** 数据看板: 服务状态文案, 服务 id, 服务列字段名, 等宽数字类名. */
++export const DASHBOARD = {
++  stateOk: "正常",
++  authId: TEMPLATE_SAMPLE.authId,
++  searchId: TEMPLATE_SAMPLE.searchId,
++  nameKey: TEMPLATE_SAMPLE.nameKey,
++  tabularNums: TEMPLATE_SAMPLE.tabularNums,
++} as const;
++
++/** 设置页: 分组 id, 语言值, 密度选项, Webhook 输入框宽度. */
++export const SETTINGS = {
++  general: TEMPLATE_SAMPLE.general,
++  zh: TEMPLATE_SAMPLE.zh,
++  compact: TEMPLATE_SAMPLE.compact,
++  compactLabel: TEMPLATE_SAMPLE.compactLabel,
++  inputWidth: TEMPLATE_SAMPLE.inputWidth,
++} as const;
+diff --git a/docs/src/pages/templates/chat.tsx b/docs/src/pages/templates/chat.tsx
+index ac0837f..5ee1deb 100644
+--- a/docs/src/pages/templates/chat.tsx
++++ b/docs/src/pages/templates/chat.tsx
+@@ -3,10 +3,11 @@ import { useState } from "react";
+ import {
+   ALIGN, Bubble, Button, Message, MessageContent, MessageScroller, MessageScrollerButton,
+   MessageScrollerContent, MessageScrollerItem, StreamingMarkdown, TASK_STATUS, Textarea,
+-  Trace, TraceStep, VARIANT,
++  Trace, TraceStep, UI_CLASSES, VARIANT,
+ } from "@hx/ui";
+ import { H2, P, Preview } from "../../components/DocKit";
+ import { ApplySteps, TemplateFiles, TemplateFrame } from "../../components/TemplateKit";
++import { TEMPLATE_PAGE } from "../../constants/templates";
+ 
+ /** 示例会话: 一条用户消息, 一条流式回答, 一段工具轨迹. */
+ const USER_TEXT = "把 settings 页的三级布局改成左右两栏, 顺便跑一次类型检查";
+@@ -115,8 +116,8 @@ export function TemplateChatPage(): JSX.Element {
+       </TemplateFrame>
+       <H2>完整代码</H2>
+       <TemplateFiles files={["src/pages/ChatWorkbench.tsx"]} />
+-      <Preview code={CODE} lang="tsx">
+-        <div className="text-[12.5px] text-muted-foreground">上面就是这一页的完整结构, 复制即用。</div>
++      <Preview code={CODE} lang={TEMPLATE_PAGE.lang}>
++        <div className={UI_CLASSES.mutedHalf}>上面就是这一页的完整结构, 复制即用。</div>
+       </Preview>
+     </>
+   );
+diff --git a/docs/src/pages/templates/console.tsx b/docs/src/pages/templates/console.tsx
+index a4cf489..ef99fcf 100644
+--- a/docs/src/pages/templates/console.tsx
++++ b/docs/src/pages/templates/console.tsx
+@@ -1,20 +1,21 @@
+ import type { JSX } from "react";
+-import { Badge, Button, LogViewer, Stepper, VARIANT, type LogLine } from "@hx/ui";
++import { Badge, Button, LogViewer, Stepper, TONE_VARIANT, UI_CLASSES, VARIANT, type LogLine } from "@hx/ui";
+ import { H2, P, Preview } from "../../components/DocKit";
+ import { ApplySteps, TemplateFiles, TemplateFrame } from "../../components/TemplateKit";
++import { CONSOLE_STEP, LOG_ID, LOG_LEVEL, TEMPLATE_PAGE } from "../../constants/templates";
+ 
+ const STEPS = [
+   { id: "pull", title: "拉取镜像", description: "60.2 MB" },
+   { id: "build", title: "构建配置", description: "2 个服务" },
+-  { id: "up", title: "启动容器", description: "进行中" },
++  { id: "up", title: "启动容器", description: CONSOLE_STEP.running },
+   { id: "check", title: "健康检查" },
+ ];
+ 
+ const LOGS: readonly LogLine[] = [
+-  { id: "1", level: "info", message: "pulling image ghcr.io/acme/gateway:1.4.2", time: "10:02:11" },
+-  { id: "2", level: "success", message: "image pulled (60.2 MB)", time: "10:02:19" },
+-  { id: "3", level: "warn", message: "upstream search-index 响应偏慢, 已切到降级策略", time: "10:02:24" },
+-  { id: "4", level: "error", message: "container gateway-2 启动失败: port 8081 已被占用", time: "10:02:31", detail: "exit code 1" },
++  { id: LOG_ID.first, level: LOG_LEVEL.info, message: "pulling image ghcr.io/acme/gateway:1.4.2", time: "10:02:11" },
++  { id: LOG_ID.second, level: LOG_LEVEL.success, message: "image pulled (60.2 MB)", time: "10:02:19" },
++  { id: LOG_ID.third, level: LOG_LEVEL.warn, message: "upstream search-index 响应偏慢, 已切到降级策略", time: "10:02:24" },
++  { id: LOG_ID.fourth, level: LOG_LEVEL.error, message: "container gateway-2 启动失败: port 8081 已被占用", time: "10:02:31", detail: "exit code 1" },
+ ];
+ 
+ const CODE = `import { LogViewer, Stepper } from "@hx/ui";
+@@ -34,20 +35,20 @@ export function TemplateConsolePage(): JSX.Element {
+     <>
+       <P>整页骨架: 顶部步骤条反映部署进度, 中间日志框按级别过滤并贴底跟随, 底部放危险操作。日志行自带时间与级别色, 不需要你再套一层表格。</P>
+       <ApplySteps steps={[
+-        "安装 @hx/ui 并引入样式入口",
++        TEMPLATE_PAGE.installStep,
+         "复制下面这段进 src/pages/DeployConsole.tsx, logs 换成你的 SSE 或 WS 流",
+         "推进步骤只改 current, 失败的那一步用 steps[i].status 显式覆盖",
+       ]} />
+       <H2>整页预览</H2>
+-      <TemplateFrame height={430}>
+-        <div className="flex h-full flex-col gap-4 overflow-y-auto p-5">
++      <TemplateFrame height={TEMPLATE_PAGE.frameHeight}>
++        <div className={TEMPLATE_PAGE.body}>
+           <div className="flex items-center justify-between">
+-            <Stepper steps={STEPS} current={2} />
+-            <Button size={VARIANT.sm} variant="destructive">停止</Button>
++            <Stepper steps={STEPS} current={CONSOLE_STEP.current} />
++            <Button size={VARIANT.sm} variant={TONE_VARIANT.destructive}>停止</Button>
+           </div>
+           <LogViewer lines={LOGS} height="min(320px, 46vh)" />
+           <div className="flex items-center gap-2 rounded-lg border border-border p-3">
+-            <Badge variant="warning">1 个告警</Badge>
++            <Badge variant={VARIANT.warning}>1 个告警</Badge>
+             <span className="min-w-0 flex-1 truncate text-[12.5px] text-muted-foreground">
+               search-index 延迟升高, 已启用降级策略, 无需人工介入
+             </span>
+@@ -57,8 +58,8 @@ export function TemplateConsolePage(): JSX.Element {
+       </TemplateFrame>
+       <H2>完整代码</H2>
+       <TemplateFiles files={["src/pages/DeployConsole.tsx"]} />
+-      <Preview code={CODE} lang="tsx">
+-        <div className="text-[12.5px] text-muted-foreground">这段就是上面的结构, 组件顺序与间距保持原样。</div>
++      <Preview code={CODE} lang={TEMPLATE_PAGE.lang}>
++        <div className={UI_CLASSES.mutedHalf}>这段就是上面的结构, 组件顺序与间距保持原样。</div>
+       </Preview>
+     </>
+   );
+diff --git a/docs/src/pages/templates/dashboard.tsx b/docs/src/pages/templates/dashboard.tsx
+index 55f96ca..a60b2dd 100644
+--- a/docs/src/pages/templates/dashboard.tsx
++++ b/docs/src/pages/templates/dashboard.tsx
+@@ -1,7 +1,8 @@
+ import type { JSX } from "react";
+-import { Badge, Button, DataTable, Progress, StatCard, StatGrid, VARIANT } from "@hx/ui";
++import { Badge, Button, DataTable, Progress, SIDE, StatCard, StatGrid, TONE_VARIANT, UI_CLASSES, VARIANT } from "@hx/ui";
+ import { H2, P, Preview } from "../../components/DocKit";
+ import { ApplySteps, TemplateFiles, TemplateFrame } from "../../components/TemplateKit";
++import { DASHBOARD, TEMPLATE_PAGE } from "../../constants/templates";
+ 
+ interface ServiceRow {
+   readonly id: string;
+@@ -13,17 +14,17 @@ interface ServiceRow {
+ }
+ 
+ const ROWS: readonly ServiceRow[] = [
+-  { id: "api", name: "api-gateway", region: "ap-east-1", calls: "1.24M", p95: "182ms", state: "正常" },
+-  { id: "auth", name: "auth-service", region: "ap-east-1", calls: "684K", p95: "96ms", state: "正常" },
+-  { id: "search", name: "search-index", region: "ap-southeast-1", calls: "312K", p95: "410ms", state: "降级" },
++  { id: "api", name: "api-gateway", region: "ap-east-1", calls: "1.24M", p95: "182ms", state: DASHBOARD.stateOk },
++  { id: DASHBOARD.authId, name: "auth-service", region: "ap-east-1", calls: "684K", p95: "96ms", state: DASHBOARD.stateOk },
++  { id: DASHBOARD.searchId, name: "search-index", region: "ap-southeast-1", calls: "312K", p95: "410ms", state: "降级" },
+ ];
+ 
+ const CODE = `import { DataTable, StatCard, StatGrid } from "@hx/ui";
+ 
+ const columns = [
+   { key: "name", header: "服务" },
+-  { key: "calls", header: "调用量", align: "right", numeric: true },
+-  { key: "p95", header: "P95", align: "right", numeric: true },
++  { key: "calls", header: "调用量", align: SIDE.right, numeric: true },
++  { key: "p95", header: "P95", align: SIDE.right, numeric: true },
+ ];
+ 
+ export function DashboardPage() {
+@@ -44,13 +45,13 @@ export function TemplateDashboardPage(): JSX.Element {
+     <>
+       <P>整页骨架: 顶部指标卡, 中间服务表 (粘性表头 + 右对齐数字), 底部容量条。指标卡数字等宽, 刷新时不抖。</P>
+       <ApplySteps steps={[
+-        "安装 @hx/ui 并引入样式入口",
++        TEMPLATE_PAGE.installStep,
+         "复制下面这段进 src/pages/DashboardPage.tsx, 把 ROWS 换成你的接口返回",
+         "表格超过一屏时给 maxHeight, 表头会粘住",
+       ]} />
+       <H2>整页预览</H2>
+-      <TemplateFrame height={430}>
+-        <div className="flex h-full flex-col gap-4 overflow-y-auto p-5">
++      <TemplateFrame height={TEMPLATE_PAGE.frameHeight}>
++        <div className={TEMPLATE_PAGE.body}>
+           <StatGrid>
+             <StatCard label="今日调用" value="2.24M" hint="+8.2% 环比" />
+             <StatCard label="错误率" value="0.42%" hint="低于阈值 1%" tone="good" />
+@@ -62,16 +63,16 @@ export function TemplateDashboardPage(): JSX.Element {
+             title="服务健康"
+             actions={<Button size={VARIANT.sm} variant={VARIANT.ghost}>刷新</Button>}
+             columns={[
+-              { key: "name", header: "服务", render: (row) => <span className="font-mono text-[12px]">{row.name}</span> },
+-              { key: "region", header: "区域", render: (row) => <span className="text-muted-foreground">{row.region}</span> },
+-              { key: "calls", header: "调用量", align: "right", numeric: true },
+-              { key: "p95", header: "P95", align: "right", numeric: true },
++              { key: DASHBOARD.nameKey, header: "服务", render: (row) => <span className="font-mono text-[12px]">{row.name}</span> },
++              { key: "region", header: "区域", render: (row) => <span className={UI_CLASSES.muted}>{row.region}</span> },
++              { key: "calls", header: "调用量", align: SIDE.right, numeric: true },
++              { key: "p95", header: "P95", align: SIDE.right, numeric: true },
+               {
+                 key: "state",
+                 header: "状态",
+-                align: "right",
++                align: SIDE.right,
+                 render: (row) => (
+-                  <Badge variant={row.state === "正常" ? "success" : "warning"}>{row.state}</Badge>
++                  <Badge variant={row.state === DASHBOARD.stateOk ? TONE_VARIANT.success : VARIANT.warning}>{row.state}</Badge>
+                 ),
+               },
+             ]}
+@@ -80,8 +81,8 @@ export function TemplateDashboardPage(): JSX.Element {
+ 
+           <div className="flex flex-col gap-2 rounded-lg border border-border p-4">
+             <div className="flex items-center justify-between text-[12.5px]">
+-              <span className="text-muted-foreground">本月额度</span>
+-              <span className="tabular-nums">68% , 6.8M / 10M</span>
++              <span className={UI_CLASSES.muted}>本月额度</span>
++              <span className={DASHBOARD.tabularNums}>68% , 6.8M / 10M</span>
+             </div>
+             <Progress value={68} />
+           </div>
+@@ -89,8 +90,8 @@ export function TemplateDashboardPage(): JSX.Element {
+       </TemplateFrame>
+       <H2>完整代码</H2>
+       <TemplateFiles files={["src/pages/DashboardPage.tsx"]} />
+-      <Preview code={CODE} lang="tsx">
+-        <div className="text-[12.5px] text-muted-foreground">表格列定义与真实渲染一致, 直接改数据源即可。</div>
++      <Preview code={CODE} lang={TEMPLATE_PAGE.lang}>
++        <div className={UI_CLASSES.mutedHalf}>表格列定义与真实渲染一致, 直接改数据源即可。</div>
+       </Preview>
+     </>
+   );
+diff --git a/docs/src/pages/templates/settings.tsx b/docs/src/pages/templates/settings.tsx
+index d5bbe75..16691ad 100644
+--- a/docs/src/pages/templates/settings.tsx
++++ b/docs/src/pages/templates/settings.tsx
+@@ -1,10 +1,11 @@
+ import type { JSX } from "react";
+ import {
+   Button, Input, SegmentedControl, Select, SelectContent, SelectItem, SelectTrigger,
+-  SelectValue, SettingRow, SettingSection, Switch, VARIANT,
++  SelectValue, SettingRow, SettingSection, Switch, UI_CLASSES, VARIANT,
+ } from "@hx/ui";
+ import { H2, P, Preview } from "../../components/DocKit";
+ import { ApplySteps, TemplateFiles, TemplateFrame } from "../../components/TemplateKit";
++import { SETTINGS, TEMPLATE_PAGE } from "../../constants/templates";
+ 
+ const CODE = `import { SettingRow, SettingSection } from "@hx/ui";
+ 
+@@ -31,19 +32,19 @@ export function TemplateSettingsPage(): JSX.Element {
+     <>
+       <P>整页骨架: 分组卡片 + 一行一个设置项, 右侧放控件。行内说明文字压到最小, 避免和标签抢注意力; 危险操作单独一组放在最下面。</P>
+       <ApplySteps steps={[
+-        "安装 @hx/ui 并引入样式入口",
++        TEMPLATE_PAGE.installStep,
+         "把下面这段复制进 src/pages/SettingsPage.tsx, 按需要增删 SettingRow",
+         "危险操作 (删除账号之类) 放最后一组, 用 variant=danger 的按钮",
+       ]} />
+       <H2>整页预览</H2>
+-      <TemplateFrame height={430}>
+-        <div className="flex h-full flex-col gap-4 overflow-y-auto p-5">
+-          <SettingSection section={{ id: "general", title: "通用" }} description="影响整个应用的偏好">
++      <TemplateFrame height={TEMPLATE_PAGE.frameHeight}>
++        <div className={TEMPLATE_PAGE.body}>
++          <SettingSection section={{ id: SETTINGS.general, title: "通用" }} description="影响整个应用的偏好">
+             <SettingRow title="界面语言" description="菜单与通知使用的语言">
+-              <Select defaultValue="zh">
++              <Select defaultValue={SETTINGS.zh}>
+                 <SelectTrigger className="w-36"><SelectValue /></SelectTrigger>
+                 <SelectContent>
+-                  <SelectItem value="zh">简体中文</SelectItem>
++                  <SelectItem value={SETTINGS.zh}>简体中文</SelectItem>
+                   <SelectItem value="en">English</SelectItem>
+                 </SelectContent>
+               </Select>
+@@ -54,7 +55,7 @@ export function TemplateSettingsPage(): JSX.Element {
+             <SettingRow title="密度" description="列表与表单的间距">
+               <SegmentedControl
+                 items={[
+-                  { key: "compact", label: "紧凑" },
++                  { key: SETTINGS.compact, label: SETTINGS.compactLabel },
+                   { key: "normal", label: "标准" },
+                 ]}
+                 value="normal"
+@@ -71,7 +72,7 @@ export function TemplateSettingsPage(): JSX.Element {
+               <Switch defaultChecked />
+             </SettingRow>
+             <SettingRow title="自定义 Webhook" description="以 POST 形式发到你的服务">
+-              <Input placeholder="https://example.com/hook" className="w-52" />
++              <Input placeholder="https://example.com/hook" className={SETTINGS.inputWidth} />
+             </SettingRow>
+           </SettingSection>
+ 
+@@ -83,8 +84,8 @@ export function TemplateSettingsPage(): JSX.Element {
+       </TemplateFrame>
+       <H2>完整代码</H2>
+       <TemplateFiles files={["src/pages/SettingsPage.tsx"]} />
+-      <Preview code={CODE} lang="tsx">
+-        <div className="text-[12.5px] text-muted-foreground">复制即用, 只保留了你真正会改的那几行。</div>
++      <Preview code={CODE} lang={TEMPLATE_PAGE.lang}>
++        <div className={UI_CLASSES.mutedHalf}>复制即用, 只保留了你真正会改的那几行。</div>
+       </Preview>
+     </>
+   );
+diff --git a/src/constants/templates.ts b/src/constants/templates.ts
+new file mode 100644
+index 0000000..16f4c6d
+--- /dev/null
++++ b/src/constants/templates.ts
+@@ -0,0 +1,31 @@
++/**
++ * 文档站模板页 (docs/src/pages/templates/) 的演示取值: 与库或其它文档页同值的字面量登记在这里,
++ * 由 docs/src/constants/templates.ts 按用途取用. 库本身不引用这里.
++ */
++
++/** 模板页演示数据里与别处同值的取值. */
++export const TEMPLATE_SAMPLE = {
++	/** 完整代码块的语言. */
++	lang: "tsx",
++	/** 部署控制台: 当前步骤下标与进行中步骤的说明. */
++	consoleCurrent: 2,
++	running: "进行中",
++	/** 日志级别 warn (LogLine.level). */
++	warn: "warn",
++	/** 日志行的 id. */
++	logFirst: "1",
++	logSecond: "2",
++	logThird: "3",
++	logFourth: "4",
++	/** 数据看板: 服务 id, 服务列的字段名, 等宽数字类名. */
++	authId: "auth",
++	searchId: "search",
++	nameKey: "name",
++	tabularNums: "tabular-nums",
++	/** 设置页: 分组 id, 语言值, 密度选项, 输入框宽度. */
++	general: "general",
++	zh: "zh",
++	compact: "compact",
++	compactLabel: "紧凑",
++	inputWidth: "w-52",
++} as const;
+-- 
+2.47.3
+
