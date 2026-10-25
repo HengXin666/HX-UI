@@ -3,17 +3,19 @@
  *
  * Node 在 ESM 下不会补 "./x" 的 .js 后缀, tsc 的产物因此无法被 node 直接 import.
  * 这里在 tsc 之后统一改写相对说明符 (目录的补 /index.js), 再拷 CSS 与许可证.
- * 决策与取舍见 .agents/notes/implemented/architecture/2026-10-22-release-tarball-packaging.md
+ * 决策与取舍见 release-tarball-packaging 决策记录 (锚点在 rewrite 上方).
  */
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { LICENSE_FILE, SRC_DIR } from "./constants/pack.ts";
+import { NODE_MODULES, STDIO_INHERIT, UTF8 } from "./constants/quality.ts";
 
 const ROOT = process.cwd();
 const DIST = join(ROOT, "dist");
-const SRC = join(ROOT, "src");
+const SRC = join(ROOT, SRC_DIR);
 const CSS_FILES = ["tokens.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css"];
-const EXTRA_FILES = ["LICENSE", "NOTICE"];
+const EXTRA_FILES = [LICENSE_FILE, "NOTICE"];
 const SPECIFIER = /((?:from|import)\s*["'])(\.{1,2}\/[^"']+)(["'])/g;
 
 /** 递归列出目录下的文件 (不跟随符号链接). */
@@ -55,7 +57,7 @@ function rewrite(): number {
     if (!/\.(?:js|d\.ts)$/.test(file)) {
       continue;
     }
-    const before = readFileSync(file, "utf8");
+    const before = readFileSync(file, UTF8);
     const after = before.replace(SPECIFIER, (_all: string, head: string, spec: string, tail: string) => {
       return head + resolveSpecifier(spec, file) + tail;
     });
@@ -67,8 +69,10 @@ function rewrite(): number {
   return changed;
 }
 
-execFileSync(process.execPath, [join(ROOT, "node_modules", "typescript", "bin", "tsc"), "-p", "tsconfig.build.json"], {
-  stdio: "inherit",
+/** 复用旧 dist 会把已删除或已改名的模块继续打进 tarball, 所以每次构建前先清空输出目录. */
+rmSync(DIST, { recursive: true, force: true });
+execFileSync(process.execPath, [join(ROOT, NODE_MODULES, "typescript", "bin", "tsc"), "-p", "tsconfig.build.json"], {
+  stdio: STDIO_INHERIT,
 });
 for (const name of CSS_FILES) {
   cpSync(join(SRC, name), join(DIST, name));

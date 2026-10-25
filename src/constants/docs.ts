@@ -41,6 +41,15 @@ export const DOC = {
 	/** 规格清单每行的列数: 属性表 (名字 ~ 类型 ~ 默认 ~ 说明), 导航清单 (id ~ 标签 ~ 说明). */
 	propsColumns: 4,
 	navColumns: 3,
+	/** 文档站外壳 (品牌标, 顶栏外链, 模板页) 的类名与属性值, 经 docs/src/constants/shell.ts 按用途取用. */
+	shrink: "shrink-0",
+	grow: "min-w-0 flex-1",
+	stackSnug: "flex flex-col gap-1.5",
+	space: " ",
+	noReferrer: "noreferrer",
+	focusableOff: "false",
+	/** 代码编辑器示例的 monaco 语言 id. */
+	jsonLang: "json",
 } as const;
 
 /** 文档站示例里的演示数据 (页码, 进度, 长度限制等). */
@@ -68,4 +77,37 @@ export const DOC_SAMPLE = {
 	skeletonLines: 3,
 	wideRatio: 16 / 9,
 	invoiceLabelSpan: 3,
+	/** 品牌标的边长: 默认, 侧栏标题, 顶栏. */
+	logoSize: 24,
+	logoSidebar: 22,
+	logoTopBar: 16,
+	/** 代码编辑器示例的高度 (px): 可编辑示例, 其它语言示例. */
+	editorHeight: 320,
+	editorHeightSmall: 220,
 } as const;
+
+/** 文档属性表的一行 (DocKit 的 PropsTable). */
+export interface DocPropRow {
+	name: string;
+	type: string;
+	default?: string;
+	desc: string;
+}
+
+/** 流式文本文档页的属性表: StreamingMarkdown 与 StreamingText. */
+export const DOC_STREAMING_PROPS: { readonly markdown: DocPropRow[]; readonly text: DocPropRow[] } = {
+	markdown: [
+		{ name: "content", type: "string", desc: "已到达的 Markdown 原文, 不完整的语法按半成品渲染" },
+		{ name: "streaming", type: "boolean", default: "true", desc: "仍在生成, 为 true 时保留流式光标" },
+		{ name: "final", type: "boolean", desc: "流已结束, 与 streaming 同时给时以它为准" },
+		{ name: "customId", type: "string", desc: "每条消息一个 id, 作为节点 key 的前缀" },
+		{ name: "isDark", type: "boolean", desc: "明暗主题, 缺省跟随根元素的 data-mode" },
+		{ name: "className", type: "string", desc: "追加到外层容器的类名" },
+	],
+	text: [
+		{ name: "text", type: "string", desc: "当前已到达的文本, 原样渲染" },
+		{ name: "streaming", type: "boolean", desc: "为 true 时显示光标, 表示仍在生成" },
+		{ name: "cursor", type: "boolean", default: "true", desc: "是否显示光标, 只在 streaming 为 true 时生效" },
+		{ name: "className", type: "string", desc: "追加到文本容器的类名" },
+	],
+};

@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
-import {
-  AppFrame, Badge, BUTTON_TYPE, ConfirmDialogHost, SidebarNavIcon, Toaster,
-} from "@hx/ui";
+import { AppFrame, Badge, BUTTON_TYPE, ConfirmDialogHost, SidebarNavIcon, Toaster } from "@hx/ui";
 import { SearchDialog, useSearchHotkey } from "./components/SearchDialog";
 import { PageNav } from "./components/PageNav";
 import { TableOfContents } from "./components/TableOfContents";
@@ -56,6 +54,7 @@ import { TEMPLATE_PAGES } from "./pages/templates";
 import { CodeEditorPage } from "./pages/CodeEditorPage";
 import { TopBar } from "./components/TopBar";
 import { BrandLogo } from "./components/BrandLogo";
+import { BRAND_LOGO_SIZE } from "./constants/shell";
 import { AgentOverviewPage } from "./pages/AgentOverviewPage";
 import { StreamingTextPage } from "./pages/agent/StreamingTextPage";
 import { ToolCallCardPage } from "./pages/agent/ToolCallCardPage";
@@ -186,7 +185,7 @@ export function App(): JSX.Element {
         {/* 侧栏: 链接保留原生新标签与复制地址行为 */}
         <aside id="docs-navigation" className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-2 left-2 z-30 w-60 flex-col overflow-hidden rounded-xl border border-border/40 bg-card shadow-lg md:static md:flex md:bg-card/25 md:shadow-none`}>
           <div className="flex h-11 shrink-0 items-center gap-2 px-3">
-            <BrandLogo size={22} />
+            <BrandLogo size={BRAND_LOGO_SIZE.sidebar} />
             <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">HX UI</span>
             <ThemeToggle />
             <button type="button" aria-label="关闭导航" className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-accent md:hidden" onClick={() => setMobileNavOpen(false)}>

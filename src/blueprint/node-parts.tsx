@@ -7,8 +7,10 @@ import { Switch } from "../primitives/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../primitives/select";
 import type { BlueprintRegistry, ParamDef, PortDef } from "./types";
 import { EXEC } from "./types";
-import { HEADER_H, PORT_ROW } from "./geometry";
+import { BODY_TOP, HEADER_H, PORT_ROW } from "./geometry";
 import { PinShape } from "./PinShape";
+import { HALF_DIVISOR, SIDE } from "../constants";
+import { BP_BODY_PAD_X, BP_PORT_DIR } from "../constants/blueprint";
 
 /**
  * 节点卡片的零件: 引脚行 + 参数字段。
@@ -52,46 +54,104 @@ export const CARD_BORDER = 1;
  * 边界上, 所以偏移量里必须先扣掉卡片内边距这一段。改卡片内边距时必须同步这里,
  * 否则线会整体偏若干像素 -- 与 --bp-pin-row 那类常量是同一类陷阱。
  */
-export const BODY_PAD_X = 8;
+export const BODY_PAD_X = BP_BODY_PAD_X;
 
 /**
  * 引脚圆心落在边界上时的水平偏移 (向内为负)。
  * .agents/notes/implemented/feature/2026-10-22-blueprint-pin-alignment.md
  */
 export function pinOffset(size: number): number {
-  return -(size / 2) - CARD_BORDER;
+  return -(size / HALF_DIVISOR) - CARD_BORDER;
 }
 
 /**
  * 标题条中线上引脚的 top (相对卡片内边距盒)。
  *
  * geometry.portPos 把执行入口放在 node.y + HEADER_H / 2, 也就是离卡片**外边**
- * 半个标题条; 绝对定位的参照是内边距盒, 少了一个边框宽, 这里补回来。
+ * 半个标题条; 绝对定位的参照是内边距盒, 少了一个边框宽, 这里补回来.
  */
 export function headerPinTop(size: number): number {
-  return HEADER_H / 2 - CARD_BORDER - size / 2;
+  return HEADER_H / HALF_DIVISOR - CARD_BORDER - size / HALF_DIVISOR;
+}
+
+/** 引脚图形本身: 执行口楔形 (标题前景色), 数据口圆点 (按类型着色). */
+function PinGlyph({ exec, invalid, color }: { readonly exec: boolean; readonly invalid?: boolean; readonly color?: string }): JSX.Element {
+  const size = exec ? PIN_SIZE.exec : PIN_SIZE.data;
+  return exec ? (
+    <PinShape kind="exec" filled invalid={invalid} color="text-bp-title-foreground" size={size} />
+  ) : (
+    <PinShape kind="data" filled invalid={invalid} color={color} size={size} />
+  );
+}
+
+/**
+ * 第 row 行端口引脚的 top (相对卡片内边距盒).
+ *
+ * 端口行从内边距盒的 BODY_TOP - CARD_BORDER 开始 (体区 paddingTop 就是这么取的),
+ * 引脚在行内纵向居中; 与 geometry.portPos 的 node.y + BODY_TOP + idx * PORT_ROW + PORT_ROW / 2 同源.
+ */
+export function rowPinTop(row: number, size: number): number {
+  return BODY_TOP - CARD_BORDER + row * PORT_ROW_H + PORT_ROW_H / HALF_DIVISOR - size / HALF_DIVISOR;
+}
+
+/**
+ * 视觉引脚, **挂在卡片根节点下**绝对定位.
+ *
+ * 引脚有一半探出卡片外边界, 所以卡片根节点不能 overflow-hidden (会裁掉一半).
+ * 圆角改由标题条 / 底条各自 rounded-[inherit] 收边; 不另包一层裁剪层: 那会让标题条不再是
+ * 根节点的第一个子元素, 点"节点第一个子 div"落到卡片中心, 被相邻节点挡住.
+ * row 缺省 = 标题条中线 (执行入口 / 折叠态执行出口).
+ */
+export function NodePin({
+  portId, dir, exec, row, color, invalid, portRef,
+}: {
+  readonly portId: string;
+  readonly dir: "in" | "out";
+  readonly exec: boolean;
+  readonly row?: number;
+  readonly color?: string;
+  readonly invalid?: boolean;
+  readonly portRef?: (portId: string, dir: "in" | "out", el: HTMLElement | null) => void;
+}): JSX.Element {
+  const size = exec ? PIN_SIZE.exec : PIN_SIZE.data;
+  const top = row === undefined ? headerPinTop(size) : rowPinTop(row, size);
+  return (
+    <span
+      ref={(el) => portRef?.(portId, dir, el)}
+      data-port={portId}
+      data-dir={dir}
+      data-node-pin=""
+      aria-hidden
+      className="pointer-events-none absolute flex items-center justify-center"
+      style={{ top, [dir === BP_PORT_DIR.in ? SIDE.left : SIDE.right]: pinOffset(size), width: size, height: size } as CSSProperties}
+    >
+      <PinGlyph exec={exec} invalid={invalid} color={color} />
+    </span>
+  );
 }
 
 export function PortRow({
-  dir, port, color, filled, invalid, portRef, hot, edgeInset = BODY_PAD_X,
+  dir, port, color, filled, invalid, portRef, hot, edgeInset = BODY_PAD_X, showPin = true,
 }: {
   readonly dir: "in" | "out";
   readonly port: Pick<PortDef, "id" | "label" | "type">;
   /**
-   * 引脚颜色类名 (bg-*)。
+   * 引脚颜色类名 (bg-*).
    *
    * 改成直接收颜色而不是收 registry: 节点组件拿不到 registry (它含函数,
-   * 塞进 React Flow 的 data 会让节点 data 不可序列化且每帧换引用)。
-   * 颜色在适配层预先算好带过来。
+   * 塞进 React Flow 的 data 会让节点 data 不可序列化且每帧换引用).
+   * 颜色在适配层预先算好带过来.
    */
   readonly color?: string;
   readonly filled?: boolean;
   readonly invalid?: boolean;
   readonly portRef?: (portId: string, dir: "in" | "out", el: HTMLElement | null) => void;
-  /** 拖线悬停在这个口上且合法。 */
+  /** 拖线悬停在这个口上且合法. */
   readonly hot?: boolean;
-  /** 行左/右边缘到卡片边界的距离, 默认等于卡片内边距。 */
+  /** 行左/右边缘到卡片边界的距离, 默认等于卡片内边距. */
   readonly edgeInset?: number;
+  /** false = 行内不画引脚, 由卡片根节点下的 NodePin 画 (避免被内容裁剪层裁掉一半). */
+  readonly showPin?: boolean;
 }): JSX.Element {
   const isExec = port.type === EXEC;
   const size = isExec ? PIN_SIZE.exec : PIN_SIZE.data;
@@ -101,19 +161,17 @@ export function PortRow({
       className={cn("relative flex items-center gap-1.5", dir === "out" && "flex-row-reverse", hot && "bg-primary/10")}
       style={{ height: PORT_ROW_H }}
     >
-      <span
-        ref={(el) => portRef?.(port.id, dir, el)}
-        data-port={port.id}
-        data-dir={dir}
-        className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
-        style={{ [dir === "in" ? "left" : "right"]: offset - edgeInset } as CSSProperties}
-      >
-        {isExec ? (
-          <PinShape kind="exec" filled invalid={invalid} color="text-bp-title-foreground" size={size} />
-        ) : (
-          <PinShape kind="data" filled invalid={invalid} color={color} size={size} />
-        )}
-      </span>
+      {showPin && (
+        <span
+          ref={(el) => portRef?.(port.id, dir, el)}
+          data-port={port.id}
+          data-dir={dir}
+          className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
+          style={{ [dir === BP_PORT_DIR.in ? SIDE.left : SIDE.right]: offset - edgeInset } as CSSProperties}
+        >
+          <PinGlyph exec={isExec} invalid={invalid} color={color} />
+        </span>
+      )}
       {/* 执行引脚不带文字  UE5 里它靠形状与位置自解释, 加标签反而挤 */}
       {!isExec && (
         <span className={cn("pointer-events-none min-w-0 truncate text-[11px] text-muted-foreground", dir === "out" && "text-right")}>
@@ -124,7 +182,7 @@ export function PortRow({
   );
 }
 
-/** 节点内的一个可编辑字段。声明式: 照 ParamDef.kind 渲染对应控件。 */
+/** 节点内的一个可编辑字段. 声明式: 照 ParamDef.kind 渲染对应控件. */
 export function ParamField({
   def, value, onChange,
 }: {
@@ -134,14 +192,14 @@ export function ParamField({
 }): JSX.Element {
   return (
     /**
-     * 参数区**必须恢复文本选中**。
+     * 参数区**必须恢复文本选中**.
      *
-     * 画布为了拖节点时不选中文字, 整体设了 user-select: none。但这个输入框
+     * 画布为了拖节点时不选中文字, 整体设了 user-select: none. 但这个输入框
      * 就在画布里面  继承下来之后, 用户没法用鼠标选/拖选里面的数值,
-     * 改参数变成只能靠键盘。所以这里显式恢复。
+     * 改参数变成只能靠键盘. 所以这里显式恢复.
      *
      * 放在蓝图侧而不是改 primitives 的 Input: 那个组件全库共用,
-     * 不该为画布这一个场景背上 select-text。
+     * 不该为画布这一个场景背上 select-text.
      */
     <div className="flex select-text items-center gap-2">
       <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">{def.label ?? def.id}</span>

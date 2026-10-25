@@ -100,3 +100,5 @@ Decision-ID: ui-codeblock-one-dark-pro
   想换变体不能只改 `CODE_THEME`，darker 与默认之间有 22 个 UI 键的差异。
 - 核实结论与实测数据写在 `CodeBlock.tsx` 的注释里，紧挨着会被误改的那两个常量 
   这是它们唯一被引用的位置。
+- 异步高亮的取消标记放在每次 effect 的闭包里, 不用组件级共享 ref: 代码连续变化 (流式写入) 时
+  多个 codeToHtml 会并发, 共享 ref 会被下一次 effect 复位, 旧请求晚到就会盖掉新内容.

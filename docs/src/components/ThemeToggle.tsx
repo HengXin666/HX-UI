@@ -34,6 +34,10 @@ export function applyMode(mode: ThemeMode): void {
   const resolved = mode === "system" ? systemMode() : mode;
   const root = document.documentElement;
   root.setAttribute("data-mode", resolved);
+  // 移动端地址栏 / 系统栏颜色同步; 两档颜色由 index.html 的 meta data-* 提供, 这里不重复写色值
+  const meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  const color = meta?.getAttribute(`data-${resolved}`);
+  if (meta && color) meta.content = color;
   root.classList.add("theme-transitioning");
   window.setTimeout(() => root.classList.remove("theme-transitioning"), 200);
 }

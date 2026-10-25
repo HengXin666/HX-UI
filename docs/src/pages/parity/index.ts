@@ -3,7 +3,8 @@ import { AccordionPage } from "../AccordionPage";
 import { CalendarPage } from "../CalendarPage";
 import { SkeletonPage } from "../SkeletonPage";
 import { AttachmentPage, BubblePage, MarkerPage, MessagePage } from "./chat";
-import { MessageScrollerPage, QuestionnairePage, TracePage } from "./agent";
+import { MessageScrollerPage, QuestionnairePage } from "./agent";
+import { TracePage } from "./trace";
 import { CheckboxPage, KbdPage, LabelPage, RadioGroupPage, SeparatorPage, SpinnerPage } from "./basics";
 import { CarouselPage, DirectionPage, ResizablePage } from "./display";
 import { SidebarPage } from "./sidebar";
@@ -15,13 +16,10 @@ import { ItemPage, TablePage } from "./listing";
 import { BreadcrumbDocPage, MenubarPage, NavigationMenuPage } from "./navigation";
 import { ContextMenuPage } from "./context-menu";
 import { AlertDialogPage, CommandPage, HoverCardPage, SheetPage } from "./overlay";
-import { TemplateChatPage } from "../templates/chat";
-import { TemplateConsolePage } from "../templates/console";
-import { TemplateDashboardPage } from "../templates/dashboard";
-import { TemplateSettingsPage } from "../templates/settings";
 
 /**
  * 对标 shadcn 补齐的文档页, 按导航 id 查表. 与已有页面共用一页的别名 (collapsible / date-picker) 也登记在这里.
+ * 模板页 (templates-*) 只由 pages/templates 的 TEMPLATE_PAGES 登记, 不在这里重复.
  */
 export const PARITY_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   alert: AlertPage,
@@ -69,8 +67,4 @@ export const PARITY_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   "toggle-group": ToggleGroupPage,
   trace: TracePage,
   typography: TypographyPage,
-  "templates-chat": TemplateChatPage,
-  "templates-settings": TemplateSettingsPage,
-  "templates-dashboard": TemplateDashboardPage,
-  "templates-console": TemplateConsolePage,
 };
