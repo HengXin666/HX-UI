@@ -4,7 +4,7 @@ on:
 
 jobs:
     context:
-        uses: HengXin666/HX-AI-Review/.github/workflows/review.yml@v1
+        uses: HengXin666/HX-AI-Review/.github/workflows/review.yml@v1-lw
         with:
             endpoint: https://hx-context-review.hxloli.workers.dev
             kind: context
