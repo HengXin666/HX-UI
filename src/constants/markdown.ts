@@ -29,3 +29,10 @@ export const STREAMING_ATTR = {
   done: "false",
   live: "true",
 } as const;
+
+/**
+ * 列表项里的围栏不切出去, 而是在原位换成这个自定义标签, 由 markstream 当作 list_item 的子节点渲染,
+ * 再把标签映射回本库 CodeBlock. data-i 是围栏在本段 fences 表里的下标.
+ */
+export const NESTED_FENCE_TAG = "hx-fence";
+export const NESTED_FENCE_INDEX_ATTR = "data-i";

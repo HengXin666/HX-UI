@@ -4,8 +4,12 @@ import { useEffect, useMemo, useState, type JSX } from "react";
 import MarkdownRender from "markstream-react";
 import { cn } from "../primitives/utils";
 import { SPACE } from "../constants";
-import { MODE_ATTRIBUTE, MODE_LIGHT, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED } from "../constants/markdown";
-import { FenceBlock, needsTailCursor, splitSegments } from "./streaming-markdown-parts";
+import { MODE_ATTRIBUTE, MODE_LIGHT, NESTED_FENCE_TAG, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED } from "../constants/markdown";
+import { FenceBlock, FenceTable, NestedFence, needsTailCursor, splitSegments } from "./streaming-markdown-parts";
+
+/** 列表内围栏的占位标签与它的渲染组件: 模块级常量, 引用稳定, markstream 不会因此重挂节点. */
+const NESTED_TAGS = [NESTED_FENCE_TAG] as const;
+const NESTED_COMPONENTS = { [NESTED_FENCE_TAG]: NestedFence };
 
 /**
  * 把 markstream 自带的配色与线条拉回本库的语义 token.
@@ -85,7 +89,8 @@ export interface StreamingMarkdownProps {
  * 样式不由本组件注入, 使用方 (或文档站) 必须引入一次 markstream-react/index.css,
  * 库的样式入口 src/styles.css 已经带上它, 引了 @hx/ui/styles.css 就不用再引.
  *
- * 代码块由本库的 CodeBlock 渲染 (见 streaming-markdown-parts 的 splitSegments 说明),
+ * 代码块由本库的 CodeBlock 渲染 (见 streaming-markdown-parts 的 splitSegments 说明; 列表项里的围栏留在原位,
+ * 以 NESTED_FENCE_TAG 占位后同样交给 CodeBlock, <li> 嵌套不丢),
  * 其余节点交给 markstream: 未闭合的标题, 列表, 表格与引用在流式中途都能按半成品渲染.
  * fade 关闭: 逐节点淡入会和调用方自己的逐字追加叠成两层节奏, 看起来像抖动;
  * 光标由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪;
@@ -116,16 +121,19 @@ export function StreamingMarkdown({
           return <FenceBlock key={key} code={segment.text} open={segment.open === true} {...(segment.lang ? { lang: segment.lang } : {})} />;
         }
         return (
-          <MarkdownRender
-            key={key}
-            content={segment.text}
-            final={done}
-            fade={false}
-            typewriter={!done && index === segments.length - 1}
-            smoothStreaming={false}
-            isDark={dark}
-            {...(customId ? { customId } : {})}
-          />
+          <FenceTable.Provider key={key} value={segment.fences ?? []}>
+            <MarkdownRender
+              content={segment.text}
+              final={done}
+              fade={false}
+              typewriter={!done && index === segments.length - 1}
+              smoothStreaming={false}
+              isDark={dark}
+              customHtmlTags={NESTED_TAGS}
+              streamingComponents={NESTED_COMPONENTS}
+              {...(customId ? { customId } : {})}
+            />
+          </FenceTable.Provider>
         );
       })}
       {tailCursor ? (
