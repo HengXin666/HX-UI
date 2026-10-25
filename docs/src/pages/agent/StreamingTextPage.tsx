@@ -5,6 +5,7 @@ import { Callout, Code, H2, P, Preview, PropsTable } from "../../components/DocK
 import { DOC, DOC_STREAMING_PROPS } from "@hx/ui";
 import { STREAMING_MARKDOWN_SAMPLE } from "./streaming-markdown-sample";
 import { useTypewriter } from "./use-typewriter";
+import { THINK_THEN_ANSWER_CODE, ThinkThenAnswer } from "./ThinkThenAnswer";
 
 /** 页内示例代码: 与下面真实渲染的那份保持一致. */
 const MARKDOWN_CODE = `import { StreamingMarkdown } from "@hx/ui";
@@ -23,8 +24,8 @@ const streaming = !done;
 const TEXT_CODE = `<StreamingText text={text} streaming={streaming} />
 <StreamingText text={text} streaming cursor={false} />`;
 
-/** StreamingText 页: 逐字纯文本与流式 Markdown 两个入口. */
 /**
+ * StreamingText 页: 逐字纯文本与流式 Markdown 两个入口; 先思考再回复的完整节奏见 ThinkThenAnswer.
  * .agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
  */
 export function StreamingTextPage(): JSX.Element {
@@ -42,6 +43,12 @@ export function StreamingTextPage(): JSX.Element {
         markstream 的 JS 入口不注入样式, 使用方要在应用入口引入一次 <Code>import "markstream-react/index.css"</Code>.
         漏了这一行不会报错, 表现是"内容渲染出来了但完全没有排版".
       </Callout>
+
+      <H2>先思考, 再回复</H2>
+      <P>首个 token 到达前就出现思考态与计时; 思考小节标题实时更新为摘要; 回复开始时思考定格耗时并收起, 可随时展开回看</P>
+      <Preview code={THINK_THEN_ANSWER_CODE}>
+        <ThinkThenAnswer />
+      </Preview>
 
       <H2>流式 Markdown</H2>
       <P>点开始逐字追加整段 Markdown, 中断停在当前长度, 重置清空. 代码块与表格在围栏闭合前就按块渲染</P>

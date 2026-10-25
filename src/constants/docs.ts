@@ -111,3 +111,79 @@ export const DOC_STREAMING_PROPS: { readonly markdown: DocPropRow[]; readonly te
 		{ name: "className", type: "string", desc: "追加到文本容器的类名" },
 	],
 };
+
+/** 思考与过程页演示的时间轴: 每步间隔与各阶段的起止步号, 用名字表达流程, 避免散落的魔法数字. */
+export const PROCESS_DEMO = {
+	stepMs: 1100,
+	step: {
+		idle: -1,
+		start: 0,
+		scan: 1,
+		scanEnd: 4,
+		/** 思考结束, 进入发散比较. */
+		branch: 6,
+		/** 选定方向, 子代理开工. */
+		decide: 8,
+		read: 9,
+		research: 11,
+		merge: 12,
+		edit: 13,
+		end: 14,
+	},
+} as const;
+
+/** 先思考再回复演示: 发出请求到首个思考 token 的空窗, 以及流程各阶段名. */
+export const THINK_DEMO = {
+	firstTokenDelayMs: 700,
+	phase: {
+		idle: "idle",
+		waiting: "waiting",
+		thinking: "thinking",
+		answering: "answering",
+		done: "done",
+	},
+} as const;
+
+/** Agent 总览演示的节奏 (ms): 流式每帧间隔与字符数, 首 token 等待, 思考逐行间隔, 思考结束后工具与回复的延迟. */
+export const OVERVIEW_DEMO = {
+	streamTickMs: 24,
+	streamStep: 2,
+	thinkFirstTokenMs: 700,
+	thinkLineMs: 420,
+	toolDelayMs: 200,
+	replyDelayMs: 1000,
+} as const;
+
+/** Agent 总览演示里事件的生命周期状态. */
+export const AGENT_DEMO_STATUS = {
+	pending: "pending",
+	running: "running",
+	done: "done",
+	approved: "approved",
+	rejected: "rejected",
+} as const;
+
+/** DiffView 行类型: 上下文, 删除, 新增. */
+export const DIFF_KIND = {
+	ctx: "ctx",
+	del: "del",
+	add: "add",
+} as const;
+
+/** 工具调用卡的展示态: 执行中与成功. */
+export const TOOL_STATE = {
+	running: "running",
+	ok: "ok",
+} as const;
+
+/** 文档演示里响应的键盘按键. */
+export const DOC_KEY = {
+	enter: "Enter",
+} as const;
+
+/** Agent 总览演示的展示参数: 分隔标记的样式, 用户消息靠右与助手消息靠左的对齐. */
+export const OVERVIEW_VIEW = {
+	markerVariant: "solid",
+	alignStart: "start",
+	alignEnd: "end",
+} as const;

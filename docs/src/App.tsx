@@ -14,7 +14,6 @@ import { AppFramePage } from "./pages/AppFramePage";
 import { InstallPage } from "./pages/InstallPage";
 import { TokensPage } from "./pages/TokensPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
-import { SettingsPageDemo } from "./pages/SettingsPageDemo";
 import { NAV_ICONS, DEFAULT_NAV_ICON } from "./navIcons";
 import { useHashRoute } from "./router";
 import { CardPage } from "./pages/CardPage";
@@ -57,6 +56,7 @@ import { BrandLogo } from "./components/BrandLogo";
 import { BRAND_LOGO_SIZE } from "./constants/shell";
 import { AgentOverviewPage } from "./pages/AgentOverviewPage";
 import { StreamingTextPage } from "./pages/agent/StreamingTextPage";
+import { AgentProcessPage } from "./pages/agent/AgentProcessPage";
 import { ToolCallCardPage } from "./pages/agent/ToolCallCardPage";
 import { UsageMeterPage } from "./pages/agent/UsageMeterPage";
 import { DiffViewPage } from "./pages/agent/DiffViewPage";
@@ -67,7 +67,7 @@ import { DiffViewPage } from "./pages/agent/DiffViewPage";
  * 外壳刻意用 @hx/ui 自己的 AppFrame 与 SidebarNavItemButton 搭 
  * 文档站本身就是这套库的第一个使用方, 它长什么样就是库长什么样,
  * 加一个组件 = nav.ts 加一行 + 下面 switch 加一个分支; 分组导航在 components/DocsNav.tsx,
- * AI 交互页 (agent-*) 复用 src/agent 的组件, 过程件不在这里重写,
+ * AI 交互页 (agent-*) 复用 src/agent 的组件, 过程件不在这里重写 (思考, 发散, 子代理, 分层待办集中在 agent-process),
  * 对标 shadcn 补齐的页面不进 switch, 由 PARITY_PAGES 按 id 查表.
  * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
  * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
@@ -76,7 +76,6 @@ import { DiffViewPage } from "./pages/agent/DiffViewPage";
 function renderPage(entry: DocEntry): JSX.Element {
   switch (entry.id) {
     case "install": return <InstallPage />;
-    case "settings-demo": return <SettingsPageDemo />;
     case "tokens": return <TokensPage />;
     case "button": return <ButtonPage />;
     case "input": return <InputPage />;
@@ -110,10 +109,8 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "accordion": return <AccordionPage />;
     case "progress": return <ProgressPage />;
     case "scroll-area": return <ScrollAreaPage />;
-    case "data-table":
-    case "stat-card": return <DataTablePage />;
-    case "empty-state":
-    case "page-header": return <ChromePage />;
+    case "data-table": return <DataTablePage />;
+    case "empty-state": return <ChromePage />;
     case "browser-live": return <BrowserLivePage />;
     case "blueprint": return <BlueprintPage />;
     case "blueprint-dsh": return <BlueprintDshPage />;
@@ -122,6 +119,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "agent-stream": return <StreamingTextPage />;
     case "agent-usage": return <UsageMeterPage />;
     case "agent-diff": return <DiffViewPage />;
+    case "agent-process": return <AgentProcessPage />;
     default: {
       const Page = PARITY_PAGES[entry.id] ?? TEMPLATE_PAGES[entry.id];
       return Page ? <Page /> : <PlaceholderPage label={entry.label} desc={entry.desc} />;

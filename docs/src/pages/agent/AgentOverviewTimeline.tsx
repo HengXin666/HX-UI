@@ -1,15 +1,17 @@
 import type { JSX } from "react";
+import { OVERVIEW_VIEW } from "@hx/ui";
+import { VARIANT, TONE_VARIANT, AGENT_DEMO_STATUS, TOOL_STATE } from "@hx/ui";
 import {
   Avatar, AvatarFallback, Badge, Bubble, Marker, MarkerContent,
   Message, MessageAvatar, MessageContent, MessageHeader,
 } from "@hx/ui";
-import { DiffView, InlineApproval, StreamingText, ToolCallCard } from "@hx/ui";
+import { DiffView, InlineApproval, StreamingText, Thinking, ToolCallCard } from "@hx/ui";
 import {
   CONFIRM_DETAIL, DIFF_LINES, INDENT, KIND, STATUS, TOOL_ARGS, TOOL_DURATION_MS,
   TOOL_NAME, TOOL_RESULT, type EventItem,
 } from "./agent-overview-copy";
 
-/** 把一条事件渲染成会话内容, 过程件复用 agent/ 里的真实组件. */
+/** 把一条事件渲染成会话内容 (含首 token 前就出现的思考事件), 过程件复用 agent/ 里的真实组件. */
 export function AgentEventView({
   item,
   onApprove,
@@ -22,13 +24,13 @@ export function AgentEventView({
   switch (item.kind) {
     case KIND.user:
       return (
-        <Message align="end">
+        <Message align={OVERVIEW_VIEW.alignEnd}>
           <MessageAvatar>
-            <Avatar size="sm"><AvatarFallback>你</AvatarFallback></Avatar>
+            <Avatar size={VARIANT.sm}><AvatarFallback>你</AvatarFallback></Avatar>
           </MessageAvatar>
           <MessageContent>
             <MessageHeader><strong>你</strong><span>刚刚</span></MessageHeader>
-            <Bubble variant="primary" align="end">{item.text}</Bubble>
+            <Bubble variant={VARIANT.primary} align={OVERVIEW_VIEW.alignEnd}>{item.text}</Bubble>
           </MessageContent>
         </Message>
       );
@@ -36,18 +38,29 @@ export function AgentEventView({
       return (
         <Message>
           <MessageAvatar>
-            <Avatar size="sm"><AvatarFallback>A</AvatarFallback></Avatar>
+            <Avatar size={VARIANT.sm}><AvatarFallback>A</AvatarFallback></Avatar>
           </MessageAvatar>
           <MessageContent>
             <MessageHeader>
               <strong>Agent</strong>
-              {item.streaming && <Badge variant="default">生成中</Badge>}
+              {item.streaming && <Badge variant={VARIANT.default}>生成中</Badge>}
             </MessageHeader>
-            <Bubble variant="ghost" align="start" className="max-w-full">
+            <Bubble variant={VARIANT.ghost} align={OVERVIEW_VIEW.alignStart} className="max-w-full">
               <StreamingText text={item.text ?? ""} streaming={!!item.streaming} />
             </Bubble>
           </MessageContent>
         </Message>
+      );
+    case KIND.thinking:
+      return (
+        <div className={INDENT}>
+          <Thinking
+            content={item.text ?? ""}
+            status={item.status === STATUS.done ? AGENT_DEMO_STATUS.done : AGENT_DEMO_STATUS.running}
+            startedAt={item.startedAt}
+            endedAt={item.endedAt}
+          />
+        </div>
       );
     case KIND.tool: {
       const running = (item.status ?? STATUS.running) === STATUS.running;
@@ -57,7 +70,7 @@ export function AgentEventView({
             name={TOOL_NAME}
             args={TOOL_ARGS}
             result={running ? undefined : TOOL_RESULT}
-            status={running ? "running" : "ok"}
+            status={running ? AGENT_DEMO_STATUS.running : TOOL_STATE.ok}
             durationMs={running ? undefined : TOOL_DURATION_MS}
             defaultOpen
           />
@@ -77,7 +90,7 @@ export function AgentEventView({
         </div>
       );
     case KIND.marker:
-      return <Marker variant="separator"><MarkerContent>{item.text}</MarkerContent></Marker>;
+      return <Marker variant={TONE_VARIANT.separator}><MarkerContent>{item.text}</MarkerContent></Marker>;
     default:
       return <></>;
   }

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, type JSX } from "react";
+import { OVERVIEW_VIEW } from "@hx/ui";
+import { OVERVIEW_DEMO, AGENT_NEWLINE, DOC_KEY, TONE_VARIANT, SIZE, VARIANT } from "@hx/ui";
 import {
   Badge, Button, BUTTON_TYPE, Card, MessageScroller, MessageScrollerContent,
   MessageScrollerItem, Textarea,
@@ -6,16 +8,20 @@ import {
 import { AGENT_AUTO_RIGHT } from "@hx/ui";
 import { H2, P, PropsTable } from "../components/DocKit";
 import {
-  DEMO_PROMPT, INITIAL_EVENTS, KIND, STATUS, STREAM_TEXT, type EventItem,
+  DEMO_PROMPT, INITIAL_EVENTS, KIND, STATUS, STREAM_TEXT, THINK_LINES, type EventItem,
 } from "./agent/agent-overview-copy";
 import { AgentEventView } from "./agent/AgentOverviewTimeline";
 
-const STREAM_TICK_MS = 24;
-const STREAM_STEP = 2;
-const TOOL_DELAY_MS = 500;
-const REPLY_DELAY_MS = 1300;
+const STREAM_TICK_MS = OVERVIEW_DEMO.streamTickMs;
+const STREAM_STEP = OVERVIEW_DEMO.streamStep;
+/** 首 token 前的等待: 这段时间只有计时在走, 用户仍能看到正在思考. */
+const THINK_FIRST_TOKEN_MS = OVERVIEW_DEMO.thinkFirstTokenMs;
+const THINK_LINE_MS = OVERVIEW_DEMO.thinkLineMs;
+/** 以下两个延迟从思考结束算起. */
+const TOOL_DELAY_MS = OVERVIEW_DEMO.toolDelayMs;
+const REPLY_DELAY_MS = OVERVIEW_DEMO.replyDelayMs;
 
-/** 可交互的本地模拟: 发消息, 工具调用, 流式回复, 确认与 diff. */
+/** 可交互的本地模拟: 发消息, 思考 (首 token 前就计时), 工具调用, 流式回复, 确认与 diff. */
 function AgentDemo(): JSX.Element {
   const [events, setEvents] = useState<EventItem[]>(() => [...INITIAL_EVENTS]);
   const [draft, setDraft] = useState(DEMO_PROMPT);
@@ -67,11 +73,25 @@ function AgentDemo(): JSX.Element {
     const id = run.current;
     setBusy(true);
     setDraft("");
-    setEvents([{ id: "user-1", kind: KIND.user, text }]);
+    setEvents([
+      { id: "user-1", kind: KIND.user, text },
+      { id: "think-1", kind: KIND.thinking, status: STATUS.running, text: "", startedAt: Date.now() },
+    ]);
+    THINK_LINES.forEach((_, index) => {
+      schedule(() => {
+        if (id !== run.current) return;
+        const content = THINK_LINES.slice(0, index + 1).join(AGENT_NEWLINE);
+        setEvents((prev) => prev.map((item) => (item.kind === KIND.thinking ? { ...item, text: content } : item)));
+      }, THINK_FIRST_TOKEN_MS + index * THINK_LINE_MS);
+    });
+    const thinkEnd = THINK_FIRST_TOKEN_MS + THINK_LINES.length * THINK_LINE_MS;
     schedule(() => {
       if (id !== run.current) return;
-      setEvents((prev) => [...prev, { id: "tool-1", kind: KIND.tool, status: STATUS.running }]);
-    }, TOOL_DELAY_MS);
+      setEvents((prev) => [
+        ...prev.map((item) => (item.kind === KIND.thinking ? { ...item, status: STATUS.done, endedAt: Date.now() } : item)),
+        { id: "tool-1", kind: KIND.tool, status: STATUS.running },
+      ]);
+    }, thinkEnd + TOOL_DELAY_MS);
     schedule(() => {
       if (id !== run.current) return;
       setEvents((prev) => [
@@ -79,7 +99,7 @@ function AgentDemo(): JSX.Element {
         { id: "assistant-1", kind: KIND.assistant, text: "", streaming: true },
       ]);
       startStream(id);
-    }, REPLY_DELAY_MS);
+    }, thinkEnd + REPLY_DELAY_MS);
   }
 
   function approve(): void {
@@ -110,12 +130,12 @@ function AgentDemo(): JSX.Element {
   useEffect(() => () => clearTimers(), []);
 
   return (
-    <Card variant="solid" className="my-4 overflow-hidden">
+    <Card variant={OVERVIEW_VIEW.markerVariant} className="my-4 overflow-hidden">
       <div className="flex flex-wrap items-center gap-2 border-b border-border/60 px-3.5 py-2.5">
         <span aria-hidden className="icon-[solar--chat-round-dots-linear] size-4 text-link" />
         <span className="text-[13px] font-semibold">Agent 交互演示</span>
-        <Badge variant="secondary">本地模拟</Badge>
-        <Button type={BUTTON_TYPE} size="xs" variant="ghost" className={AGENT_AUTO_RIGHT} onClick={reset} disabled={busy}>
+        <Badge variant={TONE_VARIANT.secondary}>本地模拟</Badge>
+        <Button type={BUTTON_TYPE} size={SIZE.xs} variant={VARIANT.ghost} className={AGENT_AUTO_RIGHT} onClick={reset} disabled={busy}>
           <span aria-hidden className="icon-[solar--refresh-linear] size-3.5" />
           重置
         </Button>
@@ -136,7 +156,7 @@ function AgentDemo(): JSX.Element {
             onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
               if (event.nativeEvent.isComposing) return;
-              if (event.key === "Enter" && !event.shiftKey) {
+              if (event.key === DOC_KEY.enter && !event.shiftKey) {
                 event.preventDefault();
                 send();
               }
@@ -147,7 +167,7 @@ function AgentDemo(): JSX.Element {
             disabled={busy}
             aria-label="消息输入"
           />
-          <Button type={BUTTON_TYPE} variant="primary" onClick={send} disabled={busy || !draft.trim()}>
+          <Button type={BUTTON_TYPE} variant={VARIANT.primary} onClick={send} disabled={busy || !draft.trim()}>
             发送
           </Button>
         </div>

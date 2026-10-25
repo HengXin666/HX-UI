@@ -46,8 +46,7 @@ tokens ~ 设计令牌 ~ 颜色, 圆角, 阴影, 字号, 间距与动效
 const ACTIONS = `
 button ~ 按钮 ~ 七种语义样式与八档尺寸, 自带点按波纹
 button-group ~ 按钮组 ~ 相邻边框合并成一条
-toggle ~ 两态按钮 ~ 按下与弹起两种状态
-toggle-group ~ 两态按钮组 ~ 一组两态按钮, 单选或多选
+toggle-group ~ 两态按钮 ~ 单个与成组, 单选或多选
 segmented-control ~ 分段控件 ~ 指示器滑动, 单选分段
 `;
 
@@ -69,8 +68,7 @@ const PICKER = `
 select ~ 下拉选择 ~ 单选与分组
 native-select ~ 原生下拉 ~ 菜单跟随主题
 combobox ~ 组合框 ~ 可搜索下拉, 单选与多选
-calendar ~ 日历 ~ 单日与区间选择
-date-picker ~ 日期选择 ~ 与日历同页
+calendar ~ 日历与日期选择 ~ 单日, 区间与弹出式日期选择
 time-picker ~ 时间选择 ~ 时与分输入, 受控但中间态不卡手
 `;
 
@@ -111,8 +109,7 @@ pagination ~ 分页器 ~ 翻页时整排不跳
 const NAVIGATION = `
 breadcrumb ~ 面包屑 ~ 可折叠中间层级
 tabs ~ 标签页 ~ 下划线或药丸两种形态
-accordion ~ 折叠面板 ~ 折叠组, 双向都有高度动画
-collapsible ~ 折叠块 ~ 单块折叠
+accordion ~ 折叠面板 ~ 折叠组与单块折叠, 双向都有高度动画
 collapse-panel ~ 可折叠面板 ~ 面板折叠
 `;
 
@@ -136,7 +133,6 @@ bubble ~ 气泡 ~ 消息气泡, 四种底色, 可折叠长内容
 message ~ 消息 ~ 头像, 头部, 正文与底部
 message-scroller ~ 消息滚动 ~ 贴底跟随与回到最新
 marker ~ 标记行 ~ 系统提示, 状态行与分隔线
-trace ~ 轨迹 ~ 推理与工具调用轨迹
 questionnaire ~ 问卷 ~ 多步问卷, 切题滑动
 `;
 
@@ -155,7 +151,6 @@ sidebar ~ 侧栏 ~ 组合式应用侧栏, 可收成图标条
 stepper ~ 步骤条 ~ 步骤条与日志框, 含联动示例
 proxy-chain ~ 代理链路 ~ 入口, 策略与实体
 browser-live ~ 浏览器预览 ~ 多副本实时预览与远程操作
-settings-demo ~ 设置页示例 ~ 照上游复刻的三级布局整页
 `;
 
 const CHARTS = `
@@ -165,9 +160,11 @@ charts ~ 图表 ~ 折线, 面积, 柱状, 饼与雷达图
 const AGENT = `
 agent-overview ~ 交互总览 ~ 发消息, 工具调用, 流式回复与变更预览串成一个完整示例
 agent-toolcall ~ 工具调用卡 ~ 调用状态, 入参与结果可折叠
-agent-stream ~ 流式回复 ~ 逐字输出与中断
+agent-stream ~ 流式回复 ~ 先思考再回复, 逐字 Markdown 与中断
 agent-usage ~ 用量计量 ~ 已用 / 上限 / 速率
 agent-diff ~ 变更对比 ~ 逐行增删, 行首带符号
+agent-process ~ 思考与过程 ~ 思考计时, 发散思考, 子代理与分层待办的实时展示
+trace ~ 轨迹 ~ 推理与工具调用轨迹
 `;
 
 const TEMPLATES = `
@@ -216,7 +213,6 @@ export const TEMPLATE_GROUP: string = GROUP.templates;
 
 /** 整页示例所在页面, 内容区放宽到 1720px. */
 export const WIDE_PAGES: ReadonlySet<string> = new Set([
-  "settings-demo",
   "templates-chat",
   "templates-settings",
   "templates-dashboard",

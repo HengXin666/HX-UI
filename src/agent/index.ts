@@ -5,5 +5,8 @@
 export { InlineApproval, type InlineApprovalProps } from "./inline-approval";
 export { StreamingMarkdown, type StreamingMarkdownProps } from "./streaming-markdown";
 export { StreamingText, type StreamingTextProps } from "./streaming-text";
+export { Thinking, extractHeadline, type ThinkingProps, type ThinkingStatus } from "./thinking";
+export { StatusGlyph, TodoTree, deriveTodoStatus, type TodoNode, type TodoStatus, type TodoTreeProps } from "./todo-tree";
+export { SubagentCard, SubagentGroup, ThinkingBranches, type SubagentCardProps, type SubagentGroupProps, type ThinkingBranch, type ThinkingBranchesProps } from "./subagent";
 export { TOOL_CALL_STATUS, ToolCallCard, type ToolCallCardProps, type ToolCallStatus } from "./tool-call-card";
 export { DiffView, UsageMeter, type DiffLine, type DiffLineType, type DiffViewProps, type UsageMeterProps } from "./usage-meter";
