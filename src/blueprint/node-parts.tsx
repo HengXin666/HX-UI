@@ -7,10 +7,10 @@ import { Switch } from "../primitives/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../primitives/select";
 import type { BlueprintRegistry, ParamDef, PortDef } from "./types";
 import { EXEC } from "./types";
-import { HEADER_H, PORT_ROW } from "./geometry";
+import { BODY_TOP, HEADER_H, PORT_ROW } from "./geometry";
 import { PinShape } from "./PinShape";
 import { HALF_DIVISOR, SIDE } from "../constants";
-import { BP_BODY_PAD_X } from "../constants/blueprint";
+import { BP_BODY_PAD_X, BP_PORT_DIR } from "../constants/blueprint";
 
 /**
  * 节点卡片的零件: 引脚行 + 参数字段。
@@ -74,8 +74,64 @@ export function headerPinTop(size: number): number {
   return HEADER_H / HALF_DIVISOR - CARD_BORDER - size / HALF_DIVISOR;
 }
 
+/** 引脚图形本身: 执行口楔形 (标题前景色), 数据口圆点 (按类型着色). */
+function PinGlyph({ exec, invalid, color }: { readonly exec: boolean; readonly invalid?: boolean; readonly color?: string }): JSX.Element {
+  const size = exec ? PIN_SIZE.exec : PIN_SIZE.data;
+  return exec ? (
+    <PinShape kind="exec" filled invalid={invalid} color="text-bp-title-foreground" size={size} />
+  ) : (
+    <PinShape kind="data" filled invalid={invalid} color={color} size={size} />
+  );
+}
+
+/**
+ * 第 row 行端口引脚的 top (相对卡片内边距盒).
+ *
+ * 端口行从内边距盒的 BODY_TOP - CARD_BORDER 开始 (体区 paddingTop 就是这么取的),
+ * 引脚在行内纵向居中; 与 geometry.portPos 的 node.y + BODY_TOP + idx * PORT_ROW + PORT_ROW / 2 同源.
+ */
+export function rowPinTop(row: number, size: number): number {
+  return BODY_TOP - CARD_BORDER + row * PORT_ROW_H + PORT_ROW_H / HALF_DIVISOR - size / HALF_DIVISOR;
+}
+
+/**
+ * 视觉引脚, **挂在卡片根节点下**绝对定位.
+ *
+ * 引脚有一半探出卡片外边界, 所以卡片根节点不能 overflow-hidden (会裁掉一半).
+ * 圆角改由标题条 / 底条各自 rounded-[inherit] 收边; 不另包一层裁剪层: 那会让标题条不再是
+ * 根节点的第一个子元素, 点"节点第一个子 div"落到卡片中心, 被相邻节点挡住.
+ * row 缺省 = 标题条中线 (执行入口 / 折叠态执行出口).
+ */
+export function NodePin({
+  portId, dir, exec, row, color, invalid, portRef,
+}: {
+  readonly portId: string;
+  readonly dir: "in" | "out";
+  readonly exec: boolean;
+  readonly row?: number;
+  readonly color?: string;
+  readonly invalid?: boolean;
+  readonly portRef?: (portId: string, dir: "in" | "out", el: HTMLElement | null) => void;
+}): JSX.Element {
+  const size = exec ? PIN_SIZE.exec : PIN_SIZE.data;
+  const top = row === undefined ? headerPinTop(size) : rowPinTop(row, size);
+  return (
+    <span
+      ref={(el) => portRef?.(portId, dir, el)}
+      data-port={portId}
+      data-dir={dir}
+      data-node-pin=""
+      aria-hidden
+      className="pointer-events-none absolute flex items-center justify-center"
+      style={{ top, [dir === BP_PORT_DIR.in ? SIDE.left : SIDE.right]: pinOffset(size), width: size, height: size } as CSSProperties}
+    >
+      <PinGlyph exec={exec} invalid={invalid} color={color} />
+    </span>
+  );
+}
+
 export function PortRow({
-  dir, port, color, filled, invalid, portRef, hot, edgeInset = BODY_PAD_X,
+  dir, port, color, filled, invalid, portRef, hot, edgeInset = BODY_PAD_X, showPin = true,
 }: {
   readonly dir: "in" | "out";
   readonly port: Pick<PortDef, "id" | "label" | "type">;
@@ -94,6 +150,8 @@ export function PortRow({
   readonly hot?: boolean;
   /** 行左/右边缘到卡片边界的距离, 默认等于卡片内边距. */
   readonly edgeInset?: number;
+  /** false = 行内不画引脚, 由卡片根节点下的 NodePin 画 (避免被内容裁剪层裁掉一半). */
+  readonly showPin?: boolean;
 }): JSX.Element {
   const isExec = port.type === EXEC;
   const size = isExec ? PIN_SIZE.exec : PIN_SIZE.data;
@@ -103,19 +161,17 @@ export function PortRow({
       className={cn("relative flex items-center gap-1.5", dir === "out" && "flex-row-reverse", hot && "bg-primary/10")}
       style={{ height: PORT_ROW_H }}
     >
-      <span
-        ref={(el) => portRef?.(port.id, dir, el)}
-        data-port={port.id}
-        data-dir={dir}
-        className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
-        style={{ [dir === "in" ? SIDE.left : SIDE.right]: offset - edgeInset } as CSSProperties}
-      >
-        {isExec ? (
-          <PinShape kind="exec" filled invalid={invalid} color="text-bp-title-foreground" size={size} />
-        ) : (
-          <PinShape kind="data" filled invalid={invalid} color={color} size={size} />
-        )}
-      </span>
+      {showPin && (
+        <span
+          ref={(el) => portRef?.(port.id, dir, el)}
+          data-port={port.id}
+          data-dir={dir}
+          className="pointer-events-none absolute top-1/2 flex -translate-y-1/2 items-center justify-center"
+          style={{ [dir === BP_PORT_DIR.in ? SIDE.left : SIDE.right]: offset - edgeInset } as CSSProperties}
+        >
+          <PinGlyph exec={isExec} invalid={invalid} color={color} />
+        </span>
+      )}
       {/* 执行引脚不带文字  UE5 里它靠形状与位置自解释, 加标签反而挤 */}
       {!isExec && (
         <span className={cn("pointer-events-none min-w-0 truncate text-[11px] text-muted-foreground", dir === "out" && "text-right")}>

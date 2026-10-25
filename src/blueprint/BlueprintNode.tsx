@@ -3,7 +3,7 @@
 import type { JSX } from "react";
 import { cn } from "../primitives/utils";
 import type { BlueprintRegistry, BlueprintNode } from "./types";
-import { CARD_BORDER, PortRow, ParamField, PIN_SIZE, headerPinTop, pinOffset } from "./node-parts";
+import { CARD_BORDER, NodePin, PortRow, ParamField, PIN_SIZE } from "./node-parts";
 import { NodeRenameInput } from "./NodeRename";
 import { execOutIds, execOutLabel } from "./connect";
 import { EXEC } from "./types";
@@ -11,7 +11,7 @@ import { BODY_TOP, HEADER_H, NODE_WIDTH } from "./geometry";
 import { nodeKindOf, titleStyle } from "./node-style";
 import { PinShape } from "./PinShape";
 import { HALF_DIVISOR } from "../constants";
-import { BP_COLLAPSE_GLYPH, BP_PIN_SPACER_CLASS } from "../constants/blueprint";
+import { BP_COLLAPSE_GLYPH, BP_EXEC_IN, BP_PIN_SPACER_CLASS, BP_PORT_DIR } from "../constants/blueprint";
 
 /**
  * 节点卡片  外观对齐 UE5。
@@ -85,12 +85,22 @@ export function BlueprintNodeCard({
   const kind = nodeKindOf(def, node);
   const tone = titleStyle(kind);
   const width = node.width ?? def.width ?? NODE_WIDTH;
+  /** 输出列行序 = [执行出口, 数据出口], 必须与 geometry.portPos 一致 */
+  const outPorts = [
+    ...execOuts.map((id) => ({ id, label: execOutLabel(def, id), type: EXEC })),
+    ...(def.outputs ?? []),
+  ];
+  const colorOf = (type: string): { color?: string } => {
+    const c = registry.typeColor(type);
+    return c ? { color: c } : {};
+  };
 
   return (
     <div
       data-node-kind={kind}
       className={cn(
-        "relative overflow-hidden border text-foreground",
+        // 根节点不裁剪: 引脚有一半探出外边界; 圆角由标题条 / 底条各自按 rounded-[inherit] 收边
+        "relative overflow-visible border text-foreground",
         // UE5 的节点体是深色块 + 近黑描边 + 阴影; 圆角比卡片小 (6px)
         "border-bp-node-border bg-bp-node-bg",
         hasError && "border-destructive/70",
@@ -107,20 +117,11 @@ export function BlueprintNodeCard({
         高度取 UE5 源码常量 EstimatedExecutionPinHeight = 28。
       */}
       <div
-        className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
+        data-slot="bp-title"
+        // 根节点不裁剪, 标题条底色自己按根节点的圆角收边 (折叠态它就是整张卡, 四角都要圆)
+        className={cn("flex items-center gap-1.5 px-2", isCollapsed ? "rounded-[inherit]" : "rounded-t-[inherit]", tone.bg, tone.fg)}
         style={{ height: "var(--bp-title-h)" }}
       >
-        {def.execIn && (
-          <span
-            ref={(el) => portRef?.("exec-in", "in", el)}
-            data-port="exec-in"
-            data-dir="in"
-            className="absolute flex items-center justify-center"
-            style={{ left: pinOffset(PIN_SIZE.exec), top: headerPinTop(PIN_SIZE.exec), width: PIN_SIZE.exec, height: PIN_SIZE.exec }}
-          >
-            <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN_SIZE.exec} />
-          </span>
-        )}
         {/* 引脚脱离文档流后, 标题要让出半个引脚的位置, 否则文字会压在楔形上 */}
         {def.execIn && <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN_SIZE.exec / HALF_DIVISOR }} />}
         {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
@@ -132,23 +133,6 @@ export function BlueprintNodeCard({
           />
         ) : (
           <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
-        )}
-
-        {/*
-          折叠态没有端口区, 但执行出口必须有落点  否则一折叠,
-          从它出去的执行线就断在空气里、再也抓不回来。
-          portPos 在折叠时把所有出口放到标题条中线, 这里画在同一条线上。
-        */}
-        {isCollapsed && execOuts.length > 0 && (
-          <span
-            ref={(el) => portRef?.(execOuts[execOuts.length - 1], "out", el)}
-            data-port={execOuts[execOuts.length - 1]}
-            data-dir="out"
-            className="absolute flex items-center justify-center"
-            style={{ right: pinOffset(PIN_SIZE.exec), top: headerPinTop(PIN_SIZE.exec), width: PIN_SIZE.exec, height: PIN_SIZE.exec }}
-          >
-            <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN_SIZE.exec} />
-          </span>
         )}
 
         {onToggleCollapse && (
@@ -172,40 +156,12 @@ export function BlueprintNodeCard({
           <div className="flex gap-2">
             <div className="min-w-0 flex-1">
               {(def.inputs ?? []).map((p) => (
-                <PortRow
-                  key={p.id}
-                  dir="in"
-                  port={p}
-                  {...(registry.typeColor(p.type) ? { color: registry.typeColor(p.type) } : {})}
-                  filled={connected?.[p.id]}
-                  invalid={portErrors?.[p.id]}
-                  portRef={portRef}
-                  hot={dropTarget?.[p.id]}
-                />
+                <PortRow key={p.id} dir="in" port={p} showPin={false} hot={dropTarget?.[p.id]} />
               ))}
             </div>
             <div className="min-w-0 flex-1">
-              {/* 行序 = [执行出口, 数据出口], 必须与 geometry.portPos 一致 */}
-              {execOuts.map((id) => (
-                <PortRow
-                  key={id}
-                  dir="out"
-                  port={{ id, label: execOutLabel(def, id), type: EXEC }}
-                  filled
-                  portRef={portRef}
-                  hot={dropTarget?.[id]}
-                />
-              ))}
-              {(def.outputs ?? []).map((p) => (
-                <PortRow
-                  key={p.id}
-                  dir="out"
-                  port={p}
-                  {...(registry.typeColor(p.type) ? { color: registry.typeColor(p.type) } : {})}
-                  filled
-                  portRef={portRef}
-                  hot={dropTarget?.[p.id]}
-                />
+              {outPorts.map((p) => (
+                <PortRow key={p.id} dir="out" port={p} showPin={false} hot={dropTarget?.[p.id]} />
               ))}
             </div>
           </div>
@@ -233,10 +189,26 @@ export function BlueprintNodeCard({
       {!isCollapsed && (
         <div
           aria-hidden
-          className="h-[3px] w-full bg-foreground/[0.07]"
+          className="h-[3px] w-full rounded-b-[inherit] bg-foreground/[0.07]"
           style={{ backgroundColor: "color-mix(in srgb, var(--bp-node-border) 55%, transparent)" }}
         />
       )}
+
+      {/*
+        视觉引脚挂在根节点下: 圆心压在外边界上, 一半在卡片外, 不能被裁.
+        折叠态没有端口区, 但执行出口仍画在标题条中线  否则从它出去的执行线断在空气里.
+      */}
+      {def.execIn && <NodePin portId={BP_EXEC_IN} dir={BP_PORT_DIR.in} exec portRef={portRef} />}
+      {isCollapsed && execOuts.length > 0 && (
+        <NodePin portId={execOuts[execOuts.length - 1]} dir={BP_PORT_DIR.out} exec portRef={portRef} />
+      )}
+      {!isCollapsed && (def.inputs ?? []).map((p, i) => (
+        <NodePin key={`in:${p.id}`} portId={p.id} dir={BP_PORT_DIR.in} exec={p.type === EXEC} row={i} {...colorOf(p.type)}
+          invalid={portErrors?.[p.id]} portRef={portRef} />
+      ))}
+      {!isCollapsed && outPorts.map((p, i) => (
+        <NodePin key={`out:${p.id}`} portId={p.id} dir={BP_PORT_DIR.out} exec={p.type === EXEC} row={i} {...colorOf(p.type)} portRef={portRef} />
+      ))}
     </div>
   );
 }

@@ -3,16 +3,15 @@
 import type { JSX } from "react";
 import { Handle, Position, type NodeProps, type EdgeProps, getBezierPath } from "@xyflow/react";
 import { cn } from "../primitives/utils";
-import { PinShape } from "./PinShape";
 import {
-  BODY_PAD_X, CARD_BORDER, PIN_SIZE, PortRow, ParamField, headerPinTop, pinOffset,
+  BODY_PAD_X, CARD_BORDER, NodePin, PIN_SIZE, PortRow, ParamField, headerPinTop,
 } from "./node-parts";
-import { NODE_KIND_TITLE } from "./types";
+import { EXEC, NODE_KIND_TITLE } from "./types";
 import type { RfNode } from "./rf-adapter";
 import { handleId } from "./rf-adapter";
 import { BODY_TOP, HEADER_H, PORT_ROW } from "./geometry";
 import { HALF_DIVISOR } from "../constants";
-import { BP_EDGE_FILL, BP_HANDLE_STYLE, BP_PIN_SPACER_CLASS } from "../constants/blueprint";
+import { BP_EDGE_FILL, BP_EXEC_IN, BP_HANDLE_STYLE, BP_PIN_SPACER_CLASS, BP_PORT_DIR } from "../constants/blueprint";
 
 /**
  * React Flow 的自定义节点 / 连线  **UE5 外观在这一层**, 不在别处。
@@ -68,7 +67,8 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
   return (
     <div
       data-node-kind={data.kind}
-      className={cn("relative overflow-hidden border border-bp-node-border bg-bp-node-bg text-foreground")}
+      // 根节点不裁剪: 引脚有一半探出外边界; 圆角由标题条按 rounded-[inherit] 自己收边
+      className={cn("relative overflow-visible border border-bp-node-border bg-bp-node-bg text-foreground")}
       style={{
         borderRadius: "var(--bp-node-radius)",
         boxShadow: selected
@@ -79,7 +79,9 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
     >
       {/* 标题栏: 按节点类别配色 */}
       <div
-        className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
+        data-slot="bp-title"
+        // 根节点不裁剪, 标题条底色自己按根节点的圆角收边 (折叠态它就是整张卡, 四角都要圆)
+        className={cn("flex items-center gap-1.5 px-2", data.collapsed ? "rounded-[inherit]" : "rounded-t-[inherit]", tone.bg, tone.fg)}
         style={{ height: HEADER_H }}
       >
         {/* 执行入口: 楔形, 画在标题栏左边 */}
@@ -95,15 +97,8 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
           style={{ top: headerPinTop(PIN.exec), left: HEADER_HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
           className="!border-0 !bg-transparent !opacity-0"
         />
-        {/* 视觉引脚与上面的 Handle 用同一组偏移, 两个盒子完全重合; 引脚脱离文档流,
-            标题前面那一小段留白由右下角的占位元素让出 */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute flex items-center justify-center"
-          style={{ top: headerPinTop(PIN.exec), left: pinOffset(PIN.exec), width: PIN.exec, height: PIN.exec }}
-        >
-          <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN.exec} />
-        </span>
+        {/* 视觉引脚 (根节点下的 NodePin) 与上面的 Handle 圆心重合; 引脚脱离文档流,
+            标题前面那一小段留白由下面的占位元素让出 */}
         <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN.exec / HALF_DIVISOR }} />
         <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
       </div>
@@ -112,7 +107,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
         <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
           <div className="flex gap-2">
             <div className="min-w-0 flex-1">
-              {(data.inputs ?? []).map((p, i) => (
+              {(data.inputs ?? []).map((p) => (
                 <div key={p.id} className="relative">
                   <Handle
                     type="target"
@@ -121,18 +116,12 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
                     style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
                     className="!border-0 !bg-transparent !opacity-0"
                   />
-                  <PortRow
-                    dir="in"
-                    port={p}
-                    {...(p.color ? { color: p.color } : {})}
-                    filled={data.filled?.[p.id]}
-                    invalid={data.portErrors?.[p.id]}
-                  />
+                  <PortRow dir="in" port={p} showPin={false} />
                 </div>
               ))}
             </div>
             <div className="min-w-0 flex-1">
-              {(data.outputs ?? []).map((p, i) => (
+              {(data.outputs ?? []).map((p) => (
                 <div key={p.id} className="relative">
                   <Handle
                     type="source"
@@ -141,7 +130,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
                     style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
                     className="!border-0 !bg-transparent !opacity-0"
                   />
-                  <PortRow dir="out" port={p} {...(p.color ? { color: p.color } : {})} filled />
+                  <PortRow dir="out" port={p} showPin={false} />
                 </div>
               ))}
             </div>
@@ -161,6 +150,16 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
           )}
         </div>
       )}
+
+      {/* 视觉引脚挂在根节点下, 圆心压在外边界上 (一半在卡片外) */}
+      <NodePin portId={BP_EXEC_IN} dir={BP_PORT_DIR.in} exec />
+      {!data.collapsed && (data.inputs ?? []).map((p, i) => (
+        <NodePin key={`in:${p.id}`} portId={p.id} dir={BP_PORT_DIR.in} exec={p.type === EXEC} row={i}
+          {...(p.color ? { color: p.color } : {})} invalid={data.portErrors?.[p.id]} />
+      ))}
+      {!data.collapsed && (data.outputs ?? []).map((p, i) => (
+        <NodePin key={`out:${p.id}`} portId={p.id} dir={BP_PORT_DIR.out} exec={p.type === EXEC} row={i} {...(p.color ? { color: p.color } : {})} />
+      ))}
     </div>
   );
 }

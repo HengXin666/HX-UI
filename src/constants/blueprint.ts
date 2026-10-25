@@ -22,3 +22,9 @@ export const BP_HANDLE_STYLE = {
 
 /** 连线 path 不填充. */
 export const BP_EDGE_FILL = "none";
+
+/** 端口方向字面量: 引脚 / Handle / portRef 共用, 避免 "in" / "out" 散落各处. */
+export const BP_PORT_DIR = { in: "in", out: "out" } as const;
+
+/** 标题条执行入口的端口 id. */
+export const BP_EXEC_IN = "exec-in";

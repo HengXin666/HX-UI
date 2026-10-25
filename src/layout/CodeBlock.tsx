@@ -171,14 +171,8 @@ export function CodeBlock({
     // 那一次失败不能把后续正确的 "tsx" 一直按在纯文本上.
     setFailed(false);
     void codeToHtml(code, { lang: language, theme: CODE_THEME })
-      .then((result) => {
-        if (cancelled) return;
-        putCache(cacheKey, result);
-        setHtml(result);
-      })
-      .catch(() => {
-        if (!cancelled) setFailed(true);
-      });
+      .then((result) => { if (cancelled) return; putCache(cacheKey, result); setHtml(result); })
+      .catch(() => { if (!cancelled) setFailed(true); });
 
     return () => { cancelled = true; };
   }, [cacheKey, code, language, eligible]);
