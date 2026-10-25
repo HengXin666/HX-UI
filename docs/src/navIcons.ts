@@ -2,17 +2,16 @@
 const SETTINGS_ICON = "icon-[solar--settings-linear]";
 
 /**
- * 每个文档页的导航图标。
+ * 每个文档页的导航图标.
  *
  * 单独一张表而不是写进 nav.ts  让"加一个组件"这件事在两处都很直白:
- * nav.ts 加一行元数据, 这里加一个图标 (忘了加也有默认值兜底)。
+ * nav.ts 加一行元数据, 这里加一个图标 (忘了加也有默认值兜底).
  */
 export const NAV_ICONS: Record<string, string> = {
   // 基础
   install: "icon-[solar--download-minimalistic-linear]",
   tokens: "icon-[solar--palette-linear]",
   // 示例
-  "settings-demo": SETTINGS_ICON,
   // 基础件
   button: "icon-[solar--cursor-square-linear]",
   input: "icon-[solar--text-field-linear]",
@@ -48,9 +47,7 @@ export const NAV_ICONS: Record<string, string> = {
   progress: "icon-[solar--refresh-circle-linear]",
   // 版式件 (2026-09-29 补)
   "data-table": "icon-[solar--card-search-linear]",
-  "stat-card": "icon-[solar--chart-square-linear]",
   "empty-state": "icon-[solar--inbox-linear]",
-  "page-header": "icon-[solar--align-left-linear]",
   "browser-live": "icon-[solar--screencast-linear]",
   blueprint: "icon-[solar--mask-happy-linear]",
   "blueprint-dsh": "icon-[solar--graph-linear]",
@@ -65,11 +62,9 @@ export const NAV_ICONS: Record<string, string> = {
   "button-group": "icon-[solar--widget-5-linear]",
   carousel: "icon-[solar--gallery-wide-linear]",
   checkbox: "icon-[solar--check-square-linear]",
-  collapsible: "icon-[solar--list-down-linear]",
   combobox: "icon-[solar--list-arrow-down-linear]",
   command: "icon-[solar--command-linear]",
   "context-menu": "icon-[solar--mouse-linear]",
-  "date-picker": "icon-[solar--calendar-mark-linear]",
   direction: "icon-[solar--transfer-horizontal-linear]",
   empty: "icon-[solar--inbox-line-linear]",
   field: "icon-[solar--text-field-focus-linear]",
@@ -96,7 +91,6 @@ export const NAV_ICONS: Record<string, string> = {
   skeleton: "icon-[solar--notes-linear]",
   spinner: "icon-[solar--refresh-circle-linear]",
   table: "icon-[solar--tablet-linear]",
-  toggle: "icon-[solar--stop-circle-linear]",
   "toggle-group": "icon-[solar--checklist-linear]",
   trace: "icon-[solar--route-linear]",
   typography: "icon-[solar--text-bold-linear]",

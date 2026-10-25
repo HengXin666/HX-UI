@@ -1,6 +1,4 @@
 import type { JSX } from "react";
-import { AccordionPage } from "../AccordionPage";
-import { CalendarPage } from "../CalendarPage";
 import { SkeletonPage } from "../SkeletonPage";
 import { AttachmentPage, BubblePage, MarkerPage, MessagePage } from "./chat";
 import { MessageScrollerPage, QuestionnairePage } from "./agent";
@@ -11,14 +9,14 @@ import { SidebarPage } from "./sidebar";
 import { AlertPage, EmptyPage, PaginationPage, TypographyPage } from "./feedback";
 import { FieldPage, FormPage, InputGroupPage } from "./form";
 import { ComboboxPage, InputOTPPage, NativeSelectPage } from "./pickers";
-import { AspectRatioPage, AvatarPage, ButtonGroupPage, ToggleGroupPage, TogglePage } from "./layout";
+import { AspectRatioPage, AvatarPage, ButtonGroupPage, ToggleGroupPage } from "./layout";
 import { ItemPage, TablePage } from "./listing";
 import { BreadcrumbDocPage, MenubarPage, NavigationMenuPage } from "./navigation";
 import { ContextMenuPage } from "./context-menu";
 import { AlertDialogPage, CommandPage, HoverCardPage, SheetPage } from "./overlay";
 
 /**
- * 对标 shadcn 补齐的文档页, 按导航 id 查表. 与已有页面共用一页的别名 (collapsible / date-picker) 也登记在这里.
+ * 对标 shadcn 补齐的文档页, 按导航 id 查表.
  * 模板页 (templates-*) 只由 pages/templates 的 TEMPLATE_PAGES 登记, 不在这里重复.
  */
 export const PARITY_PAGES: Readonly<Record<string, () => JSX.Element>> = {
@@ -32,11 +30,9 @@ export const PARITY_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   "button-group": ButtonGroupPage,
   carousel: CarouselPage,
   checkbox: CheckboxPage,
-  collapsible: AccordionPage,
   combobox: ComboboxPage,
   command: CommandPage,
   "context-menu": ContextMenuPage,
-  "date-picker": CalendarPage,
   direction: DirectionPage,
   empty: EmptyPage,
   field: FieldPage,
@@ -63,7 +59,6 @@ export const PARITY_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   skeleton: SkeletonPage,
   spinner: SpinnerPage,
   table: TablePage,
-  toggle: TogglePage,
   "toggle-group": ToggleGroupPage,
   trace: TracePage,
   typography: TypographyPage,

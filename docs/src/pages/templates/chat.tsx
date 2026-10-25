@@ -12,7 +12,7 @@ import { TEMPLATE_PAGE } from "../../constants/templates";
 /** 示例会话: 一条用户消息, 一条流式回答, 一段工具轨迹. */
 const USER_TEXT = "把 settings 页的三级布局改成左右两栏, 顺便跑一次类型检查";
 const STEPS = [
-  { status: TASK_STATUS.done, title: "读取 docs/src/pages/SettingsPageDemo.tsx" },
+  { status: TASK_STATUS.done, title: "读取 docs/src/pages/templates/settings.tsx" },
   { status: TASK_STATUS.done, title: "拆分布局为左右两栏" },
   { status: TASK_STATUS.running, title: "npm run typecheck" },
 ];
@@ -53,7 +53,7 @@ export function ChatWorkbench() {
 
 const ANSWER = `## 已完成的改动
 
-- 把 \`SettingsPageDemo\` 的三级布局收成两栏
+- 把 \`SettingsTemplate\` 的三级布局收成两栏
 - 侧栏保留分组标题, 内容区按卡片堆叠
 
 | 区域 | 改动 |

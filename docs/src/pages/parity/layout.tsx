@@ -121,12 +121,16 @@ ButtonGroupSeparator ~ - ~ - ~ 两个无边框按钮之间的分隔线
   );
 }
 
-export function TogglePage(): JSX.Element {
+export function ToggleGroupPage(): JSX.Element {
   return (
     <>
-      <P>两态按钮 (按下 / 弹起). 按下态用 accent 底 + 前景文字, 不用主色实底, 工具条里一排按下的蓝块太抢眼. 默认带点按水波纹.</P>
-      <Usage names={["Toggle"]} />
-      <H2>示例</H2>
+      <P>
+        单个两态按钮 Toggle 与一组两态按钮 ToggleGroup 同页. 组: type=single 单选 (可取消), type=multiple 多选. variant / size 由组下发. spacing 为 0 时贴合成一条.
+        与 SegmentedControl 的区别: 那个是 "切视图" 且必有一项选中, 这个是 "开关若干个状态".
+      </P>
+      <Usage names={["Toggle", "ToggleGroup", "ToggleGroupItem"]} />
+      <H2>单个: Toggle</H2>
+      <P>按下态用 accent 底 + 前景文字, 不用主色实底, 工具条里一排按下的蓝块太抢眼. 默认带点按水波纹.</P>
       <Preview align={ALIGN.center} code={`<Toggle aria-label="加粗"><BoldIcon /></Toggle>
 <Toggle variant="outline" aria-label="斜体"><ItalicIcon /></Toggle>
 <Toggle defaultPressed><UnderlineIcon /> 下划线</Toggle>`}>
@@ -135,27 +139,7 @@ export function TogglePage(): JSX.Element {
         <Toggle defaultPressed><UnderlineIcon /> 下划线</Toggle>
         <Toggle size={VARIANT.sm} disabled>不可用</Toggle>
       </Preview>
-      <H2>属性</H2>
-      <Props spec={`
-pressed / defaultPressed ~ boolean ~ - ~ 受控 / 非受控按下态
-onPressedChange ~ (pressed) => void ~ - ~ 切换回调
-variant ~ "default" | "outline" ~ "default" ~ 外观
-size ~ "sm" | "default" | "lg" ~ "default" ~ 尺寸
-ripple ~ boolean ~ true ~ 点按水波纹
-`} />
-    </>
-  );
-}
-
-export function ToggleGroupPage(): JSX.Element {
-  return (
-    <>
-      <P>
-        一组两态按钮: type=single 单选 (可取消), type=multiple 多选. variant / size 由组下发. spacing 为 0 时贴合成一条.
-        与 SegmentedControl 的区别: 那个是 "切视图" 且必有一项选中, 这个是 "开关若干个状态".
-      </P>
-      <Usage names={["ToggleGroup", "ToggleGroupItem"]} />
-      <H2>示例</H2>
+      <H2>一组: ToggleGroup</H2>
       <Preview align={ALIGN.center} code={`<ToggleGroup type="multiple" variant="outline">
   <ToggleGroupItem value="bold"><BoldIcon /></ToggleGroupItem>
   <ToggleGroupItem value="italic"><ItalicIcon /></ToggleGroupItem>
@@ -173,6 +157,15 @@ export function ToggleGroupPage(): JSX.Element {
         </ToggleGroup>
       </Preview>
       <H2>属性</H2>
+      <P>Toggle</P>
+      <Props spec={`
+pressed / defaultPressed ~ boolean ~ - ~ 受控 / 非受控按下态
+onPressedChange ~ (pressed) => void ~ - ~ 切换回调
+variant ~ "default" | "outline" ~ "default" ~ 外观
+size ~ "sm" | "default" | "lg" ~ "default" ~ 尺寸
+ripple ~ boolean ~ true ~ 点按水波纹
+`} />
+      <P>ToggleGroup</P>
       <Props spec={`
 type ~ "single" | "multiple" ~ - ~ 单选或多选 (必填)
 value / defaultValue ~ string | string[] ~ - ~ 受控 / 非受控
