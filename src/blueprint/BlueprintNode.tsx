@@ -99,7 +99,7 @@ export function BlueprintNodeCard({
     <div
       data-node-kind={kind}
       className={cn(
-        // 根节点不裁剪: 引脚有一半探出外边界, 圆角由下面的内容裁剪层负责
+        // 根节点不裁剪: 引脚有一半探出外边界; 圆角由标题条 / 底条各自按 rounded-[inherit] 收边
         "relative overflow-visible border text-foreground",
         // UE5 的节点体是深色块 + 近黑描边 + 阴影; 圆角比卡片小 (6px)
         "border-bp-node-border bg-bp-node-bg",
@@ -112,90 +112,90 @@ export function BlueprintNodeCard({
         width,
       }}
     >
-      <div className="overflow-hidden rounded-[inherit]">
-        {/*
-          标题条。执行入口画在它左边  与"被触发的那一端"的语义对齐。
-          高度取 UE5 源码常量 EstimatedExecutionPinHeight = 28。
-        */}
-        <div
-          className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
-          style={{ height: "var(--bp-title-h)" }}
-        >
-          {/* 引脚脱离文档流后, 标题要让出半个引脚的位置, 否则文字会压在楔形上 */}
-          {def.execIn && <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN_SIZE.exec / HALF_DIVISOR }} />}
-          {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
-          {renaming ? (
-            <NodeRenameInput
-              value={title}
-              onCommit={(v) => onRenameCommit?.(v)}
-              onCancel={() => onRenameCancel?.()}
-            />
-          ) : (
-            <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
-          )}
-
-          {onToggleCollapse && (
-            <button
-              type="button"
-              onClick={onToggleCollapse}
-              className="shrink-0 rounded px-1 text-[11px] opacity-70 transition-opacity hover:opacity-100"
-              aria-label={isCollapsed ? "展开" : "折叠"}
-            >
-              {isCollapsed ? BP_COLLAPSE_GLYPH.collapsed : BP_COLLAPSE_GLYPH.expanded}
-            </button>
-          )}
-        </div>
-
-        {/*
-          pt 取 BODY_TOP - HEADER_H - CARD_BORDER: 端口行必须从 geometry.portPos 假设的
-          高度开始, 差 1px 每个端口就整体偏 1px, 表现是线擦着圆点过去。
-        */}
-        {!isCollapsed && (
-          <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
-            <div className="flex gap-2">
-              <div className="min-w-0 flex-1">
-                {(def.inputs ?? []).map((p) => (
-                  <PortRow key={p.id} dir="in" port={p} showPin={false} hot={dropTarget?.[p.id]} />
-                ))}
-              </div>
-              <div className="min-w-0 flex-1">
-                {outPorts.map((p) => (
-                  <PortRow key={p.id} dir="out" port={p} showPin={false} hot={dropTarget?.[p.id]} />
-                ))}
-              </div>
-            </div>
-
-            {(def.params ?? []).length > 0 && (
-              <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
-                {(def.params ?? []).map((p) => (
-                  <ParamField
-                    key={p.id}
-                    def={p}
-                    value={node.params?.[p.id] ?? p.default}
-                    onChange={(v) => onParamChange?.(p.id, v)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+      {/*
+        标题条。执行入口画在它左边  与"被触发的那一端"的语义对齐。
+        高度取 UE5 源码常量 EstimatedExecutionPinHeight = 28。
+      */}
+      <div
+        data-slot="bp-title"
+        // 根节点不裁剪, 标题条底色自己按根节点的圆角收边 (折叠态它就是整张卡, 四角都要圆)
+        className={cn("flex items-center gap-1.5 px-2", isCollapsed ? "rounded-[inherit]" : "rounded-t-[inherit]", tone.bg, tone.fg)}
+        style={{ height: "var(--bp-title-h)" }}
+      >
+        {/* 引脚脱离文档流后, 标题要让出半个引脚的位置, 否则文字会压在楔形上 */}
+        {def.execIn && <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN_SIZE.exec / HALF_DIVISOR }} />}
+        {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
+        {renaming ? (
+          <NodeRenameInput
+            value={title}
+            onCommit={(v) => onRenameCommit?.(v)}
+            onCancel={() => onRenameCancel?.()}
+          />
+        ) : (
+          <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
         )}
 
-        {/*
-          UE5 节点的底部有一条**略深于节点体**的横条  它不承载信息,
-          只是给节点一个"收尾", 让卡片看起来是压在画布上的一块实体,
-          而不是一个开口的框. 缺了它, 节点底部会显得散.
-        */}
-        {!isCollapsed && (
-          <div
-            aria-hidden
-            className="h-[3px] w-full bg-foreground/[0.07]"
-            style={{ backgroundColor: "color-mix(in srgb, var(--bp-node-border) 55%, transparent)" }}
-          />
+        {onToggleCollapse && (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="shrink-0 rounded px-1 text-[11px] opacity-70 transition-opacity hover:opacity-100"
+            aria-label={isCollapsed ? "展开" : "折叠"}
+          >
+            {isCollapsed ? BP_COLLAPSE_GLYPH.collapsed : BP_COLLAPSE_GLYPH.expanded}
+          </button>
         )}
       </div>
 
       {/*
-        视觉引脚挂在根节点下, 裁剪层之外: 圆心压在外边界上, 一半在卡片外, 不能被裁.
+        pt 取 BODY_TOP - HEADER_H - CARD_BORDER: 端口行必须从 geometry.portPos 假设的
+        高度开始, 差 1px 每个端口就整体偏 1px, 表现是线擦着圆点过去。
+      */}
+      {!isCollapsed && (
+        <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
+          <div className="flex gap-2">
+            <div className="min-w-0 flex-1">
+              {(def.inputs ?? []).map((p) => (
+                <PortRow key={p.id} dir="in" port={p} showPin={false} hot={dropTarget?.[p.id]} />
+              ))}
+            </div>
+            <div className="min-w-0 flex-1">
+              {outPorts.map((p) => (
+                <PortRow key={p.id} dir="out" port={p} showPin={false} hot={dropTarget?.[p.id]} />
+              ))}
+            </div>
+          </div>
+
+          {(def.params ?? []).length > 0 && (
+            <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
+              {(def.params ?? []).map((p) => (
+                <ParamField
+                  key={p.id}
+                  def={p}
+                  value={node.params?.[p.id] ?? p.default}
+                  onChange={(v) => onParamChange?.(p.id, v)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/*
+        UE5 节点的底部有一条**略深于节点体**的横条  它不承载信息,
+        只是给节点一个"收尾", 让卡片看起来是压在画布上的一块实体,
+        而不是一个开口的框. 缺了它, 节点底部会显得散.
+      */}
+      {!isCollapsed && (
+        <div
+          aria-hidden
+          className="h-[3px] w-full rounded-b-[inherit] bg-foreground/[0.07]"
+          style={{ backgroundColor: "color-mix(in srgb, var(--bp-node-border) 55%, transparent)" }}
+        />
+      )}
+
+      {/*
+        视觉引脚挂在根节点下: 圆心压在外边界上, 一半在卡片外, 不能被裁.
         折叠态没有端口区, 但执行出口仍画在标题条中线  否则从它出去的执行线断在空气里.
       */}
       {def.execIn && <NodePin portId={BP_EXEC_IN} dir={BP_PORT_DIR.in} exec portRef={portRef} />}

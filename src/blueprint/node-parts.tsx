@@ -97,8 +97,9 @@ export function rowPinTop(row: number, size: number): number {
 /**
  * 视觉引脚, **挂在卡片根节点下**绝对定位.
  *
- * 引脚有一半探出卡片外边界; 卡片内容要靠 overflow-hidden 裁出圆角, 引脚若留在内容里
- * 就会被裁掉一半. 所以内容包在裁剪层里, 引脚作为根节点的直接子元素画在裁剪层之外.
+ * 引脚有一半探出卡片外边界, 所以卡片根节点不能 overflow-hidden (会裁掉一半).
+ * 圆角改由标题条 / 底条各自 rounded-[inherit] 收边; 不另包一层裁剪层: 那会让标题条不再是
+ * 根节点的第一个子元素, 点"节点第一个子 div"落到卡片中心, 被相邻节点挡住.
  * row 缺省 = 标题条中线 (执行入口 / 折叠态执行出口).
  */
 export function NodePin({

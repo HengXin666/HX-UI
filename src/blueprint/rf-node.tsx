@@ -67,7 +67,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
   return (
     <div
       data-node-kind={data.kind}
-      // 根节点不裁剪: 引脚有一半探出外边界, 圆角由内容裁剪层负责, 视觉引脚挂在裁剪层之外
+      // 根节点不裁剪: 引脚有一半探出外边界; 圆角由标题条按 rounded-[inherit] 自己收边
       className={cn("relative overflow-visible border border-bp-node-border bg-bp-node-bg text-foreground")}
       style={{
         borderRadius: "var(--bp-node-radius)",
@@ -77,81 +77,81 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
         width: data.width ?? 176,
       }}
     >
-      <div className="overflow-hidden rounded-[inherit]">
-        {/* 标题栏: 按节点类别配色 */}
-        <div
-          className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
-          style={{ height: HEADER_H }}
-        >
-          {/* 执行入口: 楔形, 画在标题栏左边 */}
-          {/*
-            执行入口。Handle 必须有**真实尺寸**才可被拖、被点 
-            尺寸为 0 时它不可交互, 拖不出线也连不上。
-            这里给 11px 的命中区域并设为透明, 视觉由 PinShape 决定。
-          */}
-          <Handle
-            type="target"
-            id={handleId("exec-in", "in")}
-            position={Position.Left}
-            style={{ top: headerPinTop(PIN.exec), left: HEADER_HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
-            className="!border-0 !bg-transparent !opacity-0"
-          />
-          {/* 视觉引脚 (根节点下的 NodePin) 与上面的 Handle 圆心重合; 引脚脱离文档流,
-              标题前面那一小段留白由下面的占位元素让出 */}
-          <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN.exec / HALF_DIVISOR }} />
-          <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
-        </div>
-
-        {!data.collapsed && (
-          <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
-            <div className="flex gap-2">
-              <div className="min-w-0 flex-1">
-                {(data.inputs ?? []).map((p) => (
-                  <div key={p.id} className="relative">
-                    <Handle
-                      type="target"
-                      id={handleId(p.id, "in")}
-                      position={Position.Left}
-                      style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
-                      className="!border-0 !bg-transparent !opacity-0"
-                    />
-                    <PortRow dir="in" port={p} showPin={false} />
-                  </div>
-                ))}
-              </div>
-              <div className="min-w-0 flex-1">
-                {(data.outputs ?? []).map((p) => (
-                  <div key={p.id} className="relative">
-                    <Handle
-                      type="source"
-                      id={handleId(p.id, "out")}
-                      position={Position.Right}
-                      style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
-                      className="!border-0 !bg-transparent !opacity-0"
-                    />
-                    <PortRow dir="out" port={p} showPin={false} />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {(data.params ?? []).length > 0 && (
-              <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
-                {(data.params ?? []).map((p) => (
-                  <ParamField
-                    key={p.id}
-                    def={p}
-                    value={data.values?.[p.id] ?? p.default}
-                    onChange={(v) => data.onParamChange?.(p.id, v)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+      {/* 标题栏: 按节点类别配色 */}
+      <div
+        data-slot="bp-title"
+        // 根节点不裁剪, 标题条底色自己按根节点的圆角收边 (折叠态它就是整张卡, 四角都要圆)
+        className={cn("flex items-center gap-1.5 px-2", data.collapsed ? "rounded-[inherit]" : "rounded-t-[inherit]", tone.bg, tone.fg)}
+        style={{ height: HEADER_H }}
+      >
+        {/* 执行入口: 楔形, 画在标题栏左边 */}
+        {/*
+          执行入口。Handle 必须有**真实尺寸**才可被拖、被点 
+          尺寸为 0 时它不可交互, 拖不出线也连不上。
+          这里给 11px 的命中区域并设为透明, 视觉由 PinShape 决定。
+        */}
+        <Handle
+          type="target"
+          id={handleId("exec-in", "in")}
+          position={Position.Left}
+          style={{ top: headerPinTop(PIN.exec), left: HEADER_HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
+          className="!border-0 !bg-transparent !opacity-0"
+        />
+        {/* 视觉引脚 (根节点下的 NodePin) 与上面的 Handle 圆心重合; 引脚脱离文档流,
+            标题前面那一小段留白由下面的占位元素让出 */}
+        <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN.exec / HALF_DIVISOR }} />
+        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
       </div>
 
-      {/* 视觉引脚挂在根节点下, 裁剪层之外, 圆心压在外边界上 (一半在卡片外) */}
+      {!data.collapsed && (
+        <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
+          <div className="flex gap-2">
+            <div className="min-w-0 flex-1">
+              {(data.inputs ?? []).map((p) => (
+                <div key={p.id} className="relative">
+                  <Handle
+                    type="target"
+                    id={handleId(p.id, "in")}
+                    position={Position.Left}
+                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
+                    className="!border-0 !bg-transparent !opacity-0"
+                  />
+                  <PortRow dir="in" port={p} showPin={false} />
+                </div>
+              ))}
+            </div>
+            <div className="min-w-0 flex-1">
+              {(data.outputs ?? []).map((p) => (
+                <div key={p.id} className="relative">
+                  <Handle
+                    type="source"
+                    id={handleId(p.id, "out")}
+                    position={Position.Right}
+                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
+                    className="!border-0 !bg-transparent !opacity-0"
+                  />
+                  <PortRow dir="out" port={p} showPin={false} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {(data.params ?? []).length > 0 && (
+            <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
+              {(data.params ?? []).map((p) => (
+                <ParamField
+                  key={p.id}
+                  def={p}
+                  value={data.values?.[p.id] ?? p.default}
+                  onChange={(v) => data.onParamChange?.(p.id, v)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 视觉引脚挂在根节点下, 圆心压在外边界上 (一半在卡片外) */}
       <NodePin portId={BP_EXEC_IN} dir={BP_PORT_DIR.in} exec />
       {!data.collapsed && (data.inputs ?? []).map((p, i) => (
         <NodePin key={`in:${p.id}`} portId={p.id} dir={BP_PORT_DIR.in} exec={p.type === EXEC} row={i}

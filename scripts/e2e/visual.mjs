@@ -50,7 +50,7 @@ steps.push({
 });
 
 // 3. 标题栏按类别分色: 至少 2 种不同底色
-const titleBg = await h.distinctColors("[data-node-kind] > div:first-child", "background-color");
+const titleBg = await h.distinctColors('[data-node-kind] > [data-slot="bp-title"]', "background-color");
 steps.push({
   name: "标题栏按节点类别分色 (>=2 种底色)",
   ok: titleBg.length >= 2,

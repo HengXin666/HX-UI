@@ -1,12 +1,12 @@
 From b1a3fa996882645c85d57862ffedf0ffa41cd6d5 Mon Sep 17 00:00:00 2001
 From: hark <hark@hark.local>
 Date: Sun, 25 Oct 2026 06:12:31 +0000
-Subject: [PATCH] =?UTF-8?q?fix(blueprint):=20=E8=A7=86=E8=A7=89=E5=BC=95?=
- =?UTF-8?q?=E8=84=9A=E6=8C=82=E6=A0=B9=E8=8A=82=E7=82=B9=E5=85=8D=E8=A3=81?=
- =?UTF-8?q?=E5=89=AA;=20docs:=20theme-color=20=E8=B7=9F=E9=9A=8F=E6=98=8E?=
- =?UTF-8?q?=E6=9A=97,=20=E6=A8=A1=E6=9D=BF=E9=A1=B5=E5=8F=AA=E7=94=B1=20TE?=
- =?UTF-8?q?MPLATE=5FPAGES=20=E7=99=BB=E8=AE=B0=20(PR=20#28=20review=20P2/P?=
- =?UTF-8?q?3)?=
+Subject: [PATCH 1/2] =?UTF-8?q?fix(blueprint):=20=E8=A7=86=E8=A7=89?=
+ =?UTF-8?q?=E5=BC=95=E8=84=9A=E6=8C=82=E6=A0=B9=E8=8A=82=E7=82=B9=E5=85=8D?=
+ =?UTF-8?q?=E8=A3=81=E5=89=AA;=20docs:=20theme-color=20=E8=B7=9F=E9=9A=8F?=
+ =?UTF-8?q?=E6=98=8E=E6=9A=97,=20=E6=A8=A1=E6=9D=BF=E9=A1=B5=E5=8F=AA?=
+ =?UTF-8?q?=E7=94=B1=20TEMPLATE=5FPAGES=20=E7=99=BB=E8=AE=B0=20(PR=20#28?=
+ =?UTF-8?q?=20review=20P2/P3)?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -821,6 +821,418 @@ index 13f6541..66af244 100644
  
      return () => { cancelled = true; };
    }, [cacheKey, code, language, eligible]);
+-- 
+2.47.3
+
+
+From d25deee73202793a29ca7b0c552ac076e14d8de4 Mon Sep 17 00:00:00 2001
+From: hark <hark@hark.local>
+Date: Sun, 25 Oct 2026 06:27:31 +0000
+Subject: [PATCH 2/2] fix(blueprint): drop clip wrapper so title bar stays
+ first child (data-slot=bp-title); round corners per strip
+
+---
+ .../2026-10-22-blueprint-pin-alignment.md     |   3 +-
+ scripts/e2e/visual.mjs                        |   2 +-
+ src/blueprint/BlueprintNode.tsx               | 156 +++++++++---------
+ src/blueprint/node-parts.tsx                  |   5 +-
+ src/blueprint/rf-node.tsx                     | 142 ++++++++--------
+ 5 files changed, 155 insertions(+), 153 deletions(-)
+
+diff --git a/.agents/notes/implemented/feature/2026-10-22-blueprint-pin-alignment.md b/.agents/notes/implemented/feature/2026-10-22-blueprint-pin-alignment.md
+index 571518a..09e24a5 100644
+--- a/.agents/notes/implemented/feature/2026-10-22-blueprint-pin-alignment.md
++++ b/.agents/notes/implemented/feature/2026-10-22-blueprint-pin-alignment.md
+@@ -18,12 +18,13 @@ Decision-ID: blueprint-pin-alignment
+ - 卡片体的上内边距取 BODY_TOP - HEADER_H - CARD_BORDER, 让第一行端口的圆心与 portPos 的公式逐像素一致。
+ - React Flow 版本 (rf-node) 的 Handle 落点按同一套常量推导, 但要注意 React Flow 计算连线端点时取的是 Handle 面向节点的那条边而不是中心, 所以 Handle 的边压在外边界上, 再补一个边框宽。
+ - 视觉引脚与 Handle 分离: Handle 只是一块透明的命中区域, 视觉引脚由 NodePin 画, 两者圆心重合。
+-- 卡片根节点 overflow-visible, 标题条 / 端口区 / 底条包在一层 `overflow-hidden rounded-[inherit]` 的裁剪层里负责圆角; 视觉引脚 (NodePin) 是根节点的直接子元素, 画在裁剪层之外, 否则探出外边界的那一半会被裁掉 (PR #28 review P2)。端口行的 top 由 rowPinTop(row, size) 推出, 与 portPos 的 BODY_TOP + idx * PORT_ROW + PORT_ROW / 2 同源; 水平偏移仍是 pinOffset, Handle 的 HANDLE_EDGE / HEADER_HANDLE_EDGE 不动。PortRow 的 showPin=false 让行内不再画引脚。
++- 卡片根节点 overflow-visible, 不再裁剪; 圆角由标题条 (data-slot="bp-title", 展开时 rounded-t-[inherit], 折叠时 rounded-[inherit]) 与底条 (rounded-b-[inherit]) 各自收边。视觉引脚 (NodePin) 是根节点的直接子元素, 不会被裁掉一半 (PR #28 review P2)。端口行的 top 由 rowPinTop(row, size) 推出, 与 portPos 的 BODY_TOP + idx * PORT_ROW + PORT_ROW / 2 同源; 水平偏移仍是 pinOffset, Handle 的 HANDLE_EDGE / HEADER_HANDLE_EDGE 不动。PortRow 的 showPin=false 让行内不再画引脚。
+ 
+ ## Alternatives considered
+ 
+ - 什么都不做 / 复用现有: 最强理由是连线"基本能看出连到哪"。否决: 这是用户直接指出的错误, 差 7 到 11px 在正常缩放下一眼可见。
+ - 改 geometry.portPos 去适配流式布局的实际位置: 代码更少。否决: 那会让端点缩进到卡片内部, 线压在标签文字上; 而且 portPos 同时服务命中测试与手写画布, 改它等于把渲染误差变成几何真相。
++- 内容另包一层 overflow-hidden rounded-[inherit] 裁剪层: 圆角一处搞定。否决: 标题条不再是根节点第一个子元素, e2e 点"节点第一个子 div"会落到卡片中心被相邻节点拦截, 按 first-child 取标题条的分色断言也会取到统一底色的裁剪层。
+ - 根节点继续 overflow-hidden, 只靠负偏移把引脚摆到边界上: 改动最少。否决: 圆心在边界上意味着半个引脚在卡片外, 必然被裁掉一半, 用户看到的是半个圆点 / 半个楔形。
+ - 给卡片与端口行写死 padding 并依赖它: 不改结构。否决: 说的是同一件事但没有人守着, 下次调整间距又会偏; 现在偏移由常量推出, 门禁能断言。
+ 
+diff --git a/scripts/e2e/visual.mjs b/scripts/e2e/visual.mjs
+index a468bb1..ae48e9f 100644
+--- a/scripts/e2e/visual.mjs
++++ b/scripts/e2e/visual.mjs
+@@ -50,7 +50,7 @@ steps.push({
+ });
+ 
+ // 3. 标题栏按类别分色: 至少 2 种不同底色
+-const titleBg = await h.distinctColors("[data-node-kind] > div:first-child", "background-color");
++const titleBg = await h.distinctColors('[data-node-kind] > [data-slot="bp-title"]', "background-color");
+ steps.push({
+   name: "标题栏按节点类别分色 (>=2 种底色)",
+   ok: titleBg.length >= 2,
+diff --git a/src/blueprint/BlueprintNode.tsx b/src/blueprint/BlueprintNode.tsx
+index 9c8a732..aae851b 100644
+--- a/src/blueprint/BlueprintNode.tsx
++++ b/src/blueprint/BlueprintNode.tsx
+@@ -99,7 +99,7 @@ export function BlueprintNodeCard({
+     <div
+       data-node-kind={kind}
+       className={cn(
+-        // 根节点不裁剪: 引脚有一半探出外边界, 圆角由下面的内容裁剪层负责
++        // 根节点不裁剪: 引脚有一半探出外边界; 圆角由标题条 / 底条各自按 rounded-[inherit] 收边
+         "relative overflow-visible border text-foreground",
+         // UE5 的节点体是深色块 + 近黑描边 + 阴影; 圆角比卡片小 (6px)
+         "border-bp-node-border bg-bp-node-bg",
+@@ -112,90 +112,90 @@ export function BlueprintNodeCard({
+         width,
+       }}
+     >
+-      <div className="overflow-hidden rounded-[inherit]">
+-        {/*
+-          标题条。执行入口画在它左边  与"被触发的那一端"的语义对齐。
+-          高度取 UE5 源码常量 EstimatedExecutionPinHeight = 28。
+-        */}
+-        <div
+-          className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
+-          style={{ height: "var(--bp-title-h)" }}
+-        >
+-          {/* 引脚脱离文档流后, 标题要让出半个引脚的位置, 否则文字会压在楔形上 */}
+-          {def.execIn && <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN_SIZE.exec / HALF_DIVISOR }} />}
+-          {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
+-          {renaming ? (
+-            <NodeRenameInput
+-              value={title}
+-              onCommit={(v) => onRenameCommit?.(v)}
+-              onCancel={() => onRenameCancel?.()}
+-            />
+-          ) : (
+-            <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
+-          )}
++      {/*
++        标题条。执行入口画在它左边  与"被触发的那一端"的语义对齐。
++        高度取 UE5 源码常量 EstimatedExecutionPinHeight = 28。
++      */}
++      <div
++        data-slot="bp-title"
++        // 根节点不裁剪, 标题条底色自己按根节点的圆角收边 (折叠态它就是整张卡, 四角都要圆)
++        className={cn("flex items-center gap-1.5 px-2", isCollapsed ? "rounded-[inherit]" : "rounded-t-[inherit]", tone.bg, tone.fg)}
++        style={{ height: "var(--bp-title-h)" }}
++      >
++        {/* 引脚脱离文档流后, 标题要让出半个引脚的位置, 否则文字会压在楔形上 */}
++        {def.execIn && <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN_SIZE.exec / HALF_DIVISOR }} />}
++        {def.icon ? <span className="shrink-0 opacity-80">{def.icon}</span> : null}
++        {renaming ? (
++          <NodeRenameInput
++            value={title}
++            onCommit={(v) => onRenameCommit?.(v)}
++            onCancel={() => onRenameCancel?.()}
++          />
++        ) : (
++          <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
++        )}
+ 
+-          {onToggleCollapse && (
+-            <button
+-              type="button"
+-              onClick={onToggleCollapse}
+-              className="shrink-0 rounded px-1 text-[11px] opacity-70 transition-opacity hover:opacity-100"
+-              aria-label={isCollapsed ? "展开" : "折叠"}
+-            >
+-              {isCollapsed ? BP_COLLAPSE_GLYPH.collapsed : BP_COLLAPSE_GLYPH.expanded}
+-            </button>
+-          )}
+-        </div>
++        {onToggleCollapse && (
++          <button
++            type="button"
++            onClick={onToggleCollapse}
++            className="shrink-0 rounded px-1 text-[11px] opacity-70 transition-opacity hover:opacity-100"
++            aria-label={isCollapsed ? "展开" : "折叠"}
++          >
++            {isCollapsed ? BP_COLLAPSE_GLYPH.collapsed : BP_COLLAPSE_GLYPH.expanded}
++          </button>
++        )}
++      </div>
+ 
+-        {/*
+-          pt 取 BODY_TOP - HEADER_H - CARD_BORDER: 端口行必须从 geometry.portPos 假设的
+-          高度开始, 差 1px 每个端口就整体偏 1px, 表现是线擦着圆点过去。
+-        */}
+-        {!isCollapsed && (
+-          <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
+-            <div className="flex gap-2">
+-              <div className="min-w-0 flex-1">
+-                {(def.inputs ?? []).map((p) => (
+-                  <PortRow key={p.id} dir="in" port={p} showPin={false} hot={dropTarget?.[p.id]} />
+-                ))}
+-              </div>
+-              <div className="min-w-0 flex-1">
+-                {outPorts.map((p) => (
+-                  <PortRow key={p.id} dir="out" port={p} showPin={false} hot={dropTarget?.[p.id]} />
+-                ))}
+-              </div>
++      {/*
++        pt 取 BODY_TOP - HEADER_H - CARD_BORDER: 端口行必须从 geometry.portPos 假设的
++        高度开始, 差 1px 每个端口就整体偏 1px, 表现是线擦着圆点过去。
++      */}
++      {!isCollapsed && (
++        <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
++          <div className="flex gap-2">
++            <div className="min-w-0 flex-1">
++              {(def.inputs ?? []).map((p) => (
++                <PortRow key={p.id} dir="in" port={p} showPin={false} hot={dropTarget?.[p.id]} />
++              ))}
++            </div>
++            <div className="min-w-0 flex-1">
++              {outPorts.map((p) => (
++                <PortRow key={p.id} dir="out" port={p} showPin={false} hot={dropTarget?.[p.id]} />
++              ))}
+             </div>
+-
+-            {(def.params ?? []).length > 0 && (
+-              <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
+-                {(def.params ?? []).map((p) => (
+-                  <ParamField
+-                    key={p.id}
+-                    def={p}
+-                    value={node.params?.[p.id] ?? p.default}
+-                    onChange={(v) => onParamChange?.(p.id, v)}
+-                  />
+-                ))}
+-              </div>
+-            )}
+           </div>
+-        )}
+ 
+-        {/*
+-          UE5 节点的底部有一条**略深于节点体**的横条  它不承载信息,
+-          只是给节点一个"收尾", 让卡片看起来是压在画布上的一块实体,
+-          而不是一个开口的框. 缺了它, 节点底部会显得散.
+-        */}
+-        {!isCollapsed && (
+-          <div
+-            aria-hidden
+-            className="h-[3px] w-full bg-foreground/[0.07]"
+-            style={{ backgroundColor: "color-mix(in srgb, var(--bp-node-border) 55%, transparent)" }}
+-          />
+-        )}
+-      </div>
++          {(def.params ?? []).length > 0 && (
++            <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
++              {(def.params ?? []).map((p) => (
++                <ParamField
++                  key={p.id}
++                  def={p}
++                  value={node.params?.[p.id] ?? p.default}
++                  onChange={(v) => onParamChange?.(p.id, v)}
++                />
++              ))}
++            </div>
++          )}
++        </div>
++      )}
++
++      {/*
++        UE5 节点的底部有一条**略深于节点体**的横条  它不承载信息,
++        只是给节点一个"收尾", 让卡片看起来是压在画布上的一块实体,
++        而不是一个开口的框. 缺了它, 节点底部会显得散.
++      */}
++      {!isCollapsed && (
++        <div
++          aria-hidden
++          className="h-[3px] w-full rounded-b-[inherit] bg-foreground/[0.07]"
++          style={{ backgroundColor: "color-mix(in srgb, var(--bp-node-border) 55%, transparent)" }}
++        />
++      )}
+ 
+       {/*
+-        视觉引脚挂在根节点下, 裁剪层之外: 圆心压在外边界上, 一半在卡片外, 不能被裁.
++        视觉引脚挂在根节点下: 圆心压在外边界上, 一半在卡片外, 不能被裁.
+         折叠态没有端口区, 但执行出口仍画在标题条中线  否则从它出去的执行线断在空气里.
+       */}
+       {def.execIn && <NodePin portId={BP_EXEC_IN} dir={BP_PORT_DIR.in} exec portRef={portRef} />}
+diff --git a/src/blueprint/node-parts.tsx b/src/blueprint/node-parts.tsx
+index 3449c50..9d97af6 100644
+--- a/src/blueprint/node-parts.tsx
++++ b/src/blueprint/node-parts.tsx
+@@ -97,8 +97,9 @@ export function rowPinTop(row: number, size: number): number {
+ /**
+  * 视觉引脚, **挂在卡片根节点下**绝对定位.
+  *
+- * 引脚有一半探出卡片外边界; 卡片内容要靠 overflow-hidden 裁出圆角, 引脚若留在内容里
+- * 就会被裁掉一半. 所以内容包在裁剪层里, 引脚作为根节点的直接子元素画在裁剪层之外.
++ * 引脚有一半探出卡片外边界, 所以卡片根节点不能 overflow-hidden (会裁掉一半).
++ * 圆角改由标题条 / 底条各自 rounded-[inherit] 收边; 不另包一层裁剪层: 那会让标题条不再是
++ * 根节点的第一个子元素, 点"节点第一个子 div"落到卡片中心, 被相邻节点挡住.
+  * row 缺省 = 标题条中线 (执行入口 / 折叠态执行出口).
+  */
+ export function NodePin({
+diff --git a/src/blueprint/rf-node.tsx b/src/blueprint/rf-node.tsx
+index eee6466..d86ab37 100644
+--- a/src/blueprint/rf-node.tsx
++++ b/src/blueprint/rf-node.tsx
+@@ -67,7 +67,7 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
+   return (
+     <div
+       data-node-kind={data.kind}
+-      // 根节点不裁剪: 引脚有一半探出外边界, 圆角由内容裁剪层负责, 视觉引脚挂在裁剪层之外
++      // 根节点不裁剪: 引脚有一半探出外边界; 圆角由标题条按 rounded-[inherit] 自己收边
+       className={cn("relative overflow-visible border border-bp-node-border bg-bp-node-bg text-foreground")}
+       style={{
+         borderRadius: "var(--bp-node-radius)",
+@@ -77,81 +77,81 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
+         width: data.width ?? 176,
+       }}
+     >
+-      <div className="overflow-hidden rounded-[inherit]">
+-        {/* 标题栏: 按节点类别配色 */}
+-        <div
+-          className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
+-          style={{ height: HEADER_H }}
+-        >
+-          {/* 执行入口: 楔形, 画在标题栏左边 */}
+-          {/*
+-            执行入口。Handle 必须有**真实尺寸**才可被拖、被点 
+-            尺寸为 0 时它不可交互, 拖不出线也连不上。
+-            这里给 11px 的命中区域并设为透明, 视觉由 PinShape 决定。
+-          */}
+-          <Handle
+-            type="target"
+-            id={handleId("exec-in", "in")}
+-            position={Position.Left}
+-            style={{ top: headerPinTop(PIN.exec), left: HEADER_HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
+-            className="!border-0 !bg-transparent !opacity-0"
+-          />
+-          {/* 视觉引脚 (根节点下的 NodePin) 与上面的 Handle 圆心重合; 引脚脱离文档流,
+-              标题前面那一小段留白由下面的占位元素让出 */}
+-          <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN.exec / HALF_DIVISOR }} />
+-          <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
+-        </div>
++      {/* 标题栏: 按节点类别配色 */}
++      <div
++        data-slot="bp-title"
++        // 根节点不裁剪, 标题条底色自己按根节点的圆角收边 (折叠态它就是整张卡, 四角都要圆)
++        className={cn("flex items-center gap-1.5 px-2", data.collapsed ? "rounded-[inherit]" : "rounded-t-[inherit]", tone.bg, tone.fg)}
++        style={{ height: HEADER_H }}
++      >
++        {/* 执行入口: 楔形, 画在标题栏左边 */}
++        {/*
++          执行入口。Handle 必须有**真实尺寸**才可被拖、被点 
++          尺寸为 0 时它不可交互, 拖不出线也连不上。
++          这里给 11px 的命中区域并设为透明, 视觉由 PinShape 决定。
++        */}
++        <Handle
++          type="target"
++          id={handleId("exec-in", "in")}
++          position={Position.Left}
++          style={{ top: headerPinTop(PIN.exec), left: HEADER_HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
++          className="!border-0 !bg-transparent !opacity-0"
++        />
++        {/* 视觉引脚 (根节点下的 NodePin) 与上面的 Handle 圆心重合; 引脚脱离文档流,
++            标题前面那一小段留白由下面的占位元素让出 */}
++        <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN.exec / HALF_DIVISOR }} />
++        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
++      </div>
+ 
+-        {!data.collapsed && (
+-          <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
+-            <div className="flex gap-2">
+-              <div className="min-w-0 flex-1">
+-                {(data.inputs ?? []).map((p) => (
+-                  <div key={p.id} className="relative">
+-                    <Handle
+-                      type="target"
+-                      id={handleId(p.id, "in")}
+-                      position={Position.Left}
+-                      style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
+-                      className="!border-0 !bg-transparent !opacity-0"
+-                    />
+-                    <PortRow dir="in" port={p} showPin={false} />
+-                  </div>
+-                ))}
+-              </div>
+-              <div className="min-w-0 flex-1">
+-                {(data.outputs ?? []).map((p) => (
+-                  <div key={p.id} className="relative">
+-                    <Handle
+-                      type="source"
+-                      id={handleId(p.id, "out")}
+-                      position={Position.Right}
+-                      style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
+-                      className="!border-0 !bg-transparent !opacity-0"
+-                    />
+-                    <PortRow dir="out" port={p} showPin={false} />
+-                  </div>
+-                ))}
+-              </div>
++      {!data.collapsed && (
++        <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
++          <div className="flex gap-2">
++            <div className="min-w-0 flex-1">
++              {(data.inputs ?? []).map((p) => (
++                <div key={p.id} className="relative">
++                  <Handle
++                    type="target"
++                    id={handleId(p.id, "in")}
++                    position={Position.Left}
++                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
++                    className="!border-0 !bg-transparent !opacity-0"
++                  />
++                  <PortRow dir="in" port={p} showPin={false} />
++                </div>
++              ))}
+             </div>
+-
+-            {(data.params ?? []).length > 0 && (
+-              <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
+-                {(data.params ?? []).map((p) => (
+-                  <ParamField
+-                    key={p.id}
+-                    def={p}
+-                    value={data.values?.[p.id] ?? p.default}
+-                    onChange={(v) => data.onParamChange?.(p.id, v)}
++            <div className="min-w-0 flex-1">
++              {(data.outputs ?? []).map((p) => (
++                <div key={p.id} className="relative">
++                  <Handle
++                    type="source"
++                    id={handleId(p.id, "out")}
++                    position={Position.Right}
++                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
++                    className="!border-0 !bg-transparent !opacity-0"
+                   />
+-                ))}
+-              </div>
+-            )}
++                  <PortRow dir="out" port={p} showPin={false} />
++                </div>
++              ))}
++            </div>
+           </div>
+-        )}
+-      </div>
+ 
+-      {/* 视觉引脚挂在根节点下, 裁剪层之外, 圆心压在外边界上 (一半在卡片外) */}
++          {(data.params ?? []).length > 0 && (
++            <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
++              {(data.params ?? []).map((p) => (
++                <ParamField
++                  key={p.id}
++                  def={p}
++                  value={data.values?.[p.id] ?? p.default}
++                  onChange={(v) => data.onParamChange?.(p.id, v)}
++                />
++              ))}
++            </div>
++          )}
++        </div>
++      )}
++
++      {/* 视觉引脚挂在根节点下, 圆心压在外边界上 (一半在卡片外) */}
+       <NodePin portId={BP_EXEC_IN} dir={BP_PORT_DIR.in} exec />
+       {!data.collapsed && (data.inputs ?? []).map((p, i) => (
+         <NodePin key={`in:${p.id}`} portId={p.id} dir={BP_PORT_DIR.in} exec={p.type === EXEC} row={i}
 -- 
 2.47.3
 
