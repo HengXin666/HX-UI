@@ -3,14 +3,15 @@
 import type { JSX } from "react";
 import { Handle, Position, type NodeProps, type EdgeProps, getBezierPath } from "@xyflow/react";
 import { cn } from "../primitives/utils";
-import { PinShape } from "./PinShape";
 import {
-  BODY_PAD_X, CARD_BORDER, PIN_SIZE, PortRow, ParamField, headerPinTop, pinOffset,
+  BODY_PAD_X, CARD_BORDER, NodePin, PIN_SIZE, PortRow, ParamField, headerPinTop,
 } from "./node-parts";
-import { NODE_KIND_TITLE } from "./types";
+import { EXEC, NODE_KIND_TITLE } from "./types";
 import type { RfNode } from "./rf-adapter";
 import { handleId } from "./rf-adapter";
 import { BODY_TOP, HEADER_H, PORT_ROW } from "./geometry";
+import { HALF_DIVISOR } from "../constants";
+import { BP_EDGE_FILL, BP_EXEC_IN, BP_HANDLE_STYLE, BP_PIN_SPACER_CLASS, BP_PORT_DIR } from "../constants/blueprint";
 
 /**
  * React Flow 的自定义节点 / 连线  **UE5 外观在这一层**, 不在别处。
@@ -47,9 +48,16 @@ const PIN = PIN_SIZE;
  */
 const HANDLE_EDGE = -(BODY_PAD_X + CARD_BORDER);
 
+/**
+ * 标题栏执行 Handle 的水平落点: 它的定位参照是根节点 (relative) 的内边距盒,
+ * 没有体区 px-2 那段内边距, 只扣一个边框宽, 左边缘就压在卡片外边界上,
+ * 与视觉引脚 (pinOffset) 的圆心重合。复用 HANDLE_EDGE 会多扣 BODY_PAD_X, 偏 8px。
+ */
+const HEADER_HANDLE_EDGE = -CARD_BORDER;
+
 /** Handle 在行内纵向居中 (React Flow 取中心, 所以给出中心点)。 */
 function handleTop(size: number): number {
-  return PORT_ROW / 2 - size / 2;
+  return PORT_ROW / HALF_DIVISOR - size / HALF_DIVISOR;
 }
 
 export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
@@ -59,7 +67,8 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
   return (
     <div
       data-node-kind={data.kind}
-      className={cn("relative overflow-hidden border border-bp-node-border bg-bp-node-bg text-foreground")}
+      // 根节点不裁剪: 引脚有一半探出外边界, 圆角由内容裁剪层负责, 视觉引脚挂在裁剪层之外
+      className={cn("relative overflow-visible border border-bp-node-border bg-bp-node-bg text-foreground")}
       style={{
         borderRadius: "var(--bp-node-radius)",
         boxShadow: selected
@@ -68,99 +77,98 @@ export function BpNode({ data, selected }: NodeProps<RfNode>): JSX.Element {
         width: data.width ?? 176,
       }}
     >
-      {/* 标题栏: 按节点类别配色 */}
-      <div
-        className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
-        style={{ height: HEADER_H }}
-      >
-        {/* 执行入口: 楔形, 画在标题栏左边 */}
-        {/*
-          执行入口。Handle 必须有**真实尺寸**才可被拖、被点 
-          尺寸为 0 时它不可交互, 拖不出线也连不上。
-          这里给 11px 的命中区域并设为透明, 视觉由 PinShape 决定。
-        */}
-        <Handle
-          type="target"
-          id={handleId("exec-in", "in")}
-          position={Position.Left}
-          style={{ top: headerPinTop(PIN.exec), left: HANDLE_EDGE, width: PIN.exec, height: PIN.exec, transform: "none", zIndex: 2 }}
-          className="!border-0 !bg-transparent !opacity-0"
-        />
-        {/* 视觉引脚与上面的 Handle 用同一组偏移, 两个盒子完全重合; 引脚脱离文档流,
-            标题前面那一小段留白由右下角的占位元素让出 */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute flex items-center justify-center"
-          style={{ top: headerPinTop(PIN.exec), left: pinOffset(PIN.exec), width: PIN.exec, height: PIN.exec }}
+      <div className="overflow-hidden rounded-[inherit]">
+        {/* 标题栏: 按节点类别配色 */}
+        <div
+          className={cn("flex items-center gap-1.5 px-2", tone.bg, tone.fg)}
+          style={{ height: HEADER_H }}
         >
-          <PinShape kind="exec" filled color="text-bp-title-foreground" size={PIN.exec} />
-        </span>
-        <span aria-hidden className="shrink-0" style={{ width: PIN.exec / 2 }} />
-        <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
+          {/* 执行入口: 楔形, 画在标题栏左边 */}
+          {/*
+            执行入口。Handle 必须有**真实尺寸**才可被拖、被点 
+            尺寸为 0 时它不可交互, 拖不出线也连不上。
+            这里给 11px 的命中区域并设为透明, 视觉由 PinShape 决定。
+          */}
+          <Handle
+            type="target"
+            id={handleId("exec-in", "in")}
+            position={Position.Left}
+            style={{ top: headerPinTop(PIN.exec), left: HEADER_HANDLE_EDGE, width: PIN.exec, height: PIN.exec, ...BP_HANDLE_STYLE }}
+            className="!border-0 !bg-transparent !opacity-0"
+          />
+          {/* 视觉引脚 (根节点下的 NodePin) 与上面的 Handle 圆心重合; 引脚脱离文档流,
+              标题前面那一小段留白由下面的占位元素让出 */}
+          <span aria-hidden className={BP_PIN_SPACER_CLASS} style={{ width: PIN.exec / HALF_DIVISOR }} />
+          <span className="min-w-0 flex-1 truncate text-[12px] font-semibold">{title}</span>
+        </div>
+
+        {!data.collapsed && (
+          <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
+            <div className="flex gap-2">
+              <div className="min-w-0 flex-1">
+                {(data.inputs ?? []).map((p) => (
+                  <div key={p.id} className="relative">
+                    <Handle
+                      type="target"
+                      id={handleId(p.id, "in")}
+                      position={Position.Left}
+                      style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
+                      className="!border-0 !bg-transparent !opacity-0"
+                    />
+                    <PortRow dir="in" port={p} showPin={false} />
+                  </div>
+                ))}
+              </div>
+              <div className="min-w-0 flex-1">
+                {(data.outputs ?? []).map((p) => (
+                  <div key={p.id} className="relative">
+                    <Handle
+                      type="source"
+                      id={handleId(p.id, "out")}
+                      position={Position.Right}
+                      style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, ...BP_HANDLE_STYLE }}
+                      className="!border-0 !bg-transparent !opacity-0"
+                    />
+                    <PortRow dir="out" port={p} showPin={false} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {(data.params ?? []).length > 0 && (
+              <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
+                {(data.params ?? []).map((p) => (
+                  <ParamField
+                    key={p.id}
+                    def={p}
+                    value={data.values?.[p.id] ?? p.default}
+                    onChange={(v) => data.onParamChange?.(p.id, v)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {!data.collapsed && (
-        <div className="px-2 pb-1.5" style={{ paddingTop: BODY_TOP - HEADER_H - CARD_BORDER }}>
-          <div className="flex gap-2">
-            <div className="min-w-0 flex-1">
-              {(data.inputs ?? []).map((p, i) => (
-                <div key={p.id} className="relative">
-                  <Handle
-                    type="target"
-                    id={handleId(p.id, "in")}
-                    position={Position.Left}
-                    style={{ top: handleTop(PIN.data), left: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
-                    className="!border-0 !bg-transparent !opacity-0"
-                  />
-                  <PortRow
-                    dir="in"
-                    port={p}
-                    {...(p.color ? { color: p.color } : {})}
-                    filled={data.filled?.[p.id]}
-                    invalid={data.portErrors?.[p.id]}
-                  />
-                </div>
-              ))}
-            </div>
-            <div className="min-w-0 flex-1">
-              {(data.outputs ?? []).map((p, i) => (
-                <div key={p.id} className="relative">
-                  <Handle
-                    type="source"
-                    id={handleId(p.id, "out")}
-                    position={Position.Right}
-                    style={{ top: handleTop(PIN.data), right: HANDLE_EDGE, width: PIN.data, height: PIN.data, transform: "none", zIndex: 2 }}
-                    className="!border-0 !bg-transparent !opacity-0"
-                  />
-                  <PortRow dir="out" port={p} {...(p.color ? { color: p.color } : {})} filled />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {(data.params ?? []).length > 0 && (
-            <div className="mt-1.5 space-y-1.5 border-t border-border/50 pt-1.5">
-              {(data.params ?? []).map((p) => (
-                <ParamField
-                  key={p.id}
-                  def={p}
-                  value={data.values?.[p.id] ?? p.default}
-                  onChange={(v) => data.onParamChange?.(p.id, v)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+      {/* 视觉引脚挂在根节点下, 裁剪层之外, 圆心压在外边界上 (一半在卡片外) */}
+      <NodePin portId={BP_EXEC_IN} dir={BP_PORT_DIR.in} exec />
+      {!data.collapsed && (data.inputs ?? []).map((p, i) => (
+        <NodePin key={`in:${p.id}`} portId={p.id} dir={BP_PORT_DIR.in} exec={p.type === EXEC} row={i}
+          {...(p.color ? { color: p.color } : {})} invalid={data.portErrors?.[p.id]} />
+      ))}
+      {!data.collapsed && (data.outputs ?? []).map((p, i) => (
+        <NodePin key={`out:${p.id}`} portId={p.id} dir={BP_PORT_DIR.out} exec={p.type === EXEC} row={i} {...(p.color ? { color: p.color } : {})} />
+      ))}
     </div>
   );
 }
 
 /**
- * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows")。
+ * 执行连线: 白色粗线 + 箭头 (UE5 官方: "white arrows").
  *
  * 用 getBezierPath 拿 React Flow 自己算的路径  不自己算, 否则缩放/平移
- * 时端点会漂。
+ * 时端点会漂.
  */
 export function BpExecEdge({
   sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, selected,
@@ -172,7 +180,7 @@ export function BpExecEdge({
   return (
     <path
       d={path}
-      fill="none"
+      fill={BP_EDGE_FILL}
       strokeWidth={w}
       className="stroke-foreground"
       markerEnd="url(#bp-exec-arrow)"
@@ -180,7 +188,7 @@ export function BpExecEdge({
   );
 }
 
-/** 数据连线: 细、按类型着色。 */
+/** 数据连线: 细, 按类型着色. */
 export function BpDataEdge({
   sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, data, selected,
 }: EdgeProps): JSX.Element {
@@ -189,17 +197,17 @@ export function BpDataEdge({
   });
   const tint = (data as { tint?: string } | undefined)?.tint ?? "stroke-muted-foreground/70";
   return (
-    <path d={path} fill="none" strokeWidth={selected ? 2.2 : 1.4} className={tint} />
+    <path d={path} fill={BP_EDGE_FILL} strokeWidth={selected ? 2.2 : 1.4} className={tint} />
   );
 }
 
 /**
- * 执行线箭头的 marker 定义。
+ * 执行线箭头的 marker 定义.
  *
  * ⚠️ marker/defs/path 只能在 **<svg> 内部**  放到别处会被当成 HTML
- * 未知标签, 箭头不生效。所以这里渲染一个 0 尺寸的 svg 专门装 defs。
+ * 未知标签, 箭头不生效. 所以这里渲染一个 0 尺寸的 svg 专门装 defs.
  *
- * 所以这里渲染一个自己的 <svg> (0 尺寸、绝对定位、不挡事), 只用来装 defs。
+ * 所以这里渲染一个自己的 <svg> (0 尺寸, 绝对定位, 不挡事), 只用来装 defs.
  */
 export function ExecArrowMarker(): JSX.Element {
   return (

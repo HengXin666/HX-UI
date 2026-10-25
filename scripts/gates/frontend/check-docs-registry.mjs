@@ -55,6 +55,7 @@ const UTF8 = "utf8";
 /** 子目录页面组的入口文件名 (pages/parity/index.ts 之类)。 */
 const GROUP_ENTRY = "index.ts";
 const PARITY_INDEX = path.join(PAGES, "parity", GROUP_ENTRY);
+const TEMPLATE_INDEX = path.join(PAGES, "templates", GROUP_ENTRY);
 
 function die(msg, code = 2) {
   console.error(`check-docs-registry: ${msg}`);
@@ -94,17 +95,18 @@ const navIds = [
 /** App.tsx: case "x": (允许 fallthrough, 所以顺序收集) */
 const switchIds = [...appSrc.matchAll(/case\s+"([a-z0-9-]+)":/g)].map((m) => m[1]);
 /**
- * PARITY_PAGES 的键: `"x": XPage` 或 `x: XPage`。只取 `PARITY_PAGES ... = {` 到第一个 `};` 之间,
- * 免得把文件里别的对象字面量当成路由。App.tsx 没引用 PARITY_PAGES 时这张表视为空。
+ * 查表 (PARITY_PAGES / TEMPLATE_PAGES) 的键: `"x": XPage` 或 `x: XPage`。只取 `表名 ... = {` 到第一个 `};` 之间,
+ * 免得把文件里别的对象字面量当成路由。App.tsx 没引用该表时这张表视为空。
  * .agents/notes/implemented/feature/2026-10-18-docs-shadcn-site-pages.md
  */
-function readParityIds() {
-  if (!/\bPARITY_PAGES\b/.test(appSrc) || !fs.existsSync(PARITY_INDEX)) return [];
-  const body = fs.readFileSync(PARITY_INDEX, UTF8).match(/PARITY_PAGES[^{]*\{([\s\S]*?)\n\};/);
-  if (!body) die(`找不到 PARITY_PAGES 对象字面量 (${path.relative(ROOT, PARITY_INDEX)})`);
+function readTableIds(table, file) {
+  if (!new RegExp(`\\b${table}\\b`).test(appSrc) || !fs.existsSync(file)) return [];
+  const body = fs.readFileSync(file, UTF8).match(new RegExp(`${table}[^{]*\\{([\\s\\S]*?)\\n\\};`));
+  if (!body) die(`找不到 ${table} 对象字面量 (${path.relative(ROOT, file)})`);
   return [...body[1].matchAll(/^\s*(?:"([a-z0-9-]+)"|([a-z][a-z0-9]*))\s*:/gm)].map((m) => m[1] ?? m[2]);
 }
-const parityIds = readParityIds();
+/** 模板页 (templates-*) 由 pages/templates 的 TEMPLATE_PAGES 单独登记, 与 PARITY_PAGES 同为 default 分支查表。 */
+const parityIds = [...readTableIds("PARITY_PAGES", PARITY_INDEX), ...readTableIds("TEMPLATE_PAGES", TEMPLATE_INDEX)];
 const caseIds = [...switchIds, ...parityIds];
 /** App.tsx: import { XPage } from "./pages/XPage" (或页面组目录 "./pages/parity") */
 const importedPages = [...appSrc.matchAll(/from "\.\/pages\/([\w-]+)"/g)].map((m) => m[1]);

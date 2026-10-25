@@ -6,7 +6,11 @@
     <title>HX UI · 组件文档</title>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="alternate icon" href="./favicon.svg" />
-    <meta name="theme-color" content="#0d1117" />
+    <!--
+      地址栏 / 系统栏颜色跟随实际明暗: 两档颜色只写在这个 meta 的 data-* 上,
+      下面的内联脚本与 ThemeToggle.applyMode 都从这里读, 不各写一份。
+    -->
+    <meta name="theme-color" content="#0d1117" data-dark="#0d1117" data-light="#ffffff" />
     <!--
       防主题闪烁 (FOUC)。
 
@@ -18,15 +22,19 @@
     -->
     <script>
       (function () {
+        var m = "dark";
         try {
-          var m = localStorage.getItem("hx-ui-docs-theme") || "system";
+          m = localStorage.getItem("hx-ui-docs-theme") || "system";
           if (m === "system") {
             m = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
           }
           document.documentElement.setAttribute("data-mode", m);
         } catch (e) {
-          document.documentElement.setAttribute("data-mode", "dark");
+          m = "dark";
+          document.documentElement.setAttribute("data-mode", m);
         }
+        var tc = document.querySelector('meta[name="theme-color"]');
+        if (tc) tc.setAttribute("content", tc.getAttribute("data-" + m) || tc.content);
       })();
     </script>
   </head>

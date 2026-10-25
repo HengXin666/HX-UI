@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type JSX, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type JSX, type ReactNode } from "react";
 import { codeToHtml } from "shiki";
+import { UI_NUMBERS } from "../constants/ui";
 import { cn } from "../primitives/utils";
 
 /**
@@ -86,13 +87,13 @@ function putCache(key: string, html: string): void {
  * 这比让一次超大粘贴把界面卡住要好。
  */
 function withinBudget(code: string, lang: string): boolean {
-  if (code.length > 30000 || lang.length > 128) return false;
+  if (code.length > UI_NUMBERS.codeMaxLength || lang.length > 128) return false;
   let lineLength = 0;
   let lines = 1;
   for (const ch of code) {
     if (ch === "\n") { lineLength = 0; lines++; }
     else lineLength++;
-    if (lineLength > 2000 || lines > 1000) return false;
+    if (lineLength > UI_NUMBERS.codeMaxLineLength || lines > UI_NUMBERS.codeMaxLines) return false;
   }
   return true;
 }
@@ -157,27 +158,23 @@ export function CodeBlock({
 
   const [html, setHtml] = useState<string | null>(() => HTML_CACHE.get(cacheKey) ?? null);
   const [failed, setFailed] = useState(false);
-  const cancelled = useRef(false);
-
   useEffect(() => {
-    cancelled.current = false;
+    /** 每次 effect 闭包独立的取消标记: 流式写入时多个 codeToHtml 并发, 共享 ref 会被下一次 effect 复位, 旧请求晚到会盖掉新内容. */
+    let cancelled = false;
     if (!eligible) { setHtml(null); return; }
 
     const cached = HTML_CACHE.get(cacheKey);
     if (cached !== undefined) { setHtml(cached); return; }
 
     setHtml(null);
+    // 每次重新高亮都先清掉上一次的失败态: 流式期间语言名可能是半截的 "t",
+    // 那一次失败不能把后续正确的 "tsx" 一直按在纯文本上.
+    setFailed(false);
     void codeToHtml(code, { lang: language, theme: CODE_THEME })
-      .then((result) => {
-        if (cancelled.current) return;
-        putCache(cacheKey, result);
-        setHtml(result);
-      })
-      .catch(() => {
-        if (!cancelled.current) setFailed(true);
-      });
+      .then((result) => { if (cancelled) return; putCache(cacheKey, result); setHtml(result); })
+      .catch(() => { if (!cancelled) setFailed(true); });
 
-    return () => { cancelled.current = true; };
+    return () => { cancelled = true; };
   }, [cacheKey, code, language, eligible]);
 
   const lineCount = useMemo(() => code.replace(/\n$/, "").split("\n").length, [code]);
