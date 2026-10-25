@@ -1,0 +1,289 @@
+From a36ce020d9ae951e0f85d1bf3190910340602210 Mon Sep 17 00:00:00 2001
+From: hark <hark@local>
+Date: Sun, 25 Oct 2026 07:25:00 +0000
+Subject: [PATCH] =?UTF-8?q?fix(streaming):=20=E5=88=97=E8=A1=A8=E9=A1=B9?=
+ =?UTF-8?q?=E9=87=8C=E7=9A=84=E5=9B=B4=E6=A0=8F=E5=8E=9F=E4=BD=8D=E5=8D=A0?=
+ =?UTF-8?q?=E4=BD=8D,=20=E4=BB=A3=E7=A0=81=E5=9D=97=E7=95=99=E5=9C=A8=20<l?=
+ =?UTF-8?q?i>=20=E5=86=85=E4=BB=8D=E7=94=B1=20CodeBlock=20=E6=B8=B2?=
+ =?UTF-8?q?=E6=9F=93=20(review=20P2,=20hark=20j-20261025-019)?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ ...026-10-22-streaming-markdown-markstream.md |  2 +
+ .../pages/agent/streaming-markdown-sample.ts  | 10 ++-
+ src/agent/streaming-markdown-parts.tsx        | 81 +++++++++++++++----
+ src/agent/streaming-markdown.tsx              | 34 +++++---
+ src/constants/markdown.ts                     |  7 ++
+ 5 files changed, 105 insertions(+), 29 deletions(-)
+
+diff --git a/.agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md b/.agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
+index 7c06990..17fd587 100644
+--- a/.agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
++++ b/.agents/notes/implemented/feature/2026-10-22-streaming-markdown-markstream.md
+@@ -10,6 +10,7 @@ Decision-ID: streaming-markdown-markstream
+ - `src/chat/trace.tsx`
+ - `docs/src/pages/agent/StreamingTextPage.tsx`
+ - `docs/src/pages/parity/trace.tsx`
++- `src/agent/streaming-markdown-parts.tsx`
+ 
+ ## Problem
+ 
+@@ -20,6 +21,7 @@ AI 回复是逐 token 到达的, 内容里混着未闭合的代码块, 表格与
+ - 新增 StreamingMarkdown, 内部用 markstream-react (markstream-vue 同仓的 React 渲染器): 它按增量 AST 渲染, 半截的围栏代码块与未闭合表格在流式中途也能正确显示。CSS 由使用方显式 import markstream-react/index.css, 组件不自动注入。
+ - 配色不出另一套: 组件用 SKIN 一组父级任意变体把 markstream 的链接, 表格边框, 引用线, 行内代码拉回本库的语义 token; 明暗跟随根元素的 data-mode, 也允许调用方显式传 isDark。
+ - 代码块不走 markstream 默认的 stream-diffs 容器 (可选 peer 缺失时只画标题栏, 正文空白), 而是按围栏把内容切段后交给本库 CodeBlock 渲染, 未成段的部分仍由 MarkdownRender 解析。切段, 语言名提取, 高亮节流与末尾光标这类纯逻辑放在同目录的 streaming-markdown-parts.tsx, 主文件只留皮肤与组件本体 (单文件 250 行上限)。
++- 列表项里的围栏不切段 (PR #28 review P2): 按物理行切出去会让代码块脱离 <li>, 后面的列表项还会重新编号。缩进的开围栏且仍在列表上下文里时, 原位换成 `<hx-fence data-i="N">` 占位 (保留缩进), 列表结构仍由 markstream 解析; 占位通过 MarkdownRender 的 customHtmlTags + streamingComponents 映射到 NestedFence, 它按下标从段内 fences 表取代码交给 FenceBlock/CodeBlock, 声明为 block 显示, 不落进 <p>。不用 setCustomComponents 替换 code_block: 之前那样改代码块退化成纯文本 (pre.shiki = 0)。顶层围栏仍按原逻辑切段。
+ - 围栏 info string 只取第一个空格或 { 之前的 token: `ts title="a.ts"` 与 `ts{1,3}` 都按 ts 高亮, 整体当语言名会让 CodeBlock 找不到语法。
+ - 围栏未闭合期间按 300ms 固定间隔放行高亮, 闭合后立刻放行最终代码; 否则每来一个 token 都跑一次完整 shiki。
+ - 半截语言名 (例如 `\`\`\`t`) 会让这一次高亮失败, 所以 CodeBlock 每次重新高亮前清掉失败态, 否则正确的 `tsx` 到来后仍停在纯文本。
+diff --git a/docs/src/pages/agent/streaming-markdown-sample.ts b/docs/src/pages/agent/streaming-markdown-sample.ts
+index e99d608..d17a288 100644
+--- a/docs/src/pages/agent/streaming-markdown-sample.ts
++++ b/docs/src/pages/agent/streaming-markdown-sample.ts
+@@ -1,7 +1,7 @@
+ import { DOC } from "@hx/ui";
+ 
+ /**
+- * 流式 Markdown 演示用的原文: 一段同时含标题, 列表, 表格, 代码块与链接的模型输出.
++ * 流式 Markdown 演示用的原文: 一段同时含标题, 列表, 表格, 代码块 (含写在列表项里的围栏) 与链接的模型输出.
+  * 逐字追加时, 未闭合的标题与表格由 markstream 按半成品渲染, 结束后再收尾.
+  */
+ export const STREAMING_MARKDOWN_SAMPLE = [
+@@ -18,6 +18,14 @@ export const STREAMING_MARKDOWN_SAMPLE = [
+   "| `src/agent/streaming-markdown.tsx` | 新增流式 Markdown |",
+   "| `src/chat/trace.tsx` | 步骤进场与连线生长 |",
+   "",
++  "1. 安装依赖:",
++  "",
++  "   ```bash",
++  "   npm i @hx/ui markstream-react",
++  "   ```",
++  "",
++  "2. 在页面里渲染:",
++  "",
+   "```tsx",
+   "import { StreamingMarkdown } from \"@hx/ui\";",
+   "import \"markstream-react/index.css\";",
+diff --git a/src/agent/streaming-markdown-parts.tsx b/src/agent/streaming-markdown-parts.tsx
+index acb5d3f..ae68083 100644
+--- a/src/agent/streaming-markdown-parts.tsx
++++ b/src/agent/streaming-markdown-parts.tsx
+@@ -1,8 +1,9 @@
+ "use client";
+ 
+-import { useEffect, useMemo, useRef, useState, type JSX } from "react";
++import { createContext, useContext, useEffect, useRef, useState, type JSX } from "react";
++import { withMarkstreamComponentDisplay } from "markstream-react";
+ import { CodeBlock } from "../layout/CodeBlock";
+-import { LIVE_HIGHLIGHT_MS, MD_NEWLINE, SEGMENT_KIND } from "../constants/markdown";
++import { LIVE_HIGHLIGHT_MS, MD_NEWLINE, NESTED_FENCE_INDEX_ATTR, NESTED_FENCE_TAG, SEGMENT_KIND } from "../constants/markdown";
+ 
+ /** 围栏标记. 三个反引号单独一行即是开/闭. */
+ const FENCE = "```";
+@@ -15,15 +16,24 @@ function fenceLang(info: string): string {
+   return info.trim().split(/[\s{]/)[0] ?? "";
+ }
+ 
+-/** 一段内容: 普通 Markdown, 或者一个围栏代码块. */
+-export interface Segment {
+-  readonly kind: "markdown" | "code";
++/** 一个围栏代码块的内容. */
++export interface Fence {
+   readonly text: string;
+   readonly lang?: string;
+-  /** 流式期间最后一段代码块可能还没闭合. */
++  /** 流式期间最后一个代码块可能还没闭合. */
+   readonly open?: boolean;
+ }
+ 
++/** 一段内容: 普通 Markdown (可带列表内围栏表), 或者一个顶层围栏代码块. */
++export interface Segment extends Fence {
++  readonly kind: "markdown" | "code";
++  /** 列表项里的围栏: 原文已换成 NESTED_FENCE_TAG 占位, 按下标取回. */
++  readonly fences?: readonly Fence[];
++}
++
++/** 列表标记: "- " "* " "+ " 或 "1. " "1) ". */
++const LIST_ITEM = /^\s*(?:[-*+]|\d+[.)])\s/;
++
+ /**
+  * 按围栏把 Markdown 切成段落.
+  *
+@@ -33,44 +43,69 @@ export interface Segment {
+  * 把围栏切出来自己渲染, 代码块就能稳定用本库的 CodeBlock (shiki + One Dark Pro).
+  *
+  * 未闭合的围栏按"仍在写入的代码块"处理: 流式中途也能看到正确的代码底色.
++ *
++ * 列表项里的围栏 (缩进的开围栏, 且当前仍在列表上下文里) 不切段: 切出去会让代码块脱离 <li>,
++ * 后续列表项还会重新从 1 编号. 这类围栏在原位换成 NESTED_FENCE_TAG 占位并保留缩进,
++ * 列表结构仍由 markstream 解析, 占位再由 NestedFence 渲染成 CodeBlock (决策见 note).
+  */
+ export function splitSegments(markdown: string): Segment[] {
+   const lines = markdown.split(MD_NEWLINE);
+   const out: Segment[] = [];
+   let buffer: string[] = [];
++  let fences: Fence[] = [];
+   let code: string[] | null = null;
+   let lang = "";
++  let indent = "";
++  let inList = false;
+ 
+   const flushMarkdown = (): void => {
+     const text = buffer.join(MD_NEWLINE);
+     if (text.trim()) {
+-      out.push({ kind: SEGMENT_KIND.markdown, text });
++      out.push({ kind: SEGMENT_KIND.markdown, text, ...(fences.length ? { fences } : {}) });
+     }
+     buffer = [];
++    fences = [];
++  };
++  const closeFence = (open: boolean): void => {
++    const fence: Fence = { text: (code ?? []).join(MD_NEWLINE), lang, ...(open ? { open } : {}) };
++    if (indent) {
++      buffer.push(`${indent}<${NESTED_FENCE_TAG} ${NESTED_FENCE_INDEX_ATTR}="${fences.length}"></${NESTED_FENCE_TAG}>`);
++      fences.push(fence);
++    } else {
++      out.push({ kind: SEGMENT_KIND.code, ...fence });
++    }
++    code = null;
+   };
+ 
+   for (const line of lines) {
+     if (code === null) {
++      const lead = line.slice(0, line.length - line.trimStart().length);
+       if (line.trimStart().startsWith(FENCE)) {
+-        flushMarkdown();
++        indent = inList && lead ? lead : "";
++        if (!indent) {
++          flushMarkdown();
++        }
+         lang = fenceLang(line.trim().slice(FENCE.length));
+         code = [];
+-      } else {
+-        buffer.push(line);
++        continue;
+       }
++      if (LIST_ITEM.test(line)) {
++        inList = true;
++      } else if (line.trim() && !lead) {
++        inList = false;
++      }
++      buffer.push(line);
+       continue;
+     }
+     if (line.trim() === FENCE) {
+-      out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang });
+-      code = null;
+-      lang = "";
++      closeFence(false);
+       continue;
+     }
+-    code.push(line);
++    code.push(line.startsWith(indent) ? line.slice(indent.length) : line.trimStart());
+   }
+ 
+   if (code !== null) {
+-    out.push({ kind: SEGMENT_KIND.code, text: code.join(MD_NEWLINE), lang, open: true });
++    closeFence(true);
+   }
+   flushMarkdown();
+   return out;
+@@ -126,3 +161,19 @@ export function FenceBlock({ code, lang, open }: { readonly code: string; readon
+   const shown = useThrottledCode(code, open);
+   return <CodeBlock className="my-3" code={shown} {...(lang ? { lang } : {})} showLineNumbers />;
+ }
++
++/** 当前 Markdown 段的列表内围栏表, 由 StreamingMarkdown 按段提供. */
++export const FenceTable = createContext<readonly Fence[]>([]);
++
++/**
++ * 列表内围栏的占位标签: markstream 把它当 list_item 的块级子节点渲染, 这里按 data-i 取回代码交给 CodeBlock.
++ * 只注册这个自定义标签, 不替换 markstream 的 code_block 节点.
++ */
++function NestedFenceBase({ node }: { readonly node: { readonly attrs?: readonly (readonly [string, string])[] } }): JSX.Element | null {
++  const table = useContext(FenceTable);
++  const index = Number(node.attrs?.find(([name]) => name === NESTED_FENCE_INDEX_ATTR)?.[1]);
++  const fence = table[index];
++  return fence ? <FenceBlock code={fence.text} open={fence.open === true} {...(fence.lang ? { lang: fence.lang } : {})} /> : null;
++}
++
++export const NestedFence = withMarkstreamComponentDisplay(NestedFenceBase, "block");
+diff --git a/src/agent/streaming-markdown.tsx b/src/agent/streaming-markdown.tsx
+index 817da34..d5d7ec0 100644
+--- a/src/agent/streaming-markdown.tsx
++++ b/src/agent/streaming-markdown.tsx
+@@ -4,8 +4,12 @@ import { useEffect, useMemo, useState, type JSX } from "react";
+ import MarkdownRender from "markstream-react";
+ import { cn } from "../primitives/utils";
+ import { SPACE } from "../constants";
+-import { MODE_ATTRIBUTE, MODE_LIGHT, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED } from "../constants/markdown";
+-import { FenceBlock, needsTailCursor, splitSegments } from "./streaming-markdown-parts";
++import { MODE_ATTRIBUTE, MODE_LIGHT, NESTED_FENCE_TAG, SEGMENT_KIND, STREAMING_ATTR, TYPEOF_UNDEFINED } from "../constants/markdown";
++import { FenceBlock, FenceTable, NestedFence, needsTailCursor, splitSegments } from "./streaming-markdown-parts";
++
++/** 列表内围栏的占位标签与它的渲染组件: 模块级常量, 引用稳定, markstream 不会因此重挂节点. */
++const NESTED_TAGS = [NESTED_FENCE_TAG] as const;
++const NESTED_COMPONENTS = { [NESTED_FENCE_TAG]: NestedFence };
+ 
+ /**
+  * 把 markstream 自带的配色与线条拉回本库的语义 token.
+@@ -85,7 +89,8 @@ export interface StreamingMarkdownProps {
+  * 样式不由本组件注入, 使用方 (或文档站) 必须引入一次 markstream-react/index.css,
+  * 库的样式入口 src/styles.css 已经带上它, 引了 @hx/ui/styles.css 就不用再引.
+  *
+- * 代码块由本库的 CodeBlock 渲染 (见 streaming-markdown-parts 的 splitSegments 说明),
++ * 代码块由本库的 CodeBlock 渲染 (见 streaming-markdown-parts 的 splitSegments 说明; 列表项里的围栏留在原位,
++ * 以 NESTED_FENCE_TAG 占位后同样交给 CodeBlock, <li> 嵌套不丢),
+  * 其余节点交给 markstream: 未闭合的标题, 列表, 表格与引用在流式中途都能按半成品渲染.
+  * fade 关闭: 逐节点淡入会和调用方自己的逐字追加叠成两层节奏, 看起来像抖动;
+  * 光标由 markstream 的 typewriter 提供, 它在系统要求减弱动效时自动停闪;
+@@ -116,16 +121,19 @@ export function StreamingMarkdown({
+           return <FenceBlock key={key} code={segment.text} open={segment.open === true} {...(segment.lang ? { lang: segment.lang } : {})} />;
+         }
+         return (
+-          <MarkdownRender
+-            key={key}
+-            content={segment.text}
+-            final={done}
+-            fade={false}
+-            typewriter={!done && index === segments.length - 1}
+-            smoothStreaming={false}
+-            isDark={dark}
+-            {...(customId ? { customId } : {})}
+-          />
++          <FenceTable.Provider key={key} value={segment.fences ?? []}>
++            <MarkdownRender
++              content={segment.text}
++              final={done}
++              fade={false}
++              typewriter={!done && index === segments.length - 1}
++              smoothStreaming={false}
++              isDark={dark}
++              customHtmlTags={NESTED_TAGS}
++              streamingComponents={NESTED_COMPONENTS}
++              {...(customId ? { customId } : {})}
++            />
++          </FenceTable.Provider>
+         );
+       })}
+       {tailCursor ? (
+diff --git a/src/constants/markdown.ts b/src/constants/markdown.ts
+index dad41b0..fd4268c 100644
+--- a/src/constants/markdown.ts
++++ b/src/constants/markdown.ts
+@@ -29,3 +29,10 @@ export const STREAMING_ATTR = {
+   done: "false",
+   live: "true",
+ } as const;
++
++/**
++ * 列表项里的围栏不切出去, 而是在原位换成这个自定义标签, 由 markstream 当作 list_item 的子节点渲染,
++ * 再把标签映射回本库 CodeBlock. data-i 是围栏在本段 fences 表里的下标.
++ */
++export const NESTED_FENCE_TAG = "hx-fence";
++export const NESTED_FENCE_INDEX_ATTR = "data-i";
+-- 
+2.47.3
+
