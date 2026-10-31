@@ -1,6 +1,6 @@
 {
   "name": "@hx/ui",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "type": "module",
   "description": "HX 自维护 UI 库: 视觉沿用 open-vetta 那套设计语言",
   "license": "Apache-2.0",

@@ -1,5 +1,7 @@
 # 具名符号. 星号桶已展开, 下面的 STAR 行只标记桶还在.
 AGENT_AUTO_RIGHT
+AGENT_DEMO_STATUS
+AGENT_NEWLINE
 AGENT_ROW
 AGENT_STREAMING_LABEL
 AGENT_STREAM_LABEL
@@ -193,7 +195,9 @@ ContextMenuTrigger
 DEFAULT_LIVE_LABELS
 DEFAULT_RETRY
 DEMO_NODES
+DIFF_KIND
 DOC
+DOC_KEY
 DOC_SAMPLE
 DOC_STREAMING_PROPS
 DOC_TAB
@@ -451,8 +455,11 @@ NodeValidator
 ONE_DARK_PRO
 OPEN_STATE
 ORIENTATION
+OVERVIEW_DEMO
+OVERVIEW_VIEW
 PORT_R
 PORT_ROW
+PROCESS_DEMO
 PROXY_LAYER_META
 PageHeader
 PageHeaderProps
@@ -598,6 +605,7 @@ StatTone
 StateDot
 StateDotProps
 StateTone
+StatusGlyph
 StepContent
 StepDots
 StepItem
@@ -609,6 +617,10 @@ StreamingMarkdownProps
 StreamingText
 StreamingTextProps
 SubGraphDef
+SubagentCard
+SubagentCardProps
+SubagentGroup
+SubagentGroupProps
 SurfaceRect
 Switch
 SyncChannel
@@ -616,9 +628,12 @@ SyncMessage
 SyncOptions
 SyncTransport
 TASK_STATUS
+THINK_DEMO
+TODO_STATUS
 TONE
 TONE_VARIANT
 TOOL_CALL_STATUS
+TOOL_STATE
 TUNNEL_IN
 TUNNEL_OUT
 Table
@@ -637,6 +652,12 @@ TabsTrigger
 TabsVariant
 Textarea
 TextareaField
+Thinking
+ThinkingBranch
+ThinkingBranches
+ThinkingBranchesProps
+ThinkingProps
+ThinkingStatus
 TimePicker
 TimePickerProps
 ToastAction
@@ -646,6 +667,10 @@ ToastPosition
 ToastVariant
 ToastViewportProps
 Toaster
+TodoNode
+TodoStatus
+TodoTree
+TodoTreeProps
 Toggle
 ToggleGroup
 ToggleGroupItem
@@ -739,6 +764,7 @@ defaultRegistry
 defineTheme
 demoGraph
 demoRegistry
+deriveTodoStatus
 describeGraph
 describeRegistry
 detourPath
@@ -753,6 +779,7 @@ evaluateGraph
 execOutIds
 execOutLabel
 expandSubgraph
+extractHeadline
 fetchLiveEnvs
 findCycles
 findEntries

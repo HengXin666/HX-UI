@@ -109,8 +109,10 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "accordion": return <AccordionPage />;
     case "progress": return <ProgressPage />;
     case "scroll-area": return <ScrollAreaPage />;
-    case "data-table": return <DataTablePage />;
-    case "empty-state": return <ChromePage />;
+    case "data-table":
+    case "stat-card": return <DataTablePage />;
+    case "empty-state":
+    case "page-header": return <ChromePage />;
     case "browser-live": return <BrowserLivePage />;
     case "blueprint": return <BlueprintPage />;
     case "blueprint-dsh": return <BlueprintDshPage />;

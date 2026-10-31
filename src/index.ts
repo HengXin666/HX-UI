@@ -215,14 +215,16 @@ export type {
 } from "./hxbrowser";
 
 // ── AI 交互 (agent) ──
-/** Agent 交互过程组件: 工具调用卡, 流式文本, 用量计量, 变更对比. */
+/** Agent 交互过程组件: 工具调用卡, 流式文本, 用量计量, 变更对比, 思考过程, 子代理与任务树. */
 export { DiffView, InlineApproval, StreamingMarkdown, StreamingText, TOOL_CALL_STATUS, ToolCallCard, UsageMeter } from "./agent";
+export { Thinking, extractHeadline, StatusGlyph, TodoTree, deriveTodoStatus, SubagentCard, SubagentGroup, ThinkingBranches } from "./agent";
 export type { DiffLine, DiffLineType, DiffViewProps, InlineApprovalProps, StreamingMarkdownProps, StreamingTextProps, ToolCallCardProps, ToolCallStatus, UsageMeterProps } from "./agent";
+export type { ThinkingProps, ThinkingStatus, TodoNode, TodoStatus, TodoTreeProps, SubagentCardProps, SubagentGroupProps, ThinkingBranch, ThinkingBranchesProps } from "./agent";
 
 // ── 常量 ──
 /** 库与文档站共用的字面量 (PROJECT-CONST-DUP), 导出清单见 public-constants.ts. */
 export {
-  AGENT_AUTO_RIGHT, AGENT_ROW, AGENT_STREAMING_LABEL, AGENT_STREAM_LABEL, AGENT_TEXT_MUTED, ALIGN, BUTTON_TYPE, DOC, DOC_SAMPLE, DOC_STREAMING_PROPS, DOC_TAB, EVENT, OPEN_STATE, ORIENTATION,
-  QUESTION_TYPE, SELECT_MODE, SIDE, SIZE, TASK_STATUS, TONE, TONE_VARIANT, UI_CLASSES, USER, VARIANT,
+  AGENT_AUTO_RIGHT, AGENT_DEMO_STATUS, AGENT_NEWLINE, AGENT_ROW, AGENT_STREAMING_LABEL, AGENT_STREAM_LABEL, AGENT_TEXT_MUTED, ALIGN, BUTTON_TYPE, DIFF_KIND, DOC, DOC_KEY, DOC_SAMPLE, DOC_STREAMING_PROPS, DOC_TAB,
+  EVENT, OPEN_STATE, ORIENTATION, OVERVIEW_DEMO, OVERVIEW_VIEW, PROCESS_DEMO, QUESTION_TYPE, SELECT_MODE, SIDE, SIZE, TASK_STATUS, THINK_DEMO, TODO_STATUS, TOOL_STATE, TONE, TONE_VARIANT, UI_CLASSES, USER, VARIANT,
 } from "./public-constants";
 export type { DocPropRow } from "./public-constants";
