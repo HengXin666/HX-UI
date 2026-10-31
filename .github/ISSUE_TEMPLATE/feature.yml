@@ -1,5 +1,5 @@
 name: 功能需求
-description: 描述问题与期望行为 (新组件请用组件需求模板)
+description: 描述问题与期望行为 (缺公共控件请用公共控件缺口模板)
 labels: [enhancement]
 body:
     - type: textarea

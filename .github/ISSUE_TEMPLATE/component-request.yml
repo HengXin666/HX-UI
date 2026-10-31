@@ -1,42 +1,139 @@
-name: 组件需求
-description: 下游项目需要 HX-UI 尚未提供的通用 UI 时提交, 不要在下游手搓通用控件
-title: "[组件需求] "
+# 下游 Agent 提交契约 (GitHub 不展示注释).
+# 别的仓库任务中缺一个公共控件时, 向 HengXin666/HX-UI 开这个议题, 然后继续当前任务.
+# 下游只留临时组合或调用点, 不要手搓第二套通用控件. 本仓以后按议题实现.
+#
+# 什么是公共控件: 换一个产品还能用, 不绑死某一产品的文案, 路由或业务数据结构,
+# 并且会进入 HX-UI 公共 API (src/primitives, src/layout, src/charts, src/blueprint).
+# 不要提: 已有组件的缺陷 (用 bug.yml), 已有组件加能力 (用 feature.yml),
+# 只服务一个页面的业务界面.
+#
+# 网页:
+# https://github.com/HengXin666/HX-UI/issues/new?template=component-request.yml&title=%5B%E5%85%AC%E5%85%B1%E6%8E%A7%E4%BB%B6%5D%20
+#
+# 非交互:
+#   gh issue create --repo HengXin666/HX-UI --title "[公共控件] 组件名" --body-file gap.md
+# gap.md 的 ### 标题必须与下方 attributes.label 逐字相同. 准入三项都写成 - [x].
+# 分层只写其中一个: primitives / layout / charts / blueprint / 不确定
+# 阻塞只写其中一个: 不阻塞, 已用临时组合继续 / 阻塞, 没有这个控件当前任务做不完
+# 没有的字段写无.
+name: 公共控件缺口
+description: 下游 Agent 在别的项目里发现缺一个公共控件时提交. 只收会进 HX-UI 公共 API 的控件, 本仓稍后实现
+title: "[公共控件] "
 labels: [component-request]
 body:
     - type: markdown
       attributes:
-          value: 提交前请先在文档站和 src/ 中确认 HX-UI 没有现成组件或组合方式可用.
+          value: |
+              给正在别的仓库里干活的 Agent.
+
+              缺的是公共控件才提交: 换一个产品还能用, 不绑文案, 路由或业务数据结构, 并且会进入 HX-UI 公共 API. 提完继续当前任务, 下游只留临时组合或调用点, 不要手搓第二套通用控件. 本仓按议题再实现.
+
+              提交前先搜文档站和 src/primitives, src/layout, src/charts, src/blueprint. 已有组件的缺陷用 Bug 报告, 已有组件加能力用功能需求, 只服务一个页面的业务界面不要提.
+
+              不能开网页时读本文件顶部注释, 用 `gh issue create --repo HengXin666/HX-UI` 提交. 正文的小标题必须与下面每个字段的 label 逐字相同.
+    - type: checkboxes
+      id: gate
+      attributes:
+          label: 准入
+          description: 三项都成立才提交. 有一项不成立就不要开这个 issue.
+          options:
+              - label: 查过文档站和 src/, 没有现成组件, 也不能用现有组件组合出来
+                required: true
+              - label: 这是公共控件, 会进入 HX-UI 公共 API, 不绑定单一产品的文案, 路由或数据结构
+                required: true
+              - label: 下游不把它做成自己的通用控件; 本议题只是排队, 等本仓实现
+                required: true
+    - type: input
+      id: name
+      attributes:
+          label: 建议组件名
+          description: 英文 PascalCase, 不要带业务前缀. 例如 Tree, Combobox.
+          placeholder: Tree
+      validations:
+          required: true
+    - type: dropdown
+      id: layer
+      attributes:
+          label: 建议分层
+          description: 实现时放哪一层. 拿不准选不确定.
+          options:
+              - primitives
+              - layout
+              - charts
+              - blueprint
+              - 不确定
+      validations:
+          required: true
     - type: input
       id: downstream
       attributes:
-          label: 下游项目
-          description: 需要这个组件的仓库或项目名
+          label: 下游项目与当前任务
+          description: owner/repo, 以及发现缺口时正在做的任务
+          placeholder: HengXin666/some-app · 设置页需要可搜索多选
       validations:
           required: true
     - type: textarea
       id: scenario
       attributes:
           label: 使用场景
-          description: 在什么页面, 什么数据和交互流程里用到
+          description: 什么界面, 什么数据, 用户怎么操作. 写成换一个产品仍然成立的场景.
       validations:
           required: true
     - type: textarea
       id: api
       attributes:
-          label: 期望的 API 或交互
-          description: props, 受控/非受控, 键盘与焦点行为, 状态 (加载/空/错误)
+          label: 期望的最小 API
+          description: props, 受控或非受控, 回调. 只写没有它就做不成的部分.
+      validations:
+          required: true
+    - type: textarea
+      id: states
+      attributes:
+          label: 状态, 键盘与无障碍
+          description: 加载, 空, 错误, 禁用, 焦点, 方向键, aria. 没有就写无.
+      validations:
+          required: true
+    - type: textarea
+      id: why-not-existing
+      attributes:
+          label: 为什么现有组件不够
+          description: 点名试过哪些组件, 差在哪.
+      validations:
+          required: true
+    - type: textarea
+      id: non-goals
+      attributes:
+          label: 不要做成什么样
+          description: 业务耦合和这轮不做的能力, 避免实现时做大.
+      validations:
+          required: true
+    - type: textarea
+      id: acceptance
+      attributes:
+          label: 怎样算实现完成
+          description: 本仓以后实现时的验收. 写文档站活例子要覆盖的行为, 不要写下游业务页面.
+      validations:
+          required: true
+    - type: input
+      id: current-code
+      attributes:
+          label: 下游临时实现
+          description: 文件路径或链接. 没有写无. 临时实现留在下游.
+      validations:
+          required: true
+    - type: dropdown
+      id: blocking
+      attributes:
+          label: 对当前任务的阻塞
+          options:
+              - 不阻塞, 已用临时组合继续
+              - 阻塞, 没有这个控件当前任务做不完
       validations:
           required: true
     - type: textarea
       id: references
       attributes:
-          label: 参考截图或链接
+          label: 参考
+          description: 截图, 文档站页面, 或其他设计系统里对应组件的链接. 没有写无.
       validations:
           required: false
-    - type: input
-      id: current-code
-      attributes:
-          label: 目前的手搓代码位置
-          description: 下游仓库中临时实现的文件路径或链接, 没有则写无
-      validations:
-          required: true
