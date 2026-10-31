@@ -3,6 +3,9 @@
 一套 React + TypeScript 的 UI 组件库, 视觉沿用 [open-vetta](https://github.com/openvetta/open-vetta) 的设计语言,
 带一个可交互的组件文档站 (38 个页面, 每个页面都是活实例 + 可复制代码).
 
+文档站: <https://hengxin666.github.io/HX-UI/>
+专项刻画: <https://hengxin666.github.io/HX-UI/characterization/>
+
 ## 这套东西是什么
 
 分三层, 可以只取其中一层用:
