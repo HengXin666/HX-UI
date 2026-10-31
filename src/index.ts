@@ -82,53 +82,55 @@ export {
   AvatarGroup, AvatarGroupCount, AvatarImage, Breadcrumb,
   BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList,
   BreadcrumbPage, BreadcrumbSeparator, ButtonGroup, ButtonGroupSeparator,
-  ButtonGroupText, Carousel, CarouselApi, CarouselContent,
-  CarouselDots, CarouselItem, CarouselNext, CarouselPrevious,
-  Combobox, ComboboxMultipleProps, ComboboxOption, ComboboxProps,
-  ComboboxSingleProps, Command, CommandDialog, CommandEmpty,
-  CommandGroup, CommandInput, CommandItem, CommandList,
-  CommandSeparator, CommandShortcut, ContextMenuCheckboxItem, ContextMenuContent,
-  ContextMenuGroup, ContextMenuItem, ContextMenuLabel, ContextMenuPortal,
-  ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuRoot, ContextMenuSeparator,
-  ContextMenuShortcut, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger,
-  ContextMenuTrigger, DirectionProvider, Empty, EmptyContent,
-  EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle,
-  Field, FieldContent, FieldDescription, FieldError,
-  FieldGroup, FieldLabel, FieldLegend, FieldSeparator,
-  FieldSet, FieldTitle, Form, FormControl,
-  FormDescription, FormField, FormItem, FormLabel,
-  FormMessage, HoverCard, HoverCardContent, HoverCardTrigger,
-  InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput,
-  InputGroupText, InputGroupTextarea, InputOTP, InputOTPGroup,
-  InputOTPSeparator, InputOTPSlot, Item, ItemActions,
-  ItemContent, ItemDescription, ItemFooter, ItemGroup,
-  ItemHeader, ItemMedia, ItemSeparator, ItemTitle,
-  Label, Menubar, MenubarCheckboxItem, MenubarContent,
-  MenubarGroup, MenubarItem, MenubarLabel, MenubarMenu,
-  MenubarPortal, MenubarRadioGroup, MenubarRadioItem, MenubarSeparator,
-  MenubarShortcut, MenubarSub, MenubarSubContent, MenubarSubTrigger,
-  MenubarTrigger, NativeSelect, NativeSelectOptGroup, NativeSelectOption,
-  NavigationMenu, NavigationMenuContent, NavigationMenuIndicator, NavigationMenuItem,
-  NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport,
-  ResizableHandle, ResizablePanel, ResizablePanelGroup, Sheet,
-  SheetClose, SheetContent, SheetDescription, SheetFooter,
-  SheetHeader, SheetOverlay, SheetPortal, SheetSide,
-  SheetTitle, SheetTrigger, Sidebar, SidebarContent,
-  SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent,
-  SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset,
-  SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton,
-  SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton,
-  SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator,
-  SidebarTrigger, Spinner, Table, TableBody,
-  TableCaption, TableCell, TableFooter, TableHead,
-  TableHeader, TableRow, Toggle, ToggleGroup,
-  ToggleGroupItem, TypographyBlockquote, TypographyH1, TypographyH2,
-  TypographyH3, TypographyH4, TypographyInlineCode, TypographyLarge,
-  TypographyLead, TypographyList, TypographyMuted, TypographyP,
-  TypographySmall, avatarVariants, buttonGroupVariants, inputGroupAddonVariants,
-  itemVariants, navigationMenuTriggerStyle, sidebarMenuButtonVariants, toggleVariants,
-  useCarousel, useDirection, useFormField, useIsMobile,
-  useSidebar,
+  ButtonGroupText, Carousel, CarouselContent, CarouselDots,
+  CarouselItem, CarouselNext, CarouselPrevious, Combobox,
+  Command, CommandDialog, CommandEmpty, CommandGroup,
+  CommandInput, CommandItem, CommandList, CommandSeparator,
+  CommandShortcut, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuGroup,
+  ContextMenuItem, ContextMenuLabel, ContextMenuPortal, ContextMenuRadioGroup,
+  ContextMenuRadioItem, ContextMenuRoot, ContextMenuSeparator, ContextMenuShortcut,
+  ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger,
+  DirectionProvider, Empty, EmptyContent, EmptyDescription,
+  EmptyHeader, EmptyMedia, EmptyTitle, Field,
+  FieldContent, FieldDescription, FieldError, FieldGroup,
+  FieldLabel, FieldLegend, FieldSeparator, FieldSet,
+  FieldTitle, Form, FormControl, FormDescription,
+  FormField, FormItem, FormLabel, FormMessage,
+  HoverCard, HoverCardContent, HoverCardTrigger, InputGroup,
+  InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText,
+  InputGroupTextarea, InputOTP, InputOTPGroup, InputOTPSeparator,
+  InputOTPSlot, Item, ItemActions, ItemContent,
+  ItemDescription, ItemFooter, ItemGroup, ItemHeader,
+  ItemMedia, ItemSeparator, ItemTitle, Label,
+  Menubar, MenubarCheckboxItem, MenubarContent, MenubarGroup,
+  MenubarItem, MenubarLabel, MenubarMenu, MenubarPortal,
+  MenubarRadioGroup, MenubarRadioItem, MenubarSeparator, MenubarShortcut,
+  MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger,
+  NativeSelect, NativeSelectOptGroup, NativeSelectOption, NavigationMenu,
+  NavigationMenuContent, NavigationMenuIndicator, NavigationMenuItem, NavigationMenuLink,
+  NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, ResizableHandle,
+  ResizablePanel, ResizablePanelGroup, Sheet, SheetClose,
+  SheetContent, SheetDescription, SheetFooter, SheetHeader,
+  SheetOverlay, SheetPortal, SheetTitle, SheetTrigger,
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup,
+  SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
+  SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction,
+  SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton,
+  SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider,
+  SidebarRail, SidebarSeparator, SidebarTrigger, Spinner,
+  Table, TableBody, TableCaption, TableCell,
+  TableFooter, TableHead, TableHeader, TableRow,
+  Toggle, ToggleGroup, ToggleGroupItem, TypographyBlockquote,
+  TypographyH1, TypographyH2, TypographyH3, TypographyH4,
+  TypographyInlineCode, TypographyLarge, TypographyLead, TypographyList,
+  TypographyMuted, TypographyP, TypographySmall, avatarVariants,
+  buttonGroupVariants, inputGroupAddonVariants, itemVariants, navigationMenuTriggerStyle,
+  sidebarMenuButtonVariants, toggleVariants, useCarousel, useDirection,
+  useFormField, useIsMobile, useSidebar,
+} from "./primitives/shadcn-parity";
+export type {
+  CarouselApi, ComboboxMultipleProps, ComboboxOption, ComboboxProps,
+  ComboboxSingleProps, SheetSide,
 } from "./primitives/shadcn-parity";
 
 // ── 蓝图 ──
@@ -188,11 +190,14 @@ export type {
 } from "./blueprint/types";
 export {
   BODY_TOP, CURVE_MIN, HEADER_H, NODE_WIDTH,
-  PORT_R, PORT_ROW, Point, WireStyle,
-  arrowFillClass, arrowHead, detourPath, edgePath,
-  edgePathFrom, graphBounds, hitNode, hitPort,
-  nodeHeight, nodeWidth, portPos, rectsIntersect,
-  shouldDetour, toGraphPt, toScreen, wireStyle,
+  PORT_R, PORT_ROW, arrowFillClass, arrowHead,
+  detourPath, edgePath, edgePathFrom, graphBounds,
+  hitNode, hitPort, nodeHeight, nodeWidth,
+  portPos, rectsIntersect, shouldDetour, toGraphPt,
+  toScreen, wireStyle,
+} from "./blueprint/geometry";
+export type {
+  Point, WireStyle,
 } from "./blueprint/geometry";
 export { SHORTCUTS, matchShortcut, shouldHandle, isTypingTarget, type ShortcutDef } from "./blueprint/shortcuts";
 export { copySelection, pasteClip, alignNodes, isEmptyClip, type ClipboardPayload } from "./blueprint/clipboard";
@@ -230,8 +235,10 @@ export {
 
 // ── 代码编辑器 (monaco + One Dark Pro Darker) ──
 export {
-  CODE_THEME_ID, CodeEditor, CodeEditorProps, Monaco,
-  defineTheme, readPalette,
+  CODE_THEME_ID, CodeEditor, defineTheme, readPalette,
+} from "./editor";
+export type {
+  CodeEditorProps, Monaco,
 } from "./editor";
 
 // ── 版式件 ──
@@ -352,15 +359,17 @@ export {
 export {
   Attachment, AttachmentAction, AttachmentActions, AttachmentContent,
   AttachmentDescription, AttachmentGroup, AttachmentImage, AttachmentMedia,
-  AttachmentState, AttachmentTitle, Bubble, BubbleCollapsible,
-  BubbleContent, BubbleGroup, BubbleReactions, Marker,
-  MarkerContent, MarkerIcon, Message, MessageAvatar,
-  MessageContent, MessageFooter, MessageGroup, MessageHeader,
-  MessageScroller, MessageScrollerButton, MessageScrollerContent, MessageScrollerItem,
-  Questionnaire, QuestionnaireAnswers, QuestionnaireChoice, QuestionnaireLabels,
-  QuestionnaireQuestion, Trace, TraceLive, TraceLiveItem,
-  TraceSources, TraceStatus, TraceStep, attachmentVariants,
-  bubbleVariants, markerVariants, useMessageScroller,
+  AttachmentTitle, Bubble, BubbleCollapsible, BubbleContent,
+  BubbleGroup, BubbleReactions, Marker, MarkerContent,
+  MarkerIcon, Message, MessageAvatar, MessageContent,
+  MessageFooter, MessageGroup, MessageHeader, MessageScroller,
+  MessageScrollerButton, MessageScrollerContent, MessageScrollerItem, Questionnaire,
+  Trace, TraceLive, TraceSources, TraceStep,
+  attachmentVariants, bubbleVariants, markerVariants, useMessageScroller,
+} from "./chat";
+export type {
+  AttachmentState, QuestionnaireAnswers, QuestionnaireChoice, QuestionnaireLabels,
+  QuestionnaireQuestion, TraceLiveItem, TraceStatus,
 } from "./chat";
 
 // ── hx-browser 实时预览 ──
@@ -370,37 +379,42 @@ export {
  * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
  */
 export {
-  BrowserLiveEnvBadges, BrowserLiveEnvBadgesProps, BrowserLiveLabels, BrowserLiveStatus,
-  BrowserLiveStatusProps, BrowserLiveTile, BrowserLiveTileProps, BrowserLiveView,
-  BrowserLiveViewProps, BrowserLiveWall, BrowserLiveWallProps, DEFAULT_LIVE_LABELS,
-  DEFAULT_RETRY, FRAME_DATA_URL_PREFIX, FetchLike, HEADER_API_KEY,
-  HeldInputs, HxBrowserLive, HxBrowserLiveEnvs, HxBrowserTransport,
-  KEY_ACTION, KeyAction, KeySample, LIVE_CLOSE,
+  BrowserLiveEnvBadges, BrowserLiveStatus, BrowserLiveTile, BrowserLiveView,
+  BrowserLiveWall, DEFAULT_LIVE_LABELS, DEFAULT_RETRY, FRAME_DATA_URL_PREFIX,
+  HEADER_API_KEY, HeldInputs, KEY_ACTION, LIVE_CLOSE,
   LIVE_ENVS_PATH, LIVE_EVT, LIVE_MSG, LIVE_PRESET,
-  LIVE_STATUS, LiveActivateMessage, LiveClientMessage, LiveConnection,
-  LiveConnectionOptions, LiveEnv, LiveErrorEvent, LiveFlowMessage,
-  LiveFrameEvent, LiveKeyMessage, LiveMeta, LiveMetaEvent,
-  LiveMouseMessage, LiveNavigateMessage, LivePreset, LiveQualityMessage,
-  LiveRetryPolicy, LiveServerEvent, LiveSnapshot, LiveStatus,
-  LiveTab, LiveTabsEvent, LiveTextMessage, LiveTimers,
-  MOUSE_ACTION, MOUSE_BUTTONS, ModifierState, MouseAction,
-  MouseButtonName, NAV_ACTION, NO_RETRY_CLOSE_CODES, NavAction,
-  PointerSample, QUERY_KEY, QUERY_PRESET, SurfaceRect,
-  UseHxBrowserLiveEnvsOptions, UseHxBrowserLiveOptions, WebSocketCtor, backoffDelay,
-  buttonName, fetchLiveEnvs, findFocused, focusedGone,
-  keyMessage, liveEnvsUrl, liveSessionPath, liveSessionUrl,
-  mouseMessage, parseServerEvent, pickFocusTarget, resolveBrowserLiveLabels,
-  useDocumentVisible, useElementInView, useHxBrowserLive, useHxBrowserLiveEnvs,
-  useLiveInput,
+  LIVE_STATUS, LiveConnection, MOUSE_ACTION, MOUSE_BUTTONS,
+  NAV_ACTION, NO_RETRY_CLOSE_CODES, QUERY_KEY, QUERY_PRESET,
+  backoffDelay, buttonName, fetchLiveEnvs, findFocused,
+  focusedGone, keyMessage, liveEnvsUrl, liveSessionPath,
+  liveSessionUrl, mouseMessage, parseServerEvent, pickFocusTarget,
+  resolveBrowserLiveLabels, useDocumentVisible, useElementInView, useHxBrowserLive,
+  useHxBrowserLiveEnvs, useLiveInput,
+} from "./hxbrowser";
+export type {
+  BrowserLiveEnvBadgesProps, BrowserLiveLabels, BrowserLiveStatusProps, BrowserLiveTileProps,
+  BrowserLiveViewProps, BrowserLiveWallProps, FetchLike, HxBrowserLive,
+  HxBrowserLiveEnvs, HxBrowserTransport, KeyAction, KeySample,
+  LiveActivateMessage, LiveClientMessage, LiveConnectionOptions, LiveEnv,
+  LiveErrorEvent, LiveFlowMessage, LiveFrameEvent, LiveKeyMessage,
+  LiveMeta, LiveMetaEvent, LiveMouseMessage, LiveNavigateMessage,
+  LivePreset, LiveQualityMessage, LiveRetryPolicy, LiveServerEvent,
+  LiveSnapshot, LiveStatus, LiveTab, LiveTabsEvent,
+  LiveTextMessage, LiveTimers, ModifierState, MouseAction,
+  MouseButtonName, NavAction, PointerSample, SurfaceRect,
+  UseHxBrowserLiveEnvsOptions, UseHxBrowserLiveOptions, WebSocketCtor,
 } from "./hxbrowser";
 
 // ── AI 交互 (agent) ──
 /** Agent 交互过程组件: 工具调用卡, 流式文本, 用量计量, 变更对比. */
 export {
-  DiffLine, DiffLineType, DiffView, DiffViewProps,
-  InlineApproval, InlineApprovalProps, StreamingMarkdown, StreamingMarkdownProps,
-  StreamingText, StreamingTextProps, TOOL_CALL_STATUS, ToolCallCard,
-  ToolCallCardProps, ToolCallStatus, UsageMeter, UsageMeterProps,
+  DiffView, InlineApproval, StreamingMarkdown, StreamingText,
+  TOOL_CALL_STATUS, ToolCallCard, UsageMeter,
+} from "./agent";
+export type {
+  DiffLine, DiffLineType, DiffViewProps, InlineApprovalProps,
+  StreamingMarkdownProps, StreamingTextProps, ToolCallCardProps, ToolCallStatus,
+  UsageMeterProps,
 } from "./agent";
 
 // ── 常量 ──
@@ -408,9 +422,11 @@ export {
 export {
   AGENT_AUTO_RIGHT, AGENT_ROW, AGENT_STREAMING_LABEL, AGENT_STREAM_LABEL,
   AGENT_TEXT_MUTED, ALIGN, BUTTON_TYPE, DOC,
-  DOC_SAMPLE, DOC_STREAMING_PROPS, DOC_TAB, DocPropRow,
-  EVENT, OPEN_STATE, ORIENTATION, QUESTION_TYPE,
-  SELECT_MODE, SIDE, SIZE, TASK_STATUS,
-  TONE, TONE_VARIANT, UI_CLASSES, USER,
-  VARIANT,
+  DOC_SAMPLE, DOC_STREAMING_PROPS, DOC_TAB, EVENT,
+  OPEN_STATE, ORIENTATION, QUESTION_TYPE, SELECT_MODE,
+  SIDE, SIZE, TASK_STATUS, TONE,
+  TONE_VARIANT, UI_CLASSES, USER, VARIANT,
+} from "./public-constants";
+export type {
+  DocPropRow,
 } from "./public-constants";
