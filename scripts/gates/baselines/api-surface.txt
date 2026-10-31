@@ -416,6 +416,8 @@ ModifierState
 Monaco
 MotionList
 MotionListItem
+MotionPoint
+MotionPresence
 MotionSelect
 MotionSelectProps
 MouseAction
@@ -704,6 +706,8 @@ autoLayout
 avatarVariants
 backoffDelay
 badgeVariants
+bindGesture
+bindScrollProgress
 boundaryPorts
 bubbleVariants
 buildAnimationProps
@@ -752,6 +756,7 @@ findFocused
 flattenTree
 focusedGone
 fuzzyMatch
+gestureDelta
 graphBounds
 graphFromJson
 graphFromText
@@ -768,6 +773,7 @@ isEmptyClip
 isTypingTarget
 itemVariants
 keyMessage
+layoutDelta
 liveEnvsUrl
 liveSessionPath
 liveSessionUrl
@@ -793,6 +799,7 @@ playLayout
 portOfHandle
 portPos
 prefersReducedMotion
+presenceDuration
 readLayout
 readPalette
 rectsIntersect
@@ -801,6 +808,8 @@ removeComment
 resizeComment
 resolveBrowserLiveLabels
 resolvePort
+retainedIds
+scrollProgress
 serializeGraph
 seriesColor
 shouldCoalesce
@@ -850,17 +859,3 @@ validateGraph
 wireStyle
 writeSubgraph
 # STAR
-src/chat/index.ts -> ./attachment
-src/chat/index.ts -> ./bubble
-src/chat/index.ts -> ./marker
-src/chat/index.ts -> ./message
-src/chat/index.ts -> ./message-scroller
-src/chat/index.ts -> ./questionnaire
-src/chat/index.ts -> ./trace
-src/index.ts -> ./agent
-src/index.ts -> ./blueprint/geometry
-src/index.ts -> ./chat
-src/index.ts -> ./editor
-src/index.ts -> ./hxbrowser
-src/index.ts -> ./primitives/shadcn-parity
-src/index.ts -> ./public-constants

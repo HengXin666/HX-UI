@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>motion bar</title>
+<style>
+  html, body { margin: 0; background: white; }
+  #bar {
+    width: 120px;
+    height: 24px;
+    opacity: 1;
+    background: black;
+    animation: pulse 1s linear infinite;
+  }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.4; } }
+  @media (prefers-reduced-motion: reduce) {
+    #bar { animation: none; }
+  }
+</style>
+<div id="bar"></div>

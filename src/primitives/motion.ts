@@ -1,4 +1,5 @@
 import { MEDIA_REDUCED_MOTION } from "../constants";
+import { layoutDelta } from "./motion-math";
 
 /**
  * 系统是否要求减弱动效. 只在浏览器里有意义; 服务端渲染或测试环境缺 matchMedia 时按未开启处理.
@@ -32,11 +33,10 @@ export function readLayout(el: HTMLElement): LayoutBox {
 export function playLayout(el: HTMLElement, previous: LayoutBox | undefined): void {
 	if (!previous || prefersReducedMotion()) return;
 	const next = el.getBoundingClientRect();
-	const dx = previous.left - next.left;
-	const dy = previous.top - next.top;
-	if (dx === 0 && dy === 0) return;
+	const delta = layoutDelta({ x: previous.left, y: previous.top }, { x: next.left, y: next.top });
+	if (delta.x === 0 && delta.y === 0) return;
 	el.animate?.(
-		[{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "translate(0px, 0px)" }],
+		[{ transform: `translate(${delta.x}px, ${delta.y}px)` }, { transform: "translate(0px, 0px)" }],
 		{ duration: LAYOUT_MS, easing: LAYOUT_EASE },
 	);
 }
