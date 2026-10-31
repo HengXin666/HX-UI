@@ -41,6 +41,20 @@ export const GATES = [
     args: ["npm", "run", "--silent", "check:ui"],
   },
   {
+    id: "economy",
+    group: "lib",
+    label: "安装图节约 (sideEffects 只声明 CSS) 并写出可复原的刻画产物",
+    cwd: ".",
+    args: ["node", "scripts/check-economy.mjs"],
+  },
+  {
+    id: "api-snapshot",
+    group: "lib",
+    label: "公共符号快照 (具名导出与展开后的星号桶, 变了必须显式承认)",
+    cwd: ".",
+    args: ["node", "scripts/check-api-snapshot.mjs"],
+  },
+  {
     id: "blueprint",
     group: "lib",
     label: "蓝图纯逻辑断言 (类型协变 / 连接判定 / 独占顶替 / 环 / 分支求值 / 序列化往返 / 布局质量)",

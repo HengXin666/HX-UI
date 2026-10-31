@@ -66,3 +66,12 @@ jobs:
 
       - name: 门禁 (全部分组 + 负向探针 + 接线指纹)
         run: node scripts/gates/run.mjs --all --strict
+
+      # 产物由 economy 门禁写成. 上传本身不重跑检查, 只把那份 JSON 留下来.
+      - name: 上传可复原的刻画产物
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: characterization-${{ github.run_id }}-${{ github.run_attempt }}
+          path: scripts/.hx_code_quality/characterization.json
+          if-no-files-found: warn

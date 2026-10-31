@@ -62,6 +62,8 @@ export { Pagination, paginationRange, type PageItem, type PaginationLabels, type
 export { Kbd, KbdGroup } from "./primitives/kbd";
 export { Alert, AlertDescription, AlertTitle, alertVariants, type AlertVariant } from "./primitives/alert";
 export { Ripple, spawnRipple, useRipple, type RippleComponentProps, type RippleSize, type UseRippleOptions } from "./primitives/ripple";
+export { prefersReducedMotion, playLayout, readLayout, type LayoutBox } from "./primitives/motion";
+export { MotionList, type MotionListItem } from "./primitives/motion-list";
 export { type ClassValue, cn } from "./primitives/utils";
 /**
  * 对标 shadcn/ui 补齐的基础件, 名单见 primitives/shadcn-parity.ts; 已有同名能力的组件 (ConfirmDialog,

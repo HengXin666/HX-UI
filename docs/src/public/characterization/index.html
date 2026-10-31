@@ -93,13 +93,13 @@
   <main class="wrap">
     <p class="kicker">专项刻画 · @hx/ui 0.1.2 · 公开仓库</p>
     <h1>不是没有门禁，是没有度量。</h1>
-    <p class="lede">界面纪律是有的：令牌换肤、禁止硬编色、蓝图 38 条断言、图表按身份增量。缺的是相对动效、省着花的依赖，以及一次评测能够重放、能够复原。刻度是证据分级，不是一次构建的跑分。</p>
+    <p class="lede">相对动效补上了按身份滑动的列表。依赖图还没拆开，但 sideEffects 有门禁守着，评测产物可以复原，公共符号有快照。刻度仍是证据分级，不是一次构建的跑分。</p>
 
     <div class="top">
       <div class="plate">
         <p class="kicker">六项等权</p>
-        <p class="num">38</p>
-        <p class="dim">流水线在场把它抬起来，接口和动效把它按下去。</p>
+        <p class="num">50</p>
+        <p class="dim">动效和接口抬了一截。安装图还是胖的。</p>
       </div>
       <div class="plate" style="padding:0">
         <ul class="axes" id="axes"></ul>
@@ -108,7 +108,7 @@
 
     <div class="claims">
       <article class="card"><h2>说重了</h2><p>「没有 CI」不成立。quality.yml 在 pull request 上跑全部门禁，另有测试、文档、发布和 Pages。</p></article>
-      <article class="card"><h2>说对了</h2><p>动效语言是四组关键帧加图表增量。性能没有预算。主质量流跑完不留产物，Pages 上原先只有组件目录。</p></article>
+      <article class="card"><h2>说对了</h2><p>列表可以按身份滑。monaco 仍在 dependencies。像素基线还没有。星号桶还在，只是现在会进快照。</p></article>
       <article class="card"><h2>差在哪</h2><p>相对 Motion、图标库、xyflow、assistant-ui，HX 多半是组合层。自己的专项是蓝图求值和文档门禁，还没收成稳定接口。</p></article>
     </div>
 
@@ -145,8 +145,10 @@
         <tbody>
           <tr><td>类型 / 设计规约 / 蓝图断言</td><td><span class="tag pass">在场</span></td><td class="dim">gates 分组 lib。README 写明蓝图 38 条断言。</td></tr>
           <tr><td>文档注册表 / 冒烟 / 外壳 / 探针</td><td><span class="tag pass">在场</span></td><td class="dim">registry.mjs 的 docs、browser、probe、guard。</td></tr>
-          <tr><td>包体预算 / 性能回放 / API 快照</td><td><span class="tag absent">缺席</span></td><td class="dim">注册表没有这三组。release.yml 只核对标签并 npm pack。</td></tr>
-          <tr><td>像素基线 / 产物复原</td><td><span class="tag gap">缺口</span></td><td class="dim">visual.mjs 断言计算色，不存图。quality.yml 不上传产物。</td></tr>
+          <tr><td>包体字段</td><td><span class="tag pass">在场</span></td><td class="dim">sideEffects 只允许 CSS，economy 门禁守着。monaco 仍在 dependencies。</td></tr>
+          <tr><td>API 快照</td><td><span class="tag pass">在场</span></td><td class="dim">api-snapshot 比对展开后的公共符号。星号桶还在，变了必须改快照。</td></tr>
+          <tr><td>像素基线</td><td><span class="tag gap">缺口</span></td><td class="dim">visual.mjs 仍只断言计算色，不存图。</td></tr>
+          <tr><td>产物复原</td><td><span class="tag pass">在场</span></td><td class="dim">economy 写出 characterization.json，工作流上传，restore 脚本核对摘要。</td></tr>
         </tbody>
       </table>
       <p class="note">quality.yml 还会稀疏克隆 HX-Blueprint-Demo，缺失只告警。环境不固定，同一次命令不能当成同一次评测。</p>
@@ -161,7 +163,7 @@
           <tr><td>monaco-editor / shiki</td><td class="dim">编辑器和高亮进了库依赖，不是文档站私有。</td></tr>
           <tr><td>@xyflow/react</td><td class="dim">蓝图的运行时。HX 是皮和求值，不是图编辑器本体。</td></tr>
           <tr><td>radix-ui / recharts / ldrs</td><td class="dim">整包原语、图表、41 种 Spin。没有按入口拆预算。</td></tr>
-          <tr><td>motion</td><td class="dim">声明了依赖。primitives/motion.ts 只导出 prefersReducedMotion。</td></tr>
+          <tr><td>motion</td><td class="dim">playLayout 与 MotionList 从入口导出。分段和步骤本来就用 layoutId。</td></tr>
           <tr><td>lucide-react 与 Iconify</td><td class="dim">两套图标。门禁在补「类名写错会静默留白」。</td></tr>
         </tbody>
       </table>
@@ -189,12 +191,12 @@
   </main>
   <script>
     const axes = [
-      ["动效", 36, "有折叠、波纹、闪烁、不定进度，以及图表按身份增量。没有布局相对运动。"],
-      ["性能节约", 34, "超过 800 点会停图表动画。根依赖和单一入口没有预算。"],
-      ["流水线在场", 58, "门禁、探针、指纹、冒烟、外壳都在。不能说没有 CI。"],
-      ["可复现可复原", 33, "主质量流不上传产物。视觉脚本不存像素基线。"],
-      ["接口稳定", 24, "0.1.2，星号再导出，源码子路径公开，发布不核对 API。"],
-      ["专项深度", 44, "四类目录都有。本体仍是上游，自己的契约没收住。"]
+      ["动效", 52, "列表按身份滑动。分段和步骤本来就会共享位移。还没有手势和滚动联动。"],
+      ["性能节约", 41, "sideEffects 只允许 CSS，并且有门禁。monaco、xyflow、shiki 仍在安装图里。"],
+      ["流水线在场", 63, "原有门禁都在，又加上节约字段和 API 快照。"],
+      ["可复现可复原", 51, "刻画 JSON 会上传，本地能按摘要复原。像素基线还没有。"],
+      ["接口稳定", 43, "公共符号有快照。星号桶和源码子路径还在。"],
+      ["专项深度", 48, "动效多了一块自己的列表原语。蓝图和图标仍是上游的。"]
     ];
     document.getElementById("axes").innerHTML = axes.map(([name, score, why]) =>
       `<li><header><span>${name}</span><span class="num" style="font-size:22px">${score}</span></header><div class="track"><div class="fill ${score >= 50 ? "high" : "low"}" style="width:${score}%"></div></div><p class="because">${why}</p></li>`
