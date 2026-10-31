@@ -5,7 +5,7 @@ import { BrandLogo } from "./BrandLogo";
 import { REPO_LABEL, REPO_URL, TEMPLATE_ENTRY } from "./site";
 
 /**
- * 文档站顶栏: 一条 36px 的细栏, 只放两件"站外"的事.
+ * 文档站顶栏: 一条 36px 的细栏, 放模板、刻画和源码.
  *
  * 为什么要有它: 侧栏里全是组件页, 而"源码在哪"和"整页模板在哪"不属于任何一组.
  * 塞进侧栏底部会被 96 个条目淹没, 塞进正文会被当成某一页的内容. 顶栏是唯一
@@ -50,6 +50,9 @@ export function TopBar({
         >
           <span aria-hidden className="icon-[solar--layers-minimalistic-linear] size-3.5 bg-current" />
           模板
+        </Button>
+        <Button asChild variant={VARIANT.ghost} size={VARIANT.sm}>
+          <a href="characterization/">刻画</a>
         </Button>
         <TooltipHint label={"源码仓库: " + REPO_LABEL} side={SIDE.bottom}>
           <Button asChild variant={TONE_VARIANT.outline} size={VARIANT.sm} className="gap-1.5">
