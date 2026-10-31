@@ -143,7 +143,7 @@ questionnaire ~ 问卷 ~ 多步问卷, 切题滑动
 const LAYOUT = `
 card ~ 卡片 ~ 内容容器
 code-block ~ 代码块 ~ 语法高亮与复制
-code-editor ~ 代码编辑器 ~ Monaco + One Dark Pro Darker, 本地 worker 无 CDN
+code-editor ~ 代码编辑器 ~ Monaco 单文件与 diff, One Dark Pro Darker, 本地 worker 无 CDN
 stat-card ~ 指标卡 ~ 指标卡与栅格, 数字等宽不抖
 data-table ~ 数据表 ~ 粘性表头, 空态, 加载态与行点击
 empty-state ~ 空态页 ~ 空, 错误与加载三态

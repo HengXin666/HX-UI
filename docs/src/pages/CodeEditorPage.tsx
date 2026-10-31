@@ -2,7 +2,7 @@ import { useState, type JSX } from "react";
 import EditorWorker from "monaco-editor/editor/editor.worker.js?worker";
 import TsWorker from "monaco-editor/language/typescript/ts.worker.js?worker";
 import JsonWorker from "monaco-editor/language/json/json.worker.js?worker";
-import { ALIGN, Button, CodeEditor, DOC, DOC_SAMPLE, VARIANT } from "@hx/ui";
+import { ALIGN, Button, CodeEditor, DiffEditor, DOC, DOC_SAMPLE, VARIANT } from "@hx/ui";
 import { H2, P, Preview } from "../components/DocKit";
 import { Props } from "../components/DocSpec";
 
@@ -32,6 +32,25 @@ export function useStep(initial = 0, step = 1) {
 }
 `;
 
+const DIFF_BEFORE = `export function price(qty: number) {
+  return qty * 10;
+}
+`;
+
+const DIFF_AFTER = `export function price(qty: number) {
+  if (qty < 0) {
+    throw new Error("qty");
+  }
+  return qty * 10;
+}
+`;
+
+const DIFF_NOTE_TEXT = "负数数量会把价格算成负的, 这里先拒绝.";
+
+function diffLineOf(source: string): number {
+  return source.split(DOC.newline).findIndex((line) => line.includes("throw")) + 1;
+}
+
 const JSON_SAMPLE = `{
   "name": "@hx/ui",
   "version": "0.1.2",
@@ -46,9 +65,11 @@ const JSON_SAMPLE = `{
  * 编辑器走 monaco (VS Code 内核), 主题是 One Dark Pro Darker, 颜色全部来自
  * tokens.css 的 --code-odp-* 令牌.
  * .agents/notes/implemented/feature/2026-10-22-code-editor-one-dark-pro-darker.md
+ * .agents/notes/implemented/feature/2026-10-31-monaco-diff-editor.md
  */
 export function CodeEditorPage(): JSX.Element {
   const [code, setCode] = useState(SAMPLE);
+  const diffLine = diffLineOf(DIFF_AFTER);
   return (
     <>
       <P>
@@ -90,6 +111,32 @@ const [code, setCode] = useState(SAMPLE);
         </div>
       </Preview>
 
+      <H2>对比</H2>
+      <P>
+        DiffEditor 是同一个 monaco 内核的对比视图: 左边原文, 右边修改后的文本, 默认只读.
+        说明挂在修改侧的那一行下面, 不另开一块让人自己去对.
+      </P>
+      <Preview
+        align={ALIGN.stretch}
+        code={`<DiffEditor
+  original={before}
+  modified={after}
+  revealLine={line}
+  notes={[{ id: "qty", line, text: "负数数量会把价格算成负的, 这里先拒绝." }]}
+/>`}
+      >
+        <div className="w-full min-w-0">
+          <DiffEditor
+            original={DIFF_BEFORE}
+            modified={DIFF_AFTER}
+            height={DOC_SAMPLE.editorHeight}
+            revealLine={diffLine}
+            notes={[{ id: "qty", line: diffLine, text: DIFF_NOTE_TEXT }]}
+            createWorker={createWorker}
+          />
+        </div>
+      </Preview>
+
       <H2>属性</H2>
       <Props
         spec={`
@@ -103,11 +150,23 @@ lineNumbers ~ boolean ~ true ~ 行号
 path ~ string ~ - ~ 模型文件名, 多个编辑器之间区分模型
 className ~ string ~ - ~ 外层类名`}
       />
+      <Props
+        spec={`
+original ~ string ~ - ~ 原文
+modified ~ string ~ - ~ 修改后的文本
+language ~ string ~ "typescript" ~ 两侧共用的 monaco 语言 id
+height ~ number | string ~ 320 ~ 编辑器高度
+readOnly ~ boolean ~ true ~ 只读, 审查场景不要改成可编辑
+renderSideBySide ~ boolean ~ true ~ false 时改成行内对比
+revealLine ~ number ~ - ~ 滚到修改侧的这一行, 从 1 开始
+notes ~ DiffLineNote[] ~ [] ~ 插在某一行下面的只读说明
+className ~ string ~ - ~ 外层类名`}
+      />
       <H2>与 Code Block 的分工</H2>
       <P>
-        CodeBlock 是只读展示, 用 shiki 做静态高亮, 适合文档里的代码片段; CodeEditor 是可编辑的,
-        用 monaco, 适合配置编辑, diff 审阅与 playground。两者共用同一套 One Dark Pro 配色,
-        但取色路径不同: 前者来自 shiki 主题, 后者来自 CSS 令牌。
+        CodeBlock 是只读展示, 用 shiki 做静态高亮, 适合文档里的代码片段. CodeEditor 是可编辑的单文件编辑器.
+        要看两段文本的差别用 DiffEditor, 它和 CodeEditor 共用 monaco 与同一套令牌色. agent 里的 DiffView
+        只渲染已经切好的增删行, 没有语法着色, 也不是这个内核.
       </P>
     </>
   );

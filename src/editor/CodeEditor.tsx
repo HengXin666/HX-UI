@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState, type JSX } from "react";
-import Editor, { loader } from "@monaco-editor/react";
+import type { JSX } from "react";
+import Editor from "@monaco-editor/react";
 import { cn } from "../primitives/utils";
+import { CODE_EDITOR_DEFAULTS, CODE_EDITOR_FILL } from "../constants/editor";
+import { sharedEditorOptions } from "./editor-options";
 import { CODE_THEME_ID, defineTheme, type Monaco } from "./monaco-theme";
-import { CODE_EDITOR_DEFAULTS, CODE_EDITOR_FILL, CODE_EDITOR_OPTIONS } from "../constants/editor";
+import { useMonacoReady } from "./use-monaco";
 
 /**
  * 代码编辑器  VS Code 的内核 (monaco) 加 One Dark Pro Darker 主题.
@@ -26,6 +28,7 @@ import { CODE_EDITOR_DEFAULTS, CODE_EDITOR_FILL, CODE_EDITOR_OPTIONS } from "../
  *
  * worker 由使用方的打包器提供: Vite 下用 new URL(...) 建立 editor.worker,
  * webpack 下用 worker-loader. 拿不到时 monaco 会退化成主线程计算, 编辑仍可用.
+ * 对比两段文本用同目录的 DiffEditor, 不要在这里塞 original/modified.
  */
 export interface CodeEditorProps {
   /** 受控值. 不给 onChange 时按只读展示. */
@@ -45,29 +48,6 @@ export interface CodeEditorProps {
   readonly className?: string;
 }
 
-interface MonacoEnvironmentShape {
-  getWorker?: (moduleId: string, label: string) => Worker;
-}
-
-/**
- * 装 monaco 的 worker 钩子 (只在还没有别人装过时装).
- *
- * worker 必须由使用方提供: 它依赖具体打包器的语法 (Vite 的 ?worker, webpack 的
- * worker-loader), 库自己 new URL 一个裸包名在构建期解析不了. 没有 worker 时 monaco
- * 退回主线程计算, 编辑与着色都正常, 只有大文件的语言服务慢一点.
- */
-function installEnvironment(readFactory: () => ((label: string) => Worker) | undefined): void {
-  if (!readFactory()) {
-    return;
-  }
-  const globalObject = self as unknown as { MonacoEnvironment?: MonacoEnvironmentShape };
-  if (globalObject.MonacoEnvironment?.getWorker) {
-    return;
-  }
-  /** 每次 getWorker 调用时才读工厂, 所以调用方后续新增或替换 createWorker 都能生效. */
-  globalObject.MonacoEnvironment = { getWorker: (_moduleId: string, label: string) => readFactory()!(label) };
-}
-
 /**
  * .agents/notes/implemented/feature/2026-10-22-code-editor-one-dark-pro-darker.md
  */
@@ -83,30 +63,7 @@ export function CodeEditor({
   createWorker,
   className,
 }: CodeEditorProps): JSX.Element {
-  const [ready, setReady] = useState(false);
-  const monacoRef = useRef<Monaco | null>(null);
-  /** 记住最后一次非空的 worker 工厂: getWorker 在调用时读它, 换工厂不需要重新装环境. */
-  const workerFactory = useRef(createWorker);
-  if (createWorker) {
-    workerFactory.current = createWorker;
-  }
-
-  useEffect(() => {
-    let alive = true;
-    void import("monaco-editor").then((monaco) => {
-      if (!alive) {
-        return;
-      }
-      monacoRef.current = monaco;
-      installEnvironment(() => workerFactory.current);
-      loader.config({ monaco });
-      setReady(true);
-    });
-    return () => {
-      alive = false;
-    };
-  }, []);
-
+  const ready = useMonacoReady(createWorker);
 
   return (
     <div
@@ -123,28 +80,11 @@ export function CodeEditor({
           theme={CODE_THEME_ID}
           beforeMount={(monaco) => defineTheme(monaco as Monaco)}
           onChange={(next) => onChange?.(next ?? "")}
-          options={{
+          options={sharedEditorOptions({
             readOnly: readOnly || !onChange,
-            readOnlyMessage: { value: "只读示例" },
-            minimap: { enabled: minimap },
-            lineNumbers: lineNumbers ? "on" : "off",
-            fontSize: 12.5,
-            fontFamily: "var(--font-mono, ui-monospace), SFMono-Regular, Menlo, monospace",
-            fontLigatures: true,
-            padding: { top: CODE_EDITOR_OPTIONS.padding, bottom: CODE_EDITOR_OPTIONS.padding },
-            scrollBeyondLastLine: false,
-            smoothScrolling: true,
-            renderLineHighlight: CODE_EDITOR_OPTIONS.renderLineHighlight,
-            automaticLayout: true,
-            tabSize: CODE_EDITOR_OPTIONS.tabSize,
-            wordWrap: "on",
-            guides: { indentation: true },
-            scrollbar: {
-              verticalScrollbarSize: CODE_EDITOR_OPTIONS.scrollbarSize,
-              horizontalScrollbarSize: CODE_EDITOR_OPTIONS.scrollbarSize,
-            },
-            overviewRulerLanes: 0,
-          }}
+            minimap,
+            lineNumbers,
+          })}
         />
       ) : (
         <div className="flex h-full items-center justify-center text-[12px] text-muted-foreground">

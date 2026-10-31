@@ -30,4 +30,4 @@ Decision-ID: code-editor-one-dark-pro-darker
 
 ## Consequences
 
-首屏不受影响 (动态加载), 但首次打开代码编辑器要下载 monaco 与 worker, 内网离线部署也不会再依赖 CDN。代价是多两个依赖, 且 monaco 的 token 规则只覆盖常见语法类别; 需要更细的着色时改 tokens.css 里的令牌或加 token 规则。
+首屏不受影响 (动态加载), 但首次打开代码编辑器要下载 monaco 与 worker, 内网离线部署也不会再依赖 CDN。代价是多两个依赖, 且 monaco 的 token 规则只覆盖常见语法类别; 需要更细的着色时改 tokens.css 里的令牌或加 token 规则。加载器与选项抽到同目录的 use-monaco.ts 和 editor-options.ts, 仍由 CodeEditor 引用本决策。左右对比是另一个组件, 见 2026-10-31-monaco-diff-editor。

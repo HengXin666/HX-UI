@@ -26,4 +26,4 @@ PROJECT-CONST-DUP 要求同一字面量在 src 与 docs/src 里出现三次以�
 
 ## Consequences
 
-字面量与判据只有一处来源, 库与文档站不会各写一份; 代价是多一层 `src/constants` 目录和一次 import, 且判据必须保持 type guard 形式 (写成普通常量会静默失去收窄)。
+字面量与判据只有一处来源, 库与文档站不会各写一份; 代价是多一层 `src/constants` 目录和一次 import, 且判据必须保持 type guard 形式 (写成普通常量会静默失去收窄)。代码编辑器的字号, 只读提示, diff 注释高度和左右侧名字放在 `src/constants/editor.ts`。
