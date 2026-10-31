@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>刻画台 · HX-UI 0.1.2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f3efe6;
+      --sheet: #faf8f3;
+      --paper-2: #e6dfd2;
+      --ink: #1b1916;
+      --muted: #6f675c;
+      --rule: #d5ccbe;
+      --seal: #c2412d;
+      --seal-soft: #f6e4de;
+      --moss: #2f6a56;
+      --moss-soft: #d9ebe3;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--paper); color: var(--ink); }
+    body {
+      font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+      line-height: 1.55;
+    }
+    a { color: inherit; }
+    button { font: inherit; cursor: pointer; }
+    button:focus-visible, a:focus-visible { outline: 2px solid var(--seal); outline-offset: 2px; }
+    .wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 72px; }
+    .kicker { color: var(--seal); font-size: 14px; margin: 0; }
+    h1, h2, .num { font-family: "Noto Serif SC", "Songti SC", serif; font-weight: 600; }
+    h1 { font-size: clamp(36px, 5vw, 52px); line-height: 1.15; margin: 10px 0 0; letter-spacing: -0.02em; }
+    h2 { font-size: 28px; margin: 0; }
+    .lede { max-width: 42rem; color: var(--muted); font-size: 16px; }
+    .top { display: grid; grid-template-columns: 220px 1fr; gap: 16px; margin-top: 28px; }
+    .plate, .card, .row, .bench { background: var(--sheet); border: 1px solid var(--rule); }
+    .plate { padding: 20px; }
+    .num { font-size: 76px; line-height: 0.9; margin: 8px 0 0; }
+    .axes { list-style: none; margin: 0; padding: 0; }
+    .axes li { padding: 12px 16px; border-bottom: 1px solid var(--rule); }
+    .axes li:last-child { border-bottom: 0; }
+    .axes header { display: flex; justify-content: space-between; align-items: baseline; }
+    .track { height: 6px; background: var(--paper-2); margin-top: 8px; }
+    .fill { height: 100%; }
+    .fill.low { background: var(--seal); }
+    .fill.high { background: var(--moss); }
+    .because { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+    .claims { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+    .card { padding: 16px; }
+    .card p, .note { color: var(--muted); font-size: 14px; }
+    .bench { margin-top: 28px; }
+    .bench head, .bench-h { display: flex; justify-content: space-between; gap: 12px; align-items: center; padding: 16px; border-bottom: 1px solid var(--rule); flex-wrap: wrap; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .actions button, .linkish {
+      border: 1px solid var(--rule); background: var(--paper); color: var(--ink); padding: 8px 12px; text-decoration: none;
+    }
+    .inkbtn { background: var(--ink); color: var(--sheet); border: 0; padding: 8px 14px; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; }
+    .col { padding: 16px; }
+    .col + .col { border-left: 1px solid var(--rule); }
+    ul.items { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    ul.items li {
+      display: flex; gap: 10px; align-items: center; border: 1px solid var(--rule); background: var(--paper); padding: 8px 10px;
+    }
+    .nm { width: 52px; font-size: 14px; }
+    .bar { flex: 1; height: 8px; background: var(--paper-2); }
+    .bar i { display: block; height: 100%; background: var(--ink); transform-origin: left center; }
+    .val { width: 28px; text-align: right; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+    table { width: 100%; border-collapse: collapse; background: var(--sheet); border: 1px solid var(--rule); margin-top: 12px; }
+    th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; font-size: 14px; }
+    th { font-weight: 500; }
+    td.dim, .dim { color: var(--muted); }
+    .tag { display: inline-block; padding: 1px 6px; font-size: 12px; }
+    .tag.pass { background: var(--moss-soft); color: var(--moss); }
+    .tag.gap, .tag.absent { background: var(--seal-soft); color: var(--seal); }
+    .banner { margin-top: 28px; background: var(--ink); color: var(--sheet); padding: 22px; }
+    .banner p { color: #e6dfd2; }
+    .banner a { color: var(--sheet); }
+    section { margin-top: 36px; }
+    @media (max-width: 800px) {
+      .top, .claims, .cols { grid-template-columns: 1fr; }
+      .col + .col { border-left: 0; border-top: 1px solid var(--rule); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <p class="kicker">专项刻画 · @hx/ui 0.1.2 · 公开仓库</p>
+    <h1>不是没有门禁，是没有度量。</h1>
+    <p class="lede">界面纪律是有的：令牌换肤、禁止硬编色、蓝图 38 条断言、图表按身份增量。缺的是相对动效、省着花的依赖，以及一次评测能够重放、能够复原。刻度是证据分级，不是一次构建的跑分。</p>
+
+    <div class="top">
+      <div class="plate">
+        <p class="kicker">六项等权</p>
+        <p class="num">38</p>
+        <p class="dim">流水线在场把它抬起来，接口和动效把它按下去。</p>
+      </div>
+      <div class="plate" style="padding:0">
+        <ul class="axes" id="axes"></ul>
+      </div>
+    </div>
+
+    <div class="claims">
+      <article class="card"><h2>说重了</h2><p>「没有 CI」不成立。quality.yml 在 pull request 上跑全部门禁，另有测试、文档、发布和 Pages。</p></article>
+      <article class="card"><h2>说对了</h2><p>动效语言是四组关键帧加图表增量。性能没有预算。主质量流跑完不留产物，Pages 上原先只有组件目录。</p></article>
+      <article class="card"><h2>差在哪</h2><p>相对 Motion、图标库、xyflow、assistant-ui，HX 多半是组合层。自己的专项是蓝图求值和文档门禁，还没收成稳定接口。</p></article>
+    </div>
+
+    <section class="bench">
+      <div class="bench-h">
+        <div>
+          <h2>相对动效</h2>
+          <p class="dim" style="margin:6px 0 0">同一份数据。左边按索引闪一下，右边按身份滑过去。</p>
+        </div>
+        <div class="actions">
+          <button type="button" id="ins">头部插入</button>
+          <button type="button" id="swap">对调两端</button>
+          <button type="button" id="bump">改第一项</button>
+        </div>
+      </div>
+      <div class="cols">
+        <div class="col">
+          <strong>索引重排</strong>
+          <p class="dim">位置还在，内容被换掉。</p>
+          <ul class="items" id="index"></ul>
+        </div>
+        <div class="col">
+          <strong>身份保持</strong>
+          <p class="dim">同一 id 从旧位置滑到新位置。</p>
+          <ul class="items" id="flip"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>门禁里有什么，没有什么</h2>
+      <table>
+        <thead><tr><th>项</th><th>状态</th><th>依据</th></tr></thead>
+        <tbody>
+          <tr><td>类型 / 设计规约 / 蓝图断言</td><td><span class="tag pass">在场</span></td><td class="dim">gates 分组 lib。README 写明蓝图 38 条断言。</td></tr>
+          <tr><td>文档注册表 / 冒烟 / 外壳 / 探针</td><td><span class="tag pass">在场</span></td><td class="dim">registry.mjs 的 docs、browser、probe、guard。</td></tr>
+          <tr><td>包体预算 / 性能回放 / API 快照</td><td><span class="tag absent">缺席</span></td><td class="dim">注册表没有这三组。release.yml 只核对标签并 npm pack。</td></tr>
+          <tr><td>像素基线 / 产物复原</td><td><span class="tag gap">缺口</span></td><td class="dim">visual.mjs 断言计算色，不存图。quality.yml 不上传产物。</td></tr>
+        </tbody>
+      </table>
+      <p class="note">quality.yml 还会稀疏克隆 HX-Blueprint-Demo，缺失只告警。环境不固定，同一次命令不能当成同一次评测。</p>
+    </section>
+
+    <section>
+      <h2>安装图</h2>
+      <p class="dim">不报没测过的千字节。能确定的是这些包在 dependencies 里，而 package.json 没有 sideEffects，主入口是再导出桶。</p>
+      <table>
+        <thead><tr><th>包</th><th>代价</th></tr></thead>
+        <tbody>
+          <tr><td>monaco-editor / shiki</td><td class="dim">编辑器和高亮进了库依赖，不是文档站私有。</td></tr>
+          <tr><td>@xyflow/react</td><td class="dim">蓝图的运行时。HX 是皮和求值，不是图编辑器本体。</td></tr>
+          <tr><td>radix-ui / recharts / ldrs</td><td class="dim">整包原语、图表、41 种 Spin。没有按入口拆预算。</td></tr>
+          <tr><td>motion</td><td class="dim">声明了依赖。primitives/motion.ts 只导出 prefersReducedMotion。</td></tr>
+          <tr><td>lucide-react 与 Iconify</td><td class="dim">两套图标。门禁在补「类名写错会静默留白」。</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>和四类上游比</h2>
+      <table>
+        <thead><tr><th>上游</th><th>HX 有的</th><th>还不是本体的地方</th></tr></thead>
+        <tbody>
+          <tr><td>Motion</td><td class="dim">折叠关键帧、波纹、图表增量</td><td class="dim">没有布局相对运动、共享起点、手势</td></tr>
+          <tr><td>Lucide / Iconify</td><td class="dim">两套图标，外加静默失败门禁</td><td class="dim">没有单一图标契约</td></tr>
+          <tr><td>xyflow</td><td class="dim">连接判定、执行流、序列化、38 条断言</td><td class="dim">画布性能与稳定门面仍是上游的</td></tr>
+          <tr><td>assistant-ui</td><td class="dim">流式文本、工具卡片、用量</td><td class="dim">有卡片，没有对话运行时协议</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="banner">
+      <h2>要留在 Pages 上的，是产物，不是再跑一遍。</h2>
+      <p>建议 gates 结束时写出同一份 characterization.json：门禁、体积、API 摘要、环境指纹。Actions 留作 artifact，Pages 只展示这份文件。回放不重新开浏览器，复原只读这份 JSON。</p>
+      <p><a href="../">返回组件文档</a></p>
+    </div>
+    <p class="note">证据文件：package.json、src/primitives/motion.ts、src/motion.css、src/charts/animation.ts、scripts/gates/registry.mjs、scripts/e2e/visual.mjs、.github/workflows 下的 quality.yml、pages.yml、quality-tests.yml、release.yml。本页不替代那些检查。</p>
+  </main>
+  <script>
+    const axes = [
+      ["动效", 36, "有折叠、波纹、闪烁、不定进度，以及图表按身份增量。没有布局相对运动。"],
+      ["性能节约", 34, "超过 800 点会停图表动画。根依赖和单一入口没有预算。"],
+      ["流水线在场", 58, "门禁、探针、指纹、冒烟、外壳都在。不能说没有 CI。"],
+      ["可复现可复原", 33, "主质量流不上传产物。视觉脚本不存像素基线。"],
+      ["接口稳定", 24, "0.1.2，星号再导出，源码子路径公开，发布不核对 API。"],
+      ["专项深度", 44, "四类目录都有。本体仍是上游，自己的契约没收住。"]
+    ];
+    document.getElementById("axes").innerHTML = axes.map(([name, score, why]) =>
+      `<li><header><span>${name}</span><span class="num" style="font-size:22px">${score}</span></header><div class="track"><div class="fill ${score >= 50 ? "high" : "low"}" style="width:${score}%"></div></div><p class="because">${why}</p></li>`
+    ).join("");
+
+    let items = [
+      { id: "token", name: "令牌", value: 70 },
+      { id: "graph", name: "蓝图", value: 48 },
+      { id: "chart", name: "图表", value: 62 },
+      { id: "smoke", name: "冒烟", value: 36 }
+    ];
+    let serial = 0;
+    const names = ["门禁", "波纹", "折叠", "编辑器", "流式", "图标"];
+    const positions = new Map();
+    const indexList = document.getElementById("index");
+    const flipList = document.getElementById("flip");
+    const quiet = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function row(item) {
+      const li = document.createElement("li");
+      li.dataset.id = item.id;
+      li.innerHTML = `<span class="nm"></span><span class="bar"><i></i></span><span class="val"></span>`;
+      li.querySelector(".nm").textContent = item.name;
+      li.querySelector("i").style.width = item.value + "%";
+      li.querySelector(".val").textContent = String(item.value);
+      return li;
+    }
+
+    function paint() {
+      const prev = new Map(positions);
+      indexList.replaceChildren(...items.map(row));
+      if (!quiet && indexList.dataset.ready) {
+        indexList.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 220 });
+      }
+      flipList.replaceChildren(...items.map(row));
+      flipList.querySelectorAll("li").forEach((node) => {
+        const id = node.dataset.id;
+        const rect = node.getBoundingClientRect();
+        const before = prev.get(id);
+        if (!quiet && flipList.dataset.ready) {
+          if (!before) {
+            node.animate([{ opacity: 0, transform: "translateY(10px)" }, { opacity: 1, transform: "none" }], { duration: 280, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+          } else {
+            const dx = before.left - rect.left;
+            const dy = before.top - rect.top;
+            if (dx || dy) node.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: 460, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+          }
+        }
+        positions.set(id, rect);
+      });
+      indexList.dataset.ready = "1";
+      flipList.dataset.ready = "1";
+    }
+
+    document.getElementById("ins").onclick = () => {
+      serial += 1;
+      items = [{ id: "n" + serial, name: names[(serial - 1) % names.length], value: 28 + ((serial * 17) % 58) }, ...items].slice(0, 6);
+      paint();
+    };
+    document.getElementById("swap").onclick = () => {
+      if (items.length < 2) return;
+      items = [items[items.length - 1], ...items.slice(1, -1), items[0]];
+      paint();
+    };
+    document.getElementById("bump").onclick = () => {
+      items = items.map((item, i) => i ? item : { ...item, value: item.value > 78 ? 32 : item.value + 16 });
+      paint();
+    };
+    paint();
+  </script>
+</body>
+</html>
