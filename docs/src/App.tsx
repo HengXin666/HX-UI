@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
-import { AppFrame, Badge, BUTTON_TYPE, ConfirmDialogHost, SidebarNavIcon, Toaster } from "@hx/ui";
+import { AppFrame, Badge, BUTTON_TYPE, ConfirmDialogHost, DOC_EVENT, DOC_PAGE_ID, DOC_SHELL_CLS, SidebarNavIcon, Toaster } from "@hx/ui";
 import { SearchDialog, useSearchHotkey } from "./components/SearchDialog";
 import { PageNav } from "./components/PageNav";
 import { TableOfContents } from "./components/TableOfContents";
@@ -77,9 +77,9 @@ function renderPage(entry: DocEntry): JSX.Element {
   switch (entry.id) {
     case "install": return <InstallPage />;
     case "tokens": return <TokensPage />;
-    case "button": return <ButtonPage />;
-    case "input": return <InputPage />;
-    case "switch": return <SwitchPage />;
+    case DOC_PAGE_ID.button: return <ButtonPage />;
+    case DOC_PAGE_ID.input: return <InputPage />;
+    case DOC_PAGE_ID.switch: return <SwitchPage />;
     case "card": return <CardPage />;
     case "code-block": return <CodeBlockPage />;
     case "code-editor": return <CodeEditorPage />;
@@ -87,8 +87,8 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "setting-chrome": return <SettingChromePage />;
     case "app-frame": return <AppFramePage />;
     case "sidebar-nav": return <SidebarNavPage />;
-    case "select": return <SelectPage />;
-    case "dialog": return <DialogPage />;
+    case DOC_PAGE_ID.select: return <SelectPage />;
+    case DOC_PAGE_ID.dialog: return <DialogPage />;
     case "drawer": return <DrawerPage />;
     case "dropdown-menu": return <DropdownMenuPage />;
     case "popover": return <PopoverPage />;
@@ -151,10 +151,10 @@ export function App(): JSX.Element {
   useEffect(() => {
     if (!mobileNavOpen) return;
     const onEscape = (event: KeyboardEvent): void => {
-      if (event.key === "Escape") setMobileNavOpen(false);
+      if (event.key === DOC_EVENT.escape) setMobileNavOpen(false);
     };
-    window.addEventListener("keydown", onEscape);
-    return () => window.removeEventListener("keydown", onEscape);
+    window.addEventListener(DOC_EVENT.keydown, onEscape);
+    return () => window.removeEventListener(DOC_EVENT.keydown, onEscape);
   }, [mobileNavOpen]);
 
   // 窄屏 (>1280px 才显示右栏) 时给内容多留一点宽度
@@ -162,8 +162,8 @@ export function App(): JSX.Element {
     const mq = window.matchMedia("(min-width: 1280px)");
     const sync = (): void => setWide(mq.matches);
     sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
+    mq.addEventListener(DOC_EVENT.change, sync);
+    return () => mq.removeEventListener(DOC_EVENT.change, sync);
   }, []);
 
   // 切页后回到顶部,不做这件事时, 从长页面跳到短页面会停在半空的滚动位置,
@@ -180,15 +180,15 @@ export function App(): JSX.Element {
     <AppFrame>
       <div className="relative z-10 flex min-h-0 min-w-0 w-full flex-1 gap-2 p-2">
         {mobileNavOpen && (
-          <button type="button" aria-label="关闭导航" className="fixed inset-0 z-20 bg-black/40 md:hidden" onClick={() => setMobileNavOpen(false)} />
+          <button type={BUTTON_TYPE} aria-label="关闭导航" className="fixed inset-0 z-20 bg-black/40 md:hidden" onClick={() => setMobileNavOpen(false)} />
         )}
         {/* 侧栏: 链接保留原生新标签与复制地址行为 */}
-        <aside id="docs-navigation" className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-2 left-2 z-30 w-60 flex-col overflow-hidden rounded-xl border border-border/40 bg-card shadow-lg md:static md:flex md:bg-card/25 md:shadow-none`}>
+        <aside id="docs-navigation" className={`${mobileNavOpen ? DOC_SHELL_CLS.show : DOC_SHELL_CLS.hide} fixed inset-y-2 left-2 z-30 w-60 flex-col overflow-hidden rounded-xl border border-border/40 bg-card shadow-lg md:static md:flex md:bg-card/25 md:shadow-none`}>
           <div className="flex h-11 shrink-0 items-center gap-2 px-3">
             <BrandLogo size={BRAND_LOGO_SIZE.sidebar} />
             <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">HX UI</span>
             <ThemeToggle />
-            <button type="button" aria-label="关闭导航" className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-accent md:hidden" onClick={() => setMobileNavOpen(false)}>
+            <button type={BUTTON_TYPE} aria-label="关闭导航" className="grid size-7 place-items-center rounded-md text-muted-foreground hover:bg-accent md:hidden" onClick={() => setMobileNavOpen(false)}>
               <span aria-hidden className="icon-[solar--close-circle-linear] size-4 bg-current" />
             </button>
           </div>
@@ -196,12 +196,12 @@ export function App(): JSX.Element {
           {/* 搜索入口: 点击或 ⌘K 都能唤起 */}
           <div className="px-2.5 pb-1">
             <button
-              type="button"
+              type={BUTTON_TYPE}
               onClick={() => search.setOpen(true)}
               className="flex h-8 w-full items-center gap-2 rounded-lg border border-border/60 bg-background/40 px-2.5 text-left text-[12px] text-muted-foreground transition-colors hover:border-border hover:bg-accent/40"
             >
               <span aria-hidden className="icon-[solar--magnifier-linear] size-3.5 shrink-0 bg-current" />
-              <span className="min-w-0 flex-1 truncate">搜索组件…</span>
+              <span className={DOC_SHELL_CLS.fill}>搜索组件…</span>
               <kbd className="shrink-0 rounded border border-border/60 px-1 py-px font-mono text-[10px]">⌘K</kbd>
             </button>
           </div>
@@ -219,11 +219,11 @@ export function App(): JSX.Element {
         {/* 主区: 面板容器手写 (不加 bg-card, 它该是页面底色) */}
         <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border/40">
           <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border/40 px-3 md:hidden">
-            <button type="button" aria-label="打开导航" aria-controls="docs-navigation" aria-expanded={mobileNavOpen} className="grid size-8 place-items-center rounded-md hover:bg-accent" onClick={() => setMobileNavOpen(true)}>
+            <button type={BUTTON_TYPE} aria-label="打开导航" aria-controls="docs-navigation" aria-expanded={mobileNavOpen} className="grid size-8 place-items-center rounded-md hover:bg-accent" onClick={() => setMobileNavOpen(true)}>
               <span aria-hidden className="icon-[solar--hamburger-menu-linear] size-4 bg-current" />
             </button>
             <span className="truncate text-[13px] font-semibold">HX UI / {entry.label}</span>
-            <div className="ml-auto"><ThemeToggle /></div>
+            <div className={DOC_SHELL_CLS.pushRight}><ThemeToggle /></div>
           </div>
           <TopBar onGo={go} />
           <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">

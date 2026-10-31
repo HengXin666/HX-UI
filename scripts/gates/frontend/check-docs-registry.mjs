@@ -92,8 +92,13 @@ const navIds = [
   ...navSrc.matchAll(/\{\s*id:\s*"([a-z0-9-]+)"/g),
   ...navSrc.matchAll(/^([a-z0-9-]+) ~ /gm),
 ].map((m) => m[1]);
-/** App.tsx: case "x": (允许 fallthrough, 所以顺序收集) */
-const switchIds = [...appSrc.matchAll(/case\s+"([a-z0-9-]+)":/g)].map((m) => m[1]);
+/**
+ * App.tsx: case "x": 或 case DOC_PAGE_ID.x: (允许 fallthrough, 所以顺序收集)。
+ * 两种写法都要认: 路由 id 收进 DOC_PAGE_ID 常量后, 只匹配字面量会把整个 switch
+ * 读成空, 于是每个页面都报 nav-without-case —— 那是检查器的盲区, 不是真的缺分支。
+ */
+const switchCases = [...appSrc.matchAll(/case\s+(?:"([a-z0-9-]+)"|DOC_PAGE_ID\.([a-z0-9-]+))\s*:/g)];
+const switchIds = switchCases.map((m) => m[1] ?? m[2]);
 /**
  * 查表 (PARITY_PAGES / TEMPLATE_PAGES) 的键: `"x": XPage` 或 `x: XPage`。只取 `表名 ... = {` 到第一个 `};` 之间,
  * 免得把文件里别的对象字面量当成路由。App.tsx 没引用该表时这张表视为空。

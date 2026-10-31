@@ -187,3 +187,34 @@ export const OVERVIEW_VIEW = {
 	alignStart: "start",
 	alignEnd: "end",
 } as const;
+
+/** Page ids matched by the docs router switch. */
+export const DOC_PAGE_ID = {
+  button: "button",
+  input: "input",
+  switch: "switch",
+  select: "select",
+  dialog: "dialog",
+} as const;
+
+/** DOM event names and keys the docs shell listens for. */
+export const DOC_EVENT = {
+  escape: "Escape",
+  keydown: "keydown",
+  change: "change",
+} as const;
+
+/** Docs shell class names shared by the sidebar and the mobile top bar. */
+export const DOC_SHELL_CLS = {
+  show: "flex",
+  hide: "hidden",
+  fill: "min-w-0 flex-1 truncate",
+  pushRight: "ml-auto",
+} as const;
+
+/** Nav icons reused by several docs entries. */
+export const NAV_ICON = {
+  chevronDown: "icon-[solar--alt-arrow-down-linear]",
+  widget: "icon-[solar--widget-2-linear]",
+  clock: "icon-[solar--clock-circle-linear]",
+} as const;

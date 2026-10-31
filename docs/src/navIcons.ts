@@ -1,4 +1,5 @@
 /** 设置类页面 (示例与模板) 共用的导航图标. */
+import { NAV_ICON } from "@hx/ui";
 const SETTINGS_ICON = "icon-[solar--settings-linear]";
 
 /**
@@ -16,7 +17,7 @@ export const NAV_ICONS: Record<string, string> = {
   button: "icon-[solar--cursor-square-linear]",
   input: "icon-[solar--text-field-linear]",
   switch: "icon-[solar--tuning-linear]",
-  select: "icon-[solar--alt-arrow-down-linear]",
+  select: NAV_ICON.chevronDown,
   dialog: "icon-[solar--window-frame-linear]",
   drawer: "icon-[solar--sidebar-code-linear]",
   "dropdown-menu": "icon-[solar--hamburger-menu-linear]",
@@ -31,7 +32,7 @@ export const NAV_ICONS: Record<string, string> = {
   "code-block": "icon-[solar--code-square-linear]",
   card: "icon-[solar--card-linear]",
   badge: "icon-[solar--tag-linear]",
-  "sidebar-nav": "icon-[solar--widget-2-linear]",
+  "sidebar-nav": NAV_ICON.widget,
   "segmented-control": "icon-[solar--widget-add-linear]",
   "collapse-panel": "icon-[solar--archive-minimalistic-outline]",
   "setting-chrome": "icon-[solar--list-check-linear]",
@@ -39,10 +40,10 @@ export const NAV_ICONS: Record<string, string> = {
   // 基础件 (2026-09-29 补)
   tooltip: "icon-[solar--chat-round-dots-linear]",
   textarea: "icon-[solar--document-add-linear]",
-  "time-picker": "icon-[solar--clock-circle-linear]",
+  "time-picker": NAV_ICON.clock,
   "confirm-dialog": "icon-[solar--shield-warning-linear]",
   tabs: "icon-[solar--widget-4-linear]",
-  accordion: "icon-[solar--alt-arrow-down-linear]",
+  accordion: NAV_ICON.chevronDown,
   "scroll-area": "icon-[solar--box-minimalistic-linear]",
   progress: "icon-[solar--refresh-circle-linear]",
   // 版式件 (2026-09-29 补)
@@ -103,4 +104,4 @@ export const NAV_ICONS: Record<string, string> = {
   "templates-console": "icon-[solar--server-square-linear]",
 };
 
-export const DEFAULT_NAV_ICON = "icon-[solar--widget-2-linear]";
+export const DEFAULT_NAV_ICON = NAV_ICON.widget;
