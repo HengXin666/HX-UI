@@ -216,8 +216,12 @@ DialogOverlay
 DialogPortal
 DialogTitle
 DialogTrigger
+DiffEditor
+DiffEditorProps
 DiffLine
+DiffLineNote
 DiffLineType
+DiffSide
 DiffView
 DiffViewProps
 DirectionProvider

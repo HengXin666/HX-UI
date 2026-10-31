@@ -19,6 +19,19 @@ export const CODE_EDITOR_OPTIONS = {
   tabSize: 2,
   /** 横纵滚动条宽度 (px). */
   scrollbarSize: 8,
+  /** 编辑器字号 (px). */
+  fontSize: 12.5,
+  /** diff 行下注释区高度 (px). */
+  noteZonePx: 28,
+} as const;
+
+/** 只读时 monaco 状态栏上的说明. */
+export const CODE_EDITOR_READONLY_MESSAGE = "只读示例";
+
+/** diff 的两侧. 行号与注释都要指明落在哪一边. */
+export const DIFF_SIDE = {
+  original: "original",
+  modified: "modified",
 } as const;
 
 /** monaco 主题规则的 token 名. */
