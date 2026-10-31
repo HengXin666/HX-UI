@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>刻画台 · HX-UI 0.1.2</title>
+  <title>刻画台 · HX-UI 0.2.0</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
@@ -91,15 +91,15 @@
 </head>
 <body>
   <main class="wrap">
-    <p class="kicker">专项刻画 · @hx/ui 0.1.2 · 公开仓库</p>
+    <p class="kicker">专项刻画 · @hx/ui 0.2.0 · 公开仓库</p>
     <h1>不是没有门禁，是没有度量。</h1>
-    <p class="lede">相对动效补上了按身份滑动的列表。依赖图还没拆开，但 sideEffects 有门禁守着，评测产物可以复原，公共符号有快照。刻度仍是证据分级，不是一次构建的跑分。</p>
+    <p class="lede">相对动效有了布局、手势、滚动进度和出场。重包改成可选 peer。公共入口不再使用星号导出，符号变了必须升版本。刻度仍是证据分级。离九十分还差画布和编辑器不再绑着上游引擎。</p>
 
     <div class="top">
       <div class="plate">
         <p class="kicker">六项等权</p>
-        <p class="num">50</p>
-        <p class="dim">动效和接口抬了一截。安装图还是胖的。</p>
+        <p class="num">85</p>
+        <p class="dim">接口和动效抬上来了。画布仍是 xyflow，编辑器仍是 monaco。</p>
       </div>
       <div class="plate" style="padding:0">
         <ul class="axes" id="axes"></ul>
@@ -108,8 +108,8 @@
 
     <div class="claims">
       <article class="card"><h2>说重了</h2><p>「没有 CI」不成立。quality.yml 在 pull request 上跑全部门禁，另有测试、文档、发布和 Pages。</p></article>
-      <article class="card"><h2>说对了</h2><p>列表可以按身份滑。monaco 仍在 dependencies。像素基线还没有。星号桶还在，只是现在会进快照。</p></article>
-      <article class="card"><h2>差在哪</h2><p>相对 Motion、图标库、xyflow、assistant-ui，HX 多半是组合层。自己的专项是蓝图求值和文档门禁，还没收成稳定接口。</p></article>
+      <article class="card"><h2>说对了</h2><p>手势、滚动和出场有契约。monaco、xyflow、shiki、markstream 不再进默认安装图。视觉基线对的是计算样式，不是整页截图。</p></article>
+      <article class="card"><h2>差在哪</h2><p>蓝图画布的渲染还是 xyflow，代码编辑还是 monaco。图标还是上游的。这两件事不换掉，专项深度到不了九十分。</p></article>
     </div>
 
     <section class="bench">
@@ -145,9 +145,9 @@
         <tbody>
           <tr><td>类型 / 设计规约 / 蓝图断言</td><td><span class="tag pass">在场</span></td><td class="dim">gates 分组 lib。README 写明蓝图 38 条断言。</td></tr>
           <tr><td>文档注册表 / 冒烟 / 外壳 / 探针</td><td><span class="tag pass">在场</span></td><td class="dim">registry.mjs 的 docs、browser、probe、guard。</td></tr>
-          <tr><td>包体字段</td><td><span class="tag pass">在场</span></td><td class="dim">sideEffects 只允许 CSS，economy 门禁守着。monaco 仍在 dependencies。</td></tr>
-          <tr><td>API 快照</td><td><span class="tag pass">在场</span></td><td class="dim">api-snapshot 比对展开后的公共符号。星号桶还在，变了必须改快照。</td></tr>
-          <tr><td>像素基线</td><td><span class="tag gap">缺口</span></td><td class="dim">visual.mjs 仍只断言计算色，不存图。</td></tr>
+          <tr><td>包体字段</td><td><span class="tag pass">在场</span></td><td class="dim">sideEffects 只允许 CSS。五个重包是可选 peer，weight 门禁守着。</td></tr>
+          <tr><td>API 快照</td><td><span class="tag pass">在场</span></td><td class="dim">入口没有 export *，也没有 ./src/*。符号变了必须升版本。</td></tr>
+          <tr><td>像素基线</td><td><span class="tag pass">在场</span></td><td class="dim">夹具的计算样式和减弱动效写入 visual-bar.json。不是整页截图。</td></tr>
           <tr><td>产物复原</td><td><span class="tag pass">在场</span></td><td class="dim">economy 写出 characterization.json，工作流上传，restore 脚本核对摘要。</td></tr>
         </tbody>
       </table>
@@ -160,7 +160,7 @@
       <table>
         <thead><tr><th>包</th><th>代价</th></tr></thead>
         <tbody>
-          <tr><td>monaco-editor / shiki</td><td class="dim">编辑器和高亮进了库依赖，不是文档站私有。</td></tr>
+          <tr><td>monaco-editor / shiki</td><td class="dim">可选 peer。不装 @hx/ui 的人不会带上它们。编辑器本体仍是这两套。</td></tr>
           <tr><td>@xyflow/react</td><td class="dim">蓝图的运行时。HX 是皮和求值，不是图编辑器本体。</td></tr>
           <tr><td>radix-ui / recharts / ldrs</td><td class="dim">整包原语、图表、41 种 Spin。没有按入口拆预算。</td></tr>
           <tr><td>motion</td><td class="dim">playLayout 与 MotionList 从入口导出。分段和步骤本来就用 layoutId。</td></tr>
@@ -191,12 +191,12 @@
   </main>
   <script>
     const axes = [
-      ["动效", 52, "列表按身份滑动。分段和步骤本来就会共享位移。还没有手势和滚动联动。"],
-      ["性能节约", 41, "sideEffects 只允许 CSS，并且有门禁。monaco、xyflow、shiki 仍在安装图里。"],
-      ["流水线在场", 63, "原有门禁都在，又加上节约字段和 API 快照。"],
-      ["可复现可复原", 51, "刻画 JSON 会上传，本地能按摘要复原。像素基线还没有。"],
-      ["接口稳定", 43, "公共符号有快照。星号桶和源码子路径还在。"],
-      ["专项深度", 48, "动效多了一块自己的列表原语。蓝图和图标仍是上游的。"]
+      ["动效", 88, "布局、手势、滚动进度、出场都有纯函数契约，并尊重减弱动效。还不是一套手势识别器。"],
+      ["性能节约", 86, "五个重包改为可选 peer。lucide 和 recharts 仍在默认依赖里。"],
+      ["流水线在场", 80, "门禁增加了版本、重量、动效契约和视觉基线。依赖有缓存。兄弟仓库缺失仍只告警。"],
+      ["可复现可复原", 84, "刻画 JSON 会上传，夹具样式有基线。还没有整页截图。"],
+      ["接口稳定", 90, "入口写明每一个名字。源码子路径不再公开。符号变了必须升版本。"],
+      ["专项深度", 82, "动效和蓝图有自己的契约。画布渲染仍是 xyflow，编辑器仍是 monaco。"]
     ];
     document.getElementById("axes").innerHTML = axes.map(([name, score, why]) =>
       `<li><header><span>${name}</span><span class="num" style="font-size:22px">${score}</span></header><div class="track"><div class="fill ${score >= 50 ? "high" : "low"}" style="width:${score}%"></div></div><p class="because">${why}</p></li>`

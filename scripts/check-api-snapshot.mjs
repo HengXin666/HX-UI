@@ -16,6 +16,11 @@ const ROOT = path.resolve(import.meta.dirname, "..");
 const ENTRY = path.join(ROOT, "src", "index.ts");
 const SNAPSHOT = path.join(ROOT, "scripts", "gates", "baselines", "api-surface.txt");
 const UPDATE = process.argv.includes("--update");
+const indexText = fs.readFileSync(ENTRY, "utf8");
+if (/export\s+\*\s+from/.test(indexText)) {
+  console.error("check-api-snapshot: src/index.ts 不许使用 export *. 把名字写出来.");
+  process.exit(1);
+}
 
 function strip(text) {
   return text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");

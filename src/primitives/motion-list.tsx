@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef, type JSX, type ReactNode } from "react";
 import { playLayout, readLayout, type LayoutBox } from "./motion";
+import { retainedIds } from "./motion-math";
 
 export interface MotionListItem {
 	readonly id: string;
@@ -28,10 +29,12 @@ export function MotionList<T extends MotionListItem>({
 		const root = ref.current;
 		if (!root) return;
 		const next = new Map<string, LayoutBox>();
+		const ids = items.map((item) => item.id);
+		const keep = new Set(retainedIds([...previous.current.keys()], ids));
 		for (const node of root.querySelectorAll<HTMLElement>("[data-layout-id]")) {
 			const id = node.dataset.layoutId;
 			if (!id) continue;
-			playLayout(node, previous.current.get(id));
+			if (keep.has(id)) playLayout(node, previous.current.get(id));
 			next.set(id, readLayout(node));
 		}
 		previous.current = next;

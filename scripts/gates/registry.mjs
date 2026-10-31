@@ -55,6 +55,27 @@ export const GATES = [
     args: ["node", "scripts/check-api-snapshot.mjs"],
   },
   {
+    id: "api-version",
+    group: "lib",
+    label: "公共符号变化必须伴随版本号变化",
+    cwd: ".",
+    args: ["node", "scripts/check-api-version.mjs"],
+  },
+  {
+    id: "weight",
+    group: "lib",
+    label: "重依赖不得进入默认安装图 (monaco / xyflow / shiki / markstream 只能是可选 peer)",
+    cwd: ".",
+    args: ["node", "scripts/check-weight.mjs"],
+  },
+  {
+    id: "motion",
+    group: "lib",
+    label: "动效契约 (布局位移 / 手势 / 滚动进度 / 出场 / 身份)",
+    cwd: ".",
+    args: ["node", "scripts/check-motion.mjs"],
+  },
+  {
     id: "blueprint",
     group: "lib",
     label: "蓝图纯逻辑断言 (类型协变 / 连接判定 / 独占顶替 / 环 / 分支求值 / 序列化往返 / 布局质量)",
@@ -116,6 +137,13 @@ export const GATES = [
     args: ["node", "scripts/check-shell.ts"],
     strictArgs: ["node", "scripts/check-shell.ts", "--strict"],
     requires: "dist",
+  },
+  {
+    id: "visual-baseline",
+    group: "browser",
+    label: "视觉基线 (夹具的计算样式与减弱动效, 对不上提交里的 JSON 就失败)",
+    cwd: ".",
+    args: ["node", "scripts/check-visual-baseline.mjs"],
   },
   {
     id: "bp-e2e",

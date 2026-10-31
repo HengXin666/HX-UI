@@ -64,13 +64,74 @@ export { Alert, AlertDescription, AlertTitle, alertVariants, type AlertVariant }
 export { Ripple, spawnRipple, useRipple, type RippleComponentProps, type RippleSize, type UseRippleOptions } from "./primitives/ripple";
 export { prefersReducedMotion, playLayout, readLayout, type LayoutBox } from "./primitives/motion";
 export { MotionList, type MotionListItem } from "./primitives/motion-list";
+export { layoutDelta, gestureDelta, scrollProgress, presenceDuration, retainedIds, type MotionPoint } from "./primitives/motion-math";
+export { bindGesture } from "./primitives/gesture";
+export { bindScrollProgress } from "./primitives/scroll-link";
+export { MotionPresence } from "./primitives/presence";
 export { type ClassValue, cn } from "./primitives/utils";
 /**
  * 对标 shadcn/ui 补齐的基础件, 名单见 primitives/shadcn-parity.ts; 已有同名能力的组件 (ConfirmDialog,
  * 声明式 ContextMenu, EmptyState, Spin, DataTable, SidebarNavItemButton) 原导出不变, 组合式版本与之并存.
  * .agents/notes/implemented/feature/2026-10-18-shadcn-parity-components.md
  */
-export * from "./primitives/shadcn-parity";
+export {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia,
+  AlertDialogOverlay, AlertDialogPortal, AlertDialogTitle, AlertDialogTrigger,
+  AspectRatio, Avatar, AvatarBadge, AvatarFallback,
+  AvatarGroup, AvatarGroupCount, AvatarImage, Breadcrumb,
+  BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList,
+  BreadcrumbPage, BreadcrumbSeparator, ButtonGroup, ButtonGroupSeparator,
+  ButtonGroupText, Carousel, CarouselContent, CarouselDots,
+  CarouselItem, CarouselNext, CarouselPrevious, Combobox,
+  Command, CommandDialog, CommandEmpty, CommandGroup,
+  CommandInput, CommandItem, CommandList, CommandSeparator,
+  CommandShortcut, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuGroup,
+  ContextMenuItem, ContextMenuLabel, ContextMenuPortal, ContextMenuRadioGroup,
+  ContextMenuRadioItem, ContextMenuRoot, ContextMenuSeparator, ContextMenuShortcut,
+  ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger,
+  DirectionProvider, Empty, EmptyContent, EmptyDescription,
+  EmptyHeader, EmptyMedia, EmptyTitle, Field,
+  FieldContent, FieldDescription, FieldError, FieldGroup,
+  FieldLabel, FieldLegend, FieldSeparator, FieldSet,
+  FieldTitle, Form, FormControl, FormDescription,
+  FormField, FormItem, FormLabel, FormMessage,
+  HoverCard, HoverCardContent, HoverCardTrigger, InputGroup,
+  InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText,
+  InputGroupTextarea, InputOTP, InputOTPGroup, InputOTPSeparator,
+  InputOTPSlot, Item, ItemActions, ItemContent,
+  ItemDescription, ItemFooter, ItemGroup, ItemHeader,
+  ItemMedia, ItemSeparator, ItemTitle, Label,
+  Menubar, MenubarCheckboxItem, MenubarContent, MenubarGroup,
+  MenubarItem, MenubarLabel, MenubarMenu, MenubarPortal,
+  MenubarRadioGroup, MenubarRadioItem, MenubarSeparator, MenubarShortcut,
+  MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarTrigger,
+  NativeSelect, NativeSelectOptGroup, NativeSelectOption, NavigationMenu,
+  NavigationMenuContent, NavigationMenuIndicator, NavigationMenuItem, NavigationMenuLink,
+  NavigationMenuList, NavigationMenuTrigger, NavigationMenuViewport, ResizableHandle,
+  ResizablePanel, ResizablePanelGroup, Sheet, SheetClose,
+  SheetContent, SheetDescription, SheetFooter, SheetHeader,
+  SheetOverlay, SheetPortal, SheetTitle, SheetTrigger,
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup,
+  SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
+  SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction,
+  SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton,
+  SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider,
+  SidebarRail, SidebarSeparator, SidebarTrigger, Spinner,
+  Table, TableBody, TableCaption, TableCell,
+  TableFooter, TableHead, TableHeader, TableRow,
+  Toggle, ToggleGroup, ToggleGroupItem, TypographyBlockquote,
+  TypographyH1, TypographyH2, TypographyH3, TypographyH4,
+  TypographyInlineCode, TypographyLarge, TypographyLead, TypographyList,
+  TypographyMuted, TypographyP, TypographySmall, avatarVariants,
+  buttonGroupVariants, inputGroupAddonVariants, itemVariants, navigationMenuTriggerStyle,
+  sidebarMenuButtonVariants, toggleVariants, useCarousel, useDirection,
+  useFormField, useIsMobile, useSidebar,
+} from "./primitives/shadcn-parity";
+export type {
+  CarouselApi, ComboboxMultipleProps, ComboboxOption, ComboboxProps,
+  ComboboxSingleProps, SheetSide,
+} from "./primitives/shadcn-parity";
 
 // ── 蓝图 ──
 export {
@@ -127,7 +188,17 @@ export {
 export type {
   NodePorts, SubGraphDef, BlueprintComment,
 } from "./blueprint/types";
-export * from "./blueprint/geometry";
+export {
+  BODY_TOP, CURVE_MIN, HEADER_H, NODE_WIDTH,
+  PORT_R, PORT_ROW, arrowFillClass, arrowHead,
+  detourPath, edgePath, edgePathFrom, graphBounds,
+  hitNode, hitPort, nodeHeight, nodeWidth,
+  portPos, rectsIntersect, shouldDetour, toGraphPt,
+  toScreen, wireStyle,
+} from "./blueprint/geometry";
+export type {
+  Point, WireStyle,
+} from "./blueprint/geometry";
 export { SHORTCUTS, matchShortcut, shouldHandle, isTypingTarget, type ShortcutDef } from "./blueprint/shortcuts";
 export { copySelection, pasteClip, alignNodes, isEmptyClip, type ClipboardPayload } from "./blueprint/clipboard";
 export { downloadGraph, pickGraphFile, graphFromText, GRAPH_EXT } from "./blueprint/persist";
@@ -163,7 +234,12 @@ export {
 } from "./blueprint/layout";
 
 // ── 代码编辑器 (monaco + One Dark Pro Darker) ──
-export * from "./editor";
+export {
+  CODE_THEME_ID, CodeEditor, defineTheme, readPalette,
+} from "./editor";
+export type {
+  CodeEditorProps, Monaco,
+} from "./editor";
 
 // ── 版式件 ──
 export { AppFrame, type AppFrameProps } from "./layout/AppFrame";
@@ -280,7 +356,21 @@ export {
 
 // ── 会话 (AUI) ──
 /** 会话组合件 (附件 / 气泡 / 标记 / 消息 / 滚动容器 / 问卷 / 推理轨迹), 对标 shadcn 同名组件; 整面板仍用 ChatStream. */
-export * from "./chat";
+export {
+  Attachment, AttachmentAction, AttachmentActions, AttachmentContent,
+  AttachmentDescription, AttachmentGroup, AttachmentImage, AttachmentMedia,
+  AttachmentTitle, Bubble, BubbleCollapsible, BubbleContent,
+  BubbleGroup, BubbleReactions, Marker, MarkerContent,
+  MarkerIcon, Message, MessageAvatar, MessageContent,
+  MessageFooter, MessageGroup, MessageHeader, MessageScroller,
+  MessageScrollerButton, MessageScrollerContent, MessageScrollerItem, Questionnaire,
+  Trace, TraceLive, TraceSources, TraceStep,
+  attachmentVariants, bubbleVariants, markerVariants, useMessageScroller,
+} from "./chat";
+export type {
+  AttachmentState, QuestionnaireAnswers, QuestionnaireChoice, QuestionnaireLabels,
+  QuestionnaireQuestion, TraceLiveItem, TraceStatus,
+} from "./chat";
 
 // ── hx-browser 实时预览 ──
 /**
@@ -288,12 +378,55 @@ export * from "./chat";
  *
  * .agents/notes/implemented/feature/2026-10-17-hx-browser-live-view.md
  */
-export * from "./hxbrowser";
+export {
+  BrowserLiveEnvBadges, BrowserLiveStatus, BrowserLiveTile, BrowserLiveView,
+  BrowserLiveWall, DEFAULT_LIVE_LABELS, DEFAULT_RETRY, FRAME_DATA_URL_PREFIX,
+  HEADER_API_KEY, HeldInputs, KEY_ACTION, LIVE_CLOSE,
+  LIVE_ENVS_PATH, LIVE_EVT, LIVE_MSG, LIVE_PRESET,
+  LIVE_STATUS, LiveConnection, MOUSE_ACTION, MOUSE_BUTTONS,
+  NAV_ACTION, NO_RETRY_CLOSE_CODES, QUERY_KEY, QUERY_PRESET,
+  backoffDelay, buttonName, fetchLiveEnvs, findFocused,
+  focusedGone, keyMessage, liveEnvsUrl, liveSessionPath,
+  liveSessionUrl, mouseMessage, parseServerEvent, pickFocusTarget,
+  resolveBrowserLiveLabels, useDocumentVisible, useElementInView, useHxBrowserLive,
+  useHxBrowserLiveEnvs, useLiveInput,
+} from "./hxbrowser";
+export type {
+  BrowserLiveEnvBadgesProps, BrowserLiveLabels, BrowserLiveStatusProps, BrowserLiveTileProps,
+  BrowserLiveViewProps, BrowserLiveWallProps, FetchLike, HxBrowserLive,
+  HxBrowserLiveEnvs, HxBrowserTransport, KeyAction, KeySample,
+  LiveActivateMessage, LiveClientMessage, LiveConnectionOptions, LiveEnv,
+  LiveErrorEvent, LiveFlowMessage, LiveFrameEvent, LiveKeyMessage,
+  LiveMeta, LiveMetaEvent, LiveMouseMessage, LiveNavigateMessage,
+  LivePreset, LiveQualityMessage, LiveRetryPolicy, LiveServerEvent,
+  LiveSnapshot, LiveStatus, LiveTab, LiveTabsEvent,
+  LiveTextMessage, LiveTimers, ModifierState, MouseAction,
+  MouseButtonName, NavAction, PointerSample, SurfaceRect,
+  UseHxBrowserLiveEnvsOptions, UseHxBrowserLiveOptions, WebSocketCtor,
+} from "./hxbrowser";
 
 // ── AI 交互 (agent) ──
 /** Agent 交互过程组件: 工具调用卡, 流式文本, 用量计量, 变更对比. */
-export * from "./agent";
+export {
+  DiffView, InlineApproval, StreamingMarkdown, StreamingText,
+  TOOL_CALL_STATUS, ToolCallCard, UsageMeter,
+} from "./agent";
+export type {
+  DiffLine, DiffLineType, DiffViewProps, InlineApprovalProps,
+  StreamingMarkdownProps, StreamingTextProps, ToolCallCardProps, ToolCallStatus,
+  UsageMeterProps,
+} from "./agent";
 
 // ── 常量 ──
 /** 库与文档站共用的字面量 (PROJECT-CONST-DUP), 导出清单见 public-constants.ts. */
-export * from "./public-constants";
+export {
+  AGENT_AUTO_RIGHT, AGENT_ROW, AGENT_STREAMING_LABEL, AGENT_STREAM_LABEL,
+  AGENT_TEXT_MUTED, ALIGN, BUTTON_TYPE, DOC,
+  DOC_SAMPLE, DOC_STREAMING_PROPS, DOC_TAB, EVENT,
+  OPEN_STATE, ORIENTATION, QUESTION_TYPE, SELECT_MODE,
+  SIDE, SIZE, TASK_STATUS, TONE,
+  TONE_VARIANT, UI_CLASSES, USER, VARIANT,
+} from "./public-constants";
+export type {
+  DocPropRow,
+} from "./public-constants";
