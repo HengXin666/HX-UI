@@ -195,6 +195,7 @@ export const DOC_PAGE_ID = {
   switch: "switch",
   select: "select",
   dialog: "dialog",
+  motion: "motion",
 } as const;
 
 /** DOM event names and keys the docs shell listens for. */

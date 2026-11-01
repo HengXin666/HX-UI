@@ -109,3 +109,8 @@ export const PAGINATION = {
 export * from "./ui";
 export * from "./docs";
 export { AGENT_AUTO_RIGHT, AGENT_NEWLINE, AGENT_ROW, AGENT_STREAM_LABEL, AGENT_STREAM_STOP, AGENT_STREAMING_LABEL, AGENT_TEXT_MUTED, TODO_STATUS } from "./agent";
+/** UI 丰富度改造四个新目录的常量 (动效, 布局原语, 视觉效果, 富交互件). */
+export * from "./motion";
+export * from "./box";
+export * from "./effects";
+export * from "./widgets";

@@ -151,3 +151,257 @@
     --hx-shimmer-base: currentColor;
   }
 }
+
+/* ============================================================================
+ * 表现型动效 (S0 设计令牌一节的关键帧)
+ * ----------------------------------------------------------------------------
+ * 上面几组是 "组件不动就坏" 的必需品; 下面是表现型: 入场, 退场, 环境循环, 骨架.
+ * 工具类 animate-fade-up 等在 styles.css 的 @theme 里登记, 时长与曲线都取令牌.
+ *
+ * 只动 transform / opacity / filter / background-position, 都走合成器或只重绘,
+ * 不碰 width / height / top / left, 不触发布局.
+ * 位移距离读 --motion-distance*, 起始缩放读 --motion-scale-from: 减弱动效时
+ * tokens.css 把它们归零, 即使有人绕开时长令牌写死 duration 也不会 "飞入".
+ *
+ * 每一组后面都跟一段 prefers-reduced-motion 兜底: 入场 / 退场直接落到终态,
+ * 循环类整条停掉 (循环的时长令牌不归零, 必须在这里显式 none).
+ * .agents/notes/implemented/feature/2026-11-01-design-tokens-depth-motion.md
+ * ==========================================================================*/
+
+/* ---- 入场: 淡入 / 上浮 / 下落 / 缩放 / 去模糊 / 侧滑 / 弹出 ---- */
+
+@keyframes hx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hx-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-distance, 8px));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hx-fade-down {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--motion-distance, 8px) * -1));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hx-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(var(--motion-scale-from, 0.95));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 去模糊入场: 大标题 / 主视觉用. filter 只重绘不重排, 但模糊半径大时成本高,
+   所以起始模糊取 8px 而不是更大, 也不建议在长列表里逐项使用 */
+@keyframes hx-blur-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(var(--motion-distance-sm, 4px));
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes hx-slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--motion-distance-lg, 24px) * -1));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes hx-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(var(--motion-distance-lg, 24px));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 弹出: 配 --ease-spring, 回弹由曲线本身给出, 关键帧只写起止 */
+@keyframes hx-pop {
+  from {
+    opacity: 0;
+    transform: scale(calc(var(--motion-scale-from, 0.95) - 0.1));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 交错入场: 子项写 style="--hx-index: n", 每项延迟一个 stagger 步长.
+   只是 CSS 层的轻量方案; 需要视口触发或退场时用 S1 的 Stagger 组件. */
+@layer base {
+  /* 放进 base 层: 子项自己写的 delay-* 工具类仍然能覆盖它 */
+  :where([data-hx-stagger]) > * {
+    animation-delay: calc(var(--hx-index, 0) * var(--hx-stagger-step, 40ms));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-fade-in"],
+  [class*="animate-fade-up"],
+  [class*="animate-fade-down"],
+  [class*="animate-scale-in"],
+  [class*="animate-blur-in"],
+  [class*="animate-slide-in-"],
+  [class*="animate-pop"] {
+    animation: none;
+  }
+
+  :where([data-hx-stagger]) > * {
+    animation-delay: 0ms;
+  }
+}
+
+/* ---- 退场: 淡出 / 缩小. 退场比入场短, 用户已经决定离开了 ---- */
+
+@keyframes hx-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes hx-scale-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(var(--motion-scale-from, 0.95));
+  }
+}
+
+/* 退场不能 animation: none: radix Presence 靠 animationend 才卸载元素,
+   没有动画会立刻卸载, 这正是想要的; 但保留一个 1ms 的 opacity 过程更稳妥,
+   让依赖 animationend 的调用方仍然收到事件. */
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-fade-out"],
+  [class*="animate-scale-out"] {
+    animation-name: hx-fade-out;
+    animation-duration: 1ms;
+  }
+}
+
+/* ---- 环境循环: 漂浮 / 光晕呼吸 / 渐变平移 ---- */
+
+/* 漂浮: 插画 / 徽标的缓慢上下浮动, 幅度只有一个 sm 距离 */
+@keyframes hx-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(calc(var(--motion-distance-sm, 4px) * -1));
+  }
+}
+
+/* 光晕呼吸: 在无光晕与 --shadow-glow 之间往返, 用于 "进行中" 的强调卡 / 录制按钮 */
+@keyframes hx-glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+  50% {
+    box-shadow: var(--shadow-glow);
+  }
+}
+
+/* 渐变平移: 配 background-size 大于 100% 的 --gradient-brand, 让渐变缓慢流动 */
+@keyframes hx-gradient-pan {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.hx-gradient-pan {
+  background-image: var(--gradient-brand);
+  background-size: 200% 200%;
+  animation: hx-gradient-pan var(--duration-ambient, 6000ms) var(--ease-in-out, ease-in-out) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-float"],
+  [class*="animate-glow-pulse"],
+  [class*="animate-gradient-pan"],
+  .hx-gradient-pan {
+    animation: none;
+  }
+}
+
+/* ---- 骨架屏扫光 ---- */
+
+/* 与 hx-shimmer 的区别: shimmer 扫的是文字 (background-clip: text),
+   skeleton 扫的是占位块本身的底色. 底色取 muted, 高光是 muted 混一点前景色,
+   亮暗两套都只从语义 token 派生, 不写任何色值. */
+@keyframes hx-skeleton-sweep {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -50% 0;
+  }
+}
+
+.hx-skeleton {
+  background-color: var(--muted);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--foreground) 6%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  border-radius: var(--radius-md, 6px);
+  animation: hx-skeleton-sweep var(--duration-loop, 1600ms) var(--ease-in-out, ease-in-out) infinite;
+}
+
+/* 减弱动效时骨架不扫, 只保留静态底色: 仍然能看出 "这里在加载" */
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-skeleton-sweep"],
+  .hx-skeleton {
+    animation: none;
+    background-image: none;
+  }
+}

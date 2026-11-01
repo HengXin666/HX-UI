@@ -1,0 +1,268 @@
+/* ============================================================================
+ * 视觉效果件 (src/effects/) 的样式: 光斑, 流光边框, 跑马灯, 底纹, 毛玻璃.
+ * 颜色只从语义令牌取 (var + color-mix); 设计令牌分片的新令牌缺席时回退到基础令牌.
+ * 由集成分片在 styles.css 里 @import; 组件 tsx 只拼类名与 CSS 变量, 不出现色值.
+ * 组件规则放在 components 层, 调用方的 Tailwind 工具类可以覆盖.
+ *
+ * .agents/notes/implemented/feature/2026-11-01-visual-effects.md
+ * ========================================================================== */
+
+/* 流光角度要能插值, 必须登记类型; 不支持 @property 的浏览器退化为静止的一段光 */
+@property --hx-beam-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* 效果件共用的派生色. 亮色底上光晕更易发脏, 混入比例压低一档 */
+:root,
+[data-mode="dark"] {
+  --hx-effect-glow-mix: 38%;
+  --hx-effect-ink-mix: 10%;
+}
+
+[data-mode="light"] {
+  --hx-effect-glow-mix: 24%;
+  --hx-effect-ink-mix: 8%;
+}
+
+:root {
+  --hx-effect-glow: var(--primary-glow, color-mix(in oklab, var(--primary) var(--hx-effect-glow-mix), transparent));
+  --hx-effect-accent: var(--accent-2, color-mix(in oklab, var(--primary) 60%, var(--foreground)));
+  --hx-effect-subtle: var(--primary-subtle, color-mix(in oklab, var(--primary) 14%, transparent));
+  --hx-effect-ink: color-mix(in oklab, var(--foreground) var(--hx-effect-ink-mix), transparent);
+  --hx-effect-ease: var(--ease-in-out, cubic-bezier(0.65, 0, 0.35, 1));
+}
+
+@layer components {
+  /* ---- SpotlightCard: 指针跟随光斑 ---------------------------------------- */
+  .hx-spotlight-glow {
+    z-index: -1;
+    opacity: 0;
+    background: radial-gradient(
+      var(--spot-size, 320px) circle at var(--spot-x, 50%) var(--spot-y, 50%),
+      var(--hx-effect-glow),
+      transparent 70%
+    );
+    transition: opacity var(--duration-slow) var(--ease-out);
+  }
+
+  .hx-spotlight[data-spot] > .hx-spotlight-glow {
+    opacity: 1;
+  }
+
+  /* 键盘聚焦: 不依赖指针, 光斑在当前坐标 (默认中心) 静态亮起 */
+  .hx-spotlight:focus-within > .hx-spotlight-glow {
+    opacity: 0.7;
+  }
+
+  /* ---- BorderBeam: 沿 1px 边框流动的光 ------------------------------------ */
+  .hx-beam {
+    --hx-beam-color: var(--primary);
+    padding: 1px; /* 环宽即边框宽, 线条红线: 只允许 1px */
+    background: conic-gradient(
+      from var(--hx-beam-angle),
+      transparent 0deg 260deg,
+      var(--hx-beam-color) 320deg,
+      transparent 360deg
+    );
+    -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(black 0 0) content-box exclude, linear-gradient(black 0 0);
+    animation: hx-beam-spin var(--hx-beam-duration, 6s) linear var(--hx-beam-delay, 0s) infinite;
+  }
+
+  .hx-beam[data-tone="accent"] {
+    --hx-beam-color: var(--hx-effect-accent);
+  }
+
+  .hx-beam[data-reverse] {
+    animation-direction: reverse;
+  }
+
+  /* ---- Marquee: 无限滚动 -------------------------------------------------- */
+  .hx-marquee {
+    --hx-marquee-gap: 1rem;
+    --hx-marquee-duration: 40s;
+    display: flex;
+    gap: var(--hx-marquee-gap);
+    overflow: hidden;
+  }
+
+  .hx-marquee[data-orientation="vertical"] {
+    flex-direction: column;
+  }
+
+  .hx-marquee-track {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-around;
+    gap: var(--hx-marquee-gap);
+    min-width: 100%;
+    animation: hx-marquee-x var(--hx-marquee-duration) linear infinite;
+  }
+
+  .hx-marquee[data-orientation="vertical"] .hx-marquee-track {
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100%;
+    animation-name: hx-marquee-y;
+  }
+
+  .hx-marquee[data-reverse] .hx-marquee-track {
+    animation-direction: reverse;
+  }
+
+  /* 键盘焦点进入时总是暂停, 悬停暂停由 pauseOnHover 打开 */
+  .hx-marquee:focus-within .hx-marquee-track,
+  .hx-marquee[data-pause-on-hover]:hover .hx-marquee-track {
+    animation-play-state: paused;
+  }
+
+  .hx-marquee[data-fade] {
+    mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  }
+
+  .hx-marquee[data-fade][data-orientation="vertical"] {
+    mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  }
+
+  /* ---- Backdrop: grid / dots / aurora 底纹 -------------------------------- */
+  .hx-backdrop {
+    --hx-backdrop-size: 24px;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .hx-backdrop[data-variant="grid"] {
+    background-image:
+      linear-gradient(to right, var(--hx-effect-ink) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--hx-effect-ink) 1px, transparent 1px);
+    background-size: var(--hx-backdrop-size) var(--hx-backdrop-size);
+  }
+
+  .hx-backdrop[data-variant="dots"] {
+    background-image: radial-gradient(circle at center, var(--hx-effect-ink) 1px, transparent 1.5px);
+    background-size: var(--hx-backdrop-size) var(--hx-backdrop-size);
+  }
+
+  /* 极光画在超出宿主的伪元素上, 漂移时边缘不露底 */
+  .hx-backdrop[data-variant="aurora"]::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background:
+      radial-gradient(40% 45% at 22% 30%, var(--hx-effect-glow), transparent 70%),
+      radial-gradient(35% 40% at 78% 24%, color-mix(in oklab, var(--hx-effect-accent) 30%, transparent), transparent 70%),
+      radial-gradient(50% 45% at 50% 85%, var(--hx-effect-subtle), transparent 70%);
+  }
+
+  .hx-backdrop[data-variant="aurora"][data-animated]::before {
+    animation: hx-aurora-drift 18s var(--hx-effect-ease) infinite alternate;
+    will-change: transform;
+  }
+
+  .hx-backdrop[data-fade] {
+    mask-image: radial-gradient(ellipse at center, black 35%, transparent 80%);
+  }
+
+  /* ---- GlassPanel: 毛玻璃 ------------------------------------------------- */
+  .hx-glass {
+    background-color: color-mix(in oklab, var(--surface-overlay, var(--card)) 58%, transparent);
+    border-color: color-mix(in oklab, var(--border) 65%, transparent);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 6%, transparent),
+      var(--shadow-lg, 0 0 0 0 transparent);
+  }
+
+  .hx-glass-primary {
+    background-color: color-mix(in oklab, var(--hx-effect-subtle) 70%, transparent);
+    border-color: color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .hx-glass {
+      background-color: var(--surface-overlay, var(--card));
+    }
+  }
+}
+
+@keyframes hx-beam-spin {
+  to {
+    --hx-beam-angle: 360deg;
+  }
+}
+
+@keyframes hx-marquee-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - var(--hx-marquee-gap)));
+  }
+}
+
+@keyframes hx-marquee-y {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(calc(-100% - var(--hx-marquee-gap)));
+  }
+}
+
+@keyframes hx-aurora-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-4%, 3%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(3%, -2%, 0) scale(1.04);
+  }
+}
+
+/* 触屏与不能悬停的设备: 光斑层不渲染 (组件也不注册跟随) */
+@media (hover: none) {
+  .hx-spotlight-glow {
+    display: none;
+  }
+}
+
+/* 减弱动效: 所有效果件停在静止态, 信息不丢 */
+@media (prefers-reduced-motion: reduce) {
+  .hx-spotlight-glow {
+    transition: none;
+  }
+
+  /* 流光停转, 退化为一圈均匀的淡色 1px 描边 */
+  .hx-beam {
+    animation: none;
+    background: color-mix(in oklab, var(--hx-beam-color) 35%, transparent);
+  }
+
+  /* 跑马灯停住, 复制件隐藏, 原件改为可手动滚动 */
+  .hx-marquee {
+    overflow-x: auto;
+  }
+
+  .hx-marquee[data-orientation="vertical"] {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .hx-marquee-track {
+    animation: none;
+  }
+
+  .hx-marquee-track[aria-hidden] {
+    display: none;
+  }
+
+  .hx-backdrop::before {
+    animation: none;
+    will-change: auto;
+  }
+}

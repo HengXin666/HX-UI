@@ -221,6 +221,35 @@ export { Thinking, extractHeadline, StatusGlyph, TodoTree, deriveTodoStatus, Sub
 export type { DiffLine, DiffLineType, DiffViewProps, InlineApprovalProps, StreamingMarkdownProps, StreamingTextProps, ToolCallCardProps, ToolCallStatus, UsageMeterProps } from "./agent";
 export type { ThinkingProps, ThinkingStatus, TodoNode, TodoStatus, TodoTreeProps, SubagentCardProps, SubagentGroupProps, ThinkingBranch, ThinkingBranchesProps } from "./agent";
 
+// ── 动效引擎 (motion/react 预设, 入场, 交错, 数字滚动, 页面转场) ──
+/**
+ * UI 丰富度改造 phase 1 的四个新目录由集成分片 Z 接进公共入口, 名字逐个写出 (check-api-snapshot 不许 export *).
+ * .agents/notes/implemented/feature/2026-11-01-motion-engine.md
+ */
+export {
+  INSTANT, MOTION_PRESETS, SPRING, presetVariants, readMotionTokens, timingTransition, useMotionTokens, Reveal, MOTION_ELEMENTS, Stagger, StaggerItem, AnimatedNumber, FadeSwap, PageTransition,
+} from "./motion";
+export type {
+  MotionPresetName, MotionTiming, MotionTokens, SpringName, MotionTag, RevealProps, StaggerItemProps, StaggerProps, AnimatedNumberProps, FadeSwapProps, PageTransitionProps, PresenceMode,
+} from "./motion";
+
+// ── 布局原语 (Stack / Grid / Container / Bento / SplitView) ──
+export {
+  Stack, HStack, VStack, Spacer, stackVariants, Grid, AutoGrid, gridVariants, Container, Section, Center, BOX_WIDTH, containerVariants, sectionVariants, centerVariants, Bento, BentoItem,
+  bentoItemVariants, SplitView,
+} from "./box";
+export type {
+  StackProps, StackTag, HStackProps, VStackProps, SpacerProps, GridProps, GridColumns, AutoGridProps, BoxWidth, ContainerProps, SectionProps, CenterProps, BentoProps, BentoItemProps, SplitViewProps,
+} from "./box";
+
+// ── 视觉效果件 (样式在 effects.css, 由 styles.css 引入) ──
+export { SpotlightCard, BorderBeam, Marquee, Backdrop, GlassPanel, glassVariants } from "./effects";
+export type { SpotlightCardProps, BorderBeamProps, MarqueeProps, BackdropProps, GlassPanelProps } from "./effects";
+
+// ── 富交互件 ──
+export { Timeline, TimelineItem, Rating, FileDropzone, TagInput, ColorSwatch } from "./widgets";
+export type { TimelineProps, TimelineItemProps, RatingProps, FileDropzoneProps, FileRejection, TagInputProps, ColorSwatchOption, ColorSwatchProps } from "./widgets";
+
 // ── 常量 ──
 /** 库与文档站共用的字面量 (PROJECT-CONST-DUP), 导出清单见 public-constants.ts. */
 export {

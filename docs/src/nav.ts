@@ -21,6 +21,7 @@ export interface DocEntry {
  */
 const GROUP = {
   start: "上手",
+  gallery: "展示画廊",
   actions: "按钮与操作",
   form: "表单输入",
   picker: "选择器",
@@ -29,6 +30,7 @@ const GROUP = {
   data: "数据展示",
   navigation: "导航",
   box: "布局容器",
+  motion: "动效与质感",
   type: "排版",
   conversation: "会话",
   layout: "页面版式",
@@ -41,6 +43,10 @@ const GROUP = {
 const START = `
 install ~ 安装与使用 ~ 引入组件, 接入样式, 切换主题, 部署文档站
 tokens ~ 设计令牌 ~ 颜色, 圆角, 阴影, 字号, 间距与动效
+`;
+
+const GALLERY = `
+gallery ~ 展示画廊 ~ 用动效, 便当格, 光斑与指标卡拼成的落地页与仪表盘, 亮暗两套主题
 `;
 
 const ACTIONS = `
@@ -62,6 +68,7 @@ checkbox ~ 复选框 ~ 支持半选
 radio-group ~ 单选组 ~ 一组互斥选项
 switch ~ 开关 ~ 两档尺寸
 slider ~ 滑块 ~ 单值与区间
+widgets ~ 富交互件 ~ 时间线, 评分, 拖放上传, 标签输入与色块选择
 `;
 
 const PICKER = `
@@ -114,12 +121,19 @@ collapse-panel ~ 可折叠面板 ~ 面板折叠
 `;
 
 const BOX = `
+box ~ 布局原语 ~ Stack, Grid, Container 与可拖拽分栏, 统一间距与宽度档
+bento ~ 便当格 ~ 不等大磁贴拼出的看板与落地页版块
 separator ~ 分隔线 ~ 全局 1px
 carousel ~ 轮播 ~ 惯性拖拽与方向键切换
 resizable ~ 可调整分栏 ~ 拖拽调整大小
 scroll-area ~ 滚动区域 ~ 细滚动条容器
 aspect-ratio ~ 宽高比 ~ 固定宽高比容器
 direction ~ 文字方向 ~ 支持从右到左
+`;
+
+const MOTION = `
+motion ~ 动效 ~ 视口入场, 交错, 数字滚动与页面转场, 尊重减弱动效
+effects ~ 视觉效果 ~ 光斑卡, 流光边框, 跑马灯, 背景底纹与毛玻璃
 `;
 
 const TYPE = `
@@ -186,6 +200,7 @@ function section(group: string, list: string): DocEntry[] {
 
 export const DOCS: readonly DocEntry[] = [
   ...section(GROUP.start, START),
+  ...section(GROUP.gallery, GALLERY),
   ...section(GROUP.actions, ACTIONS),
   ...section(GROUP.form, FORM),
   ...section(GROUP.picker, PICKER),
@@ -194,6 +209,7 @@ export const DOCS: readonly DocEntry[] = [
   ...section(GROUP.data, DATA),
   ...section(GROUP.navigation, NAVIGATION),
   ...section(GROUP.box, BOX),
+  ...section(GROUP.motion, MOTION),
   ...section(GROUP.type, TYPE),
   ...section(GROUP.conversation, CONVERSATION),
   ...section(GROUP.layout, LAYOUT),
@@ -213,6 +229,7 @@ export const TEMPLATE_GROUP: string = GROUP.templates;
 
 /** 整页示例所在页面, 内容区放宽到 1720px. */
 export const WIDE_PAGES: ReadonlySet<string> = new Set([
+  "gallery",
   "templates-chat",
   "templates-settings",
   "templates-dashboard",
