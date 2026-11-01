@@ -7,6 +7,17 @@ import { VARIANT } from "../constants";
 import { useRipple } from "./ripple";
 import { cn } from "./utils";
 
+/**
+ * 可选变体共用的过渡属性: 在基础串之外补上 scale 与 filter, 让按压缩放与渐变提亮也有过渡.
+ * 只在 gradient / press 生效时由 tailwind-merge 换掉基础串里的那一条, 默认按钮仍用原串.
+ */
+const RICH_TRANSITION = "transition-[color,background-color,border-color,opacity,transform,translate,scale,filter]";
+
+/**
+ * 按钮的外观类. 默认档与上游一致; gradient 变体与 press 按压缩放是可选项, 不传不出现在类名里.
+ *
+ * .agents/notes/implemented/feature/2026-11-01-opt-in-polish-variants.md
+ */
 const buttonVariants = cva(
 	"group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-[color,background-color,border-color,opacity,transform] duration-(--duration-fast) ease-out outline-none select-none focus-visible:border-ring active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
 	{
@@ -21,6 +32,8 @@ const buttonVariants = cva(
 				destructive:
 					"border-danger/40 bg-danger/10 text-danger-fg hover:border-danger/60 hover:bg-danger/20",
 				link: "text-link underline-offset-4 hover:underline",
+				/** 品牌渐变 (可选): 令牌缺失时退回 primary 实底, 文字色与 primary 同一档 */
+				gradient: `bg-primary bg-(image:--gradient-brand) text-primary-foreground shadow-sm hover:brightness-110 hover:shadow-(--shadow-glow) aria-expanded:brightness-110 ${RICH_TRANSITION}`,
 			},
 			size: {
 				default:
@@ -34,6 +47,11 @@ const buttonVariants = cva(
 				"icon-sm":
 					"size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
 				"icon-lg": "size-9",
+			},
+			/** 按压缩放 (可选, 默认关): 按下缩到 97%, 减弱动效时不缩放 */
+			press: {
+				true: `${RICH_TRANSITION} active:not-aria-[haspopup]:scale-97 motion-reduce:active:scale-100`,
+				false: "",
 			},
 		},
 		defaultVariants: {
@@ -50,6 +68,7 @@ const NO_RIPPLE_VARIANTS: ReadonlyArray<string> = [VARIANT.link];
  * 按钮.
  *
  * ripple 默认开启 (link 变体除外), 传 ripple={false} 关闭; 图标尺寸自动用更淡的波纹.
+ * press 默认关闭, 传 press 打开按压缩放; 与 ripple 互不影响, 可以同时开.
  *
  * type 原样透传给原生 button, 不补默认值: 下游表单里不写 type 的 Button 仍是 submit, 这是有意保留的
  * 原生语义 (改掉会静默改变已有表单的提交行为). 因此本组件是 PROJECT-UI-BUTTON-TYPE 的豁免点,
@@ -61,6 +80,7 @@ function Button({
 	size = "default",
 	asChild = false,
 	ripple = true,
+	press,
 	onPointerDown,
 	onKeyDown,
 	type,
@@ -86,7 +106,7 @@ function Button({
 			data-slot="button"
 			data-variant={variant}
 			data-size={size}
-			className={cn(buttonVariants({ variant, size, className }))}
+			className={cn(buttonVariants({ variant, size, press, className }))}
 			{...props}
 			{...rippleProps}
 		/>

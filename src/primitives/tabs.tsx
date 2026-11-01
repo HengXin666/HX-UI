@@ -2,8 +2,11 @@
 
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { motion, useReducedMotion } from "motion/react";
 import { Tabs as TabsPrimitive } from "radix-ui";
-import { useRipple } from "./ripple";
+import { SPRING_TYPE } from "../constants/motion";
+import { TABS_INDICATOR_DAMPING, TABS_INDICATOR_MASS, TABS_INDICATOR_STIFFNESS } from "../constants/polish";
+import { rippleAttribute, useRipple } from "./ripple";
 import { cn } from "./utils";
 
 /**
@@ -18,10 +21,50 @@ import { cn } from "./utils";
  * Tabs 负责把 TabsContent 与触发器做 aria 关联, 别用错。
  *
  * variant 由 TabsList 通过 context 下发给 trigger, 免得调用方两处都写、写岔了。
+ *
+ * animated (可选, 默认关) 同样由 TabsList 下发: 选中指示改成一个 motion 共享布局元素,
+ * 切换时从旧标签滑到新标签. 不传时 trigger 的类名, 子节点与波纹挂法都和原来一致.
  */
 type TabsVariant = "underline" | "pill";
 
-const TabsVariantContext = React.createContext<TabsVariant>("underline");
+interface TabsListState {
+	readonly variant: TabsVariant;
+	/** 打开滑动指示器时是本组标签的共享布局 id, 关闭时为 undefined. */
+	readonly indicatorId?: string;
+}
+
+const TabsVariantContext = React.createContext<TabsListState>({ variant: "underline" });
+
+/** 当前选中值. 只为滑动指示器判断 "谁是选中项"; Radix 不对外暴露这个值. */
+const TabsValueContext = React.createContext<string | undefined>(undefined);
+
+/** 指示器的弹簧: 偏硬, 不回弹出标签边界; 与 SegmentedControl 的滑块同一手感. */
+const INDICATOR_SPRING = {
+	type: SPRING_TYPE,
+	stiffness: TABS_INDICATOR_STIFFNESS,
+	damping: TABS_INDICATOR_DAMPING,
+	mass: TABS_INDICATOR_MASS,
+} as const;
+const INDICATOR_INSTANT = { duration: 0 } as const;
+
+/** 波纹裁剪层的选择器: 宿主不挂 overflow: hidden, 滑动途中的指示器才不会被裁掉. */
+const RIPPLE_LAYER_SELECTOR = ":scope > [data-ripple]";
+
+/**
+ * 指示器形态. underline 是贴在列表 1px 底线上的 1px 主色线 (线条只用 1px);
+ * pill 是铺满标签的浮起底, 暗色下用抬升表面而不是白色叠加.
+ * isolate 让 -z-10 的指示器落在文字之下, 又不掉到列表底色后面.
+ */
+const INDICATOR_CLASS: Record<TabsVariant, string> = {
+	underline: "pointer-events-none absolute inset-x-0 -bottom-0.5 -z-10 h-px bg-primary",
+	pill: "pointer-events-none absolute inset-0 -z-10 rounded-[6px] bg-background shadow-xs dark:bg-surface-raised",
+};
+
+/** 打开指示器后, 静态的选中底线 / 选中底色交给指示器画, 这里把它们清掉. */
+const ANIMATED_TRIGGER_CLASS: Record<TabsVariant, string> = {
+	underline: "isolate data-[state=active]:border-transparent",
+	pill: "isolate data-[state=active]:bg-transparent data-[state=active]:shadow-none dark:data-[state=active]:bg-transparent",
+};
 
 const tabsListVariants = cva("inline-flex shrink-0 items-center", {
 	variants: {
@@ -53,18 +96,52 @@ const tabsTriggerVariants = cva(
 	},
 );
 
-function Tabs(props: React.ComponentProps<typeof TabsPrimitive.Root>): React.JSX.Element {
-	return <TabsPrimitive.Root data-slot="tabs" {...props} />;
+function Tabs({
+	value,
+	defaultValue,
+	onValueChange,
+	...props
+}: React.ComponentProps<typeof TabsPrimitive.Root>): React.JSX.Element {
+	// 只旁听非受控时的选中值供指示器使用; value / defaultValue / onValueChange 原样交给 Radix
+	const [uncontrolled, setUncontrolled] = React.useState(defaultValue);
+	const handleChange = React.useCallback(
+		(next: string) => {
+			setUncontrolled(next);
+			onValueChange?.(next);
+		},
+		[onValueChange],
+	);
+	return (
+		<TabsValueContext.Provider value={value ?? uncontrolled}>
+			<TabsPrimitive.Root
+				data-slot="tabs"
+				value={value}
+				defaultValue={defaultValue}
+				onValueChange={handleChange}
+				{...props}
+			/>
+		</TabsValueContext.Provider>
+	);
 }
 
 function TabsList({
 	className,
 	variant = "underline",
+	animated = false,
 	...props
 }: React.ComponentProps<typeof TabsPrimitive.List> &
-	VariantProps<typeof tabsListVariants>): React.JSX.Element {
+	VariantProps<typeof tabsListVariants> & {
+		/** 选中指示从旧标签滑到新标签 (motion 共享布局). 默认 false. */
+		animated?: boolean;
+	}): React.JSX.Element {
+	const indicatorId = React.useId();
+	const resolved = variant ?? "underline";
+	const state = React.useMemo<TabsListState>(
+		() => ({ variant: resolved, indicatorId: animated ? indicatorId : undefined }),
+		[resolved, animated, indicatorId],
+	);
 	return (
-		<TabsVariantContext.Provider value={variant ?? "underline"}>
+		<TabsVariantContext.Provider value={state}>
 			<TabsPrimitive.List
 				data-slot="tabs-list"
 				data-variant={variant}
@@ -81,6 +158,7 @@ function TabsTrigger({
 	ripple = true,
 	onPointerDown,
 	onKeyDown,
+	children,
 	...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger> & {
 	variant?: TabsVariant;
@@ -88,16 +166,54 @@ function TabsTrigger({
 	ripple?: boolean;
 }): React.JSX.Element {
 	const inherited = React.useContext(TabsVariantContext);
-	const resolved = variant ?? inherited;
-	const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple, onPointerDown, onKeyDown });
+	const selected = React.useContext(TabsValueContext);
+	const reduceMotion = useReducedMotion();
+	const resolved = variant ?? inherited.variant;
+	const indicatorId = inherited.indicatorId;
+	const rippleProps = useRipple<HTMLButtonElement>(
+		indicatorId === undefined
+			? { enabled: ripple, onPointerDown, onKeyDown }
+			: {
+					enabled: ripple,
+					onPointerDown,
+					onKeyDown,
+					container: (host) => host.querySelector<HTMLElement>(RIPPLE_LAYER_SELECTOR),
+				},
+	);
+	if (indicatorId === undefined) {
+		return (
+			<TabsPrimitive.Trigger
+				data-slot="tabs-trigger"
+				data-variant={resolved}
+				className={cn(tabsTriggerVariants({ variant: resolved }), className)}
+				{...props}
+				{...rippleProps}
+			>
+				{children}
+			</TabsPrimitive.Trigger>
+		);
+	}
 	return (
 		<TabsPrimitive.Trigger
 			data-slot="tabs-trigger"
 			data-variant={resolved}
-			className={cn(tabsTriggerVariants({ variant: resolved }), className)}
+			className={cn(tabsTriggerVariants({ variant: resolved }), ANIMATED_TRIGGER_CLASS[resolved], className)}
 			{...props}
 			{...rippleProps}
-		/>
+		>
+			{selected === props.value ? (
+				<motion.span
+					aria-hidden
+					layoutId={indicatorId}
+					className={INDICATOR_CLASS[resolved]}
+					transition={reduceMotion ? INDICATOR_INSTANT : INDICATOR_SPRING}
+				/>
+			) : null}
+			{ripple ? (
+				<span aria-hidden data-ripple={rippleAttribute()} className="pointer-events-none absolute inset-0 rounded-[inherit]" />
+			) : null}
+			{children}
+		</TabsPrimitive.Trigger>
 	);
 }
 

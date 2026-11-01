@@ -49,6 +49,25 @@
 `EmptyState` / `DataBoundary` 空/错误/加载三态, 判定顺序固定
 `PageHeader` 页头: 标题 + 说明 + 右侧操作位
 
+**动效引擎** (`src/motion/`, 基于 motion/react, 时长与缓动从令牌读, 全部尊重减弱动效)
+`Reveal` 视口内入场; `Stagger` / `StaggerItem` 子项交错; `AnimatedNumber` 弹簧数字 (`Intl.NumberFormat` + 等宽数字);
+`PageTransition` / `FadeSwap` 页面与内容切换; 预设 `MOTION_PRESETS` 与弹簧 `SPRING`
+
+**布局原语** (`src/box/`)
+`Stack` / `HStack` / `VStack` / `Spacer` 统一间距档; `Grid` / `AutoGrid` (minmax 自适应列);
+`Container` / `Section` / `Center` 统一宽度档; `Bento` / `BentoItem` 便当格磁贴; `SplitView` 可拖拽分栏, 尺寸持久化
+
+**视觉效果件** (`src/effects/`, 样式在 `effects.css`, 已由 `styles.css` 引入; 只用令牌不想要 Tailwind 时可单独引 `@hx/ui/effects.css`)
+`SpotlightCard` 指针跟随光斑; `BorderBeam` 沿 1px 边框流动的光; `Marquee` 无限跑马灯 (pauseOnHover / reverse);
+`Backdrop` grid / dots / aurora 底纹; `GlassPanel` 毛玻璃面板
+
+**富交互件** (`src/widgets/`)
+`Timeline` / `TimelineItem` 语义色时间线; `Rating` 评分 (方向键, 半星); `FileDropzone` 拖放上传 (accept / maxSize 校验, 预览);
+`TagInput` 标签输入 (回车逗号建签, 粘贴拆分); `ColorSwatch` 色块单选
+
+**既有组件的可选变体** (默认外观不变): `Card` 的 `elevated` / `glass` 与 `lift`, `Button` 的 `gradient` 与 `press`,
+`Tabs` 的 `animated` 指示器, `StatCard` 的 trend 与迷你折线
+
 **图表** (基于 Recharts 3 套一层)
 `HxLineChart` `HxAreaChart` `HxBarChart` `HxPieChart` `HxRadarChart` `HxRadialChart`
 外加 `ChartFrame` + `ChartChrome`, 需要 Recharts 完整能力时自己拼.

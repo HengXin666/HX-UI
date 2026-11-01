@@ -1,5 +1,6 @@
 /** 设置类页面 (示例与模板) 共用的导航图标. */
 import { NAV_ICON } from "@hx/ui";
+import { NAV_ICON_SHIELD_WARNING } from "../../src/constants/polish";
 const SETTINGS_ICON = "icon-[solar--settings-linear]";
 
 /**
@@ -41,7 +42,7 @@ export const NAV_ICONS: Record<string, string> = {
   tooltip: "icon-[solar--chat-round-dots-linear]",
   textarea: "icon-[solar--document-add-linear]",
   "time-picker": NAV_ICON.clock,
-  "confirm-dialog": "icon-[solar--shield-warning-linear]",
+  "confirm-dialog": NAV_ICON_SHIELD_WARNING,
   tabs: "icon-[solar--widget-4-linear]",
   accordion: NAV_ICON.chevronDown,
   "scroll-area": "icon-[solar--box-minimalistic-linear]",
@@ -54,7 +55,7 @@ export const NAV_ICONS: Record<string, string> = {
   "blueprint-dsh": "icon-[solar--graph-linear]",
   // shadcn 对标 (2026-10-18 补)
   alert: "icon-[solar--danger-circle-linear]",
-  "alert-dialog": "icon-[solar--shield-warning-linear]",
+  "alert-dialog": NAV_ICON_SHIELD_WARNING,
   "aspect-ratio": "icon-[solar--crop-minimalistic-linear]",
   attachment: "icon-[solar--paperclip-linear]",
   avatar: "icon-[solar--user-rounded-linear]",
@@ -102,6 +103,14 @@ export const NAV_ICONS: Record<string, string> = {
   "templates-settings": SETTINGS_ICON,
   "templates-dashboard": "icon-[solar--chart-2-linear]",
   "templates-console": "icon-[solar--server-square-linear]",
+  // UI 丰富度改造 (2026-11-01 补): 动效, 布局原语, 视觉效果, 富交互件
+  motion: "icon-[solar--play-circle-linear]",
+  box: "icon-[solar--widget-6-linear]",
+  bento: "icon-[solar--widget-add-linear]",
+  effects: "icon-[solar--magic-stick-2-linear]",
+  widgets: "icon-[solar--stars-linear]",
+  // 展示画廊 (S5): 新件拼成的落地页与仪表盘
+  gallery: "icon-[solar--gallery-round-linear]",
 };
 
 export const DEFAULT_NAV_ICON = NAV_ICON.widget;

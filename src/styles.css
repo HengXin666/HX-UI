@@ -10,6 +10,8 @@
 @import "./motion.css";
 /* 原生 select 的菜单在支持 base-select 时改用语义 token 绘制 (见文件内注释). */
 @import "./native-select.css";
+/* 视觉效果件 (光斑卡 / 流光边框 / 跑马灯 / 底纹 / 毛玻璃) 的样式与关键帧, 组件只拼类名, 漏了这行效果全部失效. */
+@import "./effects.css";
 /* 蓝图画布 (React Flow) 的骨架样式.
    放在样式入口而不是组件里: 组件里的 CSS import 会让库在 Node 侧不可导入
    (Node 不认 .css), 而画布的尺寸规则本来就属于"引了样式才生效"的那一类. */
@@ -70,9 +72,54 @@
   /* 固定深底代码块上的成功色, 不随主题切换 */
   --color-code-success: var(--code-success);
 
+  /* 表面分层桥接: bg-surface-raised / bg-surface-overlay / bg-surface-sunken.
+     与 card / popover 并存: 默认组件仍用后者, 可选变体与新组件用这三级. */
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-overlay: var(--surface-overlay);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-glass: var(--surface-glass);
+  --color-glass-border: var(--glass-border);
+
+  /* 品牌辅色桥接: bg-primary-subtle / text-accent-2 / bg-accent-2/15.
+     渐变不是颜色, 不能进 --color-*; 用 bg-(image:--gradient-brand) 取. */
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-glow: var(--primary-glow);
+  --color-accent-2: var(--accent-2);
+  --color-accent-2-foreground: var(--accent-2-foreground);
+  --color-accent-2-subtle: var(--accent-2-subtle);
+
   /* 动效令牌桥接: duration-(--duration-fast) 之外, ease-out 工具类也指向同一条曲线 */
   --ease-out: var(--ease-out);
   --ease-in: var(--ease-in);
+  /* 覆盖 Tailwind 默认的 ease-in-out, 让工具类与令牌同源 */
+  --ease-in-out: var(--ease-in-out);
+  --ease-emphasized: var(--ease-emphasized);
+  --ease-emphasized-accelerate: var(--ease-emphasized-accelerate);
+  /* ease-spring 在支持 linear() 时是真弹簧, 否则是 cubic-bezier 回退 (见 tokens.css) */
+  --ease-spring: var(--ease-spring);
+
+  /* 玻璃: backdrop-blur-glass / blur-glass */
+  --blur-glass: var(--blur-glass);
+
+  /* 表现型动效工具类 (animate-fade-up 等). 关键帧在 motion.css, 名字一律 hx- 前缀,
+     避开 Tailwind 内置 (spin / ping / pulse / bounce) 与 tw-animate-css 的 accordion-*.
+     时长与曲线全部取令牌: 减弱动效时令牌归零, 这些类自动失去过程;
+     循环类 (float / glow-pulse / skeleton-sweep / gradient-pan) 由 motion.css 直接停掉.
+     入场类带 both: 延迟期间停在起始帧, 不会先闪出终态再从头播. */
+  --animate-fade-in: hx-fade-in var(--duration-base) var(--ease-out) both;
+  --animate-fade-out: hx-fade-out var(--duration-fast) var(--ease-in) both;
+  --animate-fade-up: hx-fade-up var(--duration-slow) var(--ease-emphasized) both;
+  --animate-fade-down: hx-fade-down var(--duration-slow) var(--ease-emphasized) both;
+  --animate-scale-in: hx-scale-in var(--duration-base) var(--ease-spring) both;
+  --animate-scale-out: hx-scale-out var(--duration-fast) var(--ease-in) both;
+  --animate-blur-in: hx-blur-in var(--duration-emphasized) var(--ease-emphasized) both;
+  --animate-slide-in-left: hx-slide-in-left var(--duration-slow) var(--ease-emphasized) both;
+  --animate-slide-in-right: hx-slide-in-right var(--duration-slow) var(--ease-emphasized) both;
+  --animate-pop: hx-pop var(--duration-emphasized) var(--ease-spring) both;
+  --animate-float: hx-float var(--duration-ambient) var(--ease-in-out) infinite;
+  --animate-glow-pulse: hx-glow-pulse var(--duration-loop) var(--ease-in-out) infinite;
+  --animate-skeleton-sweep: hx-skeleton-sweep var(--duration-loop) var(--ease-in-out) infinite;
+  --animate-gradient-pan: hx-gradient-pan var(--duration-ambient) var(--ease-in-out) infinite;
 
   /* 字体: 把 token 桥接成 font-sans / font-mono 两个工具类。
      上游原样保留这两行; 漏掉它们会让代码块悄悄用上 Tailwind 的默认等宽栈。 */
@@ -84,12 +131,18 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* 大面板 / Bento 格 / 落地页卡片 */
+  --radius-2xl: calc(var(--radius) + 8px);
 
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
+  /* 双层阴影的最高档与两种特殊阴影: shadow-2xl / shadow-glow / shadow-inner */
+  --shadow-2xl: var(--shadow-2xl);
+  --shadow-glow: var(--shadow-glow);
+  --shadow-inner: var(--shadow-inner);
 
   /* 蓝图 (UE5) 令牌桥接。
      桥接之后组件里能写 bg-bp-int / stroke-bp-float / border-bp-node 这类类名,

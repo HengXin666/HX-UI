@@ -55,6 +55,14 @@ export const MODAL_OVERLAY = [
 	"duration-(--duration-base) data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
 ].join(SPACE);
 
+/**
+ * 模态遮罩的玻璃档 (可选): 在 MODAL_OVERLAY 之后传给遮罩的 className, 把轻微模糊换成
+ * 令牌里的玻璃模糊并略提饱和, 背景内容仍可辨认. 不传时遮罩与原来一致.
+ * 例: `<DialogOverlay className={MODAL_OVERLAY_GLASS} />`
+ */
+export const MODAL_OVERLAY_GLASS =
+	"supports-backdrop-filter:bg-background/40 supports-backdrop-filter:backdrop-blur-(--blur-glass) supports-backdrop-filter:backdrop-saturate-150";
+
 /** 模态面板的进出场: 淡入 + 缩放, 退出用 ease-in. */
 export const MODAL_MOTION = [
 	"duration-(--duration-base) ease-out data-closed:ease-in",

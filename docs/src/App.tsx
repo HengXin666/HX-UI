@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
-import { AppFrame, Badge, BUTTON_TYPE, ConfirmDialogHost, DOC_EVENT, DOC_PAGE_ID, DOC_SHELL_CLS, SidebarNavIcon, Toaster } from "@hx/ui";
+import { AppFrame, Badge, BUTTON_TYPE, ConfirmDialogHost, DOC_PAGE_ID, DOC_SHELL_CLS, SidebarNavIcon, Toaster } from "@hx/ui";
 import { SearchDialog, useSearchHotkey } from "./components/SearchDialog";
 import { PageNav } from "./components/PageNav";
 import { TableOfContents } from "./components/TableOfContents";
@@ -60,6 +60,13 @@ import { AgentProcessPage } from "./pages/agent/AgentProcessPage";
 import { ToolCallCardPage } from "./pages/agent/ToolCallCardPage";
 import { UsageMeterPage } from "./pages/agent/UsageMeterPage";
 import { DiffViewPage } from "./pages/agent/DiffViewPage";
+import { MotionPage } from "./pages/motion/MotionPage";
+import { BoxPage } from "./pages/box/BoxPage";
+import { BentoPage } from "./pages/box/BentoPage";
+import { EffectsPage } from "./pages/effects/EffectsPage";
+import { WidgetsPage } from "./pages/widgets/WidgetsPage";
+import { GalleryPage } from "./pages/gallery/GalleryPage";
+import { useShellLayout } from "./useShellLayout";
 
 /**
  * 组件文档站,
@@ -122,6 +129,12 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "agent-usage": return <UsageMeterPage />;
     case "agent-diff": return <DiffViewPage />;
     case "agent-process": return <AgentProcessPage />;
+    case DOC_PAGE_ID.motion: return <MotionPage />;
+    case "box": return <BoxPage />;
+    case "bento": return <BentoPage />;
+    case "effects": return <EffectsPage />;
+    case "widgets": return <WidgetsPage />;
+    case "gallery": return <GalleryPage />;
     default: {
       const Page = PARITY_PAGES[entry.id] ?? TEMPLATE_PAGES[entry.id];
       return Page ? <Page /> : <PlaceholderPage label={entry.label} desc={entry.desc} />;
@@ -137,8 +150,7 @@ export function App(): JSX.Element {
   const [openGroups, setOpenGroups] = useState<readonly string[]>(() => [GROUPS[0], entry.group]);
   // TOC 从渲染后的 DOM 里读标题, 所以需要内容容器的引用
   const contentRef = useRef<HTMLDivElement>(null);
-  const [wide, setWide] = useState(false);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { wide, mobileNavOpen, setMobileNavOpen } = useShellLayout();
 
   useEffect(() => {
     setOpenGroups((prev) => (prev.includes(entry.group) ? prev : [...prev, entry.group]));
@@ -147,24 +159,6 @@ export function App(): JSX.Element {
   const toggleGroup = (group: string): void => {
     setOpenGroups((prev) => (prev.includes(group) ? prev.filter((g) => g !== group) : [...prev, group]));
   };
-
-  useEffect(() => {
-    if (!mobileNavOpen) return;
-    const onEscape = (event: KeyboardEvent): void => {
-      if (event.key === DOC_EVENT.escape) setMobileNavOpen(false);
-    };
-    window.addEventListener(DOC_EVENT.keydown, onEscape);
-    return () => window.removeEventListener(DOC_EVENT.keydown, onEscape);
-  }, [mobileNavOpen]);
-
-  // 窄屏 (>1280px 才显示右栏) 时给内容多留一点宽度
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1280px)");
-    const sync = (): void => setWide(mq.matches);
-    sync();
-    mq.addEventListener(DOC_EVENT.change, sync);
-    return () => mq.removeEventListener(DOC_EVENT.change, sync);
-  }, []);
 
   // 切页后回到顶部,不做这件事时, 从长页面跳到短页面会停在半空的滚动位置,
   const go = useCallback((id: string) => {

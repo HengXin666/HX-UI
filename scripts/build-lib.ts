@@ -14,7 +14,7 @@ import { NODE_MODULES, STDIO_INHERIT, UTF8 } from "./constants/quality.ts";
 const ROOT = process.cwd();
 const DIST = join(ROOT, "dist");
 const SRC = join(ROOT, SRC_DIR);
-const CSS_FILES = ["tokens.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css"];
+const CSS_FILES = ["tokens.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css", "effects.css"];
 const EXTRA_FILES = [LICENSE_FILE, "NOTICE"];
 const SPECIFIER = /((?:from|import)\s*["'])(\.{1,2}\/[^"']+)(["'])/g;
 
