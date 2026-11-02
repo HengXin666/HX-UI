@@ -114,3 +114,34 @@ export * from "./motion";
 export * from "./box";
 export * from "./effects";
 export * from "./widgets";
+/**
+ * V0 十项与 V1 区块层的常量 (运行时主题, 国际化, hooks, 皮肤, 排版, 媒体, 站点外壳, 商业原子, 区块层), 由集成任务 V0-Z 接入.
+ * 文档站专用的清单 (docs-*, gallery, templates) 仍按文件直接引用, 不进这个桶.
+ */
+export * from "./provider";
+export * from "./locale";
+export * from "./hooks";
+export * from "./skins";
+export * from "./typography";
+export * from "./media";
+export * from "./site";
+export * from "./commerce";
+export * from "./blocks";
+export * from "./blocks-site-v101";
+export * from "./blocks-marketing-v102";
+export * from "./blocks-marketing-v103";
+export * from "./blocks-marketing-v104";
+export * from "./blocks-marketing-v105";
+export * from "./blocks-marketing-v106";
+export * from "./blocks-commerce-v107";
+export * from "./blocks-commerce-v108";
+export * from "./blocks-docs-v109";
+export * from "./blocks-portfolio-v111";
+/** 上面几个桶里同名的取值: 同值的指定一个来源, 不同值的 (电商活动首屏的 HERO_LAYOUT) 改名转出. */
+export { isNumber } from "./box";
+export { MS_PER_SECOND } from "./motion";
+export type { SlotClassNames, SlotStyles } from "./media";
+export { NEWSLETTER_STATUS } from "./commerce";
+export { RATIO_SEPARATOR } from "./blocks-marketing-v103";
+export { HERO_LAYOUT } from "./blocks-marketing-v102";
+export { HERO_LAYOUT as CAMPAIGN_HERO_LAYOUT } from "./blocks-commerce-v107";

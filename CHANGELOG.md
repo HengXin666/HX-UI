@@ -12,6 +12,31 @@
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
+## [0.7.0] - 2026-11-03
+
+V0 十项与 V1 区块层接进公共入口 (集成任务 V0-Z). 公共符号 981 -> 1599, 只增不删, 无迁移.
+
+### Added
+
+- 运行时主题 `src/provider`: `HxProvider`, `createTheme` / `varsToCss` / `isHxTheme`, `useTheme` / `useDefaults` / `mergeDefaults`, `getThemeScript`.
+- 国际化 `src/locale`: `LocaleProvider`, `useLocale` / `useLocaleText`, `formatNumber` / `formatCurrency` / `formatDate` / `formatDateTime` / `formatRelative`, `zhCN` / `enUS` 语言包.
+- 共享 hooks `src/hooks`: state / dom / browser / input 四类 16 个 hook (`useControllableState`, `useMediaQuery`, `useHotkeys` ...).
+- 皮肤与密度 `src/skins`: 六套皮肤 (default / mono / linear / fintech / emerald / retail) 与 compact / comfortable / spacious 三档密度, `applySkin` / `applyDensity` / `readSkin` / `readDensity`.
+- 营销排版 `src/typography`: `Display`, `Eyebrow`, `Kicker`, `Lead`, `GradientText`, `Prose`.
+- 媒体原语 `src/media`: `Image`, `ThemedImage`, `Video`, `Gallery`, `Lightbox`, `DeviceFrame`, `BrowserFrame`.
+- 视觉效果件新增 `MeshGradient`, `Grain`, `Beam`, `GridLines`, `MaskFade`, `GradientBorder`.
+- 动效新增 `ScrollProgress`, `Parallax`, `StickyScroll`, `RotatingText`, `SplitText` 与编排 (`orchestrate` / `useOrchestration`).
+- 站点外壳 `src/site`: `SiteHeader`, `MegaMenu`, `MobileNav`, `AnnouncementBar`, `LocaleSwitcher`, `SearchOverlay`, `SiteFooter`, `ThemeSwitcher`.
+- 商业原子 `src/commerce`: `Price`, `PromoBadge`, `ProductSwatch`, `SizeSelector`, `RatingSummary`.
+- 区块层 `src/blocks`: `_shared` 基座 (`BlockShell` / `SectionHeading` / `BlocksProvider` / `PageComposer`) 与 site / marketing / commerce / docs / portfolio 五类区块; 分类写法 `Blocks.Marketing.Hero` 与平铺导出并存. marketing 与 commerce 补了桶文件 `index.ts`.
+- 样式入口 `@hx/ui/base.css`, `@hx/ui/skins.css`, `@hx/ui/density.css`; `styles.css` 已在 `tokens.css` 之后引入皮肤层, 层序仍为 hx.tokens -> hx.base -> hx.components.
+- 常量桶 `src/constants` 接入上述各层的常量文件; 同值重名的指定单一来源, 电商活动首屏的 `HERO_LAYOUT` 另以 `CAMPAIGN_HERO_LAYOUT` 转出.
+- 文档站新增 "媒体" 与 "区块" 两组共 16 页, "排版" 组新增营销排版页.
+
+### Changed
+
+- 跨层同名的导出按层加前缀: 站点区块 `BlocksSiteHeader` / `BlocksSiteFooter` / `BlocksMobileNav` / `BlocksAnnouncementBar` / `BlocksSearchSpec`, 以及 `siteResolveSlots`, `blocksResolveSlots`, `blocksHashTarget`, `BlocksBadge`, `BlocksNewsletterStatus`, `Site*` / `Commerce*` / `Blocks*` 前缀的 slot 类型. 平铺的 `SiteHeader` 等指 `src/site` 的外壳零件, `resolveSlots` 指 `src/media` 的版本.
+
 ## [0.5.0] - 2026-11-02
 
 公共符号 894 -> 979, 只增不删, 无迁移.

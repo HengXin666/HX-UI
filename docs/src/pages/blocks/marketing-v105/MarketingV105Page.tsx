@@ -6,8 +6,6 @@ import { BlocksProvider } from "../../../../../src/blocks/_shared/BlocksProvider
 import { V105_DOC } from "../../../../../src/constants/blocks-marketing-v105";
 import { CodeBlock, H2, H3, P } from "../../../components/DocKit";
 import { FAQ_DATA, MATRIX_DATA, PRICING_DATA } from "./data";
-// 集成前皮肤样式不在 @hx/ui/styles.css 里, 演示页直接引源码入口; 集成后这一行可删
-import "../../../../../src/skins/index.css";
 
 const json = (value: unknown): string => JSON.stringify(value, null, 2);
 

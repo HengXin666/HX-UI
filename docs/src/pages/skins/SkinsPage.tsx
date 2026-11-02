@@ -13,8 +13,6 @@ import {
 import { applyDensity, applySkin, readDensity, readSkin, readSkinVariant } from "../../../../src/skins";
 import { Callout, Code, H2, P } from "../../components/DocKit";
 import { SkinShowcase } from "./SkinShowcase";
-// 集成前皮肤样式不在 @hx/ui/styles.css 里, 演示页直接引源码入口; 集成后这一行可删
-import "../../../../src/skins/index.css";
 
 const SKIN_ITEMS = SKIN_LIST.map((s) => ({ key: s.name, label: s.label }));
 const DENSITY_ITEMS = DENSITY_LIST.map((d) => ({ key: d.name, label: d.label }));

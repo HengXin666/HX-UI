@@ -32,6 +32,8 @@ const GROUP = {
   box: "布局容器",
   motion: "动效与质感",
   type: "排版",
+  media: "媒体",
+  blocks: "区块",
   conversation: "会话",
   layout: "页面版式",
   charts: "图表",
@@ -139,7 +141,30 @@ effects ~ 视觉效果 ~ 光斑卡, 流光边框, 跑马灯, 背景底纹与毛�
 
 const TYPE = `
 typography ~ 排版 ~ 标题, 正文, 引用与列表
+display-type ~ 营销排版 ~ Display, Eyebrow, Kicker, Lead, 渐变字与 Prose 正文容器, 中日韩自动收紧
 kbd ~ 按键 ~ 键盘按键标记
+`;
+
+const MEDIA = `
+media-image ~ 图片 ~ 响应式图片, 占位与加载失败兜底
+media-themed-image ~ 亮暗双图 ~ 跟随主题切换的两张图
+media-video ~ 视频 ~ 封面, 静音自动播与减弱动效
+media-gallery ~ 画廊 ~ 网格与瀑布排布, 点开进灯箱
+media-lightbox ~ 灯箱 ~ 全屏查看, 方向键与滑动切换
+media-frames ~ 设备与浏览器外框 ~ 手机, 平板, 笔记本与浏览器窗口外框
+`;
+
+const BLOCKS = `
+blocks-site ~ 站点区块 ~ 顶栏, 大菜单面板, 移动导航, 公告条与页脚
+blocks-hero ~ 首屏与转化条 ~ Hero, 标志墙, 行动条与邮件订阅
+blocks-features ~ 特性区块 ~ 特性栅格, 左右交替, 便当格, 指标带, 展示与图表栅格
+blocks-social-proof ~ 社会证明 ~ 用户评价, 案例, 更新日志与推文墙
+blocks-pricing ~ 定价与对比 ~ 定价卡, 对比矩阵与常见问题
+blocks-developer ~ 开发者区块 ~ 代码展示与安装命令
+blocks-commerce-browse ~ 电商浏览 ~ 商品卡, 栅格, 横滑轨道, 类目, 活动首屏与促销条
+blocks-commerce-trade ~ 电商交易 ~ 商品详情, 购物车, 结账步骤与搜索结果
+blocks-docs ~ 文档站区块 ~ 文档外壳, 目录, 上下页, API 表与提示框
+blocks-portfolio ~ 作品集区块 ~ 个人首屏, 粘性侧栏, 经历时间线, 项目栅格与文章列表
 `;
 
 const CONVERSATION = `
@@ -212,6 +237,8 @@ export const DOCS: readonly DocEntry[] = [
   ...section(GROUP.box, BOX),
   ...section(GROUP.motion, MOTION),
   ...section(GROUP.type, TYPE),
+  ...section(GROUP.media, MEDIA),
+  ...section(GROUP.blocks, BLOCKS),
   ...section(GROUP.conversation, CONVERSATION),
   ...section(GROUP.layout, LAYOUT),
   ...section(GROUP.charts, CHARTS),

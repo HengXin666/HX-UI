@@ -251,6 +251,169 @@ export type { SpotlightCardProps, BorderBeamProps, MarqueeProps, BackdropProps, 
 export { Timeline, TimelineItem, Rating, FileDropzone, TagInput, ColorSwatch } from "./widgets";
 export type { TimelineProps, TimelineItemProps, RatingProps, FileDropzoneProps, FileRejection, TagInputProps, ColorSwatchOption, ColorSwatchProps } from "./widgets";
 
+/**
+ * V0 十项与 V1 区块层由集成任务 V0-Z 接进公共入口 (0.7.0). 名字逐个写出 (check-api-snapshot 不许 export *),
+ * 同名不同物的件按层加前缀别名 (site* / Commerce* / Blocks*), 区块层另有 Blocks 命名空间对象.
+ */
+// ── 运行时主题 (HxProvider / createTheme / useTheme / getThemeScript) ──
+/**
+ * .agents/notes/implemented/feature/2026-11-02-runtime-theme-provider.md
+ */
+export { HxProvider, createTheme, varsToCss, isHxTheme, useTheme, useDefaults, mergeDefaults, HxThemeContext, getThemeScript } from "./provider";
+export type { HxProviderProps, HxSeed, HxTheme, HxThemeVars, HxThemeCssSelectors, HxResolvedMode, HxMode, HxDensity, HxDefaults, HxThemeValue, HxThemeScriptOptions } from "./provider";
+
+// ── 国际化 (LocaleProvider / useLocale / format*) ──
+export {
+  LocaleProvider, useLocale, useLocaleText, directionOf, mergeMessages, resolveText, formatCurrency, formatDate, formatDateTime, formatNumber, formatRelative, monthNames, weekdayNames, zhCN, enUS,
+} from "./locale";
+export type {
+  LocaleProviderProps, LocaleState, ComboboxMessages, CommerceMessages, CommonMessages, ConfirmMessages, DateMessages, DatePresetMessages, DialogMessages, LocaleDomain, LocaleMessages, LocalePack,
+  PaginationMessages, PartialMessages, TableMessages, TextDirection, UploadMessages, WeekStart, DateInput,
+} from "./locale";
+
+// ── 共享 hooks (state / dom / browser / input 四类, 直接转出 hooks/index.ts 桶) ──
+/**
+ * .agents/notes/implemented/architecture/2026-11-02-shared-hooks.md
+ */
+export {
+  useControllableState, useDisclosure, useDebouncedValue, useEventCallback, assignRef, mergeRefs, useMergeRefs, useResizeObserver, useEventListener, useClickOutside, useMediaQuery, useBreakpoint,
+  useReducedMotion, useLocalStorage, useClipboard, useIntersection, useIsomorphicLayoutEffect, getHotkeyHandler, matchHotkey, parseHotkey, useHotkeys,
+} from "./hooks";
+export type {
+  ControllableStateSetter, UseControllableStateOptions, UseControllableStateReturn, DisclosureHandlers, UseDisclosureCallbacks, UseDisclosureReturn, UseDebouncedValueOptions, UseDebouncedValueReturn,
+  EventCallback, PossibleRef, ObserverRect, UseResizeObserverReturn, EventListenerTarget, UseMediaQueryOptions, BreakpointMap, BreakpointName, BreakpointValue, UseLocalStorageOptions,
+  UseLocalStorageReturn, UseClipboardOptions, UseClipboardReturn, UseIntersectionReturn, HotkeyHandler, HotkeyItem, HotkeyItemOptions, ParsedHotkey,
+} from "./hooks";
+
+// ── 皮肤与密度 (样式在 skins/index.css, 由 styles.css 引入) ──
+/**
+ * .agents/notes/implemented/feature/2026-11-02-skins-density.md
+ */
+export {
+  isSkinName, isDensityName, applySkin, applyDensity, readSkin, readSkinVariant, readDensity, DENSITY, DENSITY_LIST, SKIN, SKIN_ATTR, SKIN_LIST, SKIN_VARIANT, SKIN_NAMES, DENSITY_NAMES,
+} from "./skins";
+export type { DensityName, SkinName, SkinVariant, ApplySkinOptions } from "./skins";
+
+// ── 营销排版 (Display / Eyebrow / Kicker / Lead / GradientText / Prose) ──
+export { Display, Eyebrow, Kicker, Lead, GradientText, Prose, DISPLAY_SIZE, TEXT_SIZE, TEXT_TONE, LEAD_MEASURE, KICKER_MARKER, CJK_MODE, detectCjk } from "./typography";
+export type {
+  DisplayProps, EyebrowProps, KickerProps, LeadProps, GradientTextProps, GradientTextState, ProseProps, ProseState, DisplaySize, TextSize, TextTone, LeadMeasure, KickerMarker, CjkMode, GradientStop,
+  DisplayTag, LineTag, ProseTag,
+} from "./typography";
+
+// ── 媒体原语 (Image / ThemedImage / Video / Gallery / Lightbox / DeviceFrame / BrowserFrame) ──
+/**
+ * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
+ */
+export {
+  Image, ThemedImage, useImageStatus, Video, Gallery, Lightbox, DeviceFrame, BrowserFrame, resolveSlots, BROWSER_FRAME_SLOTS, DEVICE, DEVICE_FRAME_SLOTS, GALLERY_SLOTS, IMAGE_FIT, IMAGE_PLACEHOLDER,
+  IMAGE_SLOTS, IMAGE_STATUS, LIGHTBOX_SLOTS, MEDIA_LABELS, MEDIA_MODE, THEMED_IMAGE_SLOTS, VIDEO_SLOTS,
+} from "./media";
+export type {
+  ImageProps, ImageSizing, ThemedImageProps, UseImageStatusReturn, VideoProps, VideoSource, GalleryProps, LightboxProps, LightboxState, MediaItem, LightboxIndexChange, DeviceFrameProps,
+  BrowserFrameProps, SlotResolver, DeviceKind, ImageFit, ImageStatus, MediaLabels, MediaMode, SlotClassNames, SlotStyles,
+} from "./media";
+
+// ── 商业页背景与遮罩 (MeshGradient / Grain / Beam / GridLines / MaskFade / GradientBorder) ──
+export { MeshGradient, Grain, Beam, GridLines, MaskFade, GradientBorder } from "./effects";
+export type { MeshGradientProps, GrainProps, BeamProps, GridLinesProps, MaskFadeProps, GradientBorderProps } from "./effects";
+
+// ── 滚动与文字动效 (ScrollProgress / Parallax / StickyScroll / RotatingText / SplitText / 编排) ──
+export {
+  ScrollProgress, useScrollProgress, useScrollProgressValue, Parallax, StickyScroll, RotatingText, SplitText, ORCHESTRATION_PRESETS, orchestrate, readStaggerStep, useOrchestration,
+} from "./motion";
+export type {
+  ScrollAxis, ScrollBarPosition, ScrollProgressOptions, ScrollProgressProps, MotionDirection, ParallaxProps, StickyLayout, StickyScrollProps, RotateTrigger, RotatingTextProps, SplitBy,
+  SplitTextProps, OrchestrationDelays, OrchestrationOptions, OrchestrationOrder, OrchestrationPresetName, OrchestrationRole,
+} from "./motion";
+
+// ── 站点外壳零件 (SiteHeader / MegaMenu / MobileNav / AnnouncementBar / LocaleSwitcher / SearchOverlay / SiteFooter / ThemeSwitcher) ──
+export {
+  resolveSlots as siteResolveSlots, SiteHeader, useSiteScroll, AnnouncementBar, MegaMenu, MobileNav, LocaleSwitcher, SearchOverlay, SiteFooter, ThemeSwitcher, THEME_MODES, isThemeMode, useThemeMode,
+  ANNOUNCEMENT_BAR_SLOTS, LOCALE_SWITCHER_SLOTS, MEGA_MENU_SLOTS, MOBILE_NAV_SLOTS, SEARCH_OVERLAY_SLOTS, SITE_COLLAPSE, SITE_CONTAINER, SITE_FOOTER_SLOTS, SITE_HEADER_SLOTS, SITE_HEIGHT,
+  SITE_OVERLAY_MODE, SITE_STORAGE, SITE_THEME_VARIANT, SITE_TONE, THEME_SWITCHER_SLOTS,
+} from "./site";
+export type {
+  SiteCollapse, SiteContainerSize, SiteFeatured, SiteHeightSize, SiteLink, SiteLinkGroup, SiteNavItem, SiteSocialLink, SiteTone, SlotClassNames as SiteSlotClassNames, SlotProps,
+  SlotResolver as SiteSlotResolver, SlotStyles as SiteSlotStyles, SiteHeaderProps, SiteHeaderSlot, SiteHeaderState, SiteScrollState, AnnouncementBarLabels, AnnouncementBarProps, AnnouncementBarSlot,
+  MegaMenuLabels, MegaMenuProps, MegaMenuSlot, MobileNavLabels, MobileNavProps, MobileNavSlot, MobileNavState, LocaleGroup, LocaleOption, LocaleSwitcherLabels, LocaleSwitcherProps,
+  LocaleSwitcherSlot, SearchOverlayGroup, SearchOverlayItem, SearchOverlayLabels, SearchOverlayProps, SearchOverlaySlot, SearchOverlayTerm, SiteFooterLabels, SiteFooterProps, SiteFooterSlot,
+  ThemeSwitcherLabels, ThemeSwitcherProps, ThemeSwitcherSlot, ResolvedThemeMode, ThemeMode, UseThemeModeOptions, UseThemeModeReturn,
+} from "./site";
+
+// ── 商业语义原子 (Price / PromoBadge / ProductSwatch / SizeSelector / RatingSummary) ──
+export {
+  Price, PromoBadge, ProductSwatch, SizeSelector, RatingSummary, discountRate, useCommerceFormat, COMMERCE_SIZE, COMMERCE_TONE, COMMERCE_VARIANT, NEWSLETTER_STATUS, PRICE_PERIOD, PROMO_KIND,
+  PROMO_PLACEMENT, RAIL_ITEM_SIZE,
+} from "./commerce";
+export type {
+  PriceProps, PriceSlot, PriceState, PromoBadgeProps, PromoBadgeSlot, PromoBadgeState, ProductSwatchOption, ProductSwatchProps, ProductSwatchSlot, ProductSwatchState, SizeOption, SizeSelectorProps,
+  SizeSelectorSlot, SizeSelectorState, RatingSummaryProps, RatingSummarySlot, RatingSummaryState, CommerceFormat, SlotClassNames as CommerceSlotClassNames, SlotProps as CommerceSlotProps,
+  SlotStyles as CommerceSlotStyles, RovingApi, RovingItem, CommerceSize, CommerceTone, CommerceVariant, NewsletterStatus, PricePeriod, PromoKind, PromoPlacement, RailItemSize,
+} from "./commerce";
+
+// ── 区块层基座 (BlockShell / SectionHeading / BlocksProvider / PageComposer 与区块类型) ──
+export {
+  BlockShell, resolveSlots as blocksResolveSlots, useBlockShell, SectionHeading, CtaButton, CtaGroup, renderSectionHeading, BlocksProvider, useBlocks, useBlockLabels, PageComposer,
+} from "./blocks/_shared";
+export type {
+  BlockShellContextValue, SectionHeadingState, BlockTone, BlockPad, BlockWidth, BlockAlign, BlockReveal, BlockTag, BlockTitleSize, BlockDensity, BackdropVariant, HeadingLevel,
+  SlotClassNames as BlocksSlotClassNames, SlotStyles as BlocksSlotStyles, BlockShellSlot, SectionHeadingSlot, CtaGroupSlot, PageComposerSlot, BlockShellState, Rich, IconName, Cta, MediaRatio, Media,
+  LinkItem, LinkGroup, MoneyPeriod, Money, Person, Logo, Badge as BlocksBadge, Stat, MaskSpec, BackdropSpec, BackdropLayerProps, BackdropRenderer, BlockBaseProps, BlockSlots, SectionHeadingData,
+  BlockLabels, BlocksContextValue, BlockRegistry, BlockNode, BlockShellProps, SectionHeadingProps, CtaGroupProps, CtaButtonProps, BlocksProviderProps, PageComposerProps, ProfileHeroLayout,
+  ProjectGridLayout, ProfileData, ExperienceItem, ProjectItem, PostItem, CalloutKind, TocItem, ApiRow, SearchSpec, DocsHomeCard,
+} from "./blocks/_shared";
+
+// ── 站点区块 (与 src/site 同名的件在平铺层带 Blocks 前缀, 分类写法见 Blocks.Site) ──
+export {
+  AnnouncementBar as BlocksAnnouncementBar, MegaMenuPanel, MobileNav as BlocksMobileNav, SiteFooter as BlocksSiteFooter, SiteHeader as BlocksSiteHeader, isMegaSpec, toNavItems, useSiteAria,
+  siteBlockRegistry,
+} from "./blocks/site";
+export type {
+  AnnouncementBlockProps, MegaMenuFeatured, MegaMenuPanelBlockProps, MegaMenuPanelData, MegaMenuSpec, MobileNavBlockProps, SearchSpec as BlocksSearchSpec, SiteBlockAriaLabels, SiteBrand,
+  SiteFooterBlockProps, SiteHeaderBlockProps, SiteNavEntry, SiteNewsletter, SiteStatusState,
+} from "./blocks/site";
+
+// ── 营销区块 (分类写法 Blocks.Marketing.Hero 与平铺别名并存) ──
+export {
+  BentoFeatures, CaseStudies, ChangelogList, CodeShowcase, ComparisonMatrix, CtaBanner, Faq, FeatureAlternating, FeatureGrid, FigureGrid, Hero, InstallBlock, LogoWall, Newsletter, Pricing, Showcase,
+  StatBand, Testimonials, TweetWall,
+} from "./blocks/marketing";
+export type {
+  BentoFeaturesItem, BentoFeaturesProps, CaseStudiesVariant, CaseStudyItem, CaseStudiesProps, ChangelogVariant, ChangelogGroupBy, ChangelogEntry, ChangelogListProps, CodeShowcaseSlot, CodeSample,
+  CodeShowcaseTab, CodeShowcaseProps, MatrixValue, MatrixPlan, MatrixRow, MatrixGroup, ComparisonMatrixProps, CtaBannerVariant, CtaBannerFill, CtaBannerProps, FaqItem, FaqGroup, FaqContact, FaqProps,
+  FeatureAlternatingItem, FeatureAlternatingProps, FeatureGridItem, FeatureGridProps, FigureGridItem, FigureGridProps, HeroLayout, HeroPill, HeroTrust, HeroProps, InstallBlockSlot, InstallCommand,
+  InstallPlatform, InstallAlternative, InstallBlockProps, LogoWallMode, LogoWallProps, NewsletterStatus as BlocksNewsletterStatus, NewsletterVariant, NewsletterProps, PricingFeature, PricingPlan,
+  PricingBilling, PricingProps, ShowcaseItem, ShowcaseFeature, ShowcaseProps, StatBandItem, StatBandProps, TestimonialsVariant, TestimonialItem, TestimonialsProps, TweetItem, TweetWallProps,
+} from "./blocks/marketing";
+
+// ── 电商区块 ──
+export { CampaignHero, CartSummary, CategoryTiles, CheckoutSteps, ProductCard, ProductDetail, ProductGrid, ProductRail, PromoStrip, SearchResults } from "./blocks/commerce";
+export type {
+  CampaignSlideData, CampaignHeroProps, CartLineData, CartTotalData, CartPromoSpec, CartSummaryData, CartSummaryProps, CategoryTileData, CategoryTilesProps, CheckoutStepData, CheckoutStepsProps,
+  ProductBadgeData, ProductSwatchData, ProductCardData, ProductCardProps, DetailOptionValue, DetailOption, ProductDetailData, ProductDetailProps, ProductGridStateData, ProductGridCardOptions,
+  ProductGridProps, ProductRailProps, PromoStripItemData, PromoStripProps, SearchFilterOption, SearchFilter, SearchSortSpec, SearchQueryState, SearchResultsProps,
+} from "./blocks/commerce";
+
+// ── 文档区块 ──
+export { DocsShell, DocsToc, DocsPager, ApiTable, Callout, DocsHome, useActiveHeading, useCollectedHeadings, hashTarget, useDocsText, CALLOUT_KIND, DOCS_WIDTH_VAR } from "./blocks/docs";
+export type {
+  DocsShellProps, DocsShellSlot, DocsShellState, DocsTocProps, DocsTocSlot, DocsPagerProps, DocsPagerSlot, ApiTableProps, ApiTableSlot, CalloutProps, CalloutSlot, DocsHomeCards, DocsHomeHero,
+  DocsHomeProps, DocsHomeSlot, ActiveHeadingOptions, DocsText,
+} from "./blocks/docs";
+
+// ── 作品集区块 ──
+export {
+  ProfileHero, StickyProfileLayout, ExperienceTimeline, ProjectGrid, PostList, HoverPreviewLink, useScrollSpy, hashTarget as blocksHashTarget, groupPostsByYear, PORTFOLIO_HERO_LAYOUT,
+  PORTFOLIO_PROJECT_LAYOUT,
+} from "./blocks/portfolio";
+export type {
+  ProfileHeroProps, StickyProfileAside, StickyProfileLayoutProps, ExperienceTimelineProps, ProjectGridProps, PostListProps, HoverPreviewLinkProps, ScrollSpyOptions, PostYearGroup,
+} from "./blocks/portfolio";
+
+// ── 区块层命名空间 (Blocks.Site / Blocks.Marketing / Blocks.Commerce / Blocks.Docs / Blocks.Portfolio) ──
+export { Blocks } from "./blocks/namespace";
+
 // ── 常量 ──
 /** 库与文档站共用的字面量 (PROJECT-CONST-DUP), 导出清单见 public-constants.ts. */
 export {

@@ -95,6 +95,25 @@ reg.node({
 回传给你提示。校验分四层（结构 → 局部 → 环 → 业务钩子），环的报错挂在**边**上
 而不是节点上：删环上任意一条边都能解开，挂节点会让人以为要删节点。
 
+## 分层结构 (0.7.0 起)
+
+公共入口 `@hx/ui` (src/index.ts) 自下而上分成这几层, 名字逐个写出, 不用 `export *`:
+
+| 层 | 目录 | 内容 |
+| --- | --- | --- |
+| 令牌与皮肤 | `tokens.css` / `base.css` / `skins/` | 语义令牌 (`@layer hx.tokens`), 可选全局重置 (`@layer hx.base`), 六套皮肤与三档密度 (`data-skin` / `data-density`) |
+| 运行时 | `provider/` / `locale/` / `hooks/` | `HxProvider` / `createTheme` / `useTheme` / `getThemeScript`; `LocaleProvider` / `useLocale` / `format*`; 16 个共享 hook |
+| 基础件与版式件 | `primitives/` / `layout/` / `box/` | radix 之上的基础件, 页面版式, Stack / Grid / Bento 布局原语 |
+| 质感 | `typography/` / `media/` / `effects/` / `motion/` | 营销排版, 图片视频与外框, 背景遮罩 (`MeshGradient` / `Grain` / `Beam` ...), 入场与滚动动效 |
+| 页面零件 | `site/` / `commerce/` | 站点外壳 (`SiteHeader` / `MegaMenu` / `SiteFooter` ...) 与商业原子 (`Price` / `SizeSelector` ...) |
+| 区块 | `blocks/` | site / marketing / commerce / docs / portfolio 五类整段区块, 外加 `_shared` 基座与 `PageComposer` |
+
+区块有两种写法: 分类的 `Blocks.Marketing.Hero`, 与平铺的 `Hero`. 与 `site/` 外壳零件同名的站点区块在平铺层带前缀
+(`BlocksSiteHeader` / `BlocksSiteFooter` / `BlocksMobileNav` / `BlocksAnnouncementBar`), 其余跨层同名件同理 (`siteResolveSlots`, `CommerceSlotProps` ...).
+
+样式入口: `@hx/ui/styles.css` 已含皮肤与密度; 只要令牌时引 `@hx/ui/tokens.css`, 需要全局重置再引 `@hx/ui/base.css`,
+单独要皮肤层引 `@hx/ui/skins.css` (内含 `density.css`, 也可单引 `@hx/ui/density.css`).
+
 ## 四个值得一说的地方
 
 **一. 换肤只需改令牌** 组件里不出现任何硬编色值. 改 `tokens.css` 里的 CSS 变量, 全站跟着变.

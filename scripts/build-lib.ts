@@ -78,6 +78,8 @@ execFileSync(process.execPath, [join(ROOT, NODE_MODULES, "typescript", "bin", "t
 for (const name of CSS_FILES) {
   cpSync(join(SRC, name), join(DIST, name));
 }
+/** 皮肤层 (skins/index.css 及其 @import 的各皮肤与 density.css) 整目录拷贝, 对应 exports 的 ./skins.css 与 ./density.css. */
+cpSync(join(SRC, "skins"), join(DIST, "skins"), { recursive: true, filter: (src: string) => !src.endsWith(".ts") });
 for (const name of EXTRA_FILES) {
   cpSync(join(ROOT, name), join(DIST, name));
 }
