@@ -51,7 +51,7 @@ export const CHECKOUT_STEPS: CheckoutStepMeta[] = [
     fields: [
       { name: "name", label: "收件人", autoComplete: "name", placeholder: "张三" },
       { name: "phone", label: "手机号", type: "tel", autoComplete: "tel", placeholder: "138 0000 0000" },
-      { name: "email", label: "邮箱 (接收订单通知)", type: "email", autoComplete: "email", placeholder: "you@example.com", wide: true },
+      { name: "email", label: "邮箱 (接收订单通知)", type: "email", autoComplete: "email", placeholder: "you@mail.test", wide: true },
       { name: "region", label: "省 / 市 / 区", autoComplete: "address-level1", placeholder: "上海市 徐汇区" },
       { name: "postcode", label: "邮编", autoComplete: "postal-code", placeholder: "200030" },
       { name: "street", label: "详细地址", autoComplete: "street-address", placeholder: "街道, 门牌号", wide: true },

@@ -215,8 +215,8 @@ templates-console ~ 链路控制台 ~ 代理链路 + 步骤条 + 日志框, 整�
 page-saas ~ SaaS 落地页 ~ 复刻 vercel / linear / stripe 型 SaaS 落地页: 主视觉 + 客户墙 + 便当格 + 定价 + 问答, 三套皮肤
 page-opensource ~ 开源项目站 ~ 复刻 tailwindcss / astro / bun 型开源项目主页: 安装命令 + 代码展示 + 案例 + 更新日志, 三套皮肤
 page-pricing ~ 定价页 ~ 复刻 linear / vercel 型定价页: 月年切换套餐 + 功能对比表 + 分组问答, 三套皮肤
-page-commerce-home ~ 电商首页 ~ 复刻 nike / apple / shopify 型电商首页: 大菜单 + 轮播 + 分类 + 商品网格
-page-product ~ 商品详情 ~ 复刻 apple / nike 型商品详情页: 画廊 + 购买面板 + 规格对比 + 评价
+page-commerce-home ~ 电商首页 ~ 复刻 nike / apple / shopify 型电商首页: 大菜单 + 轮播 + 分类 + 商品网格. 演示里顶栏未吸顶, 真实项目里传 sticky: true
+page-product ~ 商品详情 ~ 复刻 apple / nike 型商品详情页: 画廊 + 购买面板 + 规格对比 + 评价. 演示里顶栏未吸顶, 真实项目里传 sticky: true
 page-portfolio ~ 个人主页 ~ 复刻 brittanychiang.com 型个人主页: 粘性双栏, 经历 + 项目 + 文章
 page-docsite ~ 文档站 ~ 复刻 mantine / shadcn / ant.design 型组件文档站: 首页 + 侧栏目录 + 正文 + 属性表
 page-dashboard ~ 仪表盘 ~ 复刻 SaaS 后台型仪表盘: 侧栏 + 指标行 + 双图表 + 动态流 + 上手清单

@@ -59,12 +59,15 @@ export const HEADER_ACTIONS: SiteHeaderBlockProps["actions"] = [
   { label: "登录", href: "#signin", variant: "primary" },
 ];
 
-/** 首页顶栏: 吸顶, 大菜单, 公告条. */
+/**
+ * 首页顶栏: 大菜单, 公告条.
+ * 文档站演示里关闭吸顶: 模板嵌在文档站的滚动容器里, sticky 会浮到文档站自己的顶栏上. 真实项目里传 sticky: true.
+ */
 export const HOME_HEADER: SiteHeaderBlockProps = {
   brand: BRAND,
   nav: NAV,
   actions: HEADER_ACTIONS,
-  sticky: true,
+  sticky: false,
   announcement: {
     message: "会员满 ¥399 免运费, 30 天无理由退货",
     cta: { label: "立即加入", href: "#join", variant: "link" },

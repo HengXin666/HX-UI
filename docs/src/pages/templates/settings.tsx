@@ -72,7 +72,7 @@ export function TemplateSettingsPage(): JSX.Element {
               <Switch defaultChecked />
             </SettingRow>
             <SettingRow title="自定义 Webhook" description="以 POST 形式发到你的服务">
-              <Input placeholder="https://example.com/hook" className={SETTINGS.inputWidth} />
+              <Input placeholder="https://your-server.test/hook" className={SETTINGS.inputWidth} />
             </SettingRow>
           </SettingSection>
 

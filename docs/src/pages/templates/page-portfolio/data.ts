@@ -42,7 +42,7 @@ const EXPERIENCE: ExperienceItem[] = [
     period: "2024 — 至今",
     title: "资深前端工程师",
     org: "Northwind",
-    href: "https://northwind.example.com",
+    href: "#exp-northwind",
     current: true,
     body: "主导设计系统 2.0: 令牌, 皮肤与数据驱动的页面区块, 覆盖 6 条产品线, 新页面平均交付周期缩短 40%.",
     tags: ["React", "TypeScript", "Design Tokens"],
@@ -51,7 +51,7 @@ const EXPERIENCE: ExperienceItem[] = [
     period: "2021 — 2024",
     title: "前端工程师",
     org: "Lumen Labs",
-    href: "https://lumen.example.com",
+    href: "#exp-lumen",
     body: "负责营销站与文档站, 首屏 LCP 从 3.2s 降到 1.3s, 搭建可视化回归流水线.",
     tags: ["Next.js", "Playwright", "Motion"],
   },
@@ -68,16 +68,15 @@ const EXPERIENCE: ExperienceItem[] = [
 const PROJECTS: ProjectItem[] = [
   {
     title: "Tessera UI",
-    href: "https://tessera.example.com",
-    external: true,
+    href: "#project-tessera",
     featured: true,
     body: "开源区块库: 一份 JSON 拼出营销页, 文档站与仪表盘.",
     tags: ["React", "Tailwind"],
     links: [{ label: "源码", href: "https://github.com/zhouyu-dev/tessera", external: true }],
   },
-  { title: "Inkwell", href: "https://inkwell.example.com", external: true, body: "面向中文长文的排版引擎, 自动处理标点挤压.", tags: ["Typography"] },
-  { title: "Contrast Lens", href: "https://lens.example.com", external: true, body: "浏览器扩展: 实时检查页面对比度与焦点顺序.", tags: ["a11y", "Extension"] },
-  { title: "Tidewatch", href: "https://tidewatch.example.com", external: true, body: "潮汐与日落时间的离线 PWA.", tags: ["PWA"] },
+  { title: "Inkwell", href: "#project-inkwell", body: "面向中文长文的排版引擎, 自动处理标点挤压.", tags: ["Typography"] },
+  { title: "Contrast Lens", href: "#project-contrast-lens", body: "浏览器扩展: 实时检查页面对比度与焦点顺序.", tags: ["a11y", "Extension"] },
+  { title: "Tidewatch", href: "#project-tidewatch", body: "潮汐与日落时间的离线 PWA.", tags: ["PWA"] },
 ];
 
 const POSTS: PostItem[] = [

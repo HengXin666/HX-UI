@@ -179,7 +179,7 @@ export const HOME_BLOCKS = [
     tone: "muted",
     title: "第一时间收到新品与会员特惠",
     lead: "每周一封, 随时可退订.",
-    placeholder: "you@example.com",
+    placeholder: "you@mail.test",
     emailLabel: "邮箱地址",
     submitLabel: "订阅",
     successMessage: "订阅成功, 欢迎加入.",

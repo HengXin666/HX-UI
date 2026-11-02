@@ -72,7 +72,7 @@ export const SAAS_HERO = {
     { label: "免费开始", href: "#signup", variant: "primary", size: "lg" },
     { label: "预约演示", href: "#demo", variant: "secondary", size: "lg" },
   ],
-  media: { kind: "image", src: "https://picsum.photos/seed/tpl-saas-hero/1600/1000", alt: "Orbit 工作区截图", ratio: "16/9", priority: true },
+  media: { kind: "image", src: "./demo/saas-hero.svg", alt: "Orbit 工作区截图", ratio: "16/9", priority: true },
   frame: "browser",
   frameAddress: "app.orbit.dev",
   backdrop: { variant: "grid", mask: { fade: "bottom" } },
@@ -105,7 +105,7 @@ export const SAAS_BENTO = {
   cols: 3,
   tone: "muted",
   items: [
-    { icon: "lucide:map", title: "路线图", body: "季度目标拆到每一张卡片, 进度自动汇总.", span: { col: 2, row: 2 }, media: { kind: "image", src: "https://picsum.photos/seed/tpl-saas-roadmap/1200/800", alt: "路线图视图", ratio: "3/2" } },
+    { icon: "lucide:map", title: "路线图", body: "季度目标拆到每一张卡片, 进度自动汇总.", span: { col: 2, row: 2 }, media: { kind: "image", src: "./demo/saas-roadmap.svg", alt: "路线图视图", ratio: "3/2" } },
     { icon: "lucide:refresh-cw", title: "周期", body: "两周一个节奏, 未完成项自动顺延." },
     { icon: "lucide:inbox", title: "收件箱", body: "提及, 指派与评审集中处理." },
     { icon: "lucide:file-text", title: "文档", body: "规格书直接引用议题, 状态实时同步.", span: { col: 2 } },

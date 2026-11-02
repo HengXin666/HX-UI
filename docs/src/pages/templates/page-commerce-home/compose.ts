@@ -11,13 +11,19 @@ export const TEMPLATE_SKINS: ReadonlyArray<{ key: SkinName; label: string }> = [
   { key: "mono", label: "mono" },
 ];
 
-/** 示例图前缀: data.ts 里的图片地址都以它开头, 文档预览时换成 canvas 现画的图. */
-export const DEMO_CDN = "https://cdn.example.com/hx-commerce/";
+/**
+ * 示例图前缀: data.ts 里的图片地址都以它开头, 指向仓内静态占位图 docs/src/public/demo/*.svg.
+ * 用 "./demo/" 而不是 "/demo/": vite base 默认 "./" + hash 路由, 部署在 GitHub Pages 的 /HX-UI/ 子路径时
+ * 站点根相对的 "/demo/" 会 404, 相对 index.html 的 "./demo/" 在根路径, 子路径与本地预览下都能取到.
+ * 文档预览时若 canvas 现画的图就绪, 仍会替换成现画的图; 未就绪或失败时显示这里的 SVG, 不会出现坏图.
+ */
+export const DEMO_CDN = "./demo/";
 
 /** 一张示例图: name 同时是 useDemoImages 的标签. */
 export const demoImg = (name: string, alt: string) => ({
-  src: `${DEMO_CDN}${name}.jpg`,
-  srcSet: `${DEMO_CDN}${name}-640.jpg 640w, ${DEMO_CDN}${name}-1280.jpg 1280w`,
+  src: `${DEMO_CDN}${name}.svg`,
+  // SVG 与分辨率无关, 两档都指向同一文件, 保留 srcSet 结构但不产生 404
+  srcSet: `${DEMO_CDN}${name}.svg 640w, ${DEMO_CDN}${name}.svg 1280w`,
   alt,
 });
 
@@ -45,7 +51,7 @@ export function collectDemoKeys(data: unknown): string[] {
     if (!value || typeof value !== "object" || isOpaque(value)) return;
     const src = (value as { src?: unknown }).src;
     if (typeof src === "string" && src.startsWith(DEMO_CDN)) {
-      const key = src.slice(DEMO_CDN.length).replace(/\.jpg$/, "");
+      const key = src.slice(DEMO_CDN.length).replace(/\.svg$/, "");
       if (!keys.includes(key)) keys.push(key);
     }
     Object.values(value).forEach(walk);
@@ -69,7 +75,7 @@ export function withDemoMedia<T>(data: T, keys: readonly string[], images: reado
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value)) out[k] = walk(v);
     if (typeof out.src === "string" && out.src.startsWith(DEMO_CDN)) {
-      const image = images[keys.indexOf(out.src.slice(DEMO_CDN.length).replace(/\.jpg$/, ""))];
+      const image = images[keys.indexOf(out.src.slice(DEMO_CDN.length).replace(/\.svg$/, ""))];
       if (image) Object.assign(out, { src: image.src, srcSet: image.srcSet, placeholder: image.placeholder });
     }
     return out;

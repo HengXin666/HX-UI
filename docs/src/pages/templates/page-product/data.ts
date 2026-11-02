@@ -38,7 +38,8 @@ export const PRODUCT_BLOCKS = [
     brand: BRAND,
     nav: NAV,
     actions: HEADER_ACTIONS,
-    sticky: true,
+    // 文档站演示里关闭吸顶: 嵌在文档站滚动容器里时 sticky 会盖住文档站顶栏. 真实项目里传 sticky: true.
+    sticky: false,
     transparent: true,
     localNav: [
       { label: "概览", href: "#detail", current: true },
