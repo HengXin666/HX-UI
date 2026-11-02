@@ -29,6 +29,7 @@ import {
   DEMO_VARIANT_OUTLINE,
 } from "../../../../src/constants/docs-demos";
 import { Callout, Code, H2, P, Preview, PropsTable } from "../../components/DocKit";
+import { ScrollMotionSection } from "./ScrollMotionSection";
 
 const PRESET_NAMES = Object.keys(MOTION_PRESETS) as MotionPresetName[];
 const STAGGER_ITEMS = Array.from({ length: MOTION_DOC.staggerCount }, (_, index) => index + 1);
@@ -203,6 +204,8 @@ export function MotionPage(): JSX.Element {
       <Preview code={`<PageTransition pageKey={pathname}>{outlet}</PageTransition>\n<FadeSwap swapKey={status}>{label}</FadeSwap>`}>
         <TransitionDemo />
       </Preview>
+
+      <ScrollMotionSection />
     </>
   );
 }

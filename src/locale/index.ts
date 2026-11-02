@@ -6,6 +6,7 @@ export type { LocaleProviderProps, LocaleState } from "./LocaleProvider";
 export { directionOf, mergeMessages, resolveText } from "./core";
 export type {
 	ComboboxMessages,
+	CommerceMessages,
 	CommonMessages,
 	ConfirmMessages,
 	DateMessages,

@@ -143,3 +143,83 @@ export const MOTION_DOC = {
   /** 交错示例的子项数. */
   staggerCount: 6,
 } as const;
+
+/**
+ * 滚动联动与入场编排 (V0-07): ScrollProgress, Parallax, StickyScroll, RotatingText, SplitText, orchestration.
+ *
+ * .agents/notes/implemented/feature/2026-11-02-scroll-motion-orchestration.md
+ */
+
+/** 编排间隔令牌名 (V0-01 在 tokens.css 引入). 读不到时回退 STAGGER_GAP_S. */
+export const STAGGER_STEP_TOKEN = "--stagger-step";
+
+/** 滚动轴. */
+export const SCROLL_AXIS = { x: "x", y: "y" } as const;
+
+/** 滚动区间: through 为元素底边进屏到顶边出屏; contain 为元素顶边到顶, 底边到底 (粘性叙事用). */
+export const SCROLL_OFFSET = {
+  through: ["start end", "end start"],
+  contain: ["start start", "end end"],
+} as const;
+
+/** 进度的两端. */
+export const PROGRESS_RANGE = [0, 1] as const;
+
+/** 位移方向. Parallax 与 SplitText 共用. */
+export const MOTION_DIRECTION = { up: "up", down: "down", left: "left", right: "right" } as const;
+
+/** 视差: 速度因子 1 对应整段滚动内的总位移 (px); 默认速度 0.2 即约 40px, 读起来是 "慢半拍". */
+export const PARALLAX_RANGE_PX = 200;
+export const PARALLAX_DEFAULT_SPEED = 0.2;
+
+/** 进度条: 平滑弹簧, 让滚轮的阶跃变成连续推进. */
+export const SCROLL_BAR_SPRING = { stiffness: 200, damping: 40, restDelta: 0.001 } as const;
+
+/** 进度条贴边位置. */
+export const SCROLL_BAR_POSITION = { top: "top", bottom: "bottom", inline: "inline" } as const;
+
+/** 粘性叙事: 媒体在侧边 (宽屏左粘右滚) 或在上方 (上粘下滚). */
+export const STICKY_LAYOUT = { side: "side", top: "top" } as const;
+
+/** 粘性叙事的判定线: 视口正中一条线, 哪一步压线哪一步就是当前步. */
+export const STICKY_STEP_MARGIN = "-50% 0px -50% 0px";
+
+/** 轮换词触发: 定时, 或按滚动进度换词. */
+export const ROTATE_TRIGGER = { interval: "interval", scroll: "scroll" } as const;
+
+/** 轮换词默认停留 (ms). 短于 2s 读不完一个词, 长于 3s 首屏已经滚走. */
+export const ROTATE_INTERVAL_MS = 2400;
+
+/** 逐字或逐词. */
+export const SPLIT_BY = { char: "char", word: "word" } as const;
+
+/** 逐字 / 逐词的默认步长 (s). 逐字超过 40 字时总时长会拖沓, 调用方应调小或改逐词. */
+export const SPLIT_STEP_S = { char: 0.02, word: 0.06 } as const;
+
+/** 拆分时识别空白的正则源: 空白原样保留, 不包进动画单元. */
+export const WHITESPACE_PATTERN = /(\s+)/;
+
+/** 区块内的编排角色. */
+export const ORCHESTRATION_ROLE = {
+  eyebrow: "eyebrow",
+  title: "title",
+  lead: "lead",
+  cta: "cta",
+  media: "media",
+} as const;
+
+/** 滚动联动文档示例的取值与复用类名. */
+export const SCROLL_DOC = {
+  /** 示例滚动框. */
+  scrollBox: "h-48 w-full overflow-y-auto rounded-lg border border-border",
+  /** 滚动框内的加高内容, 留出可滚距离. */
+  tallInner: "flex min-h-[200%] flex-col justify-center gap-2 p-4",
+  /** 属性表里的 ref 类型名. */
+  typeRef: "RefObject<HTMLElement>",
+  /** 示例说明文字. */
+  caption: "text-[13px] text-muted-foreground",
+  /** 视差三层的速度因子. */
+  speedSlow: 0.1,
+  speedMid: 0.3,
+  speedFast: 0.6,
+} as const;

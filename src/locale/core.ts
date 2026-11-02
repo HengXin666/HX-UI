@@ -85,6 +85,50 @@ export interface CommonMessages {
 	clear: string;
 }
 
+/** 商业原子 (src/commerce) 的文案与默认币种. 币种是 ISO 4217 代码, 符号由 Intl 产出. */
+export interface CommerceMessages {
+	/** 未传 currency prop 时用的币种代码. */
+	currency: string;
+	originalPrice: string;
+	currentPrice: string;
+	/** 折扣的读屏说明, 参数是已格式化的百分比. */
+	discount: (percent: string) => string;
+	perDay: string;
+	perWeek: string;
+	perMonth: string;
+	perYear: string;
+	taxIncluded: string;
+	taxExcluded: string;
+	promoNew: string;
+	promoSale: string;
+	promoLimited: string;
+	lowStock: (count: string) => string;
+	swatchGroup: string;
+	/** "+N" 折叠按钮的可访问名. */
+	swatchMore: (count: string) => string;
+	unavailable: string;
+	sizeGroup: string;
+	soldOut: string;
+	ratingScore: (score: string, max: string) => string;
+	ratingSummary: (score: string, max: string, count: string) => string;
+	reviews: (count: string) => string;
+	newsletterLabel: string;
+	newsletterPlaceholder: string;
+	newsletterSubmit: string;
+	newsletterSubmitting: string;
+	newsletterSuccess: string;
+	newsletterError: string;
+	newsletterInvalid: string;
+	footnotes: string;
+	footnoteRef: (index: string) => string;
+	footnoteBack: (index: string) => string;
+	railLabel: string;
+	railPrevious: string;
+	railNext: string;
+	railPages: string;
+	railPage: (index: string, total: string) => string;
+}
+
 /** 一套完整文案, 按组件域分组. */
 export interface LocaleMessages {
 	date: DateMessages;
@@ -96,6 +140,7 @@ export interface LocaleMessages {
 	confirm: ConfirmMessages;
 	datePresets: DatePresetMessages;
 	common: CommonMessages;
+	commerce: CommerceMessages;
 }
 
 export type LocaleDomain = keyof LocaleMessages;

@@ -934,6 +934,77 @@
   }
 
   /* ============================================================================
+   * 展示级排版 / 营销节奏 / 宽屏容器 (V0-01, 对应视觉审计 T1 T2 T4 T5)
+   * ----------------------------------------------------------------------------
+   * 与明暗无关: 这里没有任何颜色, 只是尺寸 / 时长 / 层级, 所以**不挂 [data-mode]**,
+   * 亮暗两套主题共用同一份取值, 切主题时不需要也不应该重新求值.
+   * 字号 / 行高 / 字距 / 容器 / 层级 / 编排只挂 :root; 节奏档 (section-pad / block-gap)
+   * 乘 --density, 因此挂 :root, [data-density], 在密度覆盖点重新求值 (见文件头),
+   * 默认密度 1 时下限 / 上限正好是 48px 到 160px.
+   *
+   * 流体公式: 视口 360px 取下限, 1440px 取上限, 中间线性插值
+   *   preferred = (min - slope*360)/16 rem + slope*100 vw, slope = (max-min)/1080.
+   *   rem 截距保证用户放大浏览器字号时标题跟着放大 (纯 vw 会让缩放失效).
+   *
+   * 与既有令牌的关系 (只新增, 不改任何既有取值):
+   *   --fs-6xl/7xl/8xl 是固定档, 给数据大字; --fs-display-* 是流体档, 给落地页标题.
+   *   --lh-tight (1.25) 与 --container-max (80rem) / --container-wide (90rem) 已存在,
+   *   原样保留. 因此 display 专用的更紧行高叫 --lh-display-tight,
+   *   1536px 的最宽展示容器叫 --container-display (而不是覆盖 --container-max).
+   * ==========================================================================*/
+
+  :root {
+    /* 展示级字号: sm 36->44, md 44->56, lg 52->68, xl 60->80, 2xl 72->96 (px) */
+    --fs-display-sm: clamp(2.25rem, 2.083rem + 0.7407vw, 2.75rem);
+    --fs-display-md: clamp(2.75rem, 2.5rem + 1.111vw, 3.5rem);
+    --fs-display-lg: clamp(3.25rem, 2.917rem + 1.481vw, 4.25rem);
+    --fs-display-xl: clamp(3.75rem, 3.333rem + 1.852vw, 5rem);
+    --fs-display-2xl: clamp(4.5rem, 4rem + 2.222vw, 6rem);
+
+    /* 展示级行高: 大字号下 1.25 会显得松散, display 收到 1.05;
+       单行巨型标题 (2xl) 用 tight 的 1.0, 两行以上回到 --lh-display. */
+    --lh-display: 1.05;
+    --lh-display-tight: 1;
+
+    /* 展示级字距: 拉丁字母在大字号下需要收紧, 字号越大收得越多.
+       CJK 方块字自带字间留白, 负字距会把汉字挤到一起, 所以中文取 0;
+       使用方在 :lang(zh) / :lang(ja) 下用 --tracking-display-cjk 覆盖. */
+    --tracking-display: -0.025em;
+    --tracking-display-tight: -0.04em;
+    --tracking-display-cjk: 0em;
+
+    /* 容器宽度: content = 常规营销页正文区 (1280px), wide 沿用既有 --container-wide
+       (90rem = 1440px), display = 宽屏展示区上限 (1536px, 对齐 2xl 断点). */
+    --container-content: 80rem;
+    --container-display: 96rem;
+
+    /* 站点头部: 高于 sticky (10) 的吸顶元素, 低于 panel (30) 与所有浮层,
+       保证下拉菜单 / 弹窗永远盖得住导航栏. */
+    --z-header: calc(var(--z-sticky) + 10);
+
+    /* 入场编排: 列表 / 卡片依次出现的间隔. 第 n 项延迟 n * step;
+       超过 8 项时应封顶, 否则最后一项要等半秒以上. */
+    --stagger-step: 60ms;
+
+    /* 边缘渐隐: 横滑轨道 / logo 墙两端 mask-image 的渐变长度, 24px -> 64px */
+    --mask-fade: clamp(1.5rem, 0.6667rem + 3.704vw, 4rem);
+  }
+
+  :root, [data-density] {
+    /* 营销纵向节奏: 每一屏区块的上下留白 (默认密度下)
+       sm 48->64, md 64->96, lg 88->128, xl 112->160 (px) */
+    --section-pad-sm: clamp(calc(3rem * var(--density)), calc((2.667rem + 1.481vw) * var(--density)), calc(4rem * var(--density)));
+    --section-pad-md: clamp(calc(4rem * var(--density)), calc((3.333rem + 2.963vw) * var(--density)), calc(6rem * var(--density)));
+    --section-pad-lg: clamp(calc(5.5rem * var(--density)), calc((4.667rem + 3.704vw) * var(--density)), calc(8rem * var(--density)));
+    --section-pad-xl: clamp(calc(7rem * var(--density)), calc((6rem + 4.444vw) * var(--density)), calc(10rem * var(--density)));
+
+    /* 区块之间 / 区块内大组之间的小间距: sm 16->24, md 24->40, lg 40->64 (px) */
+    --block-gap-sm: clamp(calc(1rem * var(--density)), calc((0.8333rem + 0.7407vw) * var(--density)), calc(1.5rem * var(--density)));
+    --block-gap-md: clamp(calc(1.5rem * var(--density)), calc((1.167rem + 1.481vw) * var(--density)), calc(2.5rem * var(--density)));
+    --block-gap-lg: clamp(calc(2.5rem * var(--density)), calc((2rem + 2.222vw) * var(--density)), calc(4rem * var(--density)));
+  }
+
+  /* ============================================================================
    * One Dark Pro Darker 调色板 (代码编辑器与代码展示共用)
    * ----------------------------------------------------------------------------
    * 取值来自 One Dark Pro 官方主题的 Darker 变体 (Atom One Dark theme 的

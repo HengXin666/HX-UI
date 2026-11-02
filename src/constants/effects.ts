@@ -36,6 +36,16 @@ export const EFFECT_VAR = {
 	marqueeDuration: "--hx-marquee-duration",
 	marqueeGap: "--hx-marquee-gap",
 	backdropSize: "--hx-backdrop-size",
+	meshLayers: "--hx-mesh-layers",
+	grainOpacity: "--hx-grain-opacity",
+	lightBeamX: "--hx-light-beam-x",
+	lightBeamY: "--hx-light-beam-y",
+	lightBeamAngle: "--hx-light-beam-angle",
+	lightBeamWidth: "--hx-light-beam-width",
+	lightBeamColor: "--hx-light-beam-color",
+	/** 边缘淡出长度令牌: MaskFade 的 length 写到元素上, 不传时读主题里的 --mask-fade. */
+	maskFade: "--mask-fade",
+	gradientBorder: "--hx-gradient-border",
 } as const;
 
 /** 默认值. 时长单位秒, 尺寸单位 px. */
@@ -44,7 +54,70 @@ export const EFFECT_DEFAULTS = {
 	beamDurationS: 6,
 	marqueeRepeat: 2,
 	backdropSize: 24,
+	/** MeshGradient 强度 0..1, 映射到每个光团的令牌混入比例. */
+	meshIntensity: 0.6,
+	grainOpacity: 0.12,
+	/** Beam 光束: 角度 (deg), 原点位置 (%), 光束宽度 (px), 强度 0..1. */
+	lightBeamAngle: 18,
+	lightBeamX: 50,
+	lightBeamY: 0,
+	lightBeamWidth: 180,
+	lightBeamIntensity: 0.7,
+	/** GridLines: 格距 (px), 每隔几格放一个十字准星 (0 关闭), 准星单臂长 (px). */
+	gridLinesSize: 32,
+	gridCrossEvery: 4,
+	gridCrossArm: 5,
+	gradientBorderAngle: 135,
 } as const;
+
+/**
+ * 令牌名到 CSS 的拼接规则 (src/effects/effect-color.ts 使用). 调用方只传语义令牌名
+ * ("primary", "accent-2", "--success" 均可), 名字不合法时回退到 primary, 永远不会产出字面色值.
+ */
+export const EFFECT_TOKEN_FALLBACK = "primary";
+export const EFFECT_TOKEN_PATTERN = /^[a-z][a-z0-9-]*$/;
+/** 百分比上限, 强度与混入比例都先夹到 [0, 100]. */
+export const PERCENT_MAX = 100;
+/** 径向光团从中心到透明的终止位置. */
+export const EFFECT_GLOW_STOP = "70%";
+
+/** MeshGradient 默认三色: 主色, 青色辅色, 成功绿 (supabase 式暗底绿光). */
+export const MESH_DEFAULT_TOKENS = ["primary", "accent-2", "success"] as const;
+/** 光团混入比例上限 (%), 乘以 intensity 得到每团的 color-mix 比例. */
+export const MESH_MAX_MIX = 60;
+/** 光团的位置与半径 (%), 颜色多于位置时循环取用. */
+export const MESH_STOPS = [
+	{ x: 18, y: 22, rx: 45, ry: 50 },
+	{ x: 82, y: 18, rx: 40, ry: 45 },
+	{ x: 62, y: 84, rx: 50, ry: 45 },
+	{ x: 10, y: 86, rx: 35, ry: 40 },
+	{ x: 48, y: 46, rx: 30, ry: 35 },
+] as const;
+
+/** Grain 与下层的混合方式. */
+export const GRAIN_BLEND = {
+	normal: "normal",
+	overlay: "overlay",
+	softLight: "soft-light",
+	multiply: "multiply",
+	screen: "screen",
+} as const;
+export type GrainBlend = (typeof GRAIN_BLEND)[keyof typeof GRAIN_BLEND];
+
+/** MaskFade 的淡出方向: 单边, 水平两边 (x), 垂直两边 (y), 径向四周. */
+export const MASK_FADE_DIRECTION = {
+	top: "top",
+	bottom: "bottom",
+	left: "left",
+	right: "right",
+	x: "x",
+	y: "y",
+	radial: "radial",
+} as const;
+export type MaskFadeDirection = (typeof MASK_FADE_DIRECTION)[keyof typeof MASK_FADE_DIRECTION];
+
+/** GradientBorder 默认渐变: 主色到青色, 与 --gradient-brand 同向. */
+export const GRADIENT_BORDER_DEFAULT_TOKENS = ["primary", "accent-2"] as const;
 
 /** 跑马灯至少两份: 一份原件加一份无缝衔接的复制件. */
 export const MARQUEE_MIN_REPEAT = 2;
@@ -78,4 +151,16 @@ export const EFFECTS_DOC = {
 	],
 	marqueeSeconds: 24,
 	gridSize: 20,
+	meshTokens: ["primary", "accent-2", "success", "warning"],
+	meshIntensityStrong: 0.85,
+	grainOpacityStrong: 0.2,
+	beamAngleLeft: -24,
+	beamAngleRight: 24,
+	beamLeftX: 30,
+	beamRightX: 70,
+	maskFadeLength: "4rem",
+	gradientBorderTokens: ["success", "accent-2", "primary"],
+	stageTall: "flex h-56 w-full items-center justify-center rounded-xl border border-border",
+	maskList: "grid w-full gap-1 p-4",
+	maskRows: 12,
 } as const;

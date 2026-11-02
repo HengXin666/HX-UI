@@ -4,6 +4,7 @@ import { AutoGrid, Center, Container, Grid, HStack, Section, Spacer, SplitView, 
 import { BOX_CLASS, BOX_DOC, BOX_FILL, BOX_STEP, BOX_PAGE_PROPS } from "../../../../src/constants/box";
 import { DEMO_OVERVIEW_LABEL } from "../../../../src/constants/docs-demos";
 import { H2, P, Preview, PropsTable, Callout, Code } from "../../components/DocKit";
+import { LayoutGridDemo } from "./LayoutGridDemo";
 
 /** 演示用的占位块. 只为让间距看得见, 不是产品样式. */
 function Tile({ children }: { children: ReactNode }): JSX.Element {
@@ -169,6 +170,8 @@ export function BoxPage(): JSX.Element {
           />
         </div>
       </Preview>
+
+      <LayoutGridDemo />
 
       <H2>属性</H2>
       <PropsTable rows={[...BOX_PAGE_PROPS]} />

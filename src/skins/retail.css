@@ -1,0 +1,90 @@
+/* ============================================================================
+ * 皮肤 retail: Nike / Apple 式黑白大图
+ * 纯黑纯白强对比, 主色就是黑 (亮) 或白 (暗), 唯一的彩色是链接蓝; 装饰强度归零, 让大图自己说话. 圆角两档: 默认 sharp 为 0, data-skin-variant="round" 为 24px.
+ * 只覆盖令牌; 阴影与渐变公式见 foundation.css.
+ * .agents/notes/implemented/feature/2026-11-02-skins-density.md
+ * ==========================================================================*/
+
+[data-skin="retail"][data-skin] {
+  --radius: 0;
+  --font-display: "Helvetica Neue", "SF Pro Display", "Inter", -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --effect-intensity: 0;
+}
+
+[data-skin="retail"]:not([data-mode="light"]) {
+  color-scheme: dark;
+  --background: #000000;
+  --foreground: #f5f5f7;
+  --card: #111111;
+  --card-foreground: #f5f5f7;
+  --popover: #1d1d1f;
+  --popover-foreground: #f5f5f7;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --link: #2997ff;
+  --secondary: #1d1d1f;
+  --secondary-foreground: #f5f5f7;
+  --muted: #0a0a0a;
+  --muted-foreground: #a1a1a6;
+  --accent: #1d1d1f;
+  --accent-foreground: #ffffff;
+  --heading: #ffffff;
+  --control-hover: #2c2c2e;
+  --border: #424245;
+  --border-muted: #2c2c2e;
+  --input: #48484a;
+  --ring: #ffffff;
+  --surface-sunken: #0a0a0a;
+  --surface-raised: #161617;
+  --surface-overlay: #1d1d1f;
+  --primary-subtle: rgb(255 255 255 / 0.10);
+  --primary-glow: rgb(255 255 255 / 0.18);
+  --accent-2: #86868b;
+  --accent-2-foreground: #000000;
+  --accent-2-subtle: rgb(134 134 139 / 0.16);
+  --skin-shadow: 0 0 0;
+  --skin-shadow-a: 1.6;
+  --skin-shadow-blur: 1;
+}
+
+[data-skin="retail"][data-mode="light"],
+[data-mode="light"] [data-skin="retail"] {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #1d1d1f;
+  --card: #ffffff;
+  --card-foreground: #1d1d1f;
+  --popover: #ffffff;
+  --popover-foreground: #1d1d1f;
+  --primary: #111111;
+  --primary-foreground: #ffffff;
+  --link: #0066cc;
+  --secondary: #f5f5f7;
+  --secondary-foreground: #1d1d1f;
+  --muted: #f5f5f7;
+  --muted-foreground: #6e6e73;
+  --accent: #f0f0f2;
+  --accent-foreground: #1d1d1f;
+  --heading: #000000;
+  --control-hover: #e8e8ed;
+  --border: #d2d2d7;
+  --border-muted: #e8e8ed;
+  --input: #d2d2d7;
+  --ring: #111111;
+  --surface-sunken: #f5f5f7;
+  --surface-raised: #ffffff;
+  --surface-overlay: #ffffff;
+  --primary-subtle: rgb(17 17 17 / 0.06);
+  --primary-glow: rgb(0 0 0 / 0.12);
+  --accent-2: #6e6e73;
+  --accent-2-foreground: #ffffff;
+  --accent-2-subtle: rgb(110 110 115 / 0.12);
+  --skin-shadow: 0 0 0;
+  --skin-shadow-a: 0.6;
+  --skin-shadow-blur: 1;
+}
+
+/* 第二档圆角: 大圆角 (胶囊按钮 / 大图卡). 同特异度写在后面, 覆盖上面的 0 */
+[data-skin="retail"][data-skin-variant="round"] {
+  --radius: 1.5rem;
+}

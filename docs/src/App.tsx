@@ -64,6 +64,7 @@ import { MotionPage } from "./pages/motion/MotionPage";
 import { BoxPage } from "./pages/box/BoxPage";
 import { BentoPage } from "./pages/box/BentoPage";
 import { EffectsPage } from "./pages/effects/EffectsPage";
+import { SkinsPage } from "./pages/skins/SkinsPage";
 import { WidgetsPage } from "./pages/widgets/WidgetsPage";
 import { GalleryPage } from "./pages/gallery/GalleryPage";
 import { useShellLayout } from "./useShellLayout";
@@ -133,6 +134,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "box": return <BoxPage />;
     case "bento": return <BentoPage />;
     case "effects": return <EffectsPage />;
+    case "skins": return <SkinsPage />;
     case "widgets": return <WidgetsPage />;
     case "gallery": return <GalleryPage />;
     default: {
