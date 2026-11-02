@@ -14,7 +14,8 @@ import { NODE_MODULES, STDIO_INHERIT, UTF8 } from "./constants/quality.ts";
 const ROOT = process.cwd();
 const DIST = join(ROOT, "dist");
 const SRC = join(ROOT, SRC_DIR);
-const CSS_FILES = ["tokens.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css", "effects.css"];
+/** base.css 是可选的全局重置 (@layer hx.base), 与令牌分开发布, 由使用方自行决定是否引入. */
+const CSS_FILES = ["tokens.css", "base.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css", "effects.css"];
 const EXTRA_FILES = [LICENSE_FILE, "NOTICE"];
 const SPECIFIER = /((?:from|import)\s*["'])(\.{1,2}\/[^"']+)(["'])/g;
 

@@ -8,6 +8,8 @@
  * 库入口已经含 tokens.css、@theme inline 桥接与基础层, 所以这里不重复定义它们。
  */
 @import "../../src/styles.css";
+/* 全局重置 (body / 滚动条 / 焦点 / 选区) 已从 tokens.css 拆到可选的 base.css; 文档站要整页外观, 所以显式引入. */
+@import "../../src/base.css";
 
 @plugin "@iconify/tailwind4";
 

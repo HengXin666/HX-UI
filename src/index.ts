@@ -50,6 +50,7 @@ export { bindGesture } from "./primitives/gesture";
 export { bindScrollProgress } from "./primitives/scroll-link";
 export { MotionPresence } from "./primitives/presence";
 export { type ClassValue, cn } from "./primitives/utils";
+export { deprecate, type DeprecationNotice } from "./primitives/deprecate";
 /**
  * 对标 shadcn/ui 补齐的基础件, 名单见 primitives/shadcn-parity.ts; 已有同名能力的组件 (ConfirmDialog,
  * 声明式 ContextMenu, EmptyState, Spin, DataTable, SidebarNavItemButton) 原导出不变, 组合式版本与之并存.

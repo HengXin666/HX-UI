@@ -100,6 +100,26 @@ main 上由仓库所有者直接引入的依赖按既成事实登记为 approved
 
 版本与许可证取自 npm registry, 查证日期 2026-10-11 (shadcn 对标批次为 2026-10-18); 安全公告未逐项查询, 安装前需 npm audit.
 
+### 路线图依赖预审批 (P0-02, 2026-11-02)
+
+`docs/reference/audit/ui-library-roadmap.md` 各阶段需要的新依赖在 P0-02 一次登记, 后续任务不得自行改 approvals.json, 只由集成任务 (P0-Z / P1-Z / P2-Z) 按下表写入 package.json. 状态均为 proposed, 由代理登记, 等仓库所有者签字改为 approved 后 HC-DEPS 才显示 approved. recharts, motion, react-hook-form, radix-ui 已是 dependencies, 不重复登记. 体积为 bundlephobia min+gzip 估计, 版本与发布日期取自 npm registry, 查证日期 2026-11-02.
+
+| 审批 ID | 依赖 | 安装方式 | gzip 估计 | 首次引入 | 取舍 |
+|---|---|---|---|---|---|
+| APR-dependency-tanstack-grid | @tanstack/react-table ^8.21.3 | optional peer, check-weight HEAVY | 约 14 KB | P1-07 | 无头引擎, 外观全走令牌; 不选 AG Grid / MUI X (自带样式, 体积大). 不选最新 v9: v9 把 useReactTable 改名 useTable, 与 P1-07 判据冲突 |
+| APR-dependency-tanstack-grid | @tanstack/react-virtual ^3.14.25 | optional peer, check-weight HEAVY | 约 10 KB | P1-08 | 支持动态行高与 scrollToIndex, P2-01 可与 react-table 同族接线; 不选 react-window (无动态测量), react-virtuoso (自带 DOM 结构) |
+| APR-dependency-dnd-kit | @dnd-kit/core ^6.3.1, @dnd-kit/sortable ^10.0.0, @dnd-kit/utilities ^3.2.2 | dependencies | 合计约 19.5 KB | P2-04 | 自带 KeyboardSensor 与读屏播报; 不选 pragmatic-drag-and-drop (无键盘拖拽), react-beautiful-dnd (已归档). core 最近发布 2024-12, 活跃度偏低但 API 稳定 |
+| APR-dependency-form-schema | zod ^4.6.7 | optional peer (不进 HEAVY) | 约 89 KB 全量 | P1-01 | 下游多半自带 zod, peer 共享一份实例避免 schema 类型不兼容; 版本与 docs/package.json 一致 |
+| APR-dependency-form-schema | @hookform/resolvers ^5.9.2 | dependencies | 约 0.6 KB | P1-01 | 极小, 直接带上; 最新 7.0.1 暂不跟, 与 docs 一起另行升级 |
+| APR-dependency-unit-test-stack | vitest ^5.0.5, @vitest/browser ^5.0.5 (+ @vitest/browser-playwright) | devDependencies | 不进产物 | P0-09 | 复用 vite 8 配置; browser 模式复用已批准的 playwright |
+| APR-dependency-unit-test-stack | @testing-library/react ^16.3.3, user-event ^14.6.8, jest-dom ^7.0.1 (+ @testing-library/dom ^10.4.2 peer) | devDependencies | 不进产物 | P0-09 | 按可访问角色查询与真实键盘序列, 键盘交互测试必需 |
+| APR-dependency-unit-test-stack | happy-dom ^21.0.4 | devDependencies | 不进产物 | P0-09 | 取代 APR-dependency-ui-test-runner 里的 jsdom: 启动快; 需要真实布局时走 browser 模式 |
+| APR-dependency-unit-test-stack | axe-core ^4.14.0 | devDependencies | 不进产物 | P0-09 | 单元测试 axe 断言; MPL-2.0 只在开发期使用, 不分发 |
+| APR-dependency-axe-playwright | @axe-core/playwright ^4.14.0 | devDependencies | 不进产物 | P1-16 | AxeBuilder 逐页扫描文档站, 复用已装 playwright; 不选 pa11y (另起 puppeteer) |
+| APR-dependency-tiptap | @tiptap/react ^3.32.2, @tiptap/starter-kit ^3.32.2 (+ @tiptap/core, @tiptap/pm 同版本 peer) | optional peer, check-weight HEAVY | 合计 150 KB 以上 | P2-09 | 扩展生态与 Markdown 往返成熟; 不选 Lexical (Markdown 往返弱), Slate (0.x API 不稳) |
+
+重依赖约束: @tanstack 系与 @tiptap 系只做 optional peer 并留在 devDependencies, 由 P1-Z (tanstack) 与 P2-Z (tiptap) 在写入 package.json 的同一提交里加入 `scripts/check-weight.mjs` 的 HEAVY 清单. P0-02 不改 check-weight: package.json 未声明前加入 HEAVY 会让该检查失败.
+
 ## 验收命令
 
 ```sh

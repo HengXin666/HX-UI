@@ -714,5 +714,562 @@
         "status": "proposed",
         "approvedBy": "",
         "authorization": "待仓库所有者确认: 2026-10-21 的任务点名要求 markstream 流式渲染与 VS Code + One Dark Pro Darker 代码编辑器"
+    },
+    {
+        "id": "APR-dependency-tanstack-grid",
+        "kind": "dependency",
+        "subject": "@tanstack/react-table@^8.21.3, @tanstack/react-virtual@^3.14.25 (optional peer, check-weight HEAVY)",
+        "need": "路线图 P1-07 DataGrid (排序/筛选/列固定/列宽/行选择/分组表头/服务端模式) 与 P1-08 VirtualList/VirtualGrid, 以及 P2-01 十万行网格虚拟化; 路线图明确复杂引擎不自研",
+        "reuse": {
+            "project": "现有 layout DataTable 只有静态渲染, 没有无头表格状态机与虚拟滚动",
+            "stdlib": "浏览器与 React 不提供表格模型与窗口化",
+            "existing": "已装依赖中无同类库"
+        },
+        "candidates": [
+            {
+                "name": "@tanstack/react-table",
+                "version": "8.21.3",
+                "license": "MIT",
+                "lastRelease": "2025-04-14",
+                "activity": "npm registry latest 发布于 2025-04-14",
+                "purpose": "DataGrid 无头表格引擎: 行模型, 排序, 筛选, 分组, 列固定/尺寸, 行选择与展开",
+                "gzip": "约 14.1 KB (bundlephobia min+gzip 估计 8.21.3)",
+                "size": "约 14.1 KB (bundlephobia min+gzip 估计 8.21.3)",
+                "alternatives": "AG Grid Community (约 300 KB+ 且自带外观, 违背令牌化); MUI X DataGrid (绑定 MUI 样式); 自研 (路线图明确禁止)",
+                "install": "peerDependencies optional",
+                "optionalPeer": true,
+                "heavy": true,
+                "firstTask": "P1-07",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "React >=16.8; P1-07 判据要求 useReactTable 与 getSortedRowModel, 该 API 属于 v8",
+                "source": "https://registry.npmjs.org/@tanstack/react-table",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@tanstack/react-table",
+                "version": "9.3.1",
+                "license": "MIT",
+                "lastRelease": "2026-10-12",
+                "activity": "npm registry latest 发布于 2026-10-12",
+                "purpose": "同上, 最新主版本",
+                "gzip": "约 31.6 KB (bundlephobia min+gzip 估计 9.3.1)",
+                "size": "约 31.6 KB (bundlephobia min+gzip 估计 9.3.1)",
+                "alternatives": "见上",
+                "install": "peerDependencies optional",
+                "optionalPeer": true,
+                "heavy": true,
+                "firstTask": "P1-07",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "v9 把 useReactTable 改名为 useTable, 与 P1-07 判据冲突, 本次不选; 1.0 之后单独评估迁移",
+                "source": "https://registry.npmjs.org/@tanstack/react-table",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@tanstack/react-virtual",
+                "version": "3.14.25",
+                "license": "MIT",
+                "lastRelease": "2026-11-01",
+                "activity": "npm registry latest 发布于 2026-11-01",
+                "purpose": "VirtualList/VirtualGrid 与 DataGrid 行虚拟化: useVirtualizer, 动态行高, scrollToIndex",
+                "gzip": "约 10.3 KB (bundlephobia min+gzip 估计)",
+                "size": "约 10.3 KB (bundlephobia min+gzip 估计)",
+                "alternatives": "react-window (不支持动态行高测量, 维护慢); react-virtuoso (约 17 KB, 自带 DOM 结构, 难与 table 引擎共用); 自研 (禁止)",
+                "install": "peerDependencies optional",
+                "optionalPeer": true,
+                "heavy": true,
+                "firstTask": "P1-08",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "React 16.8 到 19 peer; 与 react-table 同属 TanStack, P2-01 接线成本最低",
+                "source": "https://registry.npmjs.org/@tanstack/react-virtual",
+                "checkedAt": "2026-11-02"
+            }
+        ],
+        "choice": {
+            "pick": "@tanstack/react-table@^8.21.3 + @tanstack/react-virtual@^3.14.25, 均为 optional peer 并进 check-weight HEAVY 清单, 同时留在 devDependencies",
+            "reason": "无头引擎, 外观完全走本库令牌; 只有用 DataGrid/虚拟化的下游才安装. table 选 v8 是因为 P1-07 判据与路线图 API (useReactTable) 都是 v8, v9 刚发布且改了入口名",
+            "rollback": "删除 src/data-grid/ 与 src/virtual/, 移除 peer/dev 声明与 HEAVY 条目"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "scripts/check-weight.mjs",
+                "src/data-grid/",
+                "src/virtual/"
+            ],
+            "steps": [
+                "P1-Z: npm i -D @tanstack/react-table@^8.21.3 @tanstack/react-virtual@^3.14.25",
+                "P1-Z: 写入 peerDependencies 与 peerDependenciesMeta optional",
+                "P1-Z: scripts/check-weight.mjs 的 HEAVY 加入两个包 (本任务不改该文件: package.json 未声明前加入会让 check-weight 失败)"
+            ],
+            "tests": [
+                "node scripts/check-weight.mjs",
+                "tests/components/data-grid.test.tsx"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-11-02 路线图任务 P0-02 (依赖预审批) 由代理一次登记, 所有者签字改为 approved 并填写 approvedBy 后 HC-DEPS 才显示 approved"
+    },
+    {
+        "id": "APR-dependency-dnd-kit",
+        "kind": "dependency",
+        "subject": "@dnd-kit/core@^6.3.1, @dnd-kit/sortable@^10.0.0, @dnd-kit/utilities@^3.2.2",
+        "need": "P2-04 SortableList/SortableGrid/Kanban: 列间移动, 键盘拖拽 (KeyboardSensor), 读屏播报; P1-09 Tree 的拖拽排序钩子也可复用",
+        "reuse": {
+            "project": "layout/DragDrop 是原生 HTML5 拖放, 无键盘传感器与读屏播报, 保留为轻量版",
+            "stdlib": "HTML5 DnD 不支持触屏与键盘",
+            "existing": "@xyflow/react 只服务画布, 不适合列表排序"
+        },
+        "candidates": [
+            {
+                "name": "@dnd-kit/core",
+                "version": "6.3.1",
+                "license": "MIT",
+                "lastRelease": "2024-12-05",
+                "activity": "npm registry latest 发布于 2024-12-05",
+                "purpose": "拖拽传感器 (指针/键盘), 碰撞检测, 读屏 announcements",
+                "gzip": "约 14.2 KB (bundlephobia min+gzip 估计)",
+                "size": "约 14.2 KB (bundlephobia min+gzip 估计)",
+                "alternatives": "pragmatic-drag-and-drop (Atlassian, 无内置键盘拖拽); react-beautiful-dnd (已归档); @dnd-kit/react 0.x (新 API 未稳定)",
+                "install": "dependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P2-04",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "React >=16.8; 最近发布 2024-12, 活跃度偏低但 API 稳定, shadcn 生态通用",
+                "source": "https://registry.npmjs.org/@dnd-kit/core",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@dnd-kit/sortable",
+                "version": "10.0.0",
+                "license": "MIT",
+                "lastRelease": "2024-12-04",
+                "activity": "npm registry latest 发布于 2024-12-04",
+                "purpose": "可排序列表/网格预设与 arrayMove",
+                "gzip": "约 3.7 KB (bundlephobia min+gzip 估计)",
+                "size": "约 3.7 KB (bundlephobia min+gzip 估计)",
+                "alternatives": "见 core",
+                "install": "dependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P2-04",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "peer @dnd-kit/core ^6.3.0",
+                "source": "https://registry.npmjs.org/@dnd-kit/sortable",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@dnd-kit/utilities",
+                "version": "3.2.2",
+                "license": "MIT",
+                "lastRelease": "2023-11-06",
+                "activity": "npm registry latest 发布于 2023-11-06",
+                "purpose": "CSS.Transform 等工具, sortable 的配套",
+                "gzip": "约 1.6 KB (bundlephobia min+gzip 估计)",
+                "size": "约 1.6 KB (bundlephobia min+gzip 估计)",
+                "alternatives": "手写 transform 字符串",
+                "install": "dependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P2-04",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "React >=16.8",
+                "source": "https://registry.npmjs.org/@dnd-kit/utilities",
+                "checkedAt": "2026-11-02"
+            }
+        ],
+        "choice": {
+            "pick": "三个 @dnd-kit 包作为 dependencies",
+            "reason": "合计约 19.5 KB gzip, 低于重依赖门槛; 路线图 P2-Z 明确 dnd-kit 为直接依赖; 键盘与读屏开箱可用",
+            "rollback": "删除 src/sortable/ 并移除依赖"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "src/sortable/"
+            ],
+            "steps": [
+                "P2-Z: npm i @dnd-kit/core@^6.3.1 @dnd-kit/sortable@^10.0.0 @dnd-kit/utilities@^3.2.2"
+            ],
+            "tests": [
+                "tests/components/kanban.test.tsx"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-11-02 路线图任务 P0-02 (依赖预审批) 由代理一次登记, 所有者签字改为 approved 并填写 approvedBy 后 HC-DEPS 才显示 approved"
+    },
+    {
+        "id": "APR-dependency-form-schema",
+        "kind": "dependency",
+        "subject": "zod@^4.6.7, @hookform/resolvers@^5.9.2",
+        "need": "P1-01 表单引擎: useZodForm 与 zodResolver 进入库本体 (此前 APR-dependency-shadcn-parity 只让两者进 docs/package.json)",
+        "reuse": {
+            "project": "react-hook-form 已是 dependencies; docs/package.json 已有 zod ^4.6.7 与 @hookform/resolvers ^5.9.2",
+            "stdlib": "无 schema 校验",
+            "existing": "版本沿用 docs 已用范围, 根与 docs 不出现两个主版本"
+        },
+        "candidates": [
+            {
+                "name": "zod",
+                "version": "4.6.7",
+                "license": "MIT",
+                "lastRelease": "2026-10-12",
+                "activity": "npm registry latest 发布于 2026-10-12",
+                "purpose": "表单 schema 与类型推导",
+                "gzip": "约 88.9 KB (bundlephobia min+gzip 估计 全量, 按需 import 后明显更小; zod/mini 更小)",
+                "size": "约 88.9 KB (bundlephobia min+gzip 估计 全量, 按需 import 后明显更小; zod/mini 更小)",
+                "alternatives": "valibot (更小, 但生态与 resolvers 示例少); yup (无静态类型推导优势)",
+                "install": "peerDependencies optional",
+                "optionalPeer": true,
+                "heavy": false,
+                "firstTask": "P1-01",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "无 peer; 下游通常自带 zod, 作 peer 避免两份实例导致 schema 类型不兼容",
+                "source": "https://registry.npmjs.org/zod",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@hookform/resolvers",
+                "version": "5.9.2",
+                "license": "MIT",
+                "lastRelease": "2026-10-17",
+                "activity": "npm registry latest 发布于 2026-10-17",
+                "purpose": "zodResolver 把 zod 接到 react-hook-form",
+                "gzip": "约 0.6 KB (bundlephobia min+gzip 估计 单个 resolver)",
+                "size": "约 0.6 KB (bundlephobia min+gzip 估计 单个 resolver)",
+                "alternatives": "手写 resolver (约 30 行, 但要跟随 zod 错误格式变化)",
+                "install": "dependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P1-01",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "peer react-hook-form ^7.55 与 zod ^3.25/^4; 最新为 7.0.1 (2026-11-01), 升级与 docs 一起另行审批",
+                "source": "https://registry.npmjs.org/@hookform/resolvers",
+                "checkedAt": "2026-11-02"
+            }
+        ],
+        "choice": {
+            "pick": "zod 作 optional peer (同时进 devDependencies), @hookform/resolvers 作 dependencies",
+            "reason": "zod 体积较大且下游多半已装, peer 共享一份实例; resolvers 极小直接带上. zod 不进 HEAVY: 不是必须项, 但 useZodForm 文档需写明需要自装 zod",
+            "rollback": "删除 src/form/use-zod-form.ts 并移除声明"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "src/form/"
+            ],
+            "steps": [
+                "P1-Z: npm i @hookform/resolvers@^5.9.2 && npm i -D zod@^4.6.7",
+                "P1-Z: zod 写入 peerDependencies + peerDependenciesMeta optional"
+            ],
+            "tests": [
+                "tests/components/form.test.tsx"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-11-02 路线图任务 P0-02 (依赖预审批) 由代理一次登记, 所有者签字改为 approved 并填写 approvedBy 后 HC-DEPS 才显示 approved"
+    },
+    {
+        "id": "APR-dependency-unit-test-stack",
+        "kind": "dependency",
+        "subject": "vitest@^5.0.5, @vitest/browser@^5.0.5, @vitest/browser-playwright@^5.0.5, @testing-library/react@^16.3.3, @testing-library/user-event@^14.6.8, @testing-library/jest-dom@^7.0.1, @testing-library/dom@^10.4.2, happy-dom@^21.0.4, axe-core@^4.14.0 (devDependencies)",
+        "need": "P0-09 单元与无障碍测试底座: vitest + happy-dom + testing-library + axe 断言, 解开 HC-TEST; 需要真实布局的组件 (虚拟化, 浮层定位) 走 vitest browser 模式",
+        "reuse": {
+            "project": "scripts/check-smoke.ts 与 check-shell.ts 只做文档站冒烟; 根 devDependencies 已有 playwright ^1.63.0, browser 模式直接复用",
+            "stdlib": "node:test 无 DOM",
+            "existing": "APR-dependency-ui-test-runner 提议 jsdom, 本条以 happy-dom 取代 (路线图 P0-09 指定)"
+        },
+        "candidates": [
+            {
+                "name": "vitest",
+                "version": "5.0.5",
+                "license": "MIT",
+                "lastRelease": "2026-10-15",
+                "activity": "npm registry latest 发布于 2026-10-15",
+                "purpose": "测试运行器, 复用 vite 8 配置",
+                "gzip": "开发依赖, 不进产物 (unpacked 约 2.8 MB)",
+                "size": "开发依赖, 不进产物 (unpacked 约 2.8 MB)",
+                "alternatives": "jest (需 babel/ts 转译, 与 vite 配置重复); node:test (无 DOM 与快照生态)",
+                "install": "devDependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P0-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "peer vite ^6/^7/^8, happy-dom *",
+                "source": "https://registry.npmjs.org/vitest",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@vitest/browser",
+                "version": "5.0.5",
+                "license": "MIT",
+                "lastRelease": "2026-10-15",
+                "activity": "npm registry latest 发布于 2026-10-15",
+                "purpose": "真实浏览器里跑组件测试 (布局, ResizeObserver, 焦点)",
+                "gzip": "开发依赖, 不进产物",
+                "size": "开发依赖, 不进产物",
+                "alternatives": "只用 happy-dom (无布局计算)",
+                "install": "devDependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P0-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "v5 的 provider 拆成独立包, 需同时装 @vitest/browser-playwright (peer playwright, 复用已装的 playwright)",
+                "source": "https://registry.npmjs.org/@vitest/browser",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@testing-library/react",
+                "version": "16.3.3",
+                "license": "MIT",
+                "lastRelease": "2026-08-27",
+                "activity": "npm registry latest 发布于 2026-08-27",
+                "purpose": "按可访问角色查询并渲染组件",
+                "gzip": "开发依赖, 不进产物",
+                "size": "开发依赖, 不进产物",
+                "alternatives": "enzyme (不支持 React 19)",
+                "install": "devDependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P0-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "React 18/19; v16 起 @testing-library/dom 是 peer, 需显式安装 ^10.4.2",
+                "source": "https://registry.npmjs.org/@testing-library/react",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@testing-library/user-event",
+                "version": "14.6.8",
+                "license": "MIT",
+                "lastRelease": "2026-10-13",
+                "activity": "npm registry latest 发布于 2026-10-13",
+                "purpose": "模拟真实键盘/指针交互序列, 键盘交互测试必需",
+                "gzip": "开发依赖, 不进产物",
+                "size": "开发依赖, 不进产物",
+                "alternatives": "fireEvent (单事件, 不模拟焦点与输入序列)",
+                "install": "devDependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P0-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "peer @testing-library/dom >=7.21.4",
+                "source": "https://registry.npmjs.org/@testing-library/user-event",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@testing-library/jest-dom",
+                "version": "7.0.1",
+                "license": "MIT",
+                "lastRelease": "2026-08-09",
+                "activity": "npm registry latest 发布于 2026-08-09",
+                "purpose": "toBeInTheDocument/toHaveAttribute 等 DOM 断言",
+                "gzip": "开发依赖, 不进产物",
+                "size": "开发依赖, 不进产物",
+                "alternatives": "手写断言",
+                "install": "devDependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P0-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "peer vitest >=0.32, @testing-library/dom >=10 <11",
+                "source": "https://registry.npmjs.org/@testing-library/jest-dom",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "happy-dom",
+                "version": "21.0.4",
+                "license": "MIT",
+                "lastRelease": "2026-10-20",
+                "activity": "npm registry latest 发布于 2026-10-20",
+                "purpose": "vitest 默认 DOM 环境",
+                "gzip": "开发依赖, 不进产物",
+                "size": "开发依赖, 不进产物",
+                "alternatives": "jsdom 30 (更全但启动慢, 原 APR-dependency-ui-test-runner 的选择)",
+                "install": "devDependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P0-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "无 peer; 缺布局计算的场景改用 browser 模式",
+                "source": "https://registry.npmjs.org/happy-dom",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "axe-core",
+                "version": "4.14.0",
+                "license": "MPL-2.0",
+                "lastRelease": "2026-10-05",
+                "activity": "npm registry latest 发布于 2026-10-05",
+                "purpose": "在单元测试里断言无 serious/critical 违规",
+                "gzip": "开发依赖, 不进产物 (运行时约 187 KB gzip, 只在测试加载)",
+                "size": "开发依赖, 不进产物 (运行时约 187 KB gzip, 只在测试加载)",
+                "alternatives": "vitest-axe/jest-axe (只是 axe-core 的薄封装, 多一层依赖)",
+                "install": "devDependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P0-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "MPL-2.0 文件级 copyleft, 只作开发依赖不分发, 无义务传递",
+                "source": "https://registry.npmjs.org/axe-core",
+                "checkedAt": "2026-11-02"
+            }
+        ],
+        "choice": {
+            "pick": "vitest + @vitest/browser(+browser-playwright) + testing-library 四件 + happy-dom + axe-core, 全部 devDependencies",
+            "reason": "与现有 vite 工具链一致; happy-dom 快, 需要真实布局时切 browser 模式; 不进发布物, 体积不影响下游",
+            "rollback": "移除 devDependencies, vitest.config.ts 与 tests/"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "vitest.config.ts",
+                "tests/",
+                "scripts/quality/runtime/"
+            ],
+            "steps": [
+                "P0-Z: npm i -D vitest@^5.0.5 @vitest/browser@^5.0.5 @vitest/browser-playwright@^5.0.5 @testing-library/react@^16.3.3 @testing-library/dom@^10.4.2 @testing-library/user-event@^14.6.8 @testing-library/jest-dom@^7.0.1 happy-dom@^21.0.4 axe-core@^4.14.0"
+            ],
+            "tests": [
+                "tests/components/button.test.tsx"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-11-02 路线图任务 P0-02 (依赖预审批) 由代理一次登记, 所有者签字改为 approved 并填写 approvedBy 后 HC-DEPS 才显示 approved"
+    },
+    {
+        "id": "APR-dependency-axe-playwright",
+        "kind": "dependency",
+        "subject": "@axe-core/playwright@^4.14.0 (devDependencies)",
+        "need": "P1-16 无障碍门禁 scripts/e2e/a11y.ts: AxeBuilder 逐页扫描文档站亮暗两套, serious/critical 失败",
+        "reuse": {
+            "project": "根已有 playwright ^1.63.0 (APR-dependency-playwright, approved), 本包只是其上的 axe 注入层",
+            "stdlib": "无",
+            "existing": "axe-core 由 APR-dependency-unit-test-stack 登记"
+        },
+        "candidates": [
+            {
+                "name": "@axe-core/playwright",
+                "version": "4.14.0",
+                "license": "MPL-2.0",
+                "lastRelease": "2026-10-15",
+                "activity": "npm registry latest 发布于 2026-10-15",
+                "purpose": "AxeBuilder: 在 Playwright 页面注入 axe-core 并汇总结果",
+                "gzip": "开发依赖, 不进产物 (unpacked 约 48 KB)",
+                "size": "开发依赖, 不进产物 (unpacked 约 48 KB)",
+                "alternatives": "手动 page.addScriptTag 注入 axe-core 再 evaluate (约 40 行, 要自己处理 iframe 与结果格式); pa11y (另起 puppeteer, 与已装 playwright 重复)",
+                "install": "devDependencies",
+                "optionalPeer": false,
+                "heavy": false,
+                "firstTask": "P1-16",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "peer playwright-core >=1.0.0, 由已装 playwright 提供; MPL-2.0 仅开发期使用",
+                "source": "https://registry.npmjs.org/@axe-core/playwright",
+                "checkedAt": "2026-11-02"
+            }
+        ],
+        "choice": {
+            "pick": "@axe-core/playwright",
+            "reason": "P1-16 判据要求 AxeBuilder; 复用已批准的 playwright, 不引入新浏览器",
+            "rollback": "删除 scripts/e2e/a11y.ts 并移除依赖"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "scripts/e2e/a11y.ts"
+            ],
+            "steps": [
+                "P1-Z: npm i -D @axe-core/playwright@^4.14.0"
+            ],
+            "tests": [
+                "a11y (scripts/gates, 由 P1-Z 注册)"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-11-02 路线图任务 P0-02 (依赖预审批) 由代理一次登记, 所有者签字改为 approved 并填写 approvedBy 后 HC-DEPS 才显示 approved"
+    },
+    {
+        "id": "APR-dependency-tiptap",
+        "kind": "dependency",
+        "subject": "@tiptap/react@^3.32.2, @tiptap/starter-kit@^3.32.2, @tiptap/core@^3.32.2, @tiptap/pm@^3.32.2 (optional peer, check-weight HEAVY)",
+        "need": "P2-09 RichTextEditor: 工具栏, 提及, 斜杠命令, Markdown 往返; 路线图要求可选 peer 且不进默认安装图",
+        "reuse": {
+            "project": "现有 monaco 是代码编辑器, markstream-react 只渲染, 都不是所见即所得富文本",
+            "stdlib": "contenteditable 无文档模型与撤销栈",
+            "existing": "无"
+        },
+        "candidates": [
+            {
+                "name": "@tiptap/react",
+                "version": "3.32.2",
+                "license": "MIT",
+                "lastRelease": "2026-10-30",
+                "activity": "npm registry latest 发布于 2026-10-30",
+                "purpose": "useEditor 与 EditorContent React 绑定",
+                "gzip": "约 9.0 KB (bundlephobia min+gzip 估计), 另需 core 约 37 KB 与 pm (ProseMirror) 本体",
+                "size": "约 9.0 KB (bundlephobia min+gzip 估计), 另需 core 约 37 KB 与 pm (ProseMirror) 本体",
+                "alternatives": "Lexical (Meta, 体积小但扩展生态与 Markdown 往返弱); Slate (0.x, API 仍在变); Quill 2 (非 React 原生)",
+                "install": "peerDependencies optional",
+                "optionalPeer": true,
+                "heavy": true,
+                "firstTask": "P2-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "peer react 17/18/19, @tiptap/core 与 @tiptap/pm 同版本 3.32.2, 因此两者一并登记",
+                "source": "https://registry.npmjs.org/@tiptap/react",
+                "checkedAt": "2026-11-02"
+            },
+            {
+                "name": "@tiptap/starter-kit",
+                "version": "3.32.2",
+                "license": "MIT",
+                "lastRelease": "2026-10-30",
+                "activity": "npm registry latest 发布于 2026-10-30",
+                "purpose": "段落/标题/列表/代码/历史等基础扩展集合",
+                "gzip": "约 107.7 KB (bundlephobia min+gzip 估计, 含 ProseMirror 依赖)",
+                "size": "约 107.7 KB (bundlephobia min+gzip 估计, 含 ProseMirror 依赖)",
+                "alternatives": "逐个安装扩展 (更细但审批与版本对齐成本高)",
+                "install": "peerDependencies optional",
+                "optionalPeer": true,
+                "heavy": true,
+                "firstTask": "P2-09",
+                "advisories": "未逐项查询 GitHub Advisory, 集成任务安装后需 npm audit",
+                "compat": "与 @tiptap/react 同版本锁步",
+                "source": "https://registry.npmjs.org/@tiptap/starter-kit",
+                "checkedAt": "2026-11-02"
+            }
+        ],
+        "choice": {
+            "pick": "@tiptap/react + @tiptap/starter-kit (+ peer @tiptap/core, @tiptap/pm), 全部 optional peer 并进 check-weight HEAVY, 同时留在 devDependencies",
+            "reason": "合计 150 KB+ gzip, 属重依赖, 只有用富文本的下游才安装; P2-09 判据要求 useEditor",
+            "rollback": "删除 src/rich-text/, 移除 peer/dev 声明与 HEAVY 条目"
+        },
+        "impact": {
+            "files": [
+                "package.json",
+                "package-lock.json",
+                "scripts/check-weight.mjs",
+                "src/rich-text/"
+            ],
+            "steps": [
+                "P2-Z: npm i -D @tiptap/react@^3.32.2 @tiptap/starter-kit@^3.32.2 @tiptap/core@^3.32.2 @tiptap/pm@^3.32.2",
+                "P2-Z: 写入 peerDependencies 与 peerDependenciesMeta optional",
+                "P2-Z: scripts/check-weight.mjs 的 HEAVY 加入四个 @tiptap 包 (P2-Z 判据要求 tiptap 命中 check-weight.mjs)"
+            ],
+            "tests": [
+                "node scripts/check-weight.mjs"
+            ]
+        },
+        "status": "proposed",
+        "approvedBy": "",
+        "authorization": "待仓库所有者确认: 2026-11-02 路线图任务 P0-02 (依赖预审批) 由代理一次登记, 所有者签字改为 approved 并填写 approvedBy 后 HC-DEPS 才显示 approved"
     }
 ]

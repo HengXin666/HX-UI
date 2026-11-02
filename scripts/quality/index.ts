@@ -3,7 +3,7 @@
  * Commands and checkpoints are documented in docs/reference/quality/rules.md.
  */
 import { spawnSync } from "node:child_process";
-import { chmodSync, readdirSync, readFileSync } from "node:fs";
+import { chmodSync, existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { USER_ARGS_START } from "../constants/browser.ts";
@@ -11,7 +11,7 @@ import { main as vendoredCli } from "../../.agents/skills/hx-agent-code/scripts/
 import { collectScope } from "../../.agents/skills/hx-agent-code/scripts/core/scope.ts";
 import { saveToolError } from "../../.agents/skills/hx-agent-code/scripts/core/report.ts";
 import {
-    BUILD_ENV, COVERAGE_FILE, EXIT_ERROR, EXIT_OK, EXIT_TOOL, GIT, NEWLINE, REPORT_DIR, UTF8, CMD_AUDIT, CMD_BASELINE, CMD_CHECK, CMD_PUSH, DOCS_DIR, DOCS_DIST, FLAG_BASE, FLAG_HEAD, FLAG_MODE, FLAG_OUT, FLAG_ROOT, GIT_CONFIG, GIT_DIR_OPTION, GROUP_BUILD, MODE_RANGE, MODE_TREE, MODE_WORKTREE, OPTION_PREFIX, SPACE, ARG_STRIDE,
+    BUILD_ENV, COVERAGE_FILE, NODE_MODULES, EXIT_ERROR, EXIT_OK, EXIT_TOOL, GIT, NEWLINE, REPORT_DIR, UTF8, CMD_AUDIT, CMD_BASELINE, CMD_CHECK, CMD_PUSH, DOCS_DIR, DOCS_DIST, FLAG_BASE, FLAG_HEAD, FLAG_MODE, FLAG_OUT, FLAG_ROOT, GIT_CONFIG, GIT_DIR_OPTION, GROUP_BUILD, MODE_RANGE, MODE_TREE, MODE_WORKTREE, OPTION_PREFIX, SPACE, ARG_STRIDE,
 } from "../constants/quality.ts";
 import { git } from "./checks/snapshot.ts";
 import { check, graph, makeBaseline, one, tests } from "./runtime/run.ts";
@@ -30,8 +30,10 @@ const OPTIONS: Record<string, string[]> = {
     tests: ["event", FLAG_MODE, FLAG_BASE, FLAG_HEAD, FLAG_ROOT],
     push: ["remote", FLAG_ROOT], done: [FLAG_ROOT], hooks: [FLAG_ROOT], audit: [FLAG_ROOT], build: [FLAG_ROOT], layer: ["name"],
 };
+/** frontend 层由 vitest 跑 tests/ 下的组件单元与无障碍测试, 配置在根目录 vitest.config.ts. */
+const FRONTEND_LAYER = "frontend";
+const VITEST_ENTRY = ["vitest", "vitest.mjs"];
 const LAYERS: Record<string, [number, string]> = {
-    frontend: [EXIT_ERROR, "blocked: frontend/ui 与 frontend/api 层尚无测试框架, 见 approvals.json APR-dependency-ui-test-runner"],
     backend: [EXIT_OK, "not-applicable: 组件库没有后端代码 (仓库无服务端入口与 API 路由)"],
     contract: [EXIT_OK, "not-applicable: 没有 docs/reference/api 契约, 组件库不发起请求"],
     perf: [EXIT_ERROR, "blocked: 文档站 38 个路由的首屏预算需要 Playwright, 见 approvals.json APR-dependency-perf-runner"],
@@ -97,6 +99,24 @@ function hooks(root: string): number {
     return EXIT_OK;
 }
 
+/**
+ * frontend 层: 用当前 Node 直接执行本仓 node_modules 里的 vitest (不经 npx, 不会临时下载),
+ * 依赖未装时按 blocked 失败并指出缺什么, 而不是报工具错误.
+ */
+function frontend(root: string): number {
+    const entry = join(root, NODE_MODULES, ...VITEST_ENTRY);
+    if (!existsSync(entry)) {
+        console.log("blocked: 未安装 vitest / happy-dom / @testing-library/* / axe-core, 测试文件在 tests/, 见 docs/reference/quality/frontend-tests.md");
+        return EXIT_ERROR;
+    }
+    const result = spawnSync(process.execPath, [entry, "run"], { cwd: root, stdio: "inherit" });
+    if (result.error) {
+        console.error("vitest 启动失败: " + result.error.message);
+        return EXIT_TOOL;
+    }
+    return result.status ?? EXIT_TOOL;
+}
+
 function build(root: string): number {
     const out = process.env[BUILD_ENV];
     if (!out) {
@@ -128,7 +148,11 @@ export function main(argv: string[]): number {
         case GROUP_BUILD: return build(root);
         case CMD_AUDIT: return vendoredCli([CMD_AUDIT, "--manifest", join(root, COVERAGE_FILE), "--out", join(root, REPORT_DIR, CMD_AUDIT)]);
         case "layer": {
-            const [code, message] = LAYERS[one(flags, "name") ?? ""] ?? [EXIT_TOOL, "unknown layer"];
+            const name = one(flags, "name") ?? "";
+            if (name === FRONTEND_LAYER) {
+                return frontend(root);
+            }
+            const [code, message] = LAYERS[name] ?? [EXIT_TOOL, "unknown layer"];
             console.log(message);
             return code;
         }

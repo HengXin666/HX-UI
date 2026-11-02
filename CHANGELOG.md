@@ -1,0 +1,150 @@
+# Changelog
+
+本文件记录 `@hx/ui` 每个版本对使用方可见的变化. 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/), 版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/). 版本规则, 废弃流程与迁移段写法见 `docs/reference/versioning.md`.
+
+每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
+
+## [Unreleased]
+
+### Added
+
+- `src/primitives/deprecate.ts`: `deprecate()` 工具函数, 开发环境同一条废弃只 `console.warn` 一次, 生产环境静默. 暂不进公共入口, 由 P0-Z 集成时决定是否导出.
+- `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
+- 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
+
+## [0.5.0] - 2026-11-02
+
+公共符号 894 -> 979, 只增不删, 无迁移.
+
+### Added
+
+- 动效引擎 `src/motion`: `SPRING` 三档, `MOTION_PRESETS` 七种, `Reveal`, `Stagger` / `StaggerItem`, `AnimatedNumber`, `PageTransition`, `FadeSwap`, `useMotionTokens` / `readMotionTokens`, `timingTransition`.
+- 布局原语 `src/box`: `Stack` / `HStack` / `VStack` / `Spacer`, `Grid` / `AutoGrid`, `Container` / `Section` / `Center`, `Bento` / `BentoItem`, `SplitView` (包 resizable 并持久化尺寸).
+- 视觉效果件 `src/effects`: `SpotlightCard`, `BorderBeam`, `Marquee`, `Backdrop`, `GlassPanel`; 新样式入口 `@hx/ui/effects.css`, 已并入 `styles.css`.
+- 富交互件 `src/widgets`: `Timeline`, `Rating`, `FileDropzone`, `TagInput`, `ColorSwatch`.
+- 令牌: 表面三级 `surface-raised` / `overlay` / `sunken`, 品牌辅色 `accent-2` 与渐变, `--blur-glass`, `--duration-instant` / `emphasized`, `--ease-in-out` / `emphasized` / `spring`; `motion.css` 关键帧由 5 条增至 14 条, 均带 reduced-motion 兜底.
+- 既有组件的可选变体: `Card` 的 elevated / glass / lift, `Button` 的 gradient, `Tabs` 滑动指示器, `StatCard` 的 trend 与迷你折线.
+
+### Changed
+
+- 阴影五档重写为双层 (近处锐影 + 远处柔影), 亮色透明度更低. 默认变体渲染的类名不变, 但阴影观感会变化.
+
+### Fixed
+
+- 同步 `package-lock.json`, 补回三个缺失的图标包.
+
+## [0.4.0] - 2026-10-31
+
+公共符号新增 4 个, 共 894 个.
+
+### Added
+
+- 公共导出补上 `DOC_PAGE_ID`, `DOC_EVENT`, `DOC_SHELL_CLS`, `NAV_ICON` (此前已在 public-constants 中但入口漏列).
+
+### Changed
+
+- `@iconify-json/solar` 与 `@iconify-json/mdi` 提升为库的 `peerDependencies`. 使用方需自行安装, 否则图标类渲染为空.
+
+### Fixed
+
+- `check-docs-registry` 同时识别字面量 case 与 `case DOC_PAGE_ID.x:` 两种写法, 不再误报 nav-without-case.
+
+### Migration
+
+- 安装两个图标 peer: `npm i @iconify-json/solar @iconify-json/mdi`.
+
+## [0.3.0] - 2026-10-31
+
+### Added
+
+- agent 过程组件进入公共导出: `Thinking` / `ThinkingBranches`, `SubagentCard` / `SubagentGroup`, `TodoTree` / `TodoNode`, `StatusGlyph`, `deriveTodoStatus`, `extractHeadline`.
+- agent 相关常量导出: `AGENT_DEMO_STATUS`, `TODO_STATUS`, `TOOL_STATE`, `DIFF_KIND`, `DOC_KEY` 等.
+- 文档站增加思考计时, 发散思考, 子代理与 TodoTree 演示页.
+
+### Removed
+
+- 文档站合并重复页并移除空演示页 (只影响文档站, 不影响库导出).
+
+## [0.2.1] - 2026-10-31
+
+### Added
+
+- `DiffEditor`: CodeEditor 的左右对比模式, 共用本地 monaco 加载与主题, 行下说明走 view zone. 新导出 `DiffEditorProps`, `DiffLineNote`, `DiffSide`.
+
+### Changed
+
+- `src/index.ts` 的多行导出收紧, 入口文件行数回到 300 行上限以内.
+
+## [0.2.0] - 2026-10-31
+
+本版是第一个带 API 快照门禁的版本, 入口形状有破坏性变化.
+
+### Added
+
+- 流式 Markdown, Monaco 代码编辑器, Trace 实时生成模式, 模板页 (#21, #28).
+- 动效契约导出: `MotionPresence`, `MotionPoint`, `bindGesture`, `bindScrollProgress`, `gestureDelta`, `layoutDelta`, `presenceDuration`, `retainedIds`, `scrollProgress`; `playLayout` 与 `MotionList` 从入口导出 (#35, #37).
+- 门禁: API 快照 (`check-api-snapshot`) 与版本联动 (`check-api-version`), sideEffects 只允许 CSS 的 economy 检查, 可复原的视觉基线与刻画产物.
+
+### Changed
+
+- `monaco`, `xyflow`, `shiki`, `markstream` 改为可选 peer 依赖, 用到对应组件时由使用方安装.
+- 仅作为类型的名字改为 `export type`.
+
+### Removed
+
+- `src/index.ts` 不再使用 `export *`, 改为逐名导出; 包内 `./src/*` 深路径导出去掉.
+
+### Fixed
+
+- 蓝图引脚视觉不再吞指针事件, Handle 提到上层; Markdown 代码块改用 CodeBlock 渲染; 列表内代码围栏保留 `<li>` 嵌套.
+
+### Migration
+
+- 原先经 `@hx/ui/src/...` 深路径引用的代码改为从 `@hx/ui` 入口具名导入.
+- 用到 CodeEditor, 蓝图画布, 代码高亮或流式 Markdown 的项目, 补装对应 peer 依赖.
+
+## [0.1.2] - 2026-10-21
+
+### Changed
+
+- 版本号对齐 Release 产物, 无代码变化.
+
+## [0.1.1] - 2026-10-21
+
+### Added
+
+- 库构建与 GitHub Release 分发, 不需要 npm 账号 (#19); 安装说明见 `docs/tutorials/install.md`.
+- `tsconfig.build.json` 归入 lib lane.
+
+## [0.1.0] - 2026-09-28 .. 2026-10-21
+
+首个版本, 从 0.0 一路累积到 PR #17 合入.
+
+### Added
+
+- 独立组件库与可交互文档站; 补齐 radix 组件, 并对标 shadcn/ui 补齐全部组件 (组合式版本与已有组件并存).
+- 节点蓝图库: 自定义节点, 连接合法性判定, 执行流, 子图折叠, UE5 式注释与连线, 自动布局, 撤销重做, 多标签同步, 给 Agent 用的构建 API; 画布层接入 React Flow 并设为默认.
+- 布局件: 图标槽, 通用树 (行内重命名, 状态位, 右键菜单与拖放), 可收起侧栏, 顶栏导航, 会话状态指示点.
+- hx-browser 实时预览库组件 (协议客户端 + 钩子), 子路径 `@hx/ui/hxbrowser` 与 `@hx/ui/hxbrowser/protocol`.
+- agent 交互组件: `UsageMeter`, `DiffView`, 内联审批等, 以及概览页.
+- 主题: 暗色改为 GitHub Dark Dimmed, 语义状态色, 动效令牌, 水波纹.
+- 三层验证门禁与质量规则 (HC-* / PROJECT-UI-*), 前端 PR 附 GIF 演示.
+
+### Fixed
+
+- 蓝图: 拖拽乱飞与闪屏, 回边斜穿节点, 注释框空壳与遮挡, 同步无条件接受对端的图, 独立页面被弹窗拦截.
+- carousel 箭头按下丢失点击, input-otp 激活格边线, native-select 菜单配色.
+
+### Removed
+
+- 源码里的开发日记式注释, 并加门禁拦住.
+
+[Unreleased]: https://github.com/HengXin666/HX-UI/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/HengXin666/HX-UI/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/HengXin666/HX-UI/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/HengXin666/HX-UI/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/HengXin666/HX-UI/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/HengXin666/HX-UI/compare/v0.1.2...v0.2.0
+[0.1.2]: https://github.com/HengXin666/HX-UI/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/HengXin666/HX-UI/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/HengXin666/HX-UI/releases/tag/v0.1.0

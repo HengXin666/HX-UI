@@ -234,6 +234,7 @@ DataTypeId
 DatePicker
 DatePickerLabels
 DatePickerProps
+DeprecationNotice
 Dialog
 DialogClose
 DialogContent
@@ -845,6 +846,7 @@ defaultRegistry
 defineTheme
 demoGraph
 demoRegistry
+deprecate
 deriveTodoStatus
 describeGraph
 describeRegistry

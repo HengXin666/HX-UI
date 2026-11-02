@@ -1,0 +1,1047 @@
+{
+ "generated": "2026-11-02",
+ "source": "docs/reference/2026-ui-library-blocks-design.md",
+ "audit": "docs/reference/2026-ui-library-visual-audit.md",
+ "references": [
+  "https://primer.style",
+  "https://ui.shadcn.com",
+  "https://stripe.com",
+  "https://supabase.com",
+  "https://www.nike.com",
+  "https://www.apple.com/iphone/",
+  "https://tailwindcss.com",
+  "https://linear.app/pricing",
+  "https://brittanychiang.com"
+ ],
+ "criteria_types": [
+  "file_exists",
+  "line_range",
+  "regex"
+ ],
+ "shared_files_owned_by_integration_tasks": [
+  "src/index.ts",
+  "src/constants/index.ts",
+  "package.json",
+  "package-lock.json",
+  "docs/src/nav.ts",
+  "docs/src/App.tsx",
+  "docs/src/navIcons.ts",
+  "README.md",
+  "scripts/gates/registry.mjs",
+  "scripts/gates/baselines/api-surface.txt",
+  "scripts/gates/baselines/api-surface.version",
+  "scripts/quality/approvals.json",
+  "src/styles.css",
+  "src/blocks/index.ts",
+  "src/blocks/registry.ts",
+  "src/blocks/marketing/index.ts",
+  "src/blocks/commerce/index.ts"
+ ],
+ "notes": "同阶段非集成任务 write_scope 互不相交, 可全并行; 各阶段 -Z 集成任务串行持有共享入口, 依赖本阶段全部任务.",
+ "tasks": [
+  {
+   "id": "V0-01",
+   "phase": "V0",
+   "title": "展示级字号与营销节奏 token",
+   "brief": "在 src/tokens.css 新增 display 字号 --fs-display-sm/md/lg/xl/2xl (clamp, 36px 到 96px), --lh-display/--lh-tight, --tracking-display/--tracking-display-cjk, 营销纵向节奏 --section-pad-sm..xl (clamp 48px 到 160px), --block-gap-*, 容器宽度 --container-content/wide/max (1280/1440/1536), --z-header, --stagger-step, mask 渐隐长度 --mask-fade. 不改既有 token 取值. 审计 T1 T2 T4 T5.",
+   "deps": [],
+   "write_scope": [
+    "src/tokens.css"
+   ],
+   "criteria": [
+    {
+     "type": "regex",
+     "path": "src/tokens.css",
+     "pattern": "--fs-display-2xl:\\s*clamp\\("
+    },
+    {
+     "type": "regex",
+     "path": "src/tokens.css",
+     "pattern": "--section-pad-xl:\\s*clamp\\("
+    },
+    {
+     "type": "regex",
+     "path": "src/tokens.css",
+     "pattern": "--container-wide"
+    },
+    {
+     "type": "line_range",
+     "path": "src/tokens.css",
+     "min": 650,
+     "max": 1500
+    }
+   ]
+  },
+  {
+   "id": "V0-02",
+   "phase": "V0",
+   "title": "皮肤与密度机制",
+   "brief": "新建 src/skins/: default/mono/linear/fintech/emerald/retail 六套皮肤, 以 [data-skin=x] 覆盖语义 token (色, --radius, --font-display, --shadow-*, --gradient-*, --effect-intensity), 亮暗各一份; density.css 提供 [data-density=compact|comfortable|spacious]. 只覆盖 token, 不改组件类名. 文档页演示一键切换. 审计 P1 到 P4.",
+   "deps": [],
+   "write_scope": [
+    "src/skins/",
+    "src/constants/skins.ts",
+    "docs/src/pages/skins/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/skins/index.css"
+    },
+    {
+     "type": "file_exists",
+     "path": "src/skins/density.css"
+    },
+    {
+     "type": "regex",
+     "path": "src/skins/retail.css",
+     "pattern": "\\[data-skin=\"retail\"\\]"
+    },
+    {
+     "type": "regex",
+     "path": "src/constants/skins.ts",
+     "pattern": "emerald"
+    }
+   ]
+  },
+  {
+   "id": "V0-03",
+   "phase": "V0",
+   "title": "营销版式组件",
+   "brief": "新建 src/typography/: Display (size sm..2xl, balance), Eyebrow, Lead, Kicker, GradientText, Prose (博客/文档正文基线), SectionHeading 不在此处 (归区块基座). 中文回退字距. 审计 T3 T8 E7.",
+   "deps": [],
+   "write_scope": [
+    "src/typography/",
+    "src/constants/typography.ts",
+    "docs/src/pages/typography/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/typography/Display.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "src/typography/Prose.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/typography/index.ts",
+     "pattern": "GradientText"
+    }
+   ]
+  },
+  {
+   "id": "V0-04",
+   "phase": "V0",
+   "title": "容器与栅格扩展",
+   "brief": "Container/Section 增加 wide 与 bleed 宽度档, Section 增加 align 与标题尺度档 (headingSize), pad 改读 --section-pad-*; Grid 新增 GridItem (span/offset/start 响应式) 支持 12 列不对称. 保持现有默认值兼容. 审计 T4 到 T7.",
+   "deps": [],
+   "write_scope": [
+    "src/box/Container.tsx",
+    "src/box/Grid.tsx",
+    "src/box/index.ts",
+    "src/constants/box.ts",
+    "docs/src/pages/box/"
+   ],
+   "criteria": [
+    {
+     "type": "regex",
+     "path": "src/box/Container.tsx",
+     "pattern": "bleed"
+    },
+    {
+     "type": "regex",
+     "path": "src/box/Grid.tsx",
+     "pattern": "export function GridItem"
+    },
+    {
+     "type": "regex",
+     "path": "src/constants/box.ts",
+     "pattern": "wide"
+    }
+   ]
+  },
+  {
+   "id": "V0-05",
+   "phase": "V0",
+   "title": "媒体原语",
+   "brief": "新建 src/media/: Image (srcSet/sizes/picture, loading lazy 默认, priority, blur 占位, focal 裁切, ratio 盒防 CLS), ThemedImage (亮暗双图), Video (静音自动播放, poster, 可暂停, 减弱动效静止), Gallery, Lightbox (键盘, 缩放), DeviceFrame/BrowserFrame. 审计 C1 到 C5.",
+   "deps": [],
+   "write_scope": [
+    "src/media/",
+    "src/constants/media.ts",
+    "docs/src/pages/media/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/media/Image.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "src/media/Lightbox.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/media/Image.tsx",
+     "pattern": "loading"
+    },
+    {
+     "type": "regex",
+     "path": "src/media/index.ts",
+     "pattern": "ThemedImage"
+    }
+   ]
+  },
+  {
+   "id": "V0-06",
+   "phase": "V0",
+   "title": "商业页背景与遮罩效果",
+   "brief": "在 src/effects/ 新增 MeshGradient (3 到 5 色径向, 可漂移), Grain (噪点 svg filter), Beam (光束/光晕层), GridLines (网格 + 交点准星), MaskFade (上/下/横向/径向渐隐), GradientBorder (1px, background-clip 实现); Backdrop 增加 mesh/grain/beam 变体. 只动 transform/opacity. 审计 E1 到 E6.",
+   "deps": [],
+   "write_scope": [
+    "src/effects/MeshGradient.tsx",
+    "src/effects/Grain.tsx",
+    "src/effects/Beam.tsx",
+    "src/effects/GridLines.tsx",
+    "src/effects/MaskFade.tsx",
+    "src/effects/GradientBorder.tsx",
+    "src/effects/Backdrop.tsx",
+    "src/effects/index.ts",
+    "src/effects.css",
+    "src/constants/effects.ts",
+    "docs/src/pages/effects/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/effects/MeshGradient.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "src/effects/MaskFade.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/effects/index.ts",
+     "pattern": "GradientBorder"
+    },
+    {
+     "type": "regex",
+     "path": "src/effects.css",
+     "pattern": "mask-image"
+    }
+   ]
+  },
+  {
+   "id": "V0-07",
+   "phase": "V0",
+   "title": "滚动联动与入场编排",
+   "brief": "在 src/motion/ 新增 useScrollProgress, Parallax, StickyScroll (粘性叙事), RotatingText, SplitText (逐字/逐词), orchestration.ts (hero/section/card 编排预设: 眉标→标题→lead→CTA→媒体, 读 --stagger-step), hover 预设 (抬升/图片缩放/箭头位移). 全部遵守减弱动效. 审计 E8 到 E11 C10.",
+   "deps": [],
+   "write_scope": [
+    "src/motion/ScrollProgress.tsx",
+    "src/motion/Parallax.tsx",
+    "src/motion/StickyScroll.tsx",
+    "src/motion/RotatingText.tsx",
+    "src/motion/SplitText.tsx",
+    "src/motion/orchestration.ts",
+    "src/motion/index.ts",
+    "src/motion.css",
+    "src/constants/motion.ts",
+    "docs/src/pages/motion/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/motion/StickyScroll.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "src/motion/orchestration.ts"
+    },
+    {
+     "type": "regex",
+     "path": "src/motion/index.ts",
+     "pattern": "RotatingText"
+    },
+    {
+     "type": "regex",
+     "path": "src/motion/orchestration.ts",
+     "pattern": "reduced"
+    }
+   ]
+  },
+  {
+   "id": "V0-08",
+   "phase": "V0",
+   "title": "站点外壳零件",
+   "brief": "新建 src/site/: StickyHeader 行为钩子 (滚动阈值加玻璃底), ThemeSwitcher (system/light/dark), LocaleSwitcher, ScrollSpy, CopyButton, GitHubStars 徽标, Footnote/FootnoteRef. 审计 C11 C13 C17 C18 C21 C23.",
+   "deps": [],
+   "write_scope": [
+    "src/site/",
+    "src/constants/site.ts",
+    "docs/src/pages/site/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/site/ThemeSwitcher.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "src/site/ScrollSpy.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/site/index.ts",
+     "pattern": "LocaleSwitcher"
+    }
+   ]
+  },
+  {
+   "id": "V0-09",
+   "phase": "V0",
+   "title": "商业原子",
+   "brief": "新建 src/commerce/: Price/PriceRange (Intl.NumberFormat, compareAt 划线, period), ProductBadge (new/sale/soldout/折扣), SwatchPicker, SizePicker, RatingSummary (星 + 分 + 数), QuantityInput. 审计 C6 到 C9.",
+   "deps": [],
+   "write_scope": [
+    "src/commerce/",
+    "src/constants/commerce.ts",
+    "docs/src/pages/commerce/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/commerce/Price.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/commerce/Price.tsx",
+     "pattern": "Intl\\.NumberFormat"
+    },
+    {
+     "type": "regex",
+     "path": "src/commerce/index.ts",
+     "pattern": "SwatchPicker"
+    }
+   ]
+  },
+  {
+   "id": "V0-10",
+   "phase": "V0",
+   "title": "区块基座",
+   "brief": "新建 src/blocks/_shared/: types.ts (BlockBaseProps, Cta, Media, LinkItem, LinkGroup, Money, Person, Logo), BlockShell (tone/pad/width/align/reveal/backdrop, data-block-tone 相邻合并留白, 容器查询), SectionHeading, BlocksProvider (locale/labels), PageComposer (registry 以参数注入). 契约见 blocks-design 第 3 节.",
+   "deps": [],
+   "write_scope": [
+    "src/blocks/_shared/",
+    "src/constants/blocks.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/_shared/BlockShell.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "src/blocks/_shared/PageComposer.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/_shared/types.ts",
+     "pattern": "interface BlockBaseProps"
+    }
+   ]
+  },
+  {
+   "id": "V0-Z",
+   "phase": "V0",
+   "title": "V0 集成",
+   "brief": "styles.css 引入 skins 与新增 css; src/index.ts 与 src/constants/index.ts 导出 typography/media/site/commerce/新 effects/新 motion/blocks _shared; 文档站导航新增 基础: 皮肤, 版式, 媒体, 站点零件, 商业原子 分组; 更新 API 快照与 approvals; 版本 minor.",
+   "deps": [
+    "V0-01",
+    "V0-02",
+    "V0-03",
+    "V0-04",
+    "V0-05",
+    "V0-06",
+    "V0-07",
+    "V0-08",
+    "V0-09",
+    "V0-10"
+   ],
+   "write_scope": [
+    "src/styles.css",
+    "src/index.ts",
+    "src/constants/index.ts",
+    "package.json",
+    "package-lock.json",
+    "docs/src/nav.ts",
+    "docs/src/App.tsx",
+    "docs/src/navIcons.ts",
+    "README.md",
+    "scripts/gates/registry.mjs",
+    "scripts/gates/baselines/api-surface.txt",
+    "scripts/gates/baselines/api-surface.version",
+    "scripts/quality/approvals.json"
+   ],
+   "criteria": [
+    {
+     "type": "regex",
+     "path": "src/styles.css",
+     "pattern": "skins"
+    },
+    {
+     "type": "regex",
+     "path": "src/index.ts",
+     "pattern": "typography"
+    },
+    {
+     "type": "regex",
+     "path": "docs/src/nav.ts",
+     "pattern": "skins"
+    }
+   ]
+  },
+  {
+   "id": "V1-01",
+   "phase": "V1",
+   "title": "站点区块: 顶栏/大菜单/移动导航/公告条/页脚",
+   "brief": "SiteHeader (mega, localNav, search, sticky blur), MegaMenuPanel, MobileNav (分级钻取), AnnouncementBar (可关闭, storageKey), SiteFooter (多列, 订阅, 社交, 地区, 法务, 状态, 主题切换, 移动端折叠). 审计 B11 B12. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/site/",
+    "docs/src/pages/blocks/site-v101/",
+    "src/constants/blocks-site-v101.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/site/SiteFooter.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/site-v101/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/site/SiteFooter.tsx",
+     "pattern": "BlockShell"
+    }
+   ]
+  },
+  {
+   "id": "V1-02",
+   "phase": "V1",
+   "title": "营销区块 A: Hero/LogoWall/CtaBanner/Newsletter",
+   "brief": "Hero 五种 layout (centered/split/media-bg/video-bg/product), rotate 轮换词, command, trust logos; LogoWall grid/marquee 灰度; CtaBanner inline/boxed/full; Newsletter 状态反馈. 审计 B1 B2 B10 B22. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/marketing/Hero.tsx",
+    "src/blocks/marketing/LogoWall.tsx",
+    "src/blocks/marketing/CtaBanner.tsx",
+    "src/blocks/marketing/Newsletter.tsx",
+    "docs/src/pages/blocks/marketing-v102/",
+    "src/constants/blocks-marketing-v102.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/marketing/Hero.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/marketing-v102/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/Hero.tsx",
+     "pattern": "BlockShell"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/Hero.tsx",
+     "pattern": "video-bg"
+    }
+   ]
+  },
+  {
+   "id": "V1-03",
+   "phase": "V1",
+   "title": "营销区块 B: 特性与数据",
+   "brief": "FeatureGrid (card/plain/numbered), FeatureAlternating, BentoFeatures (hoverMedia), StatBand (AnimatedNumber), Showcase (masonry 作品墙). 审计 B3 B4. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/marketing/FeatureGrid.tsx",
+    "src/blocks/marketing/FeatureAlternating.tsx",
+    "src/blocks/marketing/BentoFeatures.tsx",
+    "src/blocks/marketing/StatBand.tsx",
+    "src/blocks/marketing/Showcase.tsx",
+    "docs/src/pages/blocks/marketing-v103/",
+    "src/constants/blocks-marketing-v103.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/marketing/BentoFeatures.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/marketing-v103/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/BentoFeatures.tsx",
+     "pattern": "BlockShell"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/BentoFeatures.tsx",
+     "pattern": "hoverMedia"
+    }
+   ]
+  },
+  {
+   "id": "V1-04",
+   "phase": "V1",
+   "title": "营销区块 C: 社证",
+   "brief": "Testimonials (featured/grid/masonry/carousel/marquee), CaseStudies (卡片/手风琴, metrics), ChangelogList. 审计 B5 B8 B18. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/marketing/Testimonials.tsx",
+    "src/blocks/marketing/CaseStudies.tsx",
+    "src/blocks/marketing/ChangelogList.tsx",
+    "docs/src/pages/blocks/marketing-v104/",
+    "src/constants/blocks-marketing-v104.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/marketing/Testimonials.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/marketing-v104/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/Testimonials.tsx",
+     "pattern": "BlockShell"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/Testimonials.tsx",
+     "pattern": "masonry"
+    }
+   ]
+  },
+  {
+   "id": "V1-05",
+   "phase": "V1",
+   "title": "营销区块 D: 转化",
+   "brief": "Pricing (月/年切换, 推荐档, Money), ComparisonMatrix (粘性表头与首列, 分组, 移动端两档对比), Faq (双栏, 原生 details 兜底, 可搜索). 审计 B6 B7 B9. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/marketing/Pricing.tsx",
+    "src/blocks/marketing/ComparisonMatrix.tsx",
+    "src/blocks/marketing/Faq.tsx",
+    "docs/src/pages/blocks/marketing-v105/",
+    "src/constants/blocks-marketing-v105.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/marketing/Pricing.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/marketing-v105/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/Pricing.tsx",
+     "pattern": "BlockShell"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/Pricing.tsx",
+     "pattern": "billing"
+    }
+   ]
+  },
+  {
+   "id": "V1-06",
+   "phase": "V1",
+   "title": "营销区块 E: 开发者",
+   "brief": "CodeShowcase (两级 tabs, 代码+预览并排, BrowserFrame), InstallBlock (包管理器切换, CopyButton). 审计 B20 C11. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/marketing/CodeShowcase.tsx",
+    "src/blocks/marketing/InstallBlock.tsx",
+    "docs/src/pages/blocks/marketing-v106/",
+    "src/constants/blocks-marketing-v106.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/marketing/InstallBlock.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/marketing-v106/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/InstallBlock.tsx",
+     "pattern": "BlockShell"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/marketing/InstallBlock.tsx",
+     "pattern": "manager"
+    }
+   ]
+  },
+  {
+   "id": "V1-07",
+   "phase": "V1",
+   "title": "电商区块 A: 浏览",
+   "brief": "ProductCard (hover 换图, 色板换主图, 徽标, 评分, 售罄), ProductGrid (骨架, 空态), ProductRail (吸附, 边缘淡出), CategoryTiles, CampaignHero (全出血轮播), PromoStrip. 审计 B13. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/commerce/ProductCard.tsx",
+    "src/blocks/commerce/ProductGrid.tsx",
+    "src/blocks/commerce/ProductRail.tsx",
+    "src/blocks/commerce/CategoryTiles.tsx",
+    "src/blocks/commerce/CampaignHero.tsx",
+    "src/blocks/commerce/PromoStrip.tsx",
+    "docs/src/pages/blocks/commerce-v107/",
+    "src/constants/blocks-commerce-v107.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/commerce/ProductCard.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/commerce-v107/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/commerce/ProductCard.tsx",
+     "pattern": "BlockShell"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/commerce/ProductCard.tsx",
+     "pattern": "swatches"
+    }
+   ]
+  },
+  {
+   "id": "V1-08",
+   "phase": "V1",
+   "title": "电商区块 B: 交易与搜索",
+   "brief": "ProductDetail (画廊+灯箱, 粘性信息, 选项), CartSummary (抽屉/页面), CheckoutSteps (复用 Stepper, 移动端摘要折叠), SearchResults (筛选侧栏/Sheet, 排序, 空态). 审计 B14 B15 B16. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/commerce/ProductDetail.tsx",
+    "src/blocks/commerce/CartSummary.tsx",
+    "src/blocks/commerce/CheckoutSteps.tsx",
+    "src/blocks/commerce/SearchResults.tsx",
+    "docs/src/pages/blocks/commerce-v108/",
+    "src/constants/blocks-commerce-v108.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/commerce/CheckoutSteps.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/commerce-v108/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/commerce/CheckoutSteps.tsx",
+     "pattern": "BlockShell"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/commerce/CheckoutSteps.tsx",
+     "pattern": "Stepper"
+    }
+   ]
+  },
+  {
+   "id": "V1-09",
+   "phase": "V1",
+   "title": "文档站区块",
+   "brief": "DocsShell 三栏, DocsToc (ScrollSpy), DocsPager, ApiTable, Callout, DocsHome. 审计 B17. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/docs/",
+    "docs/src/pages/blocks/docs-v109/",
+    "src/constants/blocks-docs-v109.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/docs/DocsShell.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/docs-v109/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/docs/DocsShell.tsx",
+     "pattern": "BlockShell"
+    }
+   ]
+  },
+  {
+   "id": "V1-10",
+   "phase": "V1",
+   "title": "仪表盘区块",
+   "brief": "DashboardShell (默认 compact), KpiRow, ChartPanel, ActivityFeed, OnboardingChecklist, 复用 StatCard/sidebar/charts. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/dashboard/",
+    "docs/src/pages/blocks/dashboard-v110/",
+    "src/constants/blocks-dashboard-v110.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/dashboard/KpiRow.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/dashboard-v110/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/dashboard/KpiRow.tsx",
+     "pattern": "BlockShell"
+    }
+   ]
+  },
+  {
+   "id": "V1-11",
+   "phase": "V1",
+   "title": "作品集区块",
+   "brief": "ProfileHero, StickyProfileLayout (粘性左栏 + ScrollSpy), ExperienceTimeline (扩展 Timeline), ProjectGrid (hover 预设), PostList (按年分组). 审计 B19. 所有文案来自 props, 只用 token, 每个区块带 JSON 数据示例与三皮肤预览.",
+   "deps": [
+    "V0-Z"
+   ],
+   "write_scope": [
+    "src/blocks/portfolio/",
+    "docs/src/pages/blocks/portfolio-v111/",
+    "src/constants/blocks-portfolio-v111.ts"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/portfolio/StickyProfileLayout.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/blocks/portfolio-v111/index.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/portfolio/StickyProfileLayout.tsx",
+     "pattern": "BlockShell"
+    }
+   ]
+  },
+  {
+   "id": "V1-Z",
+   "phase": "V1",
+   "title": "V1 集成",
+   "brief": "生成 src/blocks/marketing/index.ts, src/blocks/commerce/index.ts, src/blocks/registry.ts (汇总全部区块), src/blocks/index.ts; src/index.ts 导出 Blocks 命名空间与平铺名; 文档站新增 Blocks 导航组 (site/marketing/commerce/docs/dashboard/portfolio); 更新 API 快照与 approvals.",
+   "deps": [
+    "V1-01",
+    "V1-02",
+    "V1-03",
+    "V1-04",
+    "V1-05",
+    "V1-06",
+    "V1-07",
+    "V1-08",
+    "V1-09",
+    "V1-10",
+    "V1-11"
+   ],
+   "write_scope": [
+    "src/blocks/index.ts",
+    "src/blocks/registry.ts",
+    "src/blocks/marketing/index.ts",
+    "src/blocks/commerce/index.ts",
+    "src/index.ts",
+    "src/constants/index.ts",
+    "package.json",
+    "package-lock.json",
+    "docs/src/nav.ts",
+    "docs/src/App.tsx",
+    "docs/src/navIcons.ts",
+    "README.md",
+    "scripts/gates/registry.mjs",
+    "scripts/gates/baselines/api-surface.txt",
+    "scripts/gates/baselines/api-surface.version",
+    "scripts/quality/approvals.json"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/registry.ts"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/registry.ts",
+     "pattern": "ProductCard"
+    },
+    {
+     "type": "regex",
+     "path": "src/index.ts",
+     "pattern": "blocks"
+    }
+   ]
+  },
+  {
+   "id": "V2-01",
+   "phase": "V2",
+   "title": "整页模板: SaaS 落地页 / 开源项目站 / 定价页",
+   "brief": "只用区块与 PageComposer 拼三套整页 (stripe 型, tailwind 型, linear pricing 型), 零自定义 class, 每页附 JSON schema 版本.",
+   "deps": [
+    "V1-Z"
+   ],
+   "write_scope": [
+    "docs/src/pages/pages/marketing/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/pages/marketing/saas.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/pages/marketing/pricing.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "docs/src/pages/pages/marketing/saas.tsx",
+     "pattern": "PageComposer"
+    }
+   ]
+  },
+  {
+   "id": "V2-02",
+   "phase": "V2",
+   "title": "整页模板: 电商首页 / 商品详情 / 结账",
+   "brief": "nike 型首页 (skin=retail), apple 型商品详情, 结账三步页.",
+   "deps": [
+    "V1-Z"
+   ],
+   "write_scope": [
+    "docs/src/pages/pages/commerce/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/pages/commerce/home.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/pages/commerce/product.tsx"
+    },
+    {
+     "type": "regex",
+     "path": "docs/src/pages/pages/commerce/home.tsx",
+     "pattern": "retail"
+    }
+   ]
+  },
+  {
+   "id": "V2-03",
+   "phase": "V2",
+   "title": "整页模板: 作品集 / 文档站 / 仪表盘",
+   "brief": "brittanychiang 型作品集, 文档站首页与内容页, 仪表盘总览.",
+   "deps": [
+    "V1-Z"
+   ],
+   "write_scope": [
+    "docs/src/pages/pages/portfolio/",
+    "docs/src/pages/pages/docs-site/",
+    "docs/src/pages/pages/dashboard/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/pages/portfolio/index.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/pages/docs-site/index.tsx"
+    },
+    {
+     "type": "file_exists",
+     "path": "docs/src/pages/pages/dashboard/index.tsx"
+    }
+   ]
+  },
+  {
+   "id": "V2-04",
+   "phase": "V2",
+   "title": "区块 schema 校验",
+   "brief": "src/blocks/schema/: 每个区块的 zod schema, validateBlocks() (路径化错误), 以及包装组件 ValidatedPageComposer (开发模式先校验再交给 PageComposer). 不修改 src/blocks/_shared/PageComposer.tsx (归 V0-10), 便于 Agent/CMS 生成整页.",
+   "deps": [
+    "V1-Z"
+   ],
+   "write_scope": [
+    "src/blocks/schema/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "src/blocks/schema/index.ts"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/schema/index.ts",
+     "pattern": "validateBlocks"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/schema/index.ts",
+     "pattern": "ValidatedPageComposer"
+    }
+   ]
+  },
+  {
+   "id": "V2-05",
+   "phase": "V2",
+   "title": "区块视觉回归",
+   "brief": "scripts/e2e/blocks/: 对 V2 整页模板在 default/mono/retail × light/dark × 375/768/1440 截图, 基线放 scripts/e2e/shots/blocks/, 阈值与现有 visual.mjs 对齐.",
+   "deps": [
+    "V2-01",
+    "V2-02",
+    "V2-03"
+   ],
+   "write_scope": [
+    "scripts/e2e/blocks/",
+    "scripts/e2e/shots/blocks/"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "scripts/e2e/blocks/run.mjs"
+    },
+    {
+     "type": "regex",
+     "path": "scripts/e2e/blocks/run.mjs",
+     "pattern": "1440"
+    }
+   ]
+  },
+  {
+   "id": "V2-06",
+   "phase": "V2",
+   "title": "区块层教程与参考",
+   "brief": "docs/tutorials/build-a-landing-page.md (从零用 PageComposer 拼落地页), docs/reference/blocks.md (区块总表, props 与皮肤联动).",
+   "deps": [
+    "V1-Z"
+   ],
+   "write_scope": [
+    "docs/tutorials/build-a-landing-page.md",
+    "docs/reference/blocks.md"
+   ],
+   "criteria": [
+    {
+     "type": "file_exists",
+     "path": "docs/tutorials/build-a-landing-page.md"
+    },
+    {
+     "type": "line_range",
+     "path": "docs/reference/blocks.md",
+     "min": 120,
+     "max": 1200
+    }
+   ]
+  },
+  {
+   "id": "V2-Z",
+   "phase": "V2",
+   "title": "V2 集成",
+   "brief": "src/blocks/index.ts 导出 schema (validateBlocks, ValidatedPageComposer); 文档站新增 Pages 导航组接入 V2 模板; gates 注册 blocks-visual; README 增加 \"用 HX-UI 搭任何页面\" 章节与皮肤截图; 更新 API 快照 (含 schema) 与 approvals.",
+   "deps": [
+    "V2-01",
+    "V2-02",
+    "V2-03",
+    "V2-04",
+    "V2-05",
+    "V2-06"
+   ],
+   "write_scope": [
+    "src/blocks/index.ts",
+    "src/index.ts",
+    "src/constants/index.ts",
+    "package.json",
+    "package-lock.json",
+    "docs/src/nav.ts",
+    "docs/src/App.tsx",
+    "docs/src/navIcons.ts",
+    "README.md",
+    "scripts/gates/registry.mjs",
+    "scripts/gates/baselines/api-surface.txt",
+    "scripts/gates/baselines/api-surface.version",
+    "scripts/quality/approvals.json"
+   ],
+   "criteria": [
+    {
+     "type": "regex",
+     "path": "scripts/gates/registry.mjs",
+     "pattern": "blocks-visual"
+    },
+    {
+     "type": "regex",
+     "path": "docs/src/nav.ts",
+     "pattern": "pages-"
+    },
+    {
+     "type": "regex",
+     "path": "README.md",
+     "pattern": "PageComposer"
+    },
+    {
+     "type": "regex",
+     "path": "src/blocks/index.ts",
+     "pattern": "schema"
+    }
+   ]
+  }
+ ]
+}
