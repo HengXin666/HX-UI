@@ -33,3 +33,5 @@ V1 的 11 个区块任务需要一套稳定的公共契约: 统一的 props 词�
 ## Consequences
 
 区块任务只需 import ./_shared 的类型与组件. src/blocks/index.ts 与 src/index.ts 的导出由集成任务接入. 令牌, typography, orchestration, mesh 等效果件落地后, 只需改 src/constants/blocks.ts 的类名映射与两处 TODO, 区块代码不变. navigator.language 作为缺省 locale 时服务端与客户端可能不同, 需要 SSR 的页面应显式传 locale.
+
+各类别区块的内容数据类型也追加在 types.ts (例: 作品集的 ProfileData / ExperienceItem / ProjectItem / PostItem, 见 2026-11-02-blocks-portfolio-v111.md), 区块仍只从这里 import 类型.

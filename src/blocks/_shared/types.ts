@@ -24,6 +24,8 @@ import type {
   PAGE_COMPOSER_SLOTS,
   SECTION_HEADING_SLOTS,
 } from "../../constants/blocks";
+import type { PORTFOLIO_HERO_LAYOUT, PORTFOLIO_PROJECT_LAYOUT } from "../../constants/blocks-portfolio-v111";
+import type { CALLOUT_KIND } from "../../constants/blocks-docs-v109";
 import type { IconSource } from "../../layout/Icon";
 
 type ValueOf<T> = T[keyof T];
@@ -274,3 +276,90 @@ export type {
 export type { SectionHeadingProps, CtaGroupProps, CtaButtonProps } from "./SectionHeading";
 export type { BlocksProviderProps } from "./BlocksProvider";
 export type { PageComposerProps } from "./PageComposer";
+
+/* ---------- portfolio (V1-11, 契约见设计文档 4.6) ---------- */
+
+export type ProfileHeroLayout = ValueOf<typeof PORTFOLIO_HERO_LAYOUT>;
+export type ProjectGridLayout = ValueOf<typeof PORTFOLIO_PROJECT_LAYOUT>;
+
+/** 个人资料: ProfileHero 与 StickyProfileLayout 侧栏共用. links 带 icon 时渲染为图标链接. */
+export interface ProfileData {
+  name: Rich;
+  role?: Rich;
+  bio?: Rich;
+  avatar?: Media;
+  links?: LinkItem[];
+}
+
+/** 一段经历. current 为真时高亮 (当前在职). */
+export interface ExperienceItem {
+  period: Rich;
+  title: Rich;
+  org: Rich;
+  href?: string;
+  body?: Rich;
+  tags?: string[];
+  current?: boolean;
+}
+
+/** 一个项目. href 为卡片主链接, links 为额外外链 (源码, 演示). */
+export interface ProjectItem {
+  title: Rich;
+  media?: Media;
+  body?: Rich;
+  href?: string;
+  external?: boolean;
+  tags?: string[];
+  featured?: boolean;
+  links?: LinkItem[];
+}
+
+/** 一篇文章. date 用 ISO 串便于 JSON 序列化. */
+export interface PostItem {
+  title: Rich;
+  date: string | number | Date;
+  href: string;
+  excerpt?: Rich;
+  tags?: string[];
+}
+
+/* ---------- docs (V1-09, 契约见设计文档 4.4) ---------- */
+
+export type CalloutKind = ValueOf<typeof CALLOUT_KIND>;
+
+/** TOC 一项: id 对应正文标题的锚点; depth 为标题层级 (2 = h2). */
+export interface TocItem {
+  id: string;
+  label: Rich;
+  depth: number;
+}
+
+/** ApiTable 一行. type 是类型串, 过长时折叠. */
+export interface ApiRow {
+  name: string;
+  type: string;
+  default?: string;
+  description: Rich;
+  required?: boolean;
+  /** 已废弃说明; 给了就划线并附说明. */
+  deprecated?: Rich;
+}
+
+/** 文档站首页的检索入口: 只给入口外观与行为, 搜索面板由调用方实现 (例如 Command). */
+export interface SearchSpec {
+  placeholder?: string;
+  /** 快捷键提示, 例如 "⌘K". */
+  shortcut?: string;
+  href?: string;
+  onOpen?: () => void;
+}
+
+/** 文档站首页一张入口卡 (组件 / 指南 / 主题). */
+export interface DocsHomeCard {
+  title: Rich;
+  href: string;
+  description?: Rich;
+  icon?: IconName;
+  badge?: Rich;
+  external?: boolean;
+}
