@@ -24,7 +24,7 @@ export const LANES = [
   {
     name: "lib",
     title: "组件库源码",
-    prefixes: ["src/", "tsconfig.json", "tsconfig.build.json", "package.json", "package-lock.json"],
+    prefixes: ["src/", "tests/", "vitest.config.ts", "tsconfig.json", "tsconfig.build.json", "package.json", "package-lock.json"],
     groups: ["lib", "shape"],
   },
   {
@@ -42,7 +42,7 @@ export const LANES = [
   {
     name: "contract",
     title: "对外承诺",
-    prefixes: ["README.md"],
+    prefixes: ["README.md", "CHANGELOG.md"],
     groups: ["lib", "docs"],
   },
 ];
