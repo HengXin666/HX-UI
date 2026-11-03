@@ -10,6 +10,7 @@ import { MeshGradient } from "../../effects/MeshGradient";
 import { BrowserFrame } from "../../media/frames/browser-frame";
 import { DeviceFrame } from "../../media/frames/device-frame";
 import { ProductMockFrame } from "../../media/frames/product-mock-frame";
+import type { ProductMockFade } from "../../constants/media";
 import { Image } from "../../media/image/image";
 import { ThemedImage } from "../../media/image/themed-image";
 import { Video } from "../../media/video";
@@ -202,12 +203,25 @@ export function LogoMark({ logo, grayscale = MV102_DEFAULT.logoGrayscale, height
 
 declare const process: { env: { NODE_ENV?: string } };
 
+/** Hero 的 mock 外框参数 (frame="mock" 时透传给 ProductMockFrame). */
+export interface HeroMockProps {
+  /** frame="mock" 时绕 X 轴的倾斜角 (deg), 默认 MV102_DEFAULT.heroMockTilt; 减弱动效时不倾斜. */
+  mockTilt?: number;
+  /** frame="mock" 时的渐隐边 (top / bottom / none), 默认 MV102_DEFAULT.heroMockFade. */
+  mockFade?: ProductMockFade;
+}
+
 /**
  * Hero 媒体外框分发: browser -> BrowserFrame, window -> BrowserFrame 去工具栏 (只剩描边窗口), device -> DeviceFrame (笔记本), mock -> ProductMockFrame
- * (自带透视与底部渐隐, 所以不再套 MaskFade), none -> 原样. fade 为 true 时 (product 版式) 非 mock 外框底部渐隐.
+ * (自带透视与渐隐, 倾斜角与渐隐边取 mock 参数, 所以不再套 MaskFade), none -> 原样. fade 为 true 时 (product 版式) 非 mock 外框底部渐隐.
  */
-export function frameHeroVisual(inner: React.ReactNode, frame: string, address: React.ReactNode, fade: boolean): React.ReactNode {
-  if (frame === HERO_FRAME.mock) return <ProductMockFrame>{inner}</ProductMockFrame>;
+export function frameHeroVisual(
+  inner: React.ReactNode, frame: string, address: React.ReactNode, fade: boolean,
+  mock: { tilt?: number; fade?: ProductMockFade } = {},
+): React.ReactNode {
+  if (frame === HERO_FRAME.mock) {
+    return <ProductMockFrame tilt={mock.tilt ?? MV102_DEFAULT.heroMockTilt} fade={mock.fade ?? MV102_DEFAULT.heroMockFade}>{inner}</ProductMockFrame>;
+  }
   let framed = inner;
   if (frame === HERO_FRAME.browser) framed = <BrowserFrame address={address}>{inner}</BrowserFrame>;
   else if (frame === HERO_FRAME.window) framed = <BrowserFrame hideAddressBar showControls={false}>{inner}</BrowserFrame>;

@@ -827,6 +827,9 @@ PORT_R
 PORT_ROW
 PRICE_PERIOD
 PROCESS_DEMO
+PRODUCT_MOCK_DEFAULT
+PRODUCT_MOCK_FADE
+PRODUCT_MOCK_FRAME_SLOTS
 PROMO_KIND
 PROMO_PLACEMENT
 PROXY_LAYER_META
@@ -893,6 +896,10 @@ ProductGrid
 ProductGridCardOptions
 ProductGridProps
 ProductGridStateData
+ProductMockFade
+ProductMockFrame
+ProductMockFrameProps
+ProductMockMedia
 ProductRail
 ProductRailProps
 ProductSwatch

@@ -9,7 +9,7 @@ Decision-ID: media-primitives
 - `src/media/video.tsx`
 - `src/media/image/image.tsx`
 - `src/media/gallery/gallery.tsx`
-- `src/media/frames/browser-frame.tsx`
+- `src/media/frames/product-mock-frame.tsx`
 - `src/constants/media.ts`
 - `docs/src/pages/media/ImagePage.tsx`
 - `docs/src/components/MediaDemo.tsx`

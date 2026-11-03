@@ -301,17 +301,19 @@ export type {
   DisplayTag, LineTag, ProseTag,
 } from "./typography";
 
-// ── 媒体原语 (Image / ThemedImage / Video / Gallery / Lightbox / DeviceFrame / BrowserFrame) ──
+// ── 媒体原语 (Image / ThemedImage / Video / Gallery / Lightbox / DeviceFrame / BrowserFrame / ProductMockFrame) ──
 /**
  * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export {
   Image, ThemedImage, useImageStatus, Video, Gallery, Lightbox, DeviceFrame, BrowserFrame, resolveSlots, BROWSER_FRAME_SLOTS, DEVICE, DEVICE_FRAME_SLOTS, GALLERY_SLOTS, IMAGE_FIT, IMAGE_PLACEHOLDER,
   IMAGE_SLOTS, IMAGE_STATUS, LIGHTBOX_SLOTS, MEDIA_LABELS, MEDIA_MODE, THEMED_IMAGE_SLOTS, VIDEO_SLOTS,
+  ProductMockFrame, PRODUCT_MOCK_DEFAULT, PRODUCT_MOCK_FADE, PRODUCT_MOCK_FRAME_SLOTS,
 } from "./media";
 export type {
   ImageProps, ImageSizing, ThemedImageProps, UseImageStatusReturn, VideoProps, VideoSource, GalleryProps, LightboxProps, LightboxState, MediaItem, LightboxIndexChange, DeviceFrameProps,
   BrowserFrameProps, SlotResolver, DeviceKind, ImageFit, ImageStatus, MediaLabels, MediaMode, SlotClassNames, SlotStyles,
+  ProductMockFrameProps, ProductMockMedia, ProductMockFade,
 } from "./media";
 
 // ── 商业页背景与遮罩 (MeshGradient / Grain / Beam / GridLines / MaskFade / GradientBorder) ──

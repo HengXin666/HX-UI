@@ -17,7 +17,7 @@ import { CtaGroup } from "../_shared/SectionHeading";
 import type { BlockBaseProps, BlockTitleSize, Cta, HeadingLevel, Logo, Media, Rich } from "../_shared/types";
 import { HeroEditorial } from "./HeroEditorial";
 import { heroPadTopStyle, type HeroPadTop } from "./heroPadTop";
-import { LogoMark, MediaView, frameHeroVisual, resolveBackdrop, warnHeroVisualDropped } from "./parts";
+import { LogoMark, MediaView, frameHeroVisual, resolveBackdrop, warnHeroVisualDropped, type HeroMockProps } from "./parts";
 
 type ValueOf<T> = T[keyof T];
 export type HeroLayout = ValueOf<typeof HERO_LAYOUT>;
@@ -35,7 +35,7 @@ export interface HeroTrust {
   text?: Rich;
 }
 
-export interface HeroProps extends BlockBaseProps {
+export interface HeroProps extends BlockBaseProps, HeroMockProps {
   /** 版式, 默认 centered. */
   layout?: HeroLayout;
   eyebrow?: Rich;
@@ -135,7 +135,7 @@ export function Hero(props: HeroProps): React.JSX.Element {
   const {
     layout = MV102_DEFAULT.heroLayout,
     eyebrow, pill, title, rotate, rotateInterval, lead, leadMeasure = MV102_DEFAULT.heroLeadMeasure, padTop, ctas, command, media, mockup,
-    frame = MV102_DEFAULT.heroFrame, frameAddress, mediaSide = MV102_DEFAULT.heroMediaSide,
+    frame = MV102_DEFAULT.heroFrame, frameAddress, mockTilt = MV102_DEFAULT.heroMockTilt, mockFade = MV102_DEFAULT.heroMockFade, mediaSide = MV102_DEFAULT.heroMediaSide,
     scrim = MV102_DEFAULT.heroScrim, trust,
     titleSize = MV102_DEFAULT.heroTitleSize, titleLevel = MV102_DEFAULT.heroTitleLevel,
     backdrop, tone, align, width, pad = MV102_DEFAULT.heroPad, slots, labels, ...shell
@@ -219,7 +219,7 @@ export function Hero(props: HeroProps): React.JSX.Element {
   if (isBg && (slots?.media || mockup || frame !== HERO_FRAME.none)) warnHeroVisualDropped(layout, "mockup / slots.media / frame");
   const visual = visualInner && !isBg ? (
     <div data-slot={MV102_SLOT.heroMedia} data-frame={frame} className={cn(isStacked && HERO_CLASS.productMedia, isSplit && mediaSide === HERO_MEDIA_SIDE.start && HERO_CLASS.splitMediaStart)}>
-      {frameHeroVisual(visualInner, frame, frameAddress, layout === HERO_LAYOUT.product)}
+      {frameHeroVisual(visualInner, frame, frameAddress, layout === HERO_LAYOUT.product, { tilt: mockTilt, fade: mockFade })}
     </div>
   ) : null;
 

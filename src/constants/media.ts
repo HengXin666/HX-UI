@@ -76,7 +76,19 @@ export type ProductMockFade = (typeof PRODUCT_MOCK_FADE)[keyof typeof PRODUCT_MO
  * 产品界面容器默认值: 倾斜角 (deg, 绕 X 轴, 正值顶边远离观者), 透视距离 (px), 缩放, 截图宽高比 (宽 / 高),
  * 倾斜角上下限. 档位取自 linear / vercel 首屏截图的观感: 小角度 + 远透视, 只给纵深不制造畸变.
  */
-export const PRODUCT_MOCK_DEFAULT = { tilt: 8, perspective: 2000, scale: 1, ratio: 16 / 10, minTilt: -45, maxTilt: 45 } as const;
+export const PRODUCT_MOCK_DEFAULT = { tilt: 0, perspective: 1200, scale: 1, ratio: 16 / 10, minTilt: -45, maxTilt: 45 } as const;
+
+/** 产品界面舞台的 CSS 变量: 倾斜角与缩放写到变量里, 类名再拼 transform, 这样减弱动效时能单独去掉倾斜. */
+export const PRODUCT_MOCK_VAR = { tilt: "--hx-product-mock-tilt", scale: "--hx-product-mock-scale" } as const;
+
+/**
+ * 产品界面舞台类名: 默认 rotateX(倾斜) + scale; prefers-reduced-motion 时只保留 scale, 不倾斜 (渐隐不受影响).
+ * 类名整串写出, Tailwind 才扫得到; 变量名与 PRODUCT_MOCK_VAR 一致.
+ */
+export const PRODUCT_MOCK_CLASSES = {
+	surface:
+		"relative w-full [transform-style:preserve-3d] [transform:rotateX(var(--hx-product-mock-tilt,0deg))_scale(var(--hx-product-mock-scale,1))] motion-reduce:[transform:scale(var(--hx-product-mock-scale,1))]",
+} as const;
 
 /** 画廊默认列数与比例, 列数上下限. */
 export const GALLERY_DEFAULTS = { columns: 3, ratio: 4 / 3, minColumns: 1, maxColumns: 6 } as const;

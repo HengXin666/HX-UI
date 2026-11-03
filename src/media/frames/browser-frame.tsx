@@ -31,7 +31,7 @@ const DOTS = ["bg-danger", "bg-warning", "bg-success"] as const;
  * 结构参考 src/hxbrowser 的标签页外壳, 但不依赖它的任何会话或输入逻辑. 地址只是展示文本, 由 props 传入.
  * ref 指向根 div.
  *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
+ * 本目录的决策锚点放在 product-mock-frame.tsx (同一决策的代表文件), 这里不重复引用.
  */
 export function BrowserFrame({
 	address, secure = true, hideAddressBar = false, showControls = true, actions, ratio, classNames, styles, className, style, children, ...props

@@ -64,6 +64,9 @@ export const MV102_DEFAULT = {
   heroTitleLevel: 1,
   heroFrame: "none",
   heroDevice: "laptop",
+  /** frame="mock" 时的倾斜角 (deg) 与渐隐边 (ProductMockFrame tilt / fade). */
+  heroMockTilt: 8,
+  heroMockFade: "bottom",
   heroMediaSide: "end",
   heroPad: "lg",
   heroLeadMeasure: "default",

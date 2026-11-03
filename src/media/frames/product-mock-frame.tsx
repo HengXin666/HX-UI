@@ -4,7 +4,7 @@ import * as React from "react";
 import { cn } from "../../primitives/utils";
 import { MaskFade } from "../../effects/MaskFade";
 import {
-	PRODUCT_MOCK_DEFAULT, PRODUCT_MOCK_FADE,
+	PRODUCT_MOCK_CLASSES, PRODUCT_MOCK_DEFAULT, PRODUCT_MOCK_FADE, PRODUCT_MOCK_VAR,
 	type ProductMockFade, type ProductMockFrameSlot, type SlotClassNames, type SlotStyles,
 } from "../../constants/media";
 import { clamp, mergeStyle, resolveSlots } from "../slots";
@@ -22,9 +22,9 @@ export interface ProductMockMedia {
 }
 
 export type ProductMockFrameProps = React.ComponentProps<"div"> & {
-	/** 绕 X 轴的倾斜角 (deg), 正值顶边远离观者; 0 为平贴. 夹在 minTilt 到 maxTilt. */
+	/** 绕 X 轴的倾斜角 (deg), 正值顶边远离观者; 默认 0 (平贴). 夹在 minTilt 到 maxTilt. prefers-reduced-motion 时不倾斜. */
 	tilt?: number;
-	/** 透视距离 (px), 越小畸变越强. */
+	/** 透视距离 (px), 越小畸变越强; 默认 1200. */
 	perspective?: number;
 	/** 渐隐的边: top / bottom / none, 默认 bottom. */
 	fade?: ProductMockFade;
@@ -61,7 +61,8 @@ function ThemedShot({ themed, priority }: Pick<ProductMockFrameProps, "themed" |
  * BrowserFrame / DeviceFrame 只给外壳, 不管空间关系; 这一层只管空间关系, 可以和它们嵌套.
  *
  * 透视写在根上 (perspective), 倾斜与缩放写在舞台上 (rotateX + scale), 变换原点贴着不渐隐的那条边,
- * 保证清晰的一侧留在原位. 变换是静态的, 不涉及动效; 遮罩只用 alpha, 亮暗主题都成立. 不画任何颜色与线条.
+ * 保证清晰的一侧留在原位. 倾斜经 CSS 变量拼进类名, prefers-reduced-motion 时只保留 scale 与渐隐, 不倾斜.
+ * 遮罩只用 alpha, 亮暗主题都成立. 不画任何颜色与线条. 内层 data-slot="product-mock-surface" (classNames / styles 的 stage 槽).
  * ref 指向根 div.
  *
  * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
@@ -87,9 +88,10 @@ export function ProductMockFrame({
 			style={mergeStyle(mergeStyle({ perspective: `${perspective}px` }, slot.style("root")), style)}
 		>
 			<div
-				data-slot="product-mock-frame-stage"
-				className={cn("relative w-full [transform-style:preserve-3d]", slot.className("stage"))}
-				style={mergeStyle({ transform: `rotateX(${angle}deg) scale(${scale})`, transformOrigin: origin }, slot.style("stage"))}
+				data-slot="product-mock-surface"
+				data-tilt={angle}
+				className={cn(PRODUCT_MOCK_CLASSES.surface, slot.className("stage"))}
+				style={mergeStyle({ [PRODUCT_MOCK_VAR.tilt]: `${angle}deg`, [PRODUCT_MOCK_VAR.scale]: String(scale), transformOrigin: origin } as React.CSSProperties, slot.style("stage"))}
 			>
 				{fade === PRODUCT_MOCK_FADE.none ? content : (
 					<MaskFade data-slot="product-mock-frame-fade" direction={fade} length={fadeLength} className={slot.className("fade")} style={slot.style("fade")}>
