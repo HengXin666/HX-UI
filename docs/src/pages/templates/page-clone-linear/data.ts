@@ -68,7 +68,7 @@ export const LINEAR_HERO = {
   title: "The product development system for teams and agents",
   lead: "Purpose-built for planning and building products. Designed for the AI era.",
   pill: { badge: "New", label: "Loops", href: "#loops" },
-  media: { kind: "image", src: "./demo/saas-hero.svg", alt: "Linear app placeholder (not a real screenshot)", ratio: "16/9", priority: true },
+  media: { kind: "image", src: "./demo/saas-hero.svg", alt: "Issue tracker app UI mock (sidebar, KPIs, chart, issue table)", ratio: "16/9", priority: true },
   frame: "none",
   backdrop: { variant: "aurora", mask: { fade: "bottom" } },
   titleSize: "lg",

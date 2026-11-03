@@ -12,10 +12,10 @@ export const TEMPLATE_SKINS: ReadonlyArray<{ key: SkinName; label: string }> = [
 ];
 
 /**
- * 示例图前缀: data.ts 里的图片地址都以它开头, 指向仓内静态占位图 docs/src/public/demo/*.svg.
+ * 示例图前缀: data.ts 里的图片地址都以它开头, 指向仓内静态示例图 docs/src/public/demo/*.svg (商品剪影 / 场景横幅).
  * 用 "./demo/" 而不是 "/demo/": vite base 默认 "./" + hash 路由, 部署在 GitHub Pages 的 /HX-UI/ 子路径时
  * 站点根相对的 "/demo/" 会 404, 相对 index.html 的 "./demo/" 在根路径, 子路径与本地预览下都能取到.
- * 文档预览时若 canvas 现画的图就绪, 仍会替换成现画的图; 未就绪或失败时显示这里的 SVG, 不会出现坏图.
+ * TemplateShell 直接渲染这些 SVG, 不再用 canvas 现画的占位图覆盖.
  */
 export const DEMO_CDN = "./demo/";
 

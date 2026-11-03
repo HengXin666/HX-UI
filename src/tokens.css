@@ -1023,6 +1023,13 @@
     --block-gap-sm: clamp(calc(1rem * var(--density)), calc((0.8333rem + 0.7407vw) * var(--density)), calc(1.5rem * var(--density)));
     --block-gap-md: clamp(calc(1.5rem * var(--density)), calc((1.167rem + 1.481vw) * var(--density)), calc(2.5rem * var(--density)));
     --block-gap-lg: clamp(calc(2.5rem * var(--density)), calc((2rem + 2.222vw) * var(--density)), calc(4rem * var(--density)));
+
+    /* Hero 顶部留白 (N13): 只给 Hero 根节点用, 独立于 --section-pad-* 节奏, 改它不影响其它区块.
+       sm 64->96, md 80->128, lg 96->160, xl 120->200 (px), 1440 视口起到上限 (linear 首屏 200px) */
+    --hero-pad-top-sm: clamp(calc(4rem * var(--density)), calc((3.2958rem + 3.01vw) * var(--density)), calc(6rem * var(--density)));
+    --hero-pad-top-md: clamp(calc(5rem * var(--density)), calc((3.9437rem + 4.52vw) * var(--density)), calc(8rem * var(--density)));
+    --hero-pad-top-lg: clamp(calc(6rem * var(--density)), calc((4.5915rem + 6.02vw) * var(--density)), calc(10rem * var(--density)));
+    --hero-pad-top-xl: clamp(calc(7.5rem * var(--density)), calc((5.7394rem + 7.52vw) * var(--density)), calc(12.5rem * var(--density)));
   }
 
   /* ============================================================================
