@@ -11,6 +11,8 @@ export type BrowserFrameProps = Omit<React.ComponentProps<"div">, "title"> & {
 	address?: React.ReactNode;
 	/** 地址栏前显示锁形图标, 默认 true. */
 	secure?: boolean;
+	/** 隐藏地址栏; 同时关掉 showControls 且无 actions 时整条工具栏不渲染, 只剩描边窗口. 默认 false. */
+	hideAddressBar?: boolean;
 	/** 左上角三个窗口按钮圆点, 默认 true. */
 	showControls?: boolean;
 	/** 工具栏右侧的自定义内容. */
@@ -32,9 +34,10 @@ const DOTS = ["bg-danger", "bg-warning", "bg-success"] as const;
  * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function BrowserFrame({
-	address, secure = true, showControls = true, actions, ratio, classNames, styles, className, style, children, ...props
+	address, secure = true, hideAddressBar = false, showControls = true, actions, ratio, classNames, styles, className, style, children, ...props
 }: BrowserFrameProps): React.JSX.Element {
 	const slot = resolveSlots(classNames, styles, undefined);
+	const toolbar = showControls || actions !== undefined || !hideAddressBar;
 	return (
 		<div
 			{...props}
@@ -42,7 +45,7 @@ export function BrowserFrame({
 			className={cn("flex w-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-lg", slot.className("root"), className)}
 			style={mergeStyle(slot.style("root"), style)}
 		>
-			<div
+			{toolbar && <div
 				data-slot="browser-frame-toolbar"
 				className={cn("flex items-center gap-3 border-b border-border bg-muted px-3 py-2", slot.className("toolbar"))}
 				style={slot.style("toolbar")}
@@ -54,7 +57,7 @@ export function BrowserFrame({
 						))}
 					</span>
 				)}
-				<div
+				{!hideAddressBar && <div
 					data-slot="browser-frame-address"
 					className={cn(
 						"flex h-(--control-h-sm) min-w-0 flex-1 items-center justify-center gap-1.5 truncate rounded-(--radius-md) border border-border bg-background px-3 text-xs text-muted-foreground",
@@ -64,13 +67,13 @@ export function BrowserFrame({
 				>
 					{secure && address !== undefined && <LockIcon aria-hidden="true" data-slot="browser-frame-address-icon" className={cn("size-3 shrink-0", slot.className("address-icon"))} />}
 					<span data-slot="browser-frame-address-text" className={cn("truncate", slot.className("address-text"))}>{address}</span>
-				</div>
+				</div>}
 				{actions !== undefined && (
 					<div data-slot="browser-frame-actions" className={cn("flex shrink-0 items-center gap-1", slot.className("actions"))} style={slot.style("actions")}>
 						{actions}
 					</div>
 				)}
-			</div>
+			</div>}
 			<div
 				data-slot="browser-frame-content"
 				className={cn("relative overflow-hidden bg-background [&>*]:size-full", slot.className("content"))}

@@ -16,6 +16,7 @@ import type { SearchSpec, SiteBlockAriaLabels, SiteBrand } from "./types";
 export function BrandLogo({ logo }: { logo: Logo }): React.JSX.Element {
   const dark = logo.darkSrc ?? logo.srcDark;
   const size = { width: logo.width, height: logo.height };
+  if (logo.node !== undefined) return <span data-slot={SITE_BLOCK_SLOT.brandLogo} aria-hidden="true">{logo.node}</span>;
   if (!dark) {
     return <img data-slot={SITE_BLOCK_SLOT.brandLogo} src={logo.src} alt="" {...size} decoding="async" className={SITE_BLOCK_CLASS.logo} />;
   }

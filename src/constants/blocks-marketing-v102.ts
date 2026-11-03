@@ -18,9 +18,10 @@ export const HERO_LAYOUT = {
 
 /**
  * Hero 媒体外框: 无 / 浏览器框 (vercel, react.dev 式截图) / 设备框 (media/DeviceFrame, 笔记本机身) /
- * 产品界面 (media/ProductMockFrame: 透视倾斜 + 渐隐, linear / supabase 式).
+ * 产品界面 (media/ProductMockFrame: 透视倾斜 + 渐隐, linear / supabase 式) /
+ * 窗口 (BrowserFrame 去掉工具栏: 只有 1px 描边 + 圆角, 无地址栏, linear / vercel 极简式).
  */
-export const HERO_FRAME = { none: "none", browser: "browser", device: "device", mock: "mock" } as const;
+export const HERO_FRAME = { none: "none", browser: "browser", device: "device", mock: "mock", window: "window" } as const;
 
 /** 分屏时媒体在起始侧还是结束侧 (逻辑方向, RTL 自动翻转). */
 export const HERO_MEDIA_SIDE = { start: "start", end: "end" } as const;
@@ -29,7 +30,7 @@ export const HERO_MEDIA_SIDE = { start: "start", end: "end" } as const;
 export const LOGO_WALL_MODE = { grid: "grid", marquee: "marquee" } as const;
 
 /** LogoWall 网格列数 (宽容器下). */
-export const LOGO_WALL_COLS = { 3: 3, 4: 4, 5: 5, 6: 6 } as const;
+export const LOGO_WALL_COLS = { 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8 } as const;
 
 /** CtaBanner 形态. */
 export const CTA_BANNER_VARIANT = { inline: "inline", boxed: "boxed", full: "full" } as const;
@@ -92,6 +93,7 @@ export const MV102_SLOT = {
   logoWall: "marketing-logo-wall",
   logoWallGrid: "marketing-logo-wall-grid",
   logoWallMarquee: "marketing-logo-wall-marquee",
+  logoWallCaption: "marketing-logo-wall-caption",
   logo: "marketing-logo",
   ctaBanner: "marketing-cta-banner",
   ctaBannerPanel: "marketing-cta-banner-panel",
@@ -123,6 +125,8 @@ export const MV102_CLASS = {
   logoImg: "h-[var(--logo-wall-height,calc(var(--spacing)*8))] w-auto",
   logoGray: "opacity-70 grayscale transition-[filter,opacity] duration-(--duration-normal,200ms) hover:opacity-100 hover:grayscale-0 focus-within:opacity-100 focus-within:grayscale-0 motion-reduce:transition-none",
   logoText: "text-sm font-medium text-muted-foreground",
+  /** 内联节点 logo (svg 字标): 高度由 style 给, svg 等高自适应宽. */
+  logoNode: "inline-flex items-center [&>svg]:h-full [&>svg]:w-auto",
 } as const;
 
 /** Hero. */
@@ -154,6 +158,8 @@ export const LOGO_WALL_CLASS = {
   gridAutoHidden: "hidden @md:grid",
   marqueeAutoOnly: "@md:hidden",
   marqueeGap: "var(--block-gap-md, calc(var(--spacing) * 12))",
+  /** 说明小字 (N2): 正文档字号 + 弱化前景, 不走区块标题通道. */
+  caption: "mb-[var(--block-gap-sm,calc(var(--spacing)*8))] text-center text-[length:var(--fs-base)] text-muted-foreground",
 } as const;
 
 /** 宽容器下的列数 (容器查询). */
@@ -162,6 +168,9 @@ export const LOGO_WALL_COLS_CLASS = {
   4: "@3xl:grid-cols-4",
   5: "@3xl:grid-cols-5",
   6: "@3xl:grid-cols-6",
+  /** 7 / 8 列只在 @5xl (64rem) 以上铺满一行, 中宽先 4 列, 免得 logo 被挤到 60px 一格. */
+  7: "@3xl:grid-cols-4 @5xl:grid-cols-7",
+  8: "@3xl:grid-cols-4 @5xl:grid-cols-8",
 } as const;
 
 /** CtaBanner. */

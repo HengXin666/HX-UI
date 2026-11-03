@@ -45,14 +45,16 @@ export function LogoMark({
       className={cn(SOCIAL_CLASS.logo, extra, className)}
     />
   );
-  const body = dark ? (
-    <>
-      {img(logo.src, SOCIAL_CLASS.logoLight)}
-      {img(dark, SOCIAL_CLASS.logoDark)}
-    </>
-  ) : (
-    img(logo.src)
-  );
+  const src = logo.src;
+  const body =
+    logo.node !== undefined ? logo.node : src === undefined ? logo.name : dark ? (
+      <>
+        {img(src, SOCIAL_CLASS.logoLight)}
+        {img(dark, SOCIAL_CLASS.logoDark)}
+      </>
+    ) : (
+      img(src)
+    );
   const target = logo.href ?? href;
   if (!target) return <span data-slot={SOCIAL_SLOT.logo} className={SOCIAL_CLASS.logoLink}>{body}</span>;
   return (

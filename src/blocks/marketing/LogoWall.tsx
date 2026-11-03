@@ -23,8 +23,10 @@ export type LogoWallMode = ValueOf<typeof LOGO_WALL_MODE>;
 export interface LogoWallProps extends BlockBaseProps {
   /** 标题 (简写); 给了 heading 时以 heading 为准. */
   title?: Rich;
-  /** 说明 (简写). */
+  /** 说明 (简写, 随标题组渲染). */
   description?: Rich;
+  /** logo 上方一行小字说明 ("超过 12,000 个团队..."), 渲染为正文档 <p>, 不走区块标题通道. */
+  caption?: Rich;
   eyebrow?: Rich;
   /** 完整标题组 (含动作). */
   heading?: SectionHeadingData;
@@ -58,6 +60,7 @@ function listName(heading: SectionHeadingData | undefined): string | undefined {
 export function LogoWall({
   title,
   description,
+  caption,
   eyebrow,
   heading,
   logos,
@@ -73,7 +76,7 @@ export function LogoWall({
   ...shell
 }: LogoWallProps): React.JSX.Element {
   const head: SectionHeadingData | undefined = heading ?? (title !== undefined ? { eyebrow, title, description } : undefined);
-  const name = listName(head);
+  const name = listName(head) ?? (typeof caption === "string" ? caption : undefined);
   const items = logos.map((logo) => (
     <li key={logo.name}>
       <LogoMark logo={logo} grayscale={grayscale} height={logoHeight} />
@@ -100,6 +103,11 @@ export function LogoWall({
   return (
     <BlockShell {...shell} backdrop={resolveBackdrop(backdrop)} heading={head} renderHeading={renderSectionHeading}>
       <div data-slot={MV102_SLOT.logoWall} data-mode={mode}>
+        {caption !== undefined && (
+          <p data-slot={MV102_SLOT.logoWallCaption} className={LOGO_WALL_CLASS.caption}>
+            {caption}
+          </p>
+        )}
         {mode === LOGO_WALL_MODE.marquee ? (
           marquee()
         ) : (

@@ -171,14 +171,22 @@ export interface LogoMarkProps {
   className?: string;
 }
 
-/** 一枚 logo: 灰度 + 悬停 / 聚焦复色; 有 href 时是链接, alt 取 name. 亮暗双图走 ThemedImage. */
+/** 一枚 logo: 灰度 + 悬停 / 聚焦复色; 有 href 时是链接, alt 取 name. 亮暗双图走 ThemedImage; 给 node 时渲染节点不出 <img>. */
 export function LogoMark({ logo, grayscale = MV102_DEFAULT.logoGrayscale, height = MV102_DEFAULT.logoHeight, className }: LogoMarkProps): React.JSX.Element {
   const dark = logo.darkSrc ?? logo.srcDark;
   const w = logo.width ?? MV102_DEFAULT.logoWidth;
   const h = logo.height ?? height;
   const width = Math.round((w / h) * height);
   const common = { alt: logo.name, width, height, fit: "contain" as const, placeholder: "none", className: MV102_CLASS.logoImg };
-  const img = dark ? <ThemedImage {...common} lightSrc={logo.src} darkSrc={dark} /> : <Image {...common} src={logo.src} />;
+  let img: React.ReactNode;
+  if (logo.node !== undefined) {
+    img = (
+      <span role="img" aria-label={logo.name} className={MV102_CLASS.logoNode} style={{ height }}>
+        {logo.node}
+      </span>
+    );
+  } else if (logo.src === undefined) img = <span className={MV102_CLASS.logoText}>{logo.name}</span>;
+  else img = dark ? <ThemedImage {...common} lightSrc={logo.src} darkSrc={dark} /> : <Image {...common} src={logo.src} />;
   return (
     <span data-slot={MV102_SLOT.logo} className={cn(MV102_CLASS.logoItem, grayscale && MV102_CLASS.logoGray, className)}>
       {logo.href ? (
@@ -195,13 +203,14 @@ export function LogoMark({ logo, grayscale = MV102_DEFAULT.logoGrayscale, height
 declare const process: { env: { NODE_ENV?: string } };
 
 /**
- * Hero 媒体外框分发: browser -> BrowserFrame, device -> DeviceFrame (笔记本), mock -> ProductMockFrame
+ * Hero 媒体外框分发: browser -> BrowserFrame, window -> BrowserFrame 去工具栏 (只剩描边窗口), device -> DeviceFrame (笔记本), mock -> ProductMockFrame
  * (自带透视与底部渐隐, 所以不再套 MaskFade), none -> 原样. fade 为 true 时 (product 版式) 非 mock 外框底部渐隐.
  */
 export function frameHeroVisual(inner: React.ReactNode, frame: string, address: React.ReactNode, fade: boolean): React.ReactNode {
   if (frame === HERO_FRAME.mock) return <ProductMockFrame>{inner}</ProductMockFrame>;
   let framed = inner;
   if (frame === HERO_FRAME.browser) framed = <BrowserFrame address={address}>{inner}</BrowserFrame>;
+  else if (frame === HERO_FRAME.window) framed = <BrowserFrame hideAddressBar showControls={false}>{inner}</BrowserFrame>;
   else if (frame === HERO_FRAME.device) framed = <DeviceFrame device={MV102_DEFAULT.heroDevice}>{inner}</DeviceFrame>;
   return fade ? <MaskFade direction="bottom">{framed}</MaskFade> : framed;
 }

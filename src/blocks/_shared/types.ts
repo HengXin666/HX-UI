@@ -155,7 +155,9 @@ export interface Person {
 
 export interface Logo {
   name: string;
-  src: string;
+  src?: string;
+  /** 内联节点 (如 svg 品牌字标): 给了就直接渲染, 不出 <img>; 此时 src 可省, src / darkSrc 忽略. */
+  node?: ReactNode;
   darkSrc?: string;
   /** 设计稿写法, 与 darkSrc 等价. */
   srcDark?: string;
