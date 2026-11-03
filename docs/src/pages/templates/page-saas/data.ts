@@ -30,8 +30,8 @@ const ARIA = { nav: "主导航", mobileOpen: "打开菜单", mobileTitle: "菜�
 
 export const SAAS_ANNOUNCEMENT = {
   message: "Orbit 2.0 发布: AI 自动分诊与实时协作上线.",
-  cta: { label: "阅读发布说明", href: "#changelog", icon: "lucide:arrow-right", iconEnd: true },
-  icon: "lucide:sparkles",
+  cta: { label: "阅读发布说明", href: "#changelog", icon: "icon-[solar--arrow-right-linear]", iconEnd: true },
+  icon: "icon-[solar--stars-linear]",
   storageKey: "tpl-saas-announcement-2-0",
   ariaLabels: ARIA,
 } satisfies AnnouncementBlockProps;
@@ -91,12 +91,12 @@ export const SAAS_FEATURES = {
   cols: 3,
   variant: "card",
   items: [
-    { icon: "lucide:zap", title: "即时响应", body: "所有数据缓存在本地, 搜索与筛选无需等待网络." },
-    { icon: "lucide:keyboard", title: "键盘优先", body: "命令面板覆盖全部操作, 双手不离开键盘." },
-    { icon: "lucide:git-branch", title: "Git 联动", body: "分支, PR 与议题自动关联, 合并即关闭." },
-    { icon: "lucide:bot", title: "AI 分诊", body: "新议题自动归类, 指派与估时, 准确率 92%." },
-    { icon: "lucide:shield-check", title: "企业级安全", body: "SOC 2 Type II, SAML SSO 与细粒度权限." },
-    { icon: "lucide:plug", title: "开放 API", body: "GraphQL API 与 Webhook, 和现有工具链无缝衔接.", cta: { label: "查看 API", href: "#api", icon: "lucide:arrow-right", iconEnd: true } },
+    { icon: "icon-[solar--bolt-linear]", title: "即时响应", body: "所有数据缓存在本地, 搜索与筛选无需等待网络." },
+    { icon: "icon-[solar--keyboard-linear]", title: "键盘优先", body: "命令面板覆盖全部操作, 双手不离开键盘." },
+    { icon: "icon-[solar--git-branch-linear]", title: "Git 联动", body: "分支, PR 与议题自动关联, 合并即关闭." },
+    { icon: "icon-[solar--bot-linear]", title: "AI 分诊", body: "新议题自动归类, 指派与估时, 准确率 92%." },
+    { icon: "icon-[solar--shield-check-linear]", title: "企业级安全", body: "SOC 2 Type II, SAML SSO 与细粒度权限." },
+    { icon: "icon-[solar--plug-circle-linear]", title: "开放 API", body: "GraphQL API 与 Webhook, 和现有工具链无缝衔接.", cta: { label: "查看 API", href: "#api", icon: "icon-[solar--arrow-right-linear]", iconEnd: true } },
   ],
 } satisfies FeatureGridProps;
 
@@ -105,11 +105,11 @@ export const SAAS_BENTO = {
   cols: 3,
   tone: "muted",
   items: [
-    { icon: "lucide:map", title: "路线图", body: "季度目标拆到每一张卡片, 进度自动汇总.", span: { col: 2, row: 2 }, media: { kind: "image", src: "./demo/saas-roadmap.svg", alt: "路线图视图", ratio: "3/2" } },
-    { icon: "lucide:refresh-cw", title: "周期", body: "两周一个节奏, 未完成项自动顺延." },
-    { icon: "lucide:inbox", title: "收件箱", body: "提及, 指派与评审集中处理." },
-    { icon: "lucide:file-text", title: "文档", body: "规格书直接引用议题, 状态实时同步.", span: { col: 2 } },
-    { icon: "lucide:bar-chart-3", title: "洞察", body: "吞吐量, 周期时长与燃尽图一键生成." },
+    { icon: "icon-[solar--map-linear]", title: "路线图", body: "季度目标拆到每一张卡片, 进度自动汇总.", span: { col: 2, row: 2 }, media: { kind: "image", src: "./demo/saas-roadmap.svg", alt: "路线图视图", ratio: "3/2" } },
+    { icon: "icon-[solar--refresh-linear]", title: "周期", body: "两周一个节奏, 未完成项自动顺延." },
+    { icon: "icon-[solar--inbox-linear]", title: "收件箱", body: "提及, 指派与评审集中处理." },
+    { icon: "icon-[solar--document-text-linear]", title: "文档", body: "规格书直接引用议题, 状态实时同步.", span: { col: 2 } },
+    { icon: "icon-[solar--chart-2-linear]", title: "洞察", body: "吞吐量, 周期时长与燃尽图一键生成." },
   ],
 } satisfies BentoFeaturesProps;
 
@@ -179,7 +179,7 @@ export const SAAS_FOOTER = {
     { title: "资源", items: [{ label: "文档", href: "#docs" }, { label: "API", href: "#api" }, { label: "社区", href: "#community" }] },
     { title: "公司", items: [{ label: "关于", href: "#about" }, { label: "招聘", href: "#careers" }, { label: "联系", href: "#contact" }] },
   ],
-  social: [{ label: "GitHub", href: "https://github.com", icon: "lucide:github", external: true }, { label: "X", href: "https://x.com", icon: "lucide:twitter", external: true }],
+  social: [{ label: "GitHub", href: "https://github.com", icon: "icon-[solar--code-square-linear]", external: true }, { label: "X", href: "https://x.com", icon: "icon-[solar--hashtag-linear]", external: true }],
   legal: [{ label: "隐私", href: "#privacy" }, { label: "条款", href: "#terms" }],
   status: { label: "所有系统正常", href: "#status", state: "ok" },
   copyright: "© 2026 Orbit Labs",

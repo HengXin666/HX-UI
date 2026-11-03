@@ -150,7 +150,7 @@ export const PRICING_FOOTER = {
     { title: "资源", items: [{ label: "文档", href: "#docs" }, { label: "API", href: "#api" }, { label: "状态", href: "#status" }] },
     { title: "公司", items: [{ label: "关于", href: "#about" }, { label: "招聘", href: "#careers" }, { label: "联系", href: "#contact" }] },
   ],
-  social: [{ label: "GitHub", href: "https://github.com", icon: "lucide:github", external: true }],
+  social: [{ label: "GitHub", href: "https://github.com", icon: "icon-[solar--code-square-linear]", external: true }],
   legal: [{ label: "隐私", href: "#privacy" }, { label: "条款", href: "#terms" }, { label: "DPA", href: "#dpa" }],
   status: { label: "所有系统正常", href: "#status", state: "ok" },
   copyright: "© 2026 Orbit Labs",

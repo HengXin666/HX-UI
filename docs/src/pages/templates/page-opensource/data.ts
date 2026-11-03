@@ -31,7 +31,7 @@ export const OSS_HEADER = {
     { label: "更新日志", href: "#changelog" },
   ],
   actions: [
-    { label: "GitHub 48.2k", href: "https://github.com", icon: "lucide:github", variant: "ghost", external: true },
+    { label: "GitHub 48.2k", href: "https://github.com", icon: "icon-[solar--code-square-linear]", variant: "ghost", external: true },
     { label: "快速开始", href: "#install", variant: "primary" },
   ],
   ariaLabels: ARIA,
@@ -44,7 +44,7 @@ export const OSS_HERO = {
   lead: "Kite 是一个开源的全栈 TypeScript 框架: 文件即路由, 默认零 JS, 一条命令部署到任意边缘.",
   ctas: [
     { label: "阅读文档", href: "#docs", variant: "primary", size: "lg" },
-    { label: "在 GitHub 上 Star", href: "https://github.com", icon: "lucide:github", variant: "secondary", size: "lg", external: true },
+    { label: "在 GitHub 上 Star", href: "https://github.com", icon: "icon-[solar--code-square-linear]", variant: "secondary", size: "lg", external: true },
   ],
   command: "npm create kite@latest",
   backdrop: { variant: "dots", mask: { fade: "radial" } },
@@ -96,7 +96,7 @@ export const OSS_CODE = {
     { label: "配置", language: "ts", filename: "kite.config.ts", code: CONFIG_CODE },
     { label: "部署", language: "bash", filename: "terminal", code: "kite build\nkite deploy --target edge" },
   ],
-  actions: [{ label: "在 StackBlitz 中打开", href: "#stackblitz", variant: "secondary", icon: "lucide:external-link", iconEnd: true }],
+  actions: [{ label: "在 StackBlitz 中打开", href: "#stackblitz", variant: "secondary", icon: "icon-[solar--square-arrow-right-up-linear]", iconEnd: true }],
 } satisfies CodeShowcaseProps;
 
 export const OSS_FEATURES = {
@@ -104,12 +104,12 @@ export const OSS_FEATURES = {
   cols: 3,
   variant: "plain",
   items: [
-    { icon: "lucide:feather", title: "默认零 JS", body: "页面先输出纯 HTML, 只有交互岛才加载脚本." },
-    { icon: "lucide:folder-tree", title: "文件即路由", body: "目录结构就是 URL, 嵌套布局与动态段开箱即用." },
-    { icon: "lucide:globe", title: "边缘优先", body: "同一份代码部署到 Vercel, Cloudflare 与 Deno Deploy." },
-    { icon: "lucide:puzzle", title: "框架无关", body: "React, Vue, Svelte 组件可在同一页混用." },
-    { icon: "lucide:gauge", title: "增量构建", body: "万页站点二次构建只需 3 秒." },
-    { icon: "lucide:heart-handshake", title: "社区驱动", body: "MIT 许可, 900+ 贡献者, 每周发版.", cta: { label: "参与贡献", href: "#contributing", icon: "lucide:arrow-right", iconEnd: true } },
+    { icon: "icon-[solar--leaf-linear]", title: "默认零 JS", body: "页面先输出纯 HTML, 只有交互岛才加载脚本." },
+    { icon: "icon-[solar--folder-path-connect-linear]", title: "文件即路由", body: "目录结构就是 URL, 嵌套布局与动态段开箱即用." },
+    { icon: "icon-[solar--global-linear]", title: "边缘优先", body: "同一份代码部署到 Vercel, Cloudflare 与 Deno Deploy." },
+    { icon: "icon-[solar--widget-add-linear]", title: "框架无关", body: "React, Vue, Svelte 组件可在同一页混用." },
+    { icon: "icon-[solar--speedometer-middle-linear]", title: "增量构建", body: "万页站点二次构建只需 3 秒." },
+    { icon: "icon-[solar--hand-heart-linear]", title: "社区驱动", body: "MIT 许可, 900+ 贡献者, 每周发版.", cta: { label: "参与贡献", href: "#contributing", icon: "icon-[solar--arrow-right-linear]", iconEnd: true } },
   ],
 } satisfies FeatureGridProps;
 
@@ -130,7 +130,7 @@ export const OSS_CHANGELOG = {
   variant: "list",
   limit: 4,
   tone: "muted",
-  viewAll: { label: "查看完整日志", href: "#changelog-all", variant: "link", icon: "lucide:arrow-right", iconEnd: true },
+  viewAll: { label: "查看完整日志", href: "#changelog-all", variant: "link", icon: "icon-[solar--arrow-right-linear]", iconEnd: true },
   items: [
     { date: "2026-10-28", version: "3.0.0", title: "Kite 3.0: 零配置边缘渲染", summary: "自动识别部署目标, 删除 adapter 配置.", tags: [{ label: "重大", tone: "primary" }], href: "#v3-0-0" },
     { date: "2026-10-14", version: "2.9.0", title: "服务端动作与表单渐进增强", summary: "表单无 JS 可提交, 有 JS 时无刷新.", tags: [{ label: "新功能", tone: "success" }], href: "#v2-9-0" },
@@ -145,7 +145,7 @@ export const OSS_CTA = {
   lead: "加入 4 万名开发者的 Discord 社区, 随时提问.",
   ctas: [
     { label: "快速开始", href: "#install", variant: "primary" },
-    { label: "加入 Discord", href: "#discord", variant: "secondary", icon: "lucide:message-circle" },
+    { label: "加入 Discord", href: "#discord", variant: "secondary", icon: "icon-[solar--chat-round-linear]" },
   ],
   variant: "full",
   fill: "mesh",
@@ -158,7 +158,7 @@ export const OSS_FOOTER = {
     { title: "社区", items: [{ label: "GitHub", href: "https://github.com", external: true }, { label: "Discord", href: "#discord" }, { label: "贡献指南", href: "#contributing" }] },
     { title: "项目", items: [{ label: "更新日志", href: "#changelog" }, { label: "路线图", href: "#roadmap" }, { label: "赞助", href: "#sponsor" }] },
   ],
-  social: [{ label: "GitHub", href: "https://github.com", icon: "lucide:github", external: true }, { label: "X", href: "https://x.com", icon: "lucide:twitter", external: true }],
+  social: [{ label: "GitHub", href: "https://github.com", icon: "icon-[solar--code-square-linear]", external: true }, { label: "X", href: "https://x.com", icon: "icon-[solar--hashtag-linear]", external: true }],
   legal: [{ label: "MIT 许可", href: "#license" }, { label: "行为准则", href: "#coc" }],
   copyright: "© 2026 Kite 贡献者",
   ariaLabels: ARIA,
