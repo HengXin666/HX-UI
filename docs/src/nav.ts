@@ -220,6 +220,7 @@ page-product ~ 商品详情 ~ 复刻 apple / nike 型商品详情页: 画廊 + �
 page-portfolio ~ 个人主页 ~ 复刻 brittanychiang.com 型个人主页: 粘性双栏, 经历 + 项目 + 文章
 page-docsite ~ 文档站 ~ 复刻 mantine / shadcn / ant.design 型组件文档站: 首页 + 侧栏目录 + 正文 + 属性表
 page-dashboard ~ 仪表盘 ~ 复刻 SaaS 后台型仪表盘: 侧栏 + 指标行 + 双图表 + 动态流 + 上手清单
+page-clone-linear ~ linear 复刻 ~ 逐块对拽 linear.app 深色首屏: 零自定义 class, 缺口如实留在画面上
 `;
 
 const BLUEPRINT = `

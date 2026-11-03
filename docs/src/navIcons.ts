@@ -111,6 +111,7 @@ export const NAV_ICONS: Record<string, string> = {
   "page-portfolio": "icon-[solar--user-id-linear]",
   "page-docsite": "icon-[solar--notebook-linear]",
   "page-dashboard": "icon-[solar--widget-4-linear]",
+  "page-clone-linear": "icon-[solar--code-square-linear]",
   // UI 丰富度改造 (2026-11-01 补): 动效, 布局原语, 视觉效果, 富交互件
   motion: "icon-[solar--play-circle-linear]",
   box: "icon-[solar--widget-6-linear]",
