@@ -53,8 +53,6 @@ function useScrollIndex(count: number, target: RefObject<HTMLElement | null>, co
  * 换词用 FadeSwap (popLayout), 旧词脱离布局, 新词就位. 读屏器只读一份 sr-only 的完整列表,
  * 轮换中的文字 aria-hidden, 不会每 2 秒被播报一次.
  * prefers-reduced-motion 时不轮换也不动画, 只静态显示第一个词.
- *
- * .agents/notes/implemented/feature/2026-11-02-scroll-motion-orchestration.md
  */
 export function RotatingText({
   words,

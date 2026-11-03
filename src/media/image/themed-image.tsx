@@ -24,8 +24,6 @@ export type ThemedImageProps = Omit<ImageProps, "src" | "srcSet" | "classNames" 
  * 祖先为 data-mode="light" 时换成亮图). 切换不经过 JS 与 effect, 首帧即正确, 没有闪烁;
  * 隐藏的那张是 display:none, 配合默认的 loading="lazy" 不会被下载 (priority 时两张都会预取).
  * 已知限制: 亮色作用域里再嵌套暗色作用域时以外层亮色为准, 需要时用 mode 强制.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function ThemedImage({
 	lightSrc, darkSrc, lightSrcSet, darkSrcSet, mode, classNames, styles, rootClassName, rootStyle, ...imageProps

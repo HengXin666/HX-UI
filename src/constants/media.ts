@@ -18,6 +18,7 @@ export const LIGHTBOX_SLOTS = [
 ] as const;
 export const DEVICE_FRAME_SLOTS = ["root", "body", "screen", "notch", "base"] as const;
 export const BROWSER_FRAME_SLOTS = ["root", "toolbar", "controls", "control", "address", "address-icon", "address-text", "actions", "content"] as const;
+export const PRODUCT_MOCK_FRAME_SLOTS = ["root", "stage", "fade", "content"] as const;
 
 export type ImageSlot = (typeof IMAGE_SLOTS)[number];
 export type ThemedImageSlot = (typeof THEMED_IMAGE_SLOTS)[number];
@@ -26,6 +27,7 @@ export type GallerySlot = (typeof GALLERY_SLOTS)[number];
 export type LightboxSlot = (typeof LIGHTBOX_SLOTS)[number];
 export type DeviceFrameSlot = (typeof DEVICE_FRAME_SLOTS)[number];
 export type BrowserFrameSlot = (typeof BROWSER_FRAME_SLOTS)[number];
+export type ProductMockFrameSlot = (typeof PRODUCT_MOCK_FRAME_SLOTS)[number];
 
 /** classNames / styles 的类型 (契约 4.1): 对象, 或按公开状态计算的函数. */
 export type SlotClassNames<S extends string, State = void> =
@@ -65,6 +67,16 @@ export type MediaMode = (typeof MEDIA_MODE)[keyof typeof MEDIA_MODE];
 export const DEVICE = { phone: "phone", tablet: "tablet", laptop: "laptop" } as const;
 export type DeviceKind = (typeof DEVICE)[keyof typeof DEVICE];
 export const DEVICE_RATIO: Record<DeviceKind, number> = { phone: 9 / 19.5, tablet: 3 / 4, laptop: 16 / 10 };
+
+/** 产品界面容器的渐隐边: 顶 / 底 / 不渐隐 (top, bottom 与 MaskFade 的 direction 同值). */
+export const PRODUCT_MOCK_FADE = { top: "top", bottom: "bottom", none: "none" } as const;
+export type ProductMockFade = (typeof PRODUCT_MOCK_FADE)[keyof typeof PRODUCT_MOCK_FADE];
+
+/**
+ * 产品界面容器默认值: 倾斜角 (deg, 绕 X 轴, 正值顶边远离观者), 透视距离 (px), 缩放, 截图宽高比 (宽 / 高),
+ * 倾斜角上下限. 档位取自 linear / vercel 首屏截图的观感: 小角度 + 远透视, 只给纵深不制造畸变.
+ */
+export const PRODUCT_MOCK_DEFAULT = { tilt: 8, perspective: 2000, scale: 1, ratio: 16 / 10, minTilt: -45, maxTilt: 45 } as const;
 
 /** 画廊默认列数与比例, 列数上下限. */
 export const GALLERY_DEFAULTS = { columns: 3, ratio: 4 / 3, minColumns: 1, maxColumns: 6 } as const;

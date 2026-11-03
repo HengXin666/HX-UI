@@ -14,8 +14,6 @@ export interface UseImageStatusReturn {
 
 /**
  * 跟踪一张图片的加载状态. 状态与 src 绑定存储, 换图时无需 effect 重置.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function useImageStatus(src: string | undefined): UseImageStatusReturn {
 	const [entry, setEntry] = useState<{ src: string | undefined; status: ImageStatus }>({ src, status: IMAGE_STATUS.loading });

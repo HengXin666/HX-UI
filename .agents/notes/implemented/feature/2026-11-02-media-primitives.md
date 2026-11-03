@@ -13,6 +13,7 @@ Decision-ID: media-primitives
 - `src/constants/media.ts`
 - `docs/src/pages/media/ImagePage.tsx`
 - `docs/src/components/MediaDemo.tsx`
+- `src/index.ts`
 
 ## Problem
 
@@ -36,6 +37,9 @@ Decision-ID: media-primitives
 - Lightbox: 底座是 primitives/dialog (Dialog, DialogContent, DialogClose, DialogTitle), 不自造 portal;
   方向键切换, Esc 与焦点归还由 radix 负责, 滚轮与按钮缩放 (1 到 4 倍), 点击空白关闭; index 三件套, null 为关闭.
 - DeviceFrame / BrowserFrame: 纯装饰外壳, 语义 token 颜色, 1px 描边; BrowserFrame 只借鉴 hxbrowser 外壳结构, 不导入它.
+- ProductMockFrame (2026-11-03, 取证报告 docs/reference/2026-ui-library-reproduction-gap.md B2): 真实站点首屏的产品界面
+  有透视倾斜与单边渐隐, 外框只给外壳不给空间关系. 根上 perspective, 舞台上 rotateX + scale, 渐隐复用 effects/MaskFade,
+  亮暗双图复用 ThemedImage; 不画颜色与线条. Hero 的 HERO_FRAME 增 device / mock 两档, 分别分发到 DeviceFrame 与它.
 - slot 元组与 SlotClassNames 类型放 `src/constants/media.ts` (仓库尚无 `src/constants/slots.ts`, 集成时可迁过去).
 
 偏离契约的条目:
@@ -44,6 +48,9 @@ Decision-ID: media-primitives
 - Lightbox 透传 primitives/dialog 的 `overlayClassName` 设遮罩深度, 因为 DialogContent 尚未迁到 classNames.overlay.
 
 ## Alternatives considered
+
+- ProductMockFrame 什么都不做 / 复用现有: 最强理由是 Hero product 版式已有 MaskFade 底部渐隐. 否决: 没有透视倾斜 (全库
+  perspective 0 命中), 也不能在 Hero 以外复用; 写成 Hero 私有参数会把空间关系锁死在一个区块里.
 
 - 什么都不做 / 复用现有: 最强理由是 aspect-ratio + carousel + dialog 已能手拼. 否决: 懒加载, 占位, 淡入,
   减弱动效, 焦点归还每个调用方都要重写一遍, 审计已证明没人这么做 (0 处 loading=).

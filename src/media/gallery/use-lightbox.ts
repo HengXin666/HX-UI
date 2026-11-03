@@ -17,8 +17,6 @@ export interface UseLightboxOptions {
 
 /**
  * 序号为 null 时灯箱关闭. 缩放与序号绑定存储, 换图自动回到 1 倍, 不需要 effect.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function useLightbox({ count, index, defaultIndex, onIndexChange, loop }: UseLightboxOptions) {
 	const [current, setCurrent] = useControllableState<number | null>({

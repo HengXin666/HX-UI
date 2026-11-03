@@ -8,6 +8,7 @@ Decision-ID: runtime-theme-provider
 
 - `src/provider/HxProvider.tsx`
 - `src/constants/provider.ts`
+- `src/index.ts`
 
 ## Problem
 

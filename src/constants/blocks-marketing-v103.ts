@@ -93,7 +93,7 @@ export const MV103_SLOT = {
 export const MV103_CLASS = {
   list: "grid grid-cols-1 gap-6",
   listTight: "grid grid-cols-1 gap-px",
-  cardItem: "relative flex flex-col gap-3 rounded-(--radius-lg) border border-border bg-card p-6 text-card-foreground transition-[border-color] duration-(--duration-fast) hover:border-primary/40 focus-within:border-ring",
+  cardItem: "relative flex flex-col gap-3 rounded-(--card-radius) border border-(--border-subtle) bg-card p-6 text-card-foreground transition-[border-color] duration-(--duration-fast) hover:border-primary/40 focus-within:border-ring",
   plainItem: "relative flex flex-col gap-3",
   itemBody: "flex flex-col gap-3",
   icon: "inline-flex size-10 items-center justify-center rounded-(--radius-md) border border-border bg-muted text-primary [&_svg]:size-5",
@@ -121,7 +121,7 @@ export const MV103_CLASS = {
   bentoScrim: "absolute inset-0 -z-10 bg-gradient-to-t from-card via-card/70 to-transparent",
   bentoText: "relative flex flex-col gap-2 p-6",
   bentoTextOver: "relative mt-auto flex flex-col gap-2 p-6",
-  statCard: "flex flex-col gap-2 rounded-(--radius-lg) border border-border bg-card p-6 text-card-foreground",
+  statCard: "flex flex-col gap-2 rounded-(--card-radius) border border-(--border-subtle) bg-card p-6 text-card-foreground",
   statInline: "flex flex-col gap-2 border-s border-border ps-6",
   statValue: "flex items-baseline gap-1 font-semibold tabular-nums leading-none tracking-[var(--tracking-display,-0.02em)] text-[length:var(--fs-display-lg,var(--text-5xl))]",
   statAffix: "text-[length:var(--fs-display-sm,var(--text-3xl))] text-muted-foreground in-data-[block-tone=brand]:text-primary-foreground/80",

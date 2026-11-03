@@ -4,7 +4,11 @@
  * 契约见 docs/reference/2026-ui-library-blocks-design.md 第 4.6 节.
  */
 
-/** ProfileHero 版式: 左对齐 / 居中 / 极简纯文字 (leerob). */
+/**
+ * ProfileHero 版式: 左对齐 / 居中 / 极简纯文字 (leerob).
+ *
+ * .agents/notes/implemented/feature/2026-11-02-blocks-portfolio-v111.md
+ */
 export const PORTFOLIO_HERO_LAYOUT = { start: "start", centered: "centered", minimal: "minimal" } as const;
 
 /** ProjectGrid 两档: 网格卡片 / 列表行. */

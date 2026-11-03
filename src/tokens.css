@@ -201,6 +201,9 @@
     --border: var(--palette-slate-600);  /* #444c56 */
     /* 次级分隔线: 列表行之间, 卡片内部 */
     --border-muted: var(--palette-slate-700);  /* #373e47 */
+    /* 营销卡片描边: 前景色 8% / 12% 半透明派生 (对齐 linear.app #ffffff14), card 底上约 1.18:1 / 1.29:1 */
+    --border-subtle: color-mix(in srgb, var(--foreground) 8%, transparent);
+    --border-strong: color-mix(in srgb, var(--foreground) 12%, transparent);
     --input: var(--palette-slate-600);  /* #444c56 */
     --ring: var(--palette-blue-400);  /* #539bf5 */
 
@@ -268,6 +271,9 @@
     --control-hover: var(--palette-gray-200);  /* #eaeef2 */
     --border: var(--palette-gray-400);  /* #d1d9e0 */
     --border-muted: var(--palette-gray-300);  /* #d8dee4 */
+    /* 营销卡片描边: 前景色 8% / 12% 半透明派生 (对齐 vercel.com #00000014), 白底上约 1.17:1 / 1.26:1 */
+    --border-subtle: color-mix(in srgb, var(--foreground) 8%, transparent);
+    --border-strong: color-mix(in srgb, var(--foreground) 12%, transparent);
     --input: var(--palette-gray-400);  /* #d1d9e0 */
     --ring: var(--palette-blue-700);  /* #0969da */
 
@@ -691,7 +697,7 @@
    * (--space-4 = p-4 = 16px), 心算不用换算.
    *
    * 密度: --density 是乘数, 默认 1. 在任意节点上写 data-density="compact" (0.875)
-   *   或 data-density="comfortable" (1.125), 该子树的间距, 控件高度, 区块留白一起缩放.
+   *   或 data-density="comfortable" (1, 与 skins/density.css 一致), 该子树的间距, 控件高度, 区块留白一起缩放.
    *   派生值必须在 [data-density] 上重新求值 (见文件头 "读取作用域的坑"),
    *   所以派生块的选择器是 :root, [data-density], 而 --density 本身单独声明
    *   (同一条规则里再写 --density: 1 会因特异性相同, 后写者胜而盖掉 compact).
@@ -710,7 +716,7 @@
   }
 
   [data-density="compact"] { --density: 0.875; }
-  [data-density="comfortable"] { --density: 1.125; }
+  [data-density="comfortable"] { --density: 1; }
 
   :root, [data-density] {
     /* 一个间距单位乘上密度: 所有随密度缩放的尺寸都从它派生 */
@@ -816,11 +822,15 @@
     --lh-relaxed: 1.625;
     --lh-loose: 1.75;
 
-    /* 字重: 正文 400, 控件与标题 500, 强调 600, 展示大字 700 */
+    /* 字重: 正文 400, 控件与标题 500, 强调 600, 粗体 700; light 300 只给 Display 的 weight 单点覆盖用.
+       --fw-display 是展示大字专用档 (默认 600), 皮肤按品牌覆盖为 450 / 510 / 300 等可变字重,
+       不改 --fw-semibold / --fw-bold, 所以 primitives 里按钮 / 输入框的字重不受影响. */
+    --fw-light: 300;
     --fw-regular: 400;
     --fw-medium: 500;
     --fw-semibold: 600;
     --fw-bold: 700;
+    --fw-display: 600;
 
     /* 断点 */
     --breakpoint-sm: 40rem;
@@ -940,7 +950,7 @@
    * 亮暗两套主题共用同一份取值, 切主题时不需要也不应该重新求值.
    * 字号 / 行高 / 字距 / 容器 / 层级 / 编排只挂 :root; 节奏档 (section-pad / block-gap)
    * 乘 --density, 因此挂 :root, [data-density], 在密度覆盖点重新求值 (见文件头),
-   * 默认密度 1 时下限 / 上限正好是 48px 到 160px.
+   * 默认密度 1 时下限 / 上限正好是 40px 到 128px.
    *
    * 流体公式: 视口 360px 取下限, 1440px 取上限, 中间线性插值
    *   preferred = (min - slope*360)/16 rem + slope*100 vw, slope = (max-min)/1080.
@@ -954,17 +964,27 @@
    * ==========================================================================*/
 
   :root {
-    /* 展示级字号: sm 36->44, md 44->56, lg 52->68, xl 60->80, 2xl 72->96 (px) */
+    /* 展示级字号: sm 36->44, md 44->56, lg 52->68, xl 60->80, 2xl 72->96, 3xl 80->150 (px) */
     --fs-display-sm: clamp(2.25rem, 2.083rem + 0.7407vw, 2.75rem);
     --fs-display-md: clamp(2.75rem, 2.5rem + 1.111vw, 3.5rem);
     --fs-display-lg: clamp(3.25rem, 2.917rem + 1.481vw, 4.25rem);
     --fs-display-xl: clamp(3.75rem, 3.333rem + 1.852vw, 5rem);
     --fs-display-2xl: clamp(4.5rem, 4rem + 2.222vw, 6rem);
+    /* oversize 档: campaign 首屏 (对齐 nike.com 150px), 360px 80 -> 1440px 150 */
+    --fs-display-3xl: clamp(5rem, 3.5417rem + 6.4815vw, 9.375rem);
 
     /* 展示级行高: 大字号下 1.25 会显得松散, display 收到 1.05;
        单行巨型标题 (2xl) 用 tight 的 1.0, 两行以上回到 --lh-display. */
     --lh-display: 1.05;
     --lh-display-tight: 1;
+    /* CJK 展示行高: 方块字无升降部, 1.05 会让两行汉字贴在一起, 1.375 (leading-snug) 在 80px 下又偏松,
+       取 1.2 (取证报告 Q2, 待中文站点实测后再定值). */
+    --lh-display-cjk: 1.2;
+
+    /* 展示字体位: 默认回到正文无衬线, 皮肤层 (src/skins/*.css) 按品牌覆盖 --font-display.
+       CJK 标题单独一位, 苹方排在 Noto 之前, 装了 Noto 的 macOS 仍用苹方. */
+    --font-display: var(--font-sans);
+    --font-display-cjk: -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
 
     /* 展示级字距: 拉丁字母在大字号下需要收紧, 字号越大收得越多.
        CJK 方块字自带字间留白, 负字距会把汉字挤到一起, 所以中文取 0;
@@ -992,11 +1012,12 @@
 
   :root, [data-density] {
     /* 营销纵向节奏: 每一屏区块的上下留白 (默认密度下)
-       sm 48->64, md 64->96, lg 88->128, xl 112->160 (px) */
-    --section-pad-sm: clamp(calc(3rem * var(--density)), calc((2.667rem + 1.481vw) * var(--density)), calc(4rem * var(--density)));
-    --section-pad-md: clamp(calc(4rem * var(--density)), calc((3.333rem + 2.963vw) * var(--density)), calc(6rem * var(--density)));
-    --section-pad-lg: clamp(calc(5.5rem * var(--density)), calc((4.667rem + 3.704vw) * var(--density)), calc(8rem * var(--density)));
-    --section-pad-xl: clamp(calc(7rem * var(--density)), calc((6rem + 4.444vw) * var(--density)), calc(10rem * var(--density)));
+       sm 40->48, md 48->64, lg 64->96, xl 96->128 (px), 对齐实测站点 48 到 96px.
+       rem 截距向上取到千分位, 保证 1440px 时 preferred 不低于上限, clamp 正好落在上限. */
+    --section-pad-sm: clamp(calc(2.5rem * var(--density)), calc((2.334rem + 0.7407vw) * var(--density)), calc(3rem * var(--density)));
+    --section-pad-md: clamp(calc(3rem * var(--density)), calc((2.668rem + 1.481vw) * var(--density)), calc(4rem * var(--density)));
+    --section-pad-lg: clamp(calc(4rem * var(--density)), calc((3.334rem + 2.963vw) * var(--density)), calc(6rem * var(--density)));
+    --section-pad-xl: clamp(calc(6rem * var(--density)), calc((5.334rem + 2.963vw) * var(--density)), calc(8rem * var(--density)));
 
     /* 区块之间 / 区块内大组之间的小间距: sm 16->24, md 24->40, lg 40->64 (px) */
     --block-gap-sm: clamp(calc(1rem * var(--density)), calc((0.8333rem + 0.7407vw) * var(--density)), calc(1.5rem * var(--density)));

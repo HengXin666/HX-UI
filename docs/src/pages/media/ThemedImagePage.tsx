@@ -7,8 +7,6 @@ import { useDemoImages } from "../../components/MediaDemo";
 
 /**
  * ThemedImage 文档页: 亮暗双图跟随 data-mode, 纯 CSS 切换无闪烁.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function ThemedImagePage(): JSX.Element {
   const [light] = useDemoImages(["亮色图"], "--accent");

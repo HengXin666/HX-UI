@@ -7,6 +7,7 @@ export { GradientText, type GradientTextProps, type GradientTextState } from "./
 export { Prose, type ProseProps, type ProseState } from "./Prose";
 export {
 	DISPLAY_SIZE,
+	DISPLAY_WEIGHT,
 	TEXT_SIZE,
 	TEXT_TONE,
 	LEAD_MEASURE,
@@ -14,6 +15,7 @@ export {
 	CJK_MODE,
 	detectCjk,
 	type DisplaySize,
+	type DisplayWeight,
 	type TextSize,
 	type TextTone,
 	type LeadMeasure,

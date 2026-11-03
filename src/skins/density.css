@@ -4,7 +4,7 @@
  * 一个倍率 --density 驱动三类令牌:
  *   1. Tailwind v4 的间距单位 --spacing (h-9 / px-2.5 / gap-1.5 都是它的倍数),
  *      于是现有组件的高度, 内边距与间隙一起按比例收紧或放松, 组件类名一行不动;
- *   2. --density-space: 区块之间的基础间距 (1rem 乘倍率);
+ *   2. --density-rem: 1rem 乘倍率 (原名 --density-space, 与 tokens.css 的 4px 单位重名, 已改名);
  *   3. 控件高度档 --control-h-* 与间距档 --space-*: 新组件与页面直接取用.
  * compact 的 --spacing 与 HxProvider 的 compact (0.21875rem) 同值, 两条路径结果一致.
  *
@@ -27,14 +27,14 @@
 }
 
 [data-density="spacious"] {
-  /* 营销 / 落地页: 放松 25% */
+  /* 营销 / 落地页: 只放松区块留白 (--section-pad-* / --block-gap-*) 25%, 控件尺寸不跟着放 */
   --density: 1.25;
 }
 
 /* 派生令牌在 :root 与每个密度作用域上重新声明, 子树局部换密度时也按本作用域的倍率解析 */
 :root,
 [data-density] {
-  --density-space: calc(1rem * var(--density));
+  --density-rem: calc(1rem * var(--density));
 
   /* 控件高度档: 与 Button 尺寸 xs / sm / default / lg / xl 对齐 (24 / 28 / 32 / 36 / 44px 乘倍率) */
   --control-h-xs: calc(1.5rem * var(--density));
@@ -56,4 +56,11 @@
 /* 只在显式声明密度时改写 Tailwind 间距单位; :root 不碰, 默认外观不变 */
 [data-density] {
   --spacing: calc(0.25rem * var(--density));
+}
+
+/* spacious 是区块密度, 不是控件密度: Tailwind 间距单位复位为默认 0.25rem,
+ * 按钮 h-9 / 卡片 p-6 / gap-6 保持原尺寸 (也覆盖嵌在 compact 子树里的情形).
+ * 特异度与上一条相同 (0,1,0), 靠后写胜出. */
+[data-density="spacious"] {
+  --spacing: 0.25rem;
 }

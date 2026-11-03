@@ -8,8 +8,6 @@ import { useDemoImages } from "../../components/MediaDemo";
 
 /**
  * DeviceFrame 与 BrowserFrame 文档页: 产品截图外壳.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function FramesPage(): JSX.Element {
   const [shot] = useDemoImages(["产品截图"]);

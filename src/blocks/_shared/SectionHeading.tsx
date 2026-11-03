@@ -6,7 +6,6 @@ import {
   BLOCK_CLASS,
   BLOCK_DEFAULT,
   BLOCK_SLOT,
-  BLOCK_TITLE_CLASS,
   CTA_BUTTON_SIZE,
   CTA_BUTTON_VARIANT,
   EXTERNAL_LINK,
@@ -15,6 +14,7 @@ import { BUTTON_TYPE } from "../../constants";
 import { IconSlot } from "../../layout/Icon";
 import { Button } from "../../primitives/button";
 import { cn } from "../../primitives/utils";
+import { Display } from "../../typography/Display";
 import { useBlockLabels } from "./BlocksProvider";
 import { resolveSlots, useBlockShell } from "./BlockShell";
 import type { BlockAlign, BlockTitleSize, Cta, CtaGroupSlot, HeadingLevel, SectionHeadingData, SectionHeadingSlot, SlotClassNames, SlotStyles } from "./types";
@@ -127,7 +127,7 @@ export interface SectionHeadingProps extends SectionHeadingData {
 
 /**
  * 区块标题组: 眉标 + 标题 + 导语 + 动作. 所有文案来自 props.
- * 字号走 --fs-display-* 令牌 (TODO(V0-03 typography): Display / Eyebrow / Lead 落地后替换为组件).
+ * 标题渲染 <Display>, 字号 / 字重 / 行高 / 字距 / 字体全部随 Display 读 token, 与 Hero 等同页标题一致 (取证报告 A5).
  * ref 作为普通 prop 指向根 <div> (React 19), 不使用 forwardRef.
  */
 export function SectionHeading({
@@ -152,7 +152,6 @@ export function SectionHeading({
   const cls = resolveSlots(classNames, state);
   const sty = resolveSlots(styles, state);
   const centered = align === BLOCK_ALIGN.center;
-  const Heading = HEADING_TAG[level];
   const hasActions = (actions?.length ?? 0) > 0 || children !== undefined;
   return (
     <div
@@ -169,9 +168,9 @@ export function SectionHeading({
             {eyebrow}
           </p>
         )}
-        <Heading id={titleId} data-slot={BLOCK_SLOT.headingTitle} className={cn(BLOCK_TITLE_CLASS[titleSize], BLOCK_CLASS.displayType, cls.title)} style={sty.title}>
+        <Display as={HEADING_TAG[level]} id={titleId} size={titleSize} data-slot={BLOCK_SLOT.headingTitle} className={cn(BLOCK_CLASS.displayTone, cls.title)} style={sty.title}>
           {title}
-        </Heading>
+        </Display>
         {description !== undefined && (
           <p data-slot={BLOCK_SLOT.headingDescription} className={cn(BLOCK_CLASS.lead, cls.description)} style={sty.description}>
             {description}

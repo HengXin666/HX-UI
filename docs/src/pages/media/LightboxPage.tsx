@@ -9,8 +9,6 @@ const LABELS = ["甲", "乙", "丙"] as const;
 
 /**
  * Lightbox 文档页: 独立使用 (受控 index), 左右切换, Esc 关闭, 缩放, 遮罩关闭.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function LightboxPage(): JSX.Element {
   const images = useDemoImages(LABELS);

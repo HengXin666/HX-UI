@@ -1,10 +1,12 @@
 /**
  * 皮肤层 (src/skins) 的字面量: 皮肤名, 密度名, DOM 属性名, 以及文档演示页的标签与类名.
+ */
+
+/**
+ * 六套皮肤. default 即现状, 其余五套以 [data-skin="<name>"] 覆盖语义令牌.
  *
  * .agents/notes/implemented/feature/2026-11-02-skins-density.md
  */
-
-/** 六套皮肤. default 即现状, 其余五套以 [data-skin="<name>"] 覆盖语义令牌. */
 export const SKIN = {
   default: "default",
   mono: "mono",

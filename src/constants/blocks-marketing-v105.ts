@@ -2,8 +2,6 @@
  * 营销区块 D (转化): Pricing / ComparisonMatrix / Faq 的取值, 类名与默认文案.
  * 区块内不写颜色/字号/间距字面量, 一律从这里取; 类名写全字面量, Tailwind 才扫得到.
  * 金额与数字的格式化不在这里拼, 全部走 commerce Price 与 BlocksProvider 的 Intl 能力.
- *
- * .agents/notes/implemented/feature/2026-11-02-marketing-conversion-blocks.md
  */
 
 /** 计费周期 (与 MONEY_PERIOD 的 month / year 同值). */
@@ -66,7 +64,7 @@ export const PRICING_GRID_CLASS = {
 } as const;
 
 export const PRICING_CLASS = {
-  plan: "relative flex flex-col gap-6 rounded-(--radius-lg) border border-border bg-card p-6 text-card-foreground text-start",
+  plan: "relative flex flex-col gap-6 rounded-(--card-radius) border border-(--border-subtle) bg-card p-6 text-card-foreground text-start",
   planHighlight: "order-first border-primary shadow-lg ring-1 ring-primary md:order-none",
   header: "flex flex-col gap-2",
   nameRow: "flex items-center justify-between gap-2",
@@ -76,7 +74,7 @@ export const PRICING_CLASS = {
   priceLabel: "text-3xl font-semibold tracking-tight",
   features: "flex flex-1 flex-col gap-3",
   cta: "w-full",
-  includes: "mt-10 rounded-(--radius-lg) border border-border p-6 text-start",
+  includes: "mt-10 rounded-(--card-radius) border border-(--border-subtle) p-6 text-start",
   includesGrid: "mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3",
 } as const;
 
@@ -90,7 +88,7 @@ export const MATRIX_CLASS = {
   rowHead: "sticky start-0 z-[1] border-b border-border bg-background px-4 py-3 text-start font-normal",
   cell: "border-b border-border px-4 py-3 text-start",
   cards: "flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 md:hidden",
-  card: "flex w-[85%] shrink-0 snap-start flex-col gap-4 rounded-(--radius-lg) border border-border bg-card p-4 text-card-foreground",
+  card: "flex w-[85%] shrink-0 snap-start flex-col gap-4 rounded-(--card-radius) border border-(--border-subtle) bg-card p-4 text-card-foreground",
   cardRow: "flex items-start justify-between gap-4 border-b border-border py-2 text-sm last:border-b-0",
   cellValue: "inline-flex items-center gap-1",
   block: "block font-normal",
@@ -108,7 +106,7 @@ export const FAQ_CLASS = {
   answer: "pt-3 text-muted-foreground",
   groupGap: "flex flex-col gap-8",
   groupTitle: "mb-2",
-  contact: "mt-10 flex flex-col items-start gap-3 rounded-(--radius-lg) bg-muted p-6 text-start sm:flex-row sm:items-center sm:justify-between",
+  contact: "mt-10 flex flex-col items-start gap-3 rounded-(--card-radius) bg-muted p-6 text-start sm:flex-row sm:items-center sm:justify-between",
 } as const;
 
 /** 区块自有文案 (BlockLabels 之外). 按语言子标签取包, 未命中回到 zh. */

@@ -1,14 +1,20 @@
 /**
  * 版式组件 (src/typography/) 与其文档页共用的取值: 档位, 语气色, 标签, slot 元组, CJK 判定与默认值.
  * 颜色只以语义令牌工具类或 var(--语义名) 出现, 字号只引用 --fs-* 令牌, 这里不写任何 px 与色值.
- *
- * .agents/notes/implemented/feature/2026-11-02-typography.md
  */
 import type * as React from "react";
 
-/** Display 的营销字号档, 一一对应 tokens.css 的 --fs-display-sm..2xl (由 V0-01 提供). */
-export const DISPLAY_SIZE = { sm: "sm", md: "md", lg: "lg", xl: "xl", "2xl": "2xl" } as const;
+/**
+ * Display 的营销字号档, 一一对应 tokens.css 的 --fs-display-sm..3xl (3xl 为 campaign oversize 档).
+ *
+ * .agents/notes/implemented/feature/2026-11-02-typography.md
+ */
+export const DISPLAY_SIZE = { sm: "sm", md: "md", lg: "lg", xl: "xl", "2xl": "2xl", "3xl": "3xl" } as const;
 export type DisplaySize = (typeof DISPLAY_SIZE)[keyof typeof DISPLAY_SIZE];
+
+/** Display 字重档: 单点覆盖皮肤的 --fw-display, 一一对应 tokens.css 的 --fw-light..--fw-bold. */
+export const DISPLAY_WEIGHT = { light: "light", regular: "regular", medium: "medium", semibold: "semibold", bold: "bold" } as const;
+export type DisplayWeight = (typeof DISPLAY_WEIGHT)[keyof typeof DISPLAY_WEIGHT];
 
 /** 文字件 (Eyebrow / Kicker / Lead / Prose) 的三档, 是契约 size 词汇 xs..xl 的子集. */
 export const TEXT_SIZE = { sm: "sm", md: "md", lg: "lg" } as const;

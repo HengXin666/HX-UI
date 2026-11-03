@@ -5,8 +5,6 @@
 
 /**
  * 顶栏高度档 (Tailwind 标准档), collapse="shrink" 滚动后退一档.
- *
- * .agents/notes/implemented/feature/2026-11-02-site-shell-parts.md
  */
 export const SITE_HEIGHT = { sm: "h-12", md: "h-14", lg: "h-16" } as const;
 export const SITE_HEIGHT_SHRUNK = { sm: "data-shrunk:h-10", md: "data-shrunk:h-12", lg: "data-shrunk:h-14" } as const;

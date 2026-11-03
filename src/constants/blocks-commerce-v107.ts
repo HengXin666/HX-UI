@@ -1,8 +1,6 @@
 /**
  * 电商浏览区块 (V1-07: ProductCard / ProductGrid / ProductRail / CategoryTiles / CampaignHero / PromoStrip) 的取值, 类名与兜底文案.
  * 区块文件只从这里取档, 不写颜色 / 字号 / 间距字面量. 类名写全字面量, Tailwind 才扫得到.
- *
- * .agents/notes/implemented/feature/2026-11-02-commerce-browse-blocks.md
  */
 
 /** data-slot 根名. 子部件为 <根名>-<slot>. */
@@ -230,7 +228,7 @@ export const BROWSE_CLASS = {
   heroSplitText: "flex flex-col gap-4 px-6 py-10 @3xl:px-12",
   heroKicker: "text-sm font-medium uppercase tracking-wide",
   heroTitle:
-    "text-[length:var(--fs-display-xl,var(--text-6xl))] font-bold leading-[var(--lh-display,1.05)] tracking-[var(--tracking-display,-0.02em)] text-balance uppercase [&:lang(zh)]:tracking-[var(--tracking-display-cjk,0)]",
+    "text-[length:var(--fs-display-3xl,var(--text-8xl))] font-bold leading-[var(--lh-display,1.05)] tracking-[var(--tracking-display,-0.02em)] text-balance uppercase [&:lang(zh)]:tracking-[var(--tracking-display-cjk,0)]",
   heroBody: "max-w-prose text-lg text-pretty",
   heroDots: "absolute inset-x-0 bottom-4 z-10 flex items-center justify-center gap-2",
   heroDot: "size-2 rounded-full bg-background/50 data-[state=active]:bg-background",

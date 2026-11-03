@@ -78,6 +78,10 @@ export const MEDIA_RATIO = {
   video: "16/9",
   cinema: "21/9",
   portrait: "3/4",
+  /** 16:10 宽屏截图 / 笔记本画面 (shopify.com, nextjs.org) */
+  wide: "16/10",
+  /** 5:4 近方画框 */
+  frame: "5/4",
 } as const;
 
 /** 价格周期. */
@@ -124,13 +128,13 @@ export const SECTION_HEADING_SLOTS = ["root", "text", "eyebrow", "title", "descr
 export const CTA_GROUP_SLOTS = ["root", "item", "icon", "label"] as const;
 export const PAGE_COMPOSER_SLOTS = ["root", "missing"] as const;
 
-/** 留白令牌 (令牌缺失时回退到 --spacing 的倍数: 48 / 80 / 112 / 160px). */
+/** 留白令牌 (令牌缺失时回退到 --spacing 的倍数: 48 / 64 / 96 / 128px, 即令牌上限). */
 export const BLOCK_PAD_CLASS = {
   none: "py-0",
   sm: "py-[var(--section-pad-sm,calc(var(--spacing)*12))]",
-  md: "py-[var(--section-pad-md,calc(var(--spacing)*20))]",
-  lg: "py-[var(--section-pad-lg,calc(var(--spacing)*28))]",
-  xl: "py-[var(--section-pad-xl,calc(var(--spacing)*40))]",
+  md: "py-[var(--section-pad-md,calc(var(--spacing)*16))]",
+  lg: "py-[var(--section-pad-lg,calc(var(--spacing)*24))]",
+  xl: "py-[var(--section-pad-xl,calc(var(--spacing)*32))]",
 } as const;
 
 /**
@@ -162,7 +166,7 @@ export const BLOCK_WIDTH_CLASS = {
   narrow: "max-w-3xl",
   content: "max-w-[var(--container-content,var(--container-7xl))]",
   wide: "max-w-[var(--container-wide,90rem)]",
-  max: "max-w-[var(--container-max,96rem)]",
+  max: "max-w-[var(--container-display,96rem)]",
   full: "max-w-none",
   bleed: "max-w-none",
 } as const;
@@ -188,14 +192,17 @@ export const BLOCK_CLASS = {
   contentQuery: "@container",
   alignStart: "text-start",
   alignCenter: "text-center",
-  displayType: "font-semibold text-balance leading-[var(--lh-display,1.1)] tracking-[var(--tracking-display,-0.02em)] [&:lang(zh)]:tracking-[var(--tracking-display-cjk,0)] [&:lang(ja)]:tracking-[var(--tracking-display-cjk,0)]",
+  /** 区块标题的字重 / 行高 / 字体与 Display 同读 token (区块标题本身已改为渲染 <Display>), 这里只剩 ProfileHero 复用. */
+  displayType: "text-balance font-(--fw-display) leading-(--lh-display) tracking-(--tracking-display) [font-family:var(--font-display)] [&:lang(zh)]:leading-(--lh-display-cjk) [&:lang(ja)]:leading-(--lh-display-cjk) [&:lang(zh)]:tracking-(--tracking-display-cjk) [&:lang(ja)]:tracking-(--tracking-display-cjk)",
+  /** Display 默认取标题色; 落在 brand / inverted 区块上时改取对应前景色, 与 eyebrow / lead 同规则. */
+  displayTone: "in-data-[block-tone=brand]:text-primary-foreground in-data-[block-tone=inverted]:text-background",
   eyebrow: "text-sm font-medium tracking-wide text-primary in-data-[block-tone=brand]:text-primary-foreground in-data-[block-tone=inverted]:text-background",
   lead: "max-w-prose text-pretty text-lg text-muted-foreground in-data-[block-tone=brand]:text-primary-foreground/80 in-data-[block-tone=inverted]:text-background/70",
   actions: "flex flex-wrap items-center gap-3",
   missing: "rounded-(--radius-md) border border-dashed border-border p-4 text-sm text-muted-foreground",
 } as const;
 
-/** 默认档位. 营销区块默认 spacious 密度由 BlocksProvider 下发. */
+/** 默认档位. 营销区块默认 comfortable 密度由 BlocksProvider 下发; spacious 需显式传入, 只放大区块留白. */
 export const BLOCK_DEFAULT = {
   tone: "plain",
   pad: "lg",
@@ -206,7 +213,7 @@ export const BLOCK_DEFAULT = {
   tag: "section",
   ctaVariant: "primary",
   ctaSize: "md",
-  density: "spacious",
+  density: "comfortable",
 } as const;
 
 /** 外链的 rel 与 target. */

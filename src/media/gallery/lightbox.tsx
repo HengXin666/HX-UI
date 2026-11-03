@@ -43,8 +43,6 @@ export interface LightboxProps {
  * 全屏灯箱. 底座是 primitives/dialog (portal, 焦点陷阱, Esc 关闭, 焦点归还, 外部 inert 都由 radix 负责).
  * 左右方向键与按钮切换, 滚轮或按钮缩放 (换图回到 1 倍), 点击图片以外的空白处关闭.
  * ref 指向全屏面板 (dialog content). 缩放只过渡 scale, 时长令牌在减弱动效下归零.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function Lightbox({
 	items, index, defaultIndex, onIndexChange, loop = true, onCloseAutoFocus, labels, classNames, styles, className, ref,

@@ -4,8 +4,6 @@
  * 只操作 document.documentElement 的 data-* 属性, 不引任何依赖, 不碰组件.
  * 样式在同目录 index.css (foundation + 五套皮肤 + density), 由集成任务接进 src/styles.css.
  * 服务端渲染 (无 document) 时所有写入函数静默返回, 读取函数返回默认值.
- *
- * .agents/notes/implemented/feature/2026-11-02-skins-density.md
  */
 import {
   DENSITY,
@@ -48,6 +46,8 @@ export function isDensityName(value: unknown): value is DensityName {
 /**
  * 切换皮肤. default 直接移除 data-skin, 让根元素回到没有皮肤层时的原样.
  * 未知名字按 default 处理, 不会留下一个无样式的属性值.
+ *
+ * .agents/notes/implemented/feature/2026-11-02-skins-density.md
  */
 export function applySkin(name: SkinName, options: ApplySkinOptions = {}): void {
   const el = root();

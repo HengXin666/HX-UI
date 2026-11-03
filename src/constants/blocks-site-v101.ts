@@ -5,8 +5,6 @@
 
 /**
  * PageComposer 注册名 (design 2: 名词, 不加 Block 后缀).
- *
- * .agents/notes/implemented/feature/2026-11-02-blocks-site-v101.md
  */
 export const SITE_BLOCK_NAME = {
   header: "SiteHeader",

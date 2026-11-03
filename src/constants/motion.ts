@@ -146,11 +146,13 @@ export const MOTION_DOC = {
 
 /**
  * 滚动联动与入场编排 (V0-07): ScrollProgress, Parallax, StickyScroll, RotatingText, SplitText, orchestration.
+ */
+
+/**
+ * 编排间隔令牌名 (V0-01 在 tokens.css 引入). 读不到时回退 STAGGER_GAP_S.
  *
  * .agents/notes/implemented/feature/2026-11-02-scroll-motion-orchestration.md
  */
-
-/** 编排间隔令牌名 (V0-01 在 tokens.css 引入). 读不到时回退 STAGGER_GAP_S. */
 export const STAGGER_STEP_TOKEN = "--stagger-step";
 
 /** 滚动轴. */

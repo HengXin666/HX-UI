@@ -14,7 +14,6 @@ import { MS_PER_SECOND, ORCHESTRATION_ROLE, STAGGER_GAP_S, STAGGER_STEP_TOKEN } 
  *
  * .agents/notes/implemented/feature/2026-11-02-scroll-motion-orchestration.md
  */
-
 export type OrchestrationRole = (typeof ORCHESTRATION_ROLE)[keyof typeof ORCHESTRATION_ROLE];
 
 const { eyebrow, title, lead, cta, media } = ORCHESTRATION_ROLE;

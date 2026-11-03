@@ -72,8 +72,6 @@ const LAYOUT_CLASS: Record<StickyLayout, { root: string; media: string }> = {
  *
  * 粘住是布局不是动效, prefers-reduced-motion 时照常粘住, 只是媒体切换不淡入淡出,
  * 步骤高亮直接切换不过渡.
- *
- * .agents/notes/implemented/feature/2026-11-02-scroll-motion-orchestration.md
  */
 export function StickyScroll({
   steps,

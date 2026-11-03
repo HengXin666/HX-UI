@@ -19,6 +19,8 @@ export const GROUP_ORDER = ["lib", "docs", "shape", "browser", "guard", "probe"]
 /**
  * lane 表: 路径前缀 → 分组集合。
  * 顺序无所谓, 取并集; 但每条前缀只该出现在一个条目里 (重复由探针的控制组钉住)。
+ * 顶层条目 (tests/, vitest.config.ts, CHANGELOG.md) 的归属决策:
+ * .agents/notes/implemented/process/2026-11-03-lanes-top-level-coverage.md
  */
 export const LANES = [
   {

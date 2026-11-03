@@ -38,8 +38,6 @@ function axisOf(direction: MotionDirection): { horizontal: boolean; sign: number
  *
  * 外层只负责测量, 内层负责位移: 测量的是未位移的盒子, 不会因自身位移而反馈抖动.
  * 只动 transform, 走合成器. prefers-reduced-motion 时不挂位移, 层静止在布局位置.
- *
- * .agents/notes/implemented/feature/2026-11-02-scroll-motion-orchestration.md
  */
 export function Parallax({
   children,

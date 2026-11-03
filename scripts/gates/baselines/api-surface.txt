@@ -344,6 +344,7 @@ DEVICE
 DEVICE_FRAME_SLOTS
 DIFF_KIND
 DISPLAY_SIZE
+DISPLAY_WEIGHT
 DOC
 DOCS_WIDTH_VAR
 DOC_EVENT
@@ -397,6 +398,7 @@ Display
 DisplayProps
 DisplaySize
 DisplayTag
+DisplayWeight
 DocPropRow
 DocsHome
 DocsHomeCard

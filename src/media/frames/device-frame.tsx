@@ -30,8 +30,6 @@ const SCREEN: Record<DeviceKind, string> = {
  * 设备外框, 供产品截图使用: children 是屏幕内容 (Image, Video 或任意节点), 铺满屏幕区域.
  * 纯装饰外壳, 不含任何图片地址. 颜色只用语义 token (机身 bg-muted, 描边 border-border, 屏幕 bg-background).
  * ref 指向根 div.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function DeviceFrame({
 	device = DEVICE.phone, ratio, classNames, styles, className, style, children, ...props

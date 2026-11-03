@@ -8,8 +8,6 @@ const DEMO_PROGRESS = 64;
  * 皮肤演示面: 一组代表性组件 (按钮, 输入, 开关, 徽标, 进度, 卡片) 与皮肤专属令牌
  * (display 字体, hero 渐变, 品牌渐变, 光晕阴影, 语义色块). 全部只用现有组件与语义类名,
  * 换皮肤 / 换密度时外观变化完全来自令牌.
- *
- * .agents/notes/implemented/feature/2026-11-02-skins-density.md
  */
 export function SkinShowcase({ skin, density }: { skin: string; density: string }): JSX.Element {
   const [notify, setNotify] = useState(true);

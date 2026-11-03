@@ -13,6 +13,7 @@ Decision-ID: shared-hooks
 - `src/hooks/browser/media/useMediaQuery.ts`
 - `src/hooks/input/useHotkeys.ts`
 - `src/constants/hooks.ts`
+- `src/index.ts`
 
 ## Problem
 

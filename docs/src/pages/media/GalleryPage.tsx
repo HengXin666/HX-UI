@@ -9,8 +9,6 @@ const LABELS = ["一", "二", "三", "四", "五", "六"] as const;
 
 /**
  * Gallery 文档页: 列数与比例, 键盘焦点, 点击打开灯箱.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function GalleryPage(): JSX.Element {
   const images = useDemoImages(LABELS);

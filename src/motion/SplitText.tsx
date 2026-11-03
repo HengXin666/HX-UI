@@ -61,8 +61,6 @@ function splitUnits(text: string, by: SplitBy): string[][] {
  * 逐字时一个词的字包在 whitespace-nowrap 里, 换行只发生在词与词之间.
  * 读屏器读外层的 aria-label 原文, 拆开的单元 aria-hidden, 不会被逐字拼读.
  * prefers-reduced-motion 时不拆分, 直接渲染静态原文.
- *
- * .agents/notes/implemented/feature/2026-11-02-scroll-motion-orchestration.md
  */
 export function SplitText({
   text,

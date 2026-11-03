@@ -4,8 +4,6 @@ import * as React from "react";
 import { BUTTON_TYPE } from "../../constants";
 import { BLOCK_ALIGN, BLOCK_TONE, BLOCK_WIDTH } from "../../constants/blocks";
 import { HERO_CLASS, HERO_FRAME, HERO_LAYOUT, HERO_MEDIA_SIDE, MV102_CLASS, MV102_DEFAULT, MV102_SLOT } from "../../constants/blocks-marketing-v102";
-import { BrowserFrame } from "../../media/frames/browser-frame";
-import { MaskFade } from "../../effects/MaskFade";
 import { RotatingText } from "../../motion/RotatingText";
 import { Button } from "../../primitives/button";
 import { cn } from "../../primitives/utils";
@@ -16,7 +14,7 @@ import { BlockShell } from "../_shared/BlockShell";
 import { useBlockLabels } from "../_shared/BlocksProvider";
 import { CtaGroup } from "../_shared/SectionHeading";
 import type { BlockBaseProps, BlockTitleSize, Cta, HeadingLevel, Logo, Media, Rich } from "../_shared/types";
-import { LogoMark, MediaView, resolveBackdrop } from "./parts";
+import { LogoMark, MediaView, frameHeroVisual, resolveBackdrop, warnHeroVisualDropped } from "./parts";
 
 type ValueOf<T> = T[keyof T];
 export type HeroLayout = ValueOf<typeof HERO_LAYOUT>;
@@ -53,7 +51,7 @@ export interface HeroProps extends BlockBaseProps {
   media?: Media;
   /** 产品 mock 节点 (linear / shadcn 的 DOM 产品界面), 优先于 media. */
   mockup?: React.ReactNode;
-  /** 媒体外框: none / browser. */
+  /** 媒体外框: none / browser / device (笔记本机身) / mock (透视倾斜 + 渐隐的产品界面). */
   frame?: ValueOf<typeof HERO_FRAME>;
   /** 浏览器外框地址栏文字. */
   frameAddress?: Rich;
@@ -198,18 +196,20 @@ export function Hero(props: HeroProps): React.JSX.Element {
     </div>
   );
 
+  const isStacked = layout === HERO_LAYOUT.product || layout === HERO_LAYOUT.centered;
   const visualInner = slots?.media ?? mockup ?? (media && !isBg ? <MediaView media={{ priority: true, ...media }} /> : null);
-  const framed = visualInner && frame === HERO_FRAME.browser ? <BrowserFrame address={frameAddress}>{visualInner}</BrowserFrame> : visualInner;
-  const visual = framed ? (
-    <div data-slot={MV102_SLOT.heroMedia} className={cn(layout === HERO_LAYOUT.product ? HERO_CLASS.productMedia : undefined, isSplit && mediaSide === HERO_MEDIA_SIDE.start && HERO_CLASS.splitMediaStart)}>
-      {layout === HERO_LAYOUT.product ? <MaskFade direction="bottom">{framed}</MaskFade> : framed}
+  if (isBg && (slots?.media || mockup || frame !== HERO_FRAME.none)) warnHeroVisualDropped(layout, "mockup / slots.media / frame");
+  const visual = visualInner && !isBg ? (
+    <div data-slot={MV102_SLOT.heroMedia} data-frame={frame} className={cn(isStacked && HERO_CLASS.productMedia, isSplit && mediaSide === HERO_MEDIA_SIDE.start && HERO_CLASS.splitMediaStart)}>
+      {frameHeroVisual(visualInner, frame, frameAddress, layout === HERO_LAYOUT.product)}
     </div>
   ) : null;
 
   let body: React.ReactNode;
   if (isSplit) body = <div className={HERO_CLASS.split}>{text}{visual}</div>;
-  else if (layout === HERO_LAYOUT.product) body = <div className={HERO_CLASS.product}>{text}{visual}</div>;
   else if (isBg) body = <div className={HERO_CLASS.bgMinHeight}>{text}</div>;
+  /* centered 有媒体时与 product 同构: 媒体在文本下方居中, 上间距取 product 容器的 gap; 无媒体仍是纯文字. */
+  else if (layout === HERO_LAYOUT.product || visual) body = <div className={HERO_CLASS.product}>{text}{visual}</div>;
   else body = text;
 
   return (

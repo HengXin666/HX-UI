@@ -16,8 +16,11 @@ export const HERO_LAYOUT = {
   product: "product",
 } as const;
 
-/** Hero 媒体外框: 无 / 浏览器框 (vercel, react.dev 式截图). */
-export const HERO_FRAME = { none: "none", browser: "browser" } as const;
+/**
+ * Hero 媒体外框: 无 / 浏览器框 (vercel, react.dev 式截图) / 设备框 (media/DeviceFrame, 笔记本机身) /
+ * 产品界面 (media/ProductMockFrame: 透视倾斜 + 渐隐, linear / supabase 式).
+ */
+export const HERO_FRAME = { none: "none", browser: "browser", device: "device", mock: "mock" } as const;
 
 /** 分屏时媒体在起始侧还是结束侧 (逻辑方向, RTL 自动翻转). */
 export const HERO_MEDIA_SIDE = { start: "start", end: "end" } as const;
@@ -47,8 +50,9 @@ export const MV102_DEFAULT = {
   heroTitleSize: "xl",
   heroTitleLevel: 1,
   heroFrame: "none",
+  heroDevice: "laptop",
   heroMediaSide: "end",
-  heroPad: "xl",
+  heroPad: "lg",
   heroScrim: true,
   logoMode: "grid",
   logoCols: 5,
@@ -135,6 +139,7 @@ export const HERO_CLASS = {
   splitMediaStart: "@3xl:order-first",
   product: "flex flex-col gap-[var(--block-gap-lg,calc(var(--spacing)*12))]",
   bgMinHeight: "flex min-h-[var(--hero-min-height,80svh)] flex-col justify-center",
+  /** product 与 centered 版式共用: 媒体在文本下方, 水平居中; 上间距由外层 product 容器的 gap 提供. */
   productMedia: "mx-auto w-full",
   trust: "flex flex-col gap-4",
   trustCenter: "items-center",

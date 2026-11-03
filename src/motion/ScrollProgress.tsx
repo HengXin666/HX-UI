@@ -30,8 +30,6 @@ export interface ScrollProgressOptions {
 /**
  * 滚动进度, 0 到 1 的 MotionValue. 直接交给 style / useTransform, 每帧不触发 React 渲染.
  * 进度是信息不是装饰, 减弱动效时照常读取; 由消费方决定要不要把它变成位移.
- *
- * .agents/notes/implemented/feature/2026-11-02-scroll-motion-orchestration.md
  */
 export function useScrollProgress({ container, target, offset, axis = SCROLL_AXIS.y }: ScrollProgressOptions = {}): MotionValue<number> {
   const defaultOffset = target ? ([...SCROLL_OFFSET.through] as ScrollOptions["offset"]) : undefined;

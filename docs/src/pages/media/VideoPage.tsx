@@ -9,8 +9,6 @@ import { useDemoImages } from "../../components/MediaDemo";
 /**
  * Video 文档页: 静音自动循环, poster, 暂停按钮, 减弱动效静止.
  * 文档站不打包视频文件, 示例视频地址由读者粘贴; 未填时只显示 poster.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function VideoPage(): JSX.Element {
   const [poster] = useDemoImages(["poster"]);

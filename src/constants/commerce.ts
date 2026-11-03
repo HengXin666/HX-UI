@@ -5,7 +5,6 @@
 
 /**
  * 控件尺寸五档 (契约 1.1), 商业原子共用.
- * .agents/notes/implemented/feature/2026-11-02-commerce-atoms.md
  */
 export const COMMERCE_SIZE = { xs: "xs", sm: "sm", md: "md", lg: "lg", xl: "xl" } as const;
 export type CommerceSize = (typeof COMMERCE_SIZE)[keyof typeof COMMERCE_SIZE];

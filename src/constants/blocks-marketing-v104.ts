@@ -127,7 +127,7 @@ export const SOCIAL_ICON = {
 
 /** 公共零件: 卡片面, 人物行, 评分, logo, 媒体. */
 export const SOCIAL_CLASS = {
-  card: "flex h-full min-w-0 flex-col gap-4 rounded-(--radius-lg) border border-border bg-card p-6 text-card-foreground shadow-xs",
+  card: "flex h-full min-w-0 flex-col gap-4 rounded-(--card-radius) border border-(--border-subtle) bg-card p-6 text-card-foreground shadow-xs",
   cardTop: "flex min-w-0 items-center justify-between gap-3",
   quote: "min-w-0 text-pretty text-base leading-relaxed text-foreground [overflow-wrap:anywhere]",
   quoteLarge: "min-w-0 text-pretty text-lg leading-relaxed text-foreground [overflow-wrap:anywhere]",
@@ -197,7 +197,7 @@ export const CHANGELOG_CLASS = {
   list: "flex flex-col divide-y divide-border border-y border-border",
   listEntry: "grid gap-2 py-6 @2xl:grid-cols-[12rem_1fr] @2xl:gap-8",
   cards: "grid gap-6",
-  cardEntry: "flex h-full min-w-0 flex-col gap-3 rounded-(--radius-lg) border border-border bg-card p-5 text-card-foreground",
+  cardEntry: "flex h-full min-w-0 flex-col gap-3 rounded-(--card-radius) border border-(--border-subtle) bg-card p-5 text-card-foreground",
   meta: "flex flex-wrap items-center gap-2 text-sm text-muted-foreground",
   body: "flex min-w-0 flex-col gap-2",
   title: "text-pretty text-lg font-semibold text-foreground [overflow-wrap:anywhere]",
@@ -210,7 +210,7 @@ export const CHANGELOG_CLASS = {
 /** TweetWall: 瀑布流 + 水位折叠. */
 export const TWEET_CLASS = {
   wall: "gap-6 [column-fill:balance]",
-  item: "mb-6 flex break-inside-avoid flex-col gap-3 rounded-(--radius-lg) border border-border bg-card p-5 text-card-foreground",
+  item: "mb-6 flex break-inside-avoid flex-col gap-3 rounded-(--card-radius) border border-(--border-subtle) bg-card p-5 text-card-foreground",
   head: "flex min-w-0 items-start justify-between gap-3",
   handle: "truncate text-sm text-muted-foreground",
   body: "whitespace-pre-line text-pretty text-sm leading-relaxed text-foreground [overflow-wrap:anywhere]",

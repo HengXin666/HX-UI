@@ -1,8 +1,6 @@
 /**
  * 营销区块 E (开发者): CodeShowcase / InstallBlock 的取值, 类名, slot, 默认 aria 文案与复制降级.
  * 区块组件内不写颜色/字号/间距字面量, 全部从这里取; 类名写全字面量, Tailwind 才扫得到.
- *
- * .agents/notes/implemented/feature/2026-11-02-blocks-marketing-developer.md
  */
 
 /** CodeShowcase 布局: 纯代码 / 代码 + 预览并排 (容器宽度不足时预览落到代码下方). */

@@ -25,6 +25,8 @@ export interface HoverPreviewLinkProps {
  * rauno.me 式行内链接预览: 悬停或键盘聚焦时在链接上方浮出一张小图, 横向跟随指针.
  * 显隐只过渡 opacity 与 translate (纯 CSS, group-hover / group-focus-within), 减弱动效下无过渡;
  * 指针位置写进 CSS 变量, 不触发 React 重渲染. 预览不拦截指针, 不进 Tab 序.
+ *
+ * .agents/notes/implemented/feature/2026-11-02-blocks-portfolio-v111.md
  */
 export function HoverPreviewLink({
   href,

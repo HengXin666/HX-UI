@@ -295,9 +295,9 @@ export {
 export type { DensityName, SkinName, SkinVariant, ApplySkinOptions } from "./skins";
 
 // ── 营销排版 (Display / Eyebrow / Kicker / Lead / GradientText / Prose) ──
-export { Display, Eyebrow, Kicker, Lead, GradientText, Prose, DISPLAY_SIZE, TEXT_SIZE, TEXT_TONE, LEAD_MEASURE, KICKER_MARKER, CJK_MODE, detectCjk } from "./typography";
+export { Display, Eyebrow, Kicker, Lead, GradientText, Prose, DISPLAY_SIZE, DISPLAY_WEIGHT, TEXT_SIZE, TEXT_TONE, LEAD_MEASURE, KICKER_MARKER, CJK_MODE, detectCjk } from "./typography";
 export type {
-  DisplayProps, EyebrowProps, KickerProps, LeadProps, GradientTextProps, GradientTextState, ProseProps, ProseState, DisplaySize, TextSize, TextTone, LeadMeasure, KickerMarker, CjkMode, GradientStop,
+  DisplayProps, EyebrowProps, KickerProps, LeadProps, GradientTextProps, GradientTextState, ProseProps, ProseState, DisplaySize, DisplayWeight, TextSize, TextTone, LeadMeasure, KickerMarker, CjkMode, GradientStop,
   DisplayTag, LineTag, ProseTag,
 } from "./typography";
 

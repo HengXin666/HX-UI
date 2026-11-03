@@ -22,6 +22,8 @@ export function hashTarget(href: string): string | undefined {
  * scrollspy: 用 IntersectionObserver 观察 ids 对应的节, 返回当前节 id. 不监听 scroll, 不轮询.
  * 判定带内有多节时取文档顺序靠前的一节; 判定带内为空时保留上一次结果 (节间空白处不闪烁).
  * SSR 与无 IntersectionObserver 的环境返回 undefined.
+ *
+ * .agents/notes/implemented/feature/2026-11-02-blocks-portfolio-v111.md
  */
 export function useScrollSpy(ids: ReadonlyArray<string>, options: ScrollSpyOptions = {}): string | undefined {
   const { rootMargin = PORTFOLIO_DEFAULT.spyRootMargin, threshold = PORTFOLIO_DEFAULT.spyThreshold, root = null } = options;

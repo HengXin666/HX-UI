@@ -1,7 +1,5 @@
 /**
  * 画廊与灯箱共用的条目类型. 地址全部由调用方传入.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 import type { ReactNode } from "react";
 

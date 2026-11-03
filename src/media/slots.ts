@@ -12,8 +12,6 @@ export interface SlotResolver<S extends string> {
 
 /**
  * 展开 classNames 与 styles. 函数形态只做纯计算 (契约 4.1), 这里每次渲染调用一次.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function resolveSlots<S extends string, State>(
 	classNames: SlotClassNames<S, State> | undefined,

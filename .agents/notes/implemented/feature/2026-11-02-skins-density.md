@@ -9,6 +9,7 @@ Decision-ID: skins-density
 - `src/skins/index.ts`
 - `src/constants/skins.ts`
 - `docs/src/pages/skins/SkinsPage.tsx`
+- `src/index.ts`
 
 ## Problem
 

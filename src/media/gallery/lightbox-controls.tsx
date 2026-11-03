@@ -47,8 +47,6 @@ export interface LightboxControlsProps {
 /**
  * 灯箱的工具栏 (计数, 缩放, 关闭) 与左右切换按钮. 关闭按钮用 primitives/dialog 的 DialogClose,
  * 关闭与焦点归还交给 radix.
- *
- * .agents/notes/implemented/feature/2026-11-02-media-primitives.md
  */
 export function LightboxControls({
 	slot, labels, position, total, zoom, canPrev, canNext, onPrev, onNext, onZoom,

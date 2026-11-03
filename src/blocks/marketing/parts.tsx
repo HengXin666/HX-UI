@@ -2,11 +2,14 @@
 
 import * as React from "react";
 import { BLOCK_BACKDROP, MEDIA_KIND } from "../../constants/blocks";
-import { MV102_CLASS, MV102_DEFAULT, MV102_MASK_DIRECTION, MV102_SLOT } from "../../constants/blocks-marketing-v102";
+import { HERO_FRAME, MV102_CLASS, MV102_DEFAULT, MV102_MASK_DIRECTION, MV102_SLOT } from "../../constants/blocks-marketing-v102";
 import { Beam } from "../../effects/Beam";
 import { Grain } from "../../effects/Grain";
 import { MaskFade } from "../../effects/MaskFade";
 import { MeshGradient } from "../../effects/MeshGradient";
+import { BrowserFrame } from "../../media/frames/browser-frame";
+import { DeviceFrame } from "../../media/frames/device-frame";
+import { ProductMockFrame } from "../../media/frames/product-mock-frame";
 import { Image } from "../../media/image/image";
 import { ThemedImage } from "../../media/image/themed-image";
 import { Video } from "../../media/video";
@@ -187,4 +190,33 @@ export function LogoMark({ logo, grayscale = MV102_DEFAULT.logoGrayscale, height
       )}
     </span>
   );
+}
+
+declare const process: { env: { NODE_ENV?: string } };
+
+/**
+ * Hero 媒体外框分发: browser -> BrowserFrame, device -> DeviceFrame (笔记本), mock -> ProductMockFrame
+ * (自带透视与底部渐隐, 所以不再套 MaskFade), none -> 原样. fade 为 true 时 (product 版式) 非 mock 外框底部渐隐.
+ */
+export function frameHeroVisual(inner: React.ReactNode, frame: string, address: React.ReactNode, fade: boolean): React.ReactNode {
+  if (frame === HERO_FRAME.mock) return <ProductMockFrame>{inner}</ProductMockFrame>;
+  let framed = inner;
+  if (frame === HERO_FRAME.browser) framed = <BrowserFrame address={address}>{inner}</BrowserFrame>;
+  else if (frame === HERO_FRAME.device) framed = <DeviceFrame device={MV102_DEFAULT.heroDevice}>{inner}</DeviceFrame>;
+  return fade ? <MaskFade direction="bottom">{framed}</MaskFade> : framed;
+}
+
+const warnedHero = new Set<string>();
+
+/** 开发环境下对 "传了媒体但版式不渲染" 的组合 console.warn 一次 (按版式去重), 生产环境静默. */
+export function warnHeroVisualDropped(layout: string, what: string): void {
+  let production = false;
+  try {
+    production = process.env.NODE_ENV === "production";
+  } catch {
+    production = false;
+  }
+  if (production || warnedHero.has(layout)) return;
+  warnedHero.add(layout);
+  console.warn(`[@hx/ui] Hero layout="${layout}" 只把 media 当背景, ${what} 不会渲染. 需要产品视觉请用 centered / product / split.`);
 }
