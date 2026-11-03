@@ -279,4 +279,5 @@ export const WIDE_PAGES: ReadonlySet<string> = new Set([
   "page-portfolio",
   "page-docsite",
   "page-dashboard",
+  "page-clone-linear",
 ]);
