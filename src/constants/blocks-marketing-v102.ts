@@ -7,14 +7,26 @@
 
 /* ---------- 档位 ---------- */
 
-/** Hero 版式: 居中 / 分屏 / 媒体底 / 视频底 / 产品 (mock 或截图在标题下). */
+/** Hero 版式: 居中 / 分屏 / 媒体底 / 视频底 / 产品 (mock 或截图在标题下) / editorial (标题左, 导语右, 基线对齐; N1). */
 export const HERO_LAYOUT = {
   centered: "centered",
   split: "split",
   mediaBg: "media-bg",
   videoBg: "video-bg",
   product: "product",
+  editorial: "editorial",
 } as const;
+
+/** Hero 顶部留白档 (N13): 映射 tokens.css 的 --hero-pad-top-*, 只作用于 Hero 根节点. */
+export const HERO_PAD_TOP = { sm: "sm", md: "md", lg: "lg", xl: "xl" } as const;
+export const HERO_PAD_TOP_VAR = {
+  sm: "var(--hero-pad-top-sm)",
+  md: "var(--hero-pad-top-md)",
+  lg: "var(--hero-pad-top-lg)",
+  xl: "var(--hero-pad-top-xl)",
+} as const;
+/** Hero 根节点读取的自定义属性名与取值. */
+export const HERO_PAD_TOP_PROP = { name: "--hero-pad-top", value: "var(--hero-pad-top)" } as const;
 
 /**
  * Hero 媒体外框: 无 / 浏览器框 (vercel, react.dev 式截图) / 设备框 (media/DeviceFrame, 笔记本机身) /
@@ -54,6 +66,7 @@ export const MV102_DEFAULT = {
   heroDevice: "laptop",
   heroMediaSide: "end",
   heroPad: "lg",
+  heroLeadMeasure: "default",
   heroScrim: true,
   logoMode: "grid",
   logoCols: 5,
@@ -89,6 +102,7 @@ export const MV102_SLOT = {
   heroCommand: "marketing-hero-command",
   heroMedia: "marketing-hero-media",
   heroTrust: "marketing-hero-trust",
+  heroAside: "marketing-hero-aside",
   heroVideoToggle: "marketing-hero-video-toggle",
   logoWall: "marketing-logo-wall",
   logoWallGrid: "marketing-logo-wall-grid",
@@ -150,6 +164,13 @@ export const HERO_CLASS = {
   trustText: "text-sm text-muted-foreground",
   trustLogos: "flex flex-wrap items-center gap-x-[var(--block-gap-md,calc(var(--spacing)*10))] gap-y-4",
   videoToggle: "self-start",
+  /** editorial (N1): 两列 grid, items-baseline 按各列首基线对齐; 窄容器堆叠. */
+  editorial: "grid gap-[var(--block-gap-md,calc(var(--spacing)*10))] @3xl:grid-cols-2 @3xl:items-baseline @3xl:gap-x-[var(--block-gap-lg,calc(var(--spacing)*12))]",
+  editorialHead: "min-w-0 text-start",
+  /** inline-block 的基线是它最后一行: 包住 pill + 标题后, 左列的首基线 = h1 末行基线. */
+  editorialHeadInner: "inline-block w-full align-baseline space-y-[var(--block-gap-sm,calc(var(--spacing)*6))]",
+  /** 右列 flex 的首基线 = lead 第一行, 与左列 (h1 末行) 落在同一条基线上. */
+  editorialAside: "flex min-w-0 flex-col items-start gap-[var(--block-gap-sm,calc(var(--spacing)*6))] text-start",
 } as const;
 
 /** LogoWall. */

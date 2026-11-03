@@ -4,6 +4,7 @@ import * as React from "react";
 import { BUTTON_TYPE } from "../../constants";
 import { BLOCK_ALIGN, BLOCK_TONE, BLOCK_WIDTH } from "../../constants/blocks";
 import { HERO_CLASS, HERO_FRAME, HERO_LAYOUT, HERO_MEDIA_SIDE, MV102_CLASS, MV102_DEFAULT, MV102_SLOT } from "../../constants/blocks-marketing-v102";
+import type { LeadMeasure } from "../../constants/typography";
 import { RotatingText } from "../../motion/RotatingText";
 import { Button } from "../../primitives/button";
 import { cn } from "../../primitives/utils";
@@ -14,10 +15,13 @@ import { BlockShell } from "../_shared/BlockShell";
 import { useBlockLabels } from "../_shared/BlocksProvider";
 import { CtaGroup } from "../_shared/SectionHeading";
 import type { BlockBaseProps, BlockTitleSize, Cta, HeadingLevel, Logo, Media, Rich } from "../_shared/types";
+import { HeroEditorial } from "./HeroEditorial";
+import { heroPadTopStyle, type HeroPadTop } from "./heroPadTop";
 import { LogoMark, MediaView, frameHeroVisual, resolveBackdrop, warnHeroVisualDropped } from "./parts";
 
 type ValueOf<T> = T[keyof T];
 export type HeroLayout = ValueOf<typeof HERO_LAYOUT>;
+export type { HeroPadTop };
 
 export interface HeroPill {
   label: Rich;
@@ -43,6 +47,10 @@ export interface HeroProps extends BlockBaseProps {
   /** 轮换停留时长 (ms). */
   rotateInterval?: number;
   lead?: Rich;
+  /** 导语最大行宽档, 透传给 Lead 的 measure (narrow 45ch / default 60ch / wide 75ch / none). 默认 default. */
+  leadMeasure?: LeadMeasure;
+  /** 顶部留白, 独立于 pad 的 section 节奏: 档位映射 --hero-pad-top-*, 数字按 px. 只作用于 Hero 根节点. */
+  padTop?: HeroPadTop | number;
   /** 通常一主一次两个. */
   ctas?: Cta[];
   /** 安装命令 (tailwind / nextjs). */
@@ -126,7 +134,7 @@ function VideoToggle({ videoRef, playing, overrides }: { videoRef: React.RefObje
 export function Hero(props: HeroProps): React.JSX.Element {
   const {
     layout = MV102_DEFAULT.heroLayout,
-    eyebrow, pill, title, rotate, rotateInterval, lead, ctas, command, media, mockup,
+    eyebrow, pill, title, rotate, rotateInterval, lead, leadMeasure = MV102_DEFAULT.heroLeadMeasure, padTop, ctas, command, media, mockup,
     frame = MV102_DEFAULT.heroFrame, frameAddress, mediaSide = MV102_DEFAULT.heroMediaSide,
     scrim = MV102_DEFAULT.heroScrim, trust,
     titleSize = MV102_DEFAULT.heroTitleSize, titleLevel = MV102_DEFAULT.heroTitleLevel,
@@ -134,7 +142,8 @@ export function Hero(props: HeroProps): React.JSX.Element {
   } = props;
   const isBg = layout === HERO_LAYOUT.mediaBg || layout === HERO_LAYOUT.videoBg;
   const isSplit = layout === HERO_LAYOUT.split;
-  const resolvedAlign = align ?? (isSplit ? BLOCK_ALIGN.start : BLOCK_ALIGN.center);
+  const isEditorial = layout === HERO_LAYOUT.editorial;
+  const resolvedAlign = align ?? (isSplit || isEditorial ? BLOCK_ALIGN.start : BLOCK_ALIGN.center);
   const centered = resolvedAlign === BLOCK_ALIGN.center;
   const titleId = React.useId();
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
@@ -161,8 +170,8 @@ export function Hero(props: HeroProps): React.JSX.Element {
     </>
   ) : effect;
 
-  const text = (
-    <div data-slot={MV102_SLOT.heroText} className={cn(HERO_CLASS.text, centered ? HERO_CLASS.textCenter : HERO_CLASS.textStart)}>
+  const head = (
+    <>
       {pill && <Pill pill={pill} />}
       {eyebrow !== undefined && (
         <Eyebrow data-slot={MV102_SLOT.heroEyebrow} tone="primary">
@@ -177,8 +186,12 @@ export function Hero(props: HeroProps): React.JSX.Element {
           </span>
         )}
       </Display>
+    </>
+  );
+  const aside = (
+    <>
       {lead !== undefined && (
-        <Lead data-slot={MV102_SLOT.heroLead} measure="default">
+        <Lead data-slot={MV102_SLOT.heroLead} measure={leadMeasure}>
           {lead}
         </Lead>
       )}
@@ -193,10 +206,15 @@ export function Hero(props: HeroProps): React.JSX.Element {
       )}
       {layout === HERO_LAYOUT.videoBg && media && <VideoToggle videoRef={videoRef} playing={playing} overrides={labels} />}
       {trust && <Trust trust={trust} centered={centered} />}
+    </>
+  );
+  const text = isEditorial ? <HeroEditorial head={head} aside={aside} /> : (
+    <div data-slot={MV102_SLOT.heroText} className={cn(HERO_CLASS.text, centered ? HERO_CLASS.textCenter : HERO_CLASS.textStart)}>
+      {head}{aside}
     </div>
   );
 
-  const isStacked = layout === HERO_LAYOUT.product || layout === HERO_LAYOUT.centered;
+  const isStacked = layout === HERO_LAYOUT.product || layout === HERO_LAYOUT.centered || isEditorial;
   const visualInner = slots?.media ?? mockup ?? (media && !isBg ? <MediaView media={{ priority: true, ...media }} /> : null);
   if (isBg && (slots?.media || mockup || frame !== HERO_FRAME.none)) warnHeroVisualDropped(layout, "mockup / slots.media / frame");
   const visual = visualInner && !isBg ? (
@@ -217,8 +235,9 @@ export function Hero(props: HeroProps): React.JSX.Element {
       {...shell}
       tone={tone ?? (isBg ? BLOCK_TONE.image : undefined)}
       align={resolvedAlign}
-      width={width ?? (isSplit ? BLOCK_WIDTH.wide : undefined)}
+      width={width ?? (isSplit || isEditorial ? BLOCK_WIDTH.wide : undefined)}
       pad={pad}
+      style={heroPadTopStyle(padTop, shell.style)} /* N13: --hero-pad-top 只落在 Hero 根节点 */
       backdrop={layered}
       slots={{ before: slots?.before, after: slots?.after }}
       aria-labelledby={shell["aria-labelledby"] ?? (shell["aria-label"] ? undefined : titleId)}
