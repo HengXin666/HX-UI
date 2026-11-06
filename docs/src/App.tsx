@@ -64,8 +64,10 @@ import { MotionPage } from "./pages/motion/MotionPage";
 import { BoxPage } from "./pages/box/BoxPage";
 import { BentoPage } from "./pages/box/BentoPage";
 import { EffectsPage } from "./pages/effects/EffectsPage";
+import { SkinsPage } from "./pages/skins/SkinsPage";
 import { WidgetsPage } from "./pages/widgets/WidgetsPage";
 import { GalleryPage } from "./pages/gallery/GalleryPage";
+import * as L from "./pages/blocks";
 import { useShellLayout } from "./useShellLayout";
 
 /**
@@ -116,10 +118,8 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "accordion": return <AccordionPage />;
     case "progress": return <ProgressPage />;
     case "scroll-area": return <ScrollAreaPage />;
-    case "data-table":
-    case "stat-card": return <DataTablePage />;
-    case "empty-state":
-    case "page-header": return <ChromePage />;
+    case "data-table": case "stat-card": return <DataTablePage />;
+    case "empty-state": case "page-header": return <ChromePage />;
     case "browser-live": return <BrowserLivePage />;
     case "blueprint": return <BlueprintPage />;
     case "blueprint-dsh": return <BlueprintDshPage />;
@@ -133,8 +133,16 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "box": return <BoxPage />;
     case "bento": return <BentoPage />;
     case "effects": return <EffectsPage />;
+    case "skins": return <SkinsPage />;
     case "widgets": return <WidgetsPage />;
     case "gallery": return <GalleryPage />;
+    case "display-type": return <L.DisplayTypePage />;
+    case "media-image": return <L.ImagePage />; case "media-themed-image": return <L.ThemedImagePage />; case "media-video": return <L.VideoPage />;
+    case "media-gallery": return <L.MediaGalleryPage />; case "media-lightbox": return <L.LightboxPage />; case "media-frames": return <L.FramesPage />;
+    case "blocks-site": return <L.SiteBlocksPage />; case "blocks-hero": return <L.MarketingV102Page />; case "blocks-features": return <L.MarketingV103Page />;
+    case "blocks-social-proof": return <L.MarketingV104Page />; case "blocks-pricing": return <L.MarketingV105Page />; case "blocks-developer": return <L.MarketingV106Page />;
+    case "blocks-commerce-browse": return <L.CommerceBrowsePage />; case "blocks-commerce-trade": return <L.CommerceTradePage />;
+    case "blocks-docs": return <L.DocsV109Page />; case "blocks-portfolio": return <L.PortfolioV111Page />;
     default: {
       const Page = PARITY_PAGES[entry.id] ?? TEMPLATE_PAGES[entry.id];
       return Page ? <Page /> : <PlaceholderPage label={entry.label} desc={entry.desc} />;

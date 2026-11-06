@@ -1,0 +1,1398 @@
+{
+  "generated": "2026-11-02",
+  "source": "docs/reference/audit/ui-library-roadmap.md",
+  "criteria_types": [
+    "file_exists",
+    "line_range",
+    "regex"
+  ],
+  "shared_files_owned_by_integration_tasks": [
+    "src/index.ts",
+    "src/constants/index.ts",
+    "package.json",
+    "package-lock.json",
+    "docs/src/nav.ts",
+    "docs/src/App.tsx",
+    "docs/src/navIcons.ts",
+    "README.md",
+    "scripts/gates/registry.mjs",
+    "scripts/gates/baselines/api-surface.txt",
+    "scripts/gates/baselines/api-surface.version",
+    "scripts/quality/approvals.json"
+  ],
+  "tasks": [
+    {
+      "id": "P0-01",
+      "phase": "P0",
+      "title": "审计文档归位与门禁对齐",
+      "brief": "删除误建的空文件 docs/audit, 把 docs/reference/ 下三份带日期前缀的 ui-library 产物迁到 docs/reference/audit/ 并改名为 ui-library-gap-analysis.md / ui-library-roadmap.md / ui-library-tasks.json, 修复 HC-DOCS (文档只放 tutorials/reference/architecture/decisions/archive) 与 HC-DOCNAME (日期前缀只在 decisions) 两条门禁, 旧路径留一行跳转说明或直接删除并改引用.",
+      "deps": [],
+      "write_scope": [
+        "docs/audit",
+        "docs/reference/audit/ui-library-gap-analysis.md",
+        "docs/reference/audit/ui-library-roadmap.md",
+        "docs/reference/audit/ui-library-tasks.json",
+        "docs/reference/audit/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "docs/reference/audit/ui-library-gap-analysis.md"
+        },
+        {
+          "type": "file_exists",
+          "path": "docs/reference/audit/ui-library-roadmap.md"
+        },
+        {
+          "type": "file_exists",
+          "path": "docs/reference/audit/ui-library-tasks.json"
+        }
+      ]
+    },
+    {
+      "id": "P0-02",
+      "phase": "P0",
+      "title": "依赖预审批",
+      "brief": "在 approvals.json 一次登记本路线图需要的新直接依赖与开发依赖 (@tanstack/react-table, @tanstack/react-virtual, @dnd-kit/core, @dnd-kit/sortable, zod, @hookform/resolvers, vitest, @testing-library/react, @testing-library/user-event, happy-dom, axe-core, @axe-core/playwright), 每项写用途, 体积, 替代方案, 是否 optional peer; 同步 inventory.md 的依赖推荐节.",
+      "deps": [],
+      "write_scope": [
+        "scripts/quality/approvals.json",
+        "docs/reference/quality/inventory.md"
+      ],
+      "criteria": [
+        {
+          "type": "regex",
+          "path": "scripts/quality/approvals.json",
+          "pattern": "@tanstack/react-table"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/quality/approvals.json",
+          "pattern": "@axe-core/playwright"
+        },
+        {
+          "type": "regex",
+          "path": "docs/reference/quality/inventory.md",
+          "pattern": "react-virtual"
+        }
+      ]
+    },
+    {
+      "id": "P0-03",
+      "phase": "P0",
+      "title": "组件契约规范",
+      "brief": "写 docs/architecture/component-contract.md: 统一 prop 词汇 (size xs..xl, variant, tone, radius, density), 受控/非受控 (value/defaultValue/onValueChange), asChild 与 render prop, 插槽 classNames/styles (对标 antd v6 semantic classNames 与 Mantine Styles API), data-slot/data-state 属性, ref 透传, 事件命名, 禁用与只读, 废弃流程. 新组件必须引用本文.",
+      "deps": [],
+      "write_scope": [
+        "docs/architecture/component-contract.md",
+        "docs/architecture/README.md",
+        "docs/architecture/AGENTS.md"
+      ],
+      "criteria": [
+        {
+          "type": "line_range",
+          "path": "docs/architecture/component-contract.md",
+          "min": 150,
+          "max": 900
+        },
+        {
+          "type": "regex",
+          "path": "docs/architecture/component-contract.md",
+          "pattern": "classNames"
+        },
+        {
+          "type": "regex",
+          "path": "docs/architecture/component-contract.md",
+          "pattern": "onValueChange"
+        }
+      ]
+    },
+    {
+      "id": "P0-04",
+      "phase": "P0",
+      "title": "令牌三层化与尺寸密度档",
+      "brief": "tokens.css 拆成 原始色板 (oklch 11 阶) -> 语义 -> 组件 三层; 新增 --control-h-xs..xl, --space-*, --radius-* 全档, --z-* 栈, --density 因子, 断点令牌; 亮暗两套都有值; TokensPage 同步展示. 不改任何组件默认外观.",
+      "deps": [
+        "P0-03"
+      ],
+      "write_scope": [
+        "src/tokens.css",
+        "src/styles.css",
+        "docs/src/pages/TokensPage.tsx",
+        ".agents/notes/implemented/feature/"
+      ],
+      "criteria": [
+        {
+          "type": "regex",
+          "path": "src/tokens.css",
+          "pattern": "--control-h-xl"
+        },
+        {
+          "type": "regex",
+          "path": "src/tokens.css",
+          "pattern": "--palette-[a-z]+-950"
+        },
+        {
+          "type": "line_range",
+          "path": "src/tokens.css",
+          "min": 700,
+          "max": 1500
+        }
+      ]
+    },
+    {
+      "id": "P0-05",
+      "phase": "P0",
+      "title": "全局样式隔离与 cascade layer",
+      "brief": "把 tokens.css 里的 body/*/scrollbar/selection 等全局规则移入可选的 src/base.css, 全部样式包进 @layer hx.tokens / hx.base / hx.components, 让使用方的样式天然胜出; build-lib 拷贝新文件, exports 增加 ./base.css (由 P0-Z 接线).",
+      "deps": [
+        "P0-04"
+      ],
+      "write_scope": [
+        "src/base.css",
+        "src/tokens.css",
+        "scripts/build-lib.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/base.css"
+        },
+        {
+          "type": "regex",
+          "path": "src/base.css",
+          "pattern": "@layer hx\\.base"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/build-lib.ts",
+          "pattern": "base\\.css"
+        }
+      ]
+    },
+    {
+      "id": "P0-06",
+      "phase": "P0",
+      "title": "主题运行时 HxProvider",
+      "brief": "src/provider/: HxProvider (mode light/dark/system, accent 种子色, radius, density, reducedMotion 覆盖, locale 透传), createTheme(seed) 用 oklch 生成整套语义变量, 支持嵌套作用域主题 (子树换肤), useTheme hook, SSR 无闪烁脚本 getThemeScript().",
+      "deps": [
+        "P0-03"
+      ],
+      "write_scope": [
+        "src/provider/",
+        "src/constants/provider.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/provider/HxProvider.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/provider/create-theme.ts",
+          "pattern": "oklch"
+        },
+        {
+          "type": "regex",
+          "path": "src/provider/index.ts",
+          "pattern": "getThemeScript"
+        }
+      ]
+    },
+    {
+      "id": "P0-07",
+      "phase": "P0",
+      "title": "国际化运行时",
+      "brief": "src/locale/: LocaleProvider + useLocale, zh-CN 与 en-US 两套语言包覆盖所有内置文案 (日期, 分页, 组合框, 对话框关闭, 空态, 上传, 表格, 确认框), 日期与数字统一走 Intl; 现有组件的 labels prop 保留为最高优先级覆盖.",
+      "deps": [
+        "P0-03"
+      ],
+      "write_scope": [
+        "src/locale/",
+        "src/constants/locale.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/locale/LocaleProvider.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/locale/en-US.ts",
+          "pattern": "pagination"
+        },
+        {
+          "type": "regex",
+          "path": "src/locale/zh-CN.ts",
+          "pattern": "pagination"
+        }
+      ]
+    },
+    {
+      "id": "P0-08",
+      "phase": "P0",
+      "title": "共享 hooks 层",
+      "brief": "src/hooks/: useControllableState, useMergeRefs, useDisclosure, useMediaQuery, useBreakpoint, useResizeObserver, useEventListener, useClickOutside, useHotkeys, useDebouncedValue, useLocalStorage, useClipboard, useIntersection, useReducedMotion; 每个一文件, 子目录按类别分组守 HC-DIR.",
+      "deps": [
+        "P0-03"
+      ],
+      "write_scope": [
+        "src/hooks/",
+        "src/constants/hooks.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/hooks/index.ts"
+        },
+        {
+          "type": "regex",
+          "path": "src/hooks/index.ts",
+          "pattern": "useControllableState"
+        },
+        {
+          "type": "regex",
+          "path": "src/hooks/index.ts",
+          "pattern": "useHotkeys"
+        }
+      ]
+    },
+    {
+      "id": "P0-09",
+      "phase": "P0",
+      "title": "单元与无障碍测试底座",
+      "brief": "接 vitest (happy-dom) + testing-library + axe-core: vitest.config.ts, tests/setup.ts, 首批 Button/Dialog/Select/Tabs/Checkbox 五个样例测试含 axe 断言; scripts/quality 的 frontend 层从 blocked 改为调用 vitest.",
+      "deps": [
+        "P0-02"
+      ],
+      "write_scope": [
+        "vitest.config.ts",
+        "tests/setup.ts",
+        "tests/components/",
+        "scripts/quality/runtime/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "vitest.config.ts"
+        },
+        {
+          "type": "regex",
+          "path": "tests/setup.ts",
+          "pattern": "axe"
+        },
+        {
+          "type": "file_exists",
+          "path": "tests/components/button.test.tsx"
+        }
+      ]
+    },
+    {
+      "id": "P0-10",
+      "phase": "P0",
+      "title": "按组件子路径导出与体积预算",
+      "brief": "build-lib 保留模块结构, 生成 @hx/ui/<component> 子路径清单 (exports 由 P0-Z 接线); 新增 scripts/check-size.ts: 每个入口 gzip 体积预算, 超预算失败; 核对 'use client' 指令在产物中保留.",
+      "deps": [
+        "P0-02",
+        "P0-05"
+      ],
+      "write_scope": [
+        "scripts/build-lib.ts",
+        "scripts/check-size.ts",
+        "scripts/constants/pack.ts",
+        "scripts/gates/baselines/size-budget.json"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "scripts/check-size.ts"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/check-size.ts",
+          "pattern": "gzip"
+        },
+        {
+          "type": "file_exists",
+          "path": "scripts/gates/baselines/size-budget.json"
+        }
+      ]
+    },
+    {
+      "id": "P0-11",
+      "phase": "P0",
+      "title": "版本与破坏性变更策略",
+      "brief": "CHANGELOG.md (Keep a Changelog 格式, 回填 0.1 到 0.5), docs/reference/versioning.md (semver, 0.x 期间 minor 可破坏但必须有迁移段, 废弃至少保留一个 minor, dev 环境 deprecate() 警告, codemods/ 目录约定), src/primitives/deprecate.ts 工具函数.",
+      "deps": [
+        "P0-03"
+      ],
+      "write_scope": [
+        "CHANGELOG.md",
+        "docs/reference/versioning.md",
+        "src/primitives/deprecate.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "CHANGELOG.md"
+        },
+        {
+          "type": "line_range",
+          "path": "docs/reference/versioning.md",
+          "min": 60,
+          "max": 400
+        },
+        {
+          "type": "regex",
+          "path": "src/primitives/deprecate.ts",
+          "pattern": "console\\.warn"
+        }
+      ]
+    },
+    {
+      "id": "P0-Z",
+      "phase": "P0",
+      "title": "第零阶段集成",
+      "brief": "唯一可改共享入口的任务: package.json (exports 子路径, base.css, 新依赖, test 脚本), src/index.ts 导出 provider/locale/hooks, gates 注册 check-size 与 vitest, API 快照与版本号更新到 0.6.0, README 三层说明改为六层.",
+      "deps": [
+        "P0-04",
+        "P0-05",
+        "P0-06",
+        "P0-07",
+        "P0-08",
+        "P0-09",
+        "P0-10",
+        "P0-11"
+      ],
+      "write_scope": [
+        "src/index.ts",
+        "src/constants/index.ts",
+        "package.json",
+        "package-lock.json",
+        "docs/src/nav.ts",
+        "docs/src/App.tsx",
+        "docs/src/navIcons.ts",
+        "README.md",
+        "scripts/gates/registry.mjs",
+        "scripts/gates/baselines/api-surface.txt",
+        "scripts/gates/baselines/api-surface.version",
+        "scripts/quality/approvals.json"
+      ],
+      "criteria": [
+        {
+          "type": "regex",
+          "path": "package.json",
+          "pattern": "\"\\./base\\.css\""
+        },
+        {
+          "type": "regex",
+          "path": "src/index.ts",
+          "pattern": "HxProvider"
+        },
+        {
+          "type": "regex",
+          "path": "package.json",
+          "pattern": "\"version\": \"0\\.6\\.0\""
+        }
+      ]
+    },
+    {
+      "id": "P1-01",
+      "phase": "P1",
+      "title": "表单引擎",
+      "brief": "src/form/: 基于 react-hook-form + zod 的 Form, FormField 自动接 aria-describedby/aria-invalid, FieldArray, 异步校验与防抖, 提交态与错误汇总, useZodForm; 与现有 primitives/form.tsx 兼容并在其顶部指向新实现.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/form/",
+        "src/constants/form.ts",
+        "docs/src/pages/form/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/form/index.ts"
+        },
+        {
+          "type": "regex",
+          "path": "src/form/index.ts",
+          "pattern": "FieldArray"
+        },
+        {
+          "type": "regex",
+          "path": "src/form/use-zod-form.ts",
+          "pattern": "zodResolver"
+        }
+      ]
+    },
+    {
+      "id": "P1-02",
+      "phase": "P1",
+      "title": "输入族扩充",
+      "brief": "src/inputs/: NumberInput (步进, 精度, 千分位, Intl, 滚轮可关), PasswordInput (可见切换, 强度条), SearchInput (防抖, 清空), PinInput 复用 input-otp, Mentions.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/inputs/",
+        "src/constants/inputs.ts",
+        "docs/src/pages/inputs/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/inputs/NumberInput.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/inputs/PasswordInput.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/inputs/NumberInput.tsx",
+          "pattern": "Intl\\.NumberFormat"
+        }
+      ]
+    },
+    {
+      "id": "P1-03",
+      "phase": "P1",
+      "title": "选择族扩充",
+      "brief": "src/select/: MultiSelect (标签折叠, 全选, 创建项), Autocomplete, TreeSelect (单选/多选/级联勾选), Cascader (懒加载, 搜索), Transfer (双栏穿梭, 搜索, 全选).",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/select/",
+        "src/constants/select.ts",
+        "docs/src/pages/select/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/select/MultiSelect.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/select/Cascader.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/select/Transfer.tsx"
+        }
+      ]
+    },
+    {
+      "id": "P1-04",
+      "phase": "P1",
+      "title": "日期时间族",
+      "brief": "src/dates/: DateRangePicker (预设区间, 双月面板), DateTimePicker, MonthPicker, YearPicker, 时区感知格式化 (Intl.DateTimeFormat timeZone), 文案与周起始日来自 LocaleProvider.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/dates/",
+        "src/constants/dates.ts",
+        "docs/src/pages/dates/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/dates/DateRangePicker.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/dates/DateRangePicker.tsx",
+          "pattern": "presets"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/dates/DateTimePicker.tsx"
+        }
+      ]
+    },
+    {
+      "id": "P1-05",
+      "phase": "P1",
+      "title": "上传",
+      "brief": "src/upload/: Upload 队列 (进度, 取消, 重试, 并发上限), 自定义 request 适配器, 图片卡片墙与预览, 粘贴上传; 内部复用 widgets/FileDropzone 的校验.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/upload/",
+        "src/constants/upload.ts",
+        "docs/src/pages/upload/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/upload/Upload.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/upload/Upload.tsx",
+          "pattern": "retry"
+        }
+      ]
+    },
+    {
+      "id": "P1-06",
+      "phase": "P1",
+      "title": "颜色选择器",
+      "brief": "src/color/: ColorPicker (色相/饱和/透明度面板, hex/rgb/hsl/oklch 输入, 预设色, EyeDropper API 可用时显示吸管), ColorInput. 组件 tsx 内零色值, 色值计算放纯 ts.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/color/",
+        "src/constants/color.ts",
+        "docs/src/pages/color/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/color/ColorPicker.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/color/convert.ts",
+          "pattern": "oklch"
+        }
+      ]
+    },
+    {
+      "id": "P1-07",
+      "phase": "P1",
+      "title": "数据网格 DataGrid",
+      "brief": "src/data-grid/: 基于 @tanstack/react-table 的 DataGrid: 排序, 筛选, 列显隐, 列固定, 列宽拖拽, 行选择, 行展开, 分组表头, 受控与服务端模式, 接 Pagination 与 EmptyState; 现有 DataTable 保留为轻量版.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/data-grid/",
+        "src/constants/data-grid.ts",
+        "docs/src/pages/data-grid/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/data-grid/DataGrid.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/data-grid/DataGrid.tsx",
+          "pattern": "useReactTable"
+        },
+        {
+          "type": "regex",
+          "path": "src/data-grid/",
+          "pattern": "getSortedRowModel"
+        }
+      ]
+    },
+    {
+      "id": "P1-08",
+      "phase": "P1",
+      "title": "虚拟化",
+      "brief": "src/virtual/: VirtualList, VirtualGrid (基于 @tanstack/react-virtual), 动态行高, 粘性分组头, 滚动到索引 API; Select/Combobox 的选项超过阈值时可开启虚拟滚动 (仅提供 hook, 接入由 P2-01).",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/virtual/",
+        "src/constants/virtual.ts",
+        "docs/src/pages/virtual/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/virtual/VirtualList.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/virtual/VirtualList.tsx",
+          "pattern": "useVirtualizer"
+        }
+      ]
+    },
+    {
+      "id": "P1-09",
+      "phase": "P1",
+      "title": "树",
+      "brief": "src/tree/: Tree (单选, 多选勾选级联, 半选, 异步加载, 搜索高亮, 键盘导航符合 APG treeview, 拖拽排序钩子), 与 layout/TreeNav 共享 flattenTree.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/tree/",
+        "src/constants/tree.ts",
+        "docs/src/pages/tree/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/tree/Tree.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/tree/Tree.tsx",
+          "pattern": "role=\\{?\"tree\""
+        }
+      ]
+    },
+    {
+      "id": "P1-10",
+      "phase": "P1",
+      "title": "展示族",
+      "brief": "src/display/: Descriptions (键值描述列表, 响应式列), Tag/Chip (可关闭, 可选), Image (懒加载, 失败兜底, 灯箱预览组), Statistic/Countdown, QRCode, Watermark.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/display/",
+        "src/constants/display.ts",
+        "docs/src/pages/display/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/display/Descriptions.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/display/Image.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/display/Tag.tsx"
+        }
+      ]
+    },
+    {
+      "id": "P1-11",
+      "phase": "P1",
+      "title": "通知系统",
+      "brief": "src/notify/: 命令式 notify()/toast.promise()/message(), 六个位置, 最大堆叠数, 操作按钮, 可暂停计时, 滑动关闭, 读屏 live region; 现有 Toaster 改为其上的一层外观.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/notify/",
+        "src/constants/notify.ts",
+        "docs/src/pages/notify/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/notify/notify.ts"
+        },
+        {
+          "type": "regex",
+          "path": "src/notify/notify.ts",
+          "pattern": "promise"
+        },
+        {
+          "type": "regex",
+          "path": "src/notify/",
+          "pattern": "aria-live"
+        }
+      ]
+    },
+    {
+      "id": "P1-12",
+      "phase": "P1",
+      "title": "浮层管理与引导",
+      "brief": "src/overlay/: 模态栈管理器 (焦点归还, 层级, Esc 只关最顶层), 命令式 openModal(), Popconfirm, Tour 步骤式引导 (高亮遮罩, 键盘), Spotlight 搜索面板 (复用 command).",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/overlay/",
+        "src/constants/overlay.ts",
+        "docs/src/pages/overlay/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/overlay/Popconfirm.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/overlay/Tour.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/overlay/modal-stack.ts",
+          "pattern": "focus"
+        }
+      ]
+    },
+    {
+      "id": "P1-13",
+      "phase": "P1",
+      "title": "导航族扩充",
+      "brief": "src/nav/: Menu (垂直/水平, 可折叠成图标, 子菜单), Anchor (滚动联动), BackTop, Affix, Tabs 溢出滚动与更多菜单, Steps 可点击与竖排.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/nav/",
+        "src/constants/nav.ts",
+        "docs/src/pages/nav/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/nav/Menu.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/nav/Anchor.tsx"
+        }
+      ]
+    },
+    {
+      "id": "P1-14",
+      "phase": "P1",
+      "title": "应用外壳与响应式",
+      "brief": "src/shell/: AppShell (header/navbar/aside/footer, 断点下自动收起成抽屉, 尺寸来自令牌), 响应式 prop 工具 (base/sm/md/lg), Show/Hide 断点组件; 与 AppFrame 并存.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/shell/",
+        "src/constants/shell.ts",
+        "docs/src/pages/shell/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/shell/AppShell.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/shell/responsive.ts",
+          "pattern": "breakpoint"
+        }
+      ]
+    },
+    {
+      "id": "P1-15",
+      "phase": "P1",
+      "title": "排版与文本工具",
+      "brief": "src/text/: Text, Title, Highlight (关键词高亮), Ellipsis (多行截断 + 溢出才显示 Tooltip), CopyButton, NumberFormatter, RelativeTime.",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "src/text/",
+        "src/constants/text.ts",
+        "docs/src/pages/text/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/text/Ellipsis.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/text/Highlight.tsx"
+        }
+      ]
+    },
+    {
+      "id": "P1-16",
+      "phase": "P1",
+      "title": "无障碍门禁",
+      "brief": "scripts/e2e/a11y.ts: 用 @axe-core/playwright 逐页扫描文档站 (亮暗两套), 产出 JSON 报告, 严重级 serious/critical 失败; 每个组件页增加键盘交互说明表 (由各组件任务填写, 本任务只建检查).",
+      "deps": [
+        "P0-Z"
+      ],
+      "write_scope": [
+        "scripts/e2e/a11y.ts",
+        "scripts/constants/a11y.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "scripts/e2e/a11y.ts"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/e2e/a11y.ts",
+          "pattern": "AxeBuilder"
+        }
+      ]
+    },
+    {
+      "id": "P1-Z",
+      "phase": "P1",
+      "title": "第一阶段集成",
+      "brief": "接线 P1 全部新目录: src/index.ts 与子路径 exports, docs nav/App/navIcons 新页面, gates 注册 a11y, API 快照与版本 0.7.0, README 组件清单.",
+      "deps": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04",
+        "P1-05",
+        "P1-06",
+        "P1-07",
+        "P1-08",
+        "P1-09",
+        "P1-10",
+        "P1-11",
+        "P1-12",
+        "P1-13",
+        "P1-14",
+        "P1-15",
+        "P1-16"
+      ],
+      "write_scope": [
+        "src/index.ts",
+        "src/constants/index.ts",
+        "package.json",
+        "package-lock.json",
+        "docs/src/nav.ts",
+        "docs/src/App.tsx",
+        "docs/src/navIcons.ts",
+        "README.md",
+        "scripts/gates/registry.mjs",
+        "scripts/gates/baselines/api-surface.txt",
+        "scripts/gates/baselines/api-surface.version",
+        "scripts/quality/approvals.json"
+      ],
+      "criteria": [
+        {
+          "type": "regex",
+          "path": "src/index.ts",
+          "pattern": "DataGrid"
+        },
+        {
+          "type": "regex",
+          "path": "docs/src/nav.ts",
+          "pattern": "data-grid ~"
+        },
+        {
+          "type": "regex",
+          "path": "package.json",
+          "pattern": "\"version\": \"0\\.7\\.0\""
+        }
+      ]
+    },
+    {
+      "id": "P2-01",
+      "phase": "P2",
+      "title": "网格虚拟化与可编辑单元格",
+      "brief": "DataGrid 接 VirtualList: 十万行流畅滚动, 单元格编辑 (文本/数字/选择/日期, 校验, Tab 跳格), 复制粘贴区域, 导出 CSV.",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "src/data-grid/"
+      ],
+      "criteria": [
+        {
+          "type": "regex",
+          "path": "src/data-grid/",
+          "pattern": "useVirtualizer"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/data-grid/editable-cell.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/data-grid/",
+          "pattern": "toCsv"
+        }
+      ]
+    },
+    {
+      "id": "P2-02",
+      "phase": "P2",
+      "title": "图表扩充与图表无障碍",
+      "brief": "src/charts/ext/: Scatter, Funnel, Treemap, Heatmap, Gauge, Sparkline, 组合图; 图例点选显隐, 十字准线, 每张图可切换为数据表视图 (读屏与导出).",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "src/charts/ext/",
+        "src/constants/charts-ext.ts",
+        "docs/src/pages/charts-ext/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/charts/ext/Heatmap.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/charts/ext/Sparkline.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/charts/ext/",
+          "pattern": "DataTableView|asTable"
+        }
+      ]
+    },
+    {
+      "id": "P2-03",
+      "phase": "P2",
+      "title": "日程视图",
+      "brief": "src/schedule/: DayView, WeekView, MonthView, AgendaView, 拖拽移动与拉伸事件, 当前时间线, 资源分组; 时区与周起始日来自 LocaleProvider.",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "src/schedule/",
+        "src/constants/schedule.ts",
+        "docs/src/pages/schedule/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/schedule/WeekView.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/schedule/MonthView.tsx"
+        }
+      ]
+    },
+    {
+      "id": "P2-04",
+      "phase": "P2",
+      "title": "拖拽排序与看板",
+      "brief": "src/sortable/: 基于 @dnd-kit 的 SortableList, SortableGrid, Kanban (列间移动, 键盘拖拽, 读屏播报); layout/DragDrop 保留.",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "src/sortable/",
+        "src/constants/sortable.ts",
+        "docs/src/pages/sortable/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/sortable/Kanban.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/sortable/",
+          "pattern": "KeyboardSensor"
+        }
+      ]
+    },
+    {
+      "id": "P2-05",
+      "phase": "P2",
+      "title": "Pro 层: ProTable / ProForm",
+      "brief": "src/pro/: ProTable (查询表单 + DataGrid + 工具栏 + 请求适配 request(params) -> {data,total}), ProForm (schema 驱动, 分步表单, 弹窗表单, 依赖联动), PageContainer, 整页 CRUD 模板.",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "src/pro/",
+        "src/constants/pro.ts",
+        "docs/src/pages/pro/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/pro/ProTable.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "src/pro/ProForm.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/pro/ProTable.tsx",
+          "pattern": "request"
+        }
+      ]
+    },
+    {
+      "id": "P2-06",
+      "phase": "P2",
+      "title": "动效第二阶段",
+      "brief": "src/motion/ext/: 浮层从触发点放大 (transform-origin 跟随 radix 变量), 抽屉与通知滑动关闭手势, View Transitions API 页面转场封装, 共享元素过渡 layoutId 工具; 全部尊重减弱动效.",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "src/motion/ext/",
+        "src/constants/motion-ext.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/motion/ext/index.ts"
+        },
+        {
+          "type": "regex",
+          "path": "src/motion/ext/",
+          "pattern": "startViewTransition"
+        }
+      ]
+    },
+    {
+      "id": "P2-07",
+      "phase": "P2",
+      "title": "主题编辑器页",
+      "brief": "docs/src/pages/theme-builder/: 种子色, 圆角, 密度, 字体实时预览全站组件, 导出 CSS 变量与 HxProvider 配置, 支持分享 URL.",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "docs/src/pages/theme-builder/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "docs/src/pages/theme-builder/ThemeBuilderPage.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "docs/src/pages/theme-builder/",
+          "pattern": "createTheme"
+        }
+      ]
+    },
+    {
+      "id": "P2-08",
+      "phase": "P2",
+      "title": "设计令牌导出",
+      "brief": "scripts/tokens/: 从 tokens.css 生成 W3C DTCG 格式 tokens.json 与 TS 常量 (dist/tokens.json, dist/tokens.d.ts), 供 Figma 插件与非 React 项目使用; 门禁核对两边一致.",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "scripts/tokens/",
+        "scripts/constants/tokens.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "scripts/tokens/export.ts"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/tokens/export.ts",
+          "pattern": "\\$value"
+        }
+      ]
+    },
+    {
+      "id": "P2-09",
+      "phase": "P2",
+      "title": "富文本编辑器 (可选 peer)",
+      "brief": "src/rich-text/: 基于 tiptap 的 RichTextEditor 作为可选 peer, 工具栏, 提及, 斜杠命令, Markdown 往返; check-weight 守住不进默认安装图.",
+      "deps": [
+        "P1-Z"
+      ],
+      "write_scope": [
+        "src/rich-text/",
+        "src/constants/rich-text.ts",
+        "docs/src/pages/rich-text/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "src/rich-text/RichTextEditor.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "src/rich-text/RichTextEditor.tsx",
+          "pattern": "useEditor"
+        }
+      ]
+    },
+    {
+      "id": "P2-Z",
+      "phase": "P2",
+      "title": "第二阶段集成",
+      "brief": "接线 P2 新目录与页面, tiptap/dnd-kit 依赖登记 (dnd-kit 为直接依赖, tiptap 为 optional peer 并加入 check-weight 的 HEAVY 清单), 版本 0.8.0.",
+      "deps": [
+        "P2-01",
+        "P2-02",
+        "P2-03",
+        "P2-04",
+        "P2-05",
+        "P2-06",
+        "P2-07",
+        "P2-08",
+        "P2-09"
+      ],
+      "write_scope": [
+        "src/index.ts",
+        "src/constants/index.ts",
+        "package.json",
+        "package-lock.json",
+        "docs/src/nav.ts",
+        "docs/src/App.tsx",
+        "docs/src/navIcons.ts",
+        "README.md",
+        "scripts/gates/registry.mjs",
+        "scripts/gates/baselines/api-surface.txt",
+        "scripts/gates/baselines/api-surface.version",
+        "scripts/quality/approvals.json",
+        "scripts/check-weight.mjs"
+      ],
+      "criteria": [
+        {
+          "type": "regex",
+          "path": "src/index.ts",
+          "pattern": "ProTable"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/check-weight.mjs",
+          "pattern": "tiptap"
+        },
+        {
+          "type": "regex",
+          "path": "package.json",
+          "pattern": "\"version\": \"0\\.8\\.0\""
+        }
+      ]
+    },
+    {
+      "id": "P3-01",
+      "phase": "P3",
+      "title": "Props 表自动生成",
+      "brief": "scripts/docs/gen-props.ts 用 TypeScript compiler API 从导出类型生成每个组件的 props JSON (名称, 类型, 默认值, JSDoc), 文档站 PropsTable 组件读取它; 手写 DocPropRow 逐步退役.",
+      "deps": [
+        "P2-Z"
+      ],
+      "write_scope": [
+        "scripts/docs/",
+        "docs/src/components/props-table/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "scripts/docs/gen-props.ts"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/docs/gen-props.ts",
+          "pattern": "createProgram"
+        }
+      ]
+    },
+    {
+      "id": "P3-02",
+      "phase": "P3",
+      "title": "在线 Playground",
+      "brief": "docs/src/playground/: 每个示例可编辑并实时渲染 (浏览器端 esbuild-wasm 或 sucrase 转译), 一键在 StackBlitz 打开, 主题与语言切换同步到示例.",
+      "deps": [
+        "P2-Z"
+      ],
+      "write_scope": [
+        "docs/src/playground/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "docs/src/playground/Playground.tsx"
+        },
+        {
+          "type": "regex",
+          "path": "docs/src/playground/",
+          "pattern": "stackblitz"
+        }
+      ]
+    },
+    {
+      "id": "P3-03",
+      "phase": "P3",
+      "title": "像素级视觉回归",
+      "brief": "scripts/e2e/visual.ts: Playwright toHaveScreenshot 逐页逐主题截图, 固定字体与视口, 允许阈值, 基线存在孤儿分支或 LFS 而非 PR 分支; 与现有计算样式基线并存.",
+      "deps": [
+        "P2-Z"
+      ],
+      "write_scope": [
+        "scripts/e2e/visual.ts",
+        "scripts/constants/visual.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "scripts/e2e/visual.ts"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/e2e/visual.ts",
+          "pattern": "toHaveScreenshot|screenshot"
+        }
+      ]
+    },
+    {
+      "id": "P3-04",
+      "phase": "P3",
+      "title": "组件交互测试铺满",
+      "brief": "tests/components/: 每个公共组件至少一个测试文件, 覆盖键盘交互, 受控/非受控, axe 无违规; 新增 scripts/check-test-coverage.ts 对账导出与测试文件.",
+      "deps": [
+        "P2-Z"
+      ],
+      "write_scope": [
+        "tests/components/",
+        "scripts/check-test-coverage.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "scripts/check-test-coverage.ts"
+        },
+        {
+          "type": "file_exists",
+          "path": "tests/components/data-grid.test.tsx"
+        },
+        {
+          "type": "file_exists",
+          "path": "tests/components/date-range-picker.test.tsx"
+        }
+      ]
+    },
+    {
+      "id": "P3-05",
+      "phase": "P3",
+      "title": "RTL 与密度全量扫查",
+      "brief": "把 src 内的 ml/mr/pl/pr/left/right 改成逻辑属性, 在 dir=rtl 与 density=compact 下跑一遍冒烟与 a11y; 新增 PROJECT-UI-LOGICAL 规则防回退.",
+      "deps": [
+        "P2-Z"
+      ],
+      "write_scope": [
+        "src/primitives/",
+        "src/layout/",
+        "scripts/quality/checks/ui.ts"
+      ],
+      "criteria": [
+        {
+          "type": "regex",
+          "path": "scripts/quality/checks/ui.ts",
+          "pattern": "PROJECT-UI-LOGICAL"
+        }
+      ]
+    },
+    {
+      "id": "P3-06",
+      "phase": "P3",
+      "title": "面向 Agent 的文档出口",
+      "brief": "生成 docs/public/llms.txt 与 llms-full.txt (组件清单, 组合结构, props 摘要, 示例), 以及 shadcn 兼容的 registry.json, 让 AI 编码工具按本库正确出码.",
+      "deps": [
+        "P3-01"
+      ],
+      "write_scope": [
+        "docs/public/llms.txt",
+        "docs/public/registry.json",
+        "scripts/docs/gen-llms.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "docs/public/llms.txt"
+        },
+        {
+          "type": "regex",
+          "path": "docs/public/registry.json",
+          "pattern": "registry:ui"
+        }
+      ]
+    },
+    {
+      "id": "P3-07",
+      "phase": "P3",
+      "title": "性能基准",
+      "brief": "解开 test:perf: 渲染一千行 DataGrid, 五百选项 Select, 百节点蓝图的首渲与交互耗时基准, 结果写报告并与基线比较, 退化超过阈值失败.",
+      "deps": [
+        "P2-Z"
+      ],
+      "write_scope": [
+        "scripts/perf/",
+        "scripts/constants/perf.ts"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "scripts/perf/run.ts"
+        },
+        {
+          "type": "regex",
+          "path": "scripts/perf/run.ts",
+          "pattern": "performance\\.now"
+        }
+      ]
+    },
+    {
+      "id": "P3-08",
+      "phase": "P3",
+      "title": "codemods 与迁移指南",
+      "brief": "codemods/ 下为 0.x 期间的每个破坏性变更提供 ts 脚本 (用 TypeScript compiler API, 不引新依赖), docs/reference/migration/ 每个 minor 一篇.",
+      "deps": [
+        "P2-Z"
+      ],
+      "write_scope": [
+        "codemods/",
+        "docs/reference/migration/"
+      ],
+      "criteria": [
+        {
+          "type": "file_exists",
+          "path": "codemods/README.md"
+        },
+        {
+          "type": "file_exists",
+          "path": "docs/reference/migration/0-6.md"
+        }
+      ]
+    },
+    {
+      "id": "P3-Z",
+      "phase": "P3",
+      "title": "第三阶段集成与 1.0 准备",
+      "brief": "gates 注册 visual/perf/test-coverage, 文档站接 PropsTable 与 Playground, README 重写为 1.0 结构, 版本 1.0.0-rc.0, 宣布 API 冻结规则.",
+      "deps": [
+        "P3-01",
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P3-06",
+        "P3-07",
+        "P3-08"
+      ],
+      "write_scope": [
+        "src/index.ts",
+        "src/constants/index.ts",
+        "package.json",
+        "package-lock.json",
+        "docs/src/nav.ts",
+        "docs/src/App.tsx",
+        "docs/src/navIcons.ts",
+        "README.md",
+        "scripts/gates/registry.mjs",
+        "scripts/gates/baselines/api-surface.txt",
+        "scripts/gates/baselines/api-surface.version",
+        "scripts/quality/approvals.json"
+      ],
+      "criteria": [
+        {
+          "type": "regex",
+          "path": "package.json",
+          "pattern": "\"version\": \"1\\.0\\.0-rc\\.0\""
+        },
+        {
+          "type": "regex",
+          "path": "scripts/gates/registry.mjs",
+          "pattern": "visual"
+        }
+      ]
+    }
+  ]
+}

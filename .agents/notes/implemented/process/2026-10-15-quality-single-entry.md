@@ -14,7 +14,7 @@ Decision-ID: quality-single-entry
 
 ## Decision
 
-`scripts/quality/index.ts` 是唯一入口: 命令 (check / baseline / graph / tests / push / done / hooks / audit / build / layer) 与检查点都在这里解析, 钩子、npm scripts 与 CI 都调它。参数与常量来自 `scripts/constants/quality.ts`, 实际检查在 `checks/` 与 `runtime/`。退出码 0 表示没有新增问题, 1 表示存在新增问题, 2 表示工具或参数错误; 报告写到 `scripts/.hx_code_quality/reports/`。
+`scripts/quality/index.ts` 是唯一入口: 命令 (check / baseline / graph / tests / push / done / hooks / audit / build / layer) 与检查点都在这里解析, 钩子、npm scripts 与 CI 都调它。参数与常量来自 `scripts/constants/quality.ts`, 实际检查在 `checks/` 与 `runtime/`。退出码 0 表示没有新增问题, 1 表示存在新增问题, 2 表示工具或参数错误; 报告写到 `scripts/.hx_code_quality/reports/`。 `layer` 命令中 frontend 层不再是静态 blocked 文案, 而是用当前 Node 执行本仓 `node_modules/vitest` 的 `vitest run` (配置 `vitest.config.ts`, 用例 `tests/`), vitest 未安装时以 1 退出并提示缺依赖; 其余层仍是静态裁决。
 
 ## Alternatives considered
 

@@ -3,6 +3,15 @@ import { TemplateChatPage } from "./chat";
 import { TemplateSettingsPage } from "./settings";
 import { TemplateDashboardPage } from "./dashboard";
 import { TemplateConsolePage } from "./console";
+import { SaasLandingPage } from "./page-saas";
+import { OpenSourcePage } from "./page-opensource";
+import { PricingPage } from "./page-pricing";
+import { CommerceHomePage } from "./page-commerce-home";
+import { ProductPage } from "./page-product";
+import { TemplatePortfolioPage } from "./page-portfolio";
+import { TemplateDocsitePage } from "./page-docsite";
+import { TemplateDashboardBlocksPage } from "./page-dashboard";
+import { LinearClonePage } from "./page-clone-linear";
 
 /**
  * 现成实例页面模板, 按导航 id 查表.
@@ -21,4 +30,13 @@ export const TEMPLATE_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   "templates-settings": TemplateSettingsPage,
   "templates-dashboard": TemplateDashboardPage,
   "templates-console": TemplateConsolePage,
+  "page-saas": SaasLandingPage,
+  "page-opensource": OpenSourcePage,
+  "page-pricing": PricingPage,
+  "page-commerce-home": CommerceHomePage,
+  "page-product": ProductPage,
+  "page-portfolio": TemplatePortfolioPage,
+  "page-docsite": TemplateDocsitePage,
+  "page-dashboard": TemplateDashboardBlocksPage,
+  "page-clone-linear": LinearClonePage,
 };

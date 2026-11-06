@@ -35,6 +35,13 @@ tsx 内函数色值 (PROJECT-UI-RGB), 加粗描边 (PROJECT-UI-LINE-1PX), 以及
   焦点进入总是暂停, 悬停暂停可选.
 - Backdrop: grid / dots 用 1px 渐变线与点, aurora 画在超出宿主的伪元素上, 漂移只动 transform.
 - GlassPanel: Tailwind backdrop-blur 档位加 `.hx-glass` 表面, 不支持 backdrop-filter 时回退不透明.
+- 商业页背景与遮罩 (V0-06, 审计 E1-E6): MeshGradient (≥3 个令牌名各一团 radial-gradient, intensity 与漂移开关),
+  Grain (内联 SVG feTurbulence 灰阶噪声, opacity 与 mix-blend), Beam (光源光晕 + 模糊光锥, 角度与位置),
+  GridLines (内联 SVG 两个 pattern: 1px 格线与交点十字准星, 线色 currentColor), MaskFade (mask-image 边缘淡出,
+  方向 top/bottom/left/right/x/y/radial, 长度读 `--mask-fade` 令牌, 默认值挂 `:where(:root)` 零特异性),
+  GradientBorder (静态渐变, 同 BorderBeam 的 `padding: 1px` + mask 挖空, 不写 2px 边). 调用方只传令牌名,
+  拼色在纯 ts `src/effects/effect-color.ts` 里, 只产出 `var(--令牌)` 与 `color-mix`; 每个效果一个文件, 不并入 Backdrop,
+  Backdrop 只在 fade 遮罩规则的选择器列表里多挂了两个类, 四种行为不变.
 - 减弱动效: effects.css 末尾的媒体查询让所有效果停在静止态 (流光退化为淡色描边, 跑马灯隐藏复制件并可手动滚动).
 
 `effects.css` 由集成分片在 `src/styles.css` 里 `@import`, 公共导出也由集成分片接到 `src/index.ts`;
@@ -48,6 +55,9 @@ tsx 内函数色值 (PROJECT-UI-RGB), 加粗描边 (PROJECT-UI-LINE-1PX), 以及
 **复用现有组件, 给 Card 加 spotlight / beam 变体** - 理由是少一个目录, 调用方只改一个 prop.
 否决: Card 由另一分片负责且约定默认外观逐字节不变; 效果件要能叠在任意宿主上 (按钮, 图片, 区块), 绑死在 Card 上限制用法.
 
+**背景新效果做成 Backdrop 的新 variant** - 理由是复用宿主与 fade 逻辑, 少导出几个名字.
+否决: mesh 要多色 props, grain 要盖在内容上方, MaskFade 是包内容的容器, 语义各不相同; 塞进 Backdrop 会让它的 props 互相冲突且改动已有 variant 的风险变大.
+
 **直接引入 magicui / aceternity 源码** - 理由是现成且效果成熟. 否决: 它们大量在 tsx 内写 rgba 与固定色值,
 依赖 motion 驱动逐帧动画, 也不处理减弱动效与触屏, 改造成本不低于自写.
 
@@ -57,3 +67,4 @@ tsx 内函数色值 (PROJECT-UI-RGB), 加粗描边 (PROJECT-UI-LINE-1PX), 以及
 
 新增一个 css 入口与五个导出, 需要集成分片接线后才在公共包里可用. 效果的强弱完全由语义令牌决定,
 换肤或调整 `--primary-glow` 会同时影响所有效果件. conic 光束在很宽的矩形上沿长边移动更快, 这是用中心角驱动的代价.
+src/effects/ 直接文件因此超过 6 个 (HC-DIR Warning): 映射工作区不能建子目录, 待集成分片按职责拆 backgrounds/ 子目录.

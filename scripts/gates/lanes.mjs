@@ -19,12 +19,14 @@ export const GROUP_ORDER = ["lib", "docs", "shape", "browser", "guard", "probe"]
 /**
  * lane 表: 路径前缀 → 分组集合。
  * 顺序无所谓, 取并集; 但每条前缀只该出现在一个条目里 (重复由探针的控制组钉住)。
+ * 顶层条目 (tests/, vitest.config.ts, CHANGELOG.md) 的归属决策:
+ * .agents/notes/implemented/process/2026-11-03-lanes-top-level-coverage.md
  */
 export const LANES = [
   {
     name: "lib",
     title: "组件库源码",
-    prefixes: ["src/", "tsconfig.json", "tsconfig.build.json", "package.json", "package-lock.json"],
+    prefixes: ["src/", "tests/", "vitest.config.ts", "tsconfig.json", "tsconfig.build.json", "package.json", "package-lock.json"],
     groups: ["lib", "shape"],
   },
   {
@@ -42,7 +44,7 @@ export const LANES = [
   {
     name: "contract",
     title: "对外承诺",
-    prefixes: ["README.md"],
+    prefixes: ["README.md", "CHANGELOG.md"],
     groups: ["lib", "docs"],
   },
 ];

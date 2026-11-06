@@ -1,5 +1,6 @@
 /* ============================================================================
- * 视觉效果件 (src/effects/) 的样式: 光斑, 流光边框, 跑马灯, 底纹, 毛玻璃.
+ * 视觉效果件 (src/effects/) 的样式: 光斑, 流光边框, 跑马灯, 底纹, 毛玻璃,
+ * mesh 渐变, 噪点颗粒, 光束, 网格准星, 边缘淡出遮罩, 静态渐变描边.
  * 颜色只从语义令牌取 (var + color-mix); 设计令牌分片的新令牌缺席时回退到基础令牌.
  * 由集成分片在 styles.css 里 @import; 组件 tsx 只拼类名与 CSS 变量, 不出现色值.
  * 组件规则放在 components 层, 调用方的 Tailwind 工具类可以覆盖.
@@ -32,6 +33,12 @@
   --hx-effect-subtle: var(--primary-subtle, color-mix(in oklab, var(--primary) 14%, transparent));
   --hx-effect-ink: color-mix(in oklab, var(--foreground) var(--hx-effect-ink-mix), transparent);
   --hx-effect-ease: var(--ease-in-out, cubic-bezier(0.65, 0, 0.35, 1));
+  --hx-effect-cross: color-mix(in oklab, var(--foreground) calc(var(--hx-effect-ink-mix) * 3), transparent);
+}
+
+/* 边缘淡出长度令牌. :where 零特异性: 主题或设计令牌分片里定义的 --mask-fade 总是优先 */
+:where(:root) {
+  --mask-fade: 15%;
 }
 
 @layer components {
@@ -163,8 +170,124 @@
     will-change: transform;
   }
 
-  .hx-backdrop[data-fade] {
+  .hx-backdrop[data-fade],
+  .hx-mesh[data-fade],
+  .hx-grid-lines[data-fade] {
     mask-image: radial-gradient(ellipse at center, black 35%, transparent 80%);
+  }
+
+  /* ---- MeshGradient: 多色径向光团, 层由组件写进 --hx-mesh-layers ----------- */
+  .hx-mesh {
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .hx-mesh::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background: var(--hx-mesh-layers);
+  }
+
+  .hx-mesh[data-animated]::before {
+    animation: hx-aurora-drift 24s var(--hx-effect-ease) infinite alternate;
+    will-change: transform;
+  }
+
+  /* ---- Grain: 灰阶 feTurbulence 噪声, 不含色值 ----------------------------- */
+  .hx-grain {
+    opacity: var(--hx-grain-opacity, 0.12);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+
+  /* ---- Beam: 光源处的光晕 + 向下投射的模糊光锥 ---------------------------- */
+  .hx-light-beam {
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .hx-light-beam::before,
+  .hx-light-beam::after {
+    content: "";
+    position: absolute;
+    left: var(--hx-light-beam-x, 50%);
+    top: var(--hx-light-beam-y, 0%);
+  }
+
+  .hx-light-beam::before {
+    width: var(--hx-light-beam-width, 180px);
+    height: 160%;
+    transform: translateX(-50%) rotate(var(--hx-light-beam-angle, 0deg));
+    transform-origin: top center;
+    background: linear-gradient(to bottom, var(--hx-light-beam-color, var(--hx-effect-glow)), transparent 75%);
+    filter: blur(calc(var(--hx-light-beam-width, 180px) / 4));
+  }
+
+  .hx-light-beam::after {
+    width: calc(var(--hx-light-beam-width, 180px) * 2);
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(closest-side, var(--hx-light-beam-color, var(--hx-effect-glow)), transparent);
+  }
+
+  .hx-light-beam[data-animated]::before {
+    animation: hx-light-beam-pulse 7s var(--hx-effect-ease) infinite alternate;
+  }
+
+  /* ---- GridLines: 1px 网格 + 交点准星, 线色走 currentColor ----------------- */
+  .hx-grid-lines {
+    z-index: -1;
+    color: var(--hx-effect-ink);
+    shape-rendering: crispEdges;
+  }
+
+  .hx-grid-lines-cross {
+    color: var(--hx-effect-cross);
+  }
+
+  /* ---- MaskFade: 边缘淡出, 长度读 --mask-fade ----------------------------- */
+  .hx-mask-fade {
+    --hx-mask-image: none;
+    -webkit-mask-image: var(--hx-mask-image);
+    mask-image: var(--hx-mask-image);
+  }
+
+  .hx-mask-fade[data-direction="top"] {
+    --hx-mask-image: linear-gradient(to bottom, transparent, black var(--mask-fade));
+  }
+
+  .hx-mask-fade[data-direction="bottom"] {
+    --hx-mask-image: linear-gradient(to top, transparent, black var(--mask-fade));
+  }
+
+  .hx-mask-fade[data-direction="left"] {
+    --hx-mask-image: linear-gradient(to right, transparent, black var(--mask-fade));
+  }
+
+  .hx-mask-fade[data-direction="right"] {
+    --hx-mask-image: linear-gradient(to left, transparent, black var(--mask-fade));
+  }
+
+  .hx-mask-fade[data-direction="x"] {
+    --hx-mask-image: linear-gradient(to right, transparent, black var(--mask-fade), black calc(100% - var(--mask-fade)), transparent);
+  }
+
+  .hx-mask-fade[data-direction="y"] {
+    --hx-mask-image: linear-gradient(to bottom, transparent, black var(--mask-fade), black calc(100% - var(--mask-fade)), transparent);
+  }
+
+  .hx-mask-fade[data-direction="radial"] {
+    --hx-mask-image: radial-gradient(closest-side, black calc(100% - var(--mask-fade)), transparent);
+  }
+
+  /* ---- GradientBorder: 静态渐变 1px 环, 手法同 BorderBeam ------------------ */
+  .hx-gradient-border {
+    padding: 1px; /* 线条红线: 只允许 1px */
+    background: var(--hx-gradient-border, var(--gradient-brand));
+    -webkit-mask: linear-gradient(black 0 0) content-box, linear-gradient(black 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(black 0 0) content-box exclude, linear-gradient(black 0 0);
   }
 
   /* ---- GlassPanel: 毛玻璃 ------------------------------------------------- */
@@ -209,6 +332,15 @@
   }
   to {
     transform: translateY(calc(-100% - var(--hx-marquee-gap)));
+  }
+}
+
+@keyframes hx-light-beam-pulse {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
   }
 }
 
@@ -262,6 +394,13 @@
   }
 
   .hx-backdrop::before {
+    animation: none;
+    will-change: auto;
+  }
+
+  /* mesh 光团与光束呼吸停在静止态 */
+  .hx-mesh::before,
+  .hx-light-beam::before {
     animation: none;
     will-change: auto;
   }

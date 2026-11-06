@@ -1,0 +1,85 @@
+/* ============================================================================
+ * 皮肤 fintech: Stripe 式亮紫
+ * 高饱和的亮紫主色配粉色第二品牌色, 圆角放大到 12px; 阴影带蓝紫色相且模糊半径拉大 1.6 倍, 浮起感柔而不脏.
+ * 只覆盖令牌; 阴影与渐变公式见 foundation.css.
+ * .agents/notes/implemented/feature/2026-11-02-skins-density.md
+ * ==========================================================================*/
+
+[data-skin="fintech"][data-skin] {
+  --radius: 0.75rem;
+  --font-display: "Sohne", "Inter", -apple-system, "Helvetica Neue", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --effect-intensity: 0.8;
+}
+
+[data-skin="fintech"]:not([data-mode="light"]) {
+  color-scheme: dark;
+  --background: #0a1628;
+  --foreground: #c4d0e3;
+  --card: #0f1f36;
+  --card-foreground: #c4d0e3;
+  --popover: #132640;
+  --popover-foreground: #c4d0e3;
+  --primary: #7a73ff;
+  --primary-foreground: #ffffff;
+  --link: #9d97ff;
+  --secondary: #142742;
+  --secondary-foreground: #c4d0e3;
+  --muted: #07111f;
+  --muted-foreground: #8b9bb4;
+  --accent: #182d4a;
+  --accent-foreground: #e6ecf5;
+  --heading: #f6f9fc;
+  --control-hover: #1c3354;
+  --border: #233a5a;
+  --border-muted: #1a2e4a;
+  --input: #2a4366;
+  --ring: #8f89ff;
+  --surface-sunken: #07111f;
+  --surface-raised: #11223b;
+  --surface-overlay: #172b47;
+  --primary-subtle: rgb(122 115 255 / 0.18);
+  --primary-glow: rgb(122 115 255 / 0.40);
+  --accent-2: #ff7ac6;
+  --accent-2-foreground: #0a1628;
+  --accent-2-subtle: rgb(255 122 198 / 0.14);
+  --skin-shadow: 0 0 0;
+  --skin-shadow-a: 2.2;
+  --skin-shadow-blur: 1.6;
+}
+
+[data-skin="fintech"][data-mode="light"],
+[data-mode="light"] [data-skin="fintech"] {
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #0a2540;
+  --card: #ffffff;
+  --card-foreground: #0a2540;
+  --popover: #ffffff;
+  --popover-foreground: #0a2540;
+  --primary: #635bff;
+  --primary-foreground: #ffffff;
+  --link: #5851ea;
+  --secondary: #f6f9fc;
+  --secondary-foreground: #0a2540;
+  --muted: #f6f9fc;
+  --muted-foreground: #425466;
+  --accent: #eef2ff;
+  --accent-foreground: #0a2540;
+  --heading: #0a2540;
+  --control-hover: #e9eefb;
+  --border: #e3e8ee;
+  --border-muted: #edf1f5;
+  --input: #d5dbe3;
+  --ring: #635bff;
+  --surface-sunken: #f6f9fc;
+  --surface-raised: #ffffff;
+  --surface-overlay: #ffffff;
+  --primary-subtle: rgb(99 91 255 / 0.10);
+  --primary-glow: rgb(99 91 255 / 0.28);
+  --accent-2: #e8508f;
+  --accent-2-foreground: #ffffff;
+  --accent-2-subtle: rgb(232 80 143 / 0.10);
+  --skin-shadow: 50 50 93;
+  --skin-shadow-a: 1.2;
+  --skin-shadow-blur: 1.6;
+}

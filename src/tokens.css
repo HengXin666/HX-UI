@@ -1,609 +1,1069 @@
 /* ============================================================================
  * 设计令牌  唯一事实源
  * ----------------------------------------------------------------------------
- * 本文件**不依赖 Tailwind**, 只有 CSS 自定义属性与少量全局基础样式,
+ * 本文件**不依赖 Tailwind**, 只有 CSS 自定义属性 (全部在 @layer hx.tokens 里),
  * 因此可以直接拷进任何项目 (包括非 Tailwind 的).
  *
  * 改皮肤只改这里的变量, 组件代码一行不动.
  * 暗色是默认; 亮色不是它的反相 (主色在亮色下要压暗才保得住白底对比度).
+ * 全局基础样式 (body / * / ::selection / 滚动条 / 焦点) 已迁到 base.css, 按需引入.
+ *
+ * 三层结构 (由下到上, 上层只引用下层, 不跨层取字面量):
+ *   1. 原始色板 --palette-<hue>-<50..950>   oklch 11 阶, 与主题无关, 只定义一次
+ *   2. 语义令牌 --background / --primary / --border ...  按亮暗主题引用色板
+ *   3. 组件令牌 --card-bg / --input-h / --button-px ...  引用语义令牌与尺寸档
+ * 另有与颜色无关的刻度: 间距 / 控件高度 / 圆角 / 字号行高字重 / 层级 / 密度 /
+ * 断点 / 容器与页面节奏, 见文件后半.
+ *
+ * 读取作用域的坑: 自定义属性里的 var() 在**声明它的元素**上求值, 子孙继承的是算好的值.
+ * 所以凡是引用"会被子树覆盖的变量" (主题色 / --density) 的派生令牌,
+ * 都必须在会覆盖它的选择器 ([data-mode] / [data-density]) 上重新声明一次,
+ * 否则子树换了主题, 组件令牌还停在根上的旧值.
  * ==========================================================================*/
 
-:root, [data-mode="dark"] {
-  color-scheme: dark;
+/* 层顺序声明: 库的全部样式都在 hx 层里, 使用方未分层的样式天然胜出,
+   不再需要靠选择器优先级硬拼. tokens.css 与 base.css 都写同一行声明,
+   谁先被引入都能定下同样的 hx 内部顺序. */
+@layer hx.tokens, hx.base, hx.components;
 
-  /* 暗色取 GitHub Dark Dimmed: 灰底而不是纯黑.
-     纯黑底上 1px 灰线与文字的对比过硬, 长时间看控制台类界面会累;
-     Dimmed 把底色抬到深灰, 层级改由"底 / 内嵌 / 悬停"三档灰与 1px 边框区分.
-     行尾注释里的十六进制是 GitHub Primer 的原值, 便于对照. */
-  --background: rgb(34, 39, 46);  /* #22272e */
-  --foreground: rgb(173, 186, 199);  /* #adbac7 */
-  /* 卡片与页面同底, 靠 1px 边框分层, 不靠底色差 */
-  --card: rgb(34, 39, 46);  /* #22272e */
-  --card-foreground: rgb(173, 186, 199);  /* #adbac7 */
-  --popover: rgb(45, 51, 59);  /* #2d333b */
-  --popover-foreground: rgb(173, 186, 199);  /* #adbac7 */
-  /* primary 是实底用的强调蓝; 文字/链接用更亮的 --link, 深灰底上实底蓝做文字对比不够 */
-  --primary: rgb(49, 109, 202);  /* #316dca */
-  --primary-foreground: rgb(255, 255, 255);  /* #ffffff */
-  --link: rgb(83, 155, 245);  /* #539bf5 */
-  --secondary: rgb(45, 51, 59);  /* #2d333b */
-  --secondary-foreground: rgb(173, 186, 199);  /* #adbac7 */
-  /* muted 是内嵌层 (输入框底 / 代码块底), 比页面更深一档 */
-  --muted: rgb(28, 33, 40);  /* #1c2128 */
-  /* 说明文字: 取 Dimmed 灰阶上一档 #909dab 而不是 Primer 的 fg.muted #768390,
-     后者在页面底上只有 3.9:1, 达不到正文 4.5:1; #909dab 在页面 / 内嵌 / 弹层底上都过 4.5:1 */
-  --muted-foreground: rgb(144, 157, 171);  /* #909dab */
-  /* accent 是悬停层 */
-  --accent: rgb(45, 51, 59);  /* #2d333b */
-  --accent-foreground: rgb(205, 217, 229);  /* #cdd9e5 */
-  /* 标题与强调文字: 比正文亮一档 */
-  --heading: rgb(205, 217, 229);  /* #cdd9e5 */
-  /* destructive 主要当文字 / 图标 / 描边用 (text-destructive), 取 danger-fg 的亮红,
-     页面底上 5.3:1; #e5534b 做文字只有 4.1:1.
-     destructive-foreground 是红色实底上的白字, 搭配的实底是 bg-danger-emphasis (5.0:1),
-     不要拿它配 bg-destructive: 亮红实底上的白字对比不够 */
-  --destructive: rgb(244, 112, 103);  /* #f47067 */
-  --destructive-foreground: rgb(255, 255, 255);  /* #ffffff */
-  /* 控件悬停: 比 secondary 亮一档, 默认按钮与次级按钮的 hover 底 */
-  --control-hover: rgb(55, 62, 71);  /* #373e47 */
-  --border: rgb(68, 76, 86);  /* #444c56 */
-  /* 次级分隔线: 列表行之间, 卡片内部 */
-  --border-muted: rgb(55, 62, 71);  /* #373e47 */
-  --input: rgb(68, 76, 86);  /* #444c56 */
-  --ring: rgb(83, 155, 245);  /* #539bf5 */
-
-  /* 语义状态色.base 用于图标/圆点/描边/浅色底 (bg-success/15),
-     emphasis 用于实底, fg 是深灰底上可读的文字色. */
-  --success: rgb(87, 171, 90);  /* #57ab5a */
-  --success-emphasis: rgb(52, 125, 57);  /* #347d39 */
-  --success-fg: rgb(107, 196, 109);  /* #6bc46d */
-  --warning: rgb(198, 144, 38);  /* #c69026 */
-  --warning-emphasis: rgb(150, 102, 0);  /* #966600 */
-  --warning-fg: rgb(218, 170, 63);  /* #daaa3f */
-  --danger: rgb(229, 83, 75);  /* #e5534b */
-  --danger-emphasis: rgb(201, 60, 55);  /* #c93c37 */
-  --danger-fg: rgb(244, 112, 103);  /* #f47067 */
-  /* done: 已完成 / Agent 身份的紫 */
-  --done: rgb(152, 110, 226);  /* #986ee2 */
-
-  /* 多分段图表: 等亮度等饱和, 只靠色相区分.
-     明度差会让读者把并列构成误读成大小对比. */
-  --segment-1: oklch(0.72 0.12 268);
-  --segment-2: oklch(0.72 0.12 215);
-  --segment-3: oklch(0.72 0.12 165);
-  --segment-4: oklch(0.72 0.12 95);
-  --segment-5: oklch(0.72 0.12 25);
-
-  --font-sans: -apple-system, "SF Pro Text", "Helvetica Neue", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-
-  /* 代码字体.
-     排序原则: 先排"为写代码设计"的字体 (带连字/字形区分度), 再退到系统等宽.
-     只写 "SF Mono", "Fira Code" 是不够的  两者在多数 Linux 上都不存在, 于是静默回退到
-     DejaVu Sans Mono 那种通用等宽, 代码看起来就"不专业", 而且没有任何报错提示.
-     ui-monospace / SFMono-Regular 放在中段: macOS 上命中系统等宽, 但让位给用户自己装的编程字体.
-     Nerd Font 变体带上, 因为很多终端用户装的是它 (extra 字形不影响代码). */
-  --font-mono: "JetBrains Mono", "JetBrainsMono Nerd Font", "Cascadia Code", "Fira Code",
-    "SF Mono", SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", "Liberation Mono",
-    ui-monospace, monospace;
-
-  --radius: 0.5rem;
-
-  /* 阴影, 表面分层, 品牌辅色见下方 "深度与品牌" 一节, 亮暗各一套 */
-}
-
-[data-mode="light"] {
-  color-scheme: light;
-
-  /* 亮色取 GitHub Light 的对应档位, 语义与暗色一一对应 */
-  --background: rgb(255, 255, 255);  /* #ffffff */
-  --foreground: rgb(31, 35, 40);  /* #1f2328 */
-  --card: rgb(255, 255, 255);  /* #ffffff */
-  --card-foreground: rgb(31, 35, 40);  /* #1f2328 */
-  --popover: rgb(255, 255, 255);  /* #ffffff */
-  --popover-foreground: rgb(31, 35, 40);  /* #1f2328 */
-  --primary: rgb(9, 105, 218);  /* #0969da */
-  --primary-foreground: rgb(255, 255, 255);  /* #ffffff */
-  --link: rgb(9, 105, 218);  /* #0969da */
-  --secondary: rgb(246, 248, 250);  /* #f6f8fa */
-  --secondary-foreground: rgb(31, 35, 40);  /* #1f2328 */
-  --muted: rgb(246, 248, 250);  /* #f6f8fa */
-  --muted-foreground: rgb(89, 99, 110);  /* #59636e */
-  --accent: rgb(239, 242, 245);  /* #eff2f5 */
-  --accent-foreground: rgb(31, 35, 40);  /* #1f2328 */
-  --heading: rgb(31, 35, 40);  /* #1f2328 */
-  --destructive: rgb(207, 34, 46);  /* #cf222e */
-  --destructive-foreground: rgb(255, 255, 255);  /* #ffffff */
-  --control-hover: rgb(234, 238, 242);  /* #eaeef2 */
-  --border: rgb(209, 217, 224);  /* #d1d9e0 */
-  --border-muted: rgb(216, 222, 228);  /* #d8dee4 */
-  --input: rgb(209, 217, 224);  /* #d1d9e0 */
-  --ring: rgb(9, 105, 218);  /* #0969da */
-
-  --success: rgb(26, 127, 55);  /* #1a7f37 */
-  --success-emphasis: rgb(31, 136, 61);  /* #1f883d */
-  --success-fg: rgb(26, 127, 55);  /* #1a7f37 */
-  --warning: rgb(191, 135, 0);  /* #bf8700 */
-  --warning-emphasis: rgb(154, 103, 0);  /* #9a6700 */
-  --warning-fg: rgb(154, 103, 0);  /* #9a6700 */
-  --danger: rgb(207, 34, 46);  /* #cf222e */
-  --danger-emphasis: rgb(207, 34, 46);  /* #cf222e */
-  --danger-fg: rgb(209, 36, 47);  /* #d1242f */
-  --done: rgb(130, 80, 223);  /* #8250df */
-
-  --segment-1: oklch(0.62 0.14 268);
-  --segment-2: oklch(0.62 0.14 215);
-  --segment-3: oklch(0.62 0.14 165);
-  --segment-4: oklch(0.62 0.14 95);
-  --segment-5: oklch(0.62 0.14 25);
-}
-
-/* ============================================================================
- * 深度与品牌: 表面分层 / 层次阴影 / 品牌辅色 / 玻璃
- * ----------------------------------------------------------------------------
- * 补这一节的理由: 之前阴影五档几乎同值 (同一个 0.18 透明度, 最大模糊 10px, 亮暗同值),
- * 表面只有 background / card / popover, card 与页面同底, 层级全靠 1px 边框硬撑,
- * 画面因此发平. 这里给出 "质感" 的原料, 默认组件不引用, 只给可选变体与新组件用.
- *
- * 表面三级 (由低到高): sunken 内嵌 < 页面 background < raised 抬起 < overlay 浮层.
- *   暗色下越高越亮 (灯光从上方打下来, 近处的面受光多);
- *   亮色下底已是纯白, raised / overlay 同为白, 高度差改由阴影表达.
- *
- * 阴影一律双层: 第一层是贴近物体的锐影 (小偏移, 小模糊, 定出接触边),
- *   第二层是远处的柔影 (大偏移, 大模糊, 负扩散收住边缘), 档位越高两层拉得越开.
- *   亮色透明度整体更低, 且带一点蓝灰色相: 纯黑阴影落在白底上会发脏.
- *
- * 品牌: primary-subtle 是浅色强调底 (选中行 / 徽标底), primary-glow 是光晕色,
- *   accent-2 是第二品牌色 (青), 与 primary 组成 gradient-brand 渐变.
- *   accent-2 刻意不用紫: 紫已是 --done (已完成 / Agent 身份) 的语义色, 撞了会误读.
- *
- * 线条约定不变: 描边仍只用 1px; ring-glow 的外圈是模糊光晕而不是加粗的线.
- * .agents/notes/implemented/feature/2026-11-01-design-tokens-depth-motion.md
- * ==========================================================================*/
-
-:root, [data-mode="dark"] {
-  /* 表面分层 */
-  --surface-sunken: rgb(28, 33, 40);  /* #1c2128, 与 muted 同档 */
-  --surface-raised: rgb(45, 51, 59);  /* #2d333b */
-  --surface-overlay: rgb(55, 62, 71);  /* #373e47 */
-  /* 玻璃面: 半透明的 overlay, 配合 --blur-glass 使用; 边是 1px 的亮线, 模拟玻璃的切边高光 */
-  --surface-glass: color-mix(in srgb, var(--surface-overlay) 68%, transparent);
-  --glass-border: hsl(0 0% 100% / 0.08);
-
-  /* 品牌辅色 */
-  --primary-subtle: rgb(65 132 228 / 0.15);  /* #4184e4 @15%, Primer accent.subtle */
-  --primary-glow: rgb(83 155 245 / 0.38);
-  --accent-2: rgb(57, 197, 207);  /* #39c5cf 青 */
-  --accent-2-foreground: rgb(28, 33, 40);  /* 青色实底上的深字 */
-  --accent-2-subtle: rgb(57 197 207 / 0.15);
-  --gradient-brand: linear-gradient(135deg, var(--primary) 0%, var(--accent-2) 100%);
-  /* 柔和版渐变: 大面积底纹用, 实底渐变铺满一屏会喧宾夺主 */
-  --gradient-brand-subtle: linear-gradient(135deg, var(--primary-subtle) 0%, var(--accent-2-subtle) 100%);
-
-  /* 层次阴影: 近处锐影 + 远处柔影 */
-  --shadow-xs: 0 1px 1px 0 hsl(0 0% 0% / 0.22);
-  --shadow-sm: 0 1px 1px 0 hsl(0 0% 0% / 0.24), 0 2px 4px -1px hsl(0 0% 0% / 0.22);
-  --shadow-md: 0 1px 2px 0 hsl(0 0% 0% / 0.26), 0 4px 10px -2px hsl(0 0% 0% / 0.30);
-  --shadow-lg: 0 2px 4px -1px hsl(0 0% 0% / 0.28), 0 10px 20px -4px hsl(0 0% 0% / 0.36);
-  --shadow-xl: 0 4px 8px -2px hsl(0 0% 0% / 0.30), 0 18px 36px -8px hsl(0 0% 0% / 0.42);
-  --shadow-2xl: 0 8px 16px -4px hsl(0 0% 0% / 0.32), 0 32px 64px -12px hsl(0 0% 0% / 0.50);
-  /* 品牌光晕: 1px 主色描边 + 大半径主色柔光, 给强调卡 / 渐变按钮 */
-  --shadow-glow: 0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent), 0 8px 32px -6px var(--primary-glow);
-  /* 内嵌: 输入框 / 凹槽 */
-  --shadow-inner: inset 0 1px 2px 0 hsl(0 0% 0% / 0.32);
-  /* 聚焦光环: 1px 实线 ring + 模糊光晕 */
-  --ring-glow: 0 0 0 1px var(--ring), 0 0 12px 0 var(--primary-glow);
-}
-
-[data-mode="light"] {
-  --surface-sunken: rgb(246, 248, 250);  /* #f6f8fa */
-  --surface-raised: rgb(255, 255, 255);  /* #ffffff */
-  --surface-overlay: rgb(255, 255, 255);  /* #ffffff */
-  --surface-glass: color-mix(in srgb, var(--surface-overlay) 72%, transparent);
-  --glass-border: hsl(213 30% 20% / 0.10);
-
-  --primary-subtle: rgb(221, 244, 255);  /* #ddf4ff, Primer accent.subtle */
-  --primary-glow: rgb(9 105 218 / 0.24);
-  --accent-2: rgb(27, 124, 131);  /* #1b7c83 青, 白底上 5.1:1 */
-  --accent-2-foreground: rgb(255, 255, 255);
-  --accent-2-subtle: rgb(27 124 131 / 0.12);
-  --gradient-brand: linear-gradient(135deg, var(--primary) 0%, var(--accent-2) 100%);
-  --gradient-brand-subtle: linear-gradient(135deg, var(--primary-subtle) 0%, var(--accent-2-subtle) 100%);
-
-  /* 亮色: 透明度更低, 带蓝灰色相 */
-  --shadow-xs: 0 1px 1px 0 hsl(213 30% 20% / 0.05);
-  --shadow-sm: 0 1px 1px 0 hsl(213 30% 20% / 0.06), 0 2px 4px -1px hsl(213 30% 20% / 0.06);
-  --shadow-md: 0 1px 2px 0 hsl(213 30% 20% / 0.06), 0 4px 10px -2px hsl(213 30% 20% / 0.08);
-  --shadow-lg: 0 2px 4px -1px hsl(213 30% 20% / 0.07), 0 10px 20px -4px hsl(213 30% 20% / 0.10);
-  --shadow-xl: 0 4px 8px -2px hsl(213 30% 20% / 0.08), 0 18px 36px -8px hsl(213 30% 20% / 0.13);
-  --shadow-2xl: 0 8px 16px -4px hsl(213 30% 20% / 0.10), 0 32px 64px -12px hsl(213 30% 20% / 0.18);
-  --shadow-glow: 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent), 0 8px 28px -6px var(--primary-glow);
-  --shadow-inner: inset 0 1px 2px 0 hsl(213 30% 20% / 0.08);
-  --ring-glow: 0 0 0 1px var(--ring), 0 0 10px 0 var(--primary-glow);
-}
-
-/* 玻璃的模糊半径与主题无关, 只定义一次 */
-:root {
-  --blur-glass: 16px;
-  /* 玻璃面的饱和度提升: 背后的内容透过来时不至于发灰 */
-  --glass-saturate: 1.6;
-}
-
-/* 代码块外壳固定用 One Dark Pro 深底 (CodeBlock 的 ONE_DARK_PRO), 不随主题切换,
-   画在它上面的状态色也必须固定: 随主题变化的 success-fg 在亮色下是深绿, 落在深底上读不清.
-   取 One Dark Pro 的字符串绿, 只在 :root 定义一次, 亮色不覆盖. */
-:root {
-  --code-success: rgb(152, 195, 121);  /* #98c379 */
-}
-
-/* ============================================================================
- * 蓝图 (UE5) 专用令牌
- * ----------------------------------------------------------------------------
- * 为什么单开一组而不复用上面的语义色:
- *   蓝图的引脚色是**按数据类型编码的信息**, 不是装饰. UE5 里看到青绿色圆点
- *   就知道那是 int, 看到亮绿就知道是 float  用户靠颜色分辨类型,
- *   复用 primary / emerald 这类语义色会把二十来种类型压成三四种观感,
- *   信息直接丢失. 所以它们必须有自己的名字与取值.
- *
- * 取值来源: 引擎源码 GraphEditorSettings.cpp 的默认表 (线性 RGB),
- *   换算 sRGB = linear^(1/2.2). 公开镜像逐字复制了那张表.
- *   注意: 是换算值, 不是官方十六进制  UE 实际渲染还受 tone mapping 影响.
- *   真要像素级一致, 得拿真机截图取色再校准一轮.
- *
- * 为什么是 CSS 变量而不是组件里的类名:
- *   本库第一条硬约定是"颜色只有这一个文件一个来源". 写进组件就等于把换肤
- *   能力交出去  亮色主题下这些高饱和色在白底上会刺眼, 必须能统一压暗.
- * ==========================================================================*/
-
-:root, [data-mode="dark"] {
-  /* 引脚 / 连线  按数据类型 */
-  --bp-exec: #ffffff;        /* 执行流: 白 */
-  --bp-bool: #940000;        /* maroon */
-  --bp-int: #24e2ae;         /* green-blue */
-  --bp-float: #a0ff47;       /* bright green */
-  --bp-number: #a0ff47;      /* 本库 number 语义上就是 float */
-  --bp-string: #ff00d3;      /* bright pink */
-  --bp-name: #cb81ff;        /* lilac */
-  --bp-text: #e67ba8;        /* salmon */
-  --bp-vector: #ffc927;      /* yellow */
-  --bp-rotator: #9fb2ff;     /* periwinkle */
-  --bp-transform: #ff7300;   /* orange */
-  --bp-object: #00a8f4;      /* sharp blue */
-  --bp-class: #5a00ba;       /* deep purple */
-  --bp-struct: #005aca;      /* deep blue */
-  --bp-wildcard: #807a7a;    /* dark gray */
-  --bp-byte: #006f65;        /* dark green */
-  --bp-delegate: #ff3b3b;    /* bright red */
-  --bp-interface: #f0ffa8;   /* pale green */
-  --bp-default: #e0caa8;     /* light brown: 未单列的类型走它 */
-
-  /* 节点标题栏  按节点类别.
-     源码只给设置项名字不给数值, 这里取 UE4/UE5 沿用的语义色.
-     深色主题下它们是"压暗的纯色 + 亮字". */
-  --bp-title-event: #8c1f1f;      /* 事件: 红 */
-  --bp-title-function: #1f4f8c;   /* 函数: 蓝 */
-  --bp-title-pure: #1f7a5c;       /* 纯函数: 绿 */
-  --bp-title-macro: #4a4a52;      /* 宏 / 折叠子图: 灰 */
-  --bp-title-flow: #6a4a8c;       /* 流程控制 (Branch/Sequence): 紫 */
-  --bp-title-cast: #1f7a8c;       /* 类型转换: 青 */
-  --bp-title-default: #33333c;    /* 兜底 */
-  --bp-title-foreground: #f0f2f8; /* 标题栏上的文字: 一律亮色 */
-
-  /* 节点本体 */
-  --bp-node-bg: #1e2028;
-  --bp-node-border: #0d0e13;
-  --bp-node-shadow: 0 2px 6px 0 hsl(0 0% 0% / 0.35);
-  --bp-node-radius: 6px;
-  /* 注意: 这两个数值必须与 geometry.ts 的 HEADER_H / PORT_ROW **逐字相等**.
-     组件画节点用 CSS 变量, 而连线端点用 geometry.portPos 算  两边差 2px
-     的表现是"每根线都偏出圆点", 是本模块最难查的一类错位.
-     曾经这里写 28 而 geometry 是 30, 实测连线端点系统性偏 2px.
-     scripts/check-blueprint.mjs 里有一条断言守着这个相等关系. */
-  --bp-title-h: 30px;
-  --bp-pin-row: 20px;
-  --bp-grid: 16px;      /* UEditorStyleSettings::GridSnapSize, 社区实测默认 16 */
-  --bp-grid-line: rgba(255, 255, 255, 0.05);
-  --bp-grid-line-bold: rgba(255, 255, 255, 0.09);
-
-  /* 选中态: UE5 是一圈亮黄描边, 不用 primary (紫) 
-     紫在蓝图里已经是 class 引脚的颜色, 会撞. */
-  --bp-selected: #ffd400;
-
-  /* 注释框的色板.
-     注意: 之前注释复用 bg-muted/25  在 rgb(20,22,30) 的画布上叠出来几乎
-        等于没有, 用户原话"根本就区分不了它和背景".
-        注释的意义是把一片节点**圈出来**, 没有可辨识的色块就圈不住任何东西.
-     取值原则: 注释要**看得见**但不能糊住里面的节点, 所以是中等明度的
-     低饱和色  深色主题下比节点体亮一档, 亮色主题下比画布暗一档. */
-  --bp-cmt-default: #3a3f4d;
-  --bp-cmt-neutral: #454b5c;
-  --bp-cmt-primary: #3b3f7a;
-  --bp-cmt-success: #1f4a3c;
-  --bp-cmt-warning: #4a3a1c;
-  --bp-cmt-danger: #4a2027;
-  --bp-cmt-info: #1f3a4a;
-
-  /* 注释标题栏: 比框体再亮一档, 让"标题 / 正文"分得开 */
-  --bp-cmt-bar-default: #4a5162;
-  --bp-cmt-bar-neutral: #565d70;
-  --bp-cmt-bar-primary: #4a4f96;
-  --bp-cmt-bar-success: #2a6150;
-  --bp-cmt-bar-warning: #5e4a24;
-  --bp-cmt-bar-danger: #5e2a33;
-  --bp-cmt-bar-info: #2a4a5e;
-}
-
-[data-mode="light"] {
-  /**
-   * 亮色下的引脚色.
+@layer hx.tokens {
+  /* ============================================================================
+   * 第 1 层  原始色板 (palette)
+   * ----------------------------------------------------------------------------
+   * 每个色相 11 阶: 50 最浅, 950 最深, 明度 (oklch L) 严格单调递减.
+   * "锚定" 的那一阶是现网语义色的原值 (GitHub Primer Light / Dark Dimmed),
+   * 用 oklch 精确反算, 回到 sRGB 后与原 8 位值逐通道相等  这是零视觉回归的前提.
+   * 其余阶在相邻锚点之间按 oklch 线性插值 (L / C / H 同步), 两端按明度阶梯外推,
+   * 越界的色度逐步收回到 sRGB 色域内.
    *
-   * 注意: 第一版把 UE 的高饱和色**一味压暗**来换白底对比度, 结果是类型之间
-   *    糊成一片深色的团  引脚色是"一眼分辨类型"的信息, 压没了信息就没了.
+   * 为什么中性灰有两套:
+   *   gray  是亮色主题的中性灰 (Primer Light, 近乎无彩);
+   *   slate 是暗色主题的中性灰 (Dark Dimmed, 带蓝的石板灰).
+   *   两者色相与色度都不同, 合成一套会让某一边的锚点挤出单调阶梯.
+   * 彩色色相亮暗共用一套: 两套主题的同色锚点按明度落在不同阶上.
+   *   个别相邻阶几乎同色 (yellow-600/700, red-700/800) 是因为两套主题的原值本来就只差
+   *   几个 8 位单位, 为了逐像素不变而各占一阶, 新代码挑其中一阶用即可.
+   * 功能色相: green = success, yellow = warning, red = danger / destructive,
+   *   purple = done (已完成 / Agent 身份), cyan = accent-2 第二品牌色, blue = primary.
    *
-   *    这一版的原则: **保色相, 提明度, 降饱和**.
-   *    让每个色仍然能说出"这是青绿 / 这是品红 / 这是橙", 只是不那么扎眼.
-   *    (暗色才是蓝图的本命主题; 亮色是给"必须白底"的场景的次选.)
-   */
-  --bp-exec: #1f1f28;
-  --bp-bool: #b3234a;        /* 栗 -> 玫红, 保住"红"的辨识 */
-  --bp-int: #0e8f7a;         /* 青绿 */
-  --bp-float: #5c8f16;       /* 亮绿压成橄榄, 仍是绿 */
-  --bp-number: #5c8f16;
-  --bp-string: #c2185b;      /* 品红 -> 玫紫 */
-  --bp-name: #7b3fb0;        /* 淡紫 */
-  --bp-text: #b04a68;        /* 肉粉 */
-  --bp-vector: #9a6a00;      /* 黄 -> 琥珀 */
-  --bp-rotator: #4059a8;     /* 长春花 -> 蓝紫 */
-  --bp-transform: #b35400;   /* 橙 */
-  --bp-object: #0b6fa8;      /* 蓝 */
-  --bp-class: #6a2fb0;       /* 紫 */
-  --bp-struct: #1f4fa8;      /* 深蓝 */
-  --bp-wildcard: #6a6a72;
-  --bp-byte: #0b6f66;
-  --bp-delegate: #c02a2a;
-  --bp-interface: #6f7a20;
-  --bp-default: #8a6a3a;
+   * 新代码不要直接用色板写组件 (那等于绕过主题); 色板是给语义层与主题生成器用的.
+   * ==========================================================================*/
 
-  --bp-title-event: #d06060;
-  --bp-title-function: #5a86c2;
-  --bp-title-pure: #4f9a76;
-  --bp-title-macro: #8a8a94;
-  --bp-title-flow: #9a7ac0;
-  --bp-title-cast: #4f9aae;
-  --bp-title-default: #b8bcc6;
-  --bp-title-foreground: #ffffff;
-
-  /* 亮色下节点体必须**有底色**: 纯白节点在白画布上等于没有边界,
-     只剩一条 1px 边框, 而 UE5 的节点是靠色块本身从画布上浮起来的. */
-  --bp-node-bg: #f4f5f8;
-  --bp-node-border: #b8bcc6;
-  --bp-node-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.14);
-  --bp-grid-line: rgba(0, 0, 0, 0.06);
-  --bp-grid-line-bold: rgba(0, 0, 0, 0.11);
-  --bp-selected: #a87900;
-
-  /* 亮色下注释要比画布**深**一档才看得见 */
-  --bp-cmt-default: #dcdfe6;
-  --bp-cmt-neutral: #d2d6de;
-  --bp-cmt-primary: #c9cdea;
-  --bp-cmt-success: #c6e0d4;
-  --bp-cmt-warning: #ecd9b4;
-  --bp-cmt-danger: #eccbd0;
-  --bp-cmt-info: #c6dcea;
-
-  --bp-cmt-bar-default: #c2c7d2;
-  --bp-cmt-bar-neutral: #b8bcc8;
-  --bp-cmt-bar-primary: #afb5dd;
-  --bp-cmt-bar-success: #a8cdbb;
-  --bp-cmt-bar-warning: #dcbf90;
-  --bp-cmt-bar-danger: #dcadb3;
-  --bp-cmt-bar-info: #a8c9dc;
-}
-
-
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
-}
-
-::selection {
-  background: color-mix(in srgb, var(--primary) 42%, transparent);
-  color: var(--foreground);
-}
-
-/* 全局关掉 outline, 交互控件改用 1px 边框变色表达焦点 */
-:focus-visible { outline: none; }
-
-/* macOS 式 overlay 滚动条: 默认透明, 只在容器被 hover / 聚焦时显形,
-   宽高始终占位所以不引起布局跳动. */
-* { scrollbar-width: thin; scrollbar-color: transparent transparent; }
-*:hover, *:focus-within {
-  scrollbar-color: color-mix(in srgb, var(--muted-foreground) 35%, transparent) transparent;
-}
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-*:hover::-webkit-scrollbar-thumb, *:focus-within::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--muted-foreground) 35%, transparent);
-  background-clip: padding-box;
-}
-
-/* 换主题时的过渡只作用于颜色类属性, 不碰 transform / opacity. */
-[data-mode].theme-transitioning,
-[data-mode].theme-transitioning * {
-  transition: background-color var(--dur-base) ease, color var(--dur-base) ease,
-              border-color var(--dur-base) ease, box-shadow var(--dur-base) ease !important;
-}
-
-/* ============================================================================
- * 排版 / 动效 / 层级刻度
- * ----------------------------------------------------------------------------
- * 补这一段的理由: 在此之前本库只有**颜色**是令牌化的, 字号与动效时长全部硬编在
- * 组件类名里 (实测 53 处 text-[12px] 这类任意值, 外加 duration-100/150/200).
- * 后果是 README 那句"改 tokens.css 一个文件就能换肤"只对颜色成立 
- * 想把整套界面字号调大一档, 得改 40 多个文件.
- *
- * 与上游同步件的关系 (这条决定了本次只立刻度, 不批量改存量):
- *   src/primitives 与大部分 src/layout 的类名整份取自 open-vetta, README 明确承诺
- *   "视觉类名一个字没改", 那是"看起来一样"的唯一可靠来源. 强改这些文件会同时
- *   失去两样东西: 与上游的可对照性, 以及 10.5px / 11.5px 这类半像素档的精确度
- *   (取整就是 0.5px 的真实视觉变化). 因此下面的刻度是给**新代码**的唯一来源,
- *   存量迁移需要先单独决策"半像素要不要收进整数档".
- *
- * 用法: 在 Tailwind 里写 text-(length:--fs-sm) 这类任意属性语法, 或直接
- *       font-size: var(--fs-sm). scale 段刻意覆盖现网每一档 (含半像素),
- *       这样后续迁移可以逐档一对一替换, 不产生视觉漂移.
- * ==========================================================================*/
-
-:root {
-  /* 字号: 与现网实际用到的每一档一一对齐, 含半像素档.
-     半像素不是笔误  12.5px 与 12px 在密集表格里是肉眼可辨的, 因此不取整,
-     而是原样建令牌, 让后续迁移可以逐档一对一替换, 不产生视觉漂移. */
-  --fs-3xs: 9px;
-  --fs-2xs: 10px;
-  --fs-2xs-half: 10.5px;
-  --fs-xs: 11px;
-  --fs-xs-half: 11.5px;
-  --fs-sm: 12px;
-  --fs-sm-half: 12.5px;
-  --fs-base: 13px;
-  --fs-lg: 15px;
-  --fs-xl: 19px;
-  --fs-2xl: 20px;
-  --fs-3xl: 22px;
-  --fs-4xl: 26px;
-  /* 排版组件 (Typography) 的导语与一级标题档 */
-  --fs-lead: 17px;
-  --fs-5xl: 30px;
-
-  /* 动效时长: 三档 + 水波纹专用一档.
-     超过 300ms 的进入动画在工具型界面里会被感知成"卡";
-     水波纹是扩散后淡出的反馈, 不挡操作, 所以单独放宽到 500ms. */
-  --duration-fast: 120ms;
-  --duration-base: 200ms;
-  --duration-slow: 300ms;
-  --duration-ripple: 500ms;
-  /* instant 给按压 / 勾选这类 "手一抬就该结束" 的反馈;
-     emphasized 给大面积入场 (页面 / 抽屉 / 弹簧), 是唯一允许超过 300ms 的进入档,
-     只用于一屏一次的主动作, 列表项与小控件不要用. */
-  --duration-instant: 80ms;
-  --duration-emphasized: 500ms;
-  /* 环境类循环动效 (漂浮 / 光晕呼吸 / 骨架扫光) 的周期: 慢到不抢注意力 */
-  --duration-loop: 1600ms;
-  --duration-ambient: 6000ms;
-  /* 旧名保留为别名, 存量组件与下游不用改 */
-  --dur-fast: var(--duration-fast);
-  --dur-base: var(--duration-base);
-  --dur-slow: var(--duration-slow);
-
-  /* 缓动: ease-out 用于进入与反馈 (起步快收尾稳, 取 GitHub Primer 的标准曲线),
-     ease-in 用于退出  用户已经决定离开了, 拖长只会挡住下一步操作. */
-  --ease-out: cubic-bezier(0.2, 0, 0, 1);
-  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-  /* in-out: 在屏内从一处移到另一处 (滑块 / 指示器 / 循环往返), 两端都要稳 */
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  /* emphasized: 强调入场, 起步极快, 尾段拉长, 取 Material 3 emphasized-decelerate;
-     与之配对的退场曲线是 emphasized-accelerate */
-  --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
-  --ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
-  /* spring: 带一次约 12% 回弹的弹簧. 这里先给 cubic-bezier 回退,
-     支持 linear() 的浏览器在下方 @supports 里换成真正的阻尼曲线 */
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* 入场位移距离: 关键帧 hx-fade-up / hx-slide-in-* 读它, 大面板可在局部覆盖 */
-  --motion-distance-sm: 4px;
-  --motion-distance: 8px;
-  --motion-distance-lg: 24px;
-  /* scale-in 的起始比例, 与 tw-animate-css 的 zoom-in-95 对齐 */
-  --motion-scale-from: 0.95;
-
-  /* 层级: 写在各组件里的 z-50 没人知道全貌, 改一处就撞另一处 */
-  --z-base: 0;
-  --z-sticky: 10;
-  --z-panel: 30;
-  --z-overlay: 40;
-  --z-modal: 50;
-  --z-toast: 60;
-  --z-tooltip: 70;
-}
-
-/* 系统要求减弱动效时, 所有走令牌的时长归零: 状态仍然切换, 只是不再有过程.
-   写在令牌层而不是逐个组件判断, 新组件只要用令牌就自动遵守. */
-/* 弹簧曲线: 欠阻尼弹簧 (阻尼比 0.55) 的位移采样, 37 个点, 峰值 1.126 后衰减回 1.
-   linear() 是 2023 年才进标准的写法, 不支持的浏览器整条声明会被丢弃,
-   所以放在 @supports 里覆盖, 外层的 cubic-bezier 就是回退值. */
-@supports (transition-timing-function: linear(0, 1)) {
   :root {
-    --ease-spring: linear(
-      0, 0.045, 0.158, 0.31, 0.475, 0.637, 0.781, 0.901, 0.994, 1.06,
-      1.102, 1.122, 1.126, 1.118, 1.102, 1.083, 1.062, 1.042, 1.024, 1.01,
-      0.999, 0.991, 0.986, 0.984, 0.984, 0.985, 0.988, 0.99, 0.993, 0.995,
-      0.997, 0.999, 1, 1.001, 1.002, 1.002, 1
-    );
-  }
-}
+    --palette-white: oklch(100% 0 0);  /* #ffffff */
+    --palette-black: oklch(0% 0 0);  /* #000000 */
 
-@media (prefers-reduced-motion: reduce) {
+    --palette-gray-50: oklch(97.818% 0.0034 247.86);  /* 锚定 #f6f8fa */
+    --palette-gray-100: oklch(95.972% 0.0052 247.88);  /* 锚定 #eff2f5 */
+    --palette-gray-200: oklch(94.722% 0.0069 247.90);  /* 锚定 #eaeef2 */
+    --palette-gray-300: oklch(89.775% 0.0105 247.94);  /* 锚定 #d8dee4 */
+    --palette-gray-400: oklch(88.124% 0.0130 244.27);  /* 锚定 #d1d9e0 */
+    --palette-gray-500: oklch(74.692% 0.0160 246.54);
+    --palette-gray-600: oklch(62.099% 0.0187 248.66);
+    --palette-gray-700: oklch(49.507% 0.0215 250.78);  /* 锚定 #59636e */
+    --palette-gray-800: oklch(41.296% 0.0180 251.89);
+    --palette-gray-900: oklch(33.084% 0.0144 253.00);
+    --palette-gray-950: oklch(25.421% 0.0111 254.04);  /* 锚定 #1f2328 */
+
+    --palette-slate-50: oklch(96.000% 0.0045 248.07);
+    --palette-slate-100: oklch(92.000% 0.0112 248.07);
+    --palette-slate-200: oklch(87.980% 0.0211 248.07);  /* 锚定 #cdd9e5 */
+    --palette-slate-300: oklch(78.290% 0.0235 248.13);  /* 锚定 #adbac7 */
+    --palette-slate-400: oklch(69.024% 0.0254 250.17);  /* 锚定 #909dab */
+    --palette-slate-500: oklch(55.616% 0.0226 252.05);
+    --palette-slate-600: oklch(41.315% 0.0197 254.06);  /* 锚定 #444c56 */
+    --palette-slate-700: oklch(36.092% 0.0182 254.76);  /* 锚定 #373e47 */
+    --palette-slate-800: oklch(31.862% 0.0165 255.64);  /* 锚定 #2d333b */
+    --palette-slate-900: oklch(27.076% 0.0149 256.80);  /* 锚定 #22272e */
+    --palette-slate-950: oklch(24.581% 0.0153 256.81);  /* 锚定 #1c2128 */
+
+    --palette-blue-50: oklch(97.500% 0.0114 228.04);
+    --palette-blue-100: oklch(95.363% 0.0284 228.04);  /* 锚定 #ddf4ff */
+    --palette-blue-200: oklch(87.400% 0.0649 236.04);
+    --palette-blue-300: oklch(78.213% 0.1070 245.28);
+    --palette-blue-400: oklch(68.412% 0.1520 255.12);  /* 锚定 #539bf5 */
+    --palette-blue-500: oklch(61.767% 0.1607 257.75);  /* 锚定 #4184e4 */
+    --palette-blue-600: oklch(54.529% 0.1575 259.06);  /* 锚定 #316dca */
+    --palette-blue-700: oklch(53.992% 0.1906 257.48);  /* 锚定 #0969da */
+    --palette-blue-800: oklch(41.500% 0.1421 257.48);
+    --palette-blue-900: oklch(34.000% 0.1130 257.48);
+    --palette-blue-950: oklch(27.000% 0.0858 257.48);
+
+    --palette-green-50: oklch(97.500% 0.0065 144.34);
+    --palette-green-100: oklch(94.000% 0.0203 144.34);
+    --palette-green-200: oklch(87.500% 0.0528 144.34);
+    --palette-green-300: oklch(80.000% 0.0972 144.34);
+    --palette-green-400: oklch(74.362% 0.1491 144.34);  /* 锚定 #6bc46d */
+    --palette-green-500: oklch(66.868% 0.1421 144.47);  /* 锚定 #57ab5a */
+    --palette-green-600: oklch(55.174% 0.1450 148.22);  /* 锚定 #1f883d */
+    --palette-green-700: oklch(52.663% 0.1253 144.76);  /* 锚定 #347d39 */
+    --palette-green-800: oklch(52.441% 0.1401 148.04);  /* 锚定 #1a7f37 */
+    --palette-green-900: oklch(34.000% 0.0859 148.04);
+    --palette-green-950: oklch(27.000% 0.0653 148.04);
+
+    --palette-yellow-50: oklch(97.500% 0.0064 83.89);
+    --palette-yellow-100: oklch(94.000% 0.0201 83.89);
+    --palette-yellow-200: oklch(87.500% 0.0522 83.89);
+    --palette-yellow-300: oklch(76.329% 0.1331 83.89);  /* 锚定 #daaa3f */
+    --palette-yellow-400: oklch(68.879% 0.1313 79.12);  /* 锚定 #c69026 */
+    --palette-yellow-500: oklch(66.187% 0.1374 79.25);  /* 锚定 #bf8700 */
+    --palette-yellow-600: oklch(55.419% 0.1169 75.01);  /* 锚定 #9a6700 */
+    --palette-yellow-700: oklch(54.719% 0.1147 76.53);  /* 锚定 #966600 */
+    --palette-yellow-800: oklch(41.500% 0.0842 76.53);
+    --palette-yellow-900: oklch(34.000% 0.0669 76.53);
+    --palette-yellow-950: oklch(27.000% 0.0508 76.53);
+
+    --palette-red-50: oklch(97.500% 0.0059 26.07);
+    --palette-red-100: oklch(94.000% 0.0184 26.07);
+    --palette-red-200: oklch(87.500% 0.0477 26.07);
+    --palette-red-300: oklch(80.000% 0.0879 26.07);
+    --palette-red-400: oklch(70.171% 0.1642 26.07);  /* 锚定 #f47067 */
+    --palette-red-500: oklch(63.737% 0.1829 26.71);  /* 锚定 #e5534b */
+    --palette-red-600: oklch(56.331% 0.1787 26.67);  /* 锚定 #c93c37 */
+    --palette-red-700: oklch(55.673% 0.2056 24.61);  /* 锚定 #d1242f */
+    --palette-red-800: oklch(55.175% 0.2051 24.53);  /* 锚定 #cf222e */
+    --palette-red-900: oklch(34.000% 0.1185 24.53);
+    --palette-red-950: oklch(27.000% 0.0899 24.53);
+
+    --palette-purple-50: oklch(97.500% 0.0047 298.07);
+    --palette-purple-100: oklch(94.000% 0.0146 298.07);
+    --palette-purple-200: oklch(87.500% 0.0378 298.07);
+    --palette-purple-300: oklch(80.000% 0.0696 298.07);
+    --palette-purple-400: oklch(72.000% 0.1078 298.07);
+    --palette-purple-500: oklch(63.246% 0.1706 298.07);  /* 锚定 #986ee2 */
+    --palette-purple-600: oklch(56.307% 0.2069 294.97);  /* 锚定 #8250df */
+    --palette-purple-700: oklch(49.000% 0.1774 294.97);
+    --palette-purple-800: oklch(41.500% 0.1470 294.97);
+    --palette-purple-900: oklch(34.000% 0.1167 294.97);
+    --palette-purple-950: oklch(27.000% 0.0884 294.97);
+
+    --palette-cyan-50: oklch(97.500% 0.0054 202.14);
+    --palette-cyan-100: oklch(94.000% 0.0167 202.14);
+    --palette-cyan-200: oklch(87.500% 0.0435 202.14);
+    --palette-cyan-300: oklch(80.000% 0.0801 202.14);
+    --palette-cyan-400: oklch(75.548% 0.1155 202.14);  /* 锚定 #39c5cf */
+    --palette-cyan-500: oklch(64.269% 0.0995 202.28);
+    --palette-cyan-600: oklch(53.696% 0.0845 202.40);  /* 锚定 #1b7c83 */
+    --palette-cyan-700: oklch(49.000% 0.0763 202.40);
+    --palette-cyan-800: oklch(41.500% 0.0634 202.40);
+    --palette-cyan-900: oklch(34.000% 0.0504 202.40);
+    --palette-cyan-950: oklch(27.000% 0.0383 202.40);
+  }
+
+  /* ============================================================================
+   * 第 2 层  语义令牌 (semantic)
+   * ----------------------------------------------------------------------------
+   * 变量名与 2026-11 之前逐字相同, 是对组件与下游的兼容契约: 名字一个不改, 只把值
+   * 改成引用第 1 层色板. 行尾的十六进制是改造前的原值, 色板锚点就是按它取的,
+   * 所以渲染结果逐像素不变.
+   * 不进色板的: 阴影 (透明黑 / 蓝灰影色), 图表分段色, 蓝图与代码块的领域色  它们
+   * 不是"界面色阶"上的点, 硬塞进色板只会让色阶失去单调性.
+   * ==========================================================================*/
+
+  :root, [data-mode="dark"] {
+    color-scheme: dark;
+
+    /* 暗色取 GitHub Dark Dimmed: 灰底而不是纯黑.
+       纯黑底上 1px 灰线与文字的对比过硬, 长时间看控制台类界面会累;
+       Dimmed 把底色抬到深灰, 层级改由"底 / 内嵌 / 悬停"三档灰与 1px 边框区分.
+       行尾注释里的十六进制是 GitHub Primer 的原值, 便于对照. */
+    --background: var(--palette-slate-900);  /* #22272e */
+    --foreground: var(--palette-slate-300);  /* #adbac7 */
+    /* 卡片与页面同底, 靠 1px 边框分层, 不靠底色差 */
+    --card: var(--palette-slate-900);  /* #22272e */
+    --card-foreground: var(--palette-slate-300);  /* #adbac7 */
+    --popover: var(--palette-slate-800);  /* #2d333b */
+    --popover-foreground: var(--palette-slate-300);  /* #adbac7 */
+    /* primary 是实底用的强调蓝; 文字/链接用更亮的 --link, 深灰底上实底蓝做文字对比不够 */
+    --primary: var(--palette-blue-600);  /* #316dca */
+    --primary-foreground: var(--palette-white);  /* #ffffff */
+    --link: var(--palette-blue-400);  /* #539bf5 */
+    --secondary: var(--palette-slate-800);  /* #2d333b */
+    --secondary-foreground: var(--palette-slate-300);  /* #adbac7 */
+    /* muted 是内嵌层 (输入框底 / 代码块底), 比页面更深一档 */
+    --muted: var(--palette-slate-950);  /* #1c2128 */
+    /* 说明文字: 取 Dimmed 灰阶上一档 #909dab 而不是 Primer 的 fg.muted #768390,
+       后者在页面底上只有 3.9:1, 达不到正文 4.5:1; #909dab 在页面 / 内嵌 / 弹层底上都过 4.5:1 */
+    --muted-foreground: var(--palette-slate-400);  /* #909dab */
+    /* accent 是悬停层 */
+    --accent: var(--palette-slate-800);  /* #2d333b */
+    --accent-foreground: var(--palette-slate-200);  /* #cdd9e5 */
+    /* 标题与强调文字: 比正文亮一档 */
+    --heading: var(--palette-slate-200);  /* #cdd9e5 */
+    /* destructive 主要当文字 / 图标 / 描边用 (text-destructive), 取 danger-fg 的亮红,
+       页面底上 5.3:1; #e5534b 做文字只有 4.1:1.
+       destructive-foreground 是红色实底上的白字, 搭配的实底是 bg-danger-emphasis (5.0:1),
+       不要拿它配 bg-destructive: 亮红实底上的白字对比不够 */
+    --destructive: var(--palette-red-400);  /* #f47067 */
+    --destructive-foreground: var(--palette-white);  /* #ffffff */
+    /* 控件悬停: 比 secondary 亮一档, 默认按钮与次级按钮的 hover 底 */
+    --control-hover: var(--palette-slate-700);  /* #373e47 */
+    --border: var(--palette-slate-600);  /* #444c56 */
+    /* 次级分隔线: 列表行之间, 卡片内部 */
+    --border-muted: var(--palette-slate-700);  /* #373e47 */
+    /* 营销卡片描边: 前景色 8% / 12% 半透明派生 (对齐 linear.app #ffffff14), card 底上约 1.18:1 / 1.29:1 */
+    --border-subtle: color-mix(in srgb, var(--foreground) 8%, transparent);
+    --border-strong: color-mix(in srgb, var(--foreground) 12%, transparent);
+    --input: var(--palette-slate-600);  /* #444c56 */
+    --ring: var(--palette-blue-400);  /* #539bf5 */
+
+    /* 语义状态色.base 用于图标/圆点/描边/浅色底 (bg-success/15),
+       emphasis 用于实底, fg 是深灰底上可读的文字色. */
+    --success: var(--palette-green-500);  /* #57ab5a */
+    --success-emphasis: var(--palette-green-700);  /* #347d39 */
+    --success-fg: var(--palette-green-400);  /* #6bc46d */
+    --warning: var(--palette-yellow-400);  /* #c69026 */
+    --warning-emphasis: var(--palette-yellow-700);  /* #966600 */
+    --warning-fg: var(--palette-yellow-300);  /* #daaa3f */
+    --danger: var(--palette-red-500);  /* #e5534b */
+    --danger-emphasis: var(--palette-red-600);  /* #c93c37 */
+    --danger-fg: var(--palette-red-400);  /* #f47067 */
+    /* done: 已完成 / Agent 身份的紫 */
+    --done: var(--palette-purple-500);  /* #986ee2 */
+
+    /* 多分段图表: 等亮度等饱和, 只靠色相区分.
+       明度差会让读者把并列构成误读成大小对比. */
+    --segment-1: oklch(0.72 0.12 268);
+    --segment-2: oklch(0.72 0.12 215);
+    --segment-3: oklch(0.72 0.12 165);
+    --segment-4: oklch(0.72 0.12 95);
+    --segment-5: oklch(0.72 0.12 25);
+
+    --font-sans: -apple-system, "SF Pro Text", "Helvetica Neue", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+    /* 代码字体.
+       排序原则: 先排"为写代码设计"的字体 (带连字/字形区分度), 再退到系统等宽.
+       只写 "SF Mono", "Fira Code" 是不够的  两者在多数 Linux 上都不存在, 于是静默回退到
+       DejaVu Sans Mono 那种通用等宽, 代码看起来就"不专业", 而且没有任何报错提示.
+       ui-monospace / SFMono-Regular 放在中段: macOS 上命中系统等宽, 但让位给用户自己装的编程字体.
+       Nerd Font 变体带上, 因为很多终端用户装的是它 (extra 字形不影响代码). */
+    --font-mono: "JetBrains Mono", "JetBrainsMono Nerd Font", "Cascadia Code", "Fira Code",
+      "SF Mono", SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", "Liberation Mono",
+      ui-monospace, monospace;
+
+    --radius: 0.5rem;
+
+    /* 阴影, 表面分层, 品牌辅色见下方 "深度与品牌" 一节, 亮暗各一套 */
+  }
+
+  [data-mode="light"] {
+    color-scheme: light;
+
+    /* 亮色取 GitHub Light 的对应档位, 语义与暗色一一对应 */
+    --background: var(--palette-white);  /* #ffffff */
+    --foreground: var(--palette-gray-950);  /* #1f2328 */
+    --card: var(--palette-white);  /* #ffffff */
+    --card-foreground: var(--palette-gray-950);  /* #1f2328 */
+    --popover: var(--palette-white);  /* #ffffff */
+    --popover-foreground: var(--palette-gray-950);  /* #1f2328 */
+    --primary: var(--palette-blue-700);  /* #0969da */
+    --primary-foreground: var(--palette-white);  /* #ffffff */
+    --link: var(--palette-blue-700);  /* #0969da */
+    --secondary: var(--palette-gray-50);  /* #f6f8fa */
+    --secondary-foreground: var(--palette-gray-950);  /* #1f2328 */
+    --muted: var(--palette-gray-50);  /* #f6f8fa */
+    --muted-foreground: var(--palette-gray-700);  /* #59636e */
+    --accent: var(--palette-gray-100);  /* #eff2f5 */
+    --accent-foreground: var(--palette-gray-950);  /* #1f2328 */
+    --heading: var(--palette-gray-950);  /* #1f2328 */
+    --destructive: var(--palette-red-800);  /* #cf222e */
+    --destructive-foreground: var(--palette-white);  /* #ffffff */
+    --control-hover: var(--palette-gray-200);  /* #eaeef2 */
+    --border: var(--palette-gray-400);  /* #d1d9e0 */
+    --border-muted: var(--palette-gray-300);  /* #d8dee4 */
+    /* 营销卡片描边: 前景色 8% / 12% 半透明派生 (对齐 vercel.com #00000014), 白底上约 1.17:1 / 1.26:1 */
+    --border-subtle: color-mix(in srgb, var(--foreground) 8%, transparent);
+    --border-strong: color-mix(in srgb, var(--foreground) 12%, transparent);
+    --input: var(--palette-gray-400);  /* #d1d9e0 */
+    --ring: var(--palette-blue-700);  /* #0969da */
+
+    --success: var(--palette-green-800);  /* #1a7f37 */
+    --success-emphasis: var(--palette-green-600);  /* #1f883d */
+    --success-fg: var(--palette-green-800);  /* #1a7f37 */
+    --warning: var(--palette-yellow-500);  /* #bf8700 */
+    --warning-emphasis: var(--palette-yellow-600);  /* #9a6700 */
+    --warning-fg: var(--palette-yellow-600);  /* #9a6700 */
+    --danger: var(--palette-red-800);  /* #cf222e */
+    --danger-emphasis: var(--palette-red-800);  /* #cf222e */
+    --danger-fg: var(--palette-red-700);  /* #d1242f */
+    --done: var(--palette-purple-600);  /* #8250df */
+
+    --segment-1: oklch(0.62 0.14 268);
+    --segment-2: oklch(0.62 0.14 215);
+    --segment-3: oklch(0.62 0.14 165);
+    --segment-4: oklch(0.62 0.14 95);
+    --segment-5: oklch(0.62 0.14 25);
+  }
+
+  /* ============================================================================
+   * 深度与品牌: 表面分层 / 层次阴影 / 品牌辅色 / 玻璃
+   * ----------------------------------------------------------------------------
+   * 补这一节的理由: 之前阴影五档几乎同值 (同一个 0.18 透明度, 最大模糊 10px, 亮暗同值),
+   * 表面只有 background / card / popover, card 与页面同底, 层级全靠 1px 边框硬撑,
+   * 画面因此发平. 这里给出 "质感" 的原料, 默认组件不引用, 只给可选变体与新组件用.
+   *
+   * 表面三级 (由低到高): sunken 内嵌 < 页面 background < raised 抬起 < overlay 浮层.
+   *   暗色下越高越亮 (灯光从上方打下来, 近处的面受光多);
+   *   亮色下底已是纯白, raised / overlay 同为白, 高度差改由阴影表达.
+   *
+   * 阴影一律双层: 第一层是贴近物体的锐影 (小偏移, 小模糊, 定出接触边),
+   *   第二层是远处的柔影 (大偏移, 大模糊, 负扩散收住边缘), 档位越高两层拉得越开.
+   *   亮色透明度整体更低, 且带一点蓝灰色相: 纯黑阴影落在白底上会发脏.
+   *
+   * 品牌: primary-subtle 是浅色强调底 (选中行 / 徽标底), primary-glow 是光晕色,
+   *   accent-2 是第二品牌色 (青), 与 primary 组成 gradient-brand 渐变.
+   *   accent-2 刻意不用紫: 紫已是 --done (已完成 / Agent 身份) 的语义色, 撞了会误读.
+   *
+   * 线条约定不变: 描边仍只用 1px; ring-glow 的外圈是模糊光晕而不是加粗的线.
+   * .agents/notes/implemented/feature/2026-11-01-design-tokens-depth-motion.md
+   * ==========================================================================*/
+
+  :root, [data-mode="dark"] {
+    /* 表面分层 */
+    --surface-sunken: var(--palette-slate-950);  /* #1c2128, 与 muted 同档 */
+    --surface-raised: var(--palette-slate-800);  /* #2d333b */
+    --surface-overlay: var(--palette-slate-700);  /* #373e47 */
+    /* 玻璃面: 半透明的 overlay, 配合 --blur-glass 使用; 边是 1px 的亮线, 模拟玻璃的切边高光 */
+    --surface-glass: color-mix(in srgb, var(--surface-overlay) 68%, transparent);
+    --glass-border: color-mix(in srgb, var(--palette-white) 8%, transparent);  /* 原值 hsl(0 0% 100% / 0.08) */
+
+    /* 品牌辅色 */
+    --primary-subtle: color-mix(in srgb, var(--palette-blue-500) 15%, transparent);  /* #4184e4 @15%, Primer accent.subtle */
+    --primary-glow: color-mix(in srgb, var(--palette-blue-400) 38%, transparent);  /* 原值 rgb(83 155 245 / 0.38) */
+    --accent-2: var(--palette-cyan-400);  /* #39c5cf 青 */
+    --accent-2-foreground: var(--palette-slate-950);  /* 青色实底上的深字 */
+    --accent-2-subtle: color-mix(in srgb, var(--palette-cyan-400) 15%, transparent);  /* 原值 rgb(57 197 207 / 0.15) */
+    --gradient-brand: linear-gradient(135deg, var(--primary) 0%, var(--accent-2) 100%);
+    /* 柔和版渐变: 大面积底纹用, 实底渐变铺满一屏会喧宾夺主 */
+    --gradient-brand-subtle: linear-gradient(135deg, var(--primary-subtle) 0%, var(--accent-2-subtle) 100%);
+
+    /* 层次阴影: 近处锐影 + 远处柔影 */
+    --shadow-xs: 0 1px 1px 0 hsl(0 0% 0% / 0.22);
+    --shadow-sm: 0 1px 1px 0 hsl(0 0% 0% / 0.24), 0 2px 4px -1px hsl(0 0% 0% / 0.22);
+    --shadow-md: 0 1px 2px 0 hsl(0 0% 0% / 0.26), 0 4px 10px -2px hsl(0 0% 0% / 0.30);
+    --shadow-lg: 0 2px 4px -1px hsl(0 0% 0% / 0.28), 0 10px 20px -4px hsl(0 0% 0% / 0.36);
+    --shadow-xl: 0 4px 8px -2px hsl(0 0% 0% / 0.30), 0 18px 36px -8px hsl(0 0% 0% / 0.42);
+    --shadow-2xl: 0 8px 16px -4px hsl(0 0% 0% / 0.32), 0 32px 64px -12px hsl(0 0% 0% / 0.50);
+    /* 品牌光晕: 1px 主色描边 + 大半径主色柔光, 给强调卡 / 渐变按钮 */
+    --shadow-glow: 0 0 0 1px color-mix(in srgb, var(--primary) 45%, transparent), 0 8px 32px -6px var(--primary-glow);
+    /* 内嵌: 输入框 / 凹槽 */
+    --shadow-inner: inset 0 1px 2px 0 hsl(0 0% 0% / 0.32);
+    /* 聚焦光环: 1px 实线 ring + 模糊光晕 */
+    --ring-glow: 0 0 0 1px var(--ring), 0 0 12px 0 var(--primary-glow);
+  }
+
+  [data-mode="light"] {
+    --surface-sunken: var(--palette-gray-50);  /* #f6f8fa */
+    --surface-raised: var(--palette-white);  /* #ffffff */
+    --surface-overlay: var(--palette-white);  /* #ffffff */
+    --surface-glass: color-mix(in srgb, var(--surface-overlay) 72%, transparent);
+    --glass-border: hsl(213 30% 20% / 0.10);
+
+    --primary-subtle: var(--palette-blue-100);  /* #ddf4ff, Primer accent.subtle */
+    --primary-glow: color-mix(in srgb, var(--palette-blue-700) 24%, transparent);  /* 原值 rgb(9 105 218 / 0.24) */
+    --accent-2: var(--palette-cyan-600);  /* #1b7c83 青, 白底上 5.1:1 */
+    --accent-2-foreground: var(--palette-white);  /* #ffffff */
+    --accent-2-subtle: color-mix(in srgb, var(--palette-cyan-600) 12%, transparent);  /* 原值 rgb(27 124 131 / 0.12) */
+    --gradient-brand: linear-gradient(135deg, var(--primary) 0%, var(--accent-2) 100%);
+    --gradient-brand-subtle: linear-gradient(135deg, var(--primary-subtle) 0%, var(--accent-2-subtle) 100%);
+
+    /* 亮色: 透明度更低, 带蓝灰色相 */
+    --shadow-xs: 0 1px 1px 0 hsl(213 30% 20% / 0.05);
+    --shadow-sm: 0 1px 1px 0 hsl(213 30% 20% / 0.06), 0 2px 4px -1px hsl(213 30% 20% / 0.06);
+    --shadow-md: 0 1px 2px 0 hsl(213 30% 20% / 0.06), 0 4px 10px -2px hsl(213 30% 20% / 0.08);
+    --shadow-lg: 0 2px 4px -1px hsl(213 30% 20% / 0.07), 0 10px 20px -4px hsl(213 30% 20% / 0.10);
+    --shadow-xl: 0 4px 8px -2px hsl(213 30% 20% / 0.08), 0 18px 36px -8px hsl(213 30% 20% / 0.13);
+    --shadow-2xl: 0 8px 16px -4px hsl(213 30% 20% / 0.10), 0 32px 64px -12px hsl(213 30% 20% / 0.18);
+    --shadow-glow: 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent), 0 8px 28px -6px var(--primary-glow);
+    --shadow-inner: inset 0 1px 2px 0 hsl(213 30% 20% / 0.08);
+    --ring-glow: 0 0 0 1px var(--ring), 0 0 10px 0 var(--primary-glow);
+  }
+
+  /* 玻璃的模糊半径与主题无关, 只定义一次 */
   :root {
-    --duration-instant: 0ms;
-    --duration-fast: 0ms;
-    --duration-base: 0ms;
-    --duration-slow: 0ms;
-    --duration-emphasized: 0ms;
-    --duration-ripple: 0ms;
-    /* 循环类不归零 (0ms 的 infinite 动画在部分引擎里会疯狂触发 iteration 事件),
-       由 motion.css 对循环类直接 animation: none */
-    /* 位移与缩放也归零: 即使有组件绕开时长令牌写死了 duration, 也不会再 "飞入" */
-    --motion-distance-sm: 0px;
-    --motion-distance: 0px;
-    --motion-distance-lg: 0px;
-    --motion-scale-from: 1;
-    /* 弹簧回弹本身就是位移过冲, 减弱动效时退回无过冲的 ease-out */
-    --ease-spring: var(--ease-out);
+    --blur-glass: 16px;
+    /* 玻璃面的饱和度提升: 背后的内容透过来时不至于发灰 */
+    --glass-saturate: 1.6;
   }
+
+  /* 代码块外壳固定用 One Dark Pro 深底 (CodeBlock 的 ONE_DARK_PRO), 不随主题切换,
+     画在它上面的状态色也必须固定: 随主题变化的 success-fg 在亮色下是深绿, 落在深底上读不清.
+     取 One Dark Pro 的字符串绿, 只在 :root 定义一次, 亮色不覆盖. */
+  :root {
+    --code-success: rgb(152, 195, 121);  /* #98c379 */
+  }
+
+  /* ============================================================================
+   * 蓝图 (UE5) 专用令牌
+   * ----------------------------------------------------------------------------
+   * 为什么单开一组而不复用上面的语义色:
+   *   蓝图的引脚色是**按数据类型编码的信息**, 不是装饰. UE5 里看到青绿色圆点
+   *   就知道那是 int, 看到亮绿就知道是 float  用户靠颜色分辨类型,
+   *   复用 primary / emerald 这类语义色会把二十来种类型压成三四种观感,
+   *   信息直接丢失. 所以它们必须有自己的名字与取值.
+   *
+   * 取值来源: 引擎源码 GraphEditorSettings.cpp 的默认表 (线性 RGB),
+   *   换算 sRGB = linear^(1/2.2). 公开镜像逐字复制了那张表.
+   *   注意: 是换算值, 不是官方十六进制  UE 实际渲染还受 tone mapping 影响.
+   *   真要像素级一致, 得拿真机截图取色再校准一轮.
+   *
+   * 为什么是 CSS 变量而不是组件里的类名:
+   *   本库第一条硬约定是"颜色只有这一个文件一个来源". 写进组件就等于把换肤
+   *   能力交出去  亮色主题下这些高饱和色在白底上会刺眼, 必须能统一压暗.
+   * ==========================================================================*/
+
+  :root, [data-mode="dark"] {
+    /* 引脚 / 连线  按数据类型 */
+    --bp-exec: #ffffff;        /* 执行流: 白 */
+    --bp-bool: #940000;        /* maroon */
+    --bp-int: #24e2ae;         /* green-blue */
+    --bp-float: #a0ff47;       /* bright green */
+    --bp-number: #a0ff47;      /* 本库 number 语义上就是 float */
+    --bp-string: #ff00d3;      /* bright pink */
+    --bp-name: #cb81ff;        /* lilac */
+    --bp-text: #e67ba8;        /* salmon */
+    --bp-vector: #ffc927;      /* yellow */
+    --bp-rotator: #9fb2ff;     /* periwinkle */
+    --bp-transform: #ff7300;   /* orange */
+    --bp-object: #00a8f4;      /* sharp blue */
+    --bp-class: #5a00ba;       /* deep purple */
+    --bp-struct: #005aca;      /* deep blue */
+    --bp-wildcard: #807a7a;    /* dark gray */
+    --bp-byte: #006f65;        /* dark green */
+    --bp-delegate: #ff3b3b;    /* bright red */
+    --bp-interface: #f0ffa8;   /* pale green */
+    --bp-default: #e0caa8;     /* light brown: 未单列的类型走它 */
+
+    /* 节点标题栏  按节点类别.
+       源码只给设置项名字不给数值, 这里取 UE4/UE5 沿用的语义色.
+       深色主题下它们是"压暗的纯色 + 亮字". */
+    --bp-title-event: #8c1f1f;      /* 事件: 红 */
+    --bp-title-function: #1f4f8c;   /* 函数: 蓝 */
+    --bp-title-pure: #1f7a5c;       /* 纯函数: 绿 */
+    --bp-title-macro: #4a4a52;      /* 宏 / 折叠子图: 灰 */
+    --bp-title-flow: #6a4a8c;       /* 流程控制 (Branch/Sequence): 紫 */
+    --bp-title-cast: #1f7a8c;       /* 类型转换: 青 */
+    --bp-title-default: #33333c;    /* 兜底 */
+    --bp-title-foreground: #f0f2f8; /* 标题栏上的文字: 一律亮色 */
+
+    /* 节点本体 */
+    --bp-node-bg: #1e2028;
+    --bp-node-border: #0d0e13;
+    --bp-node-shadow: 0 2px 6px 0 hsl(0 0% 0% / 0.35);
+    --bp-node-radius: 6px;
+    /* 注意: 这两个数值必须与 geometry.ts 的 HEADER_H / PORT_ROW **逐字相等**.
+       组件画节点用 CSS 变量, 而连线端点用 geometry.portPos 算  两边差 2px
+       的表现是"每根线都偏出圆点", 是本模块最难查的一类错位.
+       曾经这里写 28 而 geometry 是 30, 实测连线端点系统性偏 2px.
+       scripts/check-blueprint.mjs 里有一条断言守着这个相等关系. */
+    --bp-title-h: 30px;
+    --bp-pin-row: 20px;
+    --bp-grid: 16px;      /* UEditorStyleSettings::GridSnapSize, 社区实测默认 16 */
+    --bp-grid-line: rgba(255, 255, 255, 0.05);
+    --bp-grid-line-bold: rgba(255, 255, 255, 0.09);
+
+    /* 选中态: UE5 是一圈亮黄描边, 不用 primary (紫) 
+       紫在蓝图里已经是 class 引脚的颜色, 会撞. */
+    --bp-selected: #ffd400;
+
+    /* 注释框的色板.
+       注意: 之前注释复用 bg-muted/25  在 rgb(20,22,30) 的画布上叠出来几乎
+          等于没有, 用户原话"根本就区分不了它和背景".
+          注释的意义是把一片节点**圈出来**, 没有可辨识的色块就圈不住任何东西.
+       取值原则: 注释要**看得见**但不能糊住里面的节点, 所以是中等明度的
+       低饱和色  深色主题下比节点体亮一档, 亮色主题下比画布暗一档. */
+    --bp-cmt-default: #3a3f4d;
+    --bp-cmt-neutral: #454b5c;
+    --bp-cmt-primary: #3b3f7a;
+    --bp-cmt-success: #1f4a3c;
+    --bp-cmt-warning: #4a3a1c;
+    --bp-cmt-danger: #4a2027;
+    --bp-cmt-info: #1f3a4a;
+
+    /* 注释标题栏: 比框体再亮一档, 让"标题 / 正文"分得开 */
+    --bp-cmt-bar-default: #4a5162;
+    --bp-cmt-bar-neutral: #565d70;
+    --bp-cmt-bar-primary: #4a4f96;
+    --bp-cmt-bar-success: #2a6150;
+    --bp-cmt-bar-warning: #5e4a24;
+    --bp-cmt-bar-danger: #5e2a33;
+    --bp-cmt-bar-info: #2a4a5e;
+  }
+
+  [data-mode="light"] {
+    /**
+     * 亮色下的引脚色.
+     *
+     * 注意: 第一版把 UE 的高饱和色**一味压暗**来换白底对比度, 结果是类型之间
+     *    糊成一片深色的团  引脚色是"一眼分辨类型"的信息, 压没了信息就没了.
+     *
+     *    这一版的原则: **保色相, 提明度, 降饱和**.
+     *    让每个色仍然能说出"这是青绿 / 这是品红 / 这是橙", 只是不那么扎眼.
+     *    (暗色才是蓝图的本命主题; 亮色是给"必须白底"的场景的次选.)
+     */
+    --bp-exec: #1f1f28;
+    --bp-bool: #b3234a;        /* 栗 -> 玫红, 保住"红"的辨识 */
+    --bp-int: #0e8f7a;         /* 青绿 */
+    --bp-float: #5c8f16;       /* 亮绿压成橄榄, 仍是绿 */
+    --bp-number: #5c8f16;
+    --bp-string: #c2185b;      /* 品红 -> 玫紫 */
+    --bp-name: #7b3fb0;        /* 淡紫 */
+    --bp-text: #b04a68;        /* 肉粉 */
+    --bp-vector: #9a6a00;      /* 黄 -> 琥珀 */
+    --bp-rotator: #4059a8;     /* 长春花 -> 蓝紫 */
+    --bp-transform: #b35400;   /* 橙 */
+    --bp-object: #0b6fa8;      /* 蓝 */
+    --bp-class: #6a2fb0;       /* 紫 */
+    --bp-struct: #1f4fa8;      /* 深蓝 */
+    --bp-wildcard: #6a6a72;
+    --bp-byte: #0b6f66;
+    --bp-delegate: #c02a2a;
+    --bp-interface: #6f7a20;
+    --bp-default: #8a6a3a;
+
+    --bp-title-event: #d06060;
+    --bp-title-function: #5a86c2;
+    --bp-title-pure: #4f9a76;
+    --bp-title-macro: #8a8a94;
+    --bp-title-flow: #9a7ac0;
+    --bp-title-cast: #4f9aae;
+    --bp-title-default: #b8bcc6;
+    --bp-title-foreground: #ffffff;
+
+    /* 亮色下节点体必须**有底色**: 纯白节点在白画布上等于没有边界,
+       只剩一条 1px 边框, 而 UE5 的节点是靠色块本身从画布上浮起来的. */
+    --bp-node-bg: #f4f5f8;
+    --bp-node-border: #b8bcc6;
+    --bp-node-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.14);
+    --bp-grid-line: rgba(0, 0, 0, 0.06);
+    --bp-grid-line-bold: rgba(0, 0, 0, 0.11);
+    --bp-selected: #a87900;
+
+    /* 亮色下注释要比画布**深**一档才看得见 */
+    --bp-cmt-default: #dcdfe6;
+    --bp-cmt-neutral: #d2d6de;
+    --bp-cmt-primary: #c9cdea;
+    --bp-cmt-success: #c6e0d4;
+    --bp-cmt-warning: #ecd9b4;
+    --bp-cmt-danger: #eccbd0;
+    --bp-cmt-info: #c6dcea;
+
+    --bp-cmt-bar-default: #c2c7d2;
+    --bp-cmt-bar-neutral: #b8bcc8;
+    --bp-cmt-bar-primary: #afb5dd;
+    --bp-cmt-bar-success: #a8cdbb;
+    --bp-cmt-bar-warning: #dcbf90;
+    --bp-cmt-bar-danger: #dcadb3;
+    --bp-cmt-bar-info: #a8c9dc;
+  }
+
+
+  /* ============================================================================
+   * 排版 / 动效 / 层级刻度
+   * ----------------------------------------------------------------------------
+   * 补这一段的理由: 在此之前本库只有**颜色**是令牌化的, 字号与动效时长全部硬编在
+   * 组件类名里 (实测 53 处 text-[12px] 这类任意值, 外加 duration-100/150/200).
+   * 后果是 README 那句"改 tokens.css 一个文件就能换肤"只对颜色成立 
+   * 想把整套界面字号调大一档, 得改 40 多个文件.
+   *
+   * 与上游同步件的关系 (这条决定了本次只立刻度, 不批量改存量):
+   *   src/primitives 与大部分 src/layout 的类名整份取自 open-vetta, README 明确承诺
+   *   "视觉类名一个字没改", 那是"看起来一样"的唯一可靠来源. 强改这些文件会同时
+   *   失去两样东西: 与上游的可对照性, 以及 10.5px / 11.5px 这类半像素档的精确度
+   *   (取整就是 0.5px 的真实视觉变化). 因此下面的刻度是给**新代码**的唯一来源,
+   *   存量迁移需要先单独决策"半像素要不要收进整数档".
+   *
+   * 用法: 在 Tailwind 里写 text-(length:--fs-sm) 这类任意属性语法, 或直接
+   *       font-size: var(--fs-sm). scale 段刻意覆盖现网每一档 (含半像素),
+   *       这样后续迁移可以逐档一对一替换, 不产生视觉漂移.
+   * ==========================================================================*/
+
+  :root {
+    /* 字号: 与现网实际用到的每一档一一对齐, 含半像素档.
+       半像素不是笔误  12.5px 与 12px 在密集表格里是肉眼可辨的, 因此不取整,
+       而是原样建令牌, 让后续迁移可以逐档一对一替换, 不产生视觉漂移. */
+    --fs-3xs: 9px;
+    --fs-2xs: 10px;
+    --fs-2xs-half: 10.5px;
+    --fs-xs: 11px;
+    --fs-xs-half: 11.5px;
+    --fs-sm: 12px;
+    --fs-sm-half: 12.5px;
+    --fs-base: 13px;
+    --fs-lg: 15px;
+    --fs-xl: 19px;
+    --fs-2xl: 20px;
+    --fs-3xl: 22px;
+    --fs-4xl: 26px;
+    /* 排版组件 (Typography) 的导语与一级标题档 */
+    --fs-lead: 17px;
+    --fs-5xl: 30px;
+
+    /* 动效时长: 三档 + 水波纹专用一档.
+       超过 300ms 的进入动画在工具型界面里会被感知成"卡";
+       水波纹是扩散后淡出的反馈, 不挡操作, 所以单独放宽到 500ms. */
+    --duration-fast: 120ms;
+    --duration-base: 200ms;
+    --duration-slow: 300ms;
+    --duration-ripple: 500ms;
+    /* instant 给按压 / 勾选这类 "手一抬就该结束" 的反馈;
+       emphasized 给大面积入场 (页面 / 抽屉 / 弹簧), 是唯一允许超过 300ms 的进入档,
+       只用于一屏一次的主动作, 列表项与小控件不要用. */
+    --duration-instant: 80ms;
+    --duration-emphasized: 500ms;
+    /* 环境类循环动效 (漂浮 / 光晕呼吸 / 骨架扫光) 的周期: 慢到不抢注意力 */
+    --duration-loop: 1600ms;
+    --duration-ambient: 6000ms;
+    /* 旧名保留为别名, 存量组件与下游不用改 */
+    --dur-fast: var(--duration-fast);
+    --dur-base: var(--duration-base);
+    --dur-slow: var(--duration-slow);
+
+    /* 缓动: ease-out 用于进入与反馈 (起步快收尾稳, 取 GitHub Primer 的标准曲线),
+       ease-in 用于退出  用户已经决定离开了, 拖长只会挡住下一步操作. */
+    --ease-out: cubic-bezier(0.2, 0, 0, 1);
+    --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+    /* in-out: 在屏内从一处移到另一处 (滑块 / 指示器 / 循环往返), 两端都要稳 */
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    /* emphasized: 强调入场, 起步极快, 尾段拉长, 取 Material 3 emphasized-decelerate;
+       与之配对的退场曲线是 emphasized-accelerate */
+    --ease-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+    --ease-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+    /* spring: 带一次约 12% 回弹的弹簧. 这里先给 cubic-bezier 回退,
+       支持 linear() 的浏览器在下方 @supports 里换成真正的阻尼曲线 */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* 入场位移距离: 关键帧 hx-fade-up / hx-slide-in-* 读它, 大面板可在局部覆盖 */
+    --motion-distance-sm: 4px;
+    --motion-distance: 8px;
+    --motion-distance-lg: 24px;
+    /* scale-in 的起始比例, 与 tw-animate-css 的 zoom-in-95 对齐 */
+    --motion-scale-from: 0.95;
+
+    /* 层级: 写在各组件里的 z-50 没人知道全貌, 改一处就撞另一处 */
+    --z-base: 0;
+    /* 下拉菜单 / 自动补全: 贴着触发器, 但要被吸顶条盖住 */
+    --z-dropdown: 5;
+    --z-sticky: 10;
+    --z-panel: 30;
+    --z-overlay: 40;
+    --z-modal: 50;
+    /* 弹窗里再弹出的 popover / select 菜单必须高于 modal 本身 */
+    --z-popover: 55;
+    --z-toast: 60;
+    --z-tooltip: 70;
+  }
+
+  /* 系统要求减弱动效时, 所有走令牌的时长归零: 状态仍然切换, 只是不再有过程.
+     写在令牌层而不是逐个组件判断, 新组件只要用令牌就自动遵守. */
+  /* 弹簧曲线: 欠阻尼弹簧 (阻尼比 0.55) 的位移采样, 37 个点, 峰值 1.126 后衰减回 1.
+     linear() 是 2023 年才进标准的写法, 不支持的浏览器整条声明会被丢弃,
+     所以放在 @supports 里覆盖, 外层的 cubic-bezier 就是回退值. */
+  @supports (transition-timing-function: linear(0, 1)) {
+    :root {
+      --ease-spring: linear(
+        0, 0.045, 0.158, 0.31, 0.475, 0.637, 0.781, 0.901, 0.994, 1.06,
+        1.102, 1.122, 1.126, 1.118, 1.102, 1.083, 1.062, 1.042, 1.024, 1.01,
+        0.999, 0.991, 0.986, 0.984, 0.984, 0.985, 0.988, 0.99, 0.993, 0.995,
+        0.997, 0.999, 1, 1.001, 1.002, 1.002, 1
+      );
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --duration-instant: 0ms;
+      --duration-fast: 0ms;
+      --duration-base: 0ms;
+      --duration-slow: 0ms;
+      --duration-emphasized: 0ms;
+      --duration-ripple: 0ms;
+      /* 循环类不归零 (0ms 的 infinite 动画在部分引擎里会疯狂触发 iteration 事件),
+         由 motion.css 对循环类直接 animation: none */
+      /* 位移与缩放也归零: 即使有组件绕开时长令牌写死了 duration, 也不会再 "飞入" */
+      --motion-distance-sm: 0px;
+      --motion-distance: 0px;
+      --motion-distance-lg: 0px;
+      --motion-scale-from: 1;
+      /* 弹簧回弹本身就是位移过冲, 减弱动效时退回无过冲的 ease-out */
+      --ease-spring: var(--ease-out);
+    }
+  }
+
+  /* ============================================================================
+   * 尺寸刻度: 间距 / 控件高度 / 密度 / 页面节奏
+   * ----------------------------------------------------------------------------
+   * 基准 4px, --space-N = N x 4px x 密度. 档名与 Tailwind 的 p-N 一一对应
+   * (--space-4 = p-4 = 16px), 心算不用换算.
+   *
+   * 密度: --density 是乘数, 默认 1. 在任意节点上写 data-density="compact" (0.875)
+   *   或 data-density="comfortable" (1, 与 skins/density.css 一致), 该子树的间距, 控件高度, 区块留白一起缩放.
+   *   派生值必须在 [data-density] 上重新求值 (见文件头 "读取作用域的坑"),
+   *   所以派生块的选择器是 :root, [data-density], 而 --density 本身单独声明
+   *   (同一条规则里再写 --density: 1 会因特异性相同, 后写者胜而盖掉 compact).
+   *
+   * 控件高度五档对齐现网 Button 的 h-6 / h-7 / h-8 / h-9 与 h-10:
+   *   xs 24 / sm 28 / md 32 (默认) / lg 36 / xl 40 (px, 密度 1 时).
+   *
+   * 这些刻度现有组件**一个都不引用**: 组件类名沿用上游, 引用了就是改外观.
+   *   它们给新组件, 页面拼装与下游业务用. 尺寸与配色无关, 挂在 :root 上,
+   *   亮色 (data-mode="light" 也写在 html 上) 与暗色两套主题都取同一组值.
+   * ==========================================================================*/
+
+  :root {
+    --density: 1;
+    --space-unit: 4px;
+  }
+
+  [data-density="compact"] { --density: 0.875; }
+  [data-density="comfortable"] { --density: 1; }
+
+  :root, [data-density] {
+    /* 一个间距单位乘上密度: 所有随密度缩放的尺寸都从它派生 */
+    --density-space: calc(var(--space-unit) * var(--density));
+
+    --space-0: 0px;
+    --space-1: calc(var(--density-space) * 1);
+    --space-2: calc(var(--density-space) * 2);
+    --space-3: calc(var(--density-space) * 3);
+    --space-4: calc(var(--density-space) * 4);
+    --space-5: calc(var(--density-space) * 5);
+    --space-6: calc(var(--density-space) * 6);
+    --space-7: calc(var(--density-space) * 7);
+    --space-8: calc(var(--density-space) * 8);
+    --space-9: calc(var(--density-space) * 9);
+    --space-10: calc(var(--density-space) * 10);
+    --space-11: calc(var(--density-space) * 11);
+    --space-12: calc(var(--density-space) * 12);
+    --space-13: calc(var(--density-space) * 13);
+    --space-14: calc(var(--density-space) * 14);
+    --space-15: calc(var(--density-space) * 15);
+    --space-16: calc(var(--density-space) * 16);
+    --space-17: calc(var(--density-space) * 17);
+    --space-18: calc(var(--density-space) * 18);
+    --space-19: calc(var(--density-space) * 19);
+    --space-20: calc(var(--density-space) * 20);
+    --space-21: calc(var(--density-space) * 21);
+    --space-22: calc(var(--density-space) * 22);
+    --space-23: calc(var(--density-space) * 23);
+    --space-24: calc(var(--density-space) * 24);
+    /* 半档: 上游类名里大量出现的 px-2.5 / py-1.5 / gap-0.5, 给新组件对照用 */
+    --space-0-5: calc(var(--density-space) * 0.5);
+    --space-1-5: calc(var(--density-space) * 1.5);
+    --space-2-5: calc(var(--density-space) * 2.5);
+    --space-3-5: calc(var(--density-space) * 3.5);
+
+    /* 控件高度 (按钮 / 输入框 / 选择器 / 分段控件共用一套) */
+    --control-h-xs: calc(var(--density-space) * 6);
+    --control-h-sm: calc(var(--density-space) * 7);
+    --control-h-md: calc(var(--density-space) * 8);
+    --control-h-lg: calc(var(--density-space) * 9);
+    --control-h-xl: calc(var(--density-space) * 10);
+    /* 控件水平内边距: 与高度同档 */
+    --control-px-xs: var(--space-2);
+    --control-px-sm: var(--space-2-5);
+    --control-px-md: var(--space-2-5);
+    --control-px-lg: var(--space-3);
+    --control-px-xl: var(--space-4);
+
+    /* 页面纵向节奏: 区块之间的留白.
+       商业站与工具界面最大的观感差别就在这里  工具界面区块挨着排, 落地页每一屏之间
+       留 64px 到 160px. 用 clamp 随视口收放: 手机上不至于空出半屏, 宽屏上撑得开.
+       下限与上限都乘密度, 紧凑模式下一起收紧. */
+    --section-space-y: clamp(calc(var(--density-space) * 16), 8vw, calc(var(--density-space) * 24));
+    --section-space-y-lg: clamp(calc(var(--density-space) * 24), 12vw, calc(var(--density-space) * 40));
+    /* 区块内部: 标题组与正文之间 */
+    --section-gap: clamp(calc(var(--density-space) * 8), 4vw, calc(var(--density-space) * 12));
+  }
+
+  /* ============================================================================
+   * 圆角 / 字号 / 行高 / 字重 / 断点 / 容器与栅格
+   * ----------------------------------------------------------------------------
+   * 圆角: sm / md / lg / xl / 2xl 与 styles.css 的 @theme 派生式**逐字相同**
+   *   (都从 --radius 派生). 这里重复声明不是为了改值, 而是让不经过 Tailwind 的
+   *   代码也能 var(--radius-lg); 两边任何一边改动都必须同步另一边, 否则 rounded-lg
+   *   与 var(--radius-lg) 会分家. xs 取 Tailwind 默认的 2px, 也不改变 rounded-xs.
+   *   只挂 :root (不挂 [data-mode]), 与 Tailwind 主题变量的求值点一致.
+   *
+   * 字号沿用上面 "排版 / 动效 / 层级刻度" 一节的 --fs-*; 这里补展示档与行高字重.
+   *   刻意不用 --text-* / --leading-* / --font-weight-* 这些名字: 它们是 Tailwind 的主题
+   *   命名空间, 在这里声明会覆盖 text-sm / leading-tight / font-medium 的取值,
+   *   等于静默改了全部组件的字号.
+   *
+   * 断点: 与 Tailwind 默认断点同值 (sm: / md: 前缀用的就是这组), 供 JS 用
+   *   getComputedStyle(document.documentElement).getPropertyValue("--breakpoint-md") 读取,
+   *   让 matchMedia 与 CSS 断点同源. CSS 的 @media 里不能用 var(), 媒体查询仍写字面量.
+   *
+   * 容器: narrow 是正文阅读宽度 (约 45 个汉字一行), max 是常规页面, wide 是全宽展示区.
+   *   --grid-cols 与 Grid 组件内部用的变量同名: Grid 只在给了 base 列数时才在自己身上
+   *   内联设置并读取它, 这里的 12 是页面级 12 栏栅格的默认值, 不改变 Grid 的列数.
+   * ==========================================================================*/
+
+  :root {
+    --radius-none: 0px;
+    --radius-xs: 2px;
+    --radius-sm: calc(var(--radius) - 4px);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 8px);
+    --radius-full: 9999px;
+
+    /* 展示档字号: 落地页主标题 / 数据大字 */
+    --fs-6xl: 36px;
+    --fs-7xl: 48px;
+    --fs-8xl: 60px;
+
+    /* 行高: 标题用 tight / snug, 正文用 normal, 长文用 relaxed */
+    --lh-none: 1;
+    --lh-tight: 1.25;
+    --lh-snug: 1.375;
+    --lh-normal: 1.5;
+    --lh-relaxed: 1.625;
+    --lh-loose: 1.75;
+
+    /* 字重: 正文 400, 控件与标题 500, 强调 600, 粗体 700; light 300 只给 Display 的 weight 单点覆盖用.
+       --fw-display 是展示大字专用档 (默认 600), 皮肤按品牌覆盖为 450 / 510 / 300 等可变字重,
+       不改 --fw-semibold / --fw-bold, 所以 primitives 里按钮 / 输入框的字重不受影响. */
+    --fw-light: 300;
+    --fw-regular: 400;
+    --fw-medium: 500;
+    --fw-semibold: 600;
+    --fw-bold: 700;
+    --fw-display: 600;
+
+    /* 断点 */
+    --breakpoint-sm: 40rem;
+    --breakpoint-md: 48rem;
+    --breakpoint-lg: 64rem;
+    --breakpoint-xl: 80rem;
+    --breakpoint-2xl: 96rem;
+
+    /* 容器宽度 */
+    --container-narrow: 45rem;
+    --container-max: 80rem;
+    --container-wide: 90rem;
+    /* 页面左右留白: 窄屏 16px, 宽屏 32px */
+    --container-padding-x: clamp(16px, 4vw, 32px);
+
+    /* 页面栅格 */
+    --grid-cols: 12;
+    --grid-gutter: clamp(16px, 2.5vw, 32px);
+  }
+
+  /* ============================================================================
+   * 第 3 层  组件令牌 (component)
+   * ----------------------------------------------------------------------------
+   * 只引用第 2 层语义令牌与上面的尺寸档, 不出现任何字面量颜色.
+   * 取值描述的是**现网组件的实际观感** (卡片 = card 底 + 1px border + radius-xl,
+   * 输入框 = 32px 高 + radius-lg, 按钮默认 = secondary 底 + control-hover 悬停),
+   * 所以新组件引用它们就和现有组件长得一样; 现有组件类名不改, 不引用这一层.
+   *
+   * 命名: --<组件>-<部位>. 刻意避开已有语义名 (--card / --card-foreground / --input),
+   *   用 -bg / -fg / -border 后缀区分, 不会与语义层撞名.
+   *
+   * 选择器挂 :root, [data-mode], [data-density]: 引用的主题色与密度都可能被子树覆盖,
+   * 必须在覆盖点重新求值 (见文件头).
+   * ==========================================================================*/
+
+  :root, [data-mode], [data-density] {
+    /* 卡片 */
+    --card-bg: var(--card);
+    --card-fg: var(--card-foreground);
+    --card-border: var(--border);
+    --card-radius: var(--radius-xl);
+    --card-padding: var(--space-4);
+    --card-gap: var(--space-3);
+    --card-shadow: none;
+    --card-raised-bg: var(--surface-raised);
+    --card-raised-shadow: var(--shadow-md);
+
+    /* 输入框 / 文本域 / 选择器触发器 */
+    --input-h: var(--control-h-md);
+    --input-px: var(--control-px-md);
+    --input-bg: transparent;
+    --input-fg: var(--foreground);
+    --input-border: var(--border);
+    --input-border-focus: var(--ring);
+    --input-placeholder: var(--muted-foreground);
+    --input-radius: var(--radius-lg);
+
+    /* 按钮 */
+    --button-h: var(--control-h-md);
+    --button-h-sm: var(--control-h-sm);
+    --button-h-lg: var(--control-h-lg);
+    --button-px: var(--control-px-md);
+    --button-gap: var(--space-1-5);
+    --button-radius: var(--radius-lg);
+    --button-bg: var(--secondary);
+    --button-fg: var(--foreground);
+    --button-border: var(--border);
+    --button-hover-bg: var(--control-hover);
+    --button-primary-bg: var(--primary);
+    --button-primary-fg: var(--primary-foreground);
+    --button-danger-fg: var(--danger-fg);
+
+    /* 浮层 (Popover / DropdownMenu / Select 菜单) */
+    --popover-bg: var(--popover);
+    --popover-fg: var(--popover-foreground);
+    --popover-border: var(--border);
+    --popover-radius: var(--radius-lg);
+    --popover-shadow: var(--shadow-lg);
+    --popover-padding: var(--space-1);
+    --menu-item-h: var(--control-h-md);
+    --menu-item-px: var(--space-2-5);
+    --menu-item-hover-bg: var(--accent);
+
+    /* 弹窗 */
+    --dialog-bg: var(--popover);
+    --dialog-border: var(--border);
+    --dialog-radius: var(--radius-xl);
+    --dialog-shadow: var(--shadow-2xl);
+    --dialog-padding: var(--space-6);
+
+    /* 提示气泡 */
+    --tooltip-bg: var(--popover);
+    --tooltip-fg: var(--popover-foreground);
+    --tooltip-radius: var(--radius-md);
+    --tooltip-px: var(--space-2);
+
+    /* 徽标 */
+    --badge-h: var(--control-h-xs);
+    --badge-radius: var(--radius-full);
+    --badge-bg: var(--secondary);
+    --badge-fg: var(--secondary-foreground);
+
+    /* 表格 / 列表行 */
+    --table-row-h: var(--control-h-xl);
+    --table-header-bg: var(--muted);
+    --table-border: var(--border-muted);
+    --table-row-hover-bg: var(--accent);
+
+    /* 聚焦: 全库统一 1px ring 变色, 不画 outline */
+    --focus-ring: var(--ring);
+  }
+
+  /* ============================================================================
+   * 展示级排版 / 营销节奏 / 宽屏容器 (V0-01, 对应视觉审计 T1 T2 T4 T5)
+   * ----------------------------------------------------------------------------
+   * 与明暗无关: 这里没有任何颜色, 只是尺寸 / 时长 / 层级, 所以**不挂 [data-mode]**,
+   * 亮暗两套主题共用同一份取值, 切主题时不需要也不应该重新求值.
+   * 字号 / 行高 / 字距 / 容器 / 层级 / 编排只挂 :root; 节奏档 (section-pad / block-gap)
+   * 乘 --density, 因此挂 :root, [data-density], 在密度覆盖点重新求值 (见文件头),
+   * 默认密度 1 时下限 / 上限正好是 40px 到 128px.
+   *
+   * 流体公式: 视口 360px 取下限, 1440px 取上限, 中间线性插值
+   *   preferred = (min - slope*360)/16 rem + slope*100 vw, slope = (max-min)/1080.
+   *   rem 截距保证用户放大浏览器字号时标题跟着放大 (纯 vw 会让缩放失效).
+   *
+   * 与既有令牌的关系 (只新增, 不改任何既有取值):
+   *   --fs-6xl/7xl/8xl 是固定档, 给数据大字; --fs-display-* 是流体档, 给落地页标题.
+   *   --lh-tight (1.25) 与 --container-max (80rem) / --container-wide (90rem) 已存在,
+   *   原样保留. 因此 display 专用的更紧行高叫 --lh-display-tight,
+   *   1536px 的最宽展示容器叫 --container-display (而不是覆盖 --container-max).
+   * ==========================================================================*/
+
+  :root {
+    /* 展示级字号: sm 36->44, md 44->56, lg 52->68, xl 60->80, 2xl 72->96, 3xl 80->150 (px) */
+    --fs-display-sm: clamp(2.25rem, 2.083rem + 0.7407vw, 2.75rem);
+    --fs-display-md: clamp(2.75rem, 2.5rem + 1.111vw, 3.5rem);
+    --fs-display-lg: clamp(3.25rem, 2.917rem + 1.481vw, 4.25rem);
+    --fs-display-xl: clamp(3.75rem, 3.333rem + 1.852vw, 5rem);
+    --fs-display-2xl: clamp(4.5rem, 4rem + 2.222vw, 6rem);
+    /* oversize 档: campaign 首屏 (对齐 nike.com 150px), 360px 80 -> 1440px 150 */
+    --fs-display-3xl: clamp(5rem, 3.5417rem + 6.4815vw, 9.375rem);
+
+    /* 展示级行高: 大字号下 1.25 会显得松散, display 收到 1.05;
+       单行巨型标题 (2xl) 用 tight 的 1.0, 两行以上回到 --lh-display. */
+    --lh-display: 1.05;
+    --lh-display-tight: 1;
+    /* CJK 展示行高: 方块字无升降部, 1.05 会让两行汉字贴在一起, 1.375 (leading-snug) 在 80px 下又偏松,
+       取 1.2 (取证报告 Q2, 待中文站点实测后再定值). */
+    --lh-display-cjk: 1.2;
+
+    /* 展示字体位: 默认回到正文无衬线, 皮肤层 (src/skins/*.css) 按品牌覆盖 --font-display.
+       CJK 标题单独一位, 苹方排在 Noto 之前, 装了 Noto 的 macOS 仍用苹方. */
+    --font-display: var(--font-sans);
+    --font-display-cjk: -apple-system, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+
+    /* 展示级字距: 拉丁字母在大字号下需要收紧, 字号越大收得越多.
+       CJK 方块字自带字间留白, 负字距会把汉字挤到一起, 所以中文取 0;
+       使用方在 :lang(zh) / :lang(ja) 下用 --tracking-display-cjk 覆盖. */
+    --tracking-display: -0.025em;
+    --tracking-display-tight: -0.04em;
+    --tracking-display-cjk: 0em;
+
+    /* 容器宽度: content = 常规营销页正文区 (1280px), wide 沿用既有 --container-wide
+       (90rem = 1440px), display = 宽屏展示区上限 (1536px, 对齐 2xl 断点). */
+    --container-content: 80rem;
+    --container-display: 96rem;
+
+    /* 站点头部: 高于 sticky (10) 的吸顶元素, 低于 panel (30) 与所有浮层,
+       保证下拉菜单 / 弹窗永远盖得住导航栏. */
+    --z-header: calc(var(--z-sticky) + 10);
+
+    /* 入场编排: 列表 / 卡片依次出现的间隔. 第 n 项延迟 n * step;
+       超过 8 项时应封顶, 否则最后一项要等半秒以上. */
+    --stagger-step: 60ms;
+
+    /* 边缘渐隐: 横滑轨道 / logo 墙两端 mask-image 的渐变长度, 24px -> 64px */
+    --mask-fade: clamp(1.5rem, 0.6667rem + 3.704vw, 4rem);
+  }
+
+  :root, [data-density] {
+    /* 营销纵向节奏: 每一屏区块的上下留白 (默认密度下)
+       sm 40->48, md 48->64, lg 64->96, xl 96->128 (px), 对齐实测站点 48 到 96px.
+       rem 截距向上取到千分位, 保证 1440px 时 preferred 不低于上限, clamp 正好落在上限. */
+    --section-pad-sm: clamp(calc(2.5rem * var(--density)), calc((2.334rem + 0.7407vw) * var(--density)), calc(3rem * var(--density)));
+    --section-pad-md: clamp(calc(3rem * var(--density)), calc((2.668rem + 1.481vw) * var(--density)), calc(4rem * var(--density)));
+    --section-pad-lg: clamp(calc(4rem * var(--density)), calc((3.334rem + 2.963vw) * var(--density)), calc(6rem * var(--density)));
+    --section-pad-xl: clamp(calc(6rem * var(--density)), calc((5.334rem + 2.963vw) * var(--density)), calc(8rem * var(--density)));
+
+    /* 区块之间 / 区块内大组之间的小间距: sm 16->24, md 24->40, lg 40->64 (px) */
+    --block-gap-sm: clamp(calc(1rem * var(--density)), calc((0.8333rem + 0.7407vw) * var(--density)), calc(1.5rem * var(--density)));
+    --block-gap-md: clamp(calc(1.5rem * var(--density)), calc((1.167rem + 1.481vw) * var(--density)), calc(2.5rem * var(--density)));
+    --block-gap-lg: clamp(calc(2.5rem * var(--density)), calc((2rem + 2.222vw) * var(--density)), calc(4rem * var(--density)));
+
+    /* Hero 顶部留白 (N13): 只给 Hero 根节点用, 独立于 --section-pad-* 节奏, 改它不影响其它区块.
+       sm 64->96, md 80->128, lg 96->160, xl 120->200 (px), 1440 视口起到上限 (linear 首屏 200px) */
+    --hero-pad-top-sm: clamp(calc(4rem * var(--density)), calc((3.2958rem + 3.01vw) * var(--density)), calc(6rem * var(--density)));
+    --hero-pad-top-md: clamp(calc(5rem * var(--density)), calc((3.9437rem + 4.52vw) * var(--density)), calc(8rem * var(--density)));
+    --hero-pad-top-lg: clamp(calc(6rem * var(--density)), calc((4.5915rem + 6.02vw) * var(--density)), calc(10rem * var(--density)));
+    --hero-pad-top-xl: clamp(calc(7.5rem * var(--density)), calc((5.7394rem + 7.52vw) * var(--density)), calc(12.5rem * var(--density)));
+  }
+
+  /* ============================================================================
+   * One Dark Pro Darker 调色板 (代码编辑器与代码展示共用)
+   * ----------------------------------------------------------------------------
+   * 取值来自 One Dark Pro 官方主题的 Darker 变体 (Atom One Dark theme 的
+   * Darker 配色): 背景 #23272E, 前景 #ABB2BF; 语法色与标准 One Dark Pro 相同,
+   * 只有背景/行高亮/选区的亮度整体压暗一档 -- 这正是 "Darker" 这个名字的由来.
+   *
+   * 为什么放在令牌层: src 下的 .ts/.tsx 禁止写 hex 色值 (PROJECT-UI-HEX), 颜色只能
+   * 从 tokens.css 来. monaco 的主题是运行期注册的 JS 对象, 所以由组件读这些变量,
+   * 再交给 monaco.registerTheme, 而不是在组件里抄一份色板.
+   * .agents/notes/implemented/feature/2026-10-22-code-editor-one-dark-pro-darker.md
+   * ==========================================================================*/
+  :root {
+    --code-odp-background: #23272e;
+    --code-odp-foreground: #abb2bf;
+    --code-odp-line-highlight: #2c313a;
+    --code-odp-selection: #3e4451;
+    --code-odp-line-number: #495162;
+    --code-odp-comment: #7f848e;
+    --code-odp-keyword: #c678dd;
+    --code-odp-string: #98c379;
+    --code-odp-number: #d19a66;
+    --code-odp-function: #61afef;
+    --code-odp-variable: #e06c75;
+    --code-odp-type: #e5c07b;
+    --code-odp-operator: #56b6c2;
+    --code-odp-constant: #d19a66;
+    --code-odp-tag: #e06c75;
+    --code-odp-widget: #21252b;
+    --code-odp-border: #181a1f;
+  }
+
+  /* 亮色下也保持同一套深色代码底: 与 CodeBlock 的取舍一致 -- 深色代码块在浅色页面里
+     是常见且被接受的对照手法, 换主题只换页面, 不换语法色. */
 }
-
-/* ============================================================================
- * One Dark Pro Darker 调色板 (代码编辑器与代码展示共用)
- * ----------------------------------------------------------------------------
- * 取值来自 One Dark Pro 官方主题的 Darker 变体 (Atom One Dark theme 的
- * Darker 配色): 背景 #23272E, 前景 #ABB2BF; 语法色与标准 One Dark Pro 相同,
- * 只有背景/行高亮/选区的亮度整体压暗一档 -- 这正是 "Darker" 这个名字的由来.
- *
- * 为什么放在令牌层: src 下的 .ts/.tsx 禁止写 hex 色值 (PROJECT-UI-HEX), 颜色只能
- * 从 tokens.css 来. monaco 的主题是运行期注册的 JS 对象, 所以由组件读这些变量,
- * 再交给 monaco.registerTheme, 而不是在组件里抄一份色板.
- * .agents/notes/implemented/feature/2026-10-22-code-editor-one-dark-pro-darker.md
- * ==========================================================================*/
-:root {
-  --code-odp-background: #23272e;
-  --code-odp-foreground: #abb2bf;
-  --code-odp-line-highlight: #2c313a;
-  --code-odp-selection: #3e4451;
-  --code-odp-line-number: #495162;
-  --code-odp-comment: #7f848e;
-  --code-odp-keyword: #c678dd;
-  --code-odp-string: #98c379;
-  --code-odp-number: #d19a66;
-  --code-odp-function: #61afef;
-  --code-odp-variable: #e06c75;
-  --code-odp-type: #e5c07b;
-  --code-odp-operator: #56b6c2;
-  --code-odp-constant: #d19a66;
-  --code-odp-tag: #e06c75;
-  --code-odp-widget: #21252b;
-  --code-odp-border: #181a1f;
-}
-
-/* 亮色下也保持同一套深色代码底: 与 CodeBlock 的取舍一致 -- 深色代码块在浅色页面里
-   是常见且被接受的对照手法, 换主题只换页面, 不换语法色. */
-

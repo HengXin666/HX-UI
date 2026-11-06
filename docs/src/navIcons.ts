@@ -103,6 +103,15 @@ export const NAV_ICONS: Record<string, string> = {
   "templates-settings": SETTINGS_ICON,
   "templates-dashboard": "icon-[solar--chart-2-linear]",
   "templates-console": "icon-[solar--server-square-linear]",
+  "page-saas": "icon-[solar--rocket-2-linear]",
+  "page-opensource": "icon-[solar--code-square-linear]",
+  "page-pricing": "icon-[solar--tag-price-linear]",
+  "page-commerce-home": "icon-[solar--shop-linear]",
+  "page-product": "icon-[solar--box-linear]",
+  "page-portfolio": "icon-[solar--user-id-linear]",
+  "page-docsite": "icon-[solar--notebook-linear]",
+  "page-dashboard": "icon-[solar--widget-4-linear]",
+  "page-clone-linear": "icon-[solar--code-square-linear]",
   // UI 丰富度改造 (2026-11-01 补): 动效, 布局原语, 视觉效果, 富交互件
   motion: "icon-[solar--play-circle-linear]",
   box: "icon-[solar--widget-6-linear]",
@@ -111,6 +120,24 @@ export const NAV_ICONS: Record<string, string> = {
   widgets: "icon-[solar--stars-linear]",
   // 展示画廊 (S5): 新件拼成的落地页与仪表盘
   gallery: "icon-[solar--gallery-round-linear]",
+  // V0-Z 集成 (2026-11-03 补): 营销排版, 媒体原语与区块层
+  "display-type": "icon-[solar--text-square-linear]",
+  "media-image": "icon-[solar--gallery-minimalistic-linear]",
+  "media-themed-image": "icon-[solar--pallete-2-linear]",
+  "media-video": "icon-[solar--videocamera-record-linear]",
+  "media-gallery": "icon-[solar--gallery-wide-linear]",
+  "media-lightbox": "icon-[solar--maximize-square-linear]",
+  "media-frames": "icon-[solar--smartphone-linear]",
+  "blocks-site": "icon-[solar--window-frame-linear]",
+  "blocks-hero": "icon-[solar--rocket-2-linear]",
+  "blocks-features": "icon-[solar--layers-linear]",
+  "blocks-social-proof": "icon-[solar--chat-round-like-linear]",
+  "blocks-pricing": "icon-[solar--tag-price-linear]",
+  "blocks-developer": "icon-[solar--programming-linear]",
+  "blocks-commerce-browse": "icon-[solar--shop-2-linear]",
+  "blocks-commerce-trade": "icon-[solar--cart-large-2-linear]",
+  "blocks-docs": "icon-[solar--document-text-linear]",
+  "blocks-portfolio": "icon-[solar--user-id-linear]",
 };
 
 export const DEFAULT_NAV_ICON = NAV_ICON.widget;

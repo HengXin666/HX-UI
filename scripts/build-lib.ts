@@ -14,7 +14,8 @@ import { NODE_MODULES, STDIO_INHERIT, UTF8 } from "./constants/quality.ts";
 const ROOT = process.cwd();
 const DIST = join(ROOT, "dist");
 const SRC = join(ROOT, SRC_DIR);
-const CSS_FILES = ["tokens.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css", "effects.css"];
+/** base.css 是可选的全局重置 (@layer hx.base), 与令牌分开发布, 由使用方自行决定是否引入. */
+const CSS_FILES = ["tokens.css", "base.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css", "effects.css"];
 const EXTRA_FILES = [LICENSE_FILE, "NOTICE"];
 const SPECIFIER = /((?:from|import)\s*["'])(\.{1,2}\/[^"']+)(["'])/g;
 
@@ -77,6 +78,8 @@ execFileSync(process.execPath, [join(ROOT, NODE_MODULES, "typescript", "bin", "t
 for (const name of CSS_FILES) {
   cpSync(join(SRC, name), join(DIST, name));
 }
+/** 皮肤层 (skins/index.css 及其 @import 的各皮肤与 density.css) 整目录拷贝, 对应 exports 的 ./skins.css 与 ./density.css. */
+cpSync(join(SRC, "skins"), join(DIST, "skins"), { recursive: true, filter: (src: string) => !src.endsWith(".ts") });
 for (const name of EXTRA_FILES) {
   cpSync(join(ROOT, name), join(DIST, name));
 }

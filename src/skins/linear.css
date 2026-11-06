@@ -1,0 +1,85 @@
+/* ============================================================================
+ * 皮肤 linear: 暗紫灰, 低对比, 细边微光
+ * 底色带一点蓝紫的近黑, 文字与底的对比刻意压低一档; 分层几乎全靠 1px 细边, 主色光晕只在聚焦与强调卡上微微亮起.
+ * 只覆盖令牌; 阴影与渐变公式见 foundation.css.
+ * .agents/notes/implemented/feature/2026-11-02-skins-density.md
+ * ==========================================================================*/
+
+[data-skin="linear"][data-skin] {
+  --radius: 0.5rem;
+  --font-display: "Inter Display", "Inter", -apple-system, "Helvetica Neue", "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  --effect-intensity: 0.6;
+}
+
+[data-skin="linear"]:not([data-mode="light"]) {
+  color-scheme: dark;
+  --background: #0f1015;
+  --foreground: #c9cbd6;
+  --card: #13141b;
+  --card-foreground: #c9cbd6;
+  --popover: #191a23;
+  --popover-foreground: #c9cbd6;
+  --primary: #5e6ad2;
+  --primary-foreground: #ffffff;
+  --link: #8c94f0;
+  --secondary: #1a1b24;
+  --secondary-foreground: #c9cbd6;
+  --muted: #0b0c10;
+  --muted-foreground: #8a8f9e;
+  --accent: #1c1d27;
+  --accent-foreground: #e3e4ec;
+  --heading: #f2f3f7;
+  --control-hover: #22232e;
+  --border: #23252f;
+  --border-muted: #1b1c25;
+  --input: #2a2c38;
+  --ring: #7c84e8;
+  --surface-sunken: #0b0c10;
+  --surface-raised: #16171f;
+  --surface-overlay: #1d1e28;
+  --primary-subtle: rgb(94 106 210 / 0.16);
+  --primary-glow: rgb(124 132 232 / 0.32);
+  --accent-2: #b48ef0;
+  --accent-2-foreground: #0f1015;
+  --accent-2-subtle: rgb(180 142 240 / 0.14);
+  --skin-shadow: 0 0 0;
+  --skin-shadow-a: 2;
+  --skin-shadow-blur: 1;
+}
+
+[data-skin="linear"][data-mode="light"],
+[data-mode="light"] [data-skin="linear"] {
+  color-scheme: light;
+  --background: #fbfbfc;
+  --foreground: #1f2023;
+  --card: #ffffff;
+  --card-foreground: #1f2023;
+  --popover: #ffffff;
+  --popover-foreground: #1f2023;
+  --primary: #5e6ad2;
+  --primary-foreground: #ffffff;
+  --link: #4f58c0;
+  --secondary: #f3f3f6;
+  --secondary-foreground: #1f2023;
+  --muted: #f4f4f7;
+  --muted-foreground: #6b6f7b;
+  --accent: #eeeff3;
+  --accent-foreground: #1f2023;
+  --heading: #111216;
+  --control-hover: #e9eaef;
+  --border: #e4e5eb;
+  --border-muted: #eceef2;
+  --input: #dcdde4;
+  --ring: #5e6ad2;
+  --surface-sunken: #f4f4f7;
+  --surface-raised: #ffffff;
+  --surface-overlay: #ffffff;
+  --primary-subtle: rgb(94 106 210 / 0.10);
+  --primary-glow: rgb(94 106 210 / 0.22);
+  --accent-2: #8a5cd6;
+  --accent-2-foreground: #ffffff;
+  --accent-2-subtle: rgb(138 92 214 / 0.10);
+  --skin-shadow: 20 22 40;
+  --skin-shadow-a: 0.7;
+  --skin-shadow-blur: 1;
+}

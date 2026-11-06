@@ -3,6 +3,7 @@ import { BACKDROP_VARIANT, BEAM_TONE, EFFECTS_DOC, GLASS_TINT } from "../../../.
 import { Backdrop, BorderBeam, GlassPanel, Marquee, SpotlightCard } from "../../../../src/effects";
 import { Callout, Code, H2, P, Preview } from "../../components/DocKit";
 import { Props } from "../../components/DocSpec";
+import { EffectsBackgrounds } from "./EffectsBackgrounds";
 import {
   DEMO_BEAM_SLOW_SECONDS,
   DEMO_GLASS_BLUR_STRONG,
@@ -26,7 +27,8 @@ function Chips(): JSX.Element {
 }
 
 /**
- * 视觉效果件文档页: SpotlightCard, BorderBeam, Marquee, Backdrop, GlassPanel.
+ * 视觉效果件文档页: SpotlightCard, BorderBeam, Marquee, Backdrop, GlassPanel,
+ * 以及 EffectsBackgrounds 一节 (MeshGradient, Grain, Beam, GridLines, MaskFade, GradientBorder).
  * 集成前从源码相对路径引入, 集成分片接好公共导出后可改为从 @hx/ui 引入.
  *
  * .agents/notes/implemented/feature/2026-11-01-visual-effects.md
@@ -152,6 +154,8 @@ export function EffectsPage(): JSX.Element {
           </GlassPanel>
         </Backdrop>
       </Preview>
+
+      <EffectsBackgrounds />
 
       <H2>属性</H2>
       <Props spec={`

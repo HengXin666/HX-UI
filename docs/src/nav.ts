@@ -32,6 +32,8 @@ const GROUP = {
   box: "布局容器",
   motion: "动效与质感",
   type: "排版",
+  media: "媒体",
+  blocks: "区块",
   conversation: "会话",
   layout: "页面版式",
   charts: "图表",
@@ -43,6 +45,7 @@ const GROUP = {
 const START = `
 install ~ 安装与使用 ~ 引入组件, 接入样式, 切换主题, 部署文档站
 tokens ~ 设计令牌 ~ 颜色, 圆角, 阴影, 字号, 间距与动效
+skins ~ 皮肤与密度 ~ 六套皮肤一键换气质, 紧凑 / 舒适 / 宽松三档密度
 `;
 
 const GALLERY = `
@@ -138,7 +141,30 @@ effects ~ 视觉效果 ~ 光斑卡, 流光边框, 跑马灯, 背景底纹与毛�
 
 const TYPE = `
 typography ~ 排版 ~ 标题, 正文, 引用与列表
+display-type ~ 营销排版 ~ Display, Eyebrow, Kicker, Lead, 渐变字与 Prose 正文容器, 中日韩自动收紧
 kbd ~ 按键 ~ 键盘按键标记
+`;
+
+const MEDIA = `
+media-image ~ 图片 ~ 响应式图片, 占位与加载失败兜底
+media-themed-image ~ 亮暗双图 ~ 跟随主题切换的两张图
+media-video ~ 视频 ~ 封面, 静音自动播与减弱动效
+media-gallery ~ 画廊 ~ 网格与瀑布排布, 点开进灯箱
+media-lightbox ~ 灯箱 ~ 全屏查看, 方向键与滑动切换
+media-frames ~ 设备与浏览器外框 ~ 手机, 平板, 笔记本与浏览器窗口外框
+`;
+
+const BLOCKS = `
+blocks-site ~ 站点区块 ~ 顶栏, 大菜单面板, 移动导航, 公告条与页脚
+blocks-hero ~ 首屏与转化条 ~ Hero, 标志墙, 行动条与邮件订阅
+blocks-features ~ 特性区块 ~ 特性栅格, 左右交替, 便当格, 指标带, 展示与图表栅格
+blocks-social-proof ~ 社会证明 ~ 用户评价, 案例, 更新日志与推文墙
+blocks-pricing ~ 定价与对比 ~ 定价卡, 对比矩阵与常见问题
+blocks-developer ~ 开发者区块 ~ 代码展示与安装命令
+blocks-commerce-browse ~ 电商浏览 ~ 商品卡, 栅格, 横滑轨道, 类目, 活动首屏与促销条
+blocks-commerce-trade ~ 电商交易 ~ 商品详情, 购物车, 结账步骤与搜索结果
+blocks-docs ~ 文档站区块 ~ 文档外壳, 目录, 上下页, API 表与提示框
+blocks-portfolio ~ 作品集区块 ~ 个人首屏, 粘性侧栏, 经历时间线, 项目栅格与文章列表
 `;
 
 const CONVERSATION = `
@@ -186,6 +212,15 @@ templates-chat ~ AI 对话工作台 ~ 会话列表 + 流式回复 + 轨迹 + 输
 templates-settings ~ 设置页 ~ 二级设置栏 + 一行一个设置项, 整页可复制
 templates-dashboard ~ 数据看板 ~ 指标卡 + 面积图 + 数据表, 整页可复制
 templates-console ~ 链路控制台 ~ 代理链路 + 步骤条 + 日志框, 整页可复制
+page-saas ~ SaaS 落地页 ~ 复刻 vercel / linear / stripe 型 SaaS 落地页: 主视觉 + 客户墙 + 便当格 + 定价 + 问答, 三套皮肤
+page-opensource ~ 开源项目站 ~ 复刻 tailwindcss / astro / bun 型开源项目主页: 安装命令 + 代码展示 + 案例 + 更新日志, 三套皮肤
+page-pricing ~ 定价页 ~ 复刻 linear / vercel 型定价页: 月年切换套餐 + 功能对比表 + 分组问答, 三套皮肤
+page-commerce-home ~ 电商首页 ~ 复刻 nike / apple / shopify 型电商首页: 大菜单 + 轮播 + 分类 + 商品网格. 演示里顶栏未吸顶, 真实项目里传 sticky: true
+page-product ~ 商品详情 ~ 复刻 apple / nike 型商品详情页: 画廊 + 购买面板 + 规格对比 + 评价. 演示里顶栏未吸顶, 真实项目里传 sticky: true
+page-portfolio ~ 个人主页 ~ 复刻 brittanychiang.com 型个人主页: 粘性双栏, 经历 + 项目 + 文章
+page-docsite ~ 文档站 ~ 复刻 mantine / shadcn / ant.design 型组件文档站: 首页 + 侧栏目录 + 正文 + 属性表
+page-dashboard ~ 仪表盘 ~ 复刻 SaaS 后台型仪表盘: 侧栏 + 指标行 + 双图表 + 动态流 + 上手清单
+page-clone-linear ~ linear 复刻 ~ 逐块对拽 linear.app 深色首屏: 零自定义 class, 缺口如实留在画面上
 `;
 
 const BLUEPRINT = `
@@ -211,6 +246,8 @@ export const DOCS: readonly DocEntry[] = [
   ...section(GROUP.box, BOX),
   ...section(GROUP.motion, MOTION),
   ...section(GROUP.type, TYPE),
+  ...section(GROUP.media, MEDIA),
+  ...section(GROUP.blocks, BLOCKS),
   ...section(GROUP.conversation, CONVERSATION),
   ...section(GROUP.layout, LAYOUT),
   ...section(GROUP.charts, CHARTS),
@@ -234,4 +271,13 @@ export const WIDE_PAGES: ReadonlySet<string> = new Set([
   "templates-settings",
   "templates-dashboard",
   "templates-console",
+  "page-saas",
+  "page-opensource",
+  "page-pricing",
+  "page-commerce-home",
+  "page-product",
+  "page-portfolio",
+  "page-docsite",
+  "page-dashboard",
+  "page-clone-linear",
 ]);

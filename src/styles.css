@@ -4,6 +4,9 @@
    进场动画, 且类名静默失效 (产物里根本不生成这些规则)。 */
 @import "tw-animate-css";
 @import "./tokens.css";
+/* 皮肤层 (地基 + 五套皮肤 + density.css 三档密度): 只改 data-skin / data-density 下的令牌值, 必须在 tokens.css 之后引入.
+   density.css 已由 skins/index.css 末尾引入, 这里不重复. 层序沿 tokens.css 声明的 hx.tokens -> hx.base -> hx.components. */
+@import "./skins/index.css";
 /* Spin 各形态的样式 (LDRS 的 CSS 不自动加载, 必须显式引) */
 @import "./spin-variants.css";
 /* 组件必需的关键帧 (折叠高度 / 不定长进度)。同样必须显式引, 漏了组件不动。 */
