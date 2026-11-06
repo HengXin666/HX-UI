@@ -107,6 +107,7 @@ reg.node({
 | 质感 | `typography/` / `media/` / `effects/` / `motion/` | 营销排版, 图片视频与外框, 背景遮罩 (`MeshGradient` / `Grain` / `Beam` ...), 入场与滚动动效 |
 | 页面零件 | `site/` / `commerce/` | 站点外壳 (`SiteHeader` / `MegaMenu` / `SiteFooter` ...) 与商业原子 (`Price` / `SizeSelector` ...) |
 | 区块 | `blocks/` | site / marketing / commerce / docs / portfolio 五类整段区块, 外加 `_shared` 基座与 `PageComposer` |
+| 工作室 | `@hx/ui/studio` (`src/studio/`) | 镜头, 指标与过程, 两张整页 (`FieldPage` 田野, `KilnPage` 窑四号). 不进根入口 |
 
 区块有两种写法: 分类的 `Blocks.Marketing.Hero`, 与平铺的 `Hero`. 与 `site/` 外壳零件同名的站点区块在平铺层带前缀
 (`BlocksSiteHeader` / `BlocksSiteFooter` / `BlocksMobileNav` / `BlocksAnnouncementBar`), 其余跨层同名件同理 (`siteResolveSlots`, `CommerceSlotProps` ...).
