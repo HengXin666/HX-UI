@@ -7,6 +7,7 @@
 | 文档 | 内容 | 适用对象 |
 |---|---|---|
 | [component-contract.md](component-contract.md) | 组件契约: 统一 prop 词汇, 受控与非受控, asChild 与 render prop, classNames / styles 插槽与标准 slot 表, data-slot / data-state, ref 归属, 事件命名, 样式硬约束, 无障碍与键盘表, 文件切分与废弃流程, 存量组件待迁移清单 | 所有新组件与迁移中的存量组件 |
+| [studio.md](studio.md) | 工作室层: 令牌到整页的分层, 镜头词汇, 过程可视化, 子路径入口 | 拼营销页, 商品页和数据叙事的新代码 |
 
 ## 与其他文档的关系
 

@@ -8,6 +8,7 @@
 
 ### Added
 
+- `@hx/ui/studio`: 镜头 (`Shot`, `ShotSequence`, `ShotPlate`, `ShotLayer`), 指标与过程 (`Metric`, `Spark`, `Process`, `Compare`), 整页 `FieldPage` (田野) 与 `KilnPage` (窑四号). 根入口 `src/index.ts` 不新增符号. 文档站 `#/gallery` 可切换这两张整页, 镜头, 数据和原来的质感拼贴. 迁移说明见 `docs/reference/migration/studio.md`.
 - `src/primitives/deprecate.ts`: `deprecate()` 工具函数, 开发环境同一条废弃只 `console.warn` 一次, 生产环境静默. 暂不进公共入口, 由 P0-Z 集成时决定是否导出.
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
