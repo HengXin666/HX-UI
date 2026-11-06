@@ -16,6 +16,8 @@ Decision-ID: scripts-constants
 
 `scripts/constants/` 按消费方拆成两份纯 `export const`: `quality.ts` 收质量门禁的路径 (STATE_DIR / REPORT_DIR / BASELINE_FILE 等)、模式、命令与退出码, `browser.ts` 收文档站浏览器检查的值 (INDEX_HTML / JS_MIME / PROBE_SETTLE_MS 等)。两份都不 import 任何模块, 由 `scripts/quality/**`, 两个 check 脚本与 PR GIF 检查 (`scripts/pr-gif/**` 及其单测, 用 GIT_HEAD / SAMPLE_LIMIT / README_FILE) 按需引用; 新增常量先判断属于哪一侧, 两侧都要的才上提。
 
+`DOC_TOP_DIRS` includes `research` so `docs/research/` can hold study notes. No second path constant.
+
 ## Alternatives considered
 
 - 什么都不做 / 复用现有: 字面量就地写在检查里最省事, 但同一路径与阈值在多处重复, PROJECT-CONST-DUP 报 Error, 而且改一处漏一处的风险直接落在门禁上
