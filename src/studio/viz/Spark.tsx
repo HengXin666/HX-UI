@@ -6,7 +6,7 @@ import { HEALTH_LABEL } from "../../constants/gallery";
 import { SVG_CURRENT_COLOR, SVG_NONE, SVG_NON_SCALING_STROKE } from "../../constants/polish";
 import { useMotionTokens } from "../../motion/presets";
 import { SHOT_ARC_S, SPARK_BOX, sparkPath } from "../moves";
-import { F06 } from "../num";
+import { F06 } from "../figures";
 
 export interface SparkProps {
   /** 至少两个点. 少于此数不画线, 读屏标签仍在. */

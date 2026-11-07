@@ -19,7 +19,7 @@ function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxP
 		<CheckboxPrimitive.Root
 			data-slot="checkbox"
 			className={cn(
-				"peer group/checkbox inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input bg-muted text-primary-foreground outline-none",
+				"peer group/checkbox inline-flex size-4 shrink-0 items-center justify-center rounded-[4px] border border-input bg-muted text-primary-foreground outline-none active:scale-[0.92] motion-reduce:active:scale-100",
 				"transition-[background-color,border-color] duration-(--duration-fast) ease-out",
 				"focus-visible:border-ring aria-invalid:border-destructive",
 				"data-[state=checked]:border-primary data-[state=checked]:bg-primary",

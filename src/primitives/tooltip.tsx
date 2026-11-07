@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Tooltip as TooltipPrimitive } from "radix-ui";
+import { TOOLTIP_DELAY_MS } from "../craft/tokens";
 import { cn } from "./utils";
 
 /**
@@ -15,7 +16,7 @@ import { cn } from "./utils";
  * 而不是靠阴影。
  */
 function TooltipProvider({
-	delayDuration = 0,
+	delayDuration = TOOLTIP_DELAY_MS,
 	...props
 }: React.ComponentProps<typeof TooltipPrimitive.Provider>): React.JSX.Element {
 	return (

@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { motion, useReducedMotion } from "motion/react";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { SPRING_TYPE } from "../constants/motion";
-import { TABS_INDICATOR_DAMPING, TABS_INDICATOR_MASS, TABS_INDICATOR_STIFFNESS } from "../constants/polish";
+import { SPRING_THUMB } from "../craft/tokens";
 import { rippleAttribute, useRipple } from "./ripple";
 import { cn } from "./utils";
 
@@ -25,6 +25,7 @@ import { cn } from "./utils";
  * animated (可选, 默认关) 同样由 TabsList 下发: 选中指示改成一个 motion 共享布局元素,
  * 切换时从旧标签滑到新标签. 不传时 trigger 的类名, 子节点与波纹挂法都和原来一致.
  */
+const TAB_UNDERLINE = "underline" as const;
 type TabsVariant = "underline" | "pill";
 
 interface TabsListState {
@@ -33,7 +34,7 @@ interface TabsListState {
 	readonly indicatorId?: string;
 }
 
-const TabsVariantContext = React.createContext<TabsListState>({ variant: "underline" });
+const TabsVariantContext = React.createContext<TabsListState>({ variant: TAB_UNDERLINE });
 
 /** 当前选中值. 只为滑动指示器判断 "谁是选中项"; Radix 不对外暴露这个值. */
 const TabsValueContext = React.createContext<string | undefined>(undefined);
@@ -41,9 +42,9 @@ const TabsValueContext = React.createContext<string | undefined>(undefined);
 /** 指示器的弹簧: 偏硬, 不回弹出标签边界; 与 SegmentedControl 的滑块同一手感. */
 const INDICATOR_SPRING = {
 	type: SPRING_TYPE,
-	stiffness: TABS_INDICATOR_STIFFNESS,
-	damping: TABS_INDICATOR_DAMPING,
-	mass: TABS_INDICATOR_MASS,
+	stiffness: SPRING_THUMB.stiffness,
+	damping: SPRING_THUMB.damping,
+	mass: SPRING_THUMB.mass,
 } as const;
 const INDICATOR_INSTANT = { duration: 0 } as const;
 
@@ -73,7 +74,7 @@ const tabsListVariants = cva("inline-flex shrink-0 items-center", {
 			pill: "gap-0.5 rounded-lg border border-border/60 bg-muted/40 p-0.5",
 		},
 	},
-	defaultVariants: { variant: "underline" },
+	defaultVariants: { variant: TAB_UNDERLINE },
 });
 
 const tabsTriggerVariants = cva(
@@ -92,7 +93,7 @@ const tabsTriggerVariants = cva(
 				pill: "h-7 rounded-[6px] px-2.5 text-[length:var(--fs-sm)] text-muted-foreground hover:text-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-[0_1px_2px_rgba(0,0,0,0.06)] dark:data-[state=active]:bg-white/[0.12]",
 			},
 		},
-		defaultVariants: { variant: "underline" },
+		defaultVariants: { variant: TAB_UNDERLINE },
 	},
 );
 
@@ -126,7 +127,7 @@ function Tabs({
 
 function TabsList({
 	className,
-	variant = "underline",
+	variant = TAB_UNDERLINE,
 	animated = false,
 	...props
 }: React.ComponentProps<typeof TabsPrimitive.List> &
@@ -135,7 +136,7 @@ function TabsList({
 		animated?: boolean;
 	}): React.JSX.Element {
 	const indicatorId = React.useId();
-	const resolved = variant ?? "underline";
+	const resolved = variant ?? TAB_UNDERLINE;
 	const state = React.useMemo<TabsListState>(
 		() => ({ variant: resolved, indicatorId: animated ? indicatorId : undefined }),
 		[resolved, animated, indicatorId],

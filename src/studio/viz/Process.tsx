@@ -12,7 +12,7 @@ import { useMotionTokens } from "../../motion/presets";
 import { cn } from "../../primitives/utils";
 import { STUDIO_CLASS } from "../classes";
 import { SHOT_BEAT_S, SHOT_VIEWPORT_AMOUNT } from "../moves";
-import { N2 } from "../num";
+import { N2 } from "../figures";
 
 const ARIA_STEP = ONBOARDING_SLOTS[ONBOARDING_SLOTS.length - N2];
 
