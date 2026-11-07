@@ -229,3 +229,16 @@
 5. 着色器和发牌网格最后做, 而且首页同时只留一个.
 
 不做的事: 不把 react-bits 的 183 件移植进来. 不把 Remotion 时间轴嵌进按钮.
+
+## 9. 全量阅读之后
+
+逐件记录在 `react-bits.md` 与 `video-shotcraft.md`, 勾选在 `coverage.md`. 183 个组件目录的四种源码口味都读过 (1070 个源文件). 226 个 Remotion 演示和 124 张镜头卡都读过. 另外读了 Micro 35 件. 第一遍没把 Micro 算进 183, 那一层才是控件手感.
+
+读完以后合同只改这几处, 第 4 节的时间表不变:
+
+- SquishSwitch 的按下是 stiffness 320, damping 40, mass 0.6, 滑动是 stiffness 520, damping 34. 我们的 `press` 用 520 / 32 / 0.8, 比他们的按下更硬. 保留. 网页按钮要比镜头弹簧快, 不能把 3 秒弧线用在按下上.
+- JellyRadio 的 stiffness 580, 相邻项 stagger 22ms. 分段控件的错峰不超过这个量级.
+- WakeSlider 用角频率而不是时长. 拖拽仍走 `follow` (170 / 16 / 1), 不引入第二套积分.
+- 四种变体的运动字面量有时不一致. 以 `src/content` 为准. 不移植变体, 也不移植 64 个背景.
+- Magnet 的默认值确认是 stiffness 170, damping 16, mass 1. `follow` 与它对齐.
+- 发牌公式确认是 `36 + 4k - 0.0792 * k * (k - 1)` 帧. 网页上把第一段间隔放成 120ms, 末段放成 40ms, 形状相同.
