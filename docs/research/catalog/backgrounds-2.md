@@ -1,0 +1,925 @@
+# react-bits Backgrounds-2
+
+来源提交 `4dc7b5b`. 每个目录的实现文件逐行扫描后摘运动行.
+
+### Backgrounds/MagicRings
+
+- 文件: `Backgrounds/MagicRings/MagicRings.css` 15 行, `Backgrounds/MagicRings/MagicRings.jsx` 881 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uForward, uResolution, uUnit, uCenter, uShape, uFrame, uReach, uSplit. 命名常数 MAX_RINGS, MAX_BURSTS, SLOTS, SEGMENTS, FULLSCREEN, STRIP.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `MagicRings.jsx:6` `const MAX_RINGS = 12;`
+  - `MagicRings.jsx:7` `const MAX_BURSTS = 3;`
+  - `MagicRings.jsx:10` `const SEGMENTS = 128;`
+  - `MagicRings.jsx:88` `float level = 1.0 - exp(-peak);`
+  - `MagicRings.jsx:89` `vec3 color = mix(light * (level / peak), vec3(level), smoothstep(1.4, 3.6, peak) * 0.4);`
+  - `MagicRings.jsx:115` `float boost = 1.0 + 1.6 * nearness(plane);`
+  - `MagicRings.jsx:118` `float alpha = 0.0;`
+  - `MagicRings.jsx:165` `float grain = 1.0;`
+  - `MagicRings.jsx:208` `float stretch = 1.0 / max(length(vec2(dFdx(len), dFdy(len))), 1e-6);`
+  - `MagicRings.jsx:258` `const CYCLE = 3.45;`
+  - `MagicRings.jsx:259` `const STAGGER = 0.5;`
+  - `MagicRings.jsx:260` `const DEPTH = 2.6;`
+  - `MagicRings.jsx:261` `const BURST_LIFE = 1.1;`
+  - `MagicRings.jsx:262` `const BURST_SPEED = 0.9;`
+  - `MagicRings.jsx:266` `const smoothstep = (from, to, value) => {`
+  - `MagicRings.jsx:271` `const pulseLife = t => Math.min(smoothstep(0, 0.7, t), 1 - smoothstep(0.5, 3.25, t));`
+  - `MagicRings.jsx:485` `const spring = { x: 0, y: 0, vx: 0, vy: 0, hover: 0, hoverVelocity: 0 };`
+  - `MagicRings.jsx:499` `const ratio = Math.min(window.devicePixelRatio || 1, s.maxRatio);`
+  - `MagicRings.jsx:548` `const life = born ? smoothstep(0, 0.12, progress) * (1 - smoothstep(0.62, 1, progress)) : 0;`
+  - `MagicRings.jsx:554` `const rise = introLive ? smoothstep(index * 0.12, index * 0.12 + 0.9, time) : 1;`
+  - `MagicRings.jsx:571` `opening: introLive && local < CYCLE ? smoothstep(0, 0.9, local) : 1`
+  - `MagicRings.jsx:717` `const dt = clamp((now - last) / 1000 || 0, 0, 0.05);`
+  - `MagicRings.jsx:724` `const stiffness = 70;`
+  - `MagicRings.jsx:725` `const damping = 2 * Math.sqrt(stiffness) * 0.9;`
+  - `MagicRings.jsx:726` `const steps = Math.max(1, Math.ceil(dt / (1 / 240)));`
+  - `MagicRings.jsx:734` `spring.hoverVelocity += (40 * (hoverTarget - spring.hover) - 2 * Math.sqrt(40) * spring.hoverVelocity) * h;`
+  - `MagicRings.jsx:746` `Math.abs(spring.vx) + Math.abs(spring.vy) + Math.abs(spring.hoverVelocity) > 1e-4 ||`
+  - `MagicRings.jsx:747` `Math.abs((pointer.inside ? 1 : 0) - spring.hover) > 1e-3;`
+- 指针/滚动: pointermove, pointerdown, pointerup, pointercancel, pointerleave, webglcontextlost, webglcontextrestored, visibilitychange.
+- 可中断: pointercancel 有监听.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `462` const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+- Props: `color='#A855F7'` (365), `colorTwo='#6366F1'` (366), `ringCount=6` (367), `motion='pulse'` (368), `speed=1` (369), `lineThickness=2` (370), `glow=1` (371), `baseRadius=0.35` (372), `radiusStep=0.1` (373), `expansion=0.1` (374), `taper=1.5` (375), `rotation=0` (376), `spin=0` (377), `tilt=0` (378), `dispersion=0` (379), `grain=0` (380), `opacity=1` (381), `followMouse=false` (382), `mouseInfluence=0.2` (383), `hoverScale=1.2` (384), `hoverIntensity=1` (385), `parallax=0.05` (386), `clickBurst=true` (387), `intro=true` (388)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/MagnetLines
+
+- 文件: `Backgrounds/MagnetLines/MagnetLines.css` 28 行, `Backgrounds/MagnetLines/MagnetLines.jsx` 979 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uView, uCanvas, uOffset, uLine, uStretch, uHead, uPad, uFar. 自己做 force, velocity, dt 积分. 命名常数 VERTEX, FRAGMENT, MODES, SHAPES, TAU, PULSE_SPEED.
+- 技法: WebGL + canvas2d + 自写积分.
+- 常数:
+  - `MagnetLines.jsx:43` `vShown = aState.w * (1.0 - smoothstep(uFar * 0.45, uFar, depth));`
+  - `MagnetLines.jsx:132` `float north = smoothstep(-aa, aa, p.x);`
+  - `MagnetLines.jsx:138` `color = uShape == 2 ? mix(tint, uColor, 1.0 - smoothstep(-aa, aa, p.x)) : tint;`
+  - `MagnetLines.jsx:149` `const SHAPES = { line: 0, arrow: 1, needle: 2 };`
+  - `MagnetLines.jsx:151` `const PULSE_SPEED = 520;`
+  - `MagnetLines.jsx:152` `const PULSE_SPIN = 0.34;`
+  - `MagnetLines.jsx:153` `const INTRO_SPEED = 700;`
+  - `MagnetLines.jsx:154` `const INTRO_TIME = 1.1;`
+  - `MagnetLines.jsx:155` `const INTRO_SPIN = 0.65;`
+  - `MagnetLines.jsx:156` `const FAR = 4;`
+  - `MagnetLines.jsx:157` `const MAX_LINES = 30000;`
+  - `MagnetLines.jsx:604` `const ratio = Math.min(window.devicePixelRatio || 1, s.maxRatio);`
+  - `MagnetLines.jsx:677` `const dt = clamp((now - last) / 1000 || 0, 0, 0.05);`
+  - `MagnetLines.jsx:696` `const follow = 1 - Math.exp(-dt / (pointer.seen && !wandering ? 0.035 : 0.6));`
+  - `MagnetLines.jsx:702` `target.heading += turn * (1 - Math.exp(-dt / 0.25));`
+  - `MagnetLines.jsx:704` `pointer.vx *= Math.exp(-dt / 0.12);`
+  - `MagnetLines.jsx:705` `pointer.vy *= Math.exp(-dt / 0.12);`
+  - `MagnetLines.jsx:711` `const stiffness = s.inertia <= 0 || reduced ? 0 : Math.pow(6 + 42 * Math.pow(1 - s.inertia, 2), 2);`
+  - `MagnetLines.jsx:712` `const damping = stiffness ? 2 * Math.sqrt(stiffness) * (1 - 0.75 * s.bounce) : 0;`
+  - `MagnetLines.jsx:713` `const steps = stiffness ? Math.max(1, Math.ceil(dt / (1 / 240))) : 0;`
+  - `MagnetLines.jsx:714` `const h = steps ? dt / steps : 0;`
+  - `MagnetLines.jsx:736` `const k = tau > 0 ? 1 - Math.exp(-dt / tau) : 1;`
+  - `MagnetLines.jsx:769` `velocity += (stiffness * wrap(goal - angle, period) - damping * velocity) * h;`
+  - `MagnetLines.jsx:860` `const dt = Math.max(1, now - pointer.time) / 1000;`
+  - `MagnetLines.jsx:861` `if (pointer.seen && dt < 0.2) {`
+  - `MagnetLines.jsx:862` `pointer.vx = pointer.vx * 0.6 + ((spot.x - pointer.x) / dt) * 0.4;`
+  - `MagnetLines.jsx:863` `pointer.vy = pointer.vy * 0.6 + ((spot.y - pointer.y) / dt) * 0.4;`
+- 指针/滚动: pointermove, pointerdown, pointerleave, webglcontextlost, webglcontextrestored, resize, visibilitychange.
+- 可中断: 弹簧保留速度, 每帧重算目标.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `439` const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+- Props: `spacing=30` (344), `rows` (345), `columns` (346), `containerSize` (347), `lineColor='#efefef'` (348), `accentColor` (349), `lineWidth=2` (350), `lineHeight=18` (351), `baseAngle=-10` (352), `mode='orbit'` (353), `shape='line'` (354), `rainbow=false` (355), `radius=200` (356), `fade=0.65` (357), `edgeFade=0` (358), `stretch=0.4` (359), `reach=0` (360), `scatter=0` (361), `inertia=0.35` (362), `bounce=0.3` (363), `ripple=0.3` (364), `clickPulse=true` (365), `intro=true` (366), `idle=false` (367)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/MicroSlats
+
+- 文件: `Backgrounds/MicroSlats/MicroSlats.css` 6 行, `Backgrounds/MicroSlats/MicroSlats.jsx` 919 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uTexel, uTarget, uAspect, uPoint, uValue, uRadius, uVelocity, uCurl. 自己做 force, velocity, dt 积分. 2d 画布逐帧画. 命名常数 SWELL_PRESETS, FLUID_SIZE, PRESSURE_STEPS, SPLAT_FORCE, SPLASH_JETS, PIXEL_BUDGET.
+- 技法: OGL + canvas2d + ogl + 自写积分.
+- 常数:
+  - `MicroSlats.jsx:55` `const FLUID_SIZE = 96;`
+  - `MicroSlats.jsx:56` `const PRESSURE_STEPS = 16;`
+  - `MicroSlats.jsx:57` `const SPLAT_FORCE = 6900;`
+  - `MicroSlats.jsx:58` `const SPLASH_JETS = 3;`
+  - `MicroSlats.jsx:59` `const PIXEL_BUDGET = 4.5e6;`
+  - `MicroSlats.jsx:153` `vec2 force = 0.5 * vec2(abs(top) - abs(bottom), abs(right) - abs(left));`
+  - `MicroSlats.jsx:154` `force = force / (length(force) + 0.0001) * uSwirl * middle;`
+  - `MicroSlats.jsx:155` `force.y = -force.y;`
+  - `MicroSlats.jsx:156` `vec2 velocity = texture(uVelocity, vUv).xy + force * uDt;`
+  - `MicroSlats.jsx:255` `float ink = 0.0;`
+  - `MicroSlats.jsx:268` `float meander = 0.55 * sin(dot(world, vec2(0.23, 0.41)) * 0.9 + uTime * 0.13)`
+  - `MicroSlats.jsx:272` `float height = 0.0;`
+  - `MicroSlats.jsx:273` `float total = 0.0;`
+  - `MicroSlats.jsx:277` `float k = 6.2831853 / LENGTH[i];`
+  - `MicroSlats.jsx:284` `float crest = smoothstep(0.6, 1.0, level);`
+  - `MicroSlats.jsx:289` `float glow = 1.0 - exp(-max(ink, 0.0) * uInk * 1.6);`
+  - `MicroSlats.jsx:293` `float reveal = 1.0 - smoothstep(front - 0.35, front, v);`
+  - `MicroSlats.jsx:632` `renderer.dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(PIXEL_BUDGET / (width * height)));`
+  - `MicroSlats.jsx:737` `const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));`
+  - `MicroSlats.jsx:742` `introClock = s.intro && !reducedMotion ? introClock + dt / Math.max(0.2, s.introDuration) : 1;`
+  - `MicroSlats.jsx:775` `if (fluidActive) stepFluid(fluid, Math.min(Math.max(dt, 1 / 240), 1 / 30), s);`
+- 指针/滚动: pointermove, pointerdown, pointerout, blur, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `558` const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `preset='swell'` (353), `color='#A855F7'` (354), `glintColor='#ffffff'` (355), `backgroundColor='#000000'` (356), `slatWidth=10` (357), `slatHeight=25` (358), `gap=3` (359), `roundness=0.75` (360), `scale` (361), `speed` (362), `direction` (363), `chop` (364), `stretch` (365), `glint` (366), `contrast` (367), `perspective` (368), `fog` (369), `interactive=true` (370), `cursorStrength=1` (371), `cursorSize=40` (372), `swirl=0` (373), `trail=1.4` (374), `lean=0` (375), `intro=true` (376)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/MoltenMetal
+
+- 文件: `Backgrounds/MoltenMetal/MoltenMetal.css` 14 行, `Backgrounds/MoltenMetal/MoltenMetal.jsx` 604 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uTime, uClock, uScale, uDetail, uGlow, uThickness, uSwirl. 命名常数 CANVAS, MAX_COLORS, TRAIL, MAX_FLARES, SAMPLE_SECONDS, TRAIL_SECONDS.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `MoltenMetal.jsx:9` `const MAX_COLORS = 6;`
+  - `MoltenMetal.jsx:10` `const TRAIL = 16;`
+  - `MoltenMetal.jsx:11` `const MAX_FLARES = 8;`
+  - `MoltenMetal.jsx:12` `const SAMPLE_SECONDS = 0.06;`
+  - `MoltenMetal.jsx:13` `const TRAIL_SECONDS = 0.9;`
+  - `MoltenMetal.jsx:14` `const FLARE_SECONDS = 1.8;`
+  - `MoltenMetal.jsx:15` `const INTRO_SECONDS = 2.4;`
+  - `MoltenMetal.jsx:16` `const FLOW_START = 0.4;`
+  - `MoltenMetal.jsx:17` `const BALANCE = { molten: 0.5, ember: 0.3, frost: 0.7 };`
+  - `MoltenMetal.jsx:69` `return mix(uColors[index], uColors[index + 1], smoothstep(0.0, 1.0, scaled - float(index)));`
+  - `MoltenMetal.jsx:79` `float heat = 0.0;`
+  - `MoltenMetal.jsx:92` `float even = smoothstep(0.0, uHeat.z, sqrt(span));`
+  - `MoltenMetal.jsx:101` `float heat = 0.0;`
+  - `MoltenMetal.jsx:106` `float rise = 1.0 - exp(-f.z / 0.07);`
+  - `MoltenMetal.jsx:122` `float heat = 0.0;`
+  - `MoltenMetal.jsx:123` `float flare = 0.0;`
+  - `MoltenMetal.jsx:131` `float c = 0.0;`
+  - `MoltenMetal.jsx:132` `float blurred = 0.0;`
+  - `MoltenMetal.jsx:140` `for (float n = 0.0; n < 8.0; n++) {`
+  - `MoltenMetal.jsx:146` `float footprint = 0.5 * length(vec2(dFdx(l), dFdy(l)));`
+  - `MoltenMetal.jsx:156` `float reveal = 1.0;`
+  - `MoltenMetal.jsx:157` `float front = 0.0;`
+  - `MoltenMetal.jsx:160` `reveal = smoothstep(-1.0, 1.0, level) * smoothstep(0.0, 0.08, uReveal.z);`
+  - `MoltenMetal.jsx:161` `front = 0.2 * exp(-level * level * 1.5) * smoothstep(-2.6, -0.6, uReveal.x);`
+  - `MoltenMetal.jsx:394` `const ratio = Math.min(window.devicePixelRatio || 1, s.dpr);`
+  - `MoltenMetal.jsx:470` `state.presence += ((wanted ? 1 : 0) - state.presence) * (1 - Math.exp(-dt / 0.25));`
+  - `MoltenMetal.jsx:510` `const dt = state.last ? Math.min((now - state.last) / 1000, 0.1) : 0;`
+  - `MoltenMetal.jsx:520` `const ease = 1 - Math.exp(-dt / 0.33);`
+  - (带数字的运动行共 30 条, 留前 28 条, 文件 604 行已逐行扫过)
+- 指针/滚动: pointermove, pointerdown, pointerleave.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `218` typeof window !== 'undefined' && (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
+- Props: `colors=['#5227FF'` (221), `coreColor='#FFFFFF'` (222), `backgroundColor='transparent'` (223), `lightMode=false` (224), `speed=0.35` (225), `scale=4` (226), `detail=3` (227), `glow=1.6` (228), `thickness=1` (229), `swirl=1` (230), `turbulence=0.2` (231), `haze=0.75` (232), `brightness=1.3` (233), `colorMode='molten'` (234), `rotation=0` (235), `offsetX=0` (236), `offsetY=0` (237), `drift=0.3` (238), `grain=0.05` (239), `opacity=1` (240), `intro=true` (241), `mouseInteraction=true` (242), `mouseStrength=0.5` (243), `flareOnClick=true` (244)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Orb
+
+- 文件: `Backgrounds/Orb/Orb.css` 15 行, `Backgrounds/Orb/Orb.jsx` 561 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uTime, uRotation, uReach, uNear, uAwake, uBackground, uColor1. 命名常数 INTRO_SECONDS, FOCAL, VERTEX, FRAGMENT.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `Orb.jsx:6` `const INTRO_SECONDS = 1.1;`
+  - `Orb.jsx:7` `const FOCAL = 3.2;`
+  - `Orb.jsx:48` `const float K1 = 0.333333333;`
+  - `Orb.jsx:49` `const float K2 = 0.166666667;`
+  - `Orb.jsx:77` `float len = max(rawLen - reachAmount * facing * smoothstep(0.25, 0.65, rawLen), 0.0);`
+  - `Orb.jsx:88` `v0 *= smoothstep(r0 * 1.05, r0, len);`
+  - `Orb.jsx:90` `float innerFade = smoothstep(r0 * (1.0 - 0.2 * reach), r0 * (1.0 - 0.05 * reach), len);`
+  - `Orb.jsx:92` `float body = smoothstep(0.8 - 0.2 * reach, 0.8, len);`
+  - `Orb.jsx:99` `float trail = uTrail > 0.0 ? smoothstep(0.0, 0.35, lag) * exp(-max(lag, 0.0) * 2.6 / uTrail) : 0.0;`
+  - `Orb.jsx:102` `float band = v0 * smoothstep(1.0, mix(0.6, 1.0, n0 * 0.5), len) * body;`
+  - `Orb.jsx:104` `float bloom = light2(1.0, 160.0 / uGlow, max(len - r0, 0.0)) * smoothstep(0.4, 0.0, len - r0) * step(r0, len);`
+  - `Orb.jsx:106` `float v2 = smoothstep(1.0, mix(0.6, 1.0, n0 * 0.5), len);`
+  - `Orb.jsx:113` `float echo = light1(1.0, 60.0, echoD) * smoothstep(0.12, 0.0, echoD) * uEcho.y;`
+  - `Orb.jsx:149` `float hit = 1.0;`
+  - `Orb.jsx:396` `const dt = last ? clamp((now - last) / 1000, 0.0005, 0.05) : 1 / 60;`
+  - `Orb.jsx:412` `state.hover += (target - state.hover) * (1 - Math.exp(-dt / 0.16));`
+  - `Orb.jsx:416` `state.reachSpeedX += (70 * (goalX - state.reachX) - 7 * state.reachSpeedX) * dt;`
+  - `Orb.jsx:417` `state.reachSpeedY += (70 * (goalY - state.reachY) - 7 * state.reachSpeedY) * dt;`
+  - `Orb.jsx:420` `state.near += (aimed * s.hoverIntensity - state.near) * (1 - Math.exp(-dt / 0.12));`
+  - `Orb.jsx:425` `state.echo = Math.min(1, state.echo + dt / 1.2);`
+  - `Orb.jsx:426` `if (s.rotateOnHover) state.rotation += dt * 0.3 * state.hover * motion;`
+  - `Orb.jsx:431` `state.orbit += delta * (1 - Math.exp(-dt * 6));`
+  - `Orb.jsx:437` `state.pulseSpeed += (-170 * state.pulse - 11 * state.pulseSpeed) * dt;`
+  - `Orb.jsx:439` `state.kick *= Math.exp(-dt * 2.5);`
+  - `Orb.jsx:442` `else if (state.reveal < 1) state.reveal = Math.min(1, state.reveal + dt / INTRO_SECONDS);`
+  - `Orb.jsx:456` `const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+- 指针/滚动: pointermove, pointerdown, pointerup, pointercancel, pointerleave, visibilitychange.
+- 可中断: pointercancel 有监听.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `278` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `colors=['#9c43fe'` (199), `hue=0` (200), `backgroundColor='#000000'` (201), `size=1` (202), `glow=1` (203), `bleed=1` (204), `wobble=1` (205), `highlight=1` (206), `trail=1` (207), `tiltX=0` (208), `tiltY=0` (209), `speed=1` (210), `hoverIntensity=1` (211), `rotateOnHover=true` (212), `forceHoverState=false` (213), `followCursor=true` (214), `clickPulse=true` (215), `intro=true` (216), `opacity=1` (217), `paused=false` (218), `dpr` (219), `className=''` (220), `style` (221)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Particles
+
+- 文件: `Backgrounds/Particles/Particles.css` 14 行, `Backgrounds/Particles/Particles.jsx` 879 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uRotation, uOffset, uSpread, uTime, uCamera, uAspect, uView, uRatio. 命名常数 SHAPES, EFFECTS, DRIFTS, MAX_COUNT, MAX_LINKED, MAX_LINES.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `Particles.jsx:6` `const SHAPES = { circle: 0, square: 1, ring: 2, sparkle: 3 };`
+  - `Particles.jsx:7` `const EFFECTS = { parallax: 0, repel: 1, attract: 2 };`
+  - `Particles.jsx:8` `const DRIFTS = { none: 0, up: 1, down: 2, forward: 3 };`
+  - `Particles.jsx:9` `const MAX_COUNT = 20000;`
+  - `Particles.jsx:10` `const MAX_LINKED = 900;`
+  - `Particles.jsx:11` `const MAX_LINES = 9000;`
+  - `Particles.jsx:12` `const MAX_BURSTS = 4;`
+  - `Particles.jsx:13` `const DEPTH = 10;`
+  - `Particles.jsx:14` `const FOCAL = 1 / Math.tan((7.5 * Math.PI) / 180);`
+  - `Particles.jsx:15` `const NEAR = 0.1;`
+  - `Particles.jsx:16` `const FAR = 100;`
+  - `Particles.jsx:17` `const INTRO_SECONDS = 1.8;`
+  - `Particles.jsx:18` `const BURST_SECONDS = 1.5;`
+  - `Particles.jsx:19` `const BURST_SPEED = 520;`
+  - `Particles.jsx:20` `const BURST_WIDTH = 46;`
+  - `Particles.jsx:72` `float edge = 1.0;`
+  - `Particles.jsx:77` `edge = smoothstep(0.0, span * 0.12, k) * smoothstep(span, span * 0.88, k);`
+  - `Particles.jsx:82` `edge = smoothstep(0.0, span * 0.1, k);`
+  - `Particles.jsx:91` `edge *= smoothstep(1.0, 4.0, ahead);`
+  - `Particles.jsx:96` `float flash = 0.0;`
+  - `Particles.jsx:112` `shift += away * wave * fade * 56.0 * smoothstep(0.0, 30.0, reach);`
+  - `Particles.jsx:125` `float twinkle = 1.0 - uTwinkle * 0.6 * (0.5 + 0.5 * sin(uTime * (6.0 + aRandom.y * 14.0) + aRandom.w * 40.0));`
+  - `Particles.jsx:126` `float far = smoothstep(${FAR.toFixed(1)}, ${(FAR * 0.9).toFixed(1)}, ahead);`
+  - `Particles.jsx:160` `float width = 0.14 * max(0.0, 1.0 - q.x);`
+  - `Particles.jsx:161` `return (1.0 - smoothstep(width - aa, width + aa, q.y)) * step(q.x, 1.0);`
+  - `Particles.jsx:170` `shape = 1.0 - smoothstep(vRadius * 0.86 - soft, vRadius * 0.86 + soft, box);`
+  - `Particles.jsx:173` `shape = 1.0 - smoothstep(edge - soft, edge + soft, abs(d - vRadius * 0.8));`
+  - `Particles.jsx:178` `shape = max(max(ray(q, aa), ray(q.yx, aa)), 1.0 - smoothstep(vRadius * 0.32 - soft, vRadius * 0.32 + soft, d));`
+  - (带数字的运动行共 39 条, 留前 28 条, 文件 879 行已逐行扫过)
+- 指针/滚动: pointermove, pointerdown, pointerup, pointercancel, pointerleave, visibilitychange.
+- 可中断: pointercancel 有监听.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `407` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `particleCount=200` (283), `particleSpread=10` (284), `speed=0.1` (285), `particleColors=['#ffffff']` (286), `moveParticlesOnHover=true` (287), `particleHoverFactor=1` (288), `alphaParticles=false` (289), `particleBaseSize=100` (290), `sizeRandomness=1` (291), `cameraDistance=20` (292), `disableRotation=false` (293), `pixelRatio` (294), `shape='circle'` (295), `glow=0.5` (296), `twinkle=0.3` (297), `depthOfField=0` (298), `connections=false` (299), `connectionDistance=110` (300), `hoverEffect='parallax'` (301), `hoverRadius=140` (302), `clickBurst=true` (303), `drift='none'` (304), `driftSpeed=1` (305), `variation=0` (306)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/PatternWaves
+
+- 文件: `Backgrounds/PatternWaves/PatternWaves.css` 6 行, `Backgrounds/PatternWaves/PatternWaves.jsx` 895 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uSize, uDpr, uOrigin, uPitch, uWave, uTime, uUnit, uHeading. 2d 画布逐帧画. 命名常数 SURFACE_PRESETS, PATTERNS, WAVES, FADES, DEFAULT_CHARACTERS, GLYPH_FONT.
+- 技法: OGL + canvas2d + ogl + rAF.
+- 常数:
+  - `PatternWaves.jsx:89` `const PATTERNS = { dot: 0, square: 1, plus: 2, line: 3, glyph: 4 };`
+  - `PatternWaves.jsx:90` `const WAVES = { silk: 0, swell: 1, ripple: 2 };`
+  - `PatternWaves.jsx:91` `const FADES = { none: 0, edges: 1, center: 2, bottom: 3, top: 4 };`
+  - `PatternWaves.jsx:94` `const ATLAS_TILE = 128;`
+  - `PatternWaves.jsx:95` `const WAVE_UNIT = 520;`
+  - `PatternWaves.jsx:96` `const RIPPLE_CELL = 8;`
+  - `PatternWaves.jsx:97` `const RIPPLE_RATE = 60;`
+  - `PatternWaves.jsx:98` `const PIXEL_BUDGET = 4.5e6;`
+  - `PatternWaves.jsx:99` `const INTRO_SECONDS = 2;`
+  - `PatternWaves.jsx:177` `const float FOLDS = 5.5;`
+  - `PatternWaves.jsx:228` `float swell = 0.6 + 0.4 * gradientNoise(vec3(u * 0.55 + 3.0, v * 0.45, t * 0.04));`
+  - `PatternWaves.jsx:230` `float ripple = 0.16 * sin(u * FOLDS * 2.5 + bend * 1.9 - t * 0.9 + 2.1);`
+  - `PatternWaves.jsx:237` `float roll = 0.75 + 0.25 * gradientNoise(vec3(p * 0.9 + 11.0, t * 0.05));`
+  - `PatternWaves.jsx:266` `float hollow = 0.7 + 0.3 * clamp(h * 0.5 + 0.5, 0.0, 1.0);`
+  - `PatternWaves.jsx:271` `float emphasis = uInk > 0.5 ? smoothstep(0.55, 0.95, level) : clamp(spec * 1.6, 0.0, 1.0);`
+  - `PatternWaves.jsx:273` `float fade = 1.0;`
+  - `PatternWaves.jsx:276` `fade = 1.0 - smoothstep(1.0 - uFadeSize, 1.18, length(c));`
+  - `PatternWaves.jsx:278` `fade = mix(0.05, 1.0, smoothstep(0.08, 0.08 + uFadeSize, length(c * vec2(1.0, 1.35))));`
+  - `PatternWaves.jsx:280` `fade = smoothstep(0.0, uFadeSize, uv.y);`
+  - `PatternWaves.jsx:282` `fade = smoothstep(0.0, uFadeSize, 1.0 - uv.y);`
+  - `PatternWaves.jsx:286` `float appear = smoothstep(reach - 0.05, reach + 0.3, uAppear * 1.35);`
+  - `PatternWaves.jsx:352` `float extent = 0.5 * span * area;`
+  - `PatternWaves.jsx:356` `float arm = 0.5 * span * mix(0.3, 1.0, level);`
+  - `PatternWaves.jsx:357` `float width = 0.5 * uStroke;`
+  - `PatternWaves.jsx:671` `renderer.dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(PIXEL_BUDGET / (width * height)));`
+  - `PatternWaves.jsx:679` `rippleClock = Math.min(rippleClock + dt * RIPPLE_RATE, 4);`
+  - `PatternWaves.jsx:707` `const dt = Math.min(0.05, Math.max(1 / 240, (now - last) / 1000));`
+  - `PatternWaves.jsx:713` `introClock = s.intro && !reducedMotion ? Math.min(1, introClock + dt / INTRO_SECONDS) : 1;`
+  - (带数字的运动行共 29 条, 留前 28 条, 文件 895 行已逐行扫过)
+- 指针/滚动: pointermove, pointerdown, pointerout, pointerup, blur, visibilitychange.
+- 可中断: 有 pointerup, 无 pointercancel.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `619` const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `preset='silk'` (420), `pattern` (421), `wave` (422), `spacing` (423), `markSize` (424), `depth` (425), `light` (426), `shine` (427), `contrast` (428), `speed` (429), `scale` (430), `direction` (431), `color='#ffffff'` (432), `backgroundColor='#000000'` (433), `opacity=1` (434), `fade='edges'` (435), `fadeSize=0.5` (436), `characters=DEFAULT_CHARACTERS` (437), `interactive=true` (438), `cursorSize=50` (439), `cursorStrength=0.6` (440), `intro=true` (441), `paused=false` (442), `className=''` (443)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/PixelBlast
+
+- 文件: `Backgrounds/PixelBlast/PixelBlast.css` 14 行, `Backgrounds/PixelBlast/PixelBlast.jsx` 965 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uTime, uPixelSize, uScale, uDensity, uEnableRipples, uRippleSpeed, uRippleThickness. 命名常数 MAX_CLICKS, INTRO_SECONDS, SHAPES, HOVERS, BAYER_TABLE, RANGE_MIN.
+- 技法: WebGL + rAF.
+- 常数:
+  - `PixelBlast.jsx:6` `const MAX_CLICKS = 10;`
+  - `PixelBlast.jsx:7` `const INTRO_SECONDS = 1.8;`
+  - `PixelBlast.jsx:8` `const SHAPES = { square: 0, circle: 1, triangle: 2, diamond: 3, cross: 4, ring: 5 };`
+  - `PixelBlast.jsx:9` `const HOVERS = { none: 0, grow: 1, reveal: 2 };`
+  - `PixelBlast.jsx:13` `const RANGE_MIN = -6;`
+  - `PixelBlast.jsx:14` `const RANGE_MAX = 10;`
+  - `PixelBlast.jsx:91` `float amp = 1.0;`
+  - `PixelBlast.jsx:92` `float freq = 1.0;`
+  - `PixelBlast.jsx:93` `float sum = 1.0;`
+  - `PixelBlast.jsx:105` `float cellPixelSize = 8.0 * uPixelSize;`
+  - `PixelBlast.jsx:130` `float eased = 1.0 - pow(1.0 - uIntro, 2.4);`
+  - `PixelBlast.jsx:133` `float shown = smoothstep(front + 0.04, front - 0.06, r);`
+  - `PixelBlast.jsx:139` `float brush = 0.0;`
+  - `PixelBlast.jsx:191` `float side = 0.5 * sqrt(clamp(cov, 0.0, 1.0));`
+  - `PixelBlast.jsx:197` `return 1.0 - smoothstep(-aa * 0.5, aa * 0.5, d);`
+  - `PixelBlast.jsx:205` `float aa = 0.5 * aaFrom(c / max(len, 1e-5));`
+  - `PixelBlast.jsx:206` `return cov * (1.0 - smoothstep(-aa, aa, d * 2.0));`
+  - `PixelBlast.jsx:227` `float arm = 0.42 * s;`
+  - `PixelBlast.jsx:228` `float bar = 0.13 * s + 0.02;`
+  - `PixelBlast.jsx:235` `return 1.0 - smoothstep(-aa * 0.5, aa * 0.5, d);`
+  - `PixelBlast.jsx:245` `return 1.0 - smoothstep(-aa * 0.5, aa * 0.5, d);`
+  - `PixelBlast.jsx:257` `float lod = 0.0;`
+  - `PixelBlast.jsx:258` `float depthFade = 1.0;`
+  - `PixelBlast.jsx:263` `lod = smoothstep(0.3, 0.85, footprint / pixelSize);`
+  - `PixelBlast.jsx:264` `depthFade = (1.0 - smoothstep(0.45, 1.0, footprint / (8.0 * pixelSize))) * step(0.0, plane.z);`
+  - `PixelBlast.jsx:275` `float cellPixelSize = 8.0 * pixelSize;`
+  - `PixelBlast.jsx:299` `float bw = uSoftness > 0.0 ? smoothstep(-0.12 * uSoftness, 0.12 * uSoftness, margin) : step(0.0, margin);`
+  - `PixelBlast.jsx:302` `float jitterScale = 1.0 + (h - 0.5) * uPixelJitter;`
+  - (带数字的运动行共 43 条, 留前 28 条, 文件 965 行已逐行扫过)
+- 指针/滚动: pointermove, pointerdown, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `610` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: 见源码解构, 没有带默认值的签名字段
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/PixelSnow
+
+- 文件: `Backgrounds/PixelSnow/PixelSnow.css` 14 行, `Backgrounds/PixelSnow/PixelSnow.jsx` 845 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uGrid, uSizes, uLargest, uAtlas, uPile, uTime, uLight, uSource. 命名常数 SPRITES, VARIANTS, CELL, LEVELS, SLOTS, MAX_FLAKES.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `PixelSnow.jsx:61` `const CELL = 9;`
+  - `PixelSnow.jsx:62` `const LEVELS = 5;`
+  - `PixelSnow.jsx:63` `const SLOTS = 8;`
+  - `PixelSnow.jsx:64` `const MAX_FLAKES = 4000;`
+  - `PixelSnow.jsx:68` `const INTRO_SECONDS = 1.4;`
+  - `PixelSnow.jsx:143` `float threshold = (bayer[bayerIndex] + 0.5) / 16.0;`
+  - `PixelSnow.jsx:145` `float step3 = floor(shade) + step(threshold, fract(shade));`
+  - `PixelSnow.jsx:146` `float body = 0.94 - step3 * 0.13;`
+  - `PixelSnow.jsx:517` `const ease = 1 - Math.exp(-dt * 2.2);`
+  - `PixelSnow.jsx:526` `const repel = near * near * near * state.push * 1500 * dt;`
+  - `PixelSnow.jsx:527` `const carry = near * near * state.push * dt * 5;`
+  - `PixelSnow.jsx:565` `const grow = (0.25 + s.density * 0.9) * dt * Math.min(1, s.speed);`
+  - `PixelSnow.jsx:586` `pile[i] = Math.max(0, pile[i] - rate * dt);`
+  - `PixelSnow.jsx:712` `const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;`
+  - `PixelSnow.jsx:716` `else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);`
+  - `PixelSnow.jsx:718` `state.push += (goal - state.push) * (1 - Math.exp(-dt * (goal ? 6 : 3)));`
+  - `PixelSnow.jsx:719` `pointer.vx *= Math.exp(-dt * 6);`
+  - `PixelSnow.jsx:720` `pointer.vy *= Math.exp(-dt * 6);`
+  - `PixelSnow.jsx:728` `if (moving || Math.abs(goal - state.push) > 0.001) raf = requestAnimationFrame(frame);`
+  - `PixelSnow.jsx:740` `const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+- 指针/滚动: pointermove, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `436` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `color='#ffffff'` (304), `variant='snowflake'` (305), `density=0.5` (306), `speed=1` (307), `wind=0.25` (308), `sway=0.5` (309), `flakeSize=1` (310), `pixelSize=3` (311), `depth=0.6` (312), `brightness=1` (313), `glow=0.8` (314), `twinkle=0.35` (315), `accumulate=false` (316), `mouseInteraction=true` (317), `intro=true` (318), `fade=0` (319), `opacity=1` (320), `lightMode=false` (321), `paused=false` (322), `dpr` (323), `className=''` (324)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Plasma
+
+- 文件: `Backgrounds/Plasma/Plasma.css` 14 行, `Backgrounds/Plasma/Plasma.jsx` 490 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uView, uScale, uZoom, uTime, uTwist, uWave, uSharpness, uOrbit. 命名常数 QUAD_VERTEX, VOLUME, COMPOSITE, INTRO_SECONDS, MAX_VOLUME_PIXELS.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `Plasma.jsx:43` `float z = 0.0;`
+  - `Plasma.jsx:44` `float density = 0.0;`
+  - `Plasma.jsx:45` `float band = 0.0;`
+  - `Plasma.jsx:106` `float level = 1.0 - exp(-peak);`
+  - `Plasma.jsx:107` `float hot = smoothstep(1.0, 3.0, peak);`
+  - `Plasma.jsx:125` `const INTRO_SECONDS = 1.6;`
+  - `Plasma.jsx:126` `const MAX_VOLUME_PIXELS = 1600000;`
+  - `Plasma.jsx:365` `const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;`
+  - `Plasma.jsx:370` `else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);`
+  - `Plasma.jsx:374` `state.yawVelocity += (40 * (goalYaw - state.yaw) - 11 * state.yawVelocity) * dt;`
+  - `Plasma.jsx:375` `state.pitchVelocity += (40 * (goalPitch - state.pitch) - 11 * state.pitchVelocity) * dt;`
+  - `Plasma.jsx:378` `state.heat += ((engaged ? 1 : 0) - state.heat) * (1 - Math.exp(-dt * (engaged ? 4 : 2)));`
+  - `Plasma.jsx:379` `state.heatX += (pointer.x - state.heatX) * (1 - Math.exp(-dt * 8));`
+  - `Plasma.jsx:380` `state.heatY += (pointer.y - state.heatY) * (1 - Math.exp(-dt * 8));`
+  - `Plasma.jsx:401` `const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+- 指针/滚动: pointermove, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `261` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `color='#a6a3b8'` (165), `speed=1` (166), `direction='forward'` (167), `scale=1` (168), `twist=1` (169), `wave=1` (170), `softness=0.5` (171), `shine=1` (172), `brightness=1` (173), `grain=0.04` (174), `quality=0.75` (175), `mouseInteractive=true` (176), `intro=true` (177), `fade=0` (178), `opacity=1` (179), `lightMode=false` (180), `paused=false` (181), `dpr` (182), `className=''` (183)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/PlasmaWave
+
+- 文件: `Backgrounds/PlasmaWave/PlasmaWave.css` 14 行, `Backgrounds/PlasmaWave/PlasmaWave.jsx` 632 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uView, uOffset, uRotation, uFocalLength, uTime, uSpeed1, uSpeed2, uDir2. 命名常数 QUAD_VERTEX, COMMON, TRACE, COARSE, FINE, DOWN.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `PlasmaWave.jsx:15` `const float PI = 3.14159265;`
+  - `PlasmaWave.jsx:16` `const float TAU = 6.28318531;`
+  - `PlasmaWave.jsx:17` `const float HALF_PI = 1.5707963;`
+  - `PlasmaWave.jsx:50` `float s = 1.0;`
+  - `PlasmaWave.jsx:51` `float d = 0.0;`
+  - `PlasmaWave.jsx:77` `float soft = smoothstep(0.03, 0.36, field);`
+  - `PlasmaWave.jsx:78` `float hot = smoothstep(0.32, 0.8, field);`
+  - `PlasmaWave.jsx:192` `float body = smoothstep(0.15 - feather, 0.15 + feather, source.a) * uPresence;`
+  - `PlasmaWave.jsx:193` `vec3 color = mix(ink, vec3(1.0), smoothstep(12.0, 26.0, peak) * uCore);`
+  - `PlasmaWave.jsx:206` `const BLOOM_LEVELS = 4;`
+  - `PlasmaWave.jsx:207` `const COARSE_RATIO = 3;`
+  - `PlasmaWave.jsx:208` `const INTRO_SECONDS = 1.8;`
+  - `PlasmaWave.jsx:209` `const MAX_LIGHT_PIXELS = 2400000;`
+  - `PlasmaWave.jsx:516` `const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;`
+  - `PlasmaWave.jsx:521` `else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);`
+  - `PlasmaWave.jsx:523` `if (target !== null) state.heatX += (target - state.heatX) * (1 - Math.exp(-dt * 6));`
+  - `PlasmaWave.jsx:524` `state.heatVelocity += (120 * ((target === null ? 0 : 1) - state.heat) - 19 * state.heatVelocity) * dt;`
+  - `PlasmaWave.jsx:525` `state.heat = clamp(state.heat + state.heatVelocity * dt, 0, 1.15);`
+  - `PlasmaWave.jsx:526` `state.lensX += (pointer.x - state.lensX) * (1 - Math.exp(-dt * 8));`
+  - `PlasmaWave.jsx:527` `state.lensY += (pointer.y - state.lensY) * (1 - Math.exp(-dt * 8));`
+  - `PlasmaWave.jsx:542` `const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+- 指针/滚动: pointermove, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `369` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `colors=['#A855F7'` (248), `speed=1` (249), `speed1=0.05` (250), `speed2=0.05` (251), `dir2=1` (252), `bend1=1` (253), `bend2=0.5` (254), `thickness=0.3` (255), `focalLength=1.25` (256), `rotationDeg=0` (257), `xOffset=0` (258), `yOffset=0` (259), `brightness=1` (260), `glow=1` (261), `core=0.6` (262), `grain=0.03` (263), `quality=1` (264), `mouseInteraction=true` (265), `intro=true` (266), `fade=0` (267), `opacity=1` (268), `lightMode=false` (269), `paused=false` (270), `dpr` (271)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Prism
+
+- 文件: `Backgrounds/Prism/Prism.css` 14 行, `Backgrounds/Prism/Prism.jsx` 448 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uRay, uGlow, uOffset, uColorFreq, uCenterShift, uInvBaseHalf, uInvHeight. 命名常数 INTRO_SECONDS, PALETTE_SIZE, HUE_W, HUE_U, HUE_V, VERTEX.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `Prism.jsx:6` `const INTRO_SECONDS = 1.4;`
+  - `Prism.jsx:7` `const PALETTE_SIZE = 64;`
+  - `Prism.jsx:66` `float z = 5.0;`
+  - `Prism.jsx:70` `float d = 0.1 + 0.2 * abs(pyramid(p + vec3(0.0, uCenterShift, 0.0)));`
+  - `Prism.jsx:343` `view.scale = Math.min(s.dpr || window.devicePixelRatio || 1, 2) * s.resolution;`
+  - `Prism.jsx:354` `if (Math.round(view.width * Math.min(s.dpr || window.devicePixelRatio || 1, 2) * s.resolution) !== canvas.width) {`
+  - `Prism.jsx:358` `const dt = last ? clamp((now - last) / 1000, 0.001, 0.05) : 1 / 60;`
+  - `Prism.jsx:361` `if (introClock < 1) introClock = Math.min(1, introClock + dt / INTRO_SECONDS);`
+  - `Prism.jsx:367` `const follow = 1 - Math.pow(1 - s.inertia, dt * 60);`
+  - `Prism.jsx:370` `pose.roll += (0 - pose.roll) * (1 - Math.pow(0.9, dt * 60));`
+- 指针/滚动: pointermove, blur, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `275` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `height=3.5` (159), `baseWidth=5.5` (160), `animationType='rotate'` (161), `glow=1` (162), `offset` (163), `noise=0` (164), `scale=3.6` (165), `hueShift=0` (166), `colorFrequency=1` (167), `colors` (168), `saturation=1.5` (169), `timeScale=0.5` (170), `interactive=true` (171), `hoverStrength=2` (172), `inertia=0.05` (173), `intro=true` (174), `resolution=0.5` (175), `lightMode=false` (176), `dpr` (177), `className=''` (178), `style` (179)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/PrismaticBurst
+
+- 文件: `Backgrounds/PrismaticBurst/PrismaticBurst.css` 14 行, `Backgrounds/PrismaticBurst/PrismaticBurst.jsx` 887 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uTime, uPhase, uIntensity, uOrient, uColorCount, uDistort, uOffset. 命名常数 BLOOM_LEVELS, MAX_PULSES, VERTEX, BURST, DOWNSAMPLE, BLUR.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `PrismaticBurst.jsx:7` `const BLOOM_LEVELS = 4;`
+  - `PrismaticBurst.jsx:8` `const MAX_PULSES = 4;`
+  - `PrismaticBurst.jsx:44` `float f = 52.9829189 * fract(dot(p, vec2(0.065, 0.005)));`
+  - `PrismaticBurst.jsx:55` `float n = 0.0;`
+  - `PrismaticBurst.jsx:71` `float tail = 1.0 - pow(1.0 - s, 2.0);`
+  - `PrismaticBurst.jsx:90` `float jitterAmp = 0.1 * clamp(uNoiseAmount, 0.0, 1.0);`
+  - `PrismaticBurst.jsx:93` `float marchT = 0.0;`
+  - `PrismaticBurst.jsx:97` `float edge = 0.5 - 0.35 * (uRayWidth - 1.0);`
+  - `PrismaticBurst.jsx:118` `float grow = smoothstep(0.35, 3.0, marchT);`
+  - `PrismaticBurst.jsx:120` `float a2 = 0.5 * amp * grow * bendAngle(Pl.zyx * 0.5 + 3.1, t * 0.9);`
+  - `PrismaticBurst.jsx:125` `float rayPattern = smoothstep(`
+  - `PrismaticBurst.jsx:133` `float comb = 0.5 + 0.5 * cos(float(uRayCount) * ang);`
+  - `PrismaticBurst.jsx:135` `rayPattern *= smoothstep(0.15, 0.95, comb);`
+  - `PrismaticBurst.jsx:148` `col += (0.05 / (0.4 + stepLen)) * smoothstep(5.0, 0.0, rad) * spectral * rayPattern;`
+  - `PrismaticBurst.jsx:155` `float unit = 0.5 * min(uResolution.x, uResolution.y);`
+  - `PrismaticBurst.jsx:157` `float lift = 1.0;`
+  - `PrismaticBurst.jsx:171` `float streak = 0.5 + 0.22 * sin(ang * 5.0 + 1.3) + 0.16 * sin(ang * 13.0 + 4.1) + 0.12 * sin(ang * 29.0 + 2.2);`
+  - `PrismaticBurst.jsx:175` `lift *= smoothstep(front, front - 0.5, radius);`
+  - `PrismaticBurst.jsx:275` `float mask = 1.0;`
+  - `PrismaticBurst.jsx:289` `float coverage = smoothstep(0.001, 0.32, energy);`
+  - `PrismaticBurst.jsx:298` `const QUALITY = { low: 0.35, medium: 0.5, high: 0.7 };`
+  - `PrismaticBurst.jsx:299` `const MIN_SCALE = 0.2;`
+  - `PrismaticBurst.jsx:300` `const INTRO_SECONDS = 2.4;`
+  - `PrismaticBurst.jsx:301` `const PULSE_LIFE = 1.5;`
+  - `PrismaticBurst.jsx:302` `const ANIMATIONS = { rotate: 0, rotate3d: 1, hover: 2 };`
+  - `PrismaticBurst.jsx:715` `const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;`
+  - `PrismaticBurst.jsx:720` `else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);`
+  - `PrismaticBurst.jsx:725` `state.phase += dt * s.speed * (1 + rush) + state.kick * dt;`
+  - (带数字的运动行共 34 条, 留前 28 条, 文件 887 行已逐行扫过)
+- 指针/滚动: webglcontextlost, webglcontextrestored, pointermove, pointerdown, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `535` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `colors` (376), `intensity=2` (377), `speed=0.5` (378), `animationType='rotate3d'` (379), `distort=0` (380), `rayCount=0` (381), `rayWidth=1` (382), `zoom=1` (383), `twist=0` (384), `flow=0` (385), `centerFade=1` (386), `grain=0.8` (387), `glow=0` (388), `offset` (389), `mouseInteraction=true` (390), `mouseStrength=0.5` (391), `hoverDampness=0.25` (392), `clickBurst=true` (393), `intro=true` (394), `fade=0` (395), `quality='high'` (396), `resolution` (397), `lightMode=false` (398), `mixBlendMode` (399)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Radar
+
+- 文件: `Backgrounds/Radar/Radar.css` 14 行, `Backgrounds/Radar/Radar.jsx` 919 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uCenter, uViewHeight, uFocal, uDistance, uTilt, uMode, uSweep. 命名常数 QUAD_VERTEX, CAMERA, SCENE, SPRITE_VERTEX, SPRITE_FRAGMENT, DOWN.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `Radar.jsx:45` `const float TAU = 6.28318531;`
+  - `Radar.jsx:92` `float inside = 1.0 - smoothstep(1.0 - pxR, 1.0 + pxR, r);`
+  - `Radar.jsx:98` `rings *= 1.0 - smoothstep(arc - 0.01, arc, turn);`
+  - `Radar.jsx:100` `float outer = stroke(abs(r - 1.0) / pxR, uLine * 1.15) * (1.0 - smoothstep(outerArc - 0.01, outerArc, turn));`
+  - `Radar.jsx:104` `float major = 1.0 - step(0.5, mod(tickIndex, 15.0));`
+  - `Radar.jsx:105` `float middle = 1.0 - step(0.5, mod(tickIndex, 5.0));`
+  - `Radar.jsx:110` `ticks *= mix(mix(0.42 * smoothstep(2.5, 5.0, spacing), 0.7, middle), 1.0, major) * uTicks;`
+  - `Radar.jsx:111` `ticks *= smoothstep(0.55, 0.9, uIntro);`
+  - `Radar.jsx:116` `float spokes = stroke(abs(spokeCoord - spokeIndex) / spokeTotal * TAU * r / pxT, uLine) * smoothstep(0.05, 0.16, r);`
+  - `Radar.jsx:119` `float cardinal = stroke(abs(cardinalCoord - floor(cardinalCoord + 0.5)) / 4.0 * TAU * r / pxT, uLine) * smoothstep(0.02, 0.08, r) * inside;`
+  - `Radar.jsx:121` `float spokesIn = smoothstep(0.35, 0.8, uIntro);`
+  - `Radar.jsx:125` `rangeMark *= 1.0 - smoothstep(3.0 * uPixel - 0.5, 3.0 * uPixel + 0.5, axisDistance);`
+  - `Radar.jsx:126` `rangeMark *= smoothstep(0.06, 0.12, r) * inside;`
+  - `Radar.jsx:127` `float bezel = stroke(abs(r - 1.065) / pxR, uLine) * uTicks * smoothstep(0.6, 0.95, uIntro);`
+  - `Radar.jsx:140` `edge = stroke(abs(ahead) * TAU * r / pxT, uLine * 1.4) * smoothstep(0.0, 0.04, r) * inside;`
+  - `Radar.jsx:141` `trail = exp(-behind / uTrail) * (1.0 - smoothstep(uSwept - 0.15, uSwept, behind));`
+  - `Radar.jsx:149` `float sweepIn = smoothstep(0.45, 1.0, uIntro);`
+  - `Radar.jsx:154` `float returns = 0.0;`
+  - `Radar.jsx:161` `float cluster = smoothstep(0.5, 0.78, weather);`
+  - `Radar.jsx:162` `float density = uClutter * (0.02 + 0.35 * cluster) * (1.0 - smoothstep(0.55, 1.0, r));`
+  - `Radar.jsx:166` `float shape = 1.0 - smoothstep(0.18, 0.5, length(inBin));`
+  - `Radar.jsx:175` `float fill = trail * 0.11 * (0.35 + 0.65 * smoothstep(0.0, 0.6, r));`
+  - `Radar.jsx:314` `float depth = mix(0.36, 0.09, smoothstep(0.06, 0.7, peak));`
+  - `Radar.jsx:329` `const MAX_TARGETS = 16;`
+  - `Radar.jsx:330` `const HISTORY = 4;`
+  - `Radar.jsx:331` `const FOCAL = 2;`
+  - `Radar.jsx:332` `const INTRO_SECONDS = 2.2;`
+  - `Radar.jsx:333` `const MAX_RENDER_DIM = 2560;`
+  - (带数字的运动行共 36 条, 留前 28 条, 文件 919 行已逐行扫过)
+- 指针/滚动: pointermove, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `535` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `color='#3ef09a'` (397), `backgroundColor='transparent'` (398), `mode='sweep'` (399), `speed=1` (400), `trail=0.35` (401), `scale=0.9` (402), `ringCount=6` (403), `spokeCount=12` (404), `ticks=true` (405), `targets=6` (406), `clutter=0.35` (407), `glow=1` (408), `brightness=1` (409), `gridOpacity=1` (410), `lineWidth=1` (411), `tilt=0` (412), `centerX=0.5` (413), `centerY=0.5` (414), `mouseInteraction=true` (415), `intro=true` (416), `grain=0.03` (417), `fade=0` (418), `opacity=1` (419), `lightMode=false` (420)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/RippleGrid
+
+- 文件: `Backgrounds/RippleGrid/RippleGrid.css` 14 行, `Backgrounds/RippleGrid/RippleGrid.jsx` 496 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uView, uRatio, uCell, uLineWidth, uGlow, uTilt, uFocal, uTurn. 命名常数 MAX_RIPPLES, VARIANTS, VERTEX, FRAGMENT, INTRO_SECONDS.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `RippleGrid.jsx:6` `const MAX_RIPPLES = 12;`
+  - `RippleGrid.jsx:7` `const VARIANTS = { lines: 0, dots: 1, cross: 2 };`
+  - `RippleGrid.jsx:56` `float horizon = 1.0;`
+  - `RippleGrid.jsx:59` `horizon = smoothstep(0.0, uFocal * 0.35, depth);`
+  - `RippleGrid.jsx:65` `float lift = 0.0;`
+  - `RippleGrid.jsx:73` `float spread = 1.0 / (1.0 + dist / (uWaveLength * 5.0));`
+  - `RippleGrid.jsx:74` `float calm = smoothstep(0.0, uWaveLength * 0.9, dist);`
+  - `RippleGrid.jsx:87` `float shape = 0.0;`
+  - `RippleGrid.jsx:91` `shape = (1.0 - smoothstep(width * 1.7 - 0.5, width * 1.7 + 0.5, edge)) * thin * 1.8;`
+  - `RippleGrid.jsx:93` `float arm = 0.16;`
+  - `RippleGrid.jsx:94` `vec2 cover = (1.0 - smoothstep(width * 0.5 - 0.5, width * 0.5 + 0.5, dist)) * thin;`
+  - `RippleGrid.jsx:95` `vec2 reach = 1.0 - smoothstep(arm - fw * 0.5, arm + fw * 0.5, offset);`
+  - `RippleGrid.jsx:99` `vec2 cover = (1.0 - smoothstep(width * 0.5 - 0.5, width * 0.5 + 0.5, dist)) * thin;`
+  - `RippleGrid.jsx:103` `float far = 1.0 - smoothstep(0.18, 0.5, max(fw.x, fw.y));`
+  - `RippleGrid.jsx:110` `float reveal = 1.0 - smoothstep(uReveal - uCell * 4.0, uReveal, radius);`
+  - `RippleGrid.jsx:128` `const INTRO_SECONDS = 1.6;`
+  - `RippleGrid.jsx:346` `const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;`
+  - `RippleGrid.jsx:351` `else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);`
+  - `RippleGrid.jsx:366` `state.glow += ((engaged ? 1 : 0) - state.glow) * (1 - Math.exp(-dt * (engaged ? 6 : 2.5)));`
+  - `RippleGrid.jsx:382` `const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+- 指针/滚动: pointermove, pointerdown, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `243` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `color='#ffffff'` (167), `variant='lines'` (168), `cellSize=48` (169), `lineWidth=1` (170), `glow=0.6` (171), `rippleStrength=1` (172), `rippleSpeed=1` (173), `rippleSize=1` (174), `autoRipple='center'` (175), `rippleInterval=2.6` (176), `tilt=0` (177), `rotation=0` (178), `mouseInteraction=true` (179), `clickRipple=true` (180), `intro=true` (181), `fade=0.5` (182), `opacity=1` (183), `lightMode=false` (184), `paused=false` (185), `dpr` (186), `className=''` (187)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Scanner
+
+- 文件: `Backgrounds/Scanner/Scanner.css` 12 行, `Backgrounds/Scanner/Scanner.jsx` 510 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uWave, uSweep, uSweepWidth, uTrail, uScale, uFrequency, uRipple. 命名常数 MAX_PINGS, INTRO_SECONDS, DIRECTIONS, VERTEX, FRAGMENT.
+- 技法: WebGL + rAF.
+- 常数:
+  - `Scanner.jsx:6` `const MAX_PINGS = 6;`
+  - `Scanner.jsx:7` `const INTRO_SECONDS = 2;`
+  - `Scanner.jsx:8` `const DIRECTIONS = { vertical: 0, horizontal: 1, diagonal: 2 };`
+  - `Scanner.jsx:79` `float crowd = smoothstep(0.2, 0.55, fw);`
+  - `Scanner.jsx:99` `float pingLight = 0.0;`
+  - `Scanner.jsx:106` `float w = 0.12 + age * 0.1;`
+  - `Scanner.jsx:108` `float fade = exp(-age * 0.9) * smoothstep(0.0, 0.12, age);`
+  - `Scanner.jsx:115` `float lead = smoothstep(0.84, 1.0, u);`
+  - `Scanner.jsx:121` `float reveal = 1.0 - smoothstep(introFront - 0.05, introFront + 0.3, coord);`
+  - `Scanner.jsx:130` `float thread = 0.62 + 0.38 * hash(vec2(floor(lc + 0.5), 3.7));`
+  - `Scanner.jsx:138` `float crowd = smoothstep(0.2, 0.55, fw);`
+  - `Scanner.jsx:141` `float base = 0.11 * reveal;`
+  - `Scanner.jsx:144` `vec3 tone = mix(uColor1, uColor2, smoothstep(0.05, 0.75, lit));`
+  - `Scanner.jsx:157` `float scan = 1.0 - uScanline * 0.55 * (0.5 + 0.5 * cos(gl_FragCoord.y * 6.2831853 / (3.0 * uRatio)));`
+  - `Scanner.jsx:381` `view.ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+  - `Scanner.jsx:393` `const dt = last ? clamp((now - last) / 1000, 0, 1 / 20) : 1 / 60;`
+  - `Scanner.jsx:400` `if (introClock < 1) introClock = Math.min(1, introClock + dt / INTRO_SECONDS);`
+  - `Scanner.jsx:402` `const follow = 1 - Math.exp(-dt / 0.09);`
+  - `Scanner.jsx:405` `presence += ((pointer.inside && s.mouseInteraction ? 1 : 0) - presence) * (1 - Math.exp(-dt / 0.3));`
+  - `Scanner.jsx:409` `pings[k * 3 + 2] += dt;`
+  - `Scanner.jsx:414` `quiet = busy ? 0 : quiet + dt;`
+  - `Scanner.jsx:415` `if (quiet < 0.5) raf = requestAnimationFrame(frame);`
+- 指针/滚动: pointermove, pointerdown, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `312` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `color1='#5227FF'` (226), `color2='#FF9FFC'` (227), `color3='#FFFFFF'` (228), `speed=0.5` (229), `sweepSpeed=0.25` (230), `sweepWidth=1.6` (231), `trail=0.5` (232), `reverse=false` (233), `scale=1.5` (234), `frequency=2` (235), `ripple=0.22` (236), `bandDensity=11` (237), `lineWidth=1.2` (238), `glow=0.6` (239), `scanDirection='vertical'` (240), `colorSpread=0.7` (241), `brightness=1` (242), `vignette=0.3` (243), `scanline=true` (244), `scanlineIntensity=0.5` (245), `grain=true` (246), `grainIntensity=0.04` (247), `opacity=1` (248), `mouseInteraction=true` (249)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/ShapeGrid
+
+- 文件: `Backgrounds/ShapeGrid/ShapeGrid.css` 14 行, `Backgrounds/ShapeGrid/ShapeGrid.jsx` 764 行. 目录内实现已逐行扫描.
+- 看起来: 2d 画布逐帧画. 命名常数 SHAPES, DIRECTIONS, SQRT3, OFFSET, FAR, MAX_PIXELS.
+- 技法: canvas2d + rAF.
+- 常数:
+  - `ShapeGrid.jsx:17` `const OFFSET = 32768;`
+  - `ShapeGrid.jsx:18` `const FAR = 2.5;`
+  - `ShapeGrid.jsx:19` `const MAX_PIXELS = 8e6;`
+  - `ShapeGrid.jsx:23` `const smoothstep = (edge0, edge1, value) => {`
+  - `ShapeGrid.jsx:352` `let ratio = s.dpr ?? Math.min(window.devicePixelRatio || 1, 2);`
+  - `ShapeGrid.jsx:430` `let value = s.radius > 0 ? smoothstep(reach, reach * 0.15, distance) : 0;`
+  - `ShapeGrid.jsx:612` `const dt = state.last ? Math.min(0.05, (now - state.last) / 1000) : 1 / 60;`
+  - `ShapeGrid.jsx:623` `state.offsetX -= dx * s.speed * 60 * dt;`
+  - `ShapeGrid.jsx:624` `state.offsetY -= dy * s.speed * 60 * dt;`
+  - `ShapeGrid.jsx:627` `state.spotPower += (want - state.spotPower) * (1 - Math.exp(-(want ? 10 : 5) * dt));`
+  - `ShapeGrid.jsx:628` `const stiffness = 220;`
+  - `ShapeGrid.jsx:629` `const damping = 2 * Math.sqrt(stiffness) * 0.85;`
+- 指针/滚动: pointermove, pointerdown, pointerleave, blur.
+- 可中断: GSAP 时间轴可 reverse 或 kill, 改 props 通常拆掉重建.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; ResizeObserver.
+- 减弱动效: 有. `317` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `shape='square'` (256), `cellSize=40` (257), `lineWidth=1` (258), `direction='diagonal'` (259), `speed=0.5` (260), `lineColor='#2a2734'` (261), `hoverColor='#ffffff'` (262), `hoverFillColor` (263), `fillOpacity=0.15` (264), `rainbow=false` (265), `tiltX=0` (266), `tiltY=0` (267), `radius=1.5` (268), `trail=0.6` (269), `glow=0.35` (270), `twinkle=0` (271), `fade=1` (272), `clickCascade=true` (273), `intro=true` (274), `opacity=1` (275), `backgroundColor='transparent'` (276), `paused=false` (277), `dpr` (278), `className=''` (279)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/ShapeWaves
+
+- 文件: `Backgrounds/ShapeWaves/ShapeWaves.css` 29 行, `Backgrounds/ShapeWaves/ShapeWaves.jsx` 848 行. 目录内实现已逐行扫描.
+- 看起来: 2d 画布逐帧画. 命名常数 SHAPE_MODES, MAX_DPR, MAX_MASK_SIZE, NOISE_CELLS, TIME_RATE, SIMULATION_STEP.
+- 技法: canvas2d + rAF.
+- 常数:
+  - `ShapeWaves.css:17` `transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1);`
+  - `ShapeWaves.jsx:9` `const SHAPE_MODES = { mixed: 0, squares: 1, circles: 2, triangles: 3 };`
+  - `ShapeWaves.jsx:10` `const MAX_DPR = 2;`
+  - `ShapeWaves.jsx:11` `const MAX_MASK_SIZE = 1024;`
+  - `ShapeWaves.jsx:12` `const NOISE_CELLS = 32;`
+  - `ShapeWaves.jsx:13` `const TIME_RATE = 0.1;`
+  - `ShapeWaves.jsx:14` `const SIMULATION_STEP = 1 / 60;`
+  - `ShapeWaves.jsx:15` `const WAVE_SPEED = 0.42;`
+  - `ShapeWaves.jsx:16` `const WAVE_FRICTION = 0.94;`
+  - `ShapeWaves.jsx:17` `const WAVE_DECAY = 0.972;`
+  - `ShapeWaves.jsx:18` `const SETTLED_THRESHOLD = 0.01;`
+  - `ShapeWaves.jsx:19` `const INTRO_BAND = 0.2;`
+  - `ShapeWaves.jsx:20` `const INTRO_WARP = 0.3;`
+  - `ShapeWaves.jsx:21` `const INTRO_JITTER = 0.16;`
+  - `ShapeWaves.jsx:22` `const INTRO_END = 1 + INTRO_WARP + INTRO_JITTER + INTRO_BAND;`
+  - `ShapeWaves.jsx:130` `const GLOW_THRESHOLD = 0.6;`
+  - `ShapeWaves.jsx:181` `level = 1.0 - smoothstep(max(0.0, 1.0 - fade * 2.2), 1.0, radius);`
+  - `ShapeWaves.jsx:212` `front = 1.0 - smoothstep(0.0, 1.0, abs(introProgress - spread) / band);`
+  - `ShapeWaves.jsx:215` `let coverage = smoothstep(aa, -aa, shapeDistance(local, shape, size));`
+  - `ShapeWaves.jsx:217` `let tint = mix(params.color.rgb, params.hover.rgb, max(smoothstep(0.15, 0.85, charge), front * 0.35));`
+  - `ShapeWaves.jsx:477` `dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);`
+  - `ShapeWaves.jsx:802` `{ threshold: 0 }`
+- 指针/滚动: visibilitychange, change, pointermove, scroll.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `25` @media (prefers-reduced-motion: reduce) {
+- Props: `text=''` (272), `fontFamily='Geist` (273), `fontWeight=500` (274), `textSize=0.6` (275), `shapes='mixed'` (276), `cellSize=10` (277), `dotSize=0.75` (278), `color='#929292'` (279), `hoverColor='#ffffff'` (280), `backgroundColor='#000000'` (281), `speed=1` (282), `scale=1` (283), `contrast=1` (284), `brightness=0.4` (285), `flow=0` (286), `direction=0` (287), `fade=0.25` (288), `interactive=true` (289), `splashRadius=40` (290), `splashStrength=0.4` (291), `glow=0.35` (292), `intro=true` (293), `introDuration=1.6` (294), `introKey=0` (295)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/SideRays
+
+- 文件: `Backgrounds/SideRays/SideRays.css` 15 行, `Backgrounds/SideRays/SideRays.jsx` 459 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uTime, uColorA, uColorB, uBlend, uIntensity, uSpread, uDensity. 自己做 force, velocity, dt 积分. 命名常数 PIXEL_BUDGET, TAU, ORIGINS, VERTEX, FRAGMENT.
+- 技法: WebGL + 自写积分.
+- 常数:
+  - `SideRays.jsx:6` `const PIXEL_BUDGET = 2.4e6;`
+  - `SideRays.jsx:67` `float n = 0.7 * noise(vec2(u + sway + seed, t * 0.3)) + 0.3 * noise(vec2(u * 2.4 + sway * 1.5 + seed * 1.7, t * 0.45 + 3.0));`
+  - `SideRays.jsx:69` `float s = mix(smoothstep(0.5 - width, 0.5 + width, n), 0.5, aa);`
+  - `SideRays.jsx:84` `float twinkle = 0.55 + 0.45 * sin(t * 1.9 + h * 41.0);`
+  - `SideRays.jsx:85` `return (1.0 - smoothstep(size - edge, size + edge, length(f - center))) * twinkle;`
+  - `SideRays.jsx:100` `float aa = smoothstep(0.12, 0.45, fwidth(u));`
+  - `SideRays.jsx:104` `float focus = 1.0 + uFocus.z * exp(-pow((angle - uFocus.x) / uFocus.y, 2.0));`
+  - `SideRays.jsx:107` `float reach = 1.0 / (1.0 + pow(r / 0.4, uFalloff));`
+  - `SideRays.jsx:115` `light *= uIntensity * (1.0 - smoothstep(uReveal * 2.6 - 0.45, uReveal * 2.6, r)) * smoothstep(0.0, 0.35, uReveal);`
+  - `SideRays.jsx:126` `float mapped = 1.0 - exp(-peak);`
+  - `SideRays.jsx:128` `tone = mix(tone, vec3(mapped), smoothstep(0.7, 1.0, mapped) * 0.55);`
+  - `SideRays.jsx:291` `window.devicePixelRatio || 1,`
+  - `SideRays.jsx:318` `const dt = clamp((now - last) / 1000 || 0, 0, 0.05);`
+  - `SideRays.jsx:320` `time += dt * s.speed * (reduced ? 0.3 : 1);`
+  - `SideRays.jsx:321` `if (reveal < 1) reveal = Math.min(1, reveal + dt / 1.6);`
+  - `SideRays.jsx:327` `const ease = 1 - Math.exp(-dt * 6);`
+  - `SideRays.jsx:328` `if (tracking) focus.angle += (clamp(pointed - aim.value, -s.spread * 1.5, s.spread * 1.5) - focus.angle) * ease;`
+  - `SideRays.jsx:330` `const stiffness = 18;`
+  - `SideRays.jsx:331` `const damping = 2 * Math.sqrt(stiffness);`
+  - `SideRays.jsx:332` `aim.velocity += ((target - aim.value) * stiffness - aim.velocity * damping) * dt;`
+  - `SideRays.jsx:333` `aim.value += aim.velocity * dt;`
+- 指针/滚动: pointermove, pointerup, pointercancel, pointerleave, webglcontextlost, webglcontextrestored, visibilitychange.
+- 可中断: pointercancel 有监听. 弹簧保留速度, 每帧重算目标.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `271` const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+- Props: `rayColor1='#FFC46B'` (198), `rayColor2='#96c8ff'` (199), `blend=0.6` (200), `origin='top-right'` (201), `speed=2.5` (202), `intensity=2` (203), `spread=2` (204), `density=5` (205), `sharpness=0.5` (206), `tilt=0` (207), `falloff=1.6` (208), `glow=1` (209), `saturation=1` (210), `dust=0` (211), `followMouse=true` (212), `mouseInfluence=0.5` (213), `intro=true` (214), `lightMode=false` (215), `opacity=1` (216), `maxDevicePixelRatio=2` (217), `className=''` (218), `style` (219)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Silk
+
+- 文件: `Backgrounds/Silk/Silk.css` 14 行, `Backgrounds/Silk/Silk.jsx` 590 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uView, uScale, uRotation, uTime, uWave, uRipple, uFold, uShift. 命名常数 VERTEX, SILK, FIELD, COMPOSITE, INTRO_SECONDS, INTRO_RUSH.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `Silk.jsx:26` `const float e = 2.71828182845904523536;`
+  - `Silk.jsx:117` `float relief = 1.0 + (dot(normal, toLight) - toLight.z) * 1.8 * uDepth;`
+  - `Silk.jsx:119` `float gloss = pow(max(dot(normal, halfway), 0.0), 48.0) * smoothstep(0.25, 0.85, n);`
+  - `Silk.jsx:123` `float bloom = 0.0;`
+  - `Silk.jsx:133` `float fold = smoothstep(0.28, 0.9, pattern);`
+  - `Silk.jsx:134` `float specular = smoothstep(0.72, 0.98, pattern);`
+  - `Silk.jsx:157` `float mask = 1.0;`
+  - `Silk.jsx:166` `const INTRO_SECONDS = 2.2;`
+  - `Silk.jsx:167` `const INTRO_RUSH = 1.6;`
+  - `Silk.jsx:168` `const WAVE_LIFE = 1.6;`
+  - `Silk.jsx:174` `const ease = t => t * t * t * (t * (t * 6 - 15) + 10);`
+  - `Silk.jsx:419` `const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;`
+  - `Silk.jsx:422` `if (flowing) state.flow += dt * 0.1 * s.speed;`
+  - `Silk.jsx:424` `else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);`
+  - `Silk.jsx:431` `const follow = 1 - Math.exp(-dt * 10);`
+  - `Silk.jsx:436` `const velX = (state.x - prevX) / Math.max(dt, 0.001) / view.height;`
+  - `Silk.jsx:437` `const velY = (state.y - prevY) / Math.max(dt, 0.001) / view.height;`
+  - `Silk.jsx:438` `const dragBlend = 1 - Math.exp(-dt * 4);`
+  - `Silk.jsx:441` `state.touch += ((engaged ? 1 : 0) - state.touch) * (1 - Math.exp(-dt * (engaged ? 3.5 : 1.4)));`
+  - `Silk.jsx:457` `const lightFollow = 1 - Math.exp(-dt * 3);`
+  - `Silk.jsx:487` `const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+- 指针/滚动: pointermove, pointerdown, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `330` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `speed=5` (221), `scale=1` (222), `color='#7B7481'` (223), `sheenColor='#ffffff'` (224), `noiseIntensity=1.5` (225), `rotation=0` (226), `sheen=0.5` (227), `depth=0.5` (228), `glow=0.3` (229), `ripple=1` (230), `wave=1` (231), `variation=0` (232), `mouseInteraction=true` (233), `interactionStrength=1` (234), `clickRipple=true` (235), `intro=true` (236), `fade=0` (237), `lightMode=false` (238), `paused=false` (239), `dpr` (240), `className=''` (241), `style` (242)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/SlicedWaves
+
+- 文件: `Backgrounds/SlicedWaves/SlicedWaves.css` 14 行, `Backgrounds/SlicedWaves/SlicedWaves.jsx` 631 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uView, uAngle, uGlow, uSlices, uBase, uHalfBar, uScale, uLight. 命名常数 BAR_VERTEX, BAR_FRAGMENT, QUAD_VERTEX, COMPOSITE, TAU, MAX_RIBBONS.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `SlicedWaves.jsx:49` `float t = 1.0 - exp(-a * (1.2732395 + 0.147 * a) / (1.0 + 0.147 * a));`
+  - `SlicedWaves.jsx:54` `float k = 0.70710678 / max(s, 0.3);`
+  - `SlicedWaves.jsx:71` `float f = 1.0 - abs(fract(y) - 0.5) * 2.0;`
+  - `SlicedWaves.jsx:73` `body *= smoothstep(0.28 - soft, 0.28 + soft, f);`
+  - `SlicedWaves.jsx:125` `mapped = mix(mapped, vec3(1.0), smoothstep(1.1, 3.2, peak) * 0.75);`
+  - `SlicedWaves.jsx:133` `const MAX_RIBBONS = 6;`
+  - `SlicedWaves.jsx:134` `const FOCAL = 1.1;`
+  - `SlicedWaves.jsx:135` `const DISTANCE = 2.6;`
+  - `SlicedWaves.jsx:136` `const INTRO_SECONDS = 1.5;`
+  - `SlicedWaves.jsx:137` `const MAX_RENDER_DIM = 2560;`
+  - `SlicedWaves.jsx:511` `const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;`
+  - `SlicedWaves.jsx:516` `else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);`
+  - `SlicedWaves.jsx:526` `state.focusVelocity += (36 * (target - state.focus) - 11 * state.focusVelocity) * dt;`
+  - `SlicedWaves.jsx:528` `state.lift += ((engaged ? 1 : 0) - state.lift) * (1 - Math.exp(-dt / (engaged ? 0.25 : 0.6)));`
+  - `SlicedWaves.jsx:529` `state.liftX += (localX - state.liftX) * (1 - Math.exp(-dt / 0.12));`
+  - `SlicedWaves.jsx:550` `const base = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+- 指针/滚动: pointermove, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `314` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `color1='#ffd9a8'` (186), `color2='#ff5fa2'` (187), `color3='#5b8cff'` (188), `ribbons=3` (189), `spacing=28` (190), `barWidth=0.5` (191), `ribbonHeight=0.26` (192), `spread=0.1` (193), `amplitude=0.1` (194), `frequency=1` (195), `speed=1` (196), `perspective=0.45` (197), `curve=0.5` (198), `blur=0.6` (199), `glow=1` (200), `brightness=1.25` (201), `position=0.78` (202), `rotation=0` (203), `slices=0` (204), `grain=0.08` (205), `mouseInteraction=true` (206), `intro=true` (207), `fade=0` (208), `opacity=1` (209)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/SoftAurora
+
+- 文件: `Backgrounds/SoftAurora/SoftAurora.css` 14 行, `Backgrounds/SoftAurora/SoftAurora.jsx` 532 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uFlow, uHue, uScale, uBrightness, uColor1, uColor2, uNoiseFreq. 命名常数 MAX_PULSES, VERTEX, FRAGMENT.
+- 技法: WebGL + rAF.
+- 常数:
+  - `SoftAurora.jsx:6` `const MAX_PULSES = 4;`
+  - `SoftAurora.jsx:39` `#define TAU 6.28318`
+  - `SoftAurora.jsx:108` `float noiseVal = 0.0;`
+  - `SoftAurora.jsx:113` `for (float i = 0.0; i < 3.0; i += 1.0) {`
+  - `SoftAurora.jsx:136` `float t = 0.4 * uFlow;`
+  - `SoftAurora.jsx:143` `float pulse = 0.0;`
+  - `SoftAurora.jsx:168` `float core = smoothstep(0.55, 1.6, energy);`
+  - `SoftAurora.jsx:169` `float depth = 1.25 + 0.45 * core;`
+  - `SoftAurora.jsx:170` `vec3 tint = mix(average * 0.82, pow(average / max(top, 1e-4), vec3(depth + 0.6)), smoothstep(0.04, 0.2, spread));`
+  - `SoftAurora.jsx:171` `float vivid = smoothstep(0.12, 0.55, 1.0 - min(hue.r, min(hue.g, hue.b))) * smoothstep(0.04, 0.2, spread);`
+  - `SoftAurora.jsx:173` `float density = 0.88 * (1.0 - exp(-1.9 * pow(energy, 1.7)));`
+  - `SoftAurora.jsx:353` `const dt = clamp((now - last) / 1000 || 0, 0, 0.05);`
+  - `SoftAurora.jsx:358` `if (opening < 1) opening = Math.min(1, opening + dt / 2);`
+  - `SoftAurora.jsx:361` `const follow = 1 - Math.exp(-dt / 0.325);`
+  - `SoftAurora.jsx:364` `mouse.presence += ((tracking ? 1 : 0) - mouse.presence) * (1 - Math.exp(-dt / (tracking ? 0.45 : 0.8)));`
+- 指针/滚动: pointermove, pointerdown, pointerup, pointercancel, pointerleave, webglcontextlost, webglcontextrestored, visibilitychange.
+- 可中断: pointercancel 有监听.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `317` const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+- Props: `speed=0.6` (244), `scale=1.5` (245), `brightness=1.0` (246), `color1='#f7f7f7'` (247), `color2='#e100ff'` (248), `noiseFrequency=2.5` (249), `noiseAmplitude=1.0` (250), `bandHeight=0.5` (251), `bandSpread=1.0` (252), `octaveDecay=0.1` (253), `layerOffset=0` (254), `colorSpeed=1.0` (255), `spectrum=1` (256), `tilt=0` (257), `enableMouseInteraction=true` (258), `mouseInfluence=0.25` (259), `clickPulse=true` (260), `intro=true` (261), `lightMode=false` (262), `opacity=1` (263), `className=''` (264), `style` (265)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Threads
+
+- 文件: `Backgrounds/Threads/Threads.css` 13 行, `Backgrounds/Threads/Threads.jsx` 541 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uTime, uResolution, uFrame, uAmplitude, uDistance, uMouse, uCount, uThickness. 命名常数 LINE_VERTEX, LINE_FRAGMENT, SCREEN_VERTEX, SCREEN_FRAGMENT, MAX_RENDER_DIM.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `Threads.jsx:54` `float pixel = 1.0 / max(uResolution.x, uResolution.y);`
+  - `Threads.jsx:56` `float amplitudeNormal = smoothstep(splitPoint, max(0.7, splitPoint + 0.2), x);`
+  - `Threads.jsx:59` `float blur = smoothstep(splitPoint, splitPoint + 0.05, x) * perc;`
+  - `Threads.jsx:65` `float y = 0.5 + (perc - 0.5) * uDistance + xnoise / 2.0 * finalAmplitude;`
+  - `Threads.jsx:73` `float width = 7.0 * uThickness * pixel * (1.0 - perc);`
+  - `Threads.jsx:82` `vAlpha = 1.0 - smoothstep(0.0, 1.0, pow(perc, 0.3)) * uTaper;`
+  - `Threads.jsx:97` `float coverage = (1.0 - smoothstep(0.0, vDraw, abs(vEdge))) * (vBand / vDraw) * vAlpha;`
+  - `Threads.jsx:138` `const MAX_RENDER_DIM = 1920;`
+  - `Threads.jsx:350` `const baseDpr = Math.min(window.devicePixelRatio || 1, 2);`
+  - `Threads.jsx:432` `const dt = last ? Math.min(0.05, (now - last) / 1000) : 1 / 60;`
+  - `Threads.jsx:436` `const follow = 1 - Math.exp(-dt * 3);`
+  - `Threads.jsx:439` `const glide = 1 - Math.exp(-dt * 10);`
+  - `Threads.jsx:442` `state.presence += ((state.inside && s.parting > 0 ? 1 : 0) - state.presence) * (1 - Math.exp(-dt * 4));`
+- 指针/滚动: pointermove, pointerleave, visibilitychange.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `296` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `color=[1` (174), `accentColor` (175), `amplitude=1.7` (176), `distance=0.4` (177), `enableMouseInteraction=false` (178), `lineCount=90` (179), `thickness=0.6` (180), `softness=1.3` (181), `speed=0.6` (182), `waves=1.05` (183), `split=0.04` (184), `fray=0.5` (185), `angle=25` (186), `seed=0` (187), `parting=0` (188), `taper=0.85` (189), `brightness=1.4` (190), `fade=0` (191), `opacity=1` (192), `paused=false` (193)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Topography
+
+- 文件: `Backgrounds/Topography/Topography.css` 12 行, `Backgrounds/Topography/Topography.jsx` 1516 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uFrequency, uMorph, uSculpt, uSculptOn, uPulses, uEye, uForward, uNear. 命名常数 FOV, ORBIT, NEAR, FAR, HEIGHT, FREQUENCY.
+- 技法: WebGL + rAF.
+- 常数:
+  - `Topography.jsx:6` `const FOV = 0.32;`
+  - `Topography.jsx:7` `const ORBIT = 9;`
+  - `Topography.jsx:8` `const NEAR = 0.05;`
+  - `Topography.jsx:9` `const FAR = 160;`
+  - `Topography.jsx:10` `const HEIGHT = 1.7;`
+  - `Topography.jsx:11` `const FREQUENCY = 0.45;`
+  - `Topography.jsx:12` `const INTRO_SECONDS = 2.8;`
+  - `Topography.jsx:13` `const MAX_PULSES = 4;`
+  - `Topography.jsx:14` `const BLOOM_LEVELS = 4;`
+  - `Topography.jsx:15` `const SCULPT_SIZE = 256;`
+  - `Topography.jsx:16` `const SCULPT_SPAN = 48;`
+  - `Topography.jsx:17` `const MAX_CELLS = 200000;`
+  - `Topography.jsx:19` `const DIRECTIONS = { forward: [0, 1], backward: [0, -1], left: [-1, 0], right: [1, 0] };`
+  - `Topography.jsx:21` `const MARKER_STYLES = { plus: 0, dots: 1 };`
+  - `Topography.jsx:22` `const MARKER_SPACING = 1.25;`
+  - `Topography.jsx:81` `float lift = 0.0;`
+  - `Topography.jsx:224` `float total = 0.0;`
+  - `Topography.jsx:239` `float shift = 0.0;`
+  - `Topography.jsx:240` `float split = 0.0;`
+  - `Topography.jsx:263` `float trail = 0.0;`
+  - `Topography.jsx:280` `float soft = 1.0 + min(uFocus.y * abs(1.0 - uFocus.x / depth), uFocus.z);`
+  - `Topography.jsx:281` `float crowd = smoothstep(0.3, 0.75, density * max(width, soft));`
+  - `Topography.jsx:298` `float level = mix(0.45, 1.05, smoothstep(0.0, 1.1, h)) * mix(0.35, 1.25, sun * sun) * (1.0 + 0.6 * major);`
+  - `Topography.jsx:301` `float fade = 1.0 - smoother((depth - uFade.x) / max(uFade.y - uFade.x, 1e-3));`
+  - `Topography.jsx:362` `float frame = max(smoothstep(0.55, 0.95, blink), smoothstep(0.3, 0.8, heat));`
+  - `Topography.jsx:366` `float shift = 0.0;`
+  - `Topography.jsx:420` `float fade = 1.0 - smoother((vDepth - uFade.x) / max(uFade.y - uFade.x, 1e-3));`
+  - `Topography.jsx:745` `const ratio = Math.min(settingsRef.current.dpr || window.devicePixelRatio || 1, 2);`
+  - (带数字的运动行共 45 条, 留前 28 条, 文件 1516 行已逐行扫过)
+- 指针/滚动: webglcontextlost, webglcontextrestored, pointermove, pointerdown, pointerup, pointercancel, pointerleave, visibilitychange.
+- 可中断: pointercancel 有监听.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `848` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `color='#4f7cff'` (672), `lineCount=22` (673), `lineWidth=1.2` (674), `majorLines=true` (675), `elevation=1` (676), `foreground=0.2` (677), `scale=1` (678), `detail=0.35` (679), `tilt=32` (680), `speed=0.25` (681), `direction='forward'` (682), `morph=0.2` (683), `glow=0.6` (684), `depthOfField=0.4` (685), `fog=0.35` (686), `brightness=1` (687), `opacity=1` (688), `mouseInteraction=true` (689), `hoverEffect='lift'` (690), `mouseRadius=1` (691), `mouseStrength=0.6` (692), `trail=0.3` (693), `parallax=0.5` (694), `clickEffect='pulse'` (695)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/Waves
+
+- 文件: `Backgrounds/Waves/Waves.css` 13 行, `Backgrounds/Waves/Waves.jsx` 719 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uView, uRatio, uAxis, uSpacing, uStep, uStart, uAmplitude, uFrequency. 自己做 force, velocity, dt 积分. 命名常数 STYLES, CELL, STEP, INTRO_SECONDS, RIPPLE_SPEED, RIPPLE_WIDTH.
+- 技法: WebGL + canvas2d + 自写积分.
+- 常数:
+  - `Waves.jsx:6` `const STYLES = { solid: 0, dashed: 1 };`
+  - `Waves.jsx:7` `const CELL = 12;`
+  - `Waves.jsx:8` `const STEP = 4;`
+  - `Waves.jsx:9` `const INTRO_SECONDS = 2.2;`
+  - `Waves.jsx:10` `const RIPPLE_SPEED = 640;`
+  - `Waves.jsx:11` `const RIPPLE_WIDTH = 64;`
+  - `Waves.jsx:13` `const MAX_VERTICES = 1600000;`
+  - `Waves.jsx:66` `vec2 u = vec2(ease(f.x), ease(f.y));`
+  - `Waves.jsx:75` `float g = 1.0 - f;`
+  - `Waves.jsx:180` `float heat = smoothstep(0.0, uHeat, vEnergy);`
+  - `Waves.jsx:383` `const follow = 1 - Math.exp(-dt / 0.045);`
+  - `Waves.jsx:386` `const blend = 1 - Math.exp(-dt / 0.06);`
+  - `Waves.jsx:423` `const damping = 2 * zeta * omega;`
+  - `Waves.jsx:424` `const steps = Math.min(16, Math.max(1, Math.ceil(dt / Math.min(1 / 120, 0.6 / omega))));`
+  - `Waves.jsx:459` `let vx = velocity[index];`
+  - `Waves.jsx:460` `let vy = velocity[index + 1];`
+  - `Waves.jsx:469` `velocity[index] = vx;`
+  - `Waves.jsx:470` `velocity[index + 1] = vy;`
+  - `Waves.jsx:573` `const dt = last ? clamp((now - last) / 1000, 0.0005, 0.05) : 1 / 60;`
+  - `Waves.jsx:583` `else if (state.intro < 1) state.intro = Math.min(1, state.intro + dt / INTRO_SECONDS);`
+  - `Waves.jsx:587` `if (!reduce || awake || engaged || ripples.length || state.intro < 1) raf = requestAnimationFrame(frame);`
+  - `Waves.jsx:599` `const ratio = Math.min(s.dpr || window.devicePixelRatio || 1, 2);`
+- 指针/滚动: pointermove, pointerdown, pointerup, pointercancel, pointerleave, visibilitychange.
+- 可中断: pointercancel 有监听. 弹簧保留速度, 每帧重算目标.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `313` const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+- Props: `lineColor='#ffffff'` (229), `accentColor` (230), `backgroundColor='transparent'` (231), `lineStyle='solid'` (232), `spacing=10` (233), `lineWidth=1` (234), `rotation=0` (235), `amplitude=32` (236), `scale=1` (237), `twist=1` (238), `speed=1` (239), `variation=0` (240), `mouseInteraction=true` (241), `mouseRadius=175` (242), `mouseStrength=1` (243), `bounce=0.5` (244), `returnDuration=1.4` (245), `clickRipple=true` (246), `intro=true` (247), `fade=0` (248), `opacity=1` (249), `lightMode=false` (250), `paused=false` (251), `dpr` (252)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
+
+### Backgrounds/WebThreads
+
+- 文件: `Backgrounds/WebThreads/WebThreads.css` 14 行, `Backgrounds/WebThreads/WebThreads.jsx` 686 行. 目录内实现已逐行扫描.
+- 看起来: 着色器场, uniform 有 uResolution, uPhase, uClock, uCount, uFrequency, uSpread, uTaper, uPosition. 命名常数 CANVAS, MAX_THREADS, MAX_COLORS, MAX_SURGES, SURGE_SECONDS, SURGE_STAGGER.
+- 技法: WebGL + canvas2d + rAF.
+- 常数:
+  - `WebThreads.jsx:9` `const MAX_THREADS = 24;`
+  - `WebThreads.jsx:10` `const MAX_COLORS = 6;`
+  - `WebThreads.jsx:11` `const MAX_SURGES = 3;`
+  - `WebThreads.jsx:12` `const SURGE_SECONDS = 1.6;`
+  - `WebThreads.jsx:13` `const SURGE_STAGGER = 0.05;`
+  - `WebThreads.jsx:14` `const STROKE_SECONDS = 1.25;`
+  - `WebThreads.jsx:59` `const float PI = 3.14159265;`
+  - `WebThreads.jsx:60` `const float TAU = 6.28318530;`
+  - `WebThreads.jsx:95` `float spacing = 1.0 / uNodes;`
+  - `WebThreads.jsx:103` `float amp = 1.0 + i * uTaper;`
+  - `WebThreads.jsx:119` `float pixel = 1.0 / uResolution.y;`
+  - `WebThreads.jsx:125` `float energy = 0.0;`
+  - `WebThreads.jsx:126` `float ink = 0.0;`
+  - `WebThreads.jsx:134` `float head = 2.0;`
+  - `WebThreads.jsx:135` `float bead = 0.0;`
+  - `WebThreads.jsx:136` `float born = 1.0;`
+  - `WebThreads.jsx:141` `born = progress > 0.0 ? smoothstep(-0.05, 0.03, head) : 0.0;`
+  - `WebThreads.jsx:151` `float twist = uDepth * smoothstep(0.0, 0.07, abs(spot - hubAt(spot)));`
+  - `WebThreads.jsx:152` `float depth = 0.5 + 0.5 * cos(t.z);`
+  - `WebThreads.jsx:165` `float bend = t.y * smoothstep(0.0, 0.04, abs(x - hub));`
+  - `WebThreads.jsx:176` `float light = 0.0;`
+  - `WebThreads.jsx:202` `float stroke = smoothstep(0.45, 1.3, g);`
+  - `WebThreads.jsx:207` `float fade = 1.0;`
+  - `WebThreads.jsx:213` `float core = smoothstep(0.5, 2.2, energy);`
+  - `WebThreads.jsx:231` `float focal = smoothstep(2.0, 9.0, energy * fade) * 0.25;`
+  - `WebThreads.jsx:266` `const staggerFor = count => Math.min(0.12, 0.9 / Math.max(count - 1, 1));`
+  - `WebThreads.jsx:493` `const ratio = Math.min(window.devicePixelRatio || 1, s.dpr);`
+  - `WebThreads.jsx:504` `const introLength = s => (s.count - 1) * staggerFor(s.count) + STROKE_SECONDS;`
+  - (带数字的运动行共 33 条, 留前 28 条, 文件 686 行已逐行扫过)
+- 指针/滚动: pointermove, pointerdown, pointerleave.
+- 可中断: 连续模拟, 目标改了下一帧生效.
+- 性能: 无自管循环. 交给 CSS 或库.; 有 rAF, 并且有 cancel; IntersectionObserver; 读 devicePixelRatio; 离屏或隐藏时有暂停线索; ResizeObserver.
+- 减弱动效: 有. `300` typeof window !== 'undefined' && (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
+- Props: `colors=['#5227FF'` (303), `coreColor='#FFFFFF'` (304), `backgroundColor='transparent'` (305), `lightMode=false` (306), `threadCount=6` (307), `speed=0.2` (308), `frequency=5` (309), `spread=0.18` (310), `taper=1` (311), `position=0.5` (312), `pinch=0.5` (313), `nodes=1` (314), `angle=0` (315), `glow=0.02` (316), `falloff=0.6` (317), `thickness=1.1` (318), `brightness=0.6` (319), `opacity=1` (320), `depth=0` (321), `pulses=0` (322), `mirror=true` (323), `shimmer=false` (324), `fade=0` (325), `grain=0.05` (326)
+- 裁决: 不做. 全屏场和控件状态机无关, 首页最多留一个主角效果, 不进默认包.
