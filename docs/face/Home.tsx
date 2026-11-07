@@ -59,7 +59,7 @@ export function Home({ onGo }: { readonly onGo: (id: string) => void }): JSX.Ele
 
   return (
     <main>
-      <section className="mx-auto flex min-h-[70vh] max-w-3xl flex-col justify-center px-5 py-16">
+      <section className="mx-auto flex min-h-svh max-w-3xl flex-col justify-center px-5 py-16">
         <p className="text-sm text-muted-foreground">HX UI</p>
         <h1
           className="mt-4 text-5xl font-medium tracking-tight text-foreground md:text-7xl"
@@ -79,7 +79,7 @@ export function Home({ onGo }: { readonly onGo: (id: string) => void }): JSX.Ele
       <section className="mx-auto grid max-w-5xl gap-4 px-5 py-16 md:grid-cols-3">
         {["预备要看得见", "满板之后停住", "飞入必须落进槽位"].map((title, index) => {
           const start = index === 0 ? 0 : index === 1 ? DEAL_FIRST_MS : DEAL_FIRST_MS + DEAL_LAST_MS;
-          const shown = deal * 1000 >= start;
+          const shown = deal > 0.05 && deal * 1000 >= start;
           return (
             <article
               key={title}
