@@ -824,3 +824,7 @@ spring: none. Easing: Easing.bezier(0.3, 1.4, 0.5, 1), Easing.bezier(0.33, 0, 0.
 ### demos/ui-entrance/wall-reveal-moves/WireframeDrawOn.tsx
 镜头卡 `wall-reveal-moves`, 227 行. Sequence from: none. durationInFrames: none.
 spring: none. Easing: Easing.bezier(0.4, 0, 0.3, 1), Easing.bezier(0.55, 0, 0.25, 1), Easing.out(Easing.quad). interpolate: [start, start + 30]->[0, 1]; [88, 118]->[0, 1].
+
+## 7. 逐演示目录
+
+226 个 tsx 各一条, 在 `docs/research/shots/part-1.md` 到 `part-6.md`. 含遗留演示和夹具. 帧号和缓动来自源码行, 镜头卡参数另列. 覆盖清单见 `docs/research/coverage.md`.

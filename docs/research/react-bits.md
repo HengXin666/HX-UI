@@ -892,3 +892,17 @@ Micro 35 件不在这 183 里. 第一遍漏了, 附在文末. 常数是源码里
 画面: 控件级微交互 (按下, 拖拽, 开关, 滑杆). 技法: motion. 变体: content, ts-default. 四种变体的运动字面量一致.
 常数: stiffness=260; damping=22; mass=0.4 }; delay=400; ease=EASE_OUT }). uniform: none. 标记: reduced-motion, rAF.
 结论: 值得超过: 这是控件级手感, 不是背景. 吸收按下/回弹/速度保留, 不要整段复制视觉.
+
+## 5. 逐件目录
+
+218 个组件目录 (Animations 38, Backgrounds 64, Components 48, Micro 35, TextAnimations 33) 的逐件条目在 `docs/research/catalog/`. 旧笔记的 183 没有计入 Micro. 每个目录的实现文件已逐行扫描, 常数带源码行号.
+
+- `catalog/animations.md`
+- `catalog/backgrounds-1.md`
+- `catalog/backgrounds-2.md`
+- `catalog/components-1.md`
+- `catalog/components-2.md`
+- `catalog/micro.md`
+- `catalog/textanimations.md`
+
+覆盖清单见 `docs/research/coverage.md`.

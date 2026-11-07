@@ -581,3 +581,4 @@
 - [x] `references/shots/ui-entrance/row-embed.md` (37 lines)
 - [x] `references/shots/ui-entrance/value-stagger-gradient.md` (65 lines)
 - [x] `references/shots/ui-entrance/wall-reveal-moves.md` (48 lines)
+带行号的常数摘录在 `docs/research/catalog/` 与 `docs/research/shots/`. 控件分态合同在 `docs/research/craft.md`.
