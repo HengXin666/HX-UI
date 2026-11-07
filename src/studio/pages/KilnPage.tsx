@@ -15,7 +15,7 @@ import { Display } from "../../typography/Display";
 import { Eyebrow } from "../../typography/Eyebrow";
 import { Lead } from "../../typography/Lead";
 import { STUDIO_CLASS } from "../classes";
-import { F016, F088, N126, F48 } from "../num";
+import { F016, F088, N126, F48 } from "../figures";
 import { SHOT_MOVE, SHOT_PACE } from "../moves";
 import { Shot, ShotSequence } from "../sequence/Sequence";
 import { ShotPlate } from "../sequence/Plate";

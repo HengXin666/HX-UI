@@ -35,7 +35,7 @@ import {
   N40,
   N96,
   N268,
-} from "../num";
+} from "../figures";
 
 /** 整页模板的语言. 价格, 标题判定与读屏共用这一处. */
 export const STUDIO_LOCALE = LOCALE_ZH_CN;

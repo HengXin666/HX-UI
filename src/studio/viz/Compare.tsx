@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import { STACK_DIRECTION } from "../../constants/box";
 import { cn } from "../../primitives/utils";
 import { HX_LEAD, STUDIO_CLASS } from "../classes";
-import { SCOPE_COL } from "../num";
+import { SCOPE_COL } from "../figures";
 
 export interface CompareColumn {
   id: string;

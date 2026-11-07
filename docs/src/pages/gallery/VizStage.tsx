@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { TEXT_TONE } from "../../../../src/constants/typography";
 import { Compare, Metric, Process } from "../../../../src/studio";
-import { N11, N12, N13, N14, N15, N16, N17, N18, N2, N20, N21, N22, N27, N3, N4, N9 } from "../../../../src/studio/num";
+import { N11, N12, N13, N14, N15, N16, N17, N18, N2, N20, N21, N22, N27, N3, N4, N9 } from "../../../../src/studio/figures";
 
 const STEPS = [
   { id: "capture", title: "采集", detail: "原始记录进线, 先不解释." },

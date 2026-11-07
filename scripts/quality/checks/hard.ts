@@ -58,15 +58,16 @@ function literalKey(node: ts.Node): string | undefined {
     return undefined;
 }
 
-/** Tooling under scripts/ and the shipped library plus its docs site are counted as separate pools. */
+/** Constants still live in the pool directory. Counting is per file, so a 2 in another file is not a repeat. */
 function pool(path: string): string {
     return CONSTANT_DIRS.find((dir) => path.startsWith(dir.split(SLASH)[0] + SLASH)) ?? CONSTANT_DIRS[0];
 }
 
 const constDup: Rule = {
     id: "PROJECT-CONST-DUP", severity: ERROR, group: CODE,
-    summary: "同一字符串或数字字面量在同一代码池 (库与文档站 / scripts 工具) 出现 >= " + DUP_THRESHOLD
-        + " 次必须提取为常量, 分别放到 " + CONSTANT_DIRS.join(" 与 "),
+    summary: "同一字符串或数字字面量在同一文件出现 >= " + DUP_THRESHOLD
+        + " 次必须提取为常量, 分别放到 " + CONSTANT_DIRS.join(" 与 ")
+        + ". 按文件计数, 不把整个代码池里已经出现过的 2 或 120 算进新文件",
     run: (snapshot) => {
         const out = new Collector(constDup);
         const uses = new Map<string, Array<{ path: string; line: number; evidence: string }>>();
@@ -77,7 +78,7 @@ const constDup: Rule = {
             const source = parse(path, text);
             visit(source, (node) => {
                 const literal = excludedLiteral(node) ? undefined : literalKey(node);
-                const key = literal && pool(path) + SPACE + literal;
+                const key = literal && path + SPACE + literal;
                 if (key) {
                     const at = line(source, node.getStart(source));
                     const list = uses.get(key) ?? [];
@@ -90,11 +91,10 @@ const constDup: Rule = {
             if (list.length < DUP_THRESHOLD) {
                 continue;
             }
-            const [dir, ...rest] = key.split(SPACE);
-            const literal = rest.join(SPACE);
+            const literal = key.slice(key.indexOf(SPACE) + 1);
             const shown = literal.length > EVIDENCE_WIDTH ? literal.slice(0, EVIDENCE_WIDTH) + "..." : literal;
             for (const use of list) {
-                out.add(use.path, use.line, "字面量 " + shown + " 出现 " + list.length + " 次, 提取到 " + dir + " 后引用",
+                out.add(use.path, use.line, "字面量 " + shown + " 出现 " + list.length + " 次, 提取到 " + pool(use.path) + " 后引用",
                     use.evidence, key);
             }
         }

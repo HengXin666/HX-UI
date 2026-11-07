@@ -5,7 +5,8 @@ import { ThemeToggle } from "../src/components/ThemeToggle";
 import { useShellLayout } from "../src/useShellLayout";
 import { DocsFrame } from "./DocsFrame";
 import { Home } from "./Home";
-import { FACE_HOME, FACE_PREVIEW, PREVIEW_FIELD, PREVIEW_KILN, useFaceRoute } from "./router";
+import { Playground } from "./Playground";
+import { FACE_BENCH, FACE_HOME, FACE_PREVIEW, PREVIEW_FIELD, PREVIEW_KILN, useFaceRoute } from "./router";
 import { FieldPage, KilnPage } from "../../src/studio";
 
 /** 公开站点: 首页是门面, #/组件 id 进入文档. */
@@ -60,6 +61,7 @@ export function FaceApp(): JSX.Element {
       </header>
 
       {route.kind === "home" ? <Home onGo={go} /> : null}
+      {route.kind === "bench" ? <Playground onBack={() => go(FACE_HOME)} /> : null}
       {route.kind === "doc" ? (
         <DocsFrame id={docId} onGo={go} wide={shellWide} mobileNavOpen={mobileNavOpen} setMobileNavOpen={setMobileNavOpen} />
       ) : null}

@@ -4,6 +4,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 import { VARIANT } from "../constants";
+import { usePress } from "../craft/use-press";
 import { useRipple } from "./ripple";
 import { cn } from "./utils";
 
@@ -55,8 +56,8 @@ const buttonVariants = cva(
 			},
 		},
 		defaultVariants: {
-			variant: "default",
-			size: "default",
+			variant: VARIANT.default,
+			size: VARIANT.default,
 		},
 	},
 );
@@ -76,27 +77,44 @@ const NO_RIPPLE_VARIANTS: ReadonlyArray<string> = [VARIANT.link];
  */
 function Button({
 	className,
-	variant = "default",
-	size = "default",
+	variant = VARIANT.default,
+	size = VARIANT.default,
 	asChild = false,
 	ripple = true,
 	press,
+	loading = false,
 	onPointerDown,
+	onPointerUp,
+	onPointerCancel,
 	onKeyDown,
+	onKeyUp,
 	type,
+	disabled,
+	children,
+	style,
 	...props
 }: React.ComponentProps<"button"> &
 	VariantProps<typeof buttonVariants> & {
 		asChild?: boolean;
 		/** 点按水波纹. 默认 true. */
 		ripple?: boolean;
+		/** 标签让位给旋转指示, 宽度仍由标签占住. */
+		loading?: boolean;
 	}) {
 	const Comp = asChild ? Slot.Root : "button";
+	const craft = press !== false && !asChild;
+	const motion = usePress(craft && !disabled && !loading);
 	const rippleProps = useRipple<HTMLButtonElement>({
-		enabled: ripple && !NO_RIPPLE_VARIANTS.includes(variant ?? ""),
+		enabled: ripple && !loading && !NO_RIPPLE_VARIANTS.includes(variant ?? ""),
 		size: size?.startsWith(VARIANT.icon) ? VARIANT.icon : VARIANT.default,
-		onPointerDown,
-		onKeyDown,
+		onPointerDown: (event) => {
+			motion.onPointerDown(event);
+			onPointerDown?.(event);
+		},
+		onKeyDown: (event) => {
+			motion.onKeyDown(event);
+			onKeyDown?.(event);
+		},
 	});
 
 	return (
@@ -106,10 +124,37 @@ function Button({
 			data-slot="button"
 			data-variant={variant}
 			data-size={size}
-			className={cn(buttonVariants({ variant, size, press, className }))}
+			data-loading={loading ? "" : undefined}
+			aria-busy={loading || undefined}
+			disabled={disabled}
+			style={{ ...style, ...motion.style }}
+			className={cn(buttonVariants({ variant, size, press, className }), craft && "relative active:translate-y-0")}
+			onPointerUp={(event) => {
+				motion.onPointerUp(event);
+				onPointerUp?.(event);
+			}}
+			onPointerCancel={(event) => {
+				motion.onPointerCancel(event);
+				onPointerCancel?.(event);
+			}}
+			onKeyUp={(event) => {
+				motion.onKeyUp(event);
+				onKeyUp?.(event);
+			}}
 			{...props}
 			{...rippleProps}
-		/>
+		>
+			{asChild ? children : (
+				<>
+					<span className={loading ? "invisible" : undefined}>{children}</span>
+					{loading ? (
+						<span aria-hidden className="absolute inset-0 grid place-items-center">
+							<span className="size-3 animate-spin rounded-full border border-current border-t-transparent" style={{ animationDuration: "800ms" }} />
+						</span>
+					) : null}
+				</>
+			)}
+		</Comp>
 	);
 }
 
