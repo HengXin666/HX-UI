@@ -2,8 +2,8 @@ import { useEffect, useState, type JSX } from "react";
 import { BUTTON_TYPE, VARIANT } from "@hx/ui";
 import { TONE_VARIANT } from "../../src/constants/ui";
 import { Button } from "../../src/primitives/button";
-import { Follow, NumberRoll, SegmentedThumb } from "../../src/craft";
-import { DEAL_FIRST_MS, DEAL_LAST_MS, HERO_LIFT_PX, HERO_SINK_PX } from "../../src/craft/tokens";
+import { AxisShock, BlurLine, DealRow, Follow, NumberRoll, ProcessRail, SegmentedThumb } from "../../src/craft";
+import { HERO_LIFT_PX, HERO_SINK_PX } from "../../src/craft/tokens";
 import { DOCS, GROUPS } from "../src/nav";
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
@@ -76,25 +76,8 @@ export function Home({ onGo }: { readonly onGo: (id: string) => void }): JSX.Ele
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-5xl gap-4 px-5 py-16 md:grid-cols-3">
-        {["预备要看得见", "满板之后停住", "飞入必须落进槽位"].map((title, index) => {
-          const start = index === 0 ? 0 : index === 1 ? DEAL_FIRST_MS : DEAL_FIRST_MS + DEAL_LAST_MS;
-          const shown = deal > 0.05 && deal * 1000 >= start;
-          return (
-            <article
-              key={title}
-              className="rounded-xl border border-border bg-card p-4 shadow-sm"
-              style={{
-                opacity: shown ? 1 : 0,
-                transform: shown ? "none" : "translate3d(0, 24px, 0)",
-                transition: "opacity 180ms linear, transform 180ms linear, box-shadow 80ms linear",
-              }}
-            >
-              <h2 className="text-lg text-foreground">{title}</h2>
-              <p className="mt-2 text-sm text-muted-foreground">间隔从 120ms 收到 40ms, 阴影比卡片晚一拍.</p>
-            </article>
-          );
-        })}
+      <section className="mx-auto max-w-5xl px-5 py-16">
+        <DealRow progress={deal} labels={["预备要看得见", "满板之后停住", "飞入必须落进槽位"]} />
       </section>
 
       <section className="mx-auto max-w-3xl px-5 py-16">
@@ -124,6 +107,11 @@ export function Home({ onGo }: { readonly onGo: (id: string) => void }): JSX.Ele
         <p className="mt-3 text-6xl text-foreground">
           <NumberRoll value={progress > 0.7 ? 890000 : 120} />
         </p>
+        <div className="mt-8">
+          <BlurLine text="一句话, 三拍, 不用于按钮." />
+          <AxisShock value={progress > 0.75 ? 180 : 40} />
+          <ProcessRail index={Math.round(progress * 3)} />
+        </div>
       </section>
 
       <section className="mx-auto max-w-5xl px-5 py-16">
