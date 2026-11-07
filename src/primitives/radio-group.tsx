@@ -22,7 +22,7 @@ function RadioGroupItem({ className, ...props }: React.ComponentProps<typeof Rad
 			data-slot="radio-group-item"
 			className={cn(
 				"peer inline-flex aspect-square size-4 shrink-0 items-center justify-center rounded-full border border-input bg-muted outline-none",
-				"transition-[border-color] duration-(--duration-fast) ease-out",
+				"transition-[border-color,transform] duration-(--duration-fast) ease-out active:scale-[0.92] motion-reduce:active:scale-100",
 				"focus-visible:border-ring aria-invalid:border-destructive data-[state=checked]:border-primary",
 				CLASSES.disabled,
 				className,

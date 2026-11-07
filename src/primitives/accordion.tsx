@@ -5,15 +5,15 @@ import { Accordion as AccordionPrimitive } from "radix-ui";
 import { cn } from "./utils";
 
 /**
- * 折叠面板组。
+ * 折叠面板组.
  *
- * 高度动画走**关键帧 + radix 的高度变量**, 不走 CSS transition。
+ * 高度动画走**关键帧 + radix 的高度变量**, 不走 CSS transition.
  * 原因是硬约束而不是偏好: radix 的 Presence 靠 getComputedStyle 判定"还能不能卸",
- * CSS transition 在部分路径上不被识别, 收起时会直接卸载  表现是展开有动画、
- * 收起瞬间消失。关键帧每次都能被认定, 于是两端都有动画。
- * 关键帧定义在 src/motion.css。
+ * CSS transition 在部分路径上不被识别, 收起时会直接卸载  表现是展开有动画,
+ * 收起瞬间消失.关键帧每次都能被认定, 于是两端都有动画.
+ * 关键帧定义在 src/motion.css.
  *
- * 变体用 ease-out / 200ms: 与 CollapsePanel 同一档节奏, 一组页面里展开手感要一致。
+ * 变体用 ease-out / 200ms: 与 CollapsePanel 同一档节奏, 一组页面里展开手感要一致.
  */
 function Accordion(props: React.ComponentProps<typeof AccordionPrimitive.Root>): React.JSX.Element {
 	return <AccordionPrimitive.Root data-slot="accordion" {...props} />;
@@ -42,7 +42,7 @@ function AccordionTrigger({
 			<AccordionPrimitive.Trigger
 				data-slot="accordion-trigger"
 				className={cn(
-					"group/accordion flex flex-1 items-center justify-between gap-2 py-2.5 text-left text-[length:var(--fs-sm-half)] font-medium text-foreground outline-none transition-colors hover:text-foreground/80 focus-visible:ring-1 focus-visible:ring-ring/60",
+					"group/accordion flex flex-1 items-center justify-between gap-2 py-2.5 text-left text-[length:var(--fs-sm-half)] font-medium text-foreground outline-none transition-[color,transform] duration-(--duration-fast) hover:text-foreground/80 focus-visible:ring-1 focus-visible:ring-ring/60 active:scale-[0.99] motion-reduce:active:scale-100",
 					className,
 				)}
 				{...props}

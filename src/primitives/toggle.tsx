@@ -4,13 +4,14 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Toggle as TogglePrimitive } from "radix-ui";
 import { SPACE, UI_CLASSES, VARIANT } from "../constants";
+import { usePress } from "../craft/use-press";
 import { useRipple } from "./ripple";
 import { cn } from "./utils";
 
 const toggleVariants = cva(
 	[
 		"inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-transparent text-[13px] font-medium whitespace-nowrap text-muted-foreground outline-none select-none",
-		"transition-[color,background-color,border-color,transform] duration-(--duration-fast) ease-out active:translate-y-px",
+		"transition-[color,background-color,border-color,transform] duration-(--duration-fast) ease-out active:scale-[0.97] motion-reduce:active:scale-100",
 		"hover:bg-accent/50 hover:text-foreground focus-visible:border-ring",
 		"data-[state=on]:bg-accent data-[state=on]:text-foreground",
 		"disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive",
@@ -51,11 +52,27 @@ function Toggle({
 		/** 点按水波纹. 默认 true. */
 		ripple?: boolean;
 	}): React.JSX.Element {
-	const rippleProps = useRipple<HTMLButtonElement>({ enabled: ripple, size: VARIANT.icon, onPointerDown, onKeyDown });
+	const motion = usePress(!props.disabled);
+	const rippleProps = useRipple<HTMLButtonElement>({
+		enabled: ripple,
+		size: VARIANT.icon,
+		onPointerDown: (event) => {
+			motion.onPointerDown(event);
+			onPointerDown?.(event);
+		},
+		onKeyDown: (event) => {
+			motion.onKeyDown(event);
+			onKeyDown?.(event);
+		},
+	});
 	return (
 		<TogglePrimitive.Root
 			data-slot="toggle"
+			style={motion.style}
 			className={cn(toggleVariants({ variant, size, className }))}
+			onPointerUp={(event) => motion.onPointerUp(event)}
+			onPointerCancel={(event) => motion.onPointerCancel(event)}
+			onKeyUp={(event) => motion.onKeyUp(event)}
 			{...props}
 			{...rippleProps}
 		/>

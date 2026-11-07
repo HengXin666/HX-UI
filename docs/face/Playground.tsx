@@ -3,6 +3,7 @@ import { BUTTON_TYPE, VARIANT } from "@hx/ui";
 import { Button } from "../../src/primitives/button";
 import { Switch } from "../../src/primitives/switch";
 import { NumberRoll, SegmentedThumb } from "../../src/craft";
+import { ControlBench } from "./ControlBench";
 
 /** 道具台. 改值不重新挂载, 用来看中断. */
 export function Playground({ onBack }: { readonly onBack: () => void }): JSX.Element {
@@ -41,6 +42,7 @@ export function Playground({ onBack }: { readonly onBack: () => void }): JSX.Ele
         <p className="mt-3 text-4xl"><NumberRoll value={amount} /></p>
       </div>
       <pre className="mt-8 overflow-auto rounded-lg border border-border p-4 text-sm">{snippet}</pre>
+      <ControlBench />
       <button
         type="button"
         className="mt-3 text-sm text-foreground"

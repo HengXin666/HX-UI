@@ -23,8 +23,9 @@ export const MENU_CONTENT = "min-w-[10rem] overflow-hidden p-1";
 
 /** 菜单项: 与 DropdownMenuItem 同尺寸, 另支持 data-variant=destructive 与 data-inset. */
 export const MENU_ITEM = [
-	"relative flex cursor-default select-none items-center gap-2 rounded-lg px-3 py-2 text-[13px] outline-hidden transition-colors",
-	"focus:bg-accent/60 data-highlighted:bg-accent/60 data-disabled:pointer-events-none data-disabled:opacity-50",
+	"relative flex cursor-default select-none items-center gap-2 rounded-lg px-3 py-2 text-[13px] outline-hidden transition-[color,background-color,transform] duration-(--duration-fast) ease-out",
+	"hover:bg-accent/40 focus:bg-accent/60 data-highlighted:bg-accent/60 active:scale-[0.98] motion-reduce:active:scale-100",
+	"data-disabled:pointer-events-none data-disabled:opacity-[0.45]",
 	"data-[variant=destructive]:text-danger-fg data-[variant=destructive]:focus:bg-danger/10 data-[inset]:pl-8",
 	UI_CLASSES.svgSlot,
 ].join(SPACE);
@@ -75,6 +76,6 @@ export const FOCUS_RING = "outline-none focus-visible:border-ring focus-visible:
 
 /** 输入类控件外框: 与 Input 同一套边框反馈. */
 export const FIELD_FRAME = [
-	"rounded-lg border border-border/60 bg-transparent shadow-none transition-[border-color,background-color] duration-(--duration-fast)",
-	"hover:border-border dark:bg-input/20",
+	"rounded-lg border border-border/60 bg-transparent shadow-none transition-[border-color,background-color,opacity] duration-(--duration-fast)",
+	"hover:border-border focus-visible:border-ring aria-invalid:border-destructive disabled:cursor-not-allowed disabled:opacity-[0.45] dark:bg-input/20",
 ].join(SPACE);

@@ -2,6 +2,7 @@
 
 import type { JSX } from "react";
 import { useMemo, useRef, useState } from "react";
+import { THUMB_PRESS_SCALE } from "../craft/tokens";
 import { cn } from "./utils";
 
 export interface SliderProps {
@@ -19,12 +20,14 @@ export interface SliderProps {
 	onValueCommit?: (value: number[]) => void;
 }
 
+const SLIDER_MAX = 100;
+
 export function Slider({
 	className,
 	value,
 	defaultValue,
 	min = 0,
-	max = 100,
+	max = SLIDER_MAX,
 	step = 1,
 	disabled,
 	animateValue = false,
@@ -43,7 +46,7 @@ export function Slider({
 	const current = value?.[0] ?? internalValue;
 	const percent = useMemo(() => {
 		if (max <= min) return 0;
-		return Math.min(100, Math.max(0, ((current - min) / (max - min)) * 100));
+		return Math.min(SLIDER_MAX, Math.max(0, ((current - min) / (max - min)) * SLIDER_MAX));
 	}, [current, min, max]);
 
 	const changeValue = (next: number): number => {
@@ -125,7 +128,7 @@ export function Slider({
 						: "transition-colors",
 					dragging || focused ? "bg-primary ring-ring" : undefined,
 				)}
-				style={{ left: `${percent}%`, transform: "translate(-50%, -50%)" }}
+				style={{ left: `${percent}%`, transform: `translate(-50%, -50%) scale(${dragging ? THUMB_PRESS_SCALE : 1})` }}
 			/>
 			<input
 				ref={inputRef}
