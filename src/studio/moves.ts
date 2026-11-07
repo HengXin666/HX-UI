@@ -26,7 +26,7 @@ import {
   N36,
   PATH_L,
   PATH_M,
-} from "./num";
+} from "./figures";
 
 /**
  * 镜头语言的节拍, 运镜与景深. 组件只读这些取值, 不在 JSX 里另写时长.

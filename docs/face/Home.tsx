@@ -1,86 +1,141 @@
-import type { JSX } from "react";
+import { useEffect, useState, type JSX } from "react";
 import { BUTTON_TYPE, VARIANT } from "@hx/ui";
 import { TONE_VARIANT } from "../../src/constants/ui";
-import { DISPLAY_SIZE, DISPLAY_TAGS } from "../../src/constants/typography";
 import { Button } from "../../src/primitives/button";
-import { Display } from "../../src/typography/Display";
-import { Eyebrow } from "../../src/typography/Eyebrow";
-import { Lead } from "../../src/typography/Lead";
-import { FieldPlate } from "../../src/studio/pages/FieldPlate";
-import { Shot, ShotPlate, ShotSequence, SHOT_MOVE, SHOT_PACE } from "../../src/studio";
+import { Follow, NumberRoll, SegmentedThumb } from "../../src/craft";
+import { DEAL_FIRST_MS, DEAL_LAST_MS, HERO_LIFT_PX, HERO_SINK_PX } from "../../src/craft/tokens";
 import { DOCS, GROUPS } from "../src/nav";
-import { HomeShow } from "./home-show";
-import { FACE_PREVIEW, PREVIEW_FIELD } from "./router";
 
-const POINTS = [
-  { title: "先排页", body: "落地页和商品页是库里的组件, 不是文档站里手写的一块样板." },
-  { title: "再拆件", body: "按钮, 表单, 图表, 区块都还在. 找得到, 也能复制用法." },
-  { title: "节奏有拍", body: "开场只推近一句. 成组的东西后段更快. 减弱动效时全部停住." },
-] as const;
+const REDUCED = "(prefers-reduced-motion: reduce)";
 
-/** 门面首页. 空 hash 就是这一页. */
+function heroFrame(elapsed: number): { y: number; scale: number } {
+  if (elapsed < 200) return { y: HERO_SINK_PX * (elapsed / 200), scale: 1 };
+  if (elapsed < 900) {
+    const t = (elapsed - 200) / 700;
+    return { y: HERO_SINK_PX + (-HERO_SINK_PX - HERO_LIFT_PX) * t, scale: 1 + 0.02 * t };
+  }
+  if (elapsed < 1400) {
+    const t = (elapsed - 900) / 500;
+    return { y: -HERO_LIFT_PX * (1 - t), scale: 1.02 - 0.02 * t };
+  }
+  return { y: 0, scale: 1 };
+}
+
+/** 门面首页. 一镜一件事, 滚动进度可逆. */
 export function Home({ onGo }: { readonly onGo: (id: string) => void }): JSX.Element {
+  const [hero, setHero] = useState({ y: HERO_SINK_PX, scale: 1, ready: false });
+  const [page, setPage] = useState<"field" | "kiln">("field");
+  const [progress, setProgress] = useState(0);
+  const groups = GROUPS.slice(0, 4);
+
+  useEffect(() => {
+    const reduced = window.matchMedia?.(REDUCED).matches === true;
+    if (reduced) {
+      setHero({ y: 0, scale: 1, ready: true });
+      return;
+    }
+    const began = performance.now();
+    let frame = 0;
+    const loop = (now: number): void => {
+      const elapsed = now - began;
+      const pose = heroFrame(elapsed);
+      setHero({ ...pose, ready: elapsed >= 2400 });
+      if (elapsed < 2500) frame = requestAnimationFrame(loop);
+    };
+    frame = requestAnimationFrame(loop);
+    const onScroll = (): void => {
+      const range = document.documentElement.scrollHeight - window.innerHeight;
+      setProgress(range <= 0 ? 1 : Math.min(1, Math.max(0, window.scrollY / range)));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
+  const deal = Math.min(1, Math.max(0, (progress - 0.25) / 0.2));
+
   return (
     <main>
-      <section className="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 py-16 md:grid-cols-2 md:px-8 md:py-24">
-        <ShotSequence pace={SHOT_PACE.even}>
-          <Shot move={SHOT_MOVE.hold}>
-            <Eyebrow>HX UI</Eyebrow>
-          </Shot>
-          <Shot move={SHOT_MOVE.dolly}>
-            <Display as={DISPLAY_TAGS[0]} size={DISPLAY_SIZE.lg} className="mt-4">先把一页排完.</Display>
-          </Shot>
-          <Shot move={SHOT_MOVE.rise}>
-            <Lead className="mt-4">控件, 镜头和整页在同一个包里. 亮色和暗色用同一套语义, 不另画一套皮肤来撑场面.</Lead>
-          </Shot>
-          <Shot move={SHOT_MOVE.rise}>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button type={BUTTON_TYPE} variant={VARIANT.primary} onClick={() => onGo(`${FACE_PREVIEW}/${PREVIEW_FIELD}`)}>看田野这一页</Button>
-              <Button type={BUTTON_TYPE} variant={TONE_VARIANT.outline} onClick={() => onGo("install")}>从安装开始</Button>
-            </div>
-          </Shot>
-        </ShotSequence>
-        <ShotPlate className="min-h-72 rounded-xl border border-border bg-surface-sunken" label="一页决定记录">
-          <FieldPlate />
-        </ShotPlate>
+      <section className="mx-auto flex min-h-svh max-w-3xl flex-col justify-center px-5 py-16">
+        <p className="text-sm text-muted-foreground">HX UI</p>
+        <h1
+          className="mt-4 text-5xl font-medium tracking-tight text-foreground md:text-7xl"
+          style={{ transform: `translate3d(0, ${hero.y}px, 0) scale(${hero.scale})`, transformOrigin: "left center" }}
+        >
+          先把一页排完.
+        </h1>
+        <div className="mt-8 max-w-md" style={{ opacity: hero.ready ? 1 : 0, transform: hero.ready ? "none" : "translate3d(32px, 0, 0)" }}>
+          <Follow className="rounded-xl border border-border bg-card p-4">
+            <p className="text-sm text-muted-foreground">记录</p>
+            <p className="mt-2 text-foreground">控件的 90ms 比背景着色器更贵.</p>
+            <p className="mt-1 text-sm text-muted-foreground">按下, 松开, 再按下, 速度还在.</p>
+          </Follow>
+        </div>
       </section>
 
-      <section className="border-t border-border">
-        <ol className="mx-auto grid w-full max-w-6xl gap-8 px-5 py-12 md:grid-cols-3 md:px-8">
-          {POINTS.map((item, index) => (
-            <li key={item.title} className="border-t border-border pt-4">
-              <p className="font-mono text-xs text-muted-foreground">0{index + 1}</p>
-              <h2 className="mt-2 text-lg font-semibold">{item.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
-            </li>
+      <section className="mx-auto grid max-w-5xl gap-4 px-5 py-16 md:grid-cols-3">
+        {["预备要看得见", "满板之后停住", "飞入必须落进槽位"].map((title, index) => {
+          const start = index === 0 ? 0 : index === 1 ? DEAL_FIRST_MS : DEAL_FIRST_MS + DEAL_LAST_MS;
+          const shown = deal > 0.05 && deal * 1000 >= start;
+          return (
+            <article
+              key={title}
+              className="rounded-xl border border-border bg-card p-4 shadow-sm"
+              style={{
+                opacity: shown ? 1 : 0,
+                transform: shown ? "none" : "translate3d(0, 24px, 0)",
+                transition: "opacity 180ms linear, transform 180ms linear, box-shadow 80ms linear",
+              }}
+            >
+              <h2 className="text-lg text-foreground">{title}</h2>
+              <p className="mt-2 text-sm text-muted-foreground">间隔从 120ms 收到 40ms, 阴影比卡片晚一拍.</p>
+            </article>
+          );
+        })}
+      </section>
+
+      <section className="mx-auto max-w-3xl px-5 py-16">
+        <SegmentedThumb
+          ariaLabel="整页"
+          options={[
+            { value: "field" as const, label: "田野" },
+            { value: "kiln" as const, label: "窑四号" },
+          ]}
+          value={page}
+          onChange={(next) => {
+            if (next === "field" || next === "kiln") setPage(next);
+          }}
+        />
+        <div className="relative mt-6 h-40 overflow-hidden">
+          <div className="absolute inset-0 rounded-xl border border-border p-6" style={{ opacity: page === "field" ? 1 : 0, transform: page === "field" ? "none" : "translate3d(-24px, 0, 0)", transition: "opacity 180ms linear, transform 267ms linear" }}>
+            <p className="text-xl text-foreground">田野把一页软件排完.</p>
+          </div>
+          <div className="absolute inset-0 rounded-xl border border-border p-6" style={{ opacity: page === "kiln" ? 1 : 0, transform: page === "kiln" ? "none" : "translate3d(24px, 0, 0)", transition: "opacity 180ms linear, transform 267ms linear" }}>
+            <p className="text-xl text-foreground">窑四号把一件商品排完.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-5 py-16">
+        <p className="text-sm text-muted-foreground">这一镜只有一个数字</p>
+        <p className="mt-3 text-6xl text-foreground">
+          <NumberRoll value={progress > 0.7 ? 890000 : 120} />
+        </p>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-5 py-16">
+        <div className="flex flex-wrap gap-3">
+          {groups.map((group) => (
+            <Button key={group} type={BUTTON_TYPE} variant={TONE_VARIANT.outline} onClick={() => onGo(DOCS.find((entry) => entry.group === group)?.id ?? "install")}>
+              {group}
+            </Button>
           ))}
-        </ol>
-      </section>
-
-      <HomeShow onOpen={onGo} />
-
-      <section className="border-t border-border" aria-labelledby="face-index">
-        <div className="mx-auto w-full max-w-6xl px-5 py-14 md:px-8">
-          <h2 id="face-index" className="text-xl font-semibold tracking-tight">组件按用途分</h2>
-          <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {GROUPS.map((group) => {
-              const first = DOCS.find((entry) => entry.group === group);
-              const count = DOCS.filter((entry) => entry.group === group).length;
-              if (!first) return null;
-              return (
-                <li key={group}>
-                  <button
-                    type={BUTTON_TYPE}
-                    onClick={() => onGo(first.id)}
-                    className="flex w-full items-baseline justify-between gap-3 rounded-lg border border-border px-4 py-3 text-left hover:bg-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                  >
-                    <span className="font-medium">{group}</span>
-                    <span className="font-mono text-xs text-muted-foreground">{count}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <Button type={BUTTON_TYPE} variant={VARIANT.primary} onClick={() => onGo("bench")}>
+            看按下的 90ms
+          </Button>
         </div>
       </section>
     </main>

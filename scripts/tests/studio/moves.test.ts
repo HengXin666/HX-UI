@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { dealDelay, SHOT_PACE } from "../../../src/studio/moves.ts";
-import { N4, N5 } from "../../../src/studio/num.ts";
+import { N4, N5 } from "../../../src/studio/figures.ts";
 
 /**
  * 发牌节奏的后段间隔比前段短.

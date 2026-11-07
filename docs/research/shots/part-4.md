@@ -1,0 +1,1277 @@
+# video-shotcraft demos part 4
+
+来源提交 `1266a3e`. 每个 tsx 逐行扫描. 30fps, 1 帧 = 33.3ms.
+
+### demos/opening/text-as-mask/TextAsMask
+
+- 镜头卡: `references/shots/opening/text-as-mask.md`
+- 时长: 165 帧 / 5500 ms, `DURATION` 于第 29 行
+- 分镜:
+  - `TextAsMask.tsx:29` `export const TEXT_AS_MASK_DURATION = 165;`
+  - `TextAsMask.tsx:36` `const FS = 470;`
+  - `TextAsMask.tsx:37` `const BASE_Y = 712; // 基线`
+  - `TextAsMask.tsx:38` `const TEXT_ATTRS = 'x="960" y="${BASE_Y}" font-family="${FONT_STACK}" font-size="${FS}" font-weight="900" letter-spacing="-22" text-anchor="middle"';`
+  - `TextAsMask.tsx:39` `const MASK_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><text ${TEXT_ATTRS} fill="white">${WORD}</text></svg>';`
+  - `TextAsMask.tsx:41` `const SHADOW_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><text ${TEXT_ATTRS} fill="#0c1a3a">${WORD}</text></svg>';`
+  - `TextAsMask.tsx:44` `const ORIGIN_X = 1236; // L 竖笔 x∈[1195,1278] 的中线——钉在竖笔中线，S≈23× 时竖笔左右同时撑出画幅`
+  - `TextAsMask.tsx:45` `const ORIGIN_Y = 546; // 竖笔 y∈[383,709] 的中线`
+  - `TextAsMask.tsx:47` `const MAX_S = 46;`
+  - `TextAsMask.tsx:50` `const IN_END = 18;`
+  - `TextAsMask.tsx:51` `const DRIFT0 = 18;`
+  - `TextAsMask.tsx:52` `const DRIFT1 = 96;`
+  - `TextAsMask.tsx:53` `const BREATH0 = 96;`
+  - `TextAsMask.tsx:54` `const RUSH0 = 104;`
+  - `TextAsMask.tsx:55` `const RUSH1 = 128;`
+  - `TextAsMask.tsx:56` `const LAND1 = 132;`
+  - `TextAsMask.tsx:57` `const DASH_S0 = 1.32;`
+  - `TextAsMask.tsx:67` `const CW = 1560, CH = 380, N = 96;`
+  - `TextAsMask.tsx:192` `const cover = interpolate(rush, [0.86, 0.95], [0, 1], clamp); // 竖笔已撑满全屏（S≈24×）之后才换层，零灰纱`
+  - `TextAsMask.tsx:194` `const rim = 1 - interpolate(rush, [0, 0.25], [0, 1], clamp);`
+- 卡片参数:
+  - `text-as-mask.md:5` `时长: 165f（入场 18f + 字内漂移 78f + 吸气 8f + 冲入接管 24f + 落定/hold 37f）`
+  - `text-as-mask.md:20` `- 窗里的内容要有大块饱和色与亮线：demo 是 video-shotcraft 的暗色渲染看板（钴蓝→青流式面积图持续向左流、渲染帧数计数、渲染队列柱状图呼吸；眉题是 video-shotcraft 字标，副题 From one prompt to a finished launch film.），`
+  - `text-as-mask.md:22` `- 入场：遮罩从基线向上擦出（clip-path 底边收起，16f）+ 1.04→1 落定；眉题字距收拢、副题升起`
+  - `text-as-mask.md:23` `- 字内漂移：产品层 scale 1.32 + translateX +150→-150（f18–96，bezier(0.3,0,0.7,1) 两端轻缓）——`
+  - `text-as-mask.md:25` `- 吸气：f96–104 字 1→0.965（swift），眉题/副题 ease-in 退场——大动作前的预备`
+  - `text-as-mask.md:26` `- 冲入 24f（f104–128）：mask wrapper 'scale(0.965→46)'，对数空间里按 t^1.8 插值`
+  - `text-as-mask.md:27` `（'S = s0·(46/s0)^(t^1.8)'，每帧放大比例越来越大 = 越冲越快）；`
+  - `text-as-mask.md:31` `不随遮罩几何畸变；面板同时 1.32→1、漂移归零（expo-out，f104–132，比冲入晚 4f 收敛 = 跟随）`
+  - `text-as-mask.md:34` `- 收尾：f132–165 全屏面板 hold，流式图仍缓慢流动（产品活着，不是死帧）`
+  - `text-as-mask.md:39` `| 漂移速度 | ~3.8px/f（300px/78f） | 快了字内画面读不清；漂移方向选画面信息密的轴 |`
+  - `text-as-mask.md:40` `| 吸气 | 8f，1→0.965 | 没有吸气的冲入读作"突然胀开"；>0.94 读作字在缩小退场 |`
+  - `text-as-mask.md:41` `| 放大倍率 | 46×（按竖笔宽/画幅比配：88px 竖笔需 ≥24× 才撑满） | 不足则接管帧还看得到字边残影 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 首页采用或只留规则. 一镜一个主角, 飞入必须落进真实槽位.
+
+### demos/outro/grain-dissolve/GrainDissolve
+
+- 镜头卡: `references/shots/outro/grain-dissolve.md`
+- 时长: 60 帧 / 2000 ms, `DURATION` 于第 17 行
+- 分镜:
+  - `GrainDissolve.tsx:17` `export const GRAIN_DISSOLVE_DURATION = 60; // 2000ms @30fps`
+  - `GrainDissolve.tsx:20` `const BX = 128;`
+  - `GrainDissolve.tsx:21` `const BY = 148;`
+  - `GrainDissolve.tsx:22` `const BW = 384;`
+  - `GrainDissolve.tsx:23` `const BH = 62;`
+  - `GrainDissolve.tsx:30` `const SAND = Array.from({ length: 150 }, (_, i) => {`
+- 卡片参数:
+  - `grain-dissolve.md:5` `时长: 约 2.0s（60f@30fps；砂化 0.26–0.56s · 凝聚 1.2–1.42s · 凝固回落收尾）`
+  - `grain-dissolve.md:14` `- 噪点"沸腾"靠 'seed = floor(t*46)' 逐帧换种子——每帧一幅新噪声图，颗粒永不静止`
+  - `grain-dissolve.md:25` `| seed 换帧率 | floor(t*46)，2s 内 46 次 | 降低会看出噪声图重复；保持 ≥20 次/秒的换图率 |`
+  - `grain-dissolve.md:33` `- 'feDisplacementMap' 在 Safari 上性能较差，这张卡是 2s 短拍可接受；拉长时长需实测帧率`
+- 可逆: 没有帧采样. 当静态夹具.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/outro/logo-shrink-wordmark-lockup/LogoShrinkWordmarkLockup
+
+- 镜头卡: `references/shots/outro/logo-shrink-wordmark-lockup.md`
+- 时长: 132 帧 / 4400 ms, `DURATION` 于第 14 行
+- 分镜:
+  - `LogoShrinkWordmarkLockup.tsx:14` `export const LOGO_SHRINK_WORDMARK_LOCKUP_DURATION = 132; // 4400ms @30fps`
+  - `LogoShrinkWordmarkLockup.tsx:16` `const ACCENT = '#9d94ff'; // 标语强调色：与霓虹晕同色相、提亮降饱和`
+  - `LogoShrinkWordmarkLockup.tsx:18` `const ICON = 30; // 图标基准尺寸(px)`
+  - `LogoShrinkWordmarkLockup.tsx:19` `const MARK = 32; // 标志尺寸：取景框实体 ≈ 0.81×MARK ≈ 26px，正好盖住愈合后的环`
+  - `LogoShrinkWordmarkLockup.tsx:20` `const WORD_W = 172; // 字标行实测宽（22px / 700，15 字符；渲帧量得）`
+  - `LogoShrinkWordmarkLockup.tsx:21` `const GAP = 9; // 图标与字标间距`
+  - `LogoShrinkWordmarkLockup.tsx:23` `const SHIFT = -(ICON + GAP + WORD_W) / 2 + ICON / 2;`
+  - `LogoShrinkWordmarkLockup.tsx:24` `const ROW_LEFT = SHIFT + ICON / 2 + GAP; // 字母行左缘相对画面中线`
+  - `LogoShrinkWordmarkLockup.tsx:25` `const STAGGER = (0.7 - 0.46) / WORDMARK.length; // 字多：按 (0.7-0.46)/n 反算间隔，保证 0.7 前全部起跑`
+  - `LogoShrinkWordmarkLockup.tsx:26` `const DT = 1 / 131; // 一帧对应的 t 增量（132f）`
+- 卡片参数:
+  - `logo-shrink-wordmark-lockup.md:5` `时长: 约 4.4s（132f@30fps；收束 0.1–1.2s · 让位 1.5–2.1s · 字母 2–2.7s · 标语 3.2–3.7s）`
+  - `logo-shrink-wordmark-lockup.md:14` `- 缺口愈合与变色和收束同轨（t=0.10–0.28）：霓虹辉光层淡出、描边从 #dfe9ff 过半切 #fff、实心白 O 淡入——三层交叉在缩小过程中完成，落位时已是干净白标`
+  - `logo-shrink-wordmark-lockup.md:34` `- 收尾后无循环回位设计，作 outro 最后一镜使用；需要循环时在 t=1 后接 1s 静帧`
+- 可逆: 没有帧采样. 当静态夹具.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/outro/neon-triple-marquee/NeonTripleMarquee
+
+- 镜头卡: `references/shots/outro/neon-triple-marquee.md`
+- 时长: 150 帧 / 5000 ms, `DURATION` 于第 26 行
+- 分镜:
+  - `NeonTripleMarquee.tsx:26` `export const NEON_TRIPLE_MARQUEE_DURATION = 150;`
+  - `NeonTripleMarquee.tsx:29` `const WEIGHT = 800;`
+  - `NeonTripleMarquee.tsx:30` `const SIZE = 286;`
+  - `NeonTripleMarquee.tsx:31` `const GAP = SIZE * 0.36;`
+  - `NeonTripleMarquee.tsx:32` `const PLANE_W = 2900; // 墙面宽（透视斜拍时两侧不露边）`
+  - `NeonTripleMarquee.tsx:33` `const FLOOR_Y = 900; // 墙脚 / 地面线（墙面坐标）`
+  - `NeonTripleMarquee.tsx:34` `const ROW_Y = [28, 318, 608];`
+  - `NeonTripleMarquee.tsx:36` `const WALL = '#0a0b14';`
+  - `NeonTripleMarquee.tsx:38` `const BRICK = 'url("data:image/svg+xml;utf8,${encodeURIComponent(`
+  - `NeonTripleMarquee.tsx:72` `const IGNITE = [0, 1, 0.15, 0, 0.9, 0.6];`
+  - `NeonTripleMarquee.tsx:79` `const KILL = [1, 0.2, 0.85, 0.1, 0.5, 0];`
+  - `NeonTripleMarquee.tsx:86` `const PERIOD = 42;`
+  - `NeonTripleMarquee.tsx:87` `const SLOT = PERIOD / 3; // 每行 14f`
+- 卡片参数:
+  - `neon-triple-marquee.md:5` `时长: 4–5s（demo 150f：18f 逐行点火上电 + 循环体 + 18f 逐行断电 + 8f 熄灯 hold）`
+  - `neon-triple-marquee.md:23` `- 轮唱：周期 42f，每行一个 14f 槽，槽长 16f（与下一行重叠 2f 交接，不出现全暗空拍）；槽内前 2 帧启辉闪烁`
+  - `neon-triple-marquee.md:24` `（0.6 → 0.25 → 满）、3f 升满、平台、末 5f ease-in 熄灭——保证"一亮俩暗"永远成立`
+  - `neon-triple-marquee.md:27` `- 三行配色冰青/洋红/钠灯琥珀（#38d9ff/#ff3d9a/#ffae34），蓝黑砖墙 #0a0b14；中行反向且略快（9/11/9 px/f）`
+  - `neon-triple-marquee.md:28` `- 上电 / 断电：开场三行按 0/5/10f 依次跑一段确定性点火闪烁序列；124f 起自上而下每行错峰 6f 闪两下熄灭，`
+  - `neon-triple-marquee.md:37` `| 脉冲周期 | 42f，每行 14f 槽 + 2f 交接重叠 | 周期 <30f 三行抢闪读作故障；>70f 轮唱感断掉；不留重叠会每 14f 出现一次全暗空拍 |`
+  - `neon-triple-marquee.md:41` `| 上电/断电 | 入：逐行错峰 5f 点火；出：124f 起逐行错峰 6f 断电 | 硬切进出读作素材没铺满；整组同时淡出没有"关灯"的仪式感 |`
+  - `neon-triple-marquee.md:54` `- 3D 斜拍平面里的 drop-shadow 辉光开销不小（demo 1080p 约 7s 渲完 150f）；倒影层只画管体不画辉光（cheap）`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/outro/outro-group-photo-launch/OutroGroupPhotoLaunch
+
+- 镜头卡: `references/shots/outro/outro-group-photo-launch.md`
+- 时长: 145 帧 / 4833 ms, `DURATION` 于第 18 行
+- 分镜:
+  - `OutroGroupPhotoLaunch.tsx:18` `export const OUTRO_GROUP_PHOTO_LAUNCH_DURATION = 145;`
+  - `OutroGroupPhotoLaunch.tsx:25` `const FLY_EASE = Easing.bezier(0.34, 1.4, 0.44, 1);`
+  - `OutroGroupPhotoLaunch.tsx:26` `const CRANE_EASE = Easing.bezier(0.3, 0, 0.2, 1);`
+  - `OutroGroupPhotoLaunch.tsx:59` `const DUST = Array.from({ length: 20 }, (_, i) => ({`
+  - `OutroGroupPhotoLaunch.tsx:69` `const BOKEH = Array.from({ length: 6 }, (_, i) => ({`
+  - `OutroGroupPhotoLaunch.tsx:81` `const blur = interpolate(frame, [0, 24], [0, 14], {`
+  - `OutroGroupPhotoLaunch.tsx:82` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.4, 0, 0.4, 1),`
+  - `OutroGroupPhotoLaunch.tsx:84` `const rule = interpolate(frame, [58, 70], [0, 1], {`
+  - `OutroGroupPhotoLaunch.tsx:85` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.3, 0, 0.2, 1),`
+  - `OutroGroupPhotoLaunch.tsx:90` `const recede = interpolate(frame, [42, 50], [0, 1], {`
+  - `OutroGroupPhotoLaunch.tsx:95` `const craneT = interpolate(frame, [0, 40], [0, 1], {`
+  - `OutroGroupPhotoLaunch.tsx:104` `const sweepX = interpolate(frame, [2, 14], [-700, 2020], {`
+  - `OutroGroupPhotoLaunch.tsx:105` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.4, 0, 0.6, 1),`
+  - `OutroGroupPhotoLaunch.tsx:107` `const sweepOpacity = interpolate(frame, [2, 5, 11, 14], [0, 0.12, 0.12, 0], {`
+  - `OutroGroupPhotoLaunch.tsx:112` `const stageLight = interpolate(frame, [42, 50, 58], [0, 0.55, 0.32], {`
+  - `OutroGroupPhotoLaunch.tsx:115` `const vignette = interpolate(frame, [42, 54], [0, 0.1], {`
+  - `OutroGroupPhotoLaunch.tsx:120` `const ruleExt = interpolate(frame, [58, 66], [0, 1], {`
+  - `OutroGroupPhotoLaunch.tsx:121` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.3, 0, 0.2, 1),`
+  - `OutroGroupPhotoLaunch.tsx:123` `const ruleExtFade = interpolate(frame, [66, 72], [1, 0], {`
+  - `OutroGroupPhotoLaunch.tsx:128` `const wordSpacing = interpolate(frame, [62, 66], [-0.01, 0.005], {`
+  - `OutroGroupPhotoLaunch.tsx:129` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.3, 0, 0.2, 1),`
+  - `OutroGroupPhotoLaunch.tsx:153` `const t = interpolate(frame, [el.cue, el.cue + 12], [0, 1], {`
+  - (运动行 29 条, 留前 22 条, 文件 343 行已逐行扫过)
+- 卡片参数:
+  - `outro-group-photo-launch.md:5` `时长: 约 4.8s（145f）`
+  - `outro-group-photo-launch.md:22` `| 元素飞入 | 9 元素 cue 从 4 起每 3f 一个，各飞 12f；起点偏移 ±360–500px；渲染顺序=cue 顺序，后到者叠上 | 每个已展示过的功能都要有代表元素（Q8 自检项），缺谁观众都会察觉 |`
+  - `outro-group-photo-launch.md:23` `| 飞入缓动 | bezier(0.34,1.4,0.44,1) | 代码注释点名教训：旧 bezier(0.25,0.9,0.3,1) "never crossed 1" 没有真过冲——落地要弹 y1 必须 >1 |`
+  - `outro-group-photo-launch.md:24` `| 飞行姿态 | 飞行中 rot×2→settled rot（±5° 内）、scale ×1.12→1；按屏幕速度的方向性运动模糊（0.3×px/帧，封顶 22）；落地 cue+9→16f 接触影收紧 + 1.5% 轻压 | 落定角度收进 ±5° 内——合影要整齐但不刻板 |`
+  - `outro-group-photo-launch.md:25` `| 退后排 | 字标登场时 42–50f 全员 opacity −12%、saturate −8% | 主角登场配角必须让位，不让位字标压不住 9 个元素 |`
+  - `outro-group-photo-launch.md:26` `| crane 运镜 | 'perspective(1400px) rotateX(4°→0) scale(1.06→1)' 前 40f 落下，之后缓推 +0.035（36f 起 in-out 零速起步，接 crane 不突变） | crane 幅度就这么小（4°）已经够"落机位"读感，大了会晕（推测） |`
+  - `outro-group-photo-launch.md:27` `| 氛围三件套 | 光带 2–14f（600px 宽 overlay 峰值 opacity 0.12）；舞台光 42→50→58f 0→0.5→0.25；金尘 20 颗 2.4–4.2px 带暖光晕、opacity 0.35–0.7 微闪 + 6 颗前景失焦光斑、全参数 index 派生确定性 | 粒子/光效参数必须确定性派生（硬规则：渲染必须可复现）；金尘超过 30 颗开始像雪（推测） |`
+  - `outro-group-photo-launch.md:28` `| 字标 | demo 为 video-shotcraft 标志 + 全小写字标（品牌字体 118px）：标志 38f 先压，字母 delay=42+i·1.8、8f，同一套 letterpress；rule 58→70f 长出、两端 190px 延长线 8f 射出 6f 淡去；字距 62–66f 呼吸；背景页 24f 内 blur 0→14；落定后 sign-off hold 30f | 字标落定 hold 满 1 秒（R1 定案）；...`
+  - `outro-group-photo-launch.md:39` `demos/outro/outro-group-photo-launch/OutroGroupPhotoLaunch.tsx（原 template/src/aifl/live/SceneOutroLive.tsx；30f sign-off hold 时长见 template/src/aifl/Main.tsx 时间线）`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/outro/ui-strip-away-outro/UiStripAwayOutro
+
+- 镜头卡: `references/shots/outro/ui-strip-away-outro.md`
+- 时长: 144 帧 / 4800 ms, `DURATION` 于第 14 行
+- 分镜:
+  - `UiStripAwayOutro.tsx:14` `export const UI_STRIP_AWAY_OUTRO_DURATION = 144; // 字标定版后 hold ≥1s（R1）`
+  - `UiStripAwayOutro.tsx:16` `const CLICK = 34; // 点击时刻`
+  - `UiStripAwayOutro.tsx:26` `const STRIP_DUR = 14;`
+  - `UiStripAwayOutro.tsx:27` `const BTN_FADE = CLICK + 52;`
+  - `UiStripAwayOutro.tsx:28` `const LOGO_IN = CLICK + 62;`
+  - `UiStripAwayOutro.tsx:31` `const INK = '#0b0c10'; // 黑场：带冷色相的近黑`
+  - `UiStripAwayOutro.tsx:33` `const BTN_W = 150;`
+  - `UiStripAwayOutro.tsx:34` `const BTN_H = 40;`
+  - `UiStripAwayOutro.tsx:35` `const BTN_FROM = { x: 1920 - 24 - BTN_W / 2, y: 30 };`
+  - `UiStripAwayOutro.tsx:36` `const BTN_TO = { x: 960, y: 540 };`
+  - `UiStripAwayOutro.tsx:40` `const p = interpolate(frame, [start, start + STRIP_DUR], [0, 1], {`
+  - `UiStripAwayOutro.tsx:43` `easing: Easing.in(Easing.quad), // 离场加速`
+  - `UiStripAwayOutro.tsx:107` `const bgDark = interpolate(frame, [STRIP.canvasBg, STRIP.canvasBg + STRIP_DUR + 6], [0, 1], {`
+  - `UiStripAwayOutro.tsx:110` `easing: Easing.inOut(Easing.quad),`
+  - `UiStripAwayOutro.tsx:124` `const press = spring({ frame: frame - CLICK, fps, config: { damping: 12, stiffness: 220 } });`
+  - `UiStripAwayOutro.tsx:128` `const btnCenter = interpolate(frame, [STRIP.toolbarShell, STRIP.toolbarShell + 18], [0, 1], {`
+  - `UiStripAwayOutro.tsx:131` `easing: Easing.inOut(Easing.cubic),`
+  - `UiStripAwayOutro.tsx:137` `const dPrev = interpolate(frame - 1, [STRIP.toolbarShell, STRIP.toolbarShell + 18], [0, 1], {`
+  - `UiStripAwayOutro.tsx:138` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.cubic),`
+  - `UiStripAwayOutro.tsx:146` `const logoP = spring({ frame: frame - LOGO_IN, fps, config: { damping: 14, stiffness: 90 } });`
+  - `UiStripAwayOutro.tsx:147` `const wordP = spring({ frame: frame - LOGO_IN - 3, fps, config: { damping: 14, stiffness: 90 } });`
+  - `UiStripAwayOutro.tsx:150` `const curX = interpolate(frame, [4, CLICK - 2], [820, BTN_FROM.x + 18], {`
+  - (运动行 25 条, 留前 22 条, 文件 357 行已逐行扫过)
+- 卡片参数:
+  - `ui-strip-away-outro.md:5` `时长: ~4.8s（144f：光标就位 34f → 蒸发 ~40f → 按钮独占 → 字标接棒 → 字标 hold ≥1s）`
+  - `ui-strip-away-outro.md:13` `动效叙事。命门有二：**蒸发要有秩序**——从外围到中心每 4f 一层、`
+  - `ui-strip-away-outro.md:14` `每层带方向性位移（各自往画外散），乱序或同帧齐灭读作断电故障；`
+  - `ui-strip-away-outro.md:21` `点击后 +4f 起每 4f 一层；每层 STRIP_DUR 14f，Easing.in(quad)`
+  - `ui-strip-away-outro.md:24` `- 画布内 4 张卡再各错峰 3f，位移左右交替（±70px）——大块整体消失`
+  - `ui-strip-away-outro.md:26` `- 背景压黑：随画布底层蒸发（+20f 起 20f）灰底 → #111110`
+  - `ui-strip-away-outro.md:27` `- 按钮：点击 spring(damping 12, stiffness 220) 压缩脉冲；蒸发期`
+  - `ui-strip-away-outro.md:28` `位置/尺寸插值滑向屏心（18f，inOut cubic），scale ×1.5，白晕`
+  - `ui-strip-away-outro.md:29` `30→70px 随黑场增强；+52f 起 12f 淡出`
+  - `ui-strip-away-outro.md:30` `- 字标接棒：+62f spring(damping 14, stiffness 90) 淡入 +`
+  - `ui-strip-away-outro.md:32` `- 光标点击后 10f 内淡出——主角换人，光标必须退场`
+  - `ui-strip-away-outro.md:37` `| 层间错峰 | 4f × 6 层 | 同帧齐灭读作断电；>8f 拖成慢拆迁，仪式感散 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/outro/ui-to-brand-morph/IconFlipBloomLogo
+
+- 镜头卡: `references/shots/outro/ui-to-brand-morph.md`
+- 时长: 130 帧 / 4333 ms, `DURATION` 于第 15 行
+- 分镜:
+  - `IconFlipBloomLogo.tsx:15` `export const ICON_FLIP_BLOOM_LOGO_DURATION = 130;`
+  - `IconFlipBloomLogo.tsx:16` `const MARK = 300; // 标志尺寸（viewBox 128 → 可见取景框约 244×225）`
+  - `IconFlipBloomLogo.tsx:40` `const FLIP_START = 34;`
+  - `IconFlipBloomLogo.tsx:41` `const FLIP_MID = 46;`
+  - `IconFlipBloomLogo.tsx:42` `const BLOOM_END = 62;`
+  - `IconFlipBloomLogo.tsx:43` `const WORD_START = 66;`
+  - `IconFlipBloomLogo.tsx:46` `const inT = spring({ frame, fps, config: { damping: 13, stiffness: 140, mass: 0.8 } });`
+  - `IconFlipBloomLogo.tsx:50` `interpolate(frame, [12, 18, 24, 30, FLIP_START], [0, -12, 14, -18, 0], {`
+  - `IconFlipBloomLogo.tsx:53` `easing: Easing.inOut(Easing.sin),`
+  - `IconFlipBloomLogo.tsx:57` `const flipIn = interpolate(frame, [FLIP_START, FLIP_MID], [0, 1], {`
+  - `IconFlipBloomLogo.tsx:60` `easing: Easing.in(Easing.cubic),`
+  - `IconFlipBloomLogo.tsx:62` `const iconScaleX = interpolate(flipIn, [0, 1], [1, 0.04]);`
+  - `IconFlipBloomLogo.tsx:65` `const bloomSpring = spring({`
+  - `IconFlipBloomLogo.tsx:68` `config: { damping: 11, stiffness: 130, mass: 0.9 },`
+  - `IconFlipBloomLogo.tsx:72` `const markScaleX = interpolate(bloom, [0, 1], [0.04, 1]);`
+  - `IconFlipBloomLogo.tsx:74` `const cut = frame < FLIP_MID + 7 ? 0 : spring({ frame: frame - FLIP_MID - 7, fps, config: { damping: 16, stiffness: 170 } });`
+  - `IconFlipBloomLogo.tsx:77` `const shift = interpolate(frame, [WORD_START - 2, WORD_START + 16], [0, 1], {`
+  - `IconFlipBloomLogo.tsx:80` `easing: Easing.out(Easing.cubic),`
+  - `IconFlipBloomLogo.tsx:82` `const markX = interpolate(shift, [0, 1], [0, -471]); // 与字标起点 +187 耦合：lockup 整组视觉居中`
+- 卡片参数:
+  - `ui-to-brand-morph.md:5` `时长: A ~4.3s（130f）/ B ~5.6s（168f）`
+  - `ui-to-brand-morph.md:20` `| A icon-flip-bloom | 图标 anticipation 晃两下→Y 轴 scaleX 压扁成竖线（双层拖影+blur）→最薄处实体交换、标志按过冲 spring 从竖线撑开、琥珀斜切随后沿 45° 划入→mark 左移让位、wordmark 逐字落定 | 单图标产品；图标与 logo 形态差异大、需要"翻过去变身"的魔术感 |`
+  - `ui-to-brand-morph.md:21` `| B input-morph-assemble | 光标点发送→文字飞走、标志墨色从发送键漫开灌满输入框→x/y/w/h/r 五量 spring 收成取景框竖笔→上横 / 下横 / 琥珀斜切错峰从画外落进虚线构造槽位拼成标志→让位出字标 | 输入框/卡片等矩形 UI 是全片主角的片子；logo 可拆解为几何图元组合 |`
+  - `ui-to-brand-morph.md:26` `| A anticipation | 12–34f 倾斜 -12°/+14°/-18°→0°，inOut(sin)，transformOrigin 钉底部 78%；接地软影随倾斜偏移、翻扁时收窄 | 幅度递增才读作"蓄力"；只晃一下读不出预备动作 |`
+  - `ui-to-brand-morph.md:27` `| A 翻扁 | 34–46f Easing.in(cubic)，scaleX 1→0.04；两层残影 opacity 0.22/0.14 + blur 6px 滞后 0.12/0.24 | 加速入是"甩"的关键；匀速翻读作 flip 卡片。0.04 是最薄处，实体交换在这帧做 |`
+  - `ui-to-brand-morph.md:28` `| A 撑开 | 46f 起 spring(damping 11, stiffness 130) 驱动标志 scaleX 0.04→1（带过冲）；53f 起斜切 spring(damping 16, stiffness 170) 沿 45° 划入（cutProgress 0→1） | 标志从闭合竖线撑开才接得住"翻过最薄处"；直接 scale 整个标志会断因果。斜切晚 7f 是第二拍，与取景框同时出现读不出"刻" |`
+  - `ui-to-brand-morph.md:29` `| A wordmark | mark 64–82f 左移 -471px 让位（字标起点 mark+187，整组居中）；逐字 2.6f 错峰、每字 12f：scale 1.9→1 + blur 14→0（snappy），原点钉基线；字标 112px 品牌字体 700、+0.03em（标志高 ≈ 字号 2.1 倍） | 对照原片：各字母由大变小落位，大的时候模糊、落位时清晰（scale+blur 联动逐字落定），不是横向扫出；错峰 <2....`
+  - `ui-to-brand-morph.md:30` `| B 发送反馈 | 光标 20f 移入按下 scale 0.84 + 按钮闪白 6f；文字 11f ease-in 加速右上飞出（+760,-420）+ rotate -9° + 拖影 | 飞走必须加速——匀速飞读作平移不读作"发出去了" |`
+  - `ui-to-brand-morph.md:31` `| B 灌色 | 28–40f 标志墨色从发送键位置圆形 clip-path 漫开灌满输入框（全程实色） | 用 opacity 渐变填色会经过一段发灰的半透明态；文字要先飞离再灌色，否则深字压在墨上 |`
+  - `ui-to-brand-morph.md:32` `| B morph | 30f 起 spring(damping 15, stiffness 95)，1040×132 r34 → 89×330 直角（取景框竖笔，横条直接挤成竖条）五量同步，按 spring 速度加 ≤3px 拖影；输入框投影随 morph 收掉 | 五量必须同一个 spring 驱动，分开插值会中途散架 |`
+  - `ui-to-brand-morph.md:33` `| B 三块落下 | 上横 / 下横 / 琥珀斜切 58/72/86f 错峰 14f，各自 spring(damping 13) 从画外 -760px 落到槽位；落前 10f 槽位先沿轮廓画出虚线构造框（外扩 10px），落定 14f 后淡出；按速度拉伸 / 回弹压扁（原点钉底部），空中带落影、落定即平 | 错峰是"集结"的节奏感；齐落读作下雨；没有槽位预示，落点读作随机 |`
+  - `ui-to-brand-morph.md:34` `| B 落定 | 108f 起 mark 20f 左移让位并收到 0.7（给 15 字符字标腾地方）、构造网格退场，字标 110px 逐字（1.5f 错峰）从基线升起、口号逐词；124f 起整组极缓推近 2% | 落定后整段不动即死帧；逐拍 scale 呼吸容易读作抖动 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/outro/ui-to-brand-morph/InputMorphsIntoLogo
+
+- 镜头卡: `references/shots/outro/ui-to-brand-morph.md`
+- 时长: 168 帧 / 5600 ms, `DURATION` 于第 34 行
+- 分镜:
+  - `InputMorphsIntoLogo.tsx:21` `//   30–60   morph：spring(damping 15, stiffness 95) 输入框 → 取景框竖笔`
+  - `InputMorphsIntoLogo.tsx:34` `export const INPUT_MORPHS_INTO_LOGO_DURATION = 168;`
+  - `InputMorphsIntoLogo.tsx:48` `const COBALT = '#2446ff';`
+  - `InputMorphsIntoLogo.tsx:53` `const CLICK = 20;`
+  - `InputMorphsIntoLogo.tsx:54` `const FLY = 21;`
+  - `InputMorphsIntoLogo.tsx:55` `const MORPH = 30;`
+  - `InputMorphsIntoLogo.tsx:56` `const DROPS = [58, 72, 86];`
+  - `InputMorphsIntoLogo.tsx:57` `const SHIFT = 108;`
+  - `InputMorphsIntoLogo.tsx:58` `const WORD = 114;`
+  - `InputMorphsIntoLogo.tsx:63` `const MY = 492;`
+  - `InputMorphsIntoLogo.tsx:64` `const MX0 = 960; // 拼装时 mark 居中`
+  - `InputMorphsIntoLogo.tsx:65` `const END_S = 0.7; // 让位时 mark 收到 0.7`
+  - `InputMorphsIntoLogo.tsx:66` `const SHIFT_DX = -466; // 让位后 lockup 整组居中（与字标起点、字号 110 耦合）`
+  - `InputMorphsIntoLogo.tsx:67` `const STEM = { x: (29 - 64) * U, y: 0, w: 26 * U, h: 96 * U };`
+  - `InputMorphsIntoLogo.tsx:81` `const BOX = { x: 960, y: 690, w: 1040, h: 132, r: 34 };`
+  - `InputMorphsIntoLogo.tsx:84` `const DROP_H = 760;`
+  - `InputMorphsIntoLogo.tsx:85` `const dropAt = (f: number, i: number) => (f < DROPS[i] ? 0 : springAt(f, DROPS[i], { damping: 13, stiffness: 120, mass: 0.9 }));`
+  - `InputMorphsIntoLogo.tsx:144` `const m = f < MORPH ? 0 : springAt(f, MORPH, { damping: 15, stiffness: 95, mass: 1 });`
+  - `InputMorphsIntoLogo.tsx:152` `const MX = MX0 + SHIFT_DX * shift;`
+  - `InputMorphsIntoLogo.tsx:160` `const mPrev = f - 1 < MORPH ? 0 : springAt(f - 1, MORPH, { damping: 15, stiffness: 95, mass: 1 });`
+- 卡片参数:
+  - `ui-to-brand-morph.md:5` `时长: A ~4.3s（130f）/ B ~5.6s（168f）`
+  - `ui-to-brand-morph.md:20` `| A icon-flip-bloom | 图标 anticipation 晃两下→Y 轴 scaleX 压扁成竖线（双层拖影+blur）→最薄处实体交换、标志按过冲 spring 从竖线撑开、琥珀斜切随后沿 45° 划入→mark 左移让位、wordmark 逐字落定 | 单图标产品；图标与 logo 形态差异大、需要"翻过去变身"的魔术感 |`
+  - `ui-to-brand-morph.md:21` `| B input-morph-assemble | 光标点发送→文字飞走、标志墨色从发送键漫开灌满输入框→x/y/w/h/r 五量 spring 收成取景框竖笔→上横 / 下横 / 琥珀斜切错峰从画外落进虚线构造槽位拼成标志→让位出字标 | 输入框/卡片等矩形 UI 是全片主角的片子；logo 可拆解为几何图元组合 |`
+  - `ui-to-brand-morph.md:26` `| A anticipation | 12–34f 倾斜 -12°/+14°/-18°→0°，inOut(sin)，transformOrigin 钉底部 78%；接地软影随倾斜偏移、翻扁时收窄 | 幅度递增才读作"蓄力"；只晃一下读不出预备动作 |`
+  - `ui-to-brand-morph.md:27` `| A 翻扁 | 34–46f Easing.in(cubic)，scaleX 1→0.04；两层残影 opacity 0.22/0.14 + blur 6px 滞后 0.12/0.24 | 加速入是"甩"的关键；匀速翻读作 flip 卡片。0.04 是最薄处，实体交换在这帧做 |`
+  - `ui-to-brand-morph.md:28` `| A 撑开 | 46f 起 spring(damping 11, stiffness 130) 驱动标志 scaleX 0.04→1（带过冲）；53f 起斜切 spring(damping 16, stiffness 170) 沿 45° 划入（cutProgress 0→1） | 标志从闭合竖线撑开才接得住"翻过最薄处"；直接 scale 整个标志会断因果。斜切晚 7f 是第二拍，与取景框同时出现读不出"刻" |`
+  - `ui-to-brand-morph.md:29` `| A wordmark | mark 64–82f 左移 -471px 让位（字标起点 mark+187，整组居中）；逐字 2.6f 错峰、每字 12f：scale 1.9→1 + blur 14→0（snappy），原点钉基线；字标 112px 品牌字体 700、+0.03em（标志高 ≈ 字号 2.1 倍） | 对照原片：各字母由大变小落位，大的时候模糊、落位时清晰（scale+blur 联动逐字落定），不是横向扫出；错峰 <2....`
+  - `ui-to-brand-morph.md:30` `| B 发送反馈 | 光标 20f 移入按下 scale 0.84 + 按钮闪白 6f；文字 11f ease-in 加速右上飞出（+760,-420）+ rotate -9° + 拖影 | 飞走必须加速——匀速飞读作平移不读作"发出去了" |`
+  - `ui-to-brand-morph.md:31` `| B 灌色 | 28–40f 标志墨色从发送键位置圆形 clip-path 漫开灌满输入框（全程实色） | 用 opacity 渐变填色会经过一段发灰的半透明态；文字要先飞离再灌色，否则深字压在墨上 |`
+  - `ui-to-brand-morph.md:32` `| B morph | 30f 起 spring(damping 15, stiffness 95)，1040×132 r34 → 89×330 直角（取景框竖笔，横条直接挤成竖条）五量同步，按 spring 速度加 ≤3px 拖影；输入框投影随 morph 收掉 | 五量必须同一个 spring 驱动，分开插值会中途散架 |`
+  - `ui-to-brand-morph.md:33` `| B 三块落下 | 上横 / 下横 / 琥珀斜切 58/72/86f 错峰 14f，各自 spring(damping 13) 从画外 -760px 落到槽位；落前 10f 槽位先沿轮廓画出虚线构造框（外扩 10px），落定 14f 后淡出；按速度拉伸 / 回弹压扁（原点钉底部），空中带落影、落定即平 | 错峰是"集结"的节奏感；齐落读作下雨；没有槽位预示，落点读作随机 |`
+  - `ui-to-brand-morph.md:34` `| B 落定 | 108f 起 mark 20f 左移让位并收到 0.7（给 15 字符字标腾地方）、构造网格退场，字标 110px 逐字（1.5f 错峰）从基线升起、口号逐词；124f 起整组极缓推近 2% | 落定后整段不动即死帧；逐拍 scale 呼吸容易读作抖动 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/rhythm/beat-cut-moves/PaparazziFlash
+
+- 镜头卡: `references/shots/rhythm/beat-cut-moves.md`
+- 时长: 140 帧 / 4667 ms, `DURATION` 于第 26 行
+- 分镜:
+  - `PaparazziFlash.tsx:26` `export const PAPARAZZI_FLASH_DURATION = 140; // 活素材 30f + 三闪 40f + hold 70f`
+  - `PaparazziFlash.tsx:29` `const GOLD = L.accent2;`
+  - `PaparazziFlash.tsx:30` `const F1 = 30;`
+  - `PaparazziFlash.tsx:31` `const F2 = 52;`
+  - `PaparazziFlash.tsx:32` `const F3 = 70;`
+  - `PaparazziFlash.tsx:33` `const FLASHES = [F1, F2, F3];`
+  - `PaparazziFlash.tsx:34` `const SETTLE = 6; // 切入回落`
+  - `PaparazziFlash.tsx:35` `const DECAY = 4; // 白闪衰减`
+  - `PaparazziFlash.tsx:36` `const BLOOM = 7; // 闪后过曝回落`
+  - `PaparazziFlash.tsx:37` `const AF = 8; // 对焦框提前量`
+  - `PaparazziFlash.tsx:45` `const CARD = { x: 610, y: 176, w: 700, h: 780 };`
+  - `PaparazziFlash.tsx:46` `const DIGIT = { cx: CARD.x + 350, cy: CARD.y + 412 }; // 「Take 1」+ 右侧说明的中心`
+- 卡片参数:
+  - `beat-cut-moves.md:5` `时长: 全程 140f ≈4.7s（活素材 30f + 三闪 + hold 70f）`
+  - `beat-cut-moves.md:14` `三次白闪、间隔渐紧（22f→18f），读作快门连拍（A）。与 R 系不`
+  - `beat-cut-moves.md:15` `冲突：R 管落定后的停，本卡管切点排布，切串结束必须接足量 hold 把`
+  - `beat-cut-moves.md:17` `串切得越狠，切完的 hold 要比平常更长。`
+  - `beat-cut-moves.md:27` `| 三闪切点 | 30/52/70（间隔 22f→18f 渐紧），闪前 30f 慢推"活素材"（背板上别家相机的小闪光）衬托闪后定格 | 闪前必须是活的，全片死素材三闪读不出"定格" |`
+  - `beat-cut-moves.md:28` `| 白闪层 | 每闪 opacity 0.95→0 走 4f ease-out 衰减；闪帧 ±2px seed 哈希全屏抖动 | 0.95 起步才有闪光灯的爆点；衰减 >6f 变柔光转场，失去快门感 |`
+  - `beat-cut-moves.md:29` `| 快门余韵 | 切入视图 scale 1.03→1 走 6f ease-out 回落 + −16px 沉降归零 | 余韵是"被拍到晃了一下"；去掉后三闪读作幻灯片翻页 |`
+  - `beat-cut-moves.md:31` `| 对焦预备 | 下一闪前 8f 对焦框从 1.3 倍收到下一张裁切范围（屏幕坐标投影），闪前 3f 转香槟色锁定 | 这是"预备拍"：观众提前知道下一张拍哪里，闪光才像被按下的快门 |`
+  - `beat-cut-moves.md:32` `| 末段收束 | 第三闪后特写 hold 70f，只有 1→1.015 极缓推近 + HUD「SAVED」淡入 | 三闪是重击，hold 要给足平常两倍以上；定格是照片，不加画内运动 |`
+  - `beat-cut-moves.md:38` `无声版只剩画面乱跳；钉帧走 sound-design.md §4.5 相对 shot 起点，不钉绝对帧`
+  - `beat-cut-moves.md:43` `- 节奏偏好判例是单向"放慢"，本卡是刻意例外——切完的 hold（70f）`
+  - `beat-cut-moves.md:45` `- 真硬切 = frame 落区间渲染对应视图，无任何过渡帧；手滑加 2f 交叉`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/rhythm/beat-step-list-theme-cycle/BeatStepListThemeCycle
+
+- 镜头卡: `references/shots/rhythm/beat-step-list-theme-cycle.md`
+- 时长: 140 帧 / 4667 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `BeatStepListThemeCycle.tsx:28` `export const BEAT_STEP_LIST_THEME_CYCLE_DURATION = 140; // 铺垫 30f + 4 拍 × 18f + 末拍后 hold 38f`
+  - `BeatStepListThemeCycle.tsx:30` `const ROW_H = 176;`
+  - `BeatStepListThemeCycle.tsx:31` `const FS = 132; // 形容词字号`
+  - `BeatStepListThemeCycle.tsx:32` `const CY = 520; // 视口中心行（略高于画面中线，给底部色票 / 口号留位）`
+  - `BeatStepListThemeCycle.tsx:35` `const START_IDX = 2; // modern`
+  - `BeatStepListThemeCycle.tsx:38` `const BEAT_LEN = 18;`
+  - `BeatStepListThemeCycle.tsx:39` `const FIRST_BEAT = 30;`
+  - `BeatStepListThemeCycle.tsx:40` `const N_BEATS = 4;`
+  - `BeatStepListThemeCycle.tsx:41` `const JUMP = 6; // 跳变窗：拍头 6f，其余 12f 完全静置`
+  - `BeatStepListThemeCycle.tsx:44` `const PILL_H = 156;`
+  - `BeatStepListThemeCycle.tsx:45` `const PAD_L = 64; // 胶囊内左边距`
+  - `BeatStepListThemeCycle.tsx:46` `const PAD_R = 76; // 右边距略大（视觉居中：小写词右侧有字怀留白）`
+  - `BeatStepListThemeCycle.tsx:47` `const LEAD_W = 470; // 「Make it」占位宽`
+  - `BeatStepListThemeCycle.tsx:48` `const GAP = 34;`
+  - `BeatStepListThemeCycle.tsx:49` `const MID_PILL = 560;`
+  - `BeatStepListThemeCycle.tsx:50` `const LEFT = (1920 - (LEAD_W + GAP + MID_PILL)) / 2; // 428`
+  - `BeatStepListThemeCycle.tsx:51` `const PILL_X = LEFT + LEAD_W + GAP; // 932`
+  - `BeatStepListThemeCycle.tsx:53` `const MARGIN = 128; // 角落信息的安全边距`
+  - `BeatStepListThemeCycle.tsx:117` `const sy = beat === 0 ? 1 : interpolate(tInBeat, [0, 0.6, 1], [1.14, 0.96, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });`
+  - `BeatStepListThemeCycle.tsx:118` `const sx = beat === 0 ? 1 : interpolate(tInBeat, [0, 0.6, 1], [0.97, 1.01, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });`
+  - `BeatStepListThemeCycle.tsx:132` `const LAST = FIRST_BEAT + (N_BEATS - 1) * BEAT_LEN;`
+  - `BeatStepListThemeCycle.tsx:242` `const pop = cur ? (beat === 0 ? 1 : interpolate(tInBeat, [0, 0.6, 1], [0.7, 1.12, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' })) : 1;`
+- 卡片参数:
+  - `beat-step-list-theme-cycle.md:5` `时长: 铺垫 30f + 每拍 18f × 拍数 + 收尾 hold；4 拍约 4.7s（demo 140f）`
+  - `beat-step-list-theme-cycle.md:12` `+全场底色"三件事同帧齐跳——就成了节拍器。用最便宜的变量切换做出`
+  - `beat-step-list-theme-cycle.md:15` `——跳变只占拍头 6f，其余 12f 完全静置，拍点要"跳"不要"滑"，`
+  - `beat-step-list-theme-cycle.md:21` `- 拍长 18f（0.6s @30fps ≈ 100BPM），跳变窗仅拍头 6f：`
+  - `beat-step-list-theme-cycle.md:22` `'snap(t) = 1-(1-x)^3.2'（陡 ease-out），其余帧静置`
+  - `beat-step-list-theme-cycle.md:31` `- 胶囊落位 squash：竖向 1.14→0.96→1、横向反相 0.97→1.01→1，随拍头 6f 走完；接住瞬间`
+  - `beat-step-list-theme-cycle.md:32` `胶囊提亮 + 同色辉光涨一下（指数 ~3f 收回）`
+  - `beat-step-list-theme-cycle.md:36` `- 开拍前 30f 静置铺垫——先让观众看清"这是个列表"，再开始打拍`
+  - `beat-step-list-theme-cycle.md:41` `| 拍长 | 18f（BEAT_LEN，改它即改 BPM 对音轨） | <12f 观众来不及读词只见闪色；>26f 拍感散成逐个展示 |`
+  - `beat-step-list-theme-cycle.md:42` `| 跳变窗 | 拍头 6f，ease-out 指数 3.2 | 窗 >10f 或缓曲线，"跳"变"滑"，节拍器塌成滚动列表 |`
+  - `beat-step-list-theme-cycle.md:46` `| 铺垫/收尾 | 前 30f 静置；末拍后 hold ≥30f | 没铺垫第一拍读作 bug；末拍即切没有"停在最终色"的确认 |`
+  - `beat-step-list-theme-cycle.md:58` `- 选中态别用"整数拍判定反白"：跳变 6f 里新词还在胶囊下方就先变黑，读作穿帮。`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/rhythm/panel-grid-moves/ComicPanelSplit
+
+- 镜头卡: `references/shots/rhythm/panel-grid-moves.md`
+- 时长: 156 帧 / 5200 ms, `DURATION` 于第 29 行
+- 分镜:
+  - `ComicPanelSplit.tsx:29` `export const COMIC_PANEL_SPLIT_DURATION = 156;`
+  - `ComicPanelSplit.tsx:42` `const SPLIT = 20; // 第一刀`
+  - `ComicPanelSplit.tsx:43` `const BEAT = 4; // 逐格间隔`
+  - `ComicPanelSplit.tsx:44` `const POP = 5;`
+  - `ComicPanelSplit.tsx:45` `const CAP = 7; // 旁白框比格子晚 7f`
+  - `ComicPanelSplit.tsx:46` `const HOLD0 = SPLIT + 2 * BEAT + POP + 2; // 35：三格全部落定`
+  - `ComicPanelSplit.tsx:47` `const EXP0 = 64; // 吃屏起`
+  - `ComicPanelSplit.tsx:48` `const EXP_DUR = 16; // 含 2f 预备`
+  - `ComicPanelSplit.tsx:49` `const EXP1 = EXP0 + EXP_DUR; // 80`
+  - `ComicPanelSplit.tsx:50` `const TITLE = 82;`
+  - `ComicPanelSplit.tsx:53` `const SLANT = 230;`
+  - `ComicPanelSplit.tsx:54` `const B1 = 750; // 缝 1 顶端 x`
+  - `ComicPanelSplit.tsx:55` `const B2 = 1405; // 缝 2 顶端 x`
+  - `ComicPanelSplit.tsx:56` `const HALF = 9; // 缝半宽（纸芯 + 墨边）`
+  - `ComicPanelSplit.tsx:94` `const DIST = ['0.3', '0.5', '0.7', '1', '2', '5', '∞'];`
+- 卡片参数:
+  - `panel-grid-moves.md:5` `时长: 156f ≈5.2s（全屏侧拍 20f + 三刀分格定格 + 吃屏 + 海报 hold）`
+  - `panel-grid-moves.md:21` `| A comic-panel-split | 全屏 3/4 侧拍 20f → 三刀 12° 斜缝每 4f 一刀从上往下劈出，对应格硬切弹入（5f scale 1.07→1 + 白闪）；三格 = 同一主体的全身 / 局部特写 / 微距；定格 29f 靠主体自身动作保活；末格 2f 反向回拉 + 14f 扫屏吃掉全屏成海报 | 同一主体多视角并列；漫画感段落 |`
+  - `panel-grid-moves.md:26` `| A 斜缝 | SVG 双线：墨边 + 奶油纸芯（总宽 18px），12° 斜角，每刀 3f 从上往下画出 | 斜缝纸芯是漫画感命门；直缝读作分屏工具 |`
+  - `panel-grid-moves.md:29` `| 收尾 | 最后一行字揭示完后 ~50f 海报 hold（只留 1.5% 极缓推近） | R1；摘罩帧与吞屏终值逐像素对齐防跳变 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/rhythm/quad-split-parallel-scenes/QuadSplitParallelScenes
+
+- 镜头卡: `references/shots/rhythm/quad-split-parallel-scenes.md`
+- 时长: 90 帧 / 3000 ms, `DURATION` 于第 23 行
+- 分镜:
+  - `QuadSplitParallelScenes.tsx:23` `export const QUAD_SPLIT_PARALLEL_SCENES_DURATION = 90;`
+  - `QuadSplitParallelScenes.tsx:26` `const CREAM = '#f7eee4';`
+  - `QuadSplitParallelScenes.tsx:27` `const LATTE = '#e9d7c4';`
+  - `QuadSplitParallelScenes.tsx:29` `const DARK = '#160d09';`
+  - `QuadSplitParallelScenes.tsx:33` `const QW = (1920 - 3 * G) / 2; // 948`
+  - `QuadSplitParallelScenes.tsx:34` `const QH = (1080 - 3 * G) / 2; // 528`
+  - `QuadSplitParallelScenes.tsx:53` `const URL = 'localhost:3000/promo';`
+- 卡片参数:
+  - `quad-split-parallel-scenes.md:3` `一句话: 画面硬切 2×2 四宫格，四个象限并行跑各自的微场景（打字、急推、逐词、交互链），关键节拍错开 3–6 帧制造信息轰炸`
+  - `quad-split-parallel-scenes.md:5` `时长: 90f（3s@30fps：0–62f 并行轰炸 + 28f 终态 hold，全程无转场）`
+  - `quad-split-parallel-scenes.md:10` `用并行密度替代顺序展示：四件事同时在眼前发生，观众来不及逐一细读，但每 3–6 帧就有一个象限"动一下"——扫视节奏被牢牢钉住。这是手法卡：格内内容全部可替换，错拍编排才是配方。`
+  - `quad-split-parallel-scenes.md:13` `- 四象限独立场景（内容为示例：video-shotcraft 出一支宣传片时同时发生的四个现场）：TL 浏览器 tab 依次 overshoot 弹入 + 地址栏逐字打字 + 44f 页面载入大标题从下滑入 + 全程 inQuad 慢推 1→1.1；TR 终端命令打字 + 两行输出 + 末行出现同时 whip 急推 1→1.85（sin 包络 blur 5px，旧行退到 8%）；BL 三个 132px 大词逐个 overshoot 下...`
+  - `quad-split-parallel-scenes.md:14` `- **错拍是灵魂**：TL tab 6/11/16/21、页面 44；TR 输出 27/33、急推 37；BL 词 14/30/49；BR 点击 25、变色 27、点击 52、通知 56——任意相邻重事件间隔 ≥3 帧，永远有东西在动但从不齐动`
+  - `quad-split-parallel-scenes.md:15` `- 两处打字光标闪烁周期错开（16 帧 vs 14 帧 +5 相位），避免同闪`
+  - `quad-split-parallel-scenes.md:17` `- 62f 后四格都停在终态（Launch film. / promo.mp4 ready / Prompt. Render. Ship. / Live · 3,214 views），拼成一张完整海报 hold 28f`
+  - `quad-split-parallel-scenes.md:22` `| 错拍间隔 | 相邻重事件 3–6 帧 | <2 帧读作同拍（齐动=呆板）；>8 帧密度散掉，轰炸感消失 |`
+  - `quad-split-parallel-scenes.md:24` `| TR 急推 | 37–47f，scale 1.85 + blur 峰值 5px，旧行淡到 8% | 这是全卡最重的一拍，压 BGM 重音；blur 包络必须 sin（进出对称）|`
+  - `quad-split-parallel-scenes.md:25` `| 打字速度 | TL 20 字符 / 0–40f，TR 19 字符 / 0–24f | 换文案保持字符数近似，否则打字节奏与其他象限错拍关系漂移 |`
+  - `quad-split-parallel-scenes.md:28` `| 收尾 | 62f 后终态 hold 28f | 并行轰炸后必须给一拍让四格同时被读到 |`
+  - `quad-split-parallel-scenes.md:31` `- 这是手法卡：四格内容整体可换（产品截图/录屏/其他动效卡），但**错拍表必须重排**——新内容的关键帧继承原时刻表，否则四格变四个独立视频拼贴`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/rhythm/rhythm-interrupt-moves/JumpCutPunchIn
+
+- 镜头卡: `references/shots/rhythm/rhythm-interrupt-moves.md`
+- 时长: 135 帧 / 4500 ms, `DURATION` 于第 16 行
+- 分镜:
+  - `JumpCutPunchIn.tsx:16` `export const JUMP_CUT_PUNCH_IN_DURATION = 135; // 35f 全景 + 35f 中景 + 65f 末挡（含 49f 真静止）`
+  - `JumpCutPunchIn.tsx:20` `const CARD_L = 220 + 36 + 524.67 + 28; // ≈808.67`
+  - `JumpCutPunchIn.tsx:21` `const CARD_T = 72 + 36 + 454 + 28; // 590`
+  - `JumpCutPunchIn.tsx:22` `const CARD_W = 524.67;`
+  - `JumpCutPunchIn.tsx:23` `const CARD_H = 454;`
+  - `JumpCutPunchIn.tsx:24` `const ORIGIN_X = CARD_L + CARD_W / 2; // ≈1071`
+  - `JumpCutPunchIn.tsx:25` `const ORIGIN_Y = CARD_T + CARD_H / 2; // 817`
+  - `JumpCutPunchIn.tsx:27` `const JUMP_1 = 35;`
+  - `JumpCutPunchIn.tsx:28` `const JUMP_2 = 70;`
+  - `JumpCutPunchIn.tsx:29` `const STEPS = [1.0, 1.6, 2.6]; // 挡差 ≥1.5×，否则读作画面抖了一下`
+- 卡片参数:
+  - `rhythm-interrupt-moves.md:5` `时长: A 135f ≈4.5s`
+  - `rhythm-interrupt-moves.md:18` `| A jump-cut-punch-in | transform-origin 钉目标中心，三档 scale 阶梯跳变（零补间），每跳 2f 加深脉冲当 tick | 逐级逼近核心指标；纪录片式盯住 |`
+  - `rhythm-interrupt-moves.md:23` `| A 跳挡 | 1.0→1.6→2.6，各 hold ≥35f | 挡差 <1.5× 读作画面抖了一下 |`
+  - `rhythm-interrupt-moves.md:24` `| A tick | 跳变帧起 2f brightness 0.92 全画面脉冲 | 无 tick 的跳切读作丢帧 |`
+  - `rhythm-interrupt-moves.md:25` `| 收尾 | 末挡 ≥45f 真静止 | 打断系事后 hold 从重给 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/rhythm/sakuga-timing-shift/SakugaTimingShift
+
+- 镜头卡: `references/shots/rhythm/sakuga-timing-shift.md`
+- 时长: 150 帧 / 5000 ms, `DURATION` 于第 25 行
+- 分镜:
+  - `SakugaTimingShift.tsx:25` `export const SAKUGA_TIMING_SHIFT_DURATION = 150; // 一拍三 48f + 冲刺落位 32f + hold 70f`
+  - `SakugaTimingShift.tsx:28` `const PENCIL = '#4f78b8'; // 淡蓝铅笔（动画纸上的构图线颜色）`
+  - `SakugaTimingShift.tsx:31` `const CARD_W = 600;`
+  - `SakugaTimingShift.tsx:32` `const CARD_H = 360;`
+  - `SakugaTimingShift.tsx:33` `const CARD_Y = 330;`
+  - `SakugaTimingShift.tsx:34` `const X_LEFT = 140;`
+  - `SakugaTimingShift.tsx:35` `const X_RIGHT = 1180;`
+  - `SakugaTimingShift.tsx:36` `const X_CENTER = (W - CARD_W) / 2; // 660`
+  - `SakugaTimingShift.tsx:37` `const OVERSHOOT = 40;`
+  - `SakugaTimingShift.tsx:39` `const SWITCH = 48;`
+  - `SakugaTimingShift.tsx:40` `const ARRIVE = 68;`
+  - `SakugaTimingShift.tsx:41` `const SETTLE = 74;`
+  - `SakugaTimingShift.tsx:42` `const BOIL_FREEZE = 108;`
+  - `SakugaTimingShift.tsx:47` `const pos1 = (t: number) => interpolate(t, [0, SWITCH - 3], [X_LEFT, X_RIGHT], C);`
+  - `SakugaTimingShift.tsx:51` `? interpolate(t, [SWITCH, ARRIVE], [X_RIGHT, X_CENTER - OVERSHOOT], { ...C, easing: Easing.out(Easing.poly(4)) })`
+  - `SakugaTimingShift.tsx:52` `: interpolate(t, [ARRIVE, SETTLE], [X_CENTER - OVERSHOOT, X_CENTER], { ...C, easing: Easing.inOut(Easing.cubic) });`
+  - `SakugaTimingShift.tsx:60` `const STRIP_N = 30;`
+  - `SakugaTimingShift.tsx:61` `const CELL = 44;`
+  - `SakugaTimingShift.tsx:62` `const CELL_GAP = 6;`
+  - `SakugaTimingShift.tsx:63` `const STRIP_W = STRIP_N * CELL + (STRIP_N - 1) * CELL_GAP; // 1494`
+  - `SakugaTimingShift.tsx:64` `const STRIP_X = (W - STRIP_W) / 2;`
+  - `SakugaTimingShift.tsx:65` `const STRIP_Y = 826;`
+  - (运动行 26 条, 留前 22 条, 文件 288 行已逐行扫过)
+- 卡片参数:
+  - `sakuga-timing-shift.md:3` `一句话: 一拍三转一拍一——元素先以每 3 帧一步的手翻书顿挫移动，高潮瞬间切成逐帧丝滑冲刺，帧率量化的突变本身就是看点`
+  - `sakuga-timing-shift.md:5` `时长: 150f（5s）`
+  - `sakuga-timing-shift.md:11` `库内时间轴操纵已有 speed-ramp-freeze 的定格解冻与 hit-counter 的局部顿帧。`
+  - `sakuga-timing-shift.md:12` `本卡是另一种——**改的不是速度是帧率本身**：`
+  - `sakuga-timing-shift.md:13` `顿挫段驱动帧 q=floor(f/3)*3，元素每 3 帧才动一步（10fps 手翻书），`
+  - `sakuga-timing-shift.md:14` `切换帧起改用原始 f 逐帧驱动，丝滑冲刺。一拍三的钝与一拍一的滑`
+  - `sakuga-timing-shift.md:19` `- 顿挫段：q = Math.floor(f/3)*3 当驱动帧，位置线性 X 140→1180，`
+  - `sakuga-timing-shift.md:22` `- f48 切换：两帧「冲击帧」（画面反相成墨底 + 以卡片为焦点的集中线）当高潮标记，`
+  - `sakuga-timing-shift.md:24` `+ 6f 回弹，落地 scaleX 0.92 / scaleY 1.07 挤压`
+  - `sakuga-timing-shift.md:28` `手绘下划线每 4 帧重描一次沸腾、f=108 后冻结）；底部「摄影表」一拍三只在每 3 格写原画号、`
+  - `sakuga-timing-shift.md:31` `赛璐珞投影的 video-shotcraft 产品卡（30fps · every frame, crafted）；f74 后 hold 段 2% 极缓推进`
+  - `sakuga-timing-shift.md:37` `| 每步位移 | ≈69px（总程 1040 ÷ 15 步倒推） | <30px 读作卡顿掉帧不是顿挫——命门 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/rhythm/speed-ramp-freeze/FreezeAnnotateReal
+
+- 镜头卡: `references/shots/rhythm/speed-ramp-freeze.md`
+- 时长: 文件里没有导出的 DURATION 数字
+- 分镜:
+  - `FreezeAnnotateReal.tsx:31` `export const FREEZEANNOTATE_DUR = 158;`
+  - `FreezeAnnotateReal.tsx:36` `const CARD_W = 600;`
+  - `FreezeAnnotateReal.tsx:37` `const GAP = 52;`
+  - `FreezeAnnotateReal.tsx:40` `const TARGET_K = 5;`
+  - `FreezeAnnotateReal.tsx:41` `const TARGET_FILE = 'card9.png'; // nano-lab: automated research loop`
+  - `FreezeAnnotateReal.tsx:45` `const RAIL_TOP = 336;`
+  - `FreezeAnnotateReal.tsx:46` `const PX = 26; // 每源帧导轨位移（px）`
+  - `FreezeAnnotateReal.tsx:48` `const FREEZE = 45;`
+  - `FreezeAnnotateReal.tsx:49` `const THAW = 112;`
+  - `FreezeAnnotateReal.tsx:50` `const LAND = 134;`
+  - `FreezeAnnotateReal.tsx:61` `const OFFSET = 960 - (TARGET_K * PITCH + CARD_W / 2) + FREEZE * PX;`
+  - `FreezeAnnotateReal.tsx:66` `const CX = 960;`
+  - `FreezeAnnotateReal.tsx:67` `const CY = RAIL_TOP + TARGET_H / 2 - 16;`
+  - `FreezeAnnotateReal.tsx:68` `const RX = 1.2 * (CARD_W / 2) * 1.03;`
+  - `FreezeAnnotateReal.tsx:69` `const RY = 1.22 * (TARGET_H / 2) * 1.03;`
+  - `FreezeAnnotateReal.tsx:70` `const SE = 2 / 3; // 超椭圆参数指数 2/n（n=3）`
+  - `FreezeAnnotateReal.tsx:130` `const frameIn = frame >= FREEZE ? springAt(frame, FREEZE, { damping: 16, stiffness: 260 }) : 0;`
+  - `FreezeAnnotateReal.tsx:144` `const pin = frame >= 104 ? springAt(frame, 104, { damping: 13, stiffness: 240 }) : 0;`
+- 卡片参数:
+  - `speed-ramp-freeze.md:3` `一句话: 帧号非线性 remap 的节奏手法——定格标注（流动→定格圈注→解冻）`
+  - `speed-ramp-freeze.md:5` `时长: 定格标注全程 158f（≈5.3s，定格段 67f ≥45f）`
+  - `speed-ramp-freeze.md:11` `运动里干脆停下来——马克笔圈出重点再走。技术根是帧号 remap（斜率即速率），`
+  - `speed-ramp-freeze.md:15` `- 源动画匀速，输出帧对源帧做非线性 remap（斜率即速率）：流动段斜率 1（26px/源帧）→`
+  - `speed-ramp-freeze.md:19` `- 定格段斜率 =0（瞬时切换，无缓入——定格要干脆）；定格那一帧给"按下暂停"的`
+  - `speed-ramp-freeze.md:20` `信号：快门白闪 3f、整帧取景框四角弹入、时间码从 LIVE 走字切到 PAUSED 并停住；`
+  - `speed-ramp-freeze.md:21` `强调色马克笔超椭圆一笔圈 10f 描边（stroke-dashoffset，1.08 圈、收笔不闭合）圈住目标 +`
+  - `speed-ramp-freeze.md:22` `箭杆 6f + 箭头 3f 点题，feTurbulence（scale≈6）给手绘抖动，再接一行 68px 粗体批注 +`
+  - `speed-ramp-freeze.md:23` `手绘下划线 + 署名；解冻段 smootherstep（ease-in 起步）22f 走完一张卡、`
+  - `speed-ramp-freeze.md:24` `平均斜率 >1 补偿时长，墨迹 8f 淡出，但在目标卡角留一枚评论图钉随卡离场`
+  - `speed-ramp-freeze.md:31` `| 定格时长 | ≥45f | 短了凝视不成立（R3 宁慢勿快） |`
+  - `speed-ramp-freeze.md:32` `| 解冻补偿 | smootherstep 22f 走完一张卡（平均斜率 >1） | 解冻太慢全片拖沓；不补偿则定格吃掉的时间读作冷场 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/rhythm/trailer-grammar-moves/TrailerBumper
+
+- 镜头卡: `references/shots/rhythm/trailer-grammar-moves.md`
+- 时长: 140 帧 / 4667 ms, `DURATION` 于第 15 行
+- 分镜:
+  - `TrailerBumper.tsx:15` `export const TRAILER_BUMPER_DURATION = 140; // 速剪 27f + 黑场 6f + 标题入场 30f + 静止 77f`
+  - `TrailerBumper.tsx:18` `const CUT_1 = 0; // 镜头1：variant A 整页`
+  - `TrailerBumper.tsx:19` `const CUT_2 = 9; // 镜头2：variant B 整页`
+  - `TrailerBumper.tsx:20` `const CUT_3 = 18; // 镜头3：variant A 中列卡片 2.2x 怼脸特写`
+  - `TrailerBumper.tsx:21` `const BLACK = 27; // 纯黑静默`
+  - `TrailerBumper.tsx:22` `const TITLE = 33; // 正式开场`
+  - `TrailerBumper.tsx:23` `const TITLE_IN = 16; // 标题淡入+微升时长`
+  - `TrailerBumper.tsx:24` `const SETTLED = TITLE + 30; // 字距收拢完成 = 全片最后一个动画帧`
+  - `TrailerBumper.tsx:28` `interpolate(frame, [start, start + 9], [1, 1.04], {`
+  - `TrailerBumper.tsx:34` `const FOCUS_X = 1071;`
+  - `TrailerBumper.tsx:35` `const FOCUS_Y = 335;`
+  - `TrailerBumper.tsx:36` `const CLOSE = 2.2;`
+  - `TrailerBumper.tsx:93` `const opacity = interpolate(frame, [TITLE, TITLE + TITLE_IN], [0, 1], {`
+  - `TrailerBumper.tsx:96` `easing: Easing.out(Easing.quad),`
+  - `TrailerBumper.tsx:98` `const rise = interpolate(frame, [TITLE, TITLE + TITLE_IN], [44, 0], {`
+  - `TrailerBumper.tsx:101` `easing: Easing.out(Easing.cubic),`
+- 卡片参数:
+  - `trailer-grammar-moves.md:3` `一句话: 预告片语法一式——trailer-bumper 前置速剪钩子：三镜 9f 速剪 + 黑场静默一拍，再开场标题`
+  - `trailer-grammar-moves.md:5` `时长: A ~4.7s（140f）`
+  - `trailer-grammar-moves.md:19` `| A trailer-bumper | 三镜头各 9f 等长硬切（0/9/18），每镜内部 scale 1→1.04 微推保活；27–33f 纯黑静默，33f 起标题 16f 淡入 + 44px out-cubic 微升（demo 标题是 video-shotcraft 字标 + 品牌 tagline） | 正片开场前的钩子；cold open |`
+  - `trailer-grammar-moves.md:24` `| A 速剪 | 三镜等长 9f，零过渡；镜头 3 对焦中列 Top pages 卡放大 2.2x 怼脸特写（CSS zoom，字不糊） | 节拍感靠等长；三镜构图必须明显不同 |`
+  - `trailer-grammar-moves.md:25` `| A 微推 | 每镜内部 scale 1→1.04 线性 | 静帧三连读作幻灯片——命门 |`
+  - `trailer-grammar-moves.md:26` `| A 黑场 | 27–33f 纯黑 #000 空 div，6f | 黑场里放任何东西都毁掉"静默一拍" |`
+  - `trailer-grammar-moves.md:27` `| 收尾 | A 静止 77f（≥40f） | 字距收拢完（63f）后整帧冻结，真静止 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/transition/bottom-push-stack-wipe/BottomPushStackWipe
+
+- 镜头卡: `references/shots/transition/bottom-push-stack-wipe.md`
+- 时长: 170 帧 / 5667 ms, `DURATION` 于第 31 行
+- 分镜:
+  - `BottomPushStackWipe.tsx:31` `export const BOTTOM_PUSH_STACK_WIPE_DURATION = 170;`
+  - `BottomPushStackWipe.tsx:33` `const PUSH_STARTS = [22, 66, 110];`
+  - `BottomPushStackWipe.tsx:34` `const PUSH_DUR = 26;`
+  - `BottomPushStackWipe.tsx:80` `const msg = springAt(frame, t0 + 12, { damping: 18, stiffness: 200 });`
+  - `BottomPushStackWipe.tsx:191` `const c = springAt(frame, at[k], { damping: 14, stiffness: 240 });`
+- 卡片参数:
+  - `bottom-push-stack-wipe.md:5` `时长: demo 三连推 170f（~5.7s）；单次推入 26f + 章内 hold ~1.2s`
+  - `bottom-push-stack-wipe.md:14` `重 ease-out（快进慢停）给推入一个"哐"的落位感；上缘 40px 接缝阴影`
+  - `bottom-push-stack-wipe.md:21` `- 推入缓动 = 重 ease-out 'cubic-bezier(0.12, 0.9, 0.2, 1)'（快进`
+  - `bottom-push-stack-wipe.md:22` `慢停），26f 完成（~12f 已到 95%）；第 i 章的 y = (1−自己推入进度)×H`
+  - `bottom-push-stack-wipe.md:27` `#ff4d1f / 酸柠 #cdf23a（深色字），色相拉开 120° 级；每章左栏眉题 +`
+  - `bottom-push-stack-wipe.md:30` `- 章内动画全部错开推入：标题在推入开始后 12f（已到 95%）才从线下升起，`
+  - `bottom-push-stack-wipe.md:31` `UI 小动作（打字中→消息弹入 / 声波与当前镜头交接 / 交付步骤逐个打勾）放在 hold`
+  - `bottom-push-stack-wipe.md:32` `- 推入间隔 ~44f（demo 22/66/110f 起推）；出画的层及时卸载；尾段 28f`
+  - `bottom-push-stack-wipe.md:38` `| 推入时长 | 26f，重 ease-out | <20f 读作闪切；线性匀速读作卷帘门，"哐"感全无 |`
+  - `bottom-push-stack-wipe.md:39` `| 章间 hold | ~18f 静止 + 推入尾段，章内总停留 ~44f | 章内是内容表演区，<25f 观众没看清就被顶走 |`
+  - `bottom-push-stack-wipe.md:56` `的 26f 窗口（至少等到 95% 落位），不然两章都在动，视线没有锚点`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/card-flip-reveal/CardFlipReveal
+
+- 镜头卡: `references/shots/transition/card-flip-reveal.md`
+- 时长: 150 帧 / 5000 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `CardFlipReveal.tsx:28` `export const CARD_FLIP_REVEAL_DURATION = 150;`
+  - `CardFlipReveal.tsx:31` `const GOLD = L.accent2;`
+  - `CardFlipReveal.tsx:32` `const CW = 480;`
+  - `CardFlipReveal.tsx:33` `const CH = 620;`
+  - `CardFlipReveal.tsx:34` `const GAP = 48;`
+  - `CardFlipReveal.tsx:35` `const X0 = (1920 - (CW * 3 + GAP * 2)) / 2; // 192`
+  - `CardFlipReveal.tsx:37` `const FLIP0 = 22;`
+  - `CardFlipReveal.tsx:38` `const STAGGER = 12;`
+  - `CardFlipReveal.tsx:39` `const PRE = 4; // 预备帧`
+  - `CardFlipReveal.tsx:40` `const FLIP = 16; // 翻转帧`
+  - `CardFlipReveal.tsx:41` `const PEAK_DEG = 194;`
+  - `CardFlipReveal.tsx:50` `return PEAK_DEG - (PEAK_DEG - 180) * springAt(f, s + PRE + FLIP, { damping: 15, stiffness: 190 });`
+  - `CardFlipReveal.tsx:139` `const num = springAt(frame, land - 2, { damping: 18, stiffness: 160 });`
+- 卡片参数:
+  - `card-flip-reveal.md:5` `时长: 全程 150f（~5s，含 hold）；单卡 4f 预备 + 16f 翻 + ~10f 弹簧落定，三卡错峰 12f`
+  - `card-flip-reveal.md:14` `就是"所以呢？"的回答，Apple bento 段落的标准语法。逐张错峰 10f 扫过`
+  - `card-flip-reveal.md:20` `- 翻转三段：4f 预备（反向后仰 −10°，ease-out）→ 16f`
+  - `card-flip-reveal.md:21` `bezier(0.55,0,0.3,1) 加速翻到 194°（14° 过冲）→ 物理弹簧`
+  - `card-flip-reveal.md:29` `海报；背面 158px 数字落定时 1.08→1 收拢，结论标签晚 4f 升起，上方`
+  - `card-flip-reveal.md:33` `- 错峰 delay 12f/卡；全部翻完真静止 ≥40f（demo 72f 后 hold 78f），`
+  - `card-flip-reveal.md:39` `| 翻转时长 | 4f 预备 + 16f 翻 + ~10f 弹簧 | <14f 看不到侧棱瞬间；>28f 读作慢慢转；砍掉预备读作被弹开而不是"翻" |`
+  - `card-flip-reveal.md:40` `| 过冲 | 194°→180°（14°），spring damping 15 | 无过冲落定读作生硬停表；damping <12 回弹两次读作果冻 |`
+  - `card-flip-reveal.md:42` `| 错峰 | 12f/卡，≤4 卡 | 同时翻读作整墙翻面，"成果连报"的逐张节奏就没了 |`
+  - `card-flip-reveal.md:44` `| 收尾 | 末卡落定真静止 ≥40f | R1 |`
+  - `card-flip-reveal.md:52` `- 声音候选位：每卡翻停帧一声轻"啪"（sound-design §4.5），三连啪`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/card-flock-tumble/CardFlockTumble
+
+- 镜头卡: `references/shots/transition/card-flock-tumble.md`
+- 时长: 135 帧 / 4500 ms, `DURATION` 于第 36 行
+- 分镜:
+  - `CardFlockTumble.tsx:36` `export const CARD_FLOCK_TUMBLE_DURATION = 135;`
+  - `CardFlockTumble.tsx:37` `const WALL_UP = [6, 22] as const; // 字墙亮起`
+  - `CardFlockTumble.tsx:38` `const FLIGHT = [10, 54] as const; // 侧棱→翻飞→站定：一条连续样条`
+  - `CardFlockTumble.tsx:39` `const CARD_OUT = [62, 72] as const; // 收束（快！10 帧向中心聚拢）`
+  - `CardFlockTumble.tsx:40` `const RING_T0 = 70; // 烟雾环自收束点扩散（= 闪核帧）`
+  - `CardFlockTumble.tsx:41` `const TEXT_T0 = 74; // 巨字砸入`
+  - `CardFlockTumble.tsx:42` `const CY_OFF = 30; // 卡片群 / 收束点相对画面中心的下移（构图重心）`
+  - `CardFlockTumble.tsx:46` `const up = interpolate(frame, [WALL_UP[0], WALL_UP[1]], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: EASE.out });`
+  - `CardFlockTumble.tsx:83` `const CARD_ZOOM = 1.75;`
+  - `CardFlockTumble.tsx:263` `const grow = Easing.out(Easing.cubic)(Math.min(1, t / 52));`
+  - `CardFlockTumble.tsx:265` `const op = interpolate(t, [0, 4, 30, 60], [0, 1, 0.94, 0.76], { extrapolateRight: 'clamp' });`
+  - `CardFlockTumble.tsx:266` `const w = R * interpolate(t, [0, 52], [0.36, 0.27], { extrapolateRight: 'clamp' });`
+  - `CardFlockTumble.tsx:401` `pose = splinePose(c.k, Easing.out(Easing.cubic)(raw));`
+  - `CardFlockTumble.tsx:406` `const e = Easing.in(Easing.quad)(r);`
+  - `CardFlockTumble.tsx:409` `op = 1 - Easing.in(Easing.cubic)(Math.max(0, (r - 0.55) / 0.45));`
+- 卡片参数:
+  - `card-flock-tumble.md:15` `保持旋转"——高潮段没有静帧）、**全程清晰**（motion blur/景深糊`
+  - `card-flock-tumble.md:20` `站定）Catmull-Rom 样条，Easing.out(cubic) 驱动，~44f`
+  - `card-flock-tumble.md:21` `- 站定慢转：idle 漂移 ry +0.34°/f、rx -0.1°/f、rz +0.05°/f（14f`
+  - `card-flock-tumble.md:23` `- 收束：10f Easing.in(quad) 从慢转姿态直接加速吸入中心缩小，`
+  - `card-flock-tumble.md:25` `- 闪核：吸入到点同一帧（70f）中心一团白热核 + 全屏 12% 微曝，6f`
+  - `card-flock-tumble.md:31` `- 巨字：收束后 4f（74f）就"砸"进来——14f snappy 从 1.22 缩到 1、字距`
+  - `card-flock-tumble.md:35` `下方 44px 标语（品牌短句）错峰升起，尾帧是发布海报`
+  - `card-flock-tumble.md:45` `| 收束时长 | 10f ease-in | 22f 版被裁"要快"；透明度早退=吸入不可读（返工判例） |`
+  - `card-flock-tumble.md:46` `| 烟雾环 | 单圈、湍流絮边、衰减极慢 | 多圈被裁；平滑霓虹圈/粒子版被裁——对照原片密帧做湍流质感 |`
+  - `card-flock-tumble.md:49` `| 巨字入场 | 收束到点后 4f、14f snappy 1.22→1 + 字距收拢 | 原版等 14f 才出字，中间一段只有小环的黑场，高潮断气；慢放大（0.7→1 / 34f）读作淡入而不是砸 |`
+  - `card-flock-tumble.md:50` `| 闪核 | 径向白热核 + 全屏 12% 微曝，6f 衰减 | 去掉后环像凭空冒出；加描边亮环立刻廉价（判例同烟雾环） |`
+  - `card-flock-tumble.md:56` `feTurbulence 湍流絮边对照原片密帧逐格校——"要一样"；残余差距`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/circle-match-iris/CircleMatchIris
+
+- 镜头卡: `references/shots/transition/circle-match-iris.md`
+- 时长: 165 帧 / 5500 ms, `DURATION` 于第 30 行
+- 分镜:
+  - `CircleMatchIris.tsx:30` `export const CIRCLE_MATCH_IRIS_DURATION = 165;`
+  - `CircleMatchIris.tsx:35` `const CX = 540; // = ROW_X + 行左内边距 36 + 名次列 84 + 头像半径`
+  - `CircleMatchIris.tsx:36` `const CY = 540;`
+  - `CircleMatchIris.tsx:37` `const AV_R = 36; // 头像半径`
+  - `CircleMatchIris.tsx:38` `const RING_R = 300; // 新景圆环半径`
+  - `CircleMatchIris.tsx:39` `const RING_W = 44; // 圆环描边宽`
+  - `CircleMatchIris.tsx:40` `const GOAL = 0.87;`
+  - `CircleMatchIris.tsx:43` `const ROW_H = 108;`
+  - `CircleMatchIris.tsx:44` `const ROW_PITCH = 124;`
+  - `CircleMatchIris.tsx:45` `const ROW_X = 384; // 行左缘`
+  - `CircleMatchIris.tsx:46` `const ROW_W = 1152;`
+  - `CircleMatchIris.tsx:48` `const ME = 2;`
+  - `CircleMatchIris.tsx:65` `const IRIS_EASE = bezier(0.62, 0, 0.32, 1);`
+  - `CircleMatchIris.tsx:67` `const SWEEP_EASE = bezier(0.4, 0, 0.12, 1);`
+- 卡片参数:
+  - `circle-match-iris.md:5` `时长: 5.5s / 165f（入场+定睛 40f + 蓄力 7f + 接圆开圈 37f + sweep 58f + 静止 47f）`
+  - `circle-match-iris.md:22` `两道扩散光环（18f / 30f）；相机以锚点为 transform-origin 缓推 3%`
+  - `circle-match-iris.md:23` `（锚点在屏幕上不动），40–47f 头像收到 0.9 做预备`
+  - `circle-match-iris.md:25` `就是那颗实心头像），28f 内半径 36→300、描边收到 44px（expo-out），`
+  - `circle-match-iris.md:26` `颜色由荧光实心退成暗轨；光圈半径 = 圆环外沿 + 一段 ease-in 加速外扩`
+  - `circle-match-iris.md:27` `（54–84f 加 2400px），所以是"圆环把光圈撑开"——接圆必然发生在吃满屏之前`
+  - `circle-match-iris.md:28` `- 旧页同时以锚点为心放大 1.03→1.22 并压暗（ease-in），光圈外沿一圈落影 +`
+  - `circle-match-iris.md:31` `60–118f 慢起长尾到 87%，中央 200px 数字随 sweep 同步计数，弧头柔光跟笔尖`
+  - `circle-match-iris.md:36` `| 锚点脉冲 | 2 次 scale 1→1.16 + 光环扩两道（18f / 30f 起，各 22f） | 没有定睛引导，开圈瞬间观众找不到圆心 |`
+  - `circle-match-iris.md:37` `| 接圆 | 实心盘→圆环：r 36→300、描边 72→44px / 28f expo-out | 圆环与光圈各长各的，"头像变成图表"就读不出来 |`
+  - `circle-match-iris.md:38` `| 光圈扩张 | 圆环外沿 + 0→2400px / 30f bezier(.62,0,.32,1) | 快于 20f 接圆读不到；圆心偏移 >10px 一眼穿帮 |`
+  - `circle-match-iris.md:39` `| 旧页推远 | scale 1.03→1.22 + 亮度 1→0.45 / 34f ease-in | 旧页不动，新景像贴在上面的圆形贴纸 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/gradient-transition/GradientTransition
+
+- 镜头卡: `references/shots/transition/gradient-transition.md`
+- 时长: 200 帧 / 6667 ms, `DURATION` 于第 27 行
+- 分镜:
+  - `GradientTransition.tsx:27` `export const GRADIENT_TRANSITION_DURATION = 200;`
+  - `GradientTransition.tsx:37` `const SW = 480, SH = 270;`
+  - `GradientTransition.tsx:38` `const SLOW = bezier(0.45, 0, 0.2, 1);`
+- 卡片参数:
+  - `gradient-transition.md:5` `时长: 约 6.7s（200f@30fps；linear 0–2.3s · radial 1.9–4.4s · conic 3.9–6.7s）`
+  - `gradient-transition.md:13` `- 三层各持一种渐变类型，同一时刻只有一层主导，交叉淡化窗口很窄（12–14f）且两层在窗内都在动`
+  - `gradient-transition.md:14` `- linear 段（0–68f）：角度 18°→198°（swift in-out），三档明度色标（64→40→7）在 HSL 空间三通道插值`
+  - `gradient-transition.md:16` `- radial 段（56–132f）：圆心 (24%,72%)→(68%,38%) 对角迁移 + 半径 48%→80% 扩张，外圈近黑，`
+  - `gradient-transition.md:18` `- conic 段（118–200f）：A→B→C→A 三色环（紫 / 品红 / 冰蓝，首尾同色）'from' 0→250° 旋转，`
+  - `gradient-transition.md:19` `慢起长尾 ease 越转越慢落定；圆心放在主体右后方 (64%,54%)，外圈与文字侧再压暗`
+  - `gradient-transition.md:21` `conic 的 blur(9px) 在小画布上做（≈全分辨率 36px），每帧代价是全屏实时模糊的 1/16；上面叠颗粒防色带`
+  - `gradient-transition.md:28` `| 段窗口重叠 | 相邻段起点比前段终点早 12f | 重叠保证淡化时两层都在动；无重叠会看到"接管瞬间静止" |`
+  - `gradient-transition.md:29` `| 交叉淡化 | 56–68f / 118–132f（smooth in-out） | 拉宽会同屏看到两种渐变结构打架；窄淡化 + 参数同动是"换类型不换气"的关键 |`
+  - `gradient-transition.md:33` `| conic 旋转 | from 0→250°（不满一圈，ease-out 长尾） | 转满 360° 收尾与开头同帧，接循环时用；单次播放留缺口避免"回到原点"感 |`
+  - `gradient-transition.md:39` `- CSS 渐变字符串每帧重写触发 repaint 而非 composite——大画幅 + 低端设备需实测；Remotion 服务端渲染无此顾虑`
+  - `gradient-transition.md:41` `- 三段各自独立可拆用：只要 linear 段（0–68f 重归一化）就是一张"角度扫过"的极简底`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/line-carry-transition/LineCarryTransition
+
+- 镜头卡: `references/shots/transition/line-carry-transition.md`
+- 时长: 190 帧 / 6333 ms, `DURATION` 于第 34 行
+- 分镜:
+  - `LineCarryTransition.tsx:34` `export const LINE_CARRY_TRANSITION_DURATION = 190;`
+  - `LineCarryTransition.tsx:37` `const LINE_Y = 760;`
+  - `LineCarryTransition.tsx:38` `const X0 = 336; // 进度条起点（卡内左边距）`
+  - `LineCarryTransition.tsx:39` `const BAR = 648; // 进度条长度`
+  - `LineCarryTransition.tsx:40` `const TIP_X = 1480; // 横移时笔头钉住的屏幕 x`
+  - `LineCarryTransition.tsx:41` `const FX0 = 2880, FX1 = 3600, FY0 = 280; // B 画框（底边 = LINE_Y）`
+  - `LineCarryTransition.tsx:50` `const TOTAL = lens.reduce((s, x) => s + x, 0); // 4944`
+  - `LineCarryTransition.tsx:51` `const PATH = 'M ${X0} ${LINE_Y} H ${FX0} V ${FY0} H ${FX1} V ${LINE_Y} H ${FX0}';`
+  - `LineCarryTransition.tsx:53` `const PAN0 = 56, PAN1 = 112;`
+  - `LineCarryTransition.tsx:55` `const LEAD = TIP_X - X0; // 横移段：drawn = LEAD + cam`
+  - `LineCarryTransition.tsx:75` `const NAVY = L.accent2;`
+  - `LineCarryTransition.tsx:76` `const CREAM = '#f7eedf';`
+  - `LineCarryTransition.tsx:112` `const check = springAt(f, 40, { damping: 14, stiffness: 220 });`
+- 卡片参数:
+  - `line-carry-transition.md:5` `时长: ~6.3s / 190f（进度条走满 36f + 冲出 10f + 横移 56f + 收框 24f + 框内海报 30f + 静止 24f）`
+  - `line-carry-transition.md:20` `- 3840 宽世界容器 translateX 当镜头，56–112f 移 1920px，smooth in-out（bezier .65,0,.35,1）`
+  - `line-carry-transition.md:25` `- **交接处速度连续**：进度条 ease-out 落到零速 → 满格停 6f（状态翻成完成、对勾弹出）→`
+  - `line-carry-transition.md:27` `- 笔头是全片唯一的强调色点（赤陶 r=14 + 晕圈），框闭合后 136–142f 消散并条件卸载（摘罩判例）`
+  - `line-carry-transition.md:30` `- B 的展签标题在框外，可以在镜头到位前后先升起；框内海报必须等框闭合（136f 起）才长出`
+  - `line-carry-transition.md:36` `| 横移配比 | 1920px / 56f（均速 34px/f） | 更远的横移等比拉长时长，别提速——峰速 >80px/f 笔头开始跟丢 |`
+  - `line-carry-transition.md:39` `| 框闭合 | 闭合帧起框内内容再出 | 框没闭合内容先出，线的悬念白搭 |`
+  - `line-carry-transition.md:40` `| 收尾 | 海报长完后 ≥24f 真静止 | 笔头墨点必须条件卸载，残留即毁静止 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/mosaic-reframe/MosaicReframe
+
+- 镜头卡: `references/shots/transition/mosaic-reframe.md`
+- 时长: 214 帧 / 7133 ms, `DURATION` 于第 32 行
+- 分镜:
+  - `MosaicReframe.tsx:32` `export const MOSAIC_REFRAME_DURATION = 214;`
+  - `MosaicReframe.tsx:38` `const T_AB = 52; // 控件切到 Mosaic`
+  - `MosaicReframe.tsx:39` `const T_BC = 128; // 控件切到 Cascade`
+  - `MosaicReframe.tsx:40` `const LAG = 4; // 瓦片晚于控件起跳的帧数（父先动、子跟随）`
+  - `MosaicReframe.tsx:41` `const D_AB = 26;`
+  - `MosaicReframe.tsx:42` `const D_BC = 30;`
+  - `MosaicReframe.tsx:43` `const MOVE = bezier(0.75, 0, 0.15, 1); // 果断换位：慢起 → 急走 → 长尾软落`
+  - `MosaicReframe.tsx:44` `const ROT_SETTLE = bezier(0.45, 0, 0.3, 1.22); // 旋转晚到并轻过冲一次`
+  - `MosaicReframe.tsx:48` `const X0 = 96, X1 = 1824, Y0 = 212, Y1 = 984; // 内容区：安全边距 96，页眉下方`
+  - `MosaicReframe.tsx:51` `const AG = 24;`
+  - `MosaicReframe.tsx:52` `const AW = (X1 - X0 - 3 * AG) / 4, AH = (Y1 - Y0 - 2 * AG) / 3;`
+  - `MosaicReframe.tsx:58` `const BG = 16;`
+  - `MosaicReframe.tsx:59` `const UW = (X1 - X0 - 5 * BG) / 6, UH = (Y1 - Y0 - 3 * BG) / 4;`
+  - `MosaicReframe.tsx:69` `const CW = 300, CH = 372;`
+  - `MosaicReframe.tsx:212` `const SEG_W = 168, SEG_H = 60, SEG_PAD = 6;`
+  - `MosaicReframe.tsx:274` `const HEAD = 158;`
+- 卡片参数:
+  - `mosaic-reframe.md:3` `一句话: 12 张瓦片在规则网格、feature mosaic、对角瀑布串三种排版间连续变形，位置宽高各自插值、逐片微错峰，段间留 hold`
+  - `mosaic-reframe.md:5` `时长: 约 7.1s（214f@30fps；浮现 0–22f · hold A · A→B 56–92f · hold B · B→C 132–176f · hold C 至 214f）`
+  - `mosaic-reframe.md:15` `位置先到：w/h 晚 2f、旋转晚 4f 收敛，B→C 的旋转带一次轻过冲（bezier 0.45,0,0.3,1.22）`
+  - `mosaic-reframe.md:16` `- 换位曲线 bezier(0.75,0,0.15,1)（慢起 → 急走 → 长尾软落），A→B 每片 26f、B→C 每片 30f；`
+  - `mosaic-reframe.md:18` `- 因果驱动：右上角分段控件 Grid / Mosaic / Cascade 的强调色胶囊先滑到下一档（snappy 12f，途中横向拉长），`
+  - `mosaic-reframe.md:19` `瓦片晚 4f 才开始重排（父先动、子跟随）`
+  - `mosaic-reframe.md:20` `- 错峰：A→B 按序号先密后疏扫过（10f 跨度）；B→C 像发牌一样等间隔依次摊开（14f 跨度），`
+  - `mosaic-reframe.md:23` `C 态瓦片长出 14px 相纸白边，左下留白处升起衬线大标题 + 副行，尾帧是完整海报`
+  - `mosaic-reframe.md:25` `- 开场：12 张照片沿对角线错峰升起（16f snappy），全程相机极缓推近 1→1.025`
+  - `mosaic-reframe.md:30` `| 段时长 / hold | A→B 26f、B→C 30f；hold A 30f、B 36f、C 34f | hold 是读版面的呼吸位，压到 <20f 三段糊成一段 |`
+  - `mosaic-reframe.md:31` `| 控件→瓦片滞后 | 4f | 0 = 读不出因果；>8f 像控件失灵 |`
+  - `mosaic-reframe.md:32` `| 错峰跨度 | A→B 10f、B→C 14f | 0 = 整版机械闪变；>24f 波浪抢过版面本身 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/page-turn-transitions/BarnDoorSplit
+
+- 镜头卡: `references/shots/transition/page-turn-transitions.md`
+- 时长: 150 帧 / 5000 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `BarnDoorSplit.tsx:28` `export const BARN_DOOR_SPLIT_DURATION = 150;`
+  - `BarnDoorSplit.tsx:32` `const OLD = { bg0: '#1d1f23', bg1: '#141518', ink: '#9a9ea7', ink2: '#6f737b', ink3: '#4a4d54', line: 'rgba(255,255,255,0.07)' };`
+  - `BarnDoorSplit.tsx:34` `const CRACK = 20; // 发丝亮线起`
+  - `BarnDoorSplit.tsx:35` `const GAP = 30; // 缝隙预张起`
+  - `BarnDoorSplit.tsx:36` `const SLIDE = 40; // 门开始加速`
+  - `BarnDoorSplit.tsx:37` `const SLIDE_D = 24;`
+  - `BarnDoorSplit.tsx:38` `const SLIDE_EASE = bezier(0.42, 0, 0.8, 0.25); // ease-in（≈cubic-in 偏猛）：起步可见、越走越快，不是最后一帧才消失`
+- 卡片参数:
+  - `page-turn-transitions.md:5` `时长: 单式 150f（前态建立 30–40f + 转场 24–40f + 跟随与收尾 ≥70f），约 5.0s`
+  - `page-turn-transitions.md:19` `| A barn-door-split | 旧页两个 960px overflow 容器对位拼合，同时向外 ease-in 加速滑出画外（按速度挂横向运动模糊）；裂缝里透出新页的光——门内缘 10px 切面被照亮、门面近缝处被光染暖，新页带一次过曝光束 scale 1.08→1 迎上；demo 为同版式的 video-shotcraft 版本更替：「Shotcraft 3」冷灰旧页 → 「Shotcraft 4」余烬发布页（眉题挂镜刻标...`
+  - `page-turn-transitions.md:24` `| 预告 | 裂前中缝一条发丝亮线（带泛光）自中点向上下描出（20–30f），30–40f 裂缝 ease-in 撑开 0→16px 成一道光缝 | 直接裂开观众没看到裂点在哪；硬开关闪线读作渲染故障 |`
+  - `page-turn-transitions.md:25` `| 滑出 | 各 translateX ∓1000px / 24f，bezier(0.42,0,0.8,0.25) 加速 | ease-out 滑出是"被推走"，ease-in 才是"让位"；quart-in 太猛会读作"停住→最后一帧消失" |`
+  - `page-turn-transitions.md:26` `| 新页迎上 | scale 1.08→1（snappy 36f，晚门 2f 起跳），过曝光束随门远去 ~30f 衰减；新旧两页同版式同槽位 | 新旧页版式不同就读不出"取代" |`
+  - `page-turn-transitions.md:28` `| 收尾 | 新页落定后跟随动作（数据滚动 / 清单打勾）+ hold ≥30f，hold 段相机极缓推近 1.5–2% | R1 |`
+  - `page-turn-transitions.md:37` `- 转场前后两页都要有 ≥30f 静止建立/收尾——两端都在动，体块感被`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/print-texture-transitions/InkBleedReveal
+
+- 镜头卡: `references/shots/transition/print-texture-transitions.md`
+- 时长: 130 帧 / 4333 ms, `DURATION` 于第 17 行
+- 分镜:
+  - `InkBleedReveal.tsx:10` `// （Easing.out(quad)）叠 ±8% 低频正弦扰动（帧 78–98 衰减到 0，洇满全屏）→`
+  - `InkBleedReveal.tsx:17` `export const INK_BLEED_REVEAL_DURATION = 130;`
+  - `InkBleedReveal.tsx:20` `const PAPER = '#f3efe6'; // 暖白纸`
+  - `InkBleedReveal.tsx:21` `const INK = '#1a1c29'; // 带一点靛的墨色（不用纯黑）`
+  - `InkBleedReveal.tsx:22` `const PAPER_INK = '#2a2620'; // 印在纸上的字色`
+  - `InkBleedReveal.tsx:65` `const baseR = interpolate(frame, [20, 98], [0, 1450], {`
+  - `InkBleedReveal.tsx:66` `easing: Easing.out(Easing.quad),`
+  - `InkBleedReveal.tsx:71` `const wobbleEnv = interpolate(frame, [78, 98], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });`
+  - `InkBleedReveal.tsx:81` `const dispScale = interpolate(frame, [20, 98], [60, 160], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });`
+- 卡片参数:
+  - `print-texture-transitions.md:5` `时长: 4–4.5s（洇开段 55–80f + 静止收尾 ≥30f）`
+  - `print-texture-transitions.md:24` `| 渗边 | SVG mask 白圆挂 'feTurbulence(fractalNoise, baseFrequency 0.02, octaves 3, seed 固定)' + 'feDisplacementMap scale 60→160 随帧涨' | filter 只揉遮罩形状、内容始终清晰；seed 必须写死（确定性） |`
+  - `print-texture-transitions.md:25` `| 洇开 | 半径 [20,98f]→[0,1450px] Easing.out(quad)，乘 '1+0.08·sin(0.32f)·env' 快慢不匀扰动（env 末 20f 衰减归零） | 匀速圆扩张读作普通 iris——扰动即"墨的脾气" |`
+  - `print-texture-transitions.md:26` `| 墨边 | 两层遮罩圆领先新景 20–42px：外沿 0.42 不透明 + 3.2px 羽化、内芯 0.86 + 1px 羽化，再外一圈 +110px 重羽化湿晕（0.12）；14–22f 先落一个小墨点 | 无墨边读作普通 iris 擦除；墨边太宽太实读作烧纸洞 |`
+  - `print-texture-transitions.md:27` `| 显影 | 新景在遮罩内 scale 1.035→1（20–100f ease-out），摘罩前精确回到 1 | 不收会在摘罩帧跳一下 |`
+  - `print-texture-transitions.md:28` `| 收尾摘罩 | 洇满后（帧 ~100）摘掉 SVG mask 直接铺新景 | feTurbulence 有亚像素抖动，不摘则结尾永不真静止（本批实渲判例） |`
+  - `print-texture-transitions.md:29` `| 收尾 | 新景就位后真静止 ≥30f | R1 |`
+  - `print-texture-transitions.md:38` `- 慢转场（55–80f 动作段），高节奏连打段落别用——那里去 shot-transitions B 式甩镜`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/shot-transitions/PortalWipeV2
+
+- 镜头卡: `references/shots/transition/shot-transitions.md`
+- 时长: 140 帧 / 4667 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `PortalWipeV2.tsx:14` `//   与穿窗同时完成；视差散开 Easing.out(cubic) 在穿窗完成后 8f 内速度归零，之后画面真静止。`
+  - `PortalWipeV2.tsx:28` `export const PORTAL_WIPE_V2_DURATION = 140;`
+  - `PortalWipeV2.tsx:31` `const COBALT = { deep: '#040a26', mid: '#0b1a5c', hi: '#2f5bff', glow: '#7d9bff', mint: '#3fe0c5' };`
+  - `PortalWipeV2.tsx:34` `const TILE = { w: 520, h: 300, gap: 32, cover: 176 };`
+  - `PortalWipeV2.tsx:35` `const GRID_X = (1920 - (3 * TILE.w + 2 * TILE.gap)) / 2;`
+  - `PortalWipeV2.tsx:36` `const GRID_Y = 330;`
+  - `PortalWipeV2.tsx:46` `const TARGET = 4;`
+  - `PortalWipeV2.tsx:87` `const SERIES = Array.from({ length: 60 }, (_, i) => 0.28 + i * 0.007 + 0.065 * Math.sin(i * 0.55) + 0.02 * Math.sin(i * 1.7 + 1));`
+  - `PortalWipeV2.tsx:88` `const NOW = 39;`
+  - `PortalWipeV2.tsx:89` `const CH = { x: 64, y: 196, w: 1112, h: 360 };`
+  - `PortalWipeV2.tsx:98` `const AREA = '${line(0, NOW)} L${px(NOW).toFixed(1)} ${CH.y + CH.h} L${px(0).toFixed(1)} ${CH.y + CH.h} Z';`
+  - `PortalWipeV2.tsx:144` `const NEAR_K = 1.3;`
+  - `PortalWipeV2.tsx:146` `const CHIP_A = nearPos(1380, 64); // 右上：压住面板右上角`
+  - `PortalWipeV2.tsx:147` `const CHIP_B = nearPos(104, 790); // 左下：压住面板左下角`
+  - `PortalWipeV2.tsx:188` `const t = interpolate(frame, [26, 66], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.7, 0, 0.3, 1) });`
+  - `PortalWipeV2.tsx:191` `const spread = interpolate(frame, [42, 74], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });`
+- 卡片参数:
+  - `shot-transitions.md:5` `时长: n/a（技法卡；各式占用帧数见参数表，从相邻镜头预算里划）`
+  - `shot-transitions.md:12` `（Linear Releases/Agent，2026-07-11 抽帧逆向）全程没有一次裸切：`
+  - `shot-transitions.md:14` `白闪盖切、甩镜借糊帧换景、穿窗点进详情世界。`
+  - `shot-transitions.md:21` `| B whip-pan 甩镜（急刹款） | 机位一拍横甩到下一场景，中段运动模糊糊到不可辨，借糊帧换景；落点前急刹、长尾滑入 | 快节奏功能段连打（高能量→高能量的轻快款）；落点是"要读内容"的镜头 |`
+  - `shot-transitions.md:27` `| A flash-cut | 'assets/lib/FlashCut.tsx'，from = 切点 − 5，两侧各 5f | 用法详见 type-and-filter 卡；白闪只盖硬切，不当装饰光效（Q4）|`
+  - `shot-transitions.md:28` `| B 甩镜急刹款 | 起点 hold ≥20f → 前 70% 路程用 30% 时间（糊段，峰值 ~300px/f）→ 后 30% 路程 ease-out 长尾 ~48f 滑入落位；用一条连续速度曲线（3f 起步 + 指数衰减）积分出位移，别分段各套 ease-out（分段处速度会二次起跳）；按瞬时速度做方向性运动模糊（'_fixtures/Polish' 的 'SpeedBlur'，sd ≈ 0.085×速度、封顶 64px），只在...`
+  - `shot-transitions.md:29` `| C 穿窗纵深款 portal-wipe | 目标卡先悬浮抬起作预备（−10px、1.03×，邻卡退暗）→ 窗放大 40f 用 bezier(0.7,0,0.3,1) 先慢后快，窗内新景从 ~0.42 缩放反向补偿长到 1（与窗几何同一个 t），卡面在前 ~28% 行程内渐隐（opacity 1−t·3.6，再慢会被拉成满屏巨字残影）；窗内**只 2 层**视差（远景面板系数 0.08 + 近景 2 卡 0.3，不加 blur），穿窗...`
+  - `shot-transitions.md:33` `等于全线挪帧——转场占用的帧从相邻镜头预算划走，规矩同 hold 预算（R3）`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/shot-transitions/WhipBrakeReal
+
+- 镜头卡: `references/shots/transition/shot-transitions.md`
+- 时长: 文件里没有导出的 DURATION 数字
+- 分镜:
+  - `WhipBrakeReal.tsx:27` `export const WHIPBRAKE_DUR = 130;`
+  - `WhipBrakeReal.tsx:32` `const RAIL = [cards[0], cards[1], cards[2], cards[4], cards[5], cards[6], cards[7], cards[8], null, cards[9]];`
+  - `WhipBrakeReal.tsx:33` `const TARGET_I = 8;`
+  - `WhipBrakeReal.tsx:34` `const START_I = 1;`
+  - `WhipBrakeReal.tsx:35` `const CARD_W = 460;`
+  - `WhipBrakeReal.tsx:36` `const GAP = 64;`
+  - `WhipBrakeReal.tsx:38` `const RAIL_Y = 318;`
+  - `WhipBrakeReal.tsx:39` `const CARD_H = 402; // 460 × 312/357`
+  - `WhipBrakeReal.tsx:40` `const LEFT0 = 960 - CARD_W / 2 - START_I * PITCH; // 起点：第 02 张卡居中`
+  - `WhipBrakeReal.tsx:42` `const T0 = 24;`
+  - `WhipBrakeReal.tsx:45` `const STEP = 0.05;`
+  - `WhipBrakeReal.tsx:70` `const DIGIT = 150;`
+- 卡片参数:
+  - `shot-transitions.md:5` `时长: n/a（技法卡；各式占用帧数见参数表，从相邻镜头预算里划）`
+  - `shot-transitions.md:12` `（Linear Releases/Agent，2026-07-11 抽帧逆向）全程没有一次裸切：`
+  - `shot-transitions.md:14` `白闪盖切、甩镜借糊帧换景、穿窗点进详情世界。`
+  - `shot-transitions.md:21` `| B whip-pan 甩镜（急刹款） | 机位一拍横甩到下一场景，中段运动模糊糊到不可辨，借糊帧换景；落点前急刹、长尾滑入 | 快节奏功能段连打（高能量→高能量的轻快款）；落点是"要读内容"的镜头 |`
+  - `shot-transitions.md:27` `| A flash-cut | 'assets/lib/FlashCut.tsx'，from = 切点 − 5，两侧各 5f | 用法详见 type-and-filter 卡；白闪只盖硬切，不当装饰光效（Q4）|`
+  - `shot-transitions.md:28` `| B 甩镜急刹款 | 起点 hold ≥20f → 前 70% 路程用 30% 时间（糊段，峰值 ~300px/f）→ 后 30% 路程 ease-out 长尾 ~48f 滑入落位；用一条连续速度曲线（3f 起步 + 指数衰减）积分出位移，别分段各套 ease-out（分段处速度会二次起跳）；按瞬时速度做方向性运动模糊（'_fixtures/Polish' 的 'SpeedBlur'，sd ≈ 0.085×速度、封顶 64px），只在...`
+  - `shot-transitions.md:29` `| C 穿窗纵深款 portal-wipe | 目标卡先悬浮抬起作预备（−10px、1.03×，邻卡退暗）→ 窗放大 40f 用 bezier(0.7,0,0.3,1) 先慢后快，窗内新景从 ~0.42 缩放反向补偿长到 1（与窗几何同一个 t），卡面在前 ~28% 行程内渐隐（opacity 1−t·3.6，再慢会被拉成满屏巨字残影）；窗内**只 2 层**视差（远景面板系数 0.08 + 近景 2 卡 0.3，不加 blur），穿窗...`
+  - `shot-transitions.md:33` `等于全线挪帧——转场占用的帧从相邻镜头预算划走，规矩同 hold 预算（R3）`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/tear-streak-transitions/GlitchDisplace
+
+- 镜头卡: `references/shots/transition/tear-streak-transitions.md`
+- 时长: 135 帧 / 4500 ms, `DURATION` 于第 30 行
+- 分镜:
+  - `GlitchDisplace.tsx:30` `export const GLITCH_DISPLACE_DURATION = 135; // A 44 + 撕裂 16 + 余波/静止 75`
+  - `GlitchDisplace.tsx:35` `const PAD = 120; // 安全边`
+  - `GlitchDisplace.tsx:36` `const STRIPS = 16;`
+  - `GlitchDisplace.tsx:37` `const AMP = 70; // 峰值条带错位（一眼可见的撕裂档）`
+  - `GlitchDisplace.tsx:38` `const GHOST = 12; // 双色剪影错位 px`
+  - `GlitchDisplace.tsx:39` `const PRE = [30, 31]; // 前兆帧`
+  - `GlitchDisplace.tsx:40` `const TEAR_IN = 44;`
+  - `GlitchDisplace.tsx:41` `const CUT = 54; // 硬切：满幅抖动中`
+  - `GlitchDisplace.tsx:42` `const TEAR_OUT = 60; // 摘罩`
+  - `GlitchDisplace.tsx:43` `const CELLS = 18;`
+  - `GlitchDisplace.tsx:90` `const TRAFFIC = [0.02, 0.03, 0.05, 0.08, 0.14, 0.22, 0.33, 0.45, 0.58, 0.7, 0.8, 0.88, 0.93, 0.96, 0.98];`
+  - `GlitchDisplace.tsx:91` `const LATENCY = [0.92, 0.9, 0.86, 0.88, 0.8, 0.72, 0.66, 0.56, 0.5, 0.42, 0.36, 0.3, 0.27, 0.25, 0.24];`
+  - `GlitchDisplace.tsx:92` `const CH = { x: 820, y: 318, w: 560, h: 220 };`
+- 卡片参数:
+  - `tear-streak-transitions.md:5` `时长: 前态 ≥40f + 撕裂 16–24f + 收尾 ≥40f，约 4.5s（135f）`
+  - `tear-streak-transitions.md:21` `| A glitch-displace | 16 条不等高水平条带（外层裁剪+内层整页 translateY 对位），每条 translateX 由库标 h(i*31+f*7) 驱动 ±70px 抖动，叠双色剪影重影 + 扫描亮线；54f 满幅抖动中硬切 B 页，再抖 6f 至 60f 归位 | 故障/断裂语义；状态跳变（上线、切换版本）；高潮前的暴力换页 |`
+  - `tear-streak-transitions.md:26` `| 抖幅 | ±70px，按条分能量（约两成不动 / 三成满幅 / 其余轻颤），位移过指数 0.6 推向两端；底层垫完整页防露底缝 | 峰值帧条带错位必须肉眼明显——±12px 级读不出撕裂；全员同幅乱抖像水波 |`
+  - `tear-streak-transitions.md:27` `| 包络 | 44–47f out-cubic 冲起 → 平台 → 54–60f 线性消散 | 冲击判例：扩散 out-cubic、消散线性 |`
+  - `tear-streak-transitions.md:29` `| 切边 / 扫描线 | 错位 >25px 的条上沿 1.5px 亮线、下沿 3px 暗渐变；每帧 2 根随机高度全宽扫描亮线 | 每条都画亮边会读成横格纸——只给重撕条 |`
+  - `tear-streak-transitions.md:30` `| 切点掩护 | 54f 曝光 1.28 / 55f 1.12 + 整屏 1.6% 冲击放大 6f 收回；30–31f 两条细条 ±12px 前兆 | 前兆是预备：观众先"感到不对"再撕 |`
+  - `tear-streak-transitions.md:31` `| 摘罩 | 60f 起条带、重影、扫描线、filter 全部条件卸载直出裸 B | opacity 0 不算摘；滤镜残留毁真静止 |`
+  - `tear-streak-transitions.md:32` `| 收尾 | 75f（余波 40f：区域格青绿波、计数、指标升起 + hold 35f） | R1；余波只在页面内容层，不再有撕裂元素 |`
+  - `tear-streak-transitions.md:41` `- 硬切藏在满幅抖动中（54f 切、60f 归位）——切点暴露在静止帧上`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/transition-hidden-cut/InvisibleCut
+
+- 镜头卡: `references/shots/transition/transition-hidden-cut.md`
+- 时长: 110 帧 / 3667 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `InvisibleCut.tsx:28` `export const INVISIBLE_CUT_DURATION = 110;`
+  - `InvisibleCut.tsx:31` `const PAD = 120;`
+  - `InvisibleCut.tsx:32` `const PRESS = 24; // 按下 Render`
+  - `InvisibleCut.tsx:33` `const SW_START = 32; // 遮挡物入画`
+  - `InvisibleCut.tsx:34` `const SW_END = 46; // 遮挡物出画`
+  - `InvisibleCut.tsx:35` `const CUT = 39; // 硬切：实心区盖满画幅的那一帧`
+  - `InvisibleCut.tsx:36` `const SOFT = 340; // 遮挡物软边宽`
+  - `InvisibleCut.tsx:37` `const CORE = 2600; // 遮挡物实心宽（> 1920，留出 >1 帧的全遮窗口）`
+  - `InvisibleCut.tsx:38` `const OCC_W = CORE + SOFT * 2;`
+  - `InvisibleCut.tsx:39` `const B_SHIFT = 40; // B 页排版右移量（抵消横移终点 −40）`
+  - `InvisibleCut.tsx:42` `const SWEEP_EASE = bezier(0.3, 0, 0.7, 1); // 起止有加减速、中段最快`
+  - `InvisibleCut.tsx:161` `const seal = springAt(f, CUT + 7, { damping: 13, stiffness: 190 });`
+- 卡片参数:
+  - `transition-hidden-cut.md:3` `一句话: 藏切点转场三式——前景遮挡隐形切、对撞开屏、暖色漏光，硬切藏进遮挡/撞击/光峰的 1-3 帧里，观众看不见剪刀`
+  - `transition-hidden-cut.md:5` `时长: n/a（技法卡；各式占用帧数见参数表，从相邻镜头预算里划）`
+  - `transition-hidden-cut.md:11` `这三式换了三种"障眼物"——扫过的前景卡片（A）、对撞的撞击帧（B）、`
+  - `transition-hidden-cut.md:13` `吸走的那 1-3 帧里完成硬切，回过神来景已经换了，全程"看不见剪刀"。`
+  - `transition-hidden-cut.md:19` `| A invisible-cut 前景遮挡隐形切 | 一块贴着镜头掠过的失焦前景物（超画幅、软边 = 失焦+运动模糊）横扫，盖满全屏的遮挡帧内背景 A→B 硬切，前景扫出观众以为还是同一镜 | 想让换景完全无痕的页面→页面；伪"一条 take"的主力款 |`
+  - `transition-hidden-cut.md:20` `| B versus-slam 对撞开屏 | 左右两半屏（两张对比海报）带斜切边从画外加速对冲撞合，撞击帧白闪+震屏+VS 盖章，切点就是撞击本身 | 对比/对阵语义的开屏或章节头（新旧方案、双产品、before/after）|`
+  - `transition-hidden-cut.md:21` `| C light-leak-burn 暖色漏光 | 三段色温的暖色漏光沿对角线斜扫，光峰帧吞掉旧画面七成以上时硬切新画面，光退散时新画面已就位 | 想要暖调/胶片味的章节过渡；比白闪柔、有方向、有温度 |`
+  - `transition-hidden-cut.md:26` `| A 遮挡物 | 纯渐变绘制的深棕失焦前景：实心核 2600px + 两侧 340px 软边（总宽 3280），前缘一道赤陶轮廓光；右→左 14f（32–46f），bezier(0.3,0,0.7,1)；切点 = 实心核盖满 0..1920 的那一帧（demo 里 f39，前后各一帧由软边盖住） | 软边渐变本身就是失焦+运动模糊，不必 CameraMotionBlur（12 倍采样太贵）；遮挡物上的明暗叠层要用 mask 限在实心区...`
+  - `transition-hidden-cut.md:28` `| A 一条 take | 全程内容慢横移 +40→−40px（smooth）贯穿切点；切前 A 被拖左 28px（ease-in），切后 B 从右 28px 14f 回稳（ease-out）；B 页排版整体右移 40px 抵消横移终点 | 卖"同一镜被风带了一下"的错觉，是无痕感的一半功劳；横移会吃安全边，终点要预留 |`
+  - `transition-hidden-cut.md:29` `| A 因果 | 24f 按下 Render（0.96 缩放 + 压暗 + Rendering… 转圈）→ 扫过 → B「That's a wrap.」渲染完成票根 + 印章弹簧落座、对勾描画 | 遮挡前给一个动作，切后给结果，观众读成"一晃就办好了" |`
+  - `transition-hidden-cut.md:30` `| B 斜缝几何 | clip-path polygon 斜边约 78°（缝顶 x=1075→缝底 x=845）；两半屏从 ±1240px 以 ease-in(cubic) 10f 对冲到位（18–28f），按速度横向运动模糊（封顶 36px） | ease-in 加速才有"砸"感；垂直缝读作 PPT 分屏 |`
+  - `transition-hidden-cut.md:31` `| B 撞击三件套 | 撞击帧（28f）同发：纸白闪 0.85→0 共 3f + 整机 shake 16px·e^(−t/1.7) 约 5f 收干 + VS 圆章弹簧压出（damping 12 / stiffness 260，scale 1.9→1，一次可见过冲）；另加冲击环 16f + 12 根放射速度线 7f | 三件必须同帧起跑，错开一帧就散；震屏幅度须过肉眼阈值（可感性判例）|`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/transition-hidden-cut/LightLeakBurn
+
+- 镜头卡: `references/shots/transition/transition-hidden-cut.md`
+- 时长: 130 帧 / 4333 ms, `DURATION` 于第 29 行
+- 分镜:
+  - `LightLeakBurn.tsx:29` `export const LIGHT_LEAK_BURN_DURATION = 130;`
+  - `LightLeakBurn.tsx:34` `const PAD = 120;`
+  - `LightLeakBurn.tsx:35` `const LEAK_IN = 24;`
+  - `LightLeakBurn.tsx:36` `const PEAK = 52; // 光峰帧 = 藏切点`
+  - `LightLeakBurn.tsx:37` `const LEAK_OUT = 95;`
+  - `LightLeakBurn.tsx:45` `const RIDGE_FAR = 'M0 640 C 180 600 300 560 420 580 C 560 604 640 520 780 500 C 900 484 1000 560 1120 570 C 1260 582 1380 500 1520 490 C 1680 480 1800 560 1920 548 L1920 1080 L0 1080 Z';`
+  - `LightLeakBurn.tsx:46` `const RIDGE_MID = 'M0 760 C 160 700 300 690 440 720 C 600 756 720 650 880 640 C 1040 630 1140 720 1300 730 C 1460 740 1600 660 1760 670 C 1840 676 1890 700 1920 706 L1920 1080 L0 1080 Z';`
+  - `LightLeakBurn.tsx:47` `const RIDGE_NEAR = 'M0 880 C 220 820 420 830 600 860 C 800 892 980 800 1180 812 C 1380 824 1560 900 1760 880 C 1840 872 1890 864 1920 862 L1920 1080 L0 1080 Z';`
+  - `LightLeakBurn.tsx:49` `const STARS = Array.from({ length: 70 }, (_, i) => ({`
+  - `LightLeakBurn.tsx:124` `const MODE_X = [0, 220, 532]; // 每项左缘（相对拨轮）`
+  - `LightLeakBurn.tsx:125` `const MODE_W = [172, 272, 228];`
+- 卡片参数:
+  - `transition-hidden-cut.md:3` `一句话: 藏切点转场三式——前景遮挡隐形切、对撞开屏、暖色漏光，硬切藏进遮挡/撞击/光峰的 1-3 帧里，观众看不见剪刀`
+  - `transition-hidden-cut.md:5` `时长: n/a（技法卡；各式占用帧数见参数表，从相邻镜头预算里划）`
+  - `transition-hidden-cut.md:11` `这三式换了三种"障眼物"——扫过的前景卡片（A）、对撞的撞击帧（B）、`
+  - `transition-hidden-cut.md:13` `吸走的那 1-3 帧里完成硬切，回过神来景已经换了，全程"看不见剪刀"。`
+  - `transition-hidden-cut.md:19` `| A invisible-cut 前景遮挡隐形切 | 一块贴着镜头掠过的失焦前景物（超画幅、软边 = 失焦+运动模糊）横扫，盖满全屏的遮挡帧内背景 A→B 硬切，前景扫出观众以为还是同一镜 | 想让换景完全无痕的页面→页面；伪"一条 take"的主力款 |`
+  - `transition-hidden-cut.md:20` `| B versus-slam 对撞开屏 | 左右两半屏（两张对比海报）带斜切边从画外加速对冲撞合，撞击帧白闪+震屏+VS 盖章，切点就是撞击本身 | 对比/对阵语义的开屏或章节头（新旧方案、双产品、before/after）|`
+  - `transition-hidden-cut.md:21` `| C light-leak-burn 暖色漏光 | 三段色温的暖色漏光沿对角线斜扫，光峰帧吞掉旧画面七成以上时硬切新画面，光退散时新画面已就位 | 想要暖调/胶片味的章节过渡；比白闪柔、有方向、有温度 |`
+  - `transition-hidden-cut.md:26` `| A 遮挡物 | 纯渐变绘制的深棕失焦前景：实心核 2600px + 两侧 340px 软边（总宽 3280），前缘一道赤陶轮廓光；右→左 14f（32–46f），bezier(0.3,0,0.7,1)；切点 = 实心核盖满 0..1920 的那一帧（demo 里 f39，前后各一帧由软边盖住） | 软边渐变本身就是失焦+运动模糊，不必 CameraMotionBlur（12 倍采样太贵）；遮挡物上的明暗叠层要用 mask 限在实心区...`
+  - `transition-hidden-cut.md:28` `| A 一条 take | 全程内容慢横移 +40→−40px（smooth）贯穿切点；切前 A 被拖左 28px（ease-in），切后 B 从右 28px 14f 回稳（ease-out）；B 页排版整体右移 40px 抵消横移终点 | 卖"同一镜被风带了一下"的错觉，是无痕感的一半功劳；横移会吃安全边，终点要预留 |`
+  - `transition-hidden-cut.md:29` `| A 因果 | 24f 按下 Render（0.96 缩放 + 压暗 + Rendering… 转圈）→ 扫过 → B「That's a wrap.」渲染完成票根 + 印章弹簧落座、对勾描画 | 遮挡前给一个动作，切后给结果，观众读成"一晃就办好了" |`
+  - `transition-hidden-cut.md:30` `| B 斜缝几何 | clip-path polygon 斜边约 78°（缝顶 x=1075→缝底 x=845）；两半屏从 ±1240px 以 ease-in(cubic) 10f 对冲到位（18–28f），按速度横向运动模糊（封顶 36px） | ease-in 加速才有"砸"感；垂直缝读作 PPT 分屏 |`
+  - `transition-hidden-cut.md:31` `| B 撞击三件套 | 撞击帧（28f）同发：纸白闪 0.85→0 共 3f + 整机 shake 16px·e^(−t/1.7) 约 5f 收干 + VS 圆章弹簧压出（damping 12 / stiffness 260，scale 1.9→1，一次可见过冲）；另加冲击环 16f + 12 根放射速度线 7f | 三件必须同帧起跑，错开一帧就散；震屏幅度须过肉眼阈值（可感性判例）|`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/transition-hidden-cut/VersusSlam
+
+- 镜头卡: `references/shots/transition/transition-hidden-cut.md`
+- 时长: 105 帧 / 3500 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `VersusSlam.tsx:11` `//   （damping 12，一次可见过冲）；同帧再发一圈墨色冲击环 + 12 根放射速度线（6f 收）。`
+  - `VersusSlam.tsx:28` `export const VERSUS_SLAM_DURATION = 105;`
+  - `VersusSlam.tsx:33` `const PAPER = '#f8f4ec';`
+  - `VersusSlam.tsx:34` `const PAD = 120;`
+  - `VersusSlam.tsx:35` `const RUSH = 18; // 对冲起`
+  - `VersusSlam.tsx:36` `const IMPACT = 28; // 撞击帧`
+  - `VersusSlam.tsx:39` `const SEAM_TOP_X = 1075;`
+  - `VersusSlam.tsx:40` `const SEAM_BOT_X = 845;`
+  - `VersusSlam.tsx:41` `const SEAM_DEG = (Math.atan2(SEAM_TOP_X - SEAM_BOT_X, 1080) * 180) / Math.PI; // ≈ +12°`
+  - `VersusSlam.tsx:43` `const SEAM_GAP = 'linear-gradient(180deg, #000 0%, #000 35%, transparent 37.5%, transparent 53%, #000 55.5%, #000 100%)';`
+  - `VersusSlam.tsx:55` `const settle = springAt(f, IMPACT + 2, { damping: 14, stiffness: 220 });`
+  - `VersusSlam.tsx:105` `const stamp = springAt(frame, IMPACT, { damping: 12, stiffness: 260 });`
+- 卡片参数:
+  - `transition-hidden-cut.md:3` `一句话: 藏切点转场三式——前景遮挡隐形切、对撞开屏、暖色漏光，硬切藏进遮挡/撞击/光峰的 1-3 帧里，观众看不见剪刀`
+  - `transition-hidden-cut.md:5` `时长: n/a（技法卡；各式占用帧数见参数表，从相邻镜头预算里划）`
+  - `transition-hidden-cut.md:11` `这三式换了三种"障眼物"——扫过的前景卡片（A）、对撞的撞击帧（B）、`
+  - `transition-hidden-cut.md:13` `吸走的那 1-3 帧里完成硬切，回过神来景已经换了，全程"看不见剪刀"。`
+  - `transition-hidden-cut.md:19` `| A invisible-cut 前景遮挡隐形切 | 一块贴着镜头掠过的失焦前景物（超画幅、软边 = 失焦+运动模糊）横扫，盖满全屏的遮挡帧内背景 A→B 硬切，前景扫出观众以为还是同一镜 | 想让换景完全无痕的页面→页面；伪"一条 take"的主力款 |`
+  - `transition-hidden-cut.md:20` `| B versus-slam 对撞开屏 | 左右两半屏（两张对比海报）带斜切边从画外加速对冲撞合，撞击帧白闪+震屏+VS 盖章，切点就是撞击本身 | 对比/对阵语义的开屏或章节头（新旧方案、双产品、before/after）|`
+  - `transition-hidden-cut.md:21` `| C light-leak-burn 暖色漏光 | 三段色温的暖色漏光沿对角线斜扫，光峰帧吞掉旧画面七成以上时硬切新画面，光退散时新画面已就位 | 想要暖调/胶片味的章节过渡；比白闪柔、有方向、有温度 |`
+  - `transition-hidden-cut.md:26` `| A 遮挡物 | 纯渐变绘制的深棕失焦前景：实心核 2600px + 两侧 340px 软边（总宽 3280），前缘一道赤陶轮廓光；右→左 14f（32–46f），bezier(0.3,0,0.7,1)；切点 = 实心核盖满 0..1920 的那一帧（demo 里 f39，前后各一帧由软边盖住） | 软边渐变本身就是失焦+运动模糊，不必 CameraMotionBlur（12 倍采样太贵）；遮挡物上的明暗叠层要用 mask 限在实心区...`
+  - `transition-hidden-cut.md:28` `| A 一条 take | 全程内容慢横移 +40→−40px（smooth）贯穿切点；切前 A 被拖左 28px（ease-in），切后 B 从右 28px 14f 回稳（ease-out）；B 页排版整体右移 40px 抵消横移终点 | 卖"同一镜被风带了一下"的错觉，是无痕感的一半功劳；横移会吃安全边，终点要预留 |`
+  - `transition-hidden-cut.md:29` `| A 因果 | 24f 按下 Render（0.96 缩放 + 压暗 + Rendering… 转圈）→ 扫过 → B「That's a wrap.」渲染完成票根 + 印章弹簧落座、对勾描画 | 遮挡前给一个动作，切后给结果，观众读成"一晃就办好了" |`
+  - `transition-hidden-cut.md:30` `| B 斜缝几何 | clip-path polygon 斜边约 78°（缝顶 x=1075→缝底 x=845）；两半屏从 ±1240px 以 ease-in(cubic) 10f 对冲到位（18–28f），按速度横向运动模糊（封顶 36px） | ease-in 加速才有"砸"感；垂直缝读作 PPT 分屏 |`
+  - `transition-hidden-cut.md:31` `| B 撞击三件套 | 撞击帧（28f）同发：纸白闪 0.85→0 共 3f + 整机 shake 16px·e^(−t/1.7) 约 5f 收干 + VS 圆章弹簧压出（damping 12 / stiffness 260，scale 1.9→1，一次可见过冲）；另加冲击环 16f + 12 根放射速度线 7f | 三件必须同帧起跑，错开一帧就散；震屏幅度须过肉眼阈值（可感性判例）|`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/transition-travel/LetterformZoom
+
+- 镜头卡: `references/shots/transition/transition-travel.md`
+- 时长: 150 帧 / 5000 ms, `DURATION` 于第 31 行
+- 分镜:
+  - `LetterformZoom.tsx:31` `export const LETTERFORM_ZOOM_DURATION = 150;`
+  - `LetterformZoom.tsx:35` `const FS = 560; // 标题字号`
+  - `LetterformZoom.tsx:36` `const BASELINE = 712;`
+  - `LetterformZoom.tsx:39` `const ORIGIN = { x: 973, y: 515 };`
+  - `LetterformZoom.tsx:40` `const ZOOM_MAX = 30;`
+  - `LetterformZoom.tsx:41` `const PUSH0 = 34;`
+  - `LetterformZoom.tsx:42` `const PUSH1 = 86;`
+  - `LetterformZoom.tsx:43` `const PAGE_ZOOM = 0.08; // 页面（后景）总推进量`
+  - `LetterformZoom.tsx:79` `const INK = '#1c0a02'; // 熔金底上的墨色（带暖色相的近黑）`
+  - `LetterformZoom.tsx:83` `const REVEAL0 = 64;`
+  - `LetterformZoom.tsx:84` `const REVEAL_DUR = 26;`
+  - `LetterformZoom.tsx:90` `const live = springAt(frame, 124, { damping: 15, stiffness: 240 });`
+- 卡片参数:
+  - `transition-travel.md:5` `时长: n/a（技法卡；demo 150f，主推动作段 52f，前后 hold 另计，帧数从相邻镜头预算里划）`
+  - `transition-travel.md:11` `shot-transitions 三式是"交棒"型——前镜收尾、后镜入场，接缝靠白闪/糊帧/`
+  - `transition-travel.md:27` `| A 穿腔主推 | 盖板 SVG mask（白底+黑字 900 字重）挖洞，transform-origin 对准字形笔画（洞）中心——锚在字腔里推到底撑满的是盖板不是洞（demo：「EDITS」560px 的 I 竖笔中心 973,515，竖笔 107px×30 > 画宽；选词时让 I 竖笔落在画面中线附近，洞才从正中撑开）；scale=30^u，u 52f bezier(0.6,0,0.85,0.5) 慢起陡收，推前 26–34f...`
+  - `transition-travel.md:29` `| A 洞里只给光不给字 | 字卡 hold 期页面的文字/卡片层完全隐去，洞里只透出暖色渐变 + 柔光形（卡片位一团奶白光、标题位一抹暗赤）；主推中段 64–90f 内容层由 18px 失焦淡入合焦（EASE.out），接管时已清晰 | 洞里能读到页面标题时，两层可读文字互相抢，标题字读作"杂乱"而不是一个干净的镂空 |`
+  - `transition-travel.md:30` `| A 撤场与拖影 | scale∈[14,26] 盖板 opacity 1→0；u>0.35 起期望模糊 0→20px（除以 scale 写进 blur）+ 四层更早 0.8–3.2 帧的半透明盖板残影叠成径向变焦拖尾；接管瞬间页面 brightness +12% 一闪回落 | blur 不除 scale 会被放大成糊墙；只用两层残影会读成硬边半透明色块，四层才连成拖尾 |`
+  - `transition-travel.md:31` `| A 后景视差 | 页面只推 1→1.08（主推期 0.7·u，接管后 quint-out 补完，交接处速度连续）+ 0–100f 向左漂 28px；接管后渲染卡上的镜头计数 0→12、时长条错峰填满、DONE 标签弹出 | 后景不动则洞里是张死图；后景推太多会和盖板同速，纵深消失 |`
+  - `transition-travel.md:34` `- 推进锚点要按渲染帧实测（demo 的竖笔坐标是从静帧量出来的），换字体/换词/渲染器字距`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/white-flash-logo-simplify-cut/WhiteFlashLogoSimplifyCut
+
+- 镜头卡: `references/shots/transition/white-flash-logo-simplify-cut.md`
+- 时长: 120 帧 / 4000 ms, `DURATION` 于第 31 行
+- 分镜:
+  - `WhiteFlashLogoSimplifyCut.tsx:31` `export const WHITE_FLASH_LOGO_SIMPLIFY_CUT_DURATION = 120;`
+  - `WhiteFlashLogoSimplifyCut.tsx:35` `const FS = 190; // 15 字符的字标按画宽压字号（原 4 字母占位字标是 300）`
+  - `WhiteFlashLogoSimplifyCut.tsx:36` `const CY = 500; // 词标中心 y`
+  - `WhiteFlashLogoSimplifyCut.tsx:37` `const FLASH0 = 44;`
+  - `WhiteFlashLogoSimplifyCut.tsx:38` `const WHITE = 50; // 全白、换场帧`
+  - `WhiteFlashLogoSimplifyCut.tsx:39` `const RECOVER = 54;`
+  - `WhiteFlashLogoSimplifyCut.tsx:45` `const MARK = 124; // 锁定段字标上方的镜刻标志尺寸`
+  - `WhiteFlashLogoSimplifyCut.tsx:57` `const IRIS = 'linear-gradient(100deg, #7c6bff 0%, #b18cff 16%, #f472b6 32%, #ffc6a8 46%, #8fdcff 62%, #7c6bff 78%, #c58cff 90%, #7c6bff 100%)';`
+- 卡片参数:
+  - `white-flash-logo-simplify-cut.md:5` `时长: 约 4s（120f@30fps；演出 0–34f · 蓄力 34–46f · 冲白 44–54f · 曝光回落 54–76f · 锁定 72–96f · hold 至 120f）`
+  - `white-flash-logo-simplify-cut.md:14` `①虹彩底色 'background-size:300%' 每帧 1.1% 缓流 ②纵向体积（顶亮底暗）③字腰镀铬反光带 ④斜向高光`
+  - `white-flash-logo-simplify-cut.md:15` `6–34f 扫过一次（Q4：只给主角一次、裁进字形）；字下同色 bloom（blur 38px）+ 地面翻转倒影（0.22、渐隐 mask）；整幅 0–44f 缓推 1→1.035`
+  - `white-flash-logo-simplify-cut.md:16` `- 蓄力 34–46f（EASE.exit 越来越快）：字标 brightness 1→1.7、bloom 加强；一条横向变形眩光从字心拉开（宽软光晕 + 4px 细亮核，核两端渐隐）`
+  - `white-flash-logo-simplify-cut.md:17` `- 冲白 44–50f：径向白团从字心撑满全屏（半径 80→1580px，二次 ease-in，后 3 帧肉眼可见地吞掉字标）；50–54f 纯白 hold（呼吸位），并在 50f 全白时换场`
+  - `white-flash-logo-simplify-cut.md:18` `- 曝光回落 54–76f：白层 1→0（quint-out，先快后慢，像眼睛适应强光）——底下扁平字标早已在位，只做 1.03→1 对焦收束`
+  - `white-flash-logo-simplify-cut.md:19` `- 锁定：琥珀 96px 短线 72–86f 从中间画出、字标上方镜刻标志 74–96f 描出（取景框先揭开、琥珀斜切后划入）、品牌短句「Frame motion. Craft the shot.」逐词升起（78f 起）；96–120f 极缓前推 1→1.01`
+  - `white-flash-logo-simplify-cut.md:24` `| 冲白窗口 | 44–50f 径向撑满（t² ease-in）+ 50–54f 纯白 | 冲白必须"快进"；整屏均匀淡入读作剪辑软切，从字心炸出才读作"字在发光过曝" |`
+  - `white-flash-logo-simplify-cut.md:25` `| 蓄力 | 34–46f，brightness ×1.7 + 横向眩光 | 砍掉蓄力则白闪没有预兆、像丢帧；眩光核加 box-shadow 会带一圈暗边（实测） |`
+  - `white-flash-logo-simplify-cut.md:26` `| 曝光回落 | 54–76f，白层 quint-out 退去 | 用扁平字标淡入代替回落，会出现"白底上浮出一个字"的二次动作；回落让字标"一直在那儿" |`
+  - `white-flash-logo-simplify-cut.md:27` `| 扁平入场 | 1.03→1（snappy，52–78f） | >1.06 读作字标弹出；同时做淡入就和回落叠成两次揭示 |`
+  - `white-flash-logo-simplify-cut.md:32` `- 换场发生在 50f 全白帧（暗场与纸面二选一渲染），白层不能在 50f 前退——否则两场同时可见`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/transition/wipe-transitions/BlindsSlice
+
+- 镜头卡: `references/shots/transition/wipe-transitions.md`
+- 时长: 132 帧 / 4400 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `BlindsSlice.tsx:11` `// - 节奏：每叶用物理弹簧翻面（damping 13 / stiffness 75：~13f 到 180°、≈5° 过冲回落，像真的叶片拍到位）；`
+  - `BlindsSlice.tsx:28` `export const BLINDS_SLICE_DURATION = 132;`
+  - `BlindsSlice.tsx:31` `const STRIPS = 12;`
+  - `BlindsSlice.tsx:33` `const WAVE0 = 24;`
+  - `BlindsSlice.tsx:34` `const SPAN = 28; // 起跳错峰总跨度`
+  - `BlindsSlice.tsx:39` `return f < s ? 0 : 180 * springAt(f, s, { damping: 13, stiffness: 75 });`
+  - `BlindsSlice.tsx:51` `const RED = '#e5432d';`
+  - `BlindsSlice.tsx:52` `const CREAM = '#fffaf3';`
+- 卡片参数:
+  - `wipe-transitions.md:5` `时长: 前态 ≥20f + 擦除 ~56f + 收尾 ≥40f，约 4.4s（132f）`
+  - `wipe-transitions.md:24` `| 波 | 24f 起，叶 i 起跳 = 24 + 28·(i/11)^0.78（间隔 3.4f→2.1f，越翻越快）；每叶物理弹簧 damping 13 / stiffness 75（~13f 到 180°、≈5° 过冲回落） | 同时 4–5 叶在转才读作"波"；EASE.out 错峰首间隔 9f，第一叶之后空等，波显得拖 |`
+  - `wipe-transitions.md:26` `| 摘罩 | 最后一叶弹簧收敛（|θ−180°|<0.3° 连续 4 帧，demo ≈80f）后卸载全部 3D 叶片，B 页直出 | opacity 0 不算摘，残留 clip-path / 3D 层毁真静止，3D 层里的字也不如平面锐利 |`
+  - `wipe-transitions.md:27` `| 收尾 | 摘罩后 ≈50f 落定（≥40f；刊头细线重画一遍、相机 1.02 落回 1） | R1 |`
+  - `wipe-transitions.md:35` `- 摘罩必须等最后一叶弹簧收敛（≈80f）再做，早一帧卸载就是叶片跳位穿帮`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 不做. 转场和光效不进普通文档页, 全片最多一处砸.
+
+### demos/typography/blur-slide/BlurSlide
+
+- 镜头卡: `references/shots/typography/blur-slide.md`
+- 时长: 120 帧 / 4000 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `BlurSlide.tsx:28` `export const BLUR_SLIDE_DURATION = 120; // 4000ms @30fps`
+  - `BlurSlide.tsx:31` `const LEFT = 168; // 左侧安全边距 / 网格起点`
+- 卡片参数:
+  - `blur-slide.md:3` `一句话: 标题逐词入场，y 0.38em→0 + blur 18→0 + opacity 0→1 三通道走同一条 ease-out 同步收敛，词间隔约 4f；副标题在标题收完前就错峰跟进`
+  - `blur-slide.md:5` `时长: 约 4.0s（120f@30fps）`
+  - `blur-slide.md:17` `- 单词进度 'p = ramp(frame, start, dur, EASE.out)'（quint-out 级），三通道全绑同一个 p：`
+  - `blur-slide.md:19` `- 主标题（170px 衬线两行）：第一行 3 词 10f 起、词间 4f、每词 22f；第二行先停 6f 换气，`
+  - `blur-slide.md:20` `"feel" 26f、主角词 "cinematic." 30f 起且入场窗 30f（最后落定）；'dy = 64'px、'B = 18'px`
+  - `blur-slide.md:21` `- 副标题（46px 无衬线，9 词）：34f 起、词间 2.4f、每词 20f、'dy = 26'px、'B = 9'px`
+  - `blur-slide.md:23` `- 错峰而非排队：副标题在 34f 起手，标题要到 60f 才收完，两段有 26f 重叠——`
+  - `blur-slide.md:29` `760px 刊号数字反向慢漂做视差；文字层全程极缓推近 1→1.03（smooth），刊脚发丝线 72f 起画给 hold 段收尾`
+  - `blur-slide.md:34` `| 词间 stagger | 主 4f / 副 2.4f | 3–4f 是"逐词"的甜点；<2f 整行齐入没有 stagger，>8f 观众开始一个个数词 |`
+  - `blur-slide.md:35` `| 单词入场窗 | 主 22f（主角词 30f）/ 副 20f，'EASE.out' | <10f 读作硬弹；>30f 每个词都在慢慢浮，整句拖沓 |`
+  - `blur-slide.md:37` `| blur 通道 | 主 '(1-p)·18'px / 副 '(1-p)·9'px | 这一通道就是"专业感"，删了退化成普通淡入上移；超过字号的 ~12% 中间帧糊成色块 |`
+  - `blur-slide.md:38` `| 主副错峰 | 主 10f–60f / 副 34f–80f | 重叠 ~26f 是"一句话"；副标题起点推到主标题收完之后就读成两拍 |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/typography/brace-expand/BraceExpand
+
+- 镜头卡: `references/shots/typography/brace-expand.md`
+- 时长: 120 帧 / 4000 ms, `DURATION` 于第 30 行
+- 分镜:
+  - `BraceExpand.tsx:12` `// - 主动作：14f 起物理弹簧 ex（damping 14 / stiffness 130：起跳后 ~8f 到位、~11f 过冲峰 ≈9%、一次回弹）；`
+  - `BraceExpand.tsx:30` `export const BRACE_EXPAND_DURATION = 120;`
+  - `BraceExpand.tsx:33` `const CY = 520; // 标题中线`
+  - `BraceExpand.tsx:34` `const HALF = 676; // 括号中心最终半距（px）`
+  - `BraceExpand.tsx:35` `const BRACE_FS = 300; // 括号最终字号`
+  - `BraceExpand.tsx:36` `const BRACE_INNER = 64; // 括号字形中心到内缘的距离（×sc），clip 从这里起算`
+  - `BraceExpand.tsx:38` `const TITLE_FS = 164; // 字宽 ≈ 内腔宽 2·(HALF−内缘)：幕布拉到头才露全（换文案要同步调 HALF 或字号）`
+  - `BraceExpand.tsx:39` `const APPEAR = 6;`
+  - `BraceExpand.tsx:40` `const EXPAND = 14;`
+  - `BraceExpand.tsx:42` `const expandAt = (f: number) => (f < EXPAND ? 0 : springAt(f, EXPAND, { damping: 14, stiffness: 130 }));`
+- 卡片参数:
+  - `brace-expand.md:5` `时长: 约 4s（120f@30fps：光标 0–6f → 6f 小括号硬切 → 14f 弹开 → 40–64f 字距松弛 → 副标 → hold）`
+  - `brace-expand.md:16` `- 开场第 0 帧中心是一个闪烁的输入光标（编辑器语感，不是空帧）；6f 被一对 0.4 倍、内缘相贴的 "{}" **硬切替换**`
+  - `brace-expand.md:17` `（不淡入），静置 8f——先建立"这是一对括号"`
+  - `brace-expand.md:18` `- 弹开 'ex = springAt(f, 14, { damping: 14, stiffness: 130 })'：起跳后 ~8f 到位、~11f 过冲峰 ≈9%、~24f 收敛，一次可见回弹`
+  - `brace-expand.md:22` `- 文字同步 'scale(sc)'，与括号共用同一个 sc；落定后字距 −0.05em → −0.03em 松弛（40–64f smooth）——"呼一口气"`
+  - `brace-expand.md:23` `- 质感（midnight）：等宽 300px 电光蓝括号 + 泛光（泛光峰值跟着过冲走、34–64f 回落），弹开快速段按水平速度加方向性`
+  - `brace-expand.md:26` `- 余波：眉题 '// shot recipes for your agent'（等宽 32px 青色）44f 起字距收拢入场，副标（品牌短句 Frame motion. Craft the shot.）54f 起逐词虚化浮现；70–120f 整幅 1→1.012 缓推`
+  - `brace-expand.md:32` `| 括号出现 | 6f 硬切替换光标 | 硬切是对的（符号"啪"地在那儿）；改淡入就少了"先看清括号"的那几帧，弹开显得突然 |`
+  - `brace-expand.md:33` `| 弹开 | 14f 起弹簧 damping 14 / stiffness 130（≈9% 过冲） | 过冲是全片唯一峰值；damping ≥18 读作滑开，没有"撑"的力道；<12 回弹两次读作果冻 |`
+  - `brace-expand.md:37` `| 字距松弛 | −0.05 → −0.03em，40–64f smooth | 这一下是"落定后的呼吸"；松弛后字会变宽，要留在内腔内 |`
+  - `brace-expand.md:38` `| 运动模糊 | SpeedBlur amount 0.22 / max 16 | amount 0.35 时峰值帧括号糊成三道横线，认不出是括号 |`
+  - `brace-expand.md:46` `会在过冲那几帧出现括号已经到位、字还在长的错位`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/typography/brand-ink-open/BrandInkOpen
+
+- 镜头卡: `references/shots/opening/brand-ink-open.md`
+- 时长: 104 帧 / 3467 ms, `DURATION` 于第 11 行
+- 分镜:
+  - `BrandInkOpen.tsx:11` `export const BRAND_INK_OPEN_DURATION = 104;`
+  - `BrandInkOpen.tsx:15` `const INK = 'oklch(18% 0.006 82)';`
+  - `BrandInkOpen.tsx:16` `const AMBER = 'oklch(52% 0.115 65)';`
+  - `BrandInkOpen.tsx:17` `const INK2 = 'oklch(50% 0.006 82)';`
+  - `BrandInkOpen.tsx:27` `const vDraw = interpolate(frame, [0, 9], [100, 0], {`
+  - `BrandInkOpen.tsx:28` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.3, 0, 0.2, 1),`
+  - `BrandInkOpen.tsx:30` `const hDraw = interpolate(frame, [8, 18], [100, 0], {`
+  - `BrandInkOpen.tsx:31` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.linear,`
+  - `BrandInkOpen.tsx:33` `const crossFade = interpolate(frame, [24, 34], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });`
+  - `BrandInkOpen.tsx:53` `const brandOut = interpolate(frame, [97, 104], [0, 1], {`
+  - `BrandInkOpen.tsx:54` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.4, 0, 0.5, 1),`
+  - `BrandInkOpen.tsx:87` `const t = interpolate(frame, [delay, delay + 12], [0, 1], {`
+  - `BrandInkOpen.tsx:88` `extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.bezier(0.2, 0.7, 0.25, 1),`
+  - `BrandInkOpen.tsx:91` `const glint = interpolate(frame, [glintCenter - 4, glintCenter, glintCenter + 4], [0, 1, 0], {`
+- 卡片参数:
+  - `brand-ink-open.md:5` `时长: 约 2.8s（83f）`
+  - `brand-ink-open.md:22` `| 准星描画 | 竖线 0→9f、横线 8→18f，24→34f 淡出 | 描画完必须淡出，残留准星会和字标抢焦点 |`
+  - `brand-ink-open.md:23` `| 字标逐字 | 第 i 字 delay=10+i·3、12f；scale 1.6→1（origin center bottom）+ blur 6px→0 | "opacity+位移/scale+blur→0"是全片入场三件套定式，缺 blur 会显得硬 |`
+  - `brand-ink-open.md:24` `| kicker 打字机 | 0.7f/字符（28 起 ~43.4 完），光标 2f 周期闪、74f 停闪 | 0.7f/字符只适用于装饰性小字；正文交互打字要 3f/字符（对照 type-and-filter，用户嫌快返工过） |`
+  - `brand-ink-open.md:25` `| 品牌 hold | 46→76 帧整整 1 秒 | 硬底线：用户两轮点名"出现后延长停留1秒"（R1）；短于 1s 必返工 |`
+  - `brand-ink-open.md:26` `| 退场 | 7f 上浮 40px + 缩 12% + 淡出 | 退场快于入场——观众已读完，拖长反而泄气 |`
+  - `brand-ink-open.md:29` `品牌落定钉 transition-soft（模板片钉在 f12），brand→dashboard 运镜钉 whoosh-fast（f78）。SFX 逐拍钉帧、声明式表管理（S2）；音色走电影系词汇，不用游戏 UI tap（S1）。`
+  - `brand-ink-open.md:32` `- hold 要给的是 wordmark 落定时刻，不是普通字卡/内容卡（R1）——曾把 hold 错加给普通内容卡后很快回滚；指代含糊的"停留"反馈先确认对象再动手（P3）`
+  - `brand-ink-open.md:36` `demos/typography/brand-ink-open/BrandInkOpen.tsx（原 template/src/aifl/live/SceneOpen.tsx 帧 0–83 段）`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/typography/countdown-arc-scatter/CountdownArcScatter
+
+- 镜头卡: `references/shots/typography/countdown-arc-scatter.md`
+- 时长: 100 帧 / 3333 ms, `DURATION` 于第 33 行
+- 分镜:
+  - `CountdownArcScatter.tsx:11` `// - 扫动：先 5f 反向蓄力 3°（anticipation），再一记物理弹簧扫 99°→0°（damping 12 / stiffness 60，`
+  - `CountdownArcScatter.tsx:33` `export const COUNTDOWN_ARC_SCATTER_DURATION = 100;`
+  - `CountdownArcScatter.tsx:37` `const NUMS = [45, 35, 28, 22, 17, 10, 5, 4, 3]; // 递减不等距 = 真量程；"5" 在 i=6`
+  - `CountdownArcScatter.tsx:38` `const HERO = 6;`
+  - `CountdownArcScatter.tsx:39` `const SP = 24; // 相邻数字角距`
+  - `CountdownArcScatter.tsx:41` `const CX = 960;`
+  - `CountdownArcScatter.tsx:42` `const CY = 1150; // 圆心：弧顶 y = 450`
+  - `CountdownArcScatter.tsx:43` `const NUM_SIZE = 112;`
+  - `CountdownArcScatter.tsx:44` `const TITLE_SIZE = 150;`
+  - `CountdownArcScatter.tsx:45` `const ARC = 800; // 外侧发丝弧半径（弧顶 y = 350）`
+  - `CountdownArcScatter.tsx:46` `const SLOT_EM = 0.6; // "5" 的固定槽宽（em）：飞行的 5 与标题槽中心严格对齐`
+  - `CountdownArcScatter.tsx:47` `const TITLE_Y = 600;`
+  - `CountdownArcScatter.tsx:53` `const GAP_EM = 0.24;`
+  - `CountdownArcScatter.tsx:55` `const TITLE_EM = SLOT_EM + GAP_EM * 3 + 1.69 + 0.88 + 2.68;`
+  - `CountdownArcScatter.tsx:56` `const TITLE_X0 = CX - (TITLE_EM * TITLE_SIZE) / 2;`
+  - `CountdownArcScatter.tsx:57` `const SLOT_CX = TITLE_X0 + (SLOT_EM * TITLE_SIZE) / 2;`
+  - `CountdownArcScatter.tsx:63` `return 99 * (1 - springAt(f, 5, { damping: 12, stiffness: 60 }));`
+  - `CountdownArcScatter.tsx:65` `const HAND0 = 32;`
+  - `CountdownArcScatter.tsx:94` `const TICKS = Array.from({ length: 61 }, (_, k) => (k - 30) * 4 - 48); // 盘面角 −168°..+72°（覆盖扫动全程）`
+- 卡片参数:
+  - `countdown-arc-scatter.md:5` `时长: 约 3.3s（100f@30fps：扫动 ~30f + 落位 20f + 标题成句 + hold 22f；最短可压到 33f 单拍）`
+  - `countdown-arc-scatter.md:6` `能量: 高（96° 大幅扫动压进 ~20 帧，纯冲击）`
+  - `countdown-arc-scatter.md:19` `- 整盘扫动：先 5f 反向蓄力 +3°（anticipation），再一记物理弹簧 99°→0°（damping 12 / stiffness 60，`
+  - `countdown-arc-scatter.md:20` `~24f 冲过 0° 约 2°、~34f 落定）——"减速急停 + 一次表针回弹"是"到位"的全部力道`
+  - `countdown-arc-scatter.md:23` `- 'i=6' 的 "5" 角度设计为 0（扫完正停弧顶），回弹落定前 2f 即起飞：20f 不对称 in-out（EASE.swift）`
+  - `countdown-arc-scatter.md:26` `- 其余 8 个数字 28→44f 原地失焦淡出（'blur(out·6)'，**不位移**，位移会跟 "5" 的平移抢戏），早于 "5"`
+  - `countdown-arc-scatter.md:27` `起飞 4f 先让路；扫动快速段每个数字按切向速度做方向性运动模糊（停稳归零）`
+  - `countdown-arc-scatter.md:31` `- 标题三词逐词 'blur((1-p)·10)' + 淡入 + 0.12em 上浮，窗 42–56 / 46–60 / 50–66f（重叠 = 一句话）；`
+  - `countdown-arc-scatter.md:32` `末词在 64–76f 从墨色插值到强调色（demo 朱红）——全片唯一的颜色事件；下方 mono 34px 命令行补一句产品事实（demo 为 video-shotcraft 的真实安装命令 'npx skills add Vincentwei1021/video-shotcraft'；右上角是 video-shotcraft 字标）`
+  - `countdown-arc-scatter.md:38` `| 弧半径 | R=700px，圆心在画面下方（弧顶 y≈450） | 半径决定弧的曲度：<R/3 帧宽数字挤成小圈，弧近乎直线时表盘感消失；整条可视弧应横跨画面 60–70% |`
+  - `countdown-arc-scatter.md:39` `| 扫动 | 蓄力 +3° 5f → 弹簧 99°→0°（damping 12 / stiffness 60，~2° 过冲） | 过冲 >4° 读作弹簧玩具；无过冲的 inOut 缓停没有仪表的干脆 |`
+  - `countdown-arc-scatter.md:41` `| "5" 落位 | 32→52f（20f，EASE.swift），112→150px，同步回正 | 落位紧接扫停，中间不留静置——留了就断成两个动作；落点必须是标题首字符槽（固定槽宽保证对齐） |`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/typography/flying-words/FlyingWords
+
+- 镜头卡: `references/shots/typography/flying-words.md`
+- 时长: 180 帧 / 6000 ms, `DURATION` 于第 26 行
+- 分镜:
+  - `FlyingWords.tsx:26` `export const FLYING_WORDS_DURATION = 180; // 6000ms @30fps`
+  - `FlyingWords.tsx:29` `const CYCLES = 2; // 整数圈 → 首尾一致`
+  - `FlyingWords.tsx:32` `const WORDS = ['Timeline', 'Keyframes', 'Easing', 'Camera', 'Depth', 'Parallax', 'Motion blur', 'Springs',`
+  - `FlyingWords.tsx:36` `const ACCENT = new Set([3, 7, 12, 19]); // Camera / Springs / Grain / Audio sync`
+  - `FlyingWords.tsx:37` `const SERIF_IDX = new Set([1, 5, 10, 14, 17, 21]);`
+  - `FlyingWords.tsx:38` `const INKS = ['#f2f5ff', '#c3cbe2', '#8a95b5'];`
+  - `FlyingWords.tsx:41` `const Z0 = -7000;`
+  - `FlyingWords.tsx:42` `const Z1 = 3200;`
+  - `FlyingWords.tsx:43` `const CX = 960;`
+  - `FlyingWords.tsx:44` `const CY = 540;`
+  - `FlyingWords.tsx:64` `const DUST = Array.from({ length: 56 }, (_, i) => {`
+  - `FlyingWords.tsx:70` `const RINGS = Array.from({ length: 10 }, (_, k) => ({ ph: k / 10 }));`
+  - `FlyingWords.tsx:73` `const OP = [0, 1, 0.5, 0.2, 0];`
+  - `FlyingWords.tsx:74` `const OT = [0, 0.25, 0.6, 0.85, 1];`
+- 卡片参数:
+  - `flying-words.md:5` `时长: 约 6.0s（180f@30fps，2 个完整循环，可无缝接续）`
+  - `flying-words.md:29` `沿径向拉长的光速流线（线长 = 近 2.6 帧的屏幕位移）；整条隧道 '±2.5°·sin(2πt)' 极缓滚转（周期函数，首尾一致）`
+  - `flying-words.md:32` `- 'CYCLES = 2' 是整数圈，demo 取 't = frame / DURATION'（末帧的下一帧 = 第 0 帧）可无缝 loop；每词相位`
+  - `flying-words.md:45` `| 配色 | demo（midnight）：冷白三阶 '#f2f5ff/#c3cbe2/#8a95b5' + 4 个电光蓝强调词 '#86a8ff'（只有强调词带泛光），中心光晕电光蓝 | 深底浅字发光是身份证，白底套本卡直接失效——要浅底得整套重配 |`
+  - `flying-words.md:60` `移植 Remotion 时保持这个结构，别改成按帧增删节点`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.
+
+### demos/typography/glitch-cycle/GlitchCycle
+
+- 镜头卡: `references/shots/typography/glitch-cycle.md`
+- 时长: 168 帧 / 5600 ms, `DURATION` 于第 28 行
+- 分镜:
+  - `GlitchCycle.tsx:28` `export const GLITCH_CYCLE_DURATION = 168;`
+  - `GlitchCycle.tsx:33` `const POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&<>/\\';`
+  - `GlitchCycle.tsx:34` `const KF = [1, 0, 0, 0.1, 0, 0, 1];`
+  - `GlitchCycle.tsx:35` `const KF_LAST = [1, 0, 0, 0.1, 0, 0, 0];`
+  - `GlitchCycle.tsx:37` `const SLOT = 38; // 每条短语帧数（末条之后一直延续到片尾）`
+  - `GlitchCycle.tsx:38` `const DONE = 140; // 进度走满帧`
+  - `GlitchCycle.tsx:39` `const SIZE = 104;`
+  - `GlitchCycle.tsx:40` `const CELL = 0.64; // 槽宽（em）`
+  - `GlitchCycle.tsx:41` `const SPLIT_A = '#ff4fa3'; // RGB 分离：粉`
+  - `GlitchCycle.tsx:42` `const SPLIT_B = '#6fd8ff'; // RGB 分离：冰蓝`
+  - `GlitchCycle.tsx:43` `const BAR_W = 1100;`
+- 卡片参数:
+  - `glitch-cycle.md:3` `一句话: 同一行等宽槽位循环轮播 4 条状态短语，每条头尾按概率关键帧 [1,0,0,0.1,0,0,1] 全乱码、中段偶发单字抖动，切换瞬间叠 RGB 分离与整行位移；末条概率收 0 保证收尾干净`
+  - `glitch-cycle.md:5` `时长: 约 5.6s（168f@30fps；demo 每条短语 38f，末条延续到片尾作收尾 hold）`
+  - `glitch-cycle.md:19` `- 时段等分：'slot = floor(frame / SLOT)'，短语内进度 'p = (frame - slot·SLOT)/SLOT'（demo SLOT=38f；`
+  - `glitch-cycle.md:20` `末条按同一 38f 走 'KF_LAST' 后保持干净直到片尾，留出 ~28f 收尾）`
+  - `glitch-cycle.md:21` `- glitch 概率关键帧 'KF=[1,0,0,0.1,0,0,1]' 按 p 线性插值：**开头 1.0 全乱、`
+  - `glitch-cycle.md:26` `即每 2 帧重掷一次`
+  - `glitch-cycle.md:30` `再驱动一条水平撕裂带（行切三段、中段横移，带高每 2 帧重掷），g>0.45 时再叠 3 块像素块残影`
+  - `glitch-cycle.md:38` `| 短语表 | 4 条，最长 17 字符（demo 'LOCKING BEAT GRID'） | 每条 42f 是"读得完一个状态"的下限；5 条以上单条不足 34f 观众只看到闪 |`
+  - `glitch-cycle.md:39` `| 概率关键帧 | '[1,0,0,0.1,0,0,1]'（6 段） | 中间那个 0.1 是"活着"的证据，删了短语中段死板；把 0 段调到 0.3+ 全片糊成故障 |`
+  - `glitch-cycle.md:40` `| 重掷频率 | 每 2 帧（'floor(frame/2)'） | 1 帧一换糊成灰带；4 帧以上乱码看得清是"另一个词"，不像噪声 |`
+  - `glitch-cycle.md:52` `- 概率关键帧是 6 段等分映射到短语内进度：短语条数变了单条时长跟着变，`
+  - `glitch-cycle.md:53` `但关键帧形状不变——所以条数越多，"全乱码"那两段的绝对时长越短，`
+- 可逆: 纯帧函数. 给定帧能算回相位, 滚动进度可以反向.
+- 裁决: 只留规则. 节奏或收尾只给首页最后一屏, 不做成组件默认态.

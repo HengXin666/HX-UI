@@ -2,7 +2,7 @@ import { useState, type JSX } from "react";
 import { BUTTON_TYPE, SegmentedControl } from "@hx/ui";
 import { FieldPage, KilnPage, Metric, Process, Shot, SHOT_MOVE, type ShotMove } from "../../src/studio";
 import { TEXT_TONE } from "../../src/constants/typography";
-import { N12, N18, N27, N4, N6, N9 } from "../../src/studio/num";
+import { N12, N18, N27, N4, N6, N9 } from "../../src/studio/figures";
 import { FACE_PREVIEW, PREVIEW_FIELD, PREVIEW_KILN } from "./router";
 
 const MOVES: ReadonlyArray<{ readonly move: ShotMove; readonly name: string; readonly line: string }> = [

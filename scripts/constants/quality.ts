@@ -71,10 +71,10 @@ export const BUDGET_MAX_BYTES = 65536;
 
 /** docs/ also hosts the documentation site app; these exact app paths are code, not documents. */
 export const DOCS_APP_PATHS = [
-    "docs/src/", "docs/scripts/", "docs/index.html", "docs/package.json", "docs/package-lock.json",
+    "docs/src/", "docs/face/", "docs/scripts/", "docs/index.html", "docs/package.json", "docs/package-lock.json",
     "docs/tsconfig.json", "docs/vite.config.ts",
 ];
-export const DOC_TOP_DIRS = ["tutorials", "reference", "architecture", "decisions", "archive"];
+export const DOC_TOP_DIRS = ["tutorials", "reference", "architecture", "decisions", "archive", "research"];
 export const DOC_EXTENSIONS = [".md", ".mdx", ".yaml"];
 export const MARKDOWN_EXTENSIONS = [".md", ".mdx"];
 export const ALLOWED_STACK_LOCKFILES = LOCKFILES;
