@@ -21,7 +21,7 @@ function RadioGroupItem({ className, ...props }: React.ComponentProps<typeof Rad
 		<RadioGroupPrimitive.Item
 			data-slot="radio-group-item"
 			className={cn(
-				"peer inline-flex aspect-square size-4 shrink-0 items-center justify-center rounded-full border border-input bg-muted outline-none",
+				"peer group/radio inline-flex aspect-square size-4 shrink-0 items-center justify-center rounded-full border border-input bg-muted outline-none",
 				"transition-[border-color,transform] duration-(--duration-fast) ease-out active:scale-[0.92] motion-reduce:active:scale-100",
 				"focus-visible:border-ring aria-invalid:border-destructive data-[state=checked]:border-primary",
 				CLASSES.disabled,
@@ -30,7 +30,7 @@ function RadioGroupItem({ className, ...props }: React.ComponentProps<typeof Rad
 			{...props}
 		>
 			<RadioGroupPrimitive.Indicator data-slot="radio-group-indicator" className="flex items-center justify-center">
-				<span className="size-2 rounded-full bg-primary" />
+				<span className="size-2 origin-center rounded-full bg-primary group-data-[state=checked]/radio:scale-100 scale-0 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] motion-reduce:transition-none" />
 			</RadioGroupPrimitive.Indicator>
 		</RadioGroupPrimitive.Item>
 	);

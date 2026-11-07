@@ -1,85 +1,63 @@
 import { useState, type JSX } from "react";
-import {
-  CraftDialog,
-  CraftDrawer,
-  CraftFold,
-  CraftMonth,
-  CraftRange,
-  CraftSelect,
-  CraftTable,
-  CraftTip,
-  CraftToasts,
-} from "../../src/craft";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../../src/primitives/accordion";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "../../src/primitives/dialog";
+import { Drawer, DrawerContent, DrawerTitle, DrawerTrigger } from "../../src/primitives/drawer";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../src/primitives/select";
+import { Slider } from "../../src/primitives/slider";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../src/primitives/tooltip";
+import { showToast } from "../../src/layout/Toast";
 
 /**
- * 道具台. 滑杆改弹簧目标, 控件不重新挂载, 用来看中断.
+ * 道具台下半. 用的就是库里的 Select / Dialog / Drawer / Accordion / Slider / Tooltip.
+ * 不再另挂一套同名控件.
  */
 export function LiveBench(): JSX.Element {
   const [choice, setChoice] = useState("field");
   const [amount, setAmount] = useState(36);
-  const [day, setDay] = useState("2026-11-07");
-  const [dialog, setDialog] = useState(false);
-  const [drawer, setDrawer] = useState(false);
-  const rows = [
-    { id: "a", name: "田野", value: 12 },
-    { id: "b", name: "窑四号", value: amount },
-    { id: "c", name: "记录", value: 7 },
-  ];
 
   return (
+    <TooltipProvider>
     <div className="mx-auto flex max-w-3xl flex-col gap-6 px-5 py-8">
       <section className="rounded-xl border border-border p-4">
-        <h2 className="text-sm text-muted-foreground">选择, 打开途中再按会反向</h2>
+        <h2 className="text-sm text-muted-foreground">选择. 面板弹簧进出</h2>
         <div className="mt-3">
-          <CraftSelect
-            label="页面"
-            value={choice}
-            onChange={setChoice}
-            options={[
-              { value: "field", label: "田野" },
-              { value: "kiln", label: "窑四号" },
-              { value: "note", label: "记录" },
-            ]}
-          />
+          <Select value={choice} onValueChange={setChoice}>
+            <SelectTrigger aria-label="页面" className="w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="field">田野</SelectItem>
+              <SelectItem value="kiln">窑四号</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <pre className="mt-3 overflow-auto text-xs text-muted-foreground">{`<CraftSelect value="${choice}" />`}</pre>
+        <pre className="mt-3 text-xs text-muted-foreground">{`<Select value="${choice}">`}</pre>
       </section>
       <section className="rounded-xl border border-border p-4">
-        <h2 className="text-sm text-muted-foreground">滑杆, 松手吸附</h2>
-        <div className="mt-6">
-          <CraftRange label="幅度" value={amount} onChange={setAmount} />
-        </div>
-        <pre className="mt-3 text-xs text-muted-foreground">{`<CraftRange value={${amount}} step={10} />`}</pre>
+        <h2 className="text-sm text-muted-foreground">滑杆</h2>
+        <Slider className="mt-4 w-48" value={[amount]} onValueChange={(next) => setAmount(next[0] ?? 0)} aria-label="幅度" />
+        <pre className="mt-3 text-xs text-muted-foreground">{`<Slider value={[${amount}]} />`}</pre>
       </section>
-      <section className="rounded-xl border border-border p-4">
-        <h2 className="text-sm text-muted-foreground">对话框与抽屉</h2>
-        <div className="mt-3 flex gap-2">
-          <button type="button" className="h-8 rounded-lg border border-border px-3 text-sm" onClick={() => setDialog(true)}>打开对话框</button>
-          <button type="button" className="h-8 rounded-lg border border-border px-3 text-sm" onClick={() => setDrawer(true)}>打开抽屉</button>
-        </div>
-        <CraftDialog open={dialog} onOpenChange={setDialog} title="对话框">Esc 会从当前进度反向关上.</CraftDialog>
-        <CraftDrawer open={drawer} onOpenChange={setDrawer} title="抽屉">按住面板向右拖, 速度够就关上.</CraftDrawer>
+      <section className="flex flex-wrap gap-2 rounded-xl border border-border p-4">
+        <Dialog>
+          <DialogTrigger className="h-8 rounded-lg border border-border px-3 text-sm">对话框</DialogTrigger>
+          <DialogContent><DialogTitle>对话框</DialogTitle>从当前进度反向关闭.</DialogContent>
+        </Dialog>
+        <Drawer>
+          <DrawerTrigger className="h-8 rounded-lg border border-border px-3 text-sm">抽屉</DrawerTrigger>
+          <DrawerContent><DrawerTitle>抽屉</DrawerTitle>向右拖可以关上.</DrawerContent>
+        </Drawer>
+        <Tooltip>
+          <TooltipTrigger className="h-8 rounded-lg border border-border px-3 text-sm">提示</TooltipTrigger>
+          <TooltipContent>延迟后出现</TooltipContent>
+        </Tooltip>
+        <button type="button" className="h-8 rounded-lg border border-border px-3 text-sm" onClick={() => showToast({ message: "已记录" })}>提示条</button>
       </section>
-      <section className="rounded-xl border border-border p-4">
-        <h2 className="text-sm text-muted-foreground">提示, 折叠, 月份, 表格, 提示条</h2>
-        <div className="mt-3">
-          <CraftTip label="400ms 后出现">
-            <button type="button" className="h-8 rounded-lg border border-border px-3 text-sm">悬停</button>
-          </CraftTip>
-        </div>
-        <div className="mt-4">
-          <CraftFold title="折叠面板">高度是弹簧, 再点一下从当前高度收回.</CraftFold>
-        </div>
-        <div className="mt-4">
-          <CraftMonth value={day} onChange={setDay} />
-        </div>
-        <div className="mt-4">
-          <CraftTable rows={rows} />
-        </div>
-        <div className="mt-4">
-          <CraftToasts />
-        </div>
-      </section>
+      <Accordion type="single" collapsible className="rounded-xl border border-border px-4">
+        <AccordionItem value="one">
+          <AccordionTrigger>折叠</AccordionTrigger>
+          <AccordionContent>高度从当前值继续, 不再用关键帧跳切.</AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
+    </TooltipProvider>
   );
 }

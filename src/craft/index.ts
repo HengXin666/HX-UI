@@ -3,20 +3,18 @@ export { NumberRoll } from "./NumberRoll";
 export { SegmentedThumb } from "./SegmentedThumb";
 export { BlurLine } from "./effects/BlurLine";
 export { DealRow } from "./effects/DealRow";
+export { Aurora, Grain, GridDrift, ShaderWash } from "./effects/field";
+export { PointerTrail, Spotlight, TiltCard, Wipe } from "./effects/pointer";
+export { ParallaxBlock, ScrollFade, SharedScale, ShimmerBar } from "./effects/scroll";
+export { CrossFade, SplitRise, StickySwap, TypeOn, UnderlineDraw } from "./effects/text";
+export { SpringHeight, SpringShell } from "./shell";
 export { digitEase, stepSpring } from "./spring";
-export { CraftDialog } from "./ui/DialogPanel";
-export { CraftDrawer } from "./ui/DrawerSheet";
-export { CraftFold } from "./ui/Fold";
-export { CraftMonth } from "./ui/MonthPicker";
-export { CraftRange } from "./ui/Range";
-export { CraftSelect } from "./ui/SelectMenu";
-export { CraftTable } from "./ui/DataGrid";
-export { CraftTip } from "./ui/Tip";
-export { CraftToasts } from "./ui/ToastStack";
 export { usePress } from "./use-press";
 export { useTrack } from "./use-track";
 export { AxisShock } from "./viz/AxisShock";
+export { FlowDiagram, KpiCard, RadarChart, Timeline } from "./viz/more";
 export { ProcessRail } from "./viz/ProcessRail";
+export { AreaChart, BarChart, DonutChart, LineChart } from "./viz/series";
 export {
   DEAL_FIRST_MS,
   DEAL_LAST_MS,

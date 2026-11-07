@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Accordion as AccordionPrimitive } from "radix-ui";
+import { SpringHeight } from "../craft/shell";
 import { cn } from "./utils";
 
 /**
@@ -65,14 +66,12 @@ function AccordionContent({
 	return (
 		<AccordionPrimitive.Content
 			data-slot="accordion-content"
-			className={cn(
-				"overflow-hidden text-[length:var(--fs-sm)] text-muted-foreground",
-				"data-[state=open]:animate-[hx-collapse-down_200ms_ease-out] data-[state=closed]:animate-[hx-collapse-up_200ms_ease-out]",
-				className,
-			)}
+			className={cn("overflow-hidden text-[length:var(--fs-sm)] text-muted-foreground", className)}
 			{...props}
 		>
-			<div className="pb-2.5">{children}</div>
+			<SpringHeight>
+				<div className="pb-2.5">{children}</div>
+			</SpringHeight>
 		</AccordionPrimitive.Content>
 	);
 }

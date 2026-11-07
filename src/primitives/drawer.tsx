@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
+import { SpringShell } from "../craft/shell";
+import { MODAL_OVERLAY } from "./styles";
 import { cn } from "./utils";
 
 function Drawer({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
@@ -27,10 +29,7 @@ function DrawerOverlay({
 	return (
 		<DrawerPrimitive.Overlay
 			data-slot="drawer-overlay"
-			className={cn(
-				"no-drag fixed inset-0 z-50 bg-black/10 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0",
-				className,
-			)}
+			className={cn(MODAL_OVERLAY, className)}
 			{...props}
 		/>
 	);
@@ -58,7 +57,7 @@ function DrawerContent({
 				{...props}
 			>
 				<div className="mx-auto mt-4 hidden h-1 w-[100px] shrink-0 rounded-full bg-muted group-data-[vaul-drawer-direction=bottom]/drawer-content:block" />
-				{children}
+				<SpringShell axis="x">{children}</SpringShell>
 			</DrawerPrimitive.Content>
 		</DrawerPortal>
 	);

@@ -6,7 +6,8 @@ import { useShellLayout } from "../src/useShellLayout";
 import { DocsFrame } from "./DocsFrame";
 import { Home } from "./Home";
 import { Playground } from "./Playground";
-import { FACE_BENCH, FACE_HOME, FACE_PREVIEW, PREVIEW_FIELD, PREVIEW_KILN, useFaceRoute } from "./router";
+import { FACE_BENCH, FACE_CATALOG, FACE_HOME, FACE_PREVIEW, PREVIEW_FIELD, PREVIEW_KILN, useFaceRoute } from "./router";
+import { Catalog } from "./Catalog";
 import { FieldPage, KilnPage } from "../../src/studio";
 
 /** 公开站点: 首页是门面, #/组件 id 进入文档. */
@@ -36,7 +37,7 @@ export function FaceApp(): JSX.Element {
         </button>
         <nav aria-label="站点" className="flex items-center gap-3 text-sm">
           <button type={BUTTON_TYPE} className="text-muted-foreground hover:text-foreground" onClick={() => go("install")}>组件</button>
-          <button type={BUTTON_TYPE} className="text-muted-foreground hover:text-foreground" onClick={() => go(`${FACE_PREVIEW}/${PREVIEW_FIELD}`)}>页面</button>
+          <button type={BUTTON_TYPE} className="text-muted-foreground hover:text-foreground" onClick={() => go(FACE_CATALOG)}>效果</button>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <button
@@ -62,6 +63,7 @@ export function FaceApp(): JSX.Element {
 
       {route.kind === "home" ? <Home onGo={go} /> : null}
       {route.kind === "bench" ? <Playground onBack={() => go(FACE_HOME)} /> : null}
+      {route.kind === "catalog" ? <Catalog id={route.id} onPick={(next) => go(`${FACE_CATALOG}/${next}`)} /> : null}
       {route.kind === "doc" ? (
         <DocsFrame id={docId} onGo={go} wide={shellWide} mobileNavOpen={mobileNavOpen} setMobileNavOpen={setMobileNavOpen} />
       ) : null}

@@ -5,11 +5,12 @@ import { Select as SelectPrimitive } from "radix-ui";
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react";
 import { useRipple } from "./ripple";
 import { cn } from "./utils";
+import { SpringShell } from "../craft/shell";
 
 /**
- * 基础 Select（无 motion）。
- * 视觉对齐产品设置里 Agent 人设下拉：card 面 + 1px border + 12px 字重 medium，
- * 展开态 bg-accent；面板 p-1、选项 py-[5px]；不叠重 ring。
+ * 基础 Select(无 motion).
+ * 视觉对齐产品设置里 Agent 人设下拉:card 面 + 1px border + 12px 字重 medium,
+ * 展开态 bg-accent;面板 p-1,选项 py-[5px];不叠重 ring.
  */
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
@@ -74,11 +75,8 @@ function SelectContent({
 				data-slot="select-content"
 				data-align-trigger={position === "item-aligned"}
 				className={cn(
-					// 面板：1px border + card/popover 面，无重 shadow/ring 叠层
+					// 面板:1px border + card/popover 面,无重 shadow/ring 叠层
 					"no-drag relative z-50 max-h-(--radix-select-content-available-height) min-w-36 origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md",
-					"data-[align-trigger=true]:animate-none",
-					"data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1 data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1",
-					"data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 duration-100",
 					position === "popper" &&
 						"data-[side=bottom]:translate-y-0.5 data-[side=left]:-translate-x-0.5 data-[side=right]:translate-x-0.5 data-[side=top]:-translate-y-0.5",
 					className,
@@ -96,7 +94,7 @@ function SelectContent({
 						"data-[position=popper]:h-(--radix-select-trigger-height) data-[position=popper]:w-full data-[position=popper]:min-w-(--radix-select-trigger-width)",
 					)}
 				>
-					{children}
+					{<SpringShell>{children}</SpringShell>}
 				</SelectPrimitive.Viewport>
 				<SelectScrollDownButton />
 			</SelectPrimitive.Content>

@@ -5,7 +5,8 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { XIcon } from "lucide-react";
 import { cn } from "./utils";
 import { Button } from "./button";
-import { MODAL_MOTION, MODAL_OVERLAY } from "./styles";
+import { MODAL_OVERLAY } from "./styles";
+import { SpringShell } from "../craft/shell";
 import { TONE_VARIANT, UI_CLASSES, VARIANT } from "../constants";
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
@@ -57,13 +58,11 @@ function DialogContent({
 					// Single max-width (not max-w + sm:max-w-sm): avoids twMerge leaving
 					// sm:max-w-sm that overrides consumer max-w-lg at the sm breakpoint.
 					"no-drag fixed top-1/2 left-1/2 z-50 grid w-full max-w-[min(24rem,calc(100%-2rem))] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl border border-border bg-popover p-4 text-sm text-popover-foreground outline-none",
-					// 居中用 translate 属性而不是 transform: 进出场的缩放关键帧写的是 transform, 两者才能叠加
-					MODAL_MOTION,
 					className,
 				)}
 				{...props}
 			>
-				{children}
+				<SpringShell>{children}</SpringShell>
 				{showCloseButton && (
 					<DialogPrimitive.Close data-slot="dialog-close" asChild>
 						<Button variant={VARIANT.ghost} className="absolute top-2 right-2" size={VARIANT.iconSm}>

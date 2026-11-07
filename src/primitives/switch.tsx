@@ -56,7 +56,7 @@ function Switch({
 				<motion.span
 					data-slot="switch-thumb"
 					className="pointer-events-none block size-4 rounded-full bg-background group-data-[size=sm]/switch:size-3 dark:data-[state=checked]:bg-primary-foreground dark:data-[state=unchecked]:bg-foreground"
-					animate={{ x: isOn ? travel : 0, scale: pressed ? THUMB_PRESS_SCALE : 1 }}
+					animate={{ x: isOn ? travel : 0, scaleX: pressed ? 1.16 : 1, scaleY: pressed ? THUMB_PRESS_SCALE : 1 }}
 					transition={reduced ? { duration: 0 } : { type: "spring", stiffness: SPRING_THUMB.stiffness, damping: SPRING_THUMB.damping, mass: SPRING_THUMB.mass }}
 				/>
 			</SwitchPrimitive.Thumb>

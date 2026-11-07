@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Checkbox as CheckboxPrimitive } from "radix-ui";
-import { CheckIcon, MinusIcon } from "lucide-react";
+import { MinusIcon } from "lucide-react";
 import { CLASSES } from "../constants";
 import { cn } from "./utils";
 
@@ -29,8 +29,10 @@ function Checkbox({ className, ...props }: React.ComponentProps<typeof CheckboxP
 			)}
 			{...props}
 		>
-			<CheckboxPrimitive.Indicator data-slot="checkbox-indicator" className="flex items-center justify-center">
-				<CheckIcon className="size-3 group-data-[state=indeterminate]/checkbox:hidden" />
+			<CheckboxPrimitive.Indicator data-slot="checkbox-indicator" className="flex items-center justify-center text-primary-foreground">
+				<svg viewBox="0 0 16 16" className="size-3 group-data-[state=indeterminate]/checkbox:hidden" aria-hidden>
+					<path d="M3 8.2 6.4 11.5 13 4.5" fill="none" stroke="currentColor" strokeWidth={1} strokeLinecap="round" pathLength={1} strokeDasharray={1} className="[stroke-dashoffset:1] group-data-[state=checked]/checkbox:[stroke-dashoffset:0] transition-[stroke-dashoffset] duration-200 ease-out motion-reduce:transition-none" />
+				</svg>
 				<MinusIcon className="hidden size-3 group-data-[state=indeterminate]/checkbox:block" />
 			</CheckboxPrimitive.Indicator>
 		</CheckboxPrimitive.Root>
