@@ -3,11 +3,13 @@ import { DOCS } from "../src/nav";
 
 export const FACE_HOME = "home";
 export const FACE_PREVIEW = "preview";
+export const FACE_CRAFT = "craft";
 export const PREVIEW_FIELD = "field";
 export const PREVIEW_KILN = "kiln";
 
 export type FaceRoute =
   | { readonly kind: "home" }
+  | { readonly kind: "craft" }
   | { readonly kind: "preview"; readonly which: typeof PREVIEW_FIELD | typeof PREVIEW_KILN }
   | { readonly kind: "doc"; readonly id: string };
 
@@ -15,6 +17,7 @@ export type FaceRoute =
 export function readFaceRoute(): FaceRoute {
   const raw = window.location.hash.replace(/^#\/?/, "").trim();
   if (!raw || raw === FACE_HOME) return { kind: "home" };
+  if (raw === FACE_CRAFT) return { kind: "craft" };
   const [head, rest] = raw.split("/");
   if (head === FACE_PREVIEW && (rest === PREVIEW_FIELD || rest === PREVIEW_KILN)) {
     return { kind: "preview", which: rest };

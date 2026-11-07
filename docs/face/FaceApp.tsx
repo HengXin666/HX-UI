@@ -7,6 +7,8 @@ import { DocsFrame } from "./DocsFrame";
 import { Home } from "./Home";
 import { FACE_HOME, FACE_PREVIEW, PREVIEW_FIELD, PREVIEW_KILN, useFaceRoute } from "./router";
 import { FieldPage, KilnPage } from "../../src/studio";
+import { CraftButton } from "../../src/craft";
+import { CraftLab } from "./CraftLab";
 
 /** 公开站点: 首页是门面, #/组件 id 进入文档. */
 export function FaceApp(): JSX.Element {
@@ -30,12 +32,11 @@ export function FaceApp(): JSX.Element {
             <span aria-hidden className="icon-[solar--hamburger-menu-linear] size-4 bg-current" />
           </button>
         ) : null}
-        <button type={BUTTON_TYPE} onClick={() => go(FACE_HOME)} className="text-sm font-semibold tracking-tight">
-          HX
-        </button>
-        <nav aria-label="站点" className="flex items-center gap-3 text-sm">
-          <button type={BUTTON_TYPE} className="text-muted-foreground hover:text-foreground" onClick={() => go("install")}>组件</button>
-          <button type={BUTTON_TYPE} className="text-muted-foreground hover:text-foreground" onClick={() => go(`${FACE_PREVIEW}/${PREVIEW_FIELD}`)}>页面</button>
+        <CraftButton variant="ghost" className="px-2 font-semibold" onClick={() => go(FACE_HOME)}>HX</CraftButton>
+        <nav aria-label="站点" className="flex items-center gap-1 text-sm">
+          <CraftButton variant="ghost" onClick={() => go("craft")}>手感</CraftButton>
+          <CraftButton variant="ghost" onClick={() => go("install")}>组件</CraftButton>
+          <CraftButton variant="ghost" onClick={() => go(`${FACE_PREVIEW}/${PREVIEW_FIELD}`)}>页面</CraftButton>
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <button
@@ -60,6 +61,7 @@ export function FaceApp(): JSX.Element {
       </header>
 
       {route.kind === "home" ? <Home onGo={go} /> : null}
+      {route.kind === "craft" ? <CraftLab /> : null}
       {route.kind === "doc" ? (
         <DocsFrame id={docId} onGo={go} wide={shellWide} mobileNavOpen={mobileNavOpen} setMobileNavOpen={setMobileNavOpen} />
       ) : null}

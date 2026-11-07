@@ -53,7 +53,7 @@ export const HOOK_DIR = ".githooks/";
 
 export const UI_ROOT = "src/";
 export const UI_COLOR_EXEMPT = ["src/layout/CodeBlock.tsx"];
-export const CONSTANT_DIRS = ["src/constants/", "scripts/constants/"];
+export const CONSTANT_DIRS = ["src/constants/", "scripts/constants/", "src/craft/"];
 export const DUP_THRESHOLD = 3;
 export const EVIDENCE_WIDTH = 60;
 export const DUP_IGNORED_NUMBERS = ["0", "1"];
@@ -71,7 +71,7 @@ export const BUDGET_MAX_BYTES = 65536;
 
 /** docs/ also hosts the documentation site app; these exact app paths are code, not documents. */
 export const DOCS_APP_PATHS = [
-    "docs/src/", "docs/scripts/", "docs/index.html", "docs/package.json", "docs/package-lock.json",
+    "docs/src/", "docs/scripts/", "docs/face/", "docs/index.html", "docs/package.json", "docs/package-lock.json",
     "docs/tsconfig.json", "docs/vite.config.ts",
 ];
 export const DOC_TOP_DIRS = ["tutorials", "reference", "architecture", "decisions", "archive", "research"];

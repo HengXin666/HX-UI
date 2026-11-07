@@ -10,7 +10,7 @@
 
 ## 硬约束
 
-- 同一字面量在代码中出现 3 次及以上, 提取到 src/constants/ (库与文档站) 或 scripts/constants/ (脚本工具) 后引用
+- 同一字面量在代码中出现 3 次及以上, 提取到 src/constants/ (库与文档站) 或 scripts/constants/ (脚本工具) 后引用. src/craft/ 是运动合同, 按常量池计, 不把弹簧和毫秒再抄一份或用加法藏起来
 - 禁止任何文件系统绝对路径写法, 包括以根路径开头的路径拼接; 使用仓库相对路径或运行时解析
 - 组件颜色只来自语义 token, 线条只用 1px, 不写 transition-all, 原生 button 必须写 type
 - 脚本只写 .ts, 由 Node 22.18+ 直接运行, 不新增 .js/.mjs/.cjs

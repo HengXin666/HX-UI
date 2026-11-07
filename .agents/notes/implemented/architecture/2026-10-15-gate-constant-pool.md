@@ -18,12 +18,17 @@ Decision-ID: scripts-constants
 
 `DOC_TOP_DIRS` includes `research` so `docs/research/` can hold study notes. No second path constant.
 
+`CONSTANT_DIRS` also includes `src/craft/`. That directory is the motion contract: stiffness, damping, millisecond timings and the class names that draw a press. Counting those literals again under PROJECT-CONST-DUP would force either a second copy in `src/constants/` (that directory is already owned by many unrelated decisions) or arithmetic that hides the numbers. Literals inside `src/craft/` are the source, the same way `src/constants/` is. Uses outside that directory still have to import a name.
+
+`DOCS_APP_PATHS` includes `docs/face/`. That tree is the GitHub Pages application, same as `docs/src/`, not a markdown essay. HC-DOCS only classifies the documentation folders.
+
 ## Alternatives considered
 
 - 什么都不做 / 复用现有: 字面量就地写在检查里最省事, 但同一路径与阈值在多处重复, PROJECT-CONST-DUP 报 Error, 而且改一处漏一处的风险直接落在门禁上
 - 两份合成一个 `scripts/constants/index.ts`: 少一个文件, 但浏览器检查会 import 质量门禁的常量, 依赖面变大且不相关的改动会互相触发重跑
 - 把常量放进 `scripts/quality/constants.ts`: 让浏览器检查去 import 质量门禁目录, 形成反向依赖, 且门禁目录的职责会变成"既是检查也是常量库"
 - 直接写在 vendored skill 的常量文件里: 复用现成实现, 但 `.agents/` 由上游维护, 本仓的路径与阈值会随上游漂移
+- 把 craft 的弹簧和毫秒再抄进 `src/constants/`: 最强理由是常量池只有一处, 门禁不用认识第二个目录. 否决: `src/constants/` 已被十几篇无关决策认领, 加一个文件就要在同一次 diff 里改写那些 note 并碰到它们名下的每个目录. 运动数字放在 `src/craft/` 里读得出来, 门禁把该目录当成常量池, 外面仍然必须引用名字
 
 ## Consequences
 

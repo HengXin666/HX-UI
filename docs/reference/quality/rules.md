@@ -49,7 +49,7 @@
 | PROJECT-UI-ICON-DECLARED | Error | code | src 中的 icon-[<set>--<name>] 图标类, 其 @iconify-json/<set> 必须在根 package.json 的 dependencies 或 peerDependencies 声明 |
 | PROJECT-UI-DEV-DIARY | Error | code | src 注释里不许写开发日记 (实测踩到 / 上一版 / 用户报 等调试经过), 只扫注释, 不扫字符串 |
 | PROJECT-UI-JSX-COMMENT-LEAK | Error | code | src 的 .tsx 中 JSX 子节点位置不许写裸块注释 (会渲染成文字), 必须写成 {/* ... */} |
-| PROJECT-CONST-DUP | Error | code | 同一字符串或数字字面量在同一代码池 (库与文档站 / scripts 工具) 出现 >= 3 次必须提取为常量, 分别放到 src/constants/ 与 scripts/constants/ |
+| PROJECT-CONST-DUP | Error | code | 同一字符串或数字字面量在同一代码池 (库与文档站 / scripts 工具) 出现 >= 3 次必须提取为常量, 分别放到 src/constants/ 与 scripts/constants/ 与 src/craft/ |
 | PROJECT-NO-ABS-PATH | Error | code | 禁止任何文件系统绝对路径写法 (POSIX 系统根目录, Windows 盘符与 UNC, 家目录, file URL, shebang) 及以根路径开头的路径拼接 |
 | HC-EXT | Error | code | 仓库内禁止手写 .js/.mjs/.cjs, 脚本统一 .ts |
 | HC-SIZE | Error | code | 逻辑文件 .ts 不超过 300 行, UI 文件 .tsx 不超过 500 行 |
@@ -82,7 +82,7 @@ PROJECT-* 是本项目扩展规则, 不替代 HC-* 内置规则. 未列出的 HC
 - 不读取: `.agents/` (vendored skill, 上游维护), node_modules, docs/dist, `scripts/.hx_code_quality/`
 - 代码规则: `src/`, `docs/src/`, `docs/scripts/`, `scripts/` 下的 .ts/.tsx 与 `docs/vite.config.ts`; PROJECT-UI-* 只查 `src/`
 - PROJECT-UI-HEX / PROJECT-UI-RGB 豁免 `src/layout/CodeBlock.tsx`: 语法高亮色来自 One Dark Pro 主题定义, 不随换肤
-- PROJECT-CONST-DUP 分两个计数池: 库与文档站 (常量放 `src/constants/`) 与 scripts 工具 (常量放 `scripts/constants/`). 不计: 空字符串, 数字 0 与 1, import 路径, 字面量类型, 属性名, 指令序言; 常量目录内的定义本身不计
+- PROJECT-CONST-DUP 分两个计数池: 库与文档站 (常量放 `src/constants/`) 与 scripts 工具 (常量放 `scripts/constants/`). `src/craft/` 是运动合同, 和常量目录一样不计数, 外面仍然引用名字. 不计: 空字符串, 数字 0 与 1, import 路径, 字面量类型, 属性名, 指令序言; 常量目录内的定义本身不计
 - PROJECT-NO-ABS-PATH 与 HC-TEXT 豁免 `scripts/quality/fixtures.json`: 门禁自测的反例输入
 - HC-TEXT 只查注释, Markdown 正文 (跳过代码块与行内代码) 和 .github 下的 YAML, 界面文案字符串属于本地化数据不查
 - HC-DOCNAME / HC-DOCS 不查文档站应用代码: `docs/src/`, `docs/scripts/`, `docs/index.html`, docs 的 package/lock/tsconfig/vite 配置
