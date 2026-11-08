@@ -2,3 +2,4 @@
 export { DotField, type DotFieldProps } from "./DotField";
 export { DotGrid, type DotGridProps } from "./DotGrid";
 export { ShapeGrid, type ShapeGridProps } from "./ShapeGrid";
+export { GridDistortion, type GridDistortionProps } from "./GridDistortion";
