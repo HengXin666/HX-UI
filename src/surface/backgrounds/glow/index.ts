@@ -6,3 +6,4 @@ export { Silk, type SilkProps } from "./Silk";
 export { Grainient, type GrainientProps } from "./Grainient";
 export { Iridescence, type IridescenceProps } from "./Iridescence";
 export { Plasma, type PlasmaProps } from "./Plasma";
+export { ColorBends, type ColorBendsProps } from "./ColorBends";

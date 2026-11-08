@@ -14,6 +14,8 @@ Decision-ID: surface-backgrounds-glow
 - `src/surface/backgrounds/glow/Grainient.tsx`
 - `src/surface/backgrounds/glow/Iridescence.tsx`
 - `src/surface/backgrounds/glow/Plasma.tsx`
+- `src/surface/backgrounds/glow/ColorBends.tsx`
+- `src/surface/backgrounds/glow/color-bends-shader.ts`
 
 ## Problem
 
@@ -34,6 +36,7 @@ Backgrounds 全量落地分七路, glow 路收以柔光, 光幕, 渐变流动为
 | Grainient | `Grainient` | 色标上限 8, 在 Oklab 里插值 (段内 shaped = smoothstep(0.5 - edge, 0.5 + edge, f), edge = 0.5 * softness), linear / radial 两型 (TYPES 0 / 1), bands > 1 时三角波往返; 分形噪声扭曲 (flow) 加丝光细纹 (silk), 流动相位 0.16 * 时钟; contrast 作用于 L, saturation 作用于 ab, 亮底模式 L 向 1 提 LIFT 0.2 (自管, 不走 GLOW_GLSL 的压墨). 入场 1.6s 由首色外扩 (lab = mix(ramp[0], lab, smoothstep(0, 1, reveal * 1.5 - length(uv - 0.5) * 0.6)) 取规格原式). 指针跟随 tau 0.06, 动时每 STIR_STEP 0.06s 落一个搅动点 (STIR_STEP 内长成, 寿命 1.3s, 上限 24, JS 侧队列打包成 vec4 数组); 点击旋涡读 u_taps 最近 4 次, 寿命 2.6s. 颗粒按 grainSize * dpr 取格, grainAnimated 关时不跳. 兜底为色标线性渐变. |
 | Iridescence | `Iridescence` | 两段: 搅动场通道 (rg 存速度, 每帧乘 exp(-dt * 1.4), 指针处按跟随速度注入, 倍率 0.0625) 与上屏. 上屏逐层 (detail 钳到 1..12) 正弦扭曲叠出油膜干涉相位, 余弦色盘换虹彩, saturation / contrast / brightness 后乘 color, 加一道薄膜高光 (sheen). 指针跟随速率 5, 在场速率 4 (换成 tau), amplitude 牵动整片纹理; 点击旋涡读 u_taps 最近 6 次, 寿命 3.2s, ease = exp(-age * 1.35) - exp(-age * 10) 与强度 3 * ease * fade * (0.21 / radius)^2 取规格原式. resolution 乘在像素比上限 2 上. 默认 color 为 token foreground, 兜底为主色系渐变. ENGINE-GAP: 规格的搅动场固定 48 列 (FIELD_COLUMNS), 内核通道只有静态倍率, 列数随画布宽变. |
 | Plasma | `Plasma` | 两段: 体积通道 (倍率 = quality 钳到 0.1..1) 让视线穿过沿深度扭转 (twist) 的四层正弦湍流 (wave), 32 步累积发光密度 peak 与色带相位 band, 存 peak / 4 防 8 位截断; 上屏 level = 1 - exp(-peak) 与 hot = smoothstep(1, 3, peak) 取规格原式, 热芯按 shine 泛白. direction forward / reverse 换穿行方向, softness 换光片锐度 1 - softness. 视角弹簧 40 * (goal - yaw) - 11 * velocity 取规格原式, 热点进 / 离 4 / 2, 位置跟随 8 (换成 tau); 入场 1.6s 由中心外扩. 默认颗粒 0.04. ENGINE-GAP: MAX_VOLUME_PIXELS 需按画布尺寸动态定通道倍率, 内核 PassSpec.scale 是静态的. |
+| ColorBends | `ColorBends` | 采用: 色带上限 MAX_COLORS 8 (空数组退到 primary / accent / primary-glow token), 坐标按 rotation (默认 90 度) 加 autoRotate * 时钟旋转, 放大 2 / scale; 扭曲迭代 iterations 钳到 1..6, 每层位移 0.35 / i 的正弦, warpStrength 大于 1 时放大位移; 第 i 条带 bend = q.y + 0.45 sin(q.x frequency (0.8 + 0.15 i) + phase) 减居中偏置 0.32, 带宽 w = 1 - exp(-bandWidth / exp(bandWidth * abs(bend))) (bandWidth 默认 6), 前带按 1 - 0.35 w 遮挡后带, 亮度 intensity 1.5 后 tonemap. 指针跟随速率 8 (换成 tau), 在场进 / 离 0.35 / 0.6s; parallax 0.5 平移画面, mouseInfluence 1 按 exp(-5 d^2) 推开附近色带; 颗粒 noise 0.15 按 24 帧每秒跳; transparent 默认 true 时色带外透出下层. 默认 speed 0.2. 兜底为色带线性渐变, 减弱动效只画一帧. |
 
 ## Alternatives considered
 
