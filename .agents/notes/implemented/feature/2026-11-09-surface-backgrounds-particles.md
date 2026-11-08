@@ -14,6 +14,8 @@ Decision-ID: surface-backgrounds-particles
 - `src/surface/backgrounds/particles/Antigravity.tsx`
 - `src/surface/backgrounds/particles/Ballpit.tsx`
 - `src/surface/backgrounds/particles/ballpit-field.ts`
+- `src/surface/backgrounds/particles/GradientBlinds.tsx`
+- `src/surface/backgrounds/particles/gradient-blinds-shader.ts`
 
 ## Problem
 
@@ -32,6 +34,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. particles 路收以�
 | Hyperspeed | `Hyperspeed` | WebGL2 全屏片元: 视线与路面求交, 路中心横移 curvature * z^2 * bend(行程) 成弯道 (straight / winding / turbulent), 每侧 lanes 条车道上的车灯对按行程哈希成光带 (对向 1.65 倍, 同向 0.35 倍相对速度), 车道虚线, 两侧灯杆逐根投影带灯头光晕, 尘线由消失点放射; 雾从 TRAVEL 的 1/4 到 TRAVEL (400). 按住加速: boost 升 0.28s / 落 0.85s, 视场弹簧 90 / 13 拉向 boostFov, 指针横移镜头 tau 0.35s. ENGINE-GAP: 无实例化网格与真泛光 (宽高斯光晕近似), 车灯贴路面; 规格 MAX_CARS / MAX_DUST 不适用. |
 | Antigravity | `Antigravity` | Canvas2D: 群体以结构化数组存家位置 / 位置 / 速度 / 深度, 光标弹簧 (刚度 49, 阻尼 14) 拖出的磁环 (ringRadius, waveCount 条波纹以 waveSpeed 绕行) 把半径内的小体吸到环带上, 临界附近阻尼 1.64 omega, 子步上限 4, omega = 4 + lerpSpeed * 120 (本库定). 入场 3 秒从下方升起, 按住蓄力 (0.9s 蓄满, 4/s 泄掉) 环收到 0.5, 点击冲量 28 散开. 深度缩放 1 + z * 0.32, 远处雾 0.35, 脉动 0.22 * variance; conic / radial / random 三种着色. ENGINE-GAP: 上游的 WebGL 实例化三维小体带光照不做, 胶囊 / 球 / 盒 / 四面体画成圆头线 / 圆 / 方块 / 三角剪影, 深度只体现为尺寸与雾. |
 | Ballpit | `Ballpit` | Canvas2D 透视圆按深度排序: 世界盒半高 CAMERA_Z (20) * tan(FOV 50 / 2), 宽高比超过 MAX_ASPECT 1.5 时半宽封顶; 子步 1/120s (帧长上限 1/20s) 显式积分, 重力 gravity * 20, 摩擦 friction^(dt * 60), 漂移三轴 0.63 / 0.47 / 0.41; 球间按 x 排序扫掠, 质量 r^3 分摊穿透 (SLOP 0.01) 并按 bounce 反弹, 撞墙 wallBounce. 光标是运动学隐形球 (位置 0.06s, 半径 0.12s 跟随, 速度钳 MAX_SPEED 16), 按住抓最前的球 (0.02s 跟手, 手速 0.05s 平滑), 松手甩出并滑行 0.6s 额外阻尼 exp(-2.2 dt); 点击 burst 半径 6 冲量 22. 入场从盒顶上方错峰落下, 减弱动效先沉降 3 秒再画一帧. 四种材质 (satin / glossy / matte / metal) 以径向渐变 + 高光点 + 菲涅耳 (F0 0.04) 边光近似. ENGINE-GAP: 无实例化球体 PBR, 环境反射与球间阴影; 数量上限 600. |
+| GradientBlinds | `GradientBlinds` | WebGL2 全屏片元: 坐标按 angle 旋转后分成 min(blindCount, 宽 / blindMinWidth) 片百叶, 透视把横坐标映到 x (1 + p) / (1 + p x); 每片内坡度 ramp 受轻摆 (sway * 0.25 正弦) 与点击涟漪倾斜, 压痕 relief * 0.38 * smoothstep(0.62, 1, ramp), 片缝按像素抗锯齿变暗, 受光沿 shine * ramp^6 (shineDirection 翻转); 色板 (最多 MAX_COLORS 8) 沿条带方向平滑渐变, gradientSpeed 以 dt * 0.06 在 0..2 内平移, mirrorGradient 改为来回; 指针聚光跟随 mouseDampening, 在场 0.35s, 聚光处坡度压平 1 - 0.6 spot 并加辉光 glow * 0.4; 点击涟漪最近 MAX_WAVES 4 个, 寿命 RIPPLE_SECONDS 1.6; distortAmount 以 0.01 倍正弦扭曲条带; 双哈希平均颗粒 noise; 入场 1.8s 从左向右展开, presence smoothstep(0, 0.65). |
 
 ## Alternatives considered
 

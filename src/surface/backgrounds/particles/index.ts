@@ -4,3 +4,4 @@ export { Galaxy, type GalaxyProps } from "./Galaxy";
 export { Hyperspeed, type HyperspeedProps } from "./Hyperspeed";
 export { Antigravity, type AntigravityProps } from "./Antigravity";
 export { Ballpit, type BallpitProps } from "./Ballpit";
+export { GradientBlinds, type GradientBlindsProps } from "./GradientBlinds";
