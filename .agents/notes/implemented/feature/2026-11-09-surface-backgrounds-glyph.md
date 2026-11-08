@@ -11,6 +11,7 @@ Decision-ID: surface-backgrounds-glyph
 - `src/surface/backgrounds/glyph/Dither.tsx`
 - `src/surface/backgrounds/glyph/use-glyph-atlas.ts`
 - `src/surface/backgrounds/glyph/GradientASCII.tsx`
+- `src/surface/backgrounds/glyph/LetterGlitch.tsx`
 
 ## Problem
 
@@ -28,6 +29,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. glyph 路收以像素
 | --- | --- | --- |
 | Dither | `Dither` | 采用: 八种抖动模式, 三种指针效果 (erase / reveal / ripple), 调色板上限 8, 入场 1.8 秒, 点击涟漪 1.6 秒, 拖尾衰减 exp(-dt / (0.08 + 0.7 * trail)). 拖尾用内核的乒乓离屏通道 (四分之一分辨率) 代替上游的 16 点轨迹; 点击涟漪读内核的点击队列 (最多 8 个, 规格上限 4 不再单独裁). enableMouseInteraction 换成公共的 mouseInteraction, dpr 走公共 prop. |
 | GradientASCII | `GradientASCII` | 采用: 四种形状 (horizon / pinch / rise / eclipse) 按规格的拱线, 呼吸与日食环常数写成形状场, 色带上限 8 (smoothstep(0.3, 1, t) 选段, smoothstep(0, 0.38, t) 作覆盖), 字形格宽高比 0.6, 点击效果 wave / burst 寿命 1.2 秒, 入场 2.4 秒按随机次序显字. 指针轨迹 (规格 24 点, 寿命 0.7 秒) 换成拖尾通道, 衰减时间常数 0.35 秒; 景深用远离中心时字形化成平均覆盖近似, 不做真模糊. |
+| LetterGlitch | `LetterGlitch` | 采用: 字符集, 静息换字 0.2 次每秒并按两层噪声 (0.65 / 0.35, 指数 2.03) 以 flow 调制, 闪烁频率 0.1 * glitchAmount ** 1.6, smooth 时按 exp(-4 * age / fade) 淡出, 指针搅动按 1400 像素每秒封顶, 入场 1.4 秒. 上游的逐格 CPU 状态 (延迟, 衰减, 游走者) 换成按格哈希把闪烁事件排在时间轴上的无状态着色器; tear 撕裂寿命 0.6 秒与格子尺寸 (高 = fontSize * (1 + 0.5 * spacing), 宽 = 0.6 倍高) 为本库定. lightMode 不单列, 换色靠 token. |
 
 ## Alternatives considered
 
