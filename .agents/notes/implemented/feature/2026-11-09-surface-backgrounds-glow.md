@@ -11,6 +11,7 @@ Decision-ID: surface-backgrounds-glow
 - `src/surface/backgrounds/glow/SoftAurora.tsx`
 - `src/surface/backgrounds/glow/DarkVeil.tsx`
 - `src/surface/backgrounds/glow/Silk.tsx`
+- `src/surface/backgrounds/glow/Grainient.tsx`
 
 ## Problem
 
@@ -28,6 +29,7 @@ Backgrounds 全量落地分七路, glow 路收以柔光, 光幕, 渐变流动为
 | SoftAurora | `SoftAurora` | 脉冲上限 4 (读 u_taps 最近 4 次), 入场 2s, 跟随 tau 0.325, 在场 0.45 / 0.8, 噪声相位 0.4 * 时钟, 三层光带; 能量着色取规格的 core = smoothstep(0.55, 1.6, energy), depth = 1.25 + 0.45 * core 与 density = 0.88 * (1 - exp(-1.9 * energy^1.7)). 默认速度 0.6. `enableMouseInteraction` 与公共 `mouseInteraction` 同义. 兜底为底色上一团主色光晕. |
 | DarkVeil | `DarkVeil` | 两段: 场通道 (域扭曲 fbm 高度 + 两向梯度, 分辨率倍率 = quality 钳到 0.1..1) 与上屏打光. 入场 1.8s 由中心外扩; 指针跟随速率 9, 拖拽速度混合 5, 触碰进场 / 离场 3 / 1.6, 光源跟随 4 (都换成 tau = 1 / k); sheen = pow(facing, 40) * smoothstep(0.08, 0.7, base), cover = 1 - exp(-peak * 1.6), ink = mix(ink, ink * 0.82, smoothstep(0.5, 1, cover)) 取规格原式. 默认速度 0.5, 颗粒 0.03. ENGINE-GAP: MAX_FIELD_PIXELS 需按画布尺寸动态定通道倍率, 内核 PassSpec.scale 是静态的, 只按 quality 取. |
 | Silk | `Silk` | 两层正弦褶皱 (宽褶 + 细褶按 ripple 混入) 经正弦域扭曲 (wave) 叠成绸面, 中心差分求法线; relief = 1 + (dot(normal, toLight) - toLight.z) * 1.8 * depth 与 gloss = pow(dot(normal, halfway), 48) * smoothstep(0.25, 0.85, n), fold / specular 取 smoothstep(0.28, 0.9) / smoothstep(0.72, 0.98) 取规格原式. 入场 2.2s 五次缓动由中心显出, 流动相位 0.1 * 时钟 (默认速度 5) 入场时多推 INTRO_RUSH 1.6 再收回; 跟随速率 10, 拖拽混合 4, 触碰 3.5 / 1.4, 光源跟随 3 (换成 tau); 点击涟漪读 u_taps, 寿命 1.6s. 兜底为双色斜向渐变. |
+| Grainient | `Grainient` | 色标上限 8, 在 Oklab 里插值 (段内 shaped = smoothstep(0.5 - edge, 0.5 + edge, f), edge = 0.5 * softness), linear / radial 两型 (TYPES 0 / 1), bands > 1 时三角波往返; 分形噪声扭曲 (flow) 加丝光细纹 (silk), 流动相位 0.16 * 时钟; contrast 作用于 L, saturation 作用于 ab, 亮底模式 L 向 1 提 LIFT 0.2 (自管, 不走 GLOW_GLSL 的压墨). 入场 1.6s 由首色外扩 (lab = mix(ramp[0], lab, smoothstep(0, 1, reveal * 1.5 - length(uv - 0.5) * 0.6)) 取规格原式). 指针跟随 tau 0.06, 动时每 STIR_STEP 0.06s 落一个搅动点 (STIR_STEP 内长成, 寿命 1.3s, 上限 24, JS 侧队列打包成 vec4 数组); 点击旋涡读 u_taps 最近 4 次, 寿命 2.6s. 颗粒按 grainSize * dpr 取格, grainAnimated 关时不跳. 兜底为色标线性渐变. |
 
 ## Alternatives considered
 
