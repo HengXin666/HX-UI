@@ -7,3 +7,4 @@ export { WebThreads, type WebThreadsProps } from "./WebThreads";
 export { Waves, type WavesProps } from "./Waves";
 export { SlicedWaves, type SlicedWavesProps } from "./SlicedWaves";
 export { ShapeWaves, type ShapeWavesProps } from "./ShapeWaves";
+export { PatternWaves, type PatternWavesProps } from "./PatternWaves";
