@@ -1,0 +1,1725 @@
+{
+ "AnimatedNumber": [
+  {
+   "name": "value",
+   "type": "number",
+   "default": "-",
+   "desc": "目标值. 变化时从当前显示值弹到新值, 不会跳回起点.",
+   "required": true
+  },
+  {
+   "name": "from",
+   "type": "number",
+   "default": "-",
+   "desc": "首次进入视口时从这个值开始. 省略则首帧直接显示 value, 只有后续变化才有动画.",
+   "required": false
+  },
+  {
+   "name": "spring",
+   "type": "\"soft\" | \"snappy\" | \"bouncy\"",
+   "default": "\"soft\"",
+   "desc": "弹簧档位. 默认 soft.",
+   "required": false
+  },
+  {
+   "name": "locale",
+   "type": "string",
+   "default": "-",
+   "desc": "区域设置, 省略时跟随运行环境.",
+   "required": false
+  },
+  {
+   "name": "format",
+   "type": "NumberFormatOptions",
+   "default": "-",
+   "desc": "Intl.NumberFormat 选项 (货币, 百分比, 紧凑写法等). 省略小数位时按 value 自身的小数位.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "Backdrop": [
+  {
+   "name": "variant",
+   "type": "\"grid\" | \"dots\" | \"aurora\"",
+   "default": "\"grid\"",
+   "desc": "底纹种类: - grid: 1px 网格线, 适合工具型首屏与空状态 - dots: 点阵, 比网格安静, 适合大面积铺底 - aurora: 主色与辅色的柔光极光, 适合落地页首屏与强调区",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "24",
+   "desc": "grid 的格距与 dots 的点距 (px). aurora 不使用.",
+   "required": false
+  },
+  {
+   "name": "fade",
+   "type": "boolean",
+   "default": "true",
+   "desc": "从中心向四周渐隐, 避免底纹在边缘硬切.",
+   "required": false
+  },
+  {
+   "name": "animated",
+   "type": "boolean",
+   "default": "true",
+   "desc": "aurora 缓慢漂移. 减弱动效时总是静止.",
+   "required": false
+  }
+ ],
+ "Beam": [
+  {
+   "name": "angle",
+   "type": "number",
+   "default": "18",
+   "desc": "光束偏转角 (deg), 0 为竖直向下.",
+   "required": false
+  },
+  {
+   "name": "x",
+   "type": "number",
+   "default": "50",
+   "desc": "光源横向位置 (%).",
+   "required": false
+  },
+  {
+   "name": "y",
+   "type": "number",
+   "default": "0",
+   "desc": "光源纵向位置 (%).",
+   "required": false
+  },
+  {
+   "name": "width",
+   "type": "number",
+   "default": "180",
+   "desc": "光束宽度 (px).",
+   "required": false
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "default": "\"primary\"",
+   "desc": "取色的语义令牌名.",
+   "required": false
+  },
+  {
+   "name": "intensity",
+   "type": "number",
+   "default": "0.7",
+   "desc": "强度 0..1.",
+   "required": false
+  },
+  {
+   "name": "animated",
+   "type": "boolean",
+   "default": "false",
+   "desc": "缓慢呼吸. 减弱动效时总是静止.",
+   "required": false
+  }
+ ],
+ "BorderBeam": [
+  {
+   "name": "duration",
+   "type": "number",
+   "default": "6",
+   "desc": "绕边一圈的时长 (秒).",
+   "required": false
+  },
+  {
+   "name": "delay",
+   "type": "number",
+   "default": "0",
+   "desc": "起步延迟 (秒), 多个光束错开时用.",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"primary\" | \"accent\"",
+   "default": "\"primary\"",
+   "desc": "取色: primary 主色, accent 辅色.",
+   "required": false
+  },
+  {
+   "name": "reverse",
+   "type": "boolean",
+   "default": "false",
+   "desc": "逆时针流动.",
+   "required": false
+  }
+ ],
+ "Button": [
+  {
+   "name": "variant",
+   "type": "\"link\" | \"default\" | \"primary\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\" | \"gradient\"",
+   "default": "\"default\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "\"default\" | \"xs\" | \"sm\" | \"lg\" | \"icon\" | \"icon-xs\" | \"icon-sm\" | \"icon-lg\"",
+   "default": "\"default\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "press",
+   "type": "boolean",
+   "default": "-",
+   "desc": "按压缩放 (可选, 默认关): 按下缩到 97%, 减弱动效时不缩放",
+   "required": false
+  },
+  {
+   "name": "asChild",
+   "type": "boolean",
+   "default": "false",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "ripple",
+   "type": "boolean",
+   "default": "true",
+   "desc": "点按水波纹. 默认 true.",
+   "required": false
+  },
+  {
+   "name": "loading",
+   "type": "boolean",
+   "default": "false",
+   "desc": "标签让位给旋转指示, 宽度仍由标签占住.",
+   "required": false
+  }
+ ],
+ "CtaBanner": [
+  {
+   "name": "eyebrow",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "title",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "lead",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "ctas",
+   "type": "Cta[]",
+   "default": "-",
+   "desc": "一个或两个 (主 + 次).",
+   "required": true
+  },
+  {
+   "name": "media",
+   "type": "Media",
+   "default": "-",
+   "desc": "背景图 (boxed 时铺在卡片里, full 时铺满区块), 自动加压暗层.",
+   "required": false
+  },
+  {
+   "name": "variant",
+   "type": "\"boxed\" | \"inline\" | \"full\"",
+   "default": "\"boxed\"",
+   "desc": "inline 横排 / boxed 卡片 / full 通栏. 默认 boxed.",
+   "required": false
+  },
+  {
+   "name": "fill",
+   "type": "\"gradient\" | \"none\" | \"mesh\"",
+   "default": "\"none\"",
+   "desc": "渐变底纹: none / gradient (--gradient-brand) / mesh.",
+   "required": false
+  },
+  {
+   "name": "titleSize",
+   "type": "\"sm\" | \"lg\" | \"md\" | \"xl\" | \"2xl\"",
+   "default": "\"lg\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "titleLevel",
+   "type": "1 | 2 | 4 | 3",
+   "default": "2",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "id",
+   "type": "string",
+   "default": "-",
+   "desc": "锚点, 也用于 ScrollSpy.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "classNames",
+   "type": "SlotClassNames<\"content\" | \"container\" | \"root\" | \"backdrop\", BlockShellState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "styles",
+   "type": "SlotStyles<\"content\" | \"container\" | \"root\" | \"backdrop\", BlockShellState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"image\" | \"plain\" | \"muted\" | \"card\" | \"inverted\" | \"brand\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pad",
+   "type": "\"sm\" | \"lg\" | \"none\" | \"md\" | \"xl\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "width",
+   "type": "\"content\" | \"max\" | \"full\" | \"prose\" | \"narrow\" | \"wide\" | \"bleed\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "align",
+   "type": "\"center\" | \"start\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "reveal",
+   "type": "\"fade\" | \"rise\" | \"stagger\" | false",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "backdrop",
+   "type": "ReactNode | BackdropSpec",
+   "default": "-",
+   "desc": "背景层: 内置/注入的规格, 或直接给节点 (例如 <MeshGradient />).",
+   "required": false
+  },
+  {
+   "name": "as",
+   "type": "\"article\" | \"aside\" | \"div\" | \"footer\" | \"header\" | \"section\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "labels",
+   "type": "Partial<BlockLabels>",
+   "default": "-",
+   "desc": "覆盖区块内置 aria 兜底文案.",
+   "required": false
+  },
+  {
+   "name": "slots",
+   "type": "BlockSlots",
+   "default": "-",
+   "desc": "\"90% 数据 + 10% 定制\" 的插槽.",
+   "required": false
+  },
+  {
+   "name": "aria-label",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "aria-labelledby",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "DataTable": [
+  {
+   "name": "columns",
+   "type": "readonly DataTableColumn<T>[]",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "rows",
+   "type": "readonly T[]",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "rowKey",
+   "type": "(row: T, index: number) => string | number",
+   "default": "-",
+   "desc": "行 key。默认取 (row as {id}).id, 取不到就用下标 有重复 key 的风险, 建议显式给。",
+   "required": false
+  },
+  {
+   "name": "onRowClick",
+   "type": "(row: T) => void",
+   "default": "-",
+   "desc": "点整行。给了就会加 cursor-pointer 与键盘可达性。",
+   "required": false
+  },
+  {
+   "name": "loading",
+   "type": "boolean",
+   "default": "false",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "loadingRows",
+   "type": "number",
+   "default": "5",
+   "desc": "加载态占位行数。",
+   "required": false
+  },
+  {
+   "name": "empty",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "emptyText",
+   "type": "string",
+   "default": "\"暂无数据\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "maxHeight",
+   "type": "string",
+   "default": "-",
+   "desc": "容器最大高度。给值才出滚动区与粘性表头。",
+   "required": false
+  },
+  {
+   "name": "bare",
+   "type": "boolean",
+   "default": "false",
+   "desc": "不套 Card, 直接渲染表格 嵌进已有卡片时用。",
+   "required": false
+  },
+  {
+   "name": "title",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "表格外的标题栏 (套 Card 时包在 CardHeader 里)。",
+   "required": false
+  },
+  {
+   "name": "actions",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tableClassName",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "Dialog": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "open",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "defaultOpen",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "onOpenChange",
+   "type": "(open: boolean) => void",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "modal",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "DialogContent": [
+  {
+   "name": "forceMount",
+   "type": "true",
+   "default": "-",
+   "desc": "Used to force mounting when more control is needed. Useful when controlling animation with React animation libraries.",
+   "required": false
+  },
+  {
+   "name": "asChild",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "deferPointerDownOutside",
+   "type": "boolean",
+   "default": "-",
+   "desc": "When `true`, a `'pointerdown'` event outside of the layered element will wait for the interaction's click event before dispatching, allowing third-party code to stop propagation of later events and cancel dismissal.",
+   "required": false
+  },
+  {
+   "name": "onEscapeKeyDown",
+   "type": "(event: KeyboardEvent) => void",
+   "default": "-",
+   "desc": "Event handler called when the escape key is down. Can be prevented.",
+   "required": false
+  },
+  {
+   "name": "onPointerDownOutside",
+   "type": "(event: PointerDownOutsideEvent) => void",
+   "default": "-",
+   "desc": "Event handler called when the a `pointerdown` event happens outside of the `DismissableLayer`. Can be prevented.",
+   "required": false
+  },
+  {
+   "name": "onFocusOutside",
+   "type": "(event: FocusOutsideEvent) => void",
+   "default": "-",
+   "desc": "Event handler called when the focus moves outside of the `DismissableLayer`. Can be prevented.",
+   "required": false
+  },
+  {
+   "name": "onInteractOutside",
+   "type": "(event: PointerDownOutsideEvent | FocusOutsideEvent) => void",
+   "default": "-",
+   "desc": "Event handler called when an interaction happens outside the `DismissableLayer`. Specifically, when a `pointerdown` event happens outside or focus moves outside of it. Can be prevented.",
+   "required": false
+  },
+  {
+   "name": "onOpenAutoFocus",
+   "type": "(event: Event) => void",
+   "default": "-",
+   "desc": "Event handler called when auto-focusing on open. Can be prevented.",
+   "required": false
+  },
+  {
+   "name": "onCloseAutoFocus",
+   "type": "(event: Event) => void",
+   "default": "-",
+   "desc": "Event handler called when auto-focusing on close. Can be prevented.",
+   "required": false
+  },
+  {
+   "name": "overlayClassName",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "showCloseButton",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "DialogFooter": [
+  {
+   "name": "showCloseButton",
+   "type": "boolean",
+   "default": "false",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "GradientBorder": [
+  {
+   "name": "colors",
+   "type": "readonly string[]",
+   "default": "GRADIENT_BORDER_DEFAULT_TOKENS",
+   "desc": "渐变色标的语义令牌名, 按顺序排列.",
+   "required": false
+  },
+  {
+   "name": "angle",
+   "type": "number",
+   "default": "135",
+   "desc": "渐变角度 (deg).",
+   "required": false
+  }
+ ],
+ "GradientText": [
+  {
+   "name": "from",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"heading\" | \"accent\" | \"success\"",
+   "default": "-",
+   "desc": "起点色标 (语义令牌名). from 与 to 都不给时使用品牌渐变令牌 --gradient-brand.",
+   "required": false
+  },
+  {
+   "name": "via",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"heading\" | \"accent\" | \"success\"",
+   "default": "-",
+   "desc": "可选中间色标.",
+   "required": false
+  },
+  {
+   "name": "to",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"heading\" | \"accent\" | \"success\"",
+   "default": "-",
+   "desc": "终点色标.",
+   "required": false
+  },
+  {
+   "name": "angle",
+   "type": "number",
+   "default": "135",
+   "desc": "渐变角度 (deg), 默认 135.",
+   "required": false
+  },
+  {
+   "name": "classNames",
+   "type": "SlotClassNames<\"root\", GradientTextState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "styles",
+   "type": "SlotStyles<\"root\", GradientTextState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "Grain": [
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "0.12",
+   "desc": "颗粒不透明度 0..1.",
+   "required": false
+  },
+  {
+   "name": "blend",
+   "type": "\"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\"",
+   "default": "\"overlay\"",
+   "desc": "与下层的混合方式.",
+   "required": false
+  }
+ ],
+ "GridLines": [
+  {
+   "name": "size",
+   "type": "number",
+   "default": "32",
+   "desc": "格距 (px).",
+   "required": false
+  },
+  {
+   "name": "crossEvery",
+   "type": "number",
+   "default": "4",
+   "desc": "每隔几格在交点放一个十字准星, 0 关闭.",
+   "required": false
+  },
+  {
+   "name": "fade",
+   "type": "boolean",
+   "default": "true",
+   "desc": "从中心向四周渐隐.",
+   "required": false
+  }
+ ],
+ "Hero": [
+  {
+   "name": "layout",
+   "type": "\"split\" | \"centered\" | \"media-bg\" | \"video-bg\" | \"product\" | \"editorial\"",
+   "default": "-",
+   "desc": "版式, 默认 centered.",
+   "required": false
+  },
+  {
+   "name": "eyebrow",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pill",
+   "type": "HeroPill",
+   "default": "-",
+   "desc": "事件胶囊 (resend \"What you missed ...\", shadcn 公告).",
+   "required": false
+  },
+  {
+   "name": "title",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "rotate",
+   "type": "string[]",
+   "default": "-",
+   "desc": "标题第二行的轮换词 (shopify, vercel). 一个词时等同静态.",
+   "required": false
+  },
+  {
+   "name": "rotateInterval",
+   "type": "number",
+   "default": "-",
+   "desc": "轮换停留时长 (ms).",
+   "required": false
+  },
+  {
+   "name": "lead",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "leadMeasure",
+   "type": "\"default\" | \"none\" | \"narrow\" | \"wide\"",
+   "default": "-",
+   "desc": "导语最大行宽档, 透传给 Lead 的 measure (narrow 45ch / default 60ch / wide 75ch / none). 默认 default.",
+   "required": false
+  },
+  {
+   "name": "padTop",
+   "type": "number | HeroPadTop",
+   "default": "-",
+   "desc": "顶部留白, 独立于 pad 的 section 节奏: 档位映射 --hero-pad-top-*, 数字按 px. 只作用于 Hero 根节点.",
+   "required": false
+  },
+  {
+   "name": "ctas",
+   "type": "Cta[]",
+   "default": "-",
+   "desc": "通常一主一次两个.",
+   "required": false
+  },
+  {
+   "name": "command",
+   "type": "string",
+   "default": "-",
+   "desc": "安装命令 (tailwind / nextjs).",
+   "required": false
+  },
+  {
+   "name": "media",
+   "type": "Media",
+   "default": "-",
+   "desc": "分屏与产品版式的媒体; media-bg / video-bg 的背景.",
+   "required": false
+  },
+  {
+   "name": "mockup",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "产品 mock 节点 (linear / shadcn 的 DOM 产品界面), 优先于 media.",
+   "required": false
+  },
+  {
+   "name": "frame",
+   "type": "\"none\" | \"browser\" | \"device\" | \"mock\" | \"window\"",
+   "default": "-",
+   "desc": "媒体外框: none / browser / device (笔记本机身) / mock (透视倾斜 + 渐隐的产品界面).",
+   "required": false
+  },
+  {
+   "name": "frameAddress",
+   "type": "Rich",
+   "default": "-",
+   "desc": "浏览器外框地址栏文字.",
+   "required": false
+  },
+  {
+   "name": "mediaSide",
+   "type": "\"end\" | \"start\"",
+   "default": "-",
+   "desc": "分屏媒体位置.",
+   "required": false
+  },
+  {
+   "name": "scrim",
+   "type": "boolean",
+   "default": "-",
+   "desc": "媒体底 / 视频底是否加压暗渐变, 保证文字对比. 默认 true.",
+   "required": false
+  },
+  {
+   "name": "trust",
+   "type": "HeroTrust",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "titleSize",
+   "type": "\"sm\" | \"lg\" | \"md\" | \"xl\" | \"2xl\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "titleLevel",
+   "type": "1 | 2 | 4 | 3",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "id",
+   "type": "string",
+   "default": "-",
+   "desc": "锚点, 也用于 ScrollSpy.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "classNames",
+   "type": "SlotClassNames<\"content\" | \"container\" | \"root\" | \"backdrop\", BlockShellState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "styles",
+   "type": "SlotStyles<\"content\" | \"container\" | \"root\" | \"backdrop\", BlockShellState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"image\" | \"plain\" | \"muted\" | \"card\" | \"inverted\" | \"brand\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pad",
+   "type": "\"sm\" | \"lg\" | \"none\" | \"md\" | \"xl\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "width",
+   "type": "\"content\" | \"max\" | \"full\" | \"prose\" | \"narrow\" | \"wide\" | \"bleed\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "align",
+   "type": "\"center\" | \"start\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "reveal",
+   "type": "\"fade\" | \"rise\" | \"stagger\" | false",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "backdrop",
+   "type": "ReactNode | BackdropSpec",
+   "default": "-",
+   "desc": "背景层: 内置/注入的规格, 或直接给节点 (例如 <MeshGradient />).",
+   "required": false
+  },
+  {
+   "name": "as",
+   "type": "\"article\" | \"aside\" | \"div\" | \"footer\" | \"header\" | \"section\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "labels",
+   "type": "Partial<BlockLabels>",
+   "default": "-",
+   "desc": "覆盖区块内置 aria 兜底文案.",
+   "required": false
+  },
+  {
+   "name": "slots",
+   "type": "BlockSlots",
+   "default": "-",
+   "desc": "\"90% 数据 + 10% 定制\" 的插槽.",
+   "required": false
+  },
+  {
+   "name": "aria-label",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "aria-labelledby",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "mockTilt",
+   "type": "number",
+   "default": "-",
+   "desc": "frame=\"mock\" 时绕 X 轴的倾斜角 (deg), 默认 MV102_DEFAULT.heroMockTilt; 减弱动效时不倾斜.",
+   "required": false
+  },
+  {
+   "name": "mockFade",
+   "type": "\"none\" | \"bottom\" | \"top\"",
+   "default": "-",
+   "desc": "frame=\"mock\" 时的渐隐边 (top / bottom / none), 默认 MV102_DEFAULT.heroMockFade.",
+   "required": false
+  }
+ ],
+ "LogoWall": [
+  {
+   "name": "title",
+   "type": "Rich",
+   "default": "-",
+   "desc": "标题 (简写); 给了 heading 时以 heading 为准.",
+   "required": false
+  },
+  {
+   "name": "description",
+   "type": "Rich",
+   "default": "-",
+   "desc": "说明 (简写, 随标题组渲染).",
+   "required": false
+  },
+  {
+   "name": "caption",
+   "type": "Rich",
+   "default": "-",
+   "desc": "logo 上方一行小字说明 (\"超过 12,000 个团队...\"), 渲染为正文档 <p>, 不走区块标题通道.",
+   "required": false
+  },
+  {
+   "name": "eyebrow",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "heading",
+   "type": "SectionHeadingData",
+   "default": "-",
+   "desc": "完整标题组 (含动作).",
+   "required": false
+  },
+  {
+   "name": "logos",
+   "type": "Logo[]",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "mode",
+   "type": "\"grid\" | \"marquee\"",
+   "default": "\"grid\"",
+   "desc": "grid 静态网格 / marquee 无限滚动. 默认 grid.",
+   "required": false
+  },
+  {
+   "name": "grayscale",
+   "type": "boolean",
+   "default": "true",
+   "desc": "灰度 + 悬停复色. 默认 true.",
+   "required": false
+  },
+  {
+   "name": "cols",
+   "type": "5 | 6 | 4 | 3 | 8 | 7",
+   "default": "5",
+   "desc": "网格在宽容器下的列数.",
+   "required": false
+  },
+  {
+   "name": "autoMarquee",
+   "type": "boolean",
+   "default": "true",
+   "desc": "grid 模式在窄容器下自动转 marquee (design 4.2). 默认 true.",
+   "required": false
+  },
+  {
+   "name": "logoHeight",
+   "type": "number",
+   "default": "32",
+   "desc": "logo 统一高度 (px).",
+   "required": false
+  },
+  {
+   "name": "duration",
+   "type": "number",
+   "default": "-",
+   "desc": "marquee 滚完一份的时长 (秒).",
+   "required": false
+  },
+  {
+   "name": "reverse",
+   "type": "boolean",
+   "default": "-",
+   "desc": "marquee 反向.",
+   "required": false
+  },
+  {
+   "name": "id",
+   "type": "string",
+   "default": "-",
+   "desc": "锚点, 也用于 ScrollSpy.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "classNames",
+   "type": "SlotClassNames<\"content\" | \"container\" | \"root\" | \"backdrop\", BlockShellState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "styles",
+   "type": "SlotStyles<\"content\" | \"container\" | \"root\" | \"backdrop\", BlockShellState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"image\" | \"plain\" | \"muted\" | \"card\" | \"inverted\" | \"brand\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pad",
+   "type": "\"sm\" | \"lg\" | \"none\" | \"md\" | \"xl\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "width",
+   "type": "\"content\" | \"max\" | \"full\" | \"prose\" | \"narrow\" | \"wide\" | \"bleed\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "align",
+   "type": "\"center\" | \"start\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "reveal",
+   "type": "\"fade\" | \"rise\" | \"stagger\" | false",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "backdrop",
+   "type": "ReactNode | BackdropSpec",
+   "default": "-",
+   "desc": "背景层: 内置/注入的规格, 或直接给节点 (例如 <MeshGradient />).",
+   "required": false
+  },
+  {
+   "name": "as",
+   "type": "\"article\" | \"aside\" | \"div\" | \"footer\" | \"header\" | \"section\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "labels",
+   "type": "Partial<BlockLabels>",
+   "default": "-",
+   "desc": "覆盖区块内置 aria 兜底文案.",
+   "required": false
+  },
+  {
+   "name": "slots",
+   "type": "BlockSlots",
+   "default": "-",
+   "desc": "\"90% 数据 + 10% 定制\" 的插槽.",
+   "required": false
+  },
+  {
+   "name": "aria-label",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "aria-labelledby",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "Marquee": [
+  {
+   "name": "pauseOnHover",
+   "type": "boolean",
+   "default": "false",
+   "desc": "指针悬停时暂停. 键盘焦点落在里面时总是暂停.",
+   "required": false
+  },
+  {
+   "name": "reverse",
+   "type": "boolean",
+   "default": "false",
+   "desc": "反向滚动 (横向从左往右, 纵向从上往下).",
+   "required": false
+  },
+  {
+   "name": "vertical",
+   "type": "boolean",
+   "default": "false",
+   "desc": "纵向滚动.",
+   "required": false
+  },
+  {
+   "name": "repeat",
+   "type": "number",
+   "default": "2",
+   "desc": "内容复制份数, 至少 2. 内容很短时调大, 避免出现空档.",
+   "required": false
+  },
+  {
+   "name": "duration",
+   "type": "number",
+   "default": "-",
+   "desc": "滚完一份的时长 (秒). 不传用 effects.css 的默认值.",
+   "required": false
+  },
+  {
+   "name": "gap",
+   "type": "string",
+   "default": "-",
+   "desc": "项与项, 份与份之间的间距, 任意 CSS 长度.",
+   "required": false
+  },
+  {
+   "name": "fade",
+   "type": "boolean",
+   "default": "false",
+   "desc": "两端渐隐.",
+   "required": false
+  }
+ ],
+ "MeshGradient": [
+  {
+   "name": "colors",
+   "type": "readonly string[]",
+   "default": "MESH_DEFAULT_TOKENS",
+   "desc": "语义令牌名, 每个一团径向光, 建议 3 个以上 (\"primary\", \"accent-2\", \"success\" ...).",
+   "required": false
+  },
+  {
+   "name": "intensity",
+   "type": "number",
+   "default": "0.6",
+   "desc": "强度 0..1, 决定每团光的令牌混入比例.",
+   "required": false
+  },
+  {
+   "name": "animated",
+   "type": "boolean",
+   "default": "true",
+   "desc": "光团缓慢漂移. 减弱动效时总是静止.",
+   "required": false
+  },
+  {
+   "name": "fade",
+   "type": "boolean",
+   "default": "false",
+   "desc": "从中心向四周渐隐.",
+   "required": false
+  }
+ ],
+ "Newsletter": [
+  {
+   "name": "title",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "lead",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "placeholder",
+   "type": "string",
+   "default": "-",
+   "desc": "输入框占位.",
+   "required": true
+  },
+  {
+   "name": "emailLabel",
+   "type": "string",
+   "default": "-",
+   "desc": "输入框的可访问名称 (视觉隐藏的 label). 缺省用 placeholder.",
+   "required": false
+  },
+  {
+   "name": "submitLabel",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "submittingLabel",
+   "type": "Rich",
+   "default": "-",
+   "desc": "提交中按钮文案; 缺省用 labels.loading.",
+   "required": false
+  },
+  {
+   "name": "successMessage",
+   "type": "Rich",
+   "default": "-",
+   "desc": "成功 / 失败 / 格式错误的提示 (进 live region).",
+   "required": true
+  },
+  {
+   "name": "errorMessage",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "invalidMessage",
+   "type": "Rich",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "onSubmit",
+   "type": "(email: string) => Promise<void>",
+   "default": "-",
+   "desc": "抛错即进入 error 态.",
+   "required": true
+  },
+  {
+   "name": "consent",
+   "type": "Rich",
+   "default": "-",
+   "desc": "隐私说明行 (\"订阅即同意 <a>隐私政策</a>\").",
+   "required": false
+  },
+  {
+   "name": "variant",
+   "type": "\"inline\" | \"card\"",
+   "default": "\"inline\"",
+   "desc": "inline 文案与表单同行 (宽容器) / card 卡片. 默认 inline.",
+   "required": false
+  },
+  {
+   "name": "status",
+   "type": "\"success\" | \"idle\" | \"submitting\" | \"error\"",
+   "default": "-",
+   "desc": "受控状态 (调用方自管时传); 不传时内部状态机管理.",
+   "required": false
+  },
+  {
+   "name": "onStatusChange",
+   "type": "(status: NewsletterStatus) => void",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "resetOnSuccess",
+   "type": "boolean",
+   "default": "true",
+   "desc": "成功后清空输入. 默认 true.",
+   "required": false
+  },
+  {
+   "name": "titleSize",
+   "type": "\"sm\" | \"lg\" | \"md\" | \"xl\" | \"2xl\"",
+   "default": "\"md\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "titleLevel",
+   "type": "1 | 2 | 4 | 3",
+   "default": "2",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "id",
+   "type": "string",
+   "default": "-",
+   "desc": "锚点, 也用于 ScrollSpy.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "style",
+   "type": "CSSProperties",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "classNames",
+   "type": "SlotClassNames<\"content\" | \"container\" | \"root\" | \"backdrop\", BlockShellState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "styles",
+   "type": "SlotStyles<\"content\" | \"container\" | \"root\" | \"backdrop\", BlockShellState>",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"image\" | \"plain\" | \"muted\" | \"card\" | \"inverted\" | \"brand\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pad",
+   "type": "\"sm\" | \"lg\" | \"none\" | \"md\" | \"xl\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "width",
+   "type": "\"content\" | \"max\" | \"full\" | \"prose\" | \"narrow\" | \"wide\" | \"bleed\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "align",
+   "type": "\"center\" | \"start\"",
+   "default": "\"start\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "reveal",
+   "type": "\"fade\" | \"rise\" | \"stagger\" | false",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "backdrop",
+   "type": "ReactNode | BackdropSpec",
+   "default": "-",
+   "desc": "背景层: 内置/注入的规格, 或直接给节点 (例如 <MeshGradient />).",
+   "required": false
+  },
+  {
+   "name": "as",
+   "type": "\"article\" | \"aside\" | \"div\" | \"footer\" | \"header\" | \"section\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "labels",
+   "type": "Partial<BlockLabels>",
+   "default": "-",
+   "desc": "覆盖区块内置 aria 兜底文案.",
+   "required": false
+  },
+  {
+   "name": "slots",
+   "type": "BlockSlots",
+   "default": "-",
+   "desc": "\"90% 数据 + 10% 定制\" 的插槽.",
+   "required": false
+  },
+  {
+   "name": "aria-label",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "aria-labelledby",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "RotatingText": [
+  {
+   "name": "words",
+   "type": "string[]",
+   "default": "-",
+   "desc": "轮换的词. 至少一个; 只有一个时等同静态文本.",
+   "required": true
+  },
+  {
+   "name": "trigger",
+   "type": "\"interval\" | \"scroll\"",
+   "default": "\"interval\"",
+   "desc": "interval (默认) 定时轮换; scroll 按目标元素的滚动进度均分换词.",
+   "required": false
+  },
+  {
+   "name": "interval",
+   "type": "number",
+   "default": "2400",
+   "desc": "定时轮换的停留时长 (ms).",
+   "required": false
+  },
+  {
+   "name": "container",
+   "type": "RefObject<HTMLElement>",
+   "default": "-",
+   "desc": "scroll 触发时的滚动容器, 省略时跟随整页.",
+   "required": false
+  },
+  {
+   "name": "preset",
+   "type": "\"fade\" | \"fadeUp\" | \"fadeDown\" | \"scaleIn\" | \"blurIn\" | \"slideLeft\" | \"slideRight\"",
+   "default": "\"fadeUp\"",
+   "desc": "换词的进出场预设. 默认 fadeUp: 旧词上浮离场, 新词自下浮入.",
+   "required": false
+  },
+  {
+   "name": "onWordChange",
+   "type": "(index: number, word: string) => void",
+   "default": "-",
+   "desc": "当前词变化时回调.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "SettingRow": [
+  {
+   "name": "title",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "description",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "border",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "SettingSection": [
+  {
+   "name": "section",
+   "type": "SettingSectionMeta",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "title",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "description",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "t",
+   "type": "(key: string) => string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "SplitText": [
+  {
+   "name": "text",
+   "type": "string",
+   "default": "-",
+   "desc": "要拆分的纯文本.",
+   "required": true
+  },
+  {
+   "name": "by",
+   "type": "\"char\" | \"word\"",
+   "default": "\"char\"",
+   "desc": "char 逐字 (默认) 或 word 逐词. 中文建议逐字, 长英文句子建议逐词.",
+   "required": false
+  },
+  {
+   "name": "direction",
+   "type": "\"left\" | \"right\" | \"up\" | \"down\"",
+   "default": "\"up\"",
+   "desc": "每个单元从哪个方向进入. 默认 up (自下浮起).",
+   "required": false
+  },
+  {
+   "name": "step",
+   "type": "number",
+   "default": "-",
+   "desc": "相邻单元的起播间隔 (s). 省略时逐字 0.02, 逐词 0.06.",
+   "required": false
+  },
+  {
+   "name": "delay",
+   "type": "number",
+   "default": "0",
+   "desc": "第一个单元之前的延迟 (s). 区块里可直接接 useOrchestration 的结果.",
+   "required": false
+  },
+  {
+   "name": "timing",
+   "type": "\"enter\" | \"exit\" | \"emphasized\"",
+   "default": "\"enter\"",
+   "desc": "节奏, 默认 enter. 首屏大标题可用 emphasized.",
+   "required": false
+  },
+  {
+   "name": "trigger",
+   "type": "\"inView\" | \"mount\"",
+   "default": "\"inView\"",
+   "desc": "inView (默认) 进视口才播; mount 挂载即播.",
+   "required": false
+  },
+  {
+   "name": "once",
+   "type": "boolean",
+   "default": "true",
+   "desc": "inView 时是否只播一次.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "SpotlightCard": [
+  {
+   "name": "size",
+   "type": "number",
+   "default": "320",
+   "desc": "光斑直径 (px).",
+   "required": false
+  }
+ ],
+ "Switch": [
+  {
+   "name": "checked",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "defaultChecked",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "required",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "onCheckedChange",
+   "type": "(checked: boolean) => void",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "asChild",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "\"default\" | \"sm\"",
+   "default": "\"default\"",
+   "desc": "",
+   "required": false
+  }
+ ]
+}

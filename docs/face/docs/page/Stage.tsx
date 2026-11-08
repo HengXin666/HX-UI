@@ -90,7 +90,7 @@ export function StageBox({
 }): JSX.Element {
   const inner = fill ? "size-full" : "grid size-full place-items-center overflow-hidden p-6 text-center";
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-background" style={{ height }}>
+    <div data-demo className="relative overflow-hidden rounded-2xl border border-border bg-background" style={{ height }}>
       <div className={cn("mx-auto h-full", device === PHONE && "border-x border-border")} style={device === PHONE ? { width: PHONE_PX, maxWidth: "100%" } : undefined}>
         <div className={inner}>{children}</div>
       </div>

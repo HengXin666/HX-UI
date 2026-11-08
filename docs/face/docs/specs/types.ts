@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { generatedRows } from "../props";
 
 /** 一个控件的取值. 颜色控件存语义令牌名, 不存色值. */
 export type ControlValue = string | number | boolean;
@@ -33,6 +34,30 @@ export interface PropRow {
   readonly type: string;
   readonly initial: string;
   readonly desc: string;
+  readonly required?: boolean;
+}
+
+/**
+ * 页型. single: 可调单件, 全部段落; composite: 复合组件, 主演示只调常用属性, Props 按部件分表, 必有键盘段;
+ * block: 区块与模板, 宽舞台, 默认手机/桌面可切.
+ */
+export type PageKind = "single" | "composite" | "block";
+
+/** 示例段的一张卡: 标题, 一句说明, 预览与它对应的代码. */
+export interface Example {
+  readonly id: string;
+  readonly title: string;
+  readonly desc?: string;
+  readonly code: string;
+  readonly render: () => ReactNode;
+  /** 预览区对齐: center (默认) 居中成排, stretch 撑满宽度 (区块). */
+  readonly align?: "center" | "stretch";
+}
+
+/** 键盘段的一行: 按键 (可多个组合) 与它做的事. */
+export interface KeyRow {
+  readonly keys: readonly string[];
+  readonly action: string;
 }
 
 /**
@@ -68,7 +93,26 @@ export interface ComponentSpec {
   readonly required?: readonly string[];
   /** 用法代码里包在组件里的子内容, 省略时自闭合. */
   readonly children?: string;
+  /** 页型, 省略为 single. */
+  readonly kind?: PageKind;
+  /** 舞台高度 (px), 省略时按 fill 取文字或背景档. */
+  readonly height?: number;
+  /** 一起出 Props 表的其他部件 (Dialog 的 DialogContent 等), 按导出名. */
+  readonly parts?: readonly string[];
+  /** 生成的 Props 里 JSDoc 为空或是英文时, 按属性名补中文说明; 只对某个部件生效时键写成 "部件名.属性名". */
+  readonly propDesc?: Readonly<Record<string, string>>;
+  /** 不进 Props 表的属性 (区块共有的槽位与样式钩子等), 由 propsNote 一句话交代. */
+  readonly hideProps?: readonly string[];
+  /** Props 表下的一句补充: 透传给谁, 隐藏了哪些共有属性. */
+  readonly propsNote?: string;
+  readonly examples?: readonly Example[];
+  readonly keyboard?: readonly KeyRow[];
+  /** 自定义用法代码 (多部件组合, 整页模板), 省略时按控件值生成单个标签. */
+  readonly usage?: (values: Values) => string;
 }
+
+/** 挂在已有导航条目上的组件页: 名称, 说明, 分组沿用导航. */
+export type PageSpec = Omit<ComponentSpec, "label" | "desc" | "group">;
 
 /** Props 表里没有默认值的占位. */
 export const NONE = "-";
@@ -101,15 +145,32 @@ export function propsOf(spec: ComponentSpec, values: Values): Record<string, unk
   return spec.toProps ? spec.toProps(values) : { ...values };
 }
 
-/** Props 表: 控件行在前, 额外行在后. */
-export function propRows(spec: ComponentSpec): PropRow[] {
+/**
+ * 一个导出名的 Props 表. 类型, 默认值与说明取自源码类型 (scripts/docs-props.ts 生成),
+ * 说明按 控件说明 > propDesc > JSDoc 取第一个非空的; 控件对应的属性排在前面.
+ * 生成数据里没有该导出名时退回控件定义 (控件的 type 与 desc 手写).
+ */
+export function propRows(spec: ComponentSpec, name: string = spec.importName): PropRow[] {
+  const hidden = new Set(spec.hideProps ?? []);
+  const controlDesc = new Map(spec.controls.map((control) => [control.prop ?? control.key, control.desc]));
+  const generated = generatedRows(name);
+  if (generated) {
+    const main = name === spec.importName;
+    const rows = generated
+      .filter((row) => !hidden.has(row.name))
+      .map((row) => ({ ...row, desc: (main ? controlDesc.get(row.name) : undefined) || spec.propDesc?.[`${name}.${row.name}`] || spec.propDesc?.[row.name] || row.desc }));
+    const first = main ? rows.filter((row) => controlDesc.has(row.name)) : [];
+    const known = new Set(rows.map((row) => row.name));
+    const extra = main ? (spec.extraProps ?? []).filter((row) => !known.has(row.name)) : [];
+    return [...first, ...rows.filter((row) => !first.includes(row)), ...extra];
+  }
   const base = propsOf(spec, initialValues(spec.controls));
   const rows = new Map<string, PropRow>();
   for (const control of spec.controls) {
-    const name = control.prop ?? control.key;
-    if (rows.has(name)) continue;
-    const value = base[name];
-    rows.set(name, { name, type: control.type, initial: value === undefined ? NONE : JSON.stringify(value), desc: control.desc });
+    const key = control.prop ?? control.key;
+    if (rows.has(key)) continue;
+    const value = base[key];
+    rows.set(key, { name: key, type: control.type, initial: value === undefined ? NONE : JSON.stringify(value), desc: control.desc });
   }
   return [...rows.values(), ...(spec.extraProps ?? [])];
 }
@@ -124,6 +185,7 @@ function literal(value: unknown): string {
 
 /** 只写出与默认值不同的 props 加固定 props, 和读者自己会写的那份一样短. */
 export function usageCode(spec: ComponentSpec, values: Values): string {
+  if (spec.usage) return spec.usage(values);
   const props = propsOf(spec, values);
   const base = propsOf(spec, initialValues(spec.controls));
   const must = new Set(spec.required ?? []);

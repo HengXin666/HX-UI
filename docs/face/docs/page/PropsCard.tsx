@@ -11,21 +11,29 @@ const TABLE = cn(
 );
 const CODE_RESET = "[&_code]:rounded-none [&_code]:bg-transparent [&_code]:p-0";
 
-/** Props 卡: 库 ApiTable 的四列 (属性, 类型, 默认, 说明), 卡头给出属性个数. */
-export function PropsCard({ rows }: { readonly rows: readonly PropRow[] }): JSX.Element {
+/** 类型串超过这个长度折叠, 展开看全文 (区块的 classNames 之类). */
+const TYPE_COLLAPSE = 64;
+
+/**
+ * Props 卡: 库 ApiTable 的四列 (属性, 类型, 默认, 说明), 卡头给出属性个数.
+ * part 给出时是复合组件的某个部件, 标题写部件名, 用 h3 挂在主表下面.
+ */
+export function PropsCard({ rows, part, note }: { readonly rows: readonly PropRow[]; readonly part?: string; readonly note?: string }): JSX.Element {
+  const id = part ? `props-${part}` : "props";
+  const Heading = part ? "h3" : "h2";
   return (
-    <section aria-labelledby="props" className={CARD}>
+    <section aria-labelledby={id} className={CARD}>
       <div className="flex items-baseline justify-between px-[18px] pt-[18px] pb-3">
-        <h2 id="props" className={SECTION_TITLE}>
-          Props 属性
-        </h2>
+        <Heading id={id} className={SECTION_TITLE}>
+          {part ? <code className="font-mono text-[14px]">{part}</code> : "Props 属性"}
+        </Heading>
         <span className="text-[12px] text-muted-foreground">{rows.length} 个属性</span>
       </div>
       <ApiTable
-        caption="Props 属性"
-        collapseAt={0}
+        caption={part ? `${part} 属性` : "Props 属性"}
+        collapseAt={TYPE_COLLAPSE}
         labels={{ apiDefault: "默认" }}
-        rows={rows.map((row) => ({ name: row.name, type: row.type, default: row.initial, description: row.desc }))}
+        rows={rows.map((row) => ({ name: row.name, type: row.type, default: row.initial, description: row.desc || "-", required: row.required }))}
         classNames={{
           root: cn(INSET, "rounded-xl border-border/60"),
           table: TABLE,
@@ -37,9 +45,10 @@ export function PropsCard({ rows }: { readonly rows: readonly PropRow[] }): JSX.
             "[&_code]:inline-block [&_code]:max-w-[140px] [&_code]:truncate [&_code]:rounded-md [&_code]:border [&_code]:border-border/60 [&_code]:bg-muted/40 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:align-middle [&_code]:text-foreground",
             MONO,
           ),
-          description: "min-w-0 leading-relaxed text-foreground/85",
+          description: "min-w-[220px] whitespace-normal leading-relaxed text-foreground/85",
         }}
       />
+      {note ? <p className="px-[18px] pt-1 pb-4 text-[12.5px] leading-relaxed text-muted-foreground">{note}</p> : null}
     </section>
   );
 }

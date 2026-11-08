@@ -1,9 +1,11 @@
 import { DOCS, GROUPS, type DocEntry } from "../../src/nav";
 import { BACKGROUND_SPECS } from "./specs/background";
+import { BLOCK_PAGES } from "./specs/blocks";
+import { CORE_PAGES } from "./specs/core";
 import { EFFECT_SPECS } from "./specs/effect";
 import { SPEC_GROUP } from "./specs/groups";
 import { TEXT_SPECS } from "./specs/text";
-import type { ComponentSpec } from "./specs/types";
+import type { ComponentSpec, PageSpec } from "./specs/types";
 import { ICON, INDEX_ID } from "./constants";
 
 /** 所有可调组件页 (有 Customize 与 Props 定义). */
@@ -14,14 +16,23 @@ export interface CatalogEntry extends DocEntry {
   readonly spec?: ComponentSpec;
 }
 
+/** 挂在原有导航条目上的组件页 (样板批: 按钮, 开关, 对话框, 数据表, 首屏区块, 设置页模板), 按 id 找. */
+const PAGE_SPECS: ReadonlyMap<string, PageSpec> = new Map([...CORE_PAGES, ...BLOCK_PAGES].map((spec) => [spec.id, spec]));
+
 const START = GROUPS[0];
 const fromSpec = (spec: ComponentSpec): CatalogEntry => ({ id: spec.id, label: spec.label, group: spec.group, desc: spec.desc, spec });
+
+/** 原有条目有组件页定义时换成组件页, 名称, 说明, 分组仍取导航; 没有的继续走通用回退. */
+function withPage(entry: DocEntry): CatalogEntry {
+  const page = PAGE_SPECS.get(entry.id);
+  return page ? { ...entry, spec: { ...page, label: entry.label, desc: entry.desc, group: entry.group } } : entry;
+}
 
 /** 上手组在最前, 可调组件页紧随其后, 再是原有分组, 与侧栏阅读顺序一致. */
 export const CATALOG: readonly CatalogEntry[] = [
   ...DOCS.filter((entry) => entry.group === START),
   ...SPECS.map(fromSpec),
-  ...DOCS.filter((entry) => entry.group !== START),
+  ...DOCS.filter((entry) => entry.group !== START).map(withPage),
 ];
 
 export const CATALOG_GROUPS: readonly string[] = [START, ...Object.values(SPEC_GROUP), ...GROUPS.slice(1)];

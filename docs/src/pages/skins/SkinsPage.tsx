@@ -19,7 +19,7 @@ const DENSITY_ITEMS = DENSITY_LIST.map((d) => ({ key: d.name, label: d.label }))
 const VARIANT_ITEMS = Object.values(SKIN_VARIANT).map((v) => ({ key: v, label: SKINS_DOC.variantLabel[v] }));
 
 /**
- * 皮肤与密度演示页: 一键切换六套皮肤与三档密度, 作用于整个文档站的根元素,
+ * 皮肤与密度演示页: 一键切换七套皮肤与三档密度, 作用于整个文档站的根元素,
  * 离开本页时还原 (移除 data-skin / data-skin-variant / data-density), 其他页面保持默认外观.
  * 明暗仍由顶栏的主题开关控制, 每套皮肤都带亮暗两份值.
  *

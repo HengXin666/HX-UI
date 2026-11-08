@@ -25,8 +25,8 @@ function CopyLine({ code, what }: { code: string; what: string }): JSX.Element {
   );
 }
 
-/** 只收 h2: 一两个章节不值得占一栏, 与原目录同一条门槛. */
-const TOC_SELECTOR = "h2[id]";
+/** 只收 h2: 一两个章节不值得占一栏, 与原目录同一条门槛. 预览台与示例卡 (data-demo) 里区块自带的标题不算页面章节. */
+const TOC_SELECTOR = "h2[id]:not([data-demo] h2)";
 const TOC_MIN = 2;
 const HASH = "#";
 const ANCHOR_TAIL = /#\s*$/;
