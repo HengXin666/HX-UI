@@ -1,7 +1,7 @@
 /**
  * e2e 总入口。
  *
- * 逐个跑三个套件, 汇总退出码。单独成入口是因为门禁只能挂一条命令,
+ * 逐个跑各套件, 汇总退出码。单独成入口是因为门禁只能挂一条命令,
  * 而"外观 / 功能 / 持久化"是可分开诊断的三块  一起跑但分别报告。
  *
  * 依赖 docs dev server (127.0.0.1:5600)。没起就自己起一个, 跑完关掉。
@@ -9,7 +9,7 @@
 import { spawn, spawnSync } from "node:child_process";
 import path from "node:path";
 
-const SUITES = ["visual.mjs", "blueprint.mjs", "persist.mjs", "reactflow.mjs"];
+const SUITES = ["visual.mjs", "blueprint.mjs", "persist.mjs", "reactflow.mjs", "drawer.ts"];
 const PORT = 5600;
 
 /**
