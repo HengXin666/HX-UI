@@ -18,6 +18,8 @@ Decision-ID: surface-backgrounds-glow
 - `src/surface/backgrounds/glow/color-bends-shader.ts`
 - `src/surface/backgrounds/glow/PlasmaWave.tsx`
 - `src/surface/backgrounds/glow/plasma-wave-shader.ts`
+- `src/surface/backgrounds/glow/GradientWaves.tsx`
+- `src/surface/backgrounds/glow/gradient-waves-shader.ts`
 
 ## Problem
 
@@ -40,6 +42,7 @@ Backgrounds 全量落地分七路, glow 路收以柔光, 光幕, 渐变流动为
 | Plasma | `Plasma` | 两段: 体积通道 (倍率 = quality 钳到 0.1..1) 让视线穿过沿深度扭转 (twist) 的四层正弦湍流 (wave), 32 步累积发光密度 peak 与色带相位 band, 存 peak / 4 防 8 位截断; 上屏 level = 1 - exp(-peak) 与 hot = smoothstep(1, 3, peak) 取规格原式, 热芯按 shine 泛白. direction forward / reverse 换穿行方向, softness 换光片锐度 1 - softness. 视角弹簧 40 * (goal - yaw) - 11 * velocity 取规格原式, 热点进 / 离 4 / 2, 位置跟随 8 (换成 tau); 入场 1.6s 由中心外扩. 默认颗粒 0.04. ENGINE-GAP: MAX_VOLUME_PIXELS 需按画布尺寸动态定通道倍率, 内核 PassSpec.scale 是静态的. |
 | ColorBends | `ColorBends` | 采用: 色带上限 MAX_COLORS 8 (空数组退到 primary / accent / primary-glow token), 坐标按 rotation (默认 90 度) 加 autoRotate * 时钟旋转, 放大 2 / scale; 扭曲迭代 iterations 钳到 1..6, 每层位移 0.35 / i 的正弦, warpStrength 大于 1 时放大位移; 第 i 条带 bend = q.y + 0.45 sin(q.x frequency (0.8 + 0.15 i) + phase) 减居中偏置 0.32, 带宽 w = 1 - exp(-bandWidth / exp(bandWidth * abs(bend))) (bandWidth 默认 6), 前带按 1 - 0.35 w 遮挡后带, 亮度 intensity 1.5 后 tonemap. 指针跟随速率 8 (换成 tau), 在场进 / 离 0.35 / 0.6s; parallax 0.5 平移画面, mouseInfluence 1 按 exp(-5 d^2) 推开附近色带; 颗粒 noise 0.15 按 24 帧每秒跳; transparent 默认 true 时色带外透出下层. 默认 speed 0.2. 兜底为色带线性渐变, 减弱动效只画一帧. |
 | PlasmaWave | `PlasmaWave` | 采用: 色标上限 4 (默认 primary / accent) 横向插值, 两条正弦光带 y = 0.22 bend sin(2.1x + phase) + 0.08 bend sin(4.7x - 1.3 phase), 相速度 speed1 / speed2 0.05 (时钟乘 20), dir2 翻第二条方向, bend1 1 / bend2 0.5, 透视 p *= focalLength / (focalLength - 0.5 p.y) (默认 1.25), 线宽 0.01 + 0.04 thickness (默认 0.3); field = 1 - exp(-0.06 peak - 0.5 halo glow), 峰值 smoothstep(12, 26) 按 core 0.6 泛白. 热点横向跟随速率 6, 热度弹簧 120 * (目标 - 热度) - 19 * 速度钳到 0..1.15, 透镜跟随速率 8 均取规格原式, 透镜放大 0.25 * exp(-10 d^2); 入场 1.8s smoothstep 亮起. 像素比上限 2 乘 quality (钳 0.1..1), 颗粒 0.03, fade 边缘渐隐. 减弱动效只画一帧. ENGINE-GAP: 规格的粗 / 细两级追踪 (COARSE_RATIO 3) 加 4 级泛光金字塔与 MAX_LIGHT_PIXELS 不落地, 单通道按距离解析光晕, quality 只作像素比倍率. |
+| GradientWaves | `GradientWaves` | 采用: 单通道逐像素步进高度场, 相机高 CAMERA_HEIGHT 30 (height 默认 5.5 按比例换算), tilt 64 度为离垂直向下的俯仰, zoom 乘焦距; 步数按 QUALITY low / medium / high 56 / 84 / 120, 视线上限 FAR 4000, 从浪面上界平面起步再二分细化. 高度场 = 三层正弦 (waveRatio 横向拉伸, waveScale 换波数) + 长周期涌浪 swell% + 值噪声碎浪 turbulence%, 乘 amplitude. 着色 body = mix(wave, crest, smoothstep(0.45, 1, crest) * 0.5), haze = 1 - exp(-dist / (fogDepth * 5)), fade = 1 - smoothstep(0.35, 1, haze), col = mix(lit, horizon, smoothstep(0, 1, haze)) * 0.85 * brightness, density *= 1 - 0.5 smoothstep(0, 1, haze) 取规格原式; relief 定漫反射强度, lightAngle 为光源方位, sheen 为镜面高光. 入场 2.6s: rise = mix(1, smoothstep(front * 0.45, front * 1.6, d), active) 取规格原式, 前沿由 400 单位缓出收到 0 (浪由远处涌来). 视角跟随指针 tau 0.45, 浪向随偏航转 tau 0.6, 离开回中; 点击涌浪读 u_taps 最近 MAX_SWELLS 4 次, 在着色器里反投影到水面, 寿命 SWELL_SECONDS 3.2s, 高 SWELL_GAIN 2.8 * amplitude, 环宽 SWELL_WIDTH 8, 外扩 22 单位每秒. backgroundColor 默认 transparent 直通 alpha, 否则在着色器里垫底. 默认 speed 0.4, 颗粒 0.2. 兜底为天光到浪身竖向渐变, 减弱动效只画一帧. |
 
 ## Alternatives considered
 
