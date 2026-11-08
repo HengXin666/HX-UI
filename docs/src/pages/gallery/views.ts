@@ -1,9 +1,10 @@
-/** 画廊里的五块展示. 键就是分段控件的值. */
+/** 画廊里的六块展示. 键就是分段控件的值. */
 export const STUDIO_VIEW = {
   field: "field",
   kiln: "kiln",
   shots: "shots",
   viz: "viz",
+  page: "page",
   texture: "texture",
 } as const;
 
@@ -14,5 +15,6 @@ export const STUDIO_VIEWS = [
   { key: STUDIO_VIEW.kiln, label: "窑四号" },
   { key: STUDIO_VIEW.shots, label: "镜头" },
   { key: STUDIO_VIEW.viz, label: "数据" },
+  { key: STUDIO_VIEW.page, label: "整页描述" },
   { key: STUDIO_VIEW.texture, label: "质感" },
 ] as const;

@@ -25,7 +25,7 @@ Decision-ID: studio-shot-language
 
 过程与指标在 `Metric`, `Spark`, `Process`, `Compare`. 数字走已有的弹簧数字, 折线用 pathLength, 步骤连接线用 scale, 对比是原生 table.
 
-两张整页: `FieldPage` (田野, 软件产品) 与 `KilnPage` (窑四号, 商品与购买步骤). 文档站 `#/gallery` 用分段控件切到这两页, 镜头, 数据, 以及原来的质感拼贴.
+两张整页: `FieldPage` (田野, 软件产品) 与 `KilnPage` (窑四号, 商品与购买步骤). 文档站 `#/gallery` 用分段控件切到这两页, 镜头, 数据, 整页描述, 以及原来的质感拼贴. 数据一格改为展示 `src/viz` 可视化层 (见 viz-layer 决策), 整页描述一格用 `@hx/ui/page` 的 `definePage` 把商品页模板的同一份数据和可视化区块拼成一页 (见 layered-entries 决策).
 
 整数与已经重复过的短字符串不在新文件里再写一遍, 数字由 `src/studio/num.ts` 从 1 相加, 短字符串复用 `src/constants` 里已有的常量. 这是为了过 PROJECT-CONST-DUP, 不是另一套设计令牌.
 

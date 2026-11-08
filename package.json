@@ -21,6 +21,22 @@
       "types": "./dist/studio/index.d.ts",
       "import": "./dist/studio/index.js"
     },
+    "./motion": {
+      "types": "./dist/entry/motion.d.ts",
+      "import": "./dist/entry/motion.js"
+    },
+    "./viz": {
+      "types": "./dist/viz/index.d.ts",
+      "import": "./dist/viz/index.js"
+    },
+    "./blocks": {
+      "types": "./dist/blocks/namespace.d.ts",
+      "import": "./dist/blocks/namespace.js"
+    },
+    "./page": {
+      "types": "./dist/page/index.d.ts",
+      "import": "./dist/page/index.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./tokens.css": "./dist/tokens.css",
     "./base.css": "./dist/base.css",
