@@ -22,6 +22,41 @@
    "required": false
   },
   {
+   "name": "duration",
+   "type": "number",
+   "default": "-",
+   "desc": "定时计数的时长 (s). 给了就按 ease-out 在这段时间内数到目标, 不走弹簧; 省略时与原先一致.",
+   "required": false
+  },
+  {
+   "name": "delay",
+   "type": "number",
+   "default": "0",
+   "desc": "进视口后再等这么久才开始 (s).",
+   "required": false
+  },
+  {
+   "name": "roll",
+   "type": "boolean",
+   "default": "false",
+   "desc": "数字槽: 每位一条竖向滚动的槽, 位间错峰有上限 (只显示整数, 不走 format).",
+   "required": false
+  },
+  {
+   "name": "prefix",
+   "type": "string",
+   "default": "\"\"",
+   "desc": "数字前后的固定文字 (货币符号, 单位等), 不参与动画.",
+   "required": false
+  },
+  {
+   "name": "suffix",
+   "type": "string",
+   "default": "\"\"",
+   "desc": "",
+   "required": false
+  },
+  {
    "name": "locale",
    "type": "string",
    "default": "-",
@@ -1523,6 +1558,20 @@
    "required": false
   },
   {
+   "name": "stagger",
+   "type": "number",
+   "default": "0",
+   "desc": "逐字错峰的间隔 (s). 给了且大于 0 时新词逐字升入; 省略时整词一起换, 与原先一致.",
+   "required": false
+  },
+  {
+   "name": "staggerFrom",
+   "type": "\"center\" | \"first\" | \"last\"",
+   "default": "\"first\"",
+   "desc": "逐字错峰的起点: first 从头, last 从尾, center 从中间向两边.",
+   "required": false
+  },
+  {
    "name": "onWordChange",
    "type": "(index: number, word: string) => void",
    "default": "-",
@@ -1659,6 +1708,20 @@
    "type": "boolean",
    "default": "true",
    "desc": "inView 时是否只播一次.",
+   "required": false
+  },
+  {
+   "name": "staggerFrom",
+   "type": "\"center\" | \"end\" | \"start\"",
+   "default": "-",
+   "desc": "错峰起点: start 从头, end 从尾, center 从中间向两边. 省略时同 start.",
+   "required": false
+  },
+  {
+   "name": "mask",
+   "type": "boolean",
+   "default": "false",
+   "desc": "每个单元套一层裁切, 只在自己的行框里升起, 不越过上下文字.",
    "required": false
   },
   {

@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, type Variants } from "motion/react";
+import { motion, stagger, type Variants } from "motion/react";
 import { Fragment, useMemo, type JSX } from "react";
 import {
   MOTION_DIRECTION,
@@ -35,8 +35,17 @@ export interface SplitTextProps {
   trigger?: (typeof STAGGER_TRIGGER)[keyof typeof STAGGER_TRIGGER];
   /** inView 时是否只播一次. */
   once?: boolean;
+  /** 错峰起点: start 从头, end 从尾, center 从中间向两边. 省略时同 start. */
+  staggerFrom?: SplitStaggerFrom;
+  /** 每个单元套一层裁切, 只在自己的行框里升起, 不越过上下文字. */
+  mask?: boolean;
   className?: string;
 }
+
+export type SplitStaggerFrom = "start" | "end" | "center";
+
+/** 错峰起点到 motion 的 stagger 起点. */
+const STAGGER_ORIGIN = { start: "first", end: "last", center: "center" } as const;
 
 /** 方向换成预设: 位移来自哪边, 就用对应的 fade / slide. */
 const DIRECTION_PRESET: Record<MotionDirection, MotionPresetName> = {
@@ -61,6 +70,8 @@ function splitUnits(text: string, by: SplitBy): string[][] {
  * 逐字时一个词的字包在 whitespace-nowrap 里, 换行只发生在词与词之间.
  * 读屏器读外层的 aria-label 原文, 拆开的单元 aria-hidden, 不会被逐字拼读.
  * prefers-reduced-motion 时不拆分, 直接渲染静态原文.
+ * staggerFrom 与 mask 是可选补充 (行为规格参照 docs/research/catalog/textanimations.md 的 SplitText 条目, 实现为 HX 自有),
+ * 不给时行为与原先一致.
  */
 export function SplitText({
   text,
@@ -71,15 +82,22 @@ export function SplitText({
   timing = MOTION_TIMING.enter,
   trigger = STAGGER_TRIGGER.inView,
   once = true,
+  staggerFrom,
+  mask = false,
   className,
 }: SplitTextProps): JSX.Element {
   const { tokens, reduced } = useMotionTokens();
   const groups = useMemo(() => splitUnits(text, by), [text, by]);
   if (reduced) return <span className={className}>{text}</span>;
 
+  const interval = step ?? SPLIT_STEP_S[by];
   const container: Variants = {
     hidden: {},
-    visible: { transition: { staggerChildren: step ?? SPLIT_STEP_S[by], delayChildren: delay } },
+    visible: {
+      transition: staggerFrom
+        ? { delayChildren: stagger(interval, { from: STAGGER_ORIGIN[staggerFrom], startDelay: delay }) }
+        : { staggerChildren: interval, delayChildren: delay },
+    },
   };
   const unit = presetVariants(DIRECTION_PRESET[direction], tokens, { timing });
   const play = trigger === STAGGER_TRIGGER.mount
@@ -93,11 +111,10 @@ export function SplitText({
         }
         return (
           <span key={groupIndex} aria-hidden className="inline-block whitespace-nowrap">
-            {group.map((piece, pieceIndex) => (
-              <motion.span key={pieceIndex} className="inline-block" variants={unit}>
-                {piece}
-              </motion.span>
-            ))}
+            {group.map((piece, pieceIndex) => {
+              const moving = <motion.span key={pieceIndex} className="inline-block" variants={unit}>{piece}</motion.span>;
+              return mask ? <span key={pieceIndex} className="inline-block overflow-hidden align-bottom">{moving}</span> : moving;
+            })}
           </span>
         );
       })}
