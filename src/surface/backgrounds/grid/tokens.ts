@@ -56,3 +56,25 @@ export function follow(f: Follower, target: number, dt: number, tauUp: number, t
 export function enumOf<K extends string>(table: Readonly<Record<K, number>>, key: string): number {
   return (table as Readonly<Record<string, number>>)[key] ?? 0;
 }
+
+/**
+ * 解析色写成 2d 画布能吃的 color(srgb ...) 串, 不出现色值字面量.
+ *
+ * @param rgb 0..1 的 sRGB.
+ * @param alpha 不透明度 0..1.
+ */
+export function inkOf(rgb: Rgb, alpha: number = 1): string {
+  const [r, g, b] = rgb.map((c) => clamp(c, 0, 1).toFixed(4));
+  return `color(srgb ${r} ${g} ${b} / ${clamp(alpha, 0, 1).toFixed(4)})`;
+}
+
+/**
+ * 色相环上的满饱和 sRGB, 给彩虹模式用.
+ *
+ * @param turn 色相, 以圈计 (0..1 一圈).
+ */
+export function hueRgb(turn: number): Rgb {
+  const h = (((turn % 1) + 1) % 1) * 6;
+  const channel = (n: number): number => clamp(Math.abs(((h + n) % 6) - 3) - 1, 0, 1);
+  return [channel(0), channel(4), channel(2)];
+}
