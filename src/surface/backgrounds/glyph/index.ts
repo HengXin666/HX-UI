@@ -2,3 +2,4 @@
 export { Dither, type DitherProps } from "./Dither";
 export { GradientASCII, type GradientASCIIProps } from "./GradientASCII";
 export { LetterGlitch, type LetterGlitchProps } from "./LetterGlitch";
+export { FaultyTerminal, type FaultyTerminalProps } from "./FaultyTerminal";
