@@ -36,4 +36,4 @@ react-bits 的 Backgrounds 族 (docs/research/catalog/backgrounds-1.md 38 件, b
 
 另一路 backgrounds-2 与 surface 的 Animations / TextAnimations 都建在本内核上, 改公共头的 uniform 名或 BackdropFrame 字段会牵动全部件, 只能加不能改. 调度测试 (tests/surface/backdrop/kernel-runtime.test.tsx) 用假 IntersectionObserver, 假 2d 上下文与记录调用名的假 WebGL2 覆盖退化, 减弱动效, 离屏停帧与多通道顺序; jsdom 没有真实 WebGL, 着色器本身只在浏览器里验证. 半精度浮点渲染目标不可用的设备退到 8 位状态缓冲, 流体类精度下降. 主线接入时从 `src/surface/backdrop/kernel/index.ts` 导出, 本次不改 src/entry 与 src/index.ts.
 
-内核提交: (见下一行, 提交后补)
+内核提交: 177284e (feat(surface): backdrop 内核).  backgrounds-2 与 Animations, TextAnimations 两路从这个提交起可以直接建在内核上.
