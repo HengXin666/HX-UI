@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { BUTTON_TYPE, Grain, MeshGradient } from "@hx/ui";
+import { BUTTON_TYPE, Button, Grain, MeshGradient, SiteFooter, type SiteLinkGroup } from "@hx/ui";
 import { REPO_URL, TEMPLATE_ENTRY } from "../../../src/components/site";
 import { FACE_BENCH } from "../../router";
 import { ARROW, BTN, WRAP } from "../kit/layout";
@@ -10,17 +10,34 @@ const BOARD_COLORS = ["primary", "link", "primary", "primary"] as const;
 const BOARD_INTENSITY = 1;
 const YEAR = 2026;
 
-interface FooterLink {
-  readonly label: string;
-  readonly id?: string;
-  readonly href?: string;
-}
+/** 站内链接走 hash 路由 (#/id), 与 useFaceRoute 的 go 落到同一处. */
+const route = (id: string): string => `#/${id}`;
 
-const COLUMNS: ReadonlyArray<{ readonly title: string; readonly links: readonly FooterLink[] }> = [
-  { title: "社区", links: [{ label: "GitHub", href: REPO_URL }, { label: "提交记录", href: `${REPO_URL}/commits` }, { label: "问题反馈", href: `${REPO_URL}/issues` }] },
-  { title: "文档", links: [{ label: "安装", id: "install" }, { label: "组件", id: INDEX_ID }, { label: "设计令牌", id: "tokens" }, { label: "皮肤", id: "skins" }] },
-  { title: "模板", links: [{ label: "整页模板", id: TEMPLATE_ENTRY }, { label: "区块", id: "blocks-hero" }, { label: "整页描述", id: "page" }, { label: "Playground", id: FACE_BENCH }] },
+/** 页脚三列, 交给库 SiteFooter 的 groups. */
+const GROUPS: SiteLinkGroup[] = [
+  { id: "community", title: "社区", links: [{ id: "github", label: "GitHub", href: REPO_URL }, { id: "commits", label: "提交记录", href: `${REPO_URL}/commits` }, { id: "issues", label: "问题反馈", href: `${REPO_URL}/issues` }] },
+  { id: "docs", title: "文档", links: [{ id: "install", label: "安装", href: route("install") }, { id: "index", label: "组件", href: route(INDEX_ID) }, { id: "tokens", label: "设计令牌", href: route("tokens") }, { id: "skins", label: "皮肤", href: route("skins") }] },
+  { id: "templates", title: "模板", links: [{ id: "template", label: "整页模板", href: route(TEMPLATE_ENTRY) }, { id: "blocks", label: "区块", href: route("blocks-hero") }, { id: "page", label: "整页描述", href: route("page") }, { id: "bench", label: "Playground", href: route(FACE_BENCH) }] },
 ];
+
+const FOOTER_LABELS = { nav: "页脚", social: "社交", legal: "法务" } as const;
+
+/**
+ * 库 SiteFooter 的版式换成门面原样: 去掉库的顶边, 容器宽与上下 48, 品牌区宽度上限与底部版权行 (版权已在品牌区里);
+ * 窄屏也保持三列横排, 不折成手风琴.
+ */
+const FOOTER_SLOTS = {
+  root: "border-t-0 bg-transparent",
+  container: "mx-0 block max-w-none p-0",
+  top: "flex flex-wrap justify-between gap-8 px-5 pb-6 pt-8 md:gap-10 md:px-8 md:pb-0 md:pt-10",
+  brand: "block max-w-none",
+  columns: "flex gap-8 md:flex md:gap-16",
+  accordion: "hidden",
+  "group-title": "m-0 mb-1.5 text-[13px] text-heading",
+  "group-list": "gap-3",
+  link: "flex rounded-none text-[13px] focus-visible:outline-offset-0",
+  bottom: "hidden",
+} as const;
 
 const LINK = "text-[13px] text-muted-foreground transition-[color] hover:text-foreground focus-visible:outline-1 focus-visible:outline-ring";
 
@@ -57,16 +74,10 @@ function DotWordmark(): JSX.Element {
   );
 }
 
-/** 收尾: 渐变板 (库里的 MeshGradient), 页脚三列, 点阵字标, 同在一张外框里. */
+/** 收尾: 渐变板 (库里的 MeshGradient), 页脚 (库里的 SiteFooter), 点阵字标, 同在一张外框里. */
 export function Closing({ onGo }: { readonly onGo: (id: string) => void }): JSX.Element {
-  const go = (link: FooterLink): JSX.Element =>
-    link.href ? (
-      <a key={link.label} href={link.href} className={LINK}>{link.label}</a>
-    ) : (
-      <button key={link.label} type={BUTTON_TYPE} onClick={() => onGo(link.id ?? "")} className={`${LINK} text-left`}>{link.label}</button>
-    );
   return (
-    <footer className={`${WRAP} pt-[152px]`}>
+    <div className={`${WRAP} pt-[152px]`}>
       <div className="overflow-hidden rounded-[18px] border border-border bg-card/60 p-1.5 pb-0">
         <MeshGradient colors={BOARD_COLORS} intensity={BOARD_INTENSITY} animated className="rounded-[13px] border border-border-muted bg-background">
           <span aria-hidden className="pointer-events-none absolute inset-0 -z-[1] bg-gradient-to-b from-background via-background/40 to-transparent" />
@@ -75,43 +86,44 @@ export function Closing({ onGo }: { readonly onGo: (id: string) => void }): JSX.
             <h2 className="m-0 text-[30px] font-medium tracking-[-0.03em] text-heading md:text-[40px]">做一页让人记住的.</h2>
             <p className="mt-4 max-w-[26rem] text-[15px] leading-[22px] text-muted-foreground">从组件开始. 要整页的时候, 模板, 区块和整页描述都在这里.</p>
             <div className="mt-8 flex flex-wrap justify-center gap-2.5">
-              <button type={BUTTON_TYPE} className={`${BTN.light} h-[43px]`} onClick={() => onGo(INDEX_ID)}>
-                浏览组件 <span aria-hidden>{ARROW}</span>
-              </button>
-              <button type={BUTTON_TYPE} className={`${BTN.primary} h-[43px] px-5 text-[14px]`} onClick={() => onGo(TEMPLATE_ENTRY)}>看整页模板</button>
+              <Button asChild {...BTN.light}>
+                <button type={BUTTON_TYPE} onClick={() => onGo(INDEX_ID)}>
+                  浏览组件 <span aria-hidden>{ARROW}</span>
+                </button>
+              </Button>
+              <Button asChild variant={BTN.primary.variant} className={`${BTN.primary.className} h-[43px] text-[14px]`}>
+                <button type={BUTTON_TYPE} onClick={() => onGo(TEMPLATE_ENTRY)}>看整页模板</button>
+              </Button>
             </div>
           </div>
         </MeshGradient>
-        <div className="flex flex-wrap justify-between gap-8 px-5 pb-6 pt-8 md:gap-10 md:px-8 md:pb-0 md:pt-10">
-          <div>
-            <p className="m-0 flex items-center gap-3 text-[26px] font-medium tracking-tight text-heading">
-              <img src="./logo.svg" alt="" width={32} height={32} />
-              HX UI
-            </p>
-            <p className="mt-4 hidden text-[13px] leading-5 text-muted-foreground md:block">
-              按得下去的 React 组件.
-              <br />
-              开源, 语义令牌, 一键换肤.
-            </p>
-            <p className="mt-6 flex flex-wrap gap-x-3 md:mt-12 text-[12px] text-muted-foreground">
-              <span>&copy; {YEAR} HX UI</span>
-              <span aria-hidden>&middot;</span>
-              <span>v{VERSION}</span>
-              <span aria-hidden>&middot;</span>
-              <a href={`${REPO_URL}/blob/main/LICENSE`} className={LINK}>Apache-2.0</a>
-            </p>
-          </div>
-          <nav aria-label="页脚" className="flex gap-8 md:gap-16">
-            {COLUMNS.map((column) => (
-              <div key={column.title} className="flex flex-col gap-3">
-                <p className="m-0 mb-1.5 text-[13px] font-medium text-heading">{column.title}</p>
-                {column.links.map(go)}
-              </div>
-            ))}
-          </nav>
-        </div>
+        <SiteFooter
+          labels={FOOTER_LABELS}
+          groups={GROUPS}
+          classNames={FOOTER_SLOTS}
+          brand={
+            <>
+              <p className="m-0 flex items-center gap-3 text-[26px] font-medium tracking-tight text-heading">
+                <img src="./logo.svg" alt="" width={32} height={32} />
+                HX UI
+              </p>
+              <p className="mt-4 hidden text-[13px] leading-5 text-muted-foreground md:block">
+                按得下去的 React 组件.
+                <br />
+                开源, 语义令牌, 一键换肤.
+              </p>
+              <p className="mt-6 flex flex-wrap gap-x-3 md:mt-12 text-[12px] text-muted-foreground">
+                <span>&copy; {YEAR} HX UI</span>
+                <span aria-hidden>&middot;</span>
+                <span>v{VERSION}</span>
+                <span aria-hidden>&middot;</span>
+                <a href={`${REPO_URL}/blob/main/LICENSE`} className={LINK}>Apache-2.0</a>
+              </p>
+            </>
+          }
+        />
         <DotWordmark />
       </div>
-    </footer>
+    </div>
   );
 }

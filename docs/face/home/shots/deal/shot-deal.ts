@@ -1,4 +1,5 @@
 import { DEAL_FIRST_MS, DEAL_LAST_MS, FRAME_MS, ease, phase } from "../../../../../src/craft";
+import { dealDelays } from "../../../../../src/viz";
 
 /**
  * 镜 3 组件墙, 来自 deck-deal-flyin (docs/research/shots/part-5.md) 与 docs/research/craft.md 镜 3.
@@ -26,14 +27,9 @@ export const SHADOW_FROM_PX = 8;
 export const SHADOW_TO_PX = 2;
 const FULL_HOLD_MS = 500;
 
-/** 第 k 张的出手时刻. 间隔从 120ms 线性收到 40ms (卡里 36+4k-0.0792k(k-1) 的间隔也是线性收窄). */
+/** 第 k 张的出手时刻. 间隔从 120ms 线性收到 40ms, 错峰交给库的 dealDelays (同一条公式), 这里只加第一张的起点. */
 export function cueMs(k: number, count: number = DEAL_CARDS): number {
-  let at = FIRST_CUE_MS;
-  for (let j = 0; j < k; j += 1) {
-    const t = count <= 2 ? 1 : j / (count - 2);
-    at += DEAL_FIRST_MS + (DEAL_LAST_MS - DEAL_FIRST_MS) * t;
-  }
-  return at;
+  return FIRST_CUE_MS + (dealDelays(count, DEAL_FIRST_MS, DEAL_LAST_MS)[k] ?? 0);
 }
 
 const LAST_LAND_MS = cueMs(DEAL_CARDS - 1) + LAND_MS + SHADOW_LAG_MS;

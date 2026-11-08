@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type JSX } from "react";
-import { BUTTON_TYPE, cn } from "@hx/ui";
+import { InputGroup, InputGroupAddon, InputGroupInput, ToggleGroup, ToggleGroupItem, cn } from "@hx/ui";
 import { CATALOG, CATALOG_GROUPS, CATEGORIES, COMPONENTS, categoryOf, type CategoryId } from "../catalog";
 import { CARD, ICON, ICON_SM, ICON_XS, INDEX_ID } from "../constants";
 
@@ -54,33 +54,42 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
         {active === INDEX_ID ? "正在浏览全部组件" : "浏览全部组件"}
       </a>
 
-      <div role="tablist" aria-label="组件分类" className="mt-3 flex items-center gap-0.5 rounded-xl border border-border/60 p-1">
+      <ToggleGroup
+        type="single"
+        spacing={0.5}
+        value={category}
+        onValueChange={(next) => {
+          if (next) setCategory(next as CategoryId);
+        }}
+        aria-label="组件分类"
+        className="mt-3 w-full rounded-xl border border-border/60 p-1"
+      >
         {CATEGORIES.map((item) => (
-          <button
+          <ToggleGroupItem
             key={item.id}
-            type={BUTTON_TYPE}
-            role="tab"
-            aria-selected={category === item.id}
+            value={item.id}
+            ripple={false}
             aria-label={item.label}
             title={item.label}
-            onClick={() => setCategory(item.id)}
-            className="grid h-8 flex-1 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground"
+            className="grid h-8 min-w-0 flex-1 place-items-center px-0 text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground active:translate-y-0 data-[state=on]:bg-muted data-[state=on]:text-foreground"
           >
             <span aria-hidden className={cn(item.icon, ICON_SM)} />
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
 
-      <label className="mt-3 flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3 text-muted-foreground focus-within:border-ring/60">
-        <span aria-hidden className={cn(ICON.search, ICON_XS)} />
-        <input
+      <InputGroup className="mt-3 h-9 gap-2 rounded-xl border-border/60 px-3 text-muted-foreground hover:border-border/60 dark:bg-transparent">
+        <InputGroupAddon className="p-0">
+          <span aria-hidden className={cn(ICON.search, ICON_XS)} />
+        </InputGroupAddon>
+        <InputGroupInput
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder={`过滤 ${COMPONENTS.length} 个组件...`}
           aria-label="过滤组件"
-          className="min-w-0 flex-1 bg-transparent text-[12px] text-foreground outline-none placeholder:text-muted-foreground"
+          className="px-0 text-[12px] text-foreground md:text-[12px]"
         />
-      </label>
+      </InputGroup>
 
       <div ref={listRef} className="relative mt-4 min-h-0 flex-1 overflow-y-auto pr-1 [mask-image:linear-gradient(to_bottom,transparent,var(--foreground)_24px,var(--foreground)_calc(100%-32px),transparent)]">
         <nav aria-label="组件目录" className="flex flex-col gap-4 py-3">

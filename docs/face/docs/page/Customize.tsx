@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Switch, cn } from "@hx/ui";
+import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Slider, Switch, cn } from "@hx/ui";
 import { GRADIENT_STOP } from "../../../../src/constants/typography";
 import { CARD, INSET, SECTION_TITLE } from "../constants";
 import type { ControlDef, ControlValue, Values } from "../specs/types";
@@ -64,11 +64,11 @@ function Cell({ control, value, onChange }: { control: ControlDef; value: Contro
       return (
         <label className={CELL}>
           <span className={cn(LABEL, "shrink-0")}>{control.label}</span>
-          <input
+          <Input
             value={String(value)}
             onChange={(event) => onChange(event.target.value)}
             aria-label={control.label}
-            className="h-7 min-w-0 flex-1 rounded-md border border-border/60 bg-background/60 px-2 text-right text-[12px] text-foreground outline-none focus:border-ring/60"
+            className="h-7 min-w-0 flex-1 rounded-md border-border/60 bg-background/60 px-2 py-0 text-right text-[12px] text-foreground hover:border-border/60 focus-visible:border-ring/60 md:text-[12px] dark:bg-background/60"
           />
         </label>
       );

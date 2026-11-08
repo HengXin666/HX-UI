@@ -1,3 +1,5 @@
+import { MOTION_DURATION_FALLBACK_MS, MOTION_EASE_FALLBACK } from "../constants/motion";
+
 /**
  * 控件手感合同里的弹簧, 时长和幅度.
  * 每个数字只在这里写一次, 组件引用名字.
@@ -40,13 +42,14 @@ export const THUMB_MIN_MS = 160;
 export const THUMB_MAX_MS = 420;
 
 /**
- * 具名缓动, 值是 cubic-bezier 的四个控制点原文, 和研究文档里的写法逐字一致. 组件和镜头只引用名字.
- * 前五条来自 docs/research/craft.md; crane / dive / stamp 取镜头卡原值:
+ * 具名缓动, 值是 cubic-bezier 的四个控制点. 组件和镜头只引用名字.
+ * out / in 与库的 tokens.css (--ease-out / --ease-in) 是同一条合同, 直接取 src/constants/motion.ts 的回退值, 不另写数字.
+ * overshoot 与 --ease-spring 同值 (库里没有 JS 侧的同名常量); punch / settle 来自 docs/research/craft.md; crane / dive / stamp 取镜头卡原值:
  * crane = crane-rise-reveal 拉升, dive = deck-deal-flyin 单卡飞行, stamp = paper-title-card 逐词压印.
  */
 export const EASE = {
-  out: "0.16, 1, 0.3, 1",
-  in: "0.7, 0, 0.84, 0",
+  out: MOTION_EASE_FALLBACK.out.join(", "),
+  in: MOTION_EASE_FALLBACK.in.join(", "),
   overshoot: "0.34, 1.56, 0.64, 1",
   punch: "0.2, 1.25, 0.3, 1",
   settle: "0.3, 0, 0.25, 1.15",
@@ -57,7 +60,8 @@ export const EASE = {
 
 export type EaseName = keyof typeof EASE;
 
-export const COLOR_MS = 120;
+/** 颜色过渡, 与 tokens.css 的 --duration-fast 同一条. */
+export const COLOR_MS = MOTION_DURATION_FALLBACK_MS.fast;
 export const THUMB_MS = 267;
 export const HOLD_MS = 1000;
 export const ARC_MS = 3000;

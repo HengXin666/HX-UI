@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type JSX } from "react";
+import { useBox } from "../kit/use-box";
 import { FieldPage } from "../../../../src/studio";
 import { CRANE_END_MS, CRANE_FROM, cranePose, type Point } from "../shots/crane/shot-crane";
 import { useLoopMs, useNear } from "../kit/use-loop";
@@ -15,7 +16,7 @@ const REST_MS = 1400;
  * 坐标系是 1280 宽的整页, 外面再缩到卡宽, cranePose 原样用.
  */
 export function CraneCard(): JSX.Element {
-  const [box, setBox] = useState<HTMLDivElement | null>(null);
+  const [box, attach, rect] = useBox<HTMLDivElement>();
   const page = useRef<HTMLDivElement>(null);
   const [view, setView] = useState({ s: 0, h: 0 });
   const [track, setTrack] = useState<{ focus: Point; start: Point }>({ focus: { x: 0, y: 0 }, start: { x: 0, y: 0 } });
@@ -24,10 +25,10 @@ export function CraneCard(): JSX.Element {
   const pose = cranePose(ms, track.focus, track.start);
 
   useLayoutEffect(() => {
-    if (!box || !mounted) return;
+    if (!mounted || rect.width <= 0) return;
     const read = (): void => {
-      const s = box.clientWidth / DESIGN_W;
-      const h = box.clientHeight / s;
+      const s = rect.width / DESIGN_W;
+      const h = rect.height / s;
       setView({ s, h });
       const row = page.current?.querySelector(TRACK_ROW) as HTMLElement | null;
       if (!row || !page.current) return;
@@ -45,17 +46,13 @@ export function CraneCard(): JSX.Element {
       });
     };
     read();
+    // FieldPage 自己的入场会改行高, 晚一拍再读一次焦点行.
     const timer = window.setTimeout(read, 1200);
-    const ro = new ResizeObserver(read);
-    ro.observe(box);
-    return () => {
-      ro.disconnect();
-      window.clearTimeout(timer);
-    };
-  }, [box, mounted]);
+    return () => window.clearTimeout(timer);
+  }, [rect.width, rect.height, mounted]);
 
   return (
-    <div ref={setBox} className="absolute inset-0 overflow-hidden bg-background">
+    <div ref={attach} className="absolute inset-0 overflow-hidden bg-background">
       {mounted && view.s > 0 ? (
         <div style={{ width: DESIGN_W, height: view.h, transform: `scale(${view.s})`, transformOrigin: "0 0" }} className="relative overflow-hidden">
           <div

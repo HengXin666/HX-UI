@@ -1,59 +1,66 @@
 import { useState, type JSX, type ReactNode } from "react";
-import { BUTTON_TYPE, CodeBlock, cn } from "@hx/ui";
+import { BUTTON_TYPE, CodeBlock, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem, cn } from "@hx/ui";
 import { ICON, ICON_SM, ICON_XS, PHONE_PX, TOOL_BTN, TOOL_GROUP } from "../constants";
 
 export type StageTab = "preview" | "code";
 export type Device = "desktop" | "phone";
 
-const TAB = "flex h-8 items-center gap-2 rounded-md px-3 text-[14px] text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground";
+const TAB = "h-8 gap-2 rounded-md px-3 text-[14px] font-normal text-muted-foreground hover:text-foreground data-[state=active]:bg-muted data-[state=active]:text-foreground data-[state=active]:shadow-none dark:data-[state=active]:bg-muted";
 const PHONE: Device = "phone";
 const DEVICES: ReadonlyArray<{ id: Device; label: string; icon: string }> = [
   { id: "desktop", label: "桌面宽度", icon: ICON.desktop },
   { id: PHONE, label: "手机宽度", icon: ICON.phone },
 ];
 
-/** 预览 | 代码页签条, 右侧设备切换与 "复制给 AI". */
+/**
+ * 预览 | 代码页签条 (库 Tabs 的 TabsList, 方向键与 aria-controls 由它给; 外层 Tabs 与两块 TabsContent 在 SpecPage),
+ * 右侧设备切换 (库 ToggleGroup 单选) 与 "复制给 AI".
+ */
 export function StageToolbar({
-  tab,
-  setTab,
   device,
   setDevice,
   onCopyAi,
 }: {
-  readonly tab: StageTab;
-  readonly setTab: (tab: StageTab) => void;
   readonly device: Device;
   readonly setDevice: (device: Device) => void;
   readonly onCopyAi: () => void;
 }): JSX.Element {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <div role="tablist" aria-label="预览或代码" className={TOOL_GROUP}>
-        <button type={BUTTON_TYPE} role="tab" aria-selected={tab === "preview"} onClick={() => setTab("preview")} className={TAB}>
+      <TabsList variant="pill" aria-label="预览或代码" className={cn(TOOL_GROUP, "rounded-lg border-border bg-muted/30")}>
+        <TabsTrigger value="preview" ripple={false} className={TAB}>
           <span aria-hidden className={cn(ICON.eye, ICON_XS)} />
           预览
-        </button>
-        <button type={BUTTON_TYPE} role="tab" aria-selected={tab === "code"} onClick={() => setTab("code")} className={TAB}>
+        </TabsTrigger>
+        <TabsTrigger value="code" ripple={false} className={TAB}>
           <span aria-hidden className={cn(ICON.code, ICON_XS)} />
           代码
-        </button>
-      </div>
+        </TabsTrigger>
+      </TabsList>
       <div className="flex items-center gap-2">
-        <div className={TOOL_GROUP} role="group" aria-label="预览宽度">
+        <ToggleGroup
+          type="single"
+          spacing={0.5}
+          value={device}
+          onValueChange={(next) => {
+            if (next) setDevice(next as Device);
+          }}
+          aria-label="预览宽度"
+          className={TOOL_GROUP}
+        >
           {DEVICES.map((item) => (
-            <button
+            <ToggleGroupItem
               key={item.id}
-              type={BUTTON_TYPE}
-              aria-pressed={device === item.id}
+              value={item.id}
+              ripple={false}
               aria-label={item.label}
               title={item.label}
-              onClick={() => setDevice(item.id)}
-              className={TOOL_BTN}
+              className={cn(TOOL_BTN, "h-8 min-w-8 border-0 px-0 active:translate-y-0 data-[state=on]:bg-muted data-[state=on]:text-foreground")}
             >
               <span aria-hidden className={cn(item.icon, ICON_SM)} />
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
         <button
           type={BUTTON_TYPE}
           onClick={onCopyAi}

@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { BUTTON_TYPE } from "@hx/ui";
+import { BUTTON_TYPE, Button } from "@hx/ui";
 import meshSource from "../../../../src/effects/MeshGradient.tsx?raw";
 import { CodeLines, Terminal, Win, tint } from "../kit/Code";
 import { ARROW, BTN, TYPE, WRAP } from "../kit/layout";
@@ -22,9 +22,11 @@ export function Command({ onGo }: { readonly onGo: (id: string) => void }): JSX.
           npm 装一个包, 入口 CSS 引一次样式. 组件, 令牌, 皮肤和动效都在里面, 源码就是你看到的这份.
         </p>
         <div className="mt-[42px]">
-          <button type={BUTTON_TYPE} className={BTN.dark} onClick={() => onGo("install")}>
-            安装指南 <span aria-hidden>{ARROW}</span>
-          </button>
+          <Button asChild {...BTN.dark}>
+            <button type={BUTTON_TYPE} onClick={() => onGo("install")}>
+              安装指南 <span aria-hidden>{ARROW}</span>
+            </button>
+          </Button>
         </div>
       </div>
       <div className="relative min-w-0 md:h-[502px]">

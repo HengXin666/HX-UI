@@ -68,3 +68,11 @@ export const COPIED = "已复制";
 export const PKG = "@hx/ui";
 /** 仓库源码的分支, 拼 GitHub 源码链接. */
 export const SOURCE_BRANCH = "main";
+
+/** 上一页 / 下一页: 库 DocsPager 的排版, 两格各占一半, 只有下一页时靠右. */
+export const PAGER_CLASS = {
+  root: "grid grid-cols-2 gap-3",
+  link: "rounded-xl border border-border/50 px-4 py-3 transition-colors hover:border-primary/40 hover:bg-card/40",
+  direction: "text-[12px] text-muted-foreground",
+  label: "text-[14px] font-medium text-foreground",
+} as const;

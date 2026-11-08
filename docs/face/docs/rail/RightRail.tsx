@@ -1,28 +1,45 @@
-import type { JSX } from "react";
-import { BUTTON_TYPE, cn } from "@hx/ui";
+import { useMemo, type JSX, type MouseEvent } from "react";
+import { DocsToc, InstallBlock, cn, useCollectedHeadings } from "@hx/ui";
 import { REPO_URL } from "../../../src/components/site";
-import { TableOfContents } from "../../../src/components/TableOfContents";
 import { VERSION } from "../../home/site-facts";
 import { CARD, ICON, ICON_XS, PKG, SOURCE_BRANCH } from "../constants";
-import { copyText } from "../page/copy";
 
 const INSTALL = `npm i ${PKG}`;
 const LINE = "flex h-10 items-center justify-between gap-2 rounded-lg border border-border/60 bg-background/60 pr-1 pl-3";
 
+/** 一行命令加复制: 库 InstallBlock 的 pill 单行, 复制结果经 aria-live 播报; 外观按右栏的方框行排. */
 function CopyLine({ code, what }: { code: string; what: string }): JSX.Element {
   return (
-    <div className={LINE}>
-      <code className="truncate font-mono text-[12px] text-foreground">{code}</code>
-      <button
-        type={BUTTON_TYPE}
-        aria-label={`复制${what}`}
-        onClick={() => copyText(code, what)}
-        className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      >
-        <span aria-hidden className={cn(ICON.copy, ICON_XS)} />
-      </button>
-    </div>
+    <InstallBlock
+      embedded
+      variant="pill"
+      prompt=""
+      commands={[{ command: code }]}
+      labels={{ copyCommand: `复制${what}` }}
+      classNames={{
+        command: cn(LINE, "flex w-full max-w-none rounded-lg bg-background/60 py-0 [&>pre]:min-w-0 [&>pre]:flex-1"),
+        line: "truncate font-mono text-[12px] text-foreground",
+        copy: "size-8 shrink-0 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground",
+      }}
+    />
   );
+}
+
+/** 只收 h2: 一两个章节不值得占一栏, 与原目录同一条门槛. */
+const TOC_SELECTOR = "h2[id]";
+const TOC_MIN = 2;
+const HASH = "#";
+const ANCHOR_TAIL = /#\s*$/;
+
+/**
+ * 目录点击: 文档站用 hash 路由 (#/组件), 锚点 #标题 会被当成换页. 拦下默认跳转, 只滚到标题.
+ */
+function scrollToHeading(event: MouseEvent<HTMLElement>): void {
+  const link = (event.target as Element).closest<HTMLAnchorElement>(`a[href^="${HASH}"]`);
+  if (!link) return;
+  event.preventDefault();
+  const id = decodeURIComponent(link.hash.slice(HASH.length));
+  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 /**
@@ -33,13 +50,16 @@ export function RightRail({
   importName,
   source,
   container,
-  deps,
 }: {
   readonly importName?: string;
   readonly source?: string;
   readonly container: HTMLElement | null;
-  readonly deps: unknown;
 }): JSX.Element {
+  const body = useMemo(() => ({ current: container }), [container]);
+  // 换页时容器不变, 库的 MutationObserver 跟随正文重采.
+  const collected = useCollectedHeadings(body, true, TOC_SELECTOR);
+  // 旧文档页的标题尾巴带一个 "#" 锚点字符, 目录里不显示它.
+  const toc = useMemo(() => collected.map((item) => ({ ...item, label: typeof item.label === "string" ? item.label.replace(ANCHOR_TAIL, "").trim() : item.label })), [collected]);
   return (
     <div className="flex flex-col gap-4">
       <section aria-label="安装" className={cn(CARD, "p-4")}>
@@ -64,9 +84,22 @@ export function RightRail({
           </a>
         ) : null}
       </section>
-      <div className={cn(CARD, "p-4 empty:hidden")}>
-        <TableOfContents container={container} deps={deps} className="static block max-h-none" />
-      </div>
+      {toc.length >= TOC_MIN ? (
+        <div className={cn(CARD, "p-4")} onClickCapture={scrollToHeading}>
+          <DocsToc
+            items={toc}
+            title="本页目录"
+            aria-label="本页目录"
+            rootMargin="-80px 0px -70% 0px"
+            classNames={{
+              root: "static block max-h-none",
+              title: "mb-2 text-[11px] font-medium text-muted-foreground/70",
+              list: "flex flex-col gap-px border-l border-border/60",
+              link: "-ml-px block border-l border-transparent py-1 pl-3 text-[12px] leading-snug text-muted-foreground transition-colors hover:border-border hover:text-foreground aria-[current=location]:border-primary aria-[current=location]:font-medium aria-[current=location]:text-foreground",
+            }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

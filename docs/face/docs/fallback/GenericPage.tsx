@@ -1,10 +1,9 @@
 import type { JSX } from "react";
-import { BUTTON_TYPE, cn } from "@hx/ui";
+import { BUTTON_TYPE, DocsPager, cn } from "@hx/ui";
 import type { DocEntry } from "../../../src/nav";
-import { PageNav } from "../../../src/components/PageNav";
 import { renderDoc } from "../../render-doc";
 import { COMPONENTS, relatedOf, type CatalogEntry } from "../catalog";
-import { ICON, ICON_XS, PKG, TOOL_GROUP } from "../constants";
+import { ICON, ICON_XS, PAGER_CLASS, PKG, TOOL_GROUP } from "../constants";
 import { Thumb } from "../index/Thumb";
 import { copyText } from "../page/copy";
 import { PageHead, Related } from "../page/Extras";
@@ -17,6 +16,8 @@ const RELATED_COUNT = 4;
  */
 export function GenericPage({ entry, onGo }: { readonly entry: CatalogEntry; readonly onGo: (id: string) => void }): JSX.Element {
   const index = COMPONENTS.findIndex((item) => item.id === entry.id);
+  const prev = index > 0 ? COMPONENTS[index - 1] : undefined;
+  const next = COMPONENTS[index + 1];
   const markdown = `# ${entry.label} (${PKG})\n\n${entry.desc}\n\n分组: ${entry.group}\n\n\`\`\`bash\nnpm i ${PKG}\n\`\`\``;
   return (
     <div className="flex flex-col gap-8">
@@ -32,7 +33,14 @@ export function GenericPage({ entry, onGo }: { readonly entry: CatalogEntry; rea
       </PageHead>
       <div className="min-w-0">{renderDoc(entry as DocEntry)}</div>
       <Related items={relatedOf(entry, RELATED_COUNT)} onGo={onGo} preview={(item) => <Thumb entry={item} />} />
-      <PageNav prev={index > 0 ? COMPONENTS[index - 1] : undefined} next={COMPONENTS[index + 1]} onGo={onGo} />
+      <DocsPager
+        aria-label="页面导航"
+        className="mt-14"
+        labels={{ prev: "上一页", next: "下一页" }}
+        prev={prev ? { label: prev.label, href: `#/${prev.id}` } : undefined}
+        next={next ? { label: next.label, href: `#/${next.id}` } : undefined}
+        classNames={PAGER_CLASS}
+      />
     </div>
   );
 }

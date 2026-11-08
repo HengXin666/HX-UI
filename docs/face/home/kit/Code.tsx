@@ -1,5 +1,5 @@
 import { useEffect, useState, type JSX, type ReactNode } from "react";
-import { BUTTON_TYPE } from "@hx/ui";
+import { BUTTON_TYPE, useClipboard, useReducedMotion } from "@hx/ui";
 import { WIN } from "./layout";
 import { useNear } from "./use-loop";
 
@@ -59,9 +59,15 @@ export function Terminal({ command, after, className }: { readonly command: stri
   const [box, setBox] = useState<HTMLDivElement | null>(null);
   const near = useNear(box, "0px", true);
   const [count, setCount] = useState(0);
-  const [copied, setCopied] = useState(false);
+  const clip = useClipboard({ timeout: COPIED_MS });
+  const reduced = useReducedMotion();
   useEffect(() => {
     if (!near) return;
+    // 减弱动效: 命令直接给全, 不逐字打.
+    if (reduced) {
+      setCount(command.length);
+      return;
+    }
     let n = 0;
     let timer = window.setTimeout(function step() {
       n += 1;
@@ -69,17 +75,13 @@ export function Terminal({ command, after, className }: { readonly command: stri
       if (n < command.length) timer = window.setTimeout(step, TYPE_MS);
     }, TYPE_DELAY_MS);
     return () => window.clearTimeout(timer);
-  }, [near, command]);
+  }, [near, command, reduced]);
   const done = count >= command.length;
-  const copy = (): void => {
-    void navigator.clipboard?.writeText(command);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), COPIED_MS);
-  };
+  const copied = clip.copied;
   const tool = (
     <button
       type={BUTTON_TYPE}
-      onClick={copy}
+      onClick={() => clip.copy(command)}
       aria-label={copied ? "已复制" : "复制命令"}
       className="grid size-6 place-items-center rounded-md text-muted-foreground transition-[color] hover:text-foreground focus-visible:outline-1 focus-visible:outline-ring"
     >
@@ -95,6 +97,9 @@ export function Terminal({ command, after, className }: { readonly command: stri
           {done ? null : <span aria-hidden className="ml-px inline-block h-4 w-2 translate-y-[3px] animate-pulse bg-foreground" />}
         </p>
         <span className="sr-only">{command}</span>
+        <span role="status" aria-live="polite" className="sr-only">
+          {copied ? "已复制" : clip.error ? "复制失败" : ""}
+        </span>
         {after.map((line, index) => (
           <p key={line} className="m-0 whitespace-pre text-muted-foreground transition-[opacity] duration-300" style={{ opacity: done ? 1 : 0, transitionDelay: `${index * 160}ms` }}>
             {line}

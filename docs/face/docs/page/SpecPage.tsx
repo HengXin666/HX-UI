@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type JSX } from "react";
+import { Tabs, TabsContent } from "@hx/ui";
 import { relatedOf, type CatalogEntry } from "../catalog";
 import { PKG, STAGE_PX } from "../constants";
 import { Thumb } from "../index/Thumb";
@@ -11,6 +12,7 @@ import { CodePane, StageBox, StageToolbar, type Device, type StageTab } from "./
 
 const RELATED_COUNT = 4;
 const PREVIEW: StageTab = "preview";
+const CODE: StageTab = "code";
 
 /** 复制给 AI 的 Markdown: 名称, 说明, 安装, 当前参数的用法与属性表, 粘进对话即可用. */
 function aiMarkdown(spec: ComponentSpec, values: Values): string {
@@ -56,18 +58,19 @@ export function SpecPage({ entry, spec, onGo }: { readonly entry: CatalogEntry; 
   return (
     <div className="flex flex-col gap-8">
       <PageHead entry={entry} />
-      <div className="flex flex-col gap-4">
-        <StageToolbar tab={tab} setTab={setTab} device={device} setDevice={setDevice} onCopyAi={() => copyText(aiMarkdown(spec, values), "组件说明 Markdown")} />
-        {tab === PREVIEW ? (
+      <Tabs value={tab} onValueChange={(next) => setTab(next as StageTab)} className="flex flex-col gap-4">
+        <StageToolbar device={device} setDevice={setDevice} onCopyAi={() => copyText(aiMarkdown(spec, values), "组件说明 Markdown")} />
+        <TabsContent value={PREVIEW} className="mt-0">
           <StageBox height={spec.fill ? STAGE_PX.fill : STAGE_PX.text} fill={Boolean(spec.fill)} device={device} onReplay={() => setReplay((prev) => prev + 1)}>
             <div key={stageKey} className={spec.fill ? "size-full" : "max-w-full"}>
               {spec.render(props)}
             </div>
           </StageBox>
-        ) : (
+        </TabsContent>
+        <TabsContent value={CODE} className="mt-0">
           <CodePane install={`npm i ${PKG}`} usage={usage} source={spec.source} raw={spec.raw} />
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
       <Customize controls={spec.controls} values={values} onChange={change} />
       <Related items={related} onGo={onGo} preview={(item) => <Thumb entry={item} />} />
       <PropsCard rows={rows} />

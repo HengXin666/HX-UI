@@ -1,4 +1,5 @@
 import { DEAL_FIRST_MS, DEAL_LAST_MS, FRAME_MS, ease, phase } from "../../../../../src/craft";
+import { dealDelays } from "../../../../../src/viz";
 
 /**
  * 镜 7 选一条路读, 来自 docs/research/craft.md 镜 6 (分组名发牌, 无过冲) 与 list-reveal 的重叠比例:
@@ -14,21 +15,18 @@ export const WINDOW_RATIO = 2.4;
 export const RISE_PX = 16;
 const HOLD_FRAMES = 30;
 
-function gap(k: number): number {
-  const t = k / (PATH_ITEMS - 2);
-  return DEAL_FIRST_MS + (DEAL_LAST_MS - DEAL_FIRST_MS) * Math.min(1, t);
-}
+/** 每项起点相对 START_MS 的偏移, 间隔从 120ms 线性收到 40ms (库的 dealDelays). */
+const CUES = dealDelays(PATH_ITEMS, DEAL_FIRST_MS, DEAL_LAST_MS);
 
 /** 第 k 项的起点. */
 export function pathCue(k: number): number {
-  let at = START_MS;
-  for (let j = 0; j < k; j += 1) at += gap(j);
-  return at;
+  return START_MS + (CUES[k] ?? 0);
 }
 
-/** 第 k 项的窗口: 它与下一项的间隔乘 2.4. */
+/** 第 k 项的窗口: 它与下一项的间隔乘 2.4; 最后一项沿用倒数第二个间隔. */
 export function pathWindow(k: number): number {
-  return gap(Math.min(k, PATH_ITEMS - 2)) * WINDOW_RATIO;
+  const at = Math.min(k, PATH_ITEMS - 2);
+  return (CUES[at + 1] - CUES[at]) * WINDOW_RATIO;
 }
 
 export const PATHS_END_MS = Math.ceil((pathCue(PATH_ITEMS - 1) + pathWindow(PATH_ITEMS - 1) + HOLD_FRAMES * FRAME_MS) / FRAME_MS) * FRAME_MS;

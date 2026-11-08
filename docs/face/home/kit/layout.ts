@@ -1,3 +1,5 @@
+import { VARIANT } from "@hx/ui";
+
 /**
  * 门面首页的版式刻度. 尺寸对着 reactbits.dev 1440 宽的实拍量出来:
  * 舞台 1364 宽 (两侧 38), 段落内容 1276 宽 (两侧 82), 卡与卡之间 16, 卡内图区内缩 6.
@@ -25,12 +27,16 @@ export const TILE = {
   body: "flex flex-col gap-1.5 px-4 pb-4 pt-5",
 } as const;
 
-/** 按钮: 实心浅色, 次级深色, 主色. 高 46 的大号与高 36 的顶栏号. */
+/**
+ * 按钮: 实心浅色, 次级深色, 主色, 顶栏小号. 一律是库里的 Button (asChild 包原生 button / a), 这里只给变体和尺寸覆盖.
+ * 库的基础串带透明边框与 bg-clip-padding, 门面的实心按钮不要那 1px 透明边, 所以统一 bg-clip-border; 悬停沿用门面原值.
+ */
+const BTN_BASE = "gap-2 bg-clip-border font-medium focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-ring";
 export const BTN = {
-  light: "inline-flex h-[46px] items-center gap-2 rounded-[10px] bg-foreground px-5 text-[15px] font-medium text-background transition-[opacity] hover:opacity-90 focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-ring",
-  dark: "inline-flex h-[46px] items-center gap-2 rounded-[10px] border border-border bg-secondary px-5 text-[15px] font-medium text-secondary-foreground transition-[background-color] hover:bg-control-hover focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-ring",
-  primary: "inline-flex h-9 items-center gap-2 rounded-lg bg-primary px-[18px] text-[13px] font-medium text-primary-foreground transition-[opacity] hover:opacity-90 focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-ring",
-  chip: "inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-secondary px-3 text-[13px] text-secondary-foreground transition-[background-color] hover:bg-control-hover focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-ring",
+  light: { variant: VARIANT.primary, className: `${BTN_BASE} h-[46px] rounded-[10px] border-0 bg-foreground px-5 text-[15px] text-background transition-[opacity] hover:bg-foreground hover:opacity-90` },
+  dark: { variant: VARIANT.default, className: `${BTN_BASE} h-[46px] rounded-[10px] bg-secondary px-5 text-[15px] text-secondary-foreground transition-[background-color] hover:bg-control-hover` },
+  primary: { variant: VARIANT.primary, className: `${BTN_BASE} h-9 rounded-lg border-0 px-[18px] text-[13px] text-primary-foreground transition-[opacity] hover:bg-primary hover:opacity-90` },
+  chip: { variant: VARIANT.default, className: `${BTN_BASE} h-9 rounded-lg bg-secondary px-3 text-[13px] font-normal text-secondary-foreground transition-[background-color] hover:bg-control-hover` },
 } as const;
 
 /** 窗口 (代码窗, 终端, 预设): 标题栏 36 高, 内容区沉一档并内缩 6. */

@@ -1,6 +1,7 @@
-import { useLayoutEffect, useState, type CSSProperties, type JSX, type ReactNode } from "react";
-import { BUTTON_TYPE } from "@hx/ui";
+import { type CSSProperties, type JSX, type ReactNode } from "react";
+import { BUTTON_TYPE, SectionHeading } from "@hx/ui";
 import { OUT, TILE, TYPE } from "./layout";
+import { useBox } from "./use-box";
 import { useNear } from "./use-loop";
 
 /** 页面预览的排版宽度: 整页按桌面宽排完, 再整体缩到卡宽. */
@@ -63,21 +64,12 @@ export function Tile({ art, artHeight, title, desc, tag, onOpen, className, artC
  * 进视口附近才挂载, 首屏不为下面的整页付钱. offset (设计像素) 把整页往上推, 让矮卡露出页里最有辨识度的那一截.
  */
 export function PagePreview({ children, className, offset = 0 }: { readonly children: ReactNode; readonly className?: string; readonly offset?: number }): JSX.Element {
-  const [box, setBox] = useState<HTMLDivElement | null>(null);
-  const [width, setWidth] = useState(0);
+  const [box, attach, rect] = useBox<HTMLDivElement>();
   const near = useNear(box, MOUNT_AHEAD, true);
-  useLayoutEffect(() => {
-    if (!box) return;
-    const read = (): void => setWidth(box.clientWidth);
-    read();
-    const ro = new ResizeObserver(read);
-    ro.observe(box);
-    return () => ro.disconnect();
-  }, [box]);
-  const scale = width > 0 ? width / DESIGN_W : 0;
+  const scale = rect.width > 0 ? rect.width / DESIGN_W : 0;
   const style: CSSProperties = { width: DESIGN_W, transform: `translateY(${-offset * scale}px) scale(${scale})`, transformOrigin: "0 0" };
   return (
-    <div ref={setBox} className={`absolute isolate overflow-hidden [contain:paint] ${className ?? "inset-0"}`}>
+    <div ref={attach} className={`absolute isolate overflow-hidden [contain:paint] ${className ?? "inset-0"}`}>
       {near && scale > 0 ? (
         <div inert aria-hidden className="pointer-events-none bg-background text-foreground" style={style}>
           {children}
@@ -87,15 +79,23 @@ export function PagePreview({ children, className, offset = 0 }: { readonly chil
   );
 }
 
-/** 段落标题行: 左大标题 (可带副标题), 右侧可选一个动作. */
+/** 段落标题行: 库 SectionHeading (标题 + 导语 + 动作), 排版改成左标题右动作, 字号按 1:1 实拍. */
 export function SectionHead({ title, sub, action, className }: { readonly title: ReactNode; readonly sub?: string; readonly action?: ReactNode; readonly className?: string }): JSX.Element {
   return (
-    <div className={`flex flex-wrap items-end justify-between gap-6 ${className ?? ""}`}>
-      <div className="min-w-0">
-        <h2 className={TYPE.h2}>{title}</h2>
-        {sub ? <p className={`${TYPE.lede} mt-3`}>{sub}</p> : null}
-      </div>
+    <SectionHeading
+      title={title}
+      description={sub}
+      level={2}
+      className={className}
+      classNames={{
+        root: "mb-0 flex-row flex-wrap items-end justify-between gap-6",
+        text: "gap-0",
+        title: TYPE.h2,
+        description: `${TYPE.lede} mt-3 max-w-none`,
+        actions: "mt-0",
+      }}
+    >
       {action}
-    </div>
+    </SectionHeading>
   );
 }

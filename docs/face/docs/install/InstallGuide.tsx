@@ -1,9 +1,9 @@
 import type { JSX } from "react";
-import { BUTTON_TYPE, CodeBlock, cn } from "@hx/ui";
+import { BUTTON_TYPE, CodeBlock, DocsPager, InstallBlock, cn } from "@hx/ui";
 import { REPO_URL } from "../../../src/components/site";
 import { VERSION } from "../../home/site-facts";
 import { CATALOG } from "../catalog";
-import { ICON, ICON_XS, INSTALL_ID, PKG, TOOL_GROUP } from "../constants";
+import { ICON, ICON_XS, INSTALL_ID, PAGER_CLASS, PKG, TOOL_GROUP } from "../constants";
 import { copyText } from "../page/copy";
 
 interface Snippet {
@@ -76,27 +76,29 @@ function toMarkdown(): string {
   return [`# ${TITLE}`, LEAD, ...parts, `## ${OUTRO_TITLE}`, OUTRO].join(GAP);
 }
 
+/** 一条终端命令: 库 InstallBlock 的单行加复制 (复制结果经 aria-live 播报), 有标签时标签在上. */
 function Command({ snippet }: { readonly snippet: Snippet }): JSX.Element {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/70 py-3 pr-3 pl-4">
-      <div className="min-w-0">
-        {snippet.label ? <p className="mb-1.5 text-[13px] font-semibold text-foreground">{snippet.label}</p> : null}
-        <pre className="overflow-x-auto font-mono text-[12.5px] text-muted-foreground">{snippet.code}</pre>
-      </div>
-      <button
-        type={BUTTON_TYPE}
-        aria-label="复制命令"
-        onClick={() => copyText(snippet.code, "命令")}
-        className="grid size-8 shrink-0 place-items-center rounded-lg border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <span aria-hidden className={cn(ICON.copy, ICON_XS)} />
-      </button>
+    <div className="rounded-xl border border-border/60 bg-background/70 py-3 pr-3 pl-4">
+      {snippet.label ? <p className="mb-1.5 text-[13px] font-semibold text-foreground">{snippet.label}</p> : null}
+      <InstallBlock
+        embedded
+        variant="pill"
+        prompt=""
+        commands={[{ command: snippet.code }]}
+        labels={{ copyCommand: "复制命令" }}
+        classNames={{
+          command: "flex w-full max-w-none items-center justify-between gap-3 rounded-none border-0 bg-transparent p-0 [&>pre]:min-w-0 [&>pre]:flex-1",
+          line: "font-mono text-[12.5px] text-muted-foreground",
+          copy: "size-8 shrink-0 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground",
+        }}
+      />
     </div>
   );
 }
 
 /** 安装页, 对标 reactbits /get-started/installation: 编号步骤, 每段代码可复制, 整页可复制为 Markdown. */
-export function InstallGuide({ onGo }: { readonly onGo: (id: string) => void }): JSX.Element {
+export function InstallGuide(): JSX.Element {
   const index = CATALOG.findIndex((entry) => entry.id === INSTALL_ID);
   const next = CATALOG[index + 1];
   return (
@@ -143,14 +145,13 @@ export function InstallGuide({ onGo }: { readonly onGo: (id: string) => void }):
         <p className="mt-4 text-[15px] leading-relaxed text-muted-foreground">{OUTRO}</p>
       </section>
 
-      {next ? (
-        <div className="mt-20 flex justify-end">
-          <button type={BUTTON_TYPE} onClick={() => onGo(next.id)} className={cn(TOOL_GROUP, "h-10 gap-2 px-4 text-[13.5px] font-medium text-foreground hover:bg-muted")}>
-            {next.label}
-            <span aria-hidden className={cn(ICON.next, ICON_XS)} />
-          </button>
-        </div>
-      ) : null}
+      <DocsPager
+        aria-label="页面导航"
+        className="mt-20"
+        labels={{ next: "下一页" }}
+        next={next ? { label: next.label, href: `#/${next.id}` } : undefined}
+        classNames={PAGER_CLASS}
+      />
     </article>
   );
 }

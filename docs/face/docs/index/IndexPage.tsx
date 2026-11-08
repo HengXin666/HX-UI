@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState, type JSX } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn } from "@hx/ui";
+import { useMemo, useRef, useState, type JSX } from "react";
+import { InputGroup, InputGroupAddon, InputGroupInput, Kbd, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn, useHotkeys } from "@hx/ui";
 import { CATEGORIES, COMPONENTS, categoryOf } from "../catalog";
 import { CARD, ICON, ICON_XS } from "../constants";
 import { Thumb } from "./Thumb";
@@ -17,16 +17,8 @@ export function IndexPage({ onGo }: { readonly onGo: (id: string) => void }): JS
   const [sort, setSort] = useState<SortId>(SORT.catalog);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent): void => {
-      const target = event.target as HTMLElement | null;
-      if (event.key !== SLASH || target?.closest("input, textarea, [contenteditable=true]")) return;
-      event.preventDefault();
-      inputRef.current?.focus();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  // 按 / 聚焦搜索; 焦点在输入框或可编辑区里时库的 useHotkeys 自己让位.
+  useHotkeys([[SLASH, () => inputRef.current?.focus()]]);
 
   const items = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -43,18 +35,22 @@ export function IndexPage({ onGo }: { readonly onGo: (id: string) => void }): JS
     <div className="flex flex-col">
       <h1 className="text-[34px] leading-tight font-bold tracking-[-0.03em] text-foreground">组件</h1>
       <div className="mt-8 flex flex-wrap items-center gap-2.5">
-        <label className={cn(FIELD, "flex w-full items-center gap-2 px-3 text-muted-foreground focus-within:border-ring/60 sm:w-[220px]")}>
-          <span aria-hidden className={cn(ICON.search, ICON_XS)} />
-          <input
+        <InputGroup className={cn(FIELD, "w-full gap-2 px-3 text-muted-foreground hover:border-border/60 sm:w-[220px] dark:bg-muted/30")}>
+          <InputGroupAddon className="p-0">
+            <span aria-hidden className={cn(ICON.search, ICON_XS)} />
+          </InputGroupAddon>
+          <InputGroupInput
             ref={inputRef}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="搜索..."
             aria-label="搜索组件"
-            className="min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground"
+            className="px-0 text-[13px] text-foreground md:text-[13px]"
           />
-          <kbd className="rounded border border-border px-1.5 font-mono text-[11px] leading-5">{SLASH}</kbd>
-        </label>
+          <InputGroupAddon align="inline-end" className="p-0">
+            <Kbd className="h-5 min-w-0 rounded border-border bg-transparent px-1.5 text-[11px] shadow-none">{SLASH}</Kbd>
+          </InputGroupAddon>
+        </InputGroup>
         <Select value={category} onValueChange={setCategory}>
           <SelectTrigger aria-label="分类" className={cn(FIELD, "h-9 w-[180px] px-3 font-medium")}>
             <SelectValue />

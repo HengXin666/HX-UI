@@ -1,7 +1,8 @@
 import { useEffect, useState, type CSSProperties, type JSX, type ReactNode } from "react";
 import { stepSpring, type SpringSpec } from "../../../../src/craft";
 import { DT_MIN_MS } from "../../../../src/craft/tokens";
-import { MEDIA_REDUCED_MOTION } from "../../../../src/constants/ui";
+import { useMediaQuery } from "../../../../src/hooks";
+import { prefersReducedMotion } from "../../../../src/primitives/motion";
 import { SHOT_ARC_S, SHOT_BEAT_S } from "../../../../src/motion/shots";
 import { stageSpan, useStageMs } from "../use-clock";
 
@@ -55,7 +56,7 @@ export function Stage({
   const seek = (target: number): void => {
     if (!track) return;
     const span = stageSpan(track);
-    const smooth = window.matchMedia?.(MEDIA_REDUCED_MOTION).matches ? "auto" : "smooth";
+    const smooth = prefersReducedMotion() ? "auto" : "smooth";
     window.scrollTo({ top: span.start + (Math.min(total, Math.max(0, target)) / total) * span.length, behavior: smooth });
   };
   return (
@@ -95,18 +96,9 @@ export function springAt(spec: SpringSpec, ms: number): number {
   return previous + (current - previous) * rest;
 }
 
-/** 窄屏 (小于 md) 时为 false. 镜 4 据此改成上下叠. */
+/** 窄屏 (小于 md) 时为 false. 镜 4 据此改成上下叠. 首帧按宽屏排, 挂载后读真实值. */
 export function useWide(): boolean {
-  const [wide, setWide] = useState(true);
-  useEffect(() => {
-    const query = window.matchMedia?.(MEDIA_WIDE);
-    if (!query) return;
-    const read = (): void => setWide(query.matches);
-    read();
-    query.addEventListener("change", read);
-    return () => query.removeEventListener("change", read);
-  }, []);
-  return wide;
+  return useMediaQuery(MEDIA_WIDE, true);
 }
 
 const WARM_STYLE: CSSProperties = {
@@ -143,7 +135,7 @@ export function Warm({
 }): JSX.Element {
   const [warm, setWarm] = useState(true);
   useEffect(() => {
-    if (window.matchMedia?.(MEDIA_REDUCED_MOTION).matches) {
+    if (prefersReducedMotion()) {
       setWarm(false);
       return;
     }

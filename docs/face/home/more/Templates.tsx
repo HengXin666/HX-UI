@@ -1,5 +1,5 @@
 import type { JSX, ReactNode } from "react";
-import { BUTTON_TYPE, Grain } from "@hx/ui";
+import { BUTTON_TYPE, Button, Grain } from "@hx/ui";
 import { DashboardPage } from "../../../src/pages/templates/page-dashboard/DashboardPage";
 import { OpenSourcePage } from "../../../src/pages/templates/page-opensource/OpenSourcePage";
 import { PortfolioPage } from "../../../src/pages/templates/page-portfolio/PortfolioPage";
@@ -35,9 +35,11 @@ export function Templates({ onGo }: { readonly onGo: (id: string) => void }): JS
         title={<span id="templates-title">不止首屏, 一整页都有.</span>}
         sub={`${FACTS.templates} 套整页模板与 ${FACTS.blocks} 组区块, 全是能改的源码.`}
         action={
-          <button type={BUTTON_TYPE} className={BTN.light} onClick={() => onGo(TEMPLATE_ENTRY)}>
-            浏览模板 <span aria-hidden>{ARROW}</span>
-          </button>
+          <Button asChild {...BTN.light}>
+            <button type={BUTTON_TYPE} onClick={() => onGo(TEMPLATE_ENTRY)}>
+              浏览模板 <span aria-hidden>{ARROW}</span>
+            </button>
+          </Button>
         }
       />
       <div className="mt-10 grid gap-[13px] md:grid-cols-2">

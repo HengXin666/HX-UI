@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type JSX } from "react";
+import { useBox } from "../kit/use-box";
 import { WALL } from "../shots/deal/cells";
 import { DEAL_END_MS, cardPose, type Vec } from "../shots/deal/shot-deal";
 import { useLoopMs } from "../kit/use-loop";
@@ -14,29 +15,22 @@ const REST_MS = 1800;
 
 /** 卡内版的镜 3 组件墙: 同一条 cardPose, 进视口循环发牌. 每格是库里的真组件. */
 export function DealCard(): JSX.Element {
-  const [box, setBox] = useState<HTMLDivElement | null>(null);
+  const [box, attach, rect] = useBox<HTMLDivElement>();
   const grid = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(0);
   const [slots, setSlots] = useState<readonly Vec[]>([]);
   const ms = useLoopMs(box, DEAL_END_MS, REST_MS);
+  const scale = rect.width / DESIGN_W;
 
+  // 槽位坐标在墙自己的设计坐标系里, 只随卡宽重排时重读.
   useLayoutEffect(() => {
-    if (!box) return;
-    const read = (): void => {
-      setScale(box.clientWidth / DESIGN_W);
-      const nodes = Array.from(grid.current?.children ?? []) as HTMLElement[];
-      setSlots(nodes.map((node) => ({ x: node.offsetLeft, y: node.offsetTop })));
-    };
-    read();
-    const ro = new ResizeObserver(read);
-    ro.observe(box);
-    return () => ro.disconnect();
-  }, [box]);
+    const nodes = Array.from(grid.current?.children ?? []) as HTMLElement[];
+    setSlots(nodes.map((node) => ({ x: node.offsetLeft, y: node.offsetTop })));
+  }, [rect.width]);
 
   const anchor = slots[slots.length - 1] ?? { x: 0, y: 0 };
   const pile = { x: anchor.x + PILE_NUDGE.x, y: anchor.y + PILE_NUDGE.y };
   return (
-    <div ref={setBox} className="absolute inset-0 overflow-hidden">
+    <div ref={attach} className="absolute inset-0 overflow-hidden">
       <div
         ref={grid}
         inert

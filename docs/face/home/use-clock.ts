@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { FRAME_MS } from "../../../src/craft";
-import { MEDIA_REDUCED_MOTION } from "../../../src/constants/ui";
+import { useReducedMotion } from "../../../src/hooks";
 
 /** 毫秒取整到微秒, 让 15 帧正好是 500ms 而不是 500.00000000000006. */
 const MICRO = 1000;
@@ -10,15 +10,12 @@ export function toFrameMs(ms: number): number {
   return Math.round(Math.round(ms / FRAME_MS) * FRAME_MS * MICRO) / MICRO;
 }
 
-function reduced(): boolean {
-  return window.matchMedia?.(MEDIA_REDUCED_MOTION).matches === true;
-}
-
 /** 挂载起算的毫秒时钟, 按整帧走, 到 end 停表. 减弱动效直接给终点. */
 export function useShotClock(end: number): number {
+  const reduced = useReducedMotion();
   const [ms, setMs] = useState(0);
   useEffect(() => {
-    if (reduced()) {
+    if (reduced) {
       setMs(end);
       return;
     }
@@ -31,29 +28,8 @@ export function useShotClock(end: number): number {
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
-  }, [end]);
+  }, [end, reduced]);
   return ms;
-}
-
-/** sticky 舞台的滚动进度: 轨道顶到达视口顶为 0, 轨道底离开视口底为 1. 往回滚就往回减. */
-export function useStageProgress(track: HTMLElement | null): number {
-  const [progress, setProgress] = useState(0);
-  useEffect(() => {
-    if (!track) return;
-    const read = (): void => {
-      const rect = track.getBoundingClientRect();
-      const range = rect.height - window.innerHeight;
-      setProgress(range <= 0 ? 1 : Math.min(1, Math.max(0, -rect.top / range)));
-    };
-    read();
-    window.addEventListener("scroll", read, { passive: true });
-    window.addEventListener("resize", read);
-    return () => {
-      window.removeEventListener("scroll", read);
-      window.removeEventListener("resize", read);
-    };
-  }, [track]);
-  return progress;
 }
 
 /** 舞台从贴顶到松开走过的滚动距离, 与它在视口里贴住的位置. */
@@ -76,10 +52,11 @@ export function stageSpan(track: HTMLElement): StageSpan {
  * 减弱动效直接给终点.
  */
 export function useStageMs(track: HTMLElement | null, total: number): number {
+  const reduced = useReducedMotion();
   const [ms, setMs] = useState(0);
   useEffect(() => {
     if (!track) return;
-    if (reduced()) {
+    if (reduced) {
       setMs(total);
       return;
     }
@@ -95,6 +72,6 @@ export function useStageMs(track: HTMLElement | null, total: number): number {
       window.removeEventListener("scroll", read);
       window.removeEventListener("resize", read);
     };
-  }, [track, total]);
+  }, [track, total, reduced]);
   return ms;
 }

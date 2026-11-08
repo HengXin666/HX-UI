@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { Marquee } from "@hx/ui";
+import { Button, Marquee } from "@hx/ui";
 import { REPO_URL } from "../../../src/components/site";
 import { SectionHead } from "../kit/Tile";
 import { BTN, OUT, WRAP } from "../kit/layout";
@@ -37,9 +37,11 @@ export function Changelog(): JSX.Element {
         title={<span id="changelog-title">更新日志</span>}
         sub="每一条都是仓库里的真实提交, 最新的在最前."
         action={
-          <a href={`${REPO_URL}/commits`} className={BTN.dark}>
-            全部提交 <span aria-hidden>{OUT}</span>
-          </a>
+          <Button asChild {...BTN.dark}>
+            <a href={`${REPO_URL}/commits`}>
+              全部提交 <span aria-hidden>{OUT}</span>
+            </a>
+          </Button>
         }
       />
       <div className="mt-10 grid h-[1110px] items-start gap-[13px] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_56px,black_86%,transparent)] md:grid-cols-3">

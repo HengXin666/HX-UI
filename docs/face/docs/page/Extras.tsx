@@ -1,7 +1,10 @@
 import type { JSX, ReactNode } from "react";
-import { cn } from "@hx/ui";
+import { Badge, cn } from "@hx/ui";
 import { categoryOf, type CatalogEntry } from "../catalog";
 import { CARD, ICON, ICON_XS, PKG, SECTION_DESC, SECTION_TITLE } from "../constants";
+
+/** 页头分类签: 库 Badge 的 outline 档, 尺寸按页头排版. */
+const PILL = "h-6 border-border px-2.5 py-0 text-[12px] font-normal";
 
 /** 页头: 标题, 描述, 分类标签. 对标 reactbits 组件页 54px 粗标题. */
 export function PageHead({ entry, children }: { readonly entry: CatalogEntry; readonly children?: ReactNode }): JSX.Element {
@@ -14,12 +17,14 @@ export function PageHead({ entry, children }: { readonly entry: CatalogEntry; re
       </div>
       <p className="max-w-[68ch] text-[14.5px] leading-relaxed text-muted-foreground">{entry.desc}</p>
       <div className="flex flex-wrap items-center gap-2">
-        <span className="inline-flex h-6 items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 text-[12px] text-muted-foreground">
+        <Badge variant="outline" className={cn(PILL, "gap-1.5 bg-muted/40")}>
           <span aria-hidden className={cn(category.icon, ICON_XS)} />
           {category.label}
-        </span>
+        </Badge>
         {entry.group !== category.label ? (
-          <span className="inline-flex h-6 items-center rounded-full border border-border px-2.5 text-[12px] text-muted-foreground">{entry.group}</span>
+          <Badge variant="outline" className={PILL}>
+            {entry.group}
+          </Badge>
         ) : null}
       </div>
     </header>
