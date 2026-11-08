@@ -12,6 +12,8 @@ Decision-ID: surface-backgrounds-particles
 - `src/surface/backgrounds/particles/Galaxy.tsx`
 - `src/surface/backgrounds/particles/Hyperspeed.tsx`
 - `src/surface/backgrounds/particles/Antigravity.tsx`
+- `src/surface/backgrounds/particles/Ballpit.tsx`
+- `src/surface/backgrounds/particles/ballpit-field.ts`
 
 ## Problem
 
@@ -29,6 +31,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. particles 路收以�
 | Galaxy | `Galaxy` | WebGL2 全屏片元: 最多 8 层视差星格循环推进 (层深 fract(i / layers + depth)), 每格一颗星 (光核 0.05 * glow / d 加十字与 45 度十字光芒, 大星阈值 smoothstep(0.9, 1, size)), 层淡入淡出 depth * smoothstep(1, 0.9, depth); 指针跟随 tau 0.325s 推开星场, 点击跃迁 boost 衰减 exp(-1.3 dt), 期间飞行乘 (1 + 14 boost); 入场 2.2s 由中心向外点亮. starColors 收 token (最多 4 个, 规格 MAX_COLORS), hueShift 默认改为 0 以保留 token 原色; saturation 改为相对 token 色的增减; lightMode 画带色相的暗点; transparent=false 铺 background token; disableAnimation 并入 paused. |
 | Hyperspeed | `Hyperspeed` | WebGL2 全屏片元: 视线与路面求交, 路中心横移 curvature * z^2 * bend(行程) 成弯道 (straight / winding / turbulent), 每侧 lanes 条车道上的车灯对按行程哈希成光带 (对向 1.65 倍, 同向 0.35 倍相对速度), 车道虚线, 两侧灯杆逐根投影带灯头光晕, 尘线由消失点放射; 雾从 TRAVEL 的 1/4 到 TRAVEL (400). 按住加速: boost 升 0.28s / 落 0.85s, 视场弹簧 90 / 13 拉向 boostFov, 指针横移镜头 tau 0.35s. ENGINE-GAP: 无实例化网格与真泛光 (宽高斯光晕近似), 车灯贴路面; 规格 MAX_CARS / MAX_DUST 不适用. |
 | Antigravity | `Antigravity` | Canvas2D: 群体以结构化数组存家位置 / 位置 / 速度 / 深度, 光标弹簧 (刚度 49, 阻尼 14) 拖出的磁环 (ringRadius, waveCount 条波纹以 waveSpeed 绕行) 把半径内的小体吸到环带上, 临界附近阻尼 1.64 omega, 子步上限 4, omega = 4 + lerpSpeed * 120 (本库定). 入场 3 秒从下方升起, 按住蓄力 (0.9s 蓄满, 4/s 泄掉) 环收到 0.5, 点击冲量 28 散开. 深度缩放 1 + z * 0.32, 远处雾 0.35, 脉动 0.22 * variance; conic / radial / random 三种着色. ENGINE-GAP: 上游的 WebGL 实例化三维小体带光照不做, 胶囊 / 球 / 盒 / 四面体画成圆头线 / 圆 / 方块 / 三角剪影, 深度只体现为尺寸与雾. |
+| Ballpit | `Ballpit` | Canvas2D 透视圆按深度排序: 世界盒半高 CAMERA_Z (20) * tan(FOV 50 / 2), 宽高比超过 MAX_ASPECT 1.5 时半宽封顶; 子步 1/120s (帧长上限 1/20s) 显式积分, 重力 gravity * 20, 摩擦 friction^(dt * 60), 漂移三轴 0.63 / 0.47 / 0.41; 球间按 x 排序扫掠, 质量 r^3 分摊穿透 (SLOP 0.01) 并按 bounce 反弹, 撞墙 wallBounce. 光标是运动学隐形球 (位置 0.06s, 半径 0.12s 跟随, 速度钳 MAX_SPEED 16), 按住抓最前的球 (0.02s 跟手, 手速 0.05s 平滑), 松手甩出并滑行 0.6s 额外阻尼 exp(-2.2 dt); 点击 burst 半径 6 冲量 22. 入场从盒顶上方错峰落下, 减弱动效先沉降 3 秒再画一帧. 四种材质 (satin / glossy / matte / metal) 以径向渐变 + 高光点 + 菲涅耳 (F0 0.04) 边光近似. ENGINE-GAP: 无实例化球体 PBR, 环境反射与球间阴影; 数量上限 600. |
 
 ## Alternatives considered
 

@@ -3,3 +3,4 @@ export { Particles, type ParticlesProps } from "./Particles";
 export { Galaxy, type GalaxyProps } from "./Galaxy";
 export { Hyperspeed, type HyperspeedProps } from "./Hyperspeed";
 export { Antigravity, type AntigravityProps } from "./Antigravity";
+export { Ballpit, type BallpitProps } from "./Ballpit";
