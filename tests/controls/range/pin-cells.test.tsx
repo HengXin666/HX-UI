@@ -14,7 +14,10 @@ import {
 	PinCells,
 	cleanCode,
 } from "@src/controls/range/input/PinCells";
-import { overshootOf, springFromDuration } from "@src/controls/range/motion";
+import { RANGE_FIT } from "@src/controls/range/tokens";
+import { overshootOf, springFromDuration as fitDuration } from "@src/motion";
+
+const springFromDuration = (durationS: number, bounce: number, mass = 1) => fitDuration(durationS, bounce, { ...RANGE_FIT, mass });
 import { mockReducedMotion, simulate } from "./helpers";
 
 describe("PinCells 常数", () => {

@@ -4,7 +4,11 @@
  */
 import { describe, expect, it } from "vitest";
 import { stepSpring, type SpringSpec } from "@src/craft/spring";
-import { dampingRatio, overshootOf, springFromDuration } from "@src/controls/press/spring-fit";
+import { PRESS_FIT } from "@src/controls/press/tokens";
+import { dampingRatio, overshootOf, springFromDuration as fitDuration } from "@src/motion";
+
+/** press 族在 src/motion 上的写法. */
+const springFromDuration = (durationS: number, bounce: number, mass = 1) => fitDuration(durationS, bounce, { ...PRESS_FIT, mass });
 import { SWIPE_ANCHOR, SWIPE_MASS, SWIPE_SPEED_STIFFNESS, swipeSprings } from "@src/controls/press/hold/SwipeConfirm";
 import { LIFT_SPRING } from "@src/controls/press/launch/Liftoff";
 import { PULL_RECOIL_S } from "@src/controls/press/launch/PullSend";

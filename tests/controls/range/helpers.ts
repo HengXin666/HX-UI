@@ -3,7 +3,11 @@
  */
 import { vi } from "vitest";
 import type { SpringSpec } from "@src/craft/spring";
-import { stepSpringFine } from "@src/controls/range/motion";
+import { RANGE_DT_CAP_MS } from "@src/controls/range/tokens";
+import { stepSpringExact } from "@src/motion";
+
+/** range 族的解析步进: 帧长上限 RANGE_DT_CAP_MS. */
+const stepSpringFine = (current: number, velocity: number, target: number, spring: SpringSpec, dtMs: number) => stepSpringExact(current, velocity, target, spring, dtMs, RANGE_DT_CAP_MS);
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
 

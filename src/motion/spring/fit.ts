@@ -41,6 +41,8 @@ export interface DurationFitOptions {
   readonly minDampingRatio?: number;
   /** 时长下限 (秒), 默认 Number.EPSILON, 防止除零. */
   readonly minDurationS?: number;
+  /** 固有频率 (rad/s) 的闭区间, 换算结果钳进来; 默认不钳. 极短时长配大 bounce 时防止刚度失控. */
+  readonly omegaRange?: readonly [number, number];
 }
 
 export interface VisualFitOptions {
@@ -104,12 +106,13 @@ export function settleRoot(zeta: number, envelope: SettleEnvelope = "amplitude")
  *
  * @param durationS 落定时长, 秒.
  * @param bounce 0 为临界阻尼, 越大过冲越多.
- * @param options 质量, 包络, 阻尼比与时长下限.
+ * @param options 质量, 包络, 阻尼比, 时长下限与固有频率区间.
  */
 export function springFromDuration(durationS: number, bounce: number, options: DurationFitOptions = {}): SpringSpec {
-  const { mass = 1, envelope = "amplitude", minDampingRatio = MIN_DAMPING_RATIO, minDurationS = Number.EPSILON } = options;
+  const { mass = 1, envelope = "amplitude", minDampingRatio = MIN_DAMPING_RATIO, minDurationS = Number.EPSILON, omegaRange } = options;
   const zeta = clamp(1 - bounce, minDampingRatio, 1);
-  const omega = settleRoot(zeta, envelope) / Math.max(durationS, minDurationS);
+  const fitted = settleRoot(zeta, envelope) / Math.max(durationS, minDurationS);
+  const omega = omegaRange ? clamp(fitted, omegaRange[0], omegaRange[1]) : fitted;
   return { stiffness: mass * omega * omega, damping: CRITICAL_COEFF * zeta * omega * mass, mass };
 }
 

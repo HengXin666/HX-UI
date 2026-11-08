@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import { stepSpring, type SpringSpec } from "@src/craft/spring";
 import { CHOICE_FIT } from "@src/controls/choice/tone";
 import { COMPOSE_FIT, MS_PER_S } from "@src/controls/compose/tokens";
+import { PRESS_FIT } from "@src/controls/press/tokens";
 import { RANGE_BOUNCE_RANGE, RANGE_FIT } from "@src/controls/range/tokens";
 import {
 	dampingRatio,
@@ -26,7 +27,7 @@ const REL = 1e-9;
 const PRESS_SIM_DT_MS = 8;
 
 const FAMILIES: Record<keyof typeof legacy.duration, Fit> = {
-	press: (d, b) => springFromDuration(d, b),
+	press: (d, b) => springFromDuration(d, b, PRESS_FIT),
 	range: (d, b) => springFromDuration(d, b, RANGE_FIT),
 	compose: (d, b) => springFromDuration((d * MS_PER_S) / MS_PER_S, b, COMPOSE_FIT),
 	choice: (d, b) => springFromDuration(d, b, CHOICE_FIT),
@@ -71,7 +72,7 @@ describe("各族原参数逐值锁定", () => {
 		const mass = 0.6;
 		const duration = 0.4;
 		const bounce = 0.2;
-		expectSame(springFromDuration(duration, bounce, { mass }), s["press m0.6"], "press mass");
+		expectSame(springFromDuration(duration, bounce, { ...PRESS_FIT, mass }), s["press m0.6"], "press mass");
 		expectSame(springFromDuration(duration, bounce, { ...RANGE_FIT, mass }), s["range m0.6"], "range mass");
 		expectSame(springFromDuration((duration * MS_PER_S) / MS_PER_S, bounce, { ...COMPOSE_FIT, mass }), s["compose m0.6"], "compose mass");
 		expectSame(springFromDuration(duration, bounce, { ...CHOICE_FIT, mass }), s["choice m0.6"], "choice mass");

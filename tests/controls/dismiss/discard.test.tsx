@@ -15,7 +15,10 @@ import {
 } from "../../../src/controls/dismiss/discard/discard-math";
 import { RipStub } from "../../../src/controls/dismiss/discard/RipStub";
 import { ShredBin } from "../../../src/controls/dismiss/discard/ShredBin";
-import { overshootOf, springFromSettle } from "../../../src/controls/dismiss/feel";
+import { overshootOf, springFromOmega } from "../../../src/motion";
+
+/** dismiss 族的趋近率写法: omega = rate / max(floorS, durationS), 临界阻尼. */
+const springFromSettle = (durationS: number, rate: number, floorS: number) => springFromOmega(rate / Math.max(floorS, durationS));
 import { CRUSH, RIP, SHRED } from "../../../src/controls/dismiss/tokens";
 import { setReducedMotion, simulate } from "./reduced";
 

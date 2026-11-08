@@ -16,7 +16,10 @@ import {
 	TaskGlyph,
 	idleDashArray,
 } from "@src/controls/range/status/TaskGlyph";
-import { springFromDuration } from "@src/controls/range/motion";
+import { RANGE_FIT } from "@src/controls/range/tokens";
+import { springFromDuration as fitDuration } from "@src/motion";
+
+const springFromDuration = (durationS: number, bounce: number, mass = 1) => fitDuration(durationS, bounce, { ...RANGE_FIT, mass });
 import { mockReducedMotion, simulate } from "./helpers";
 
 describe("TaskGlyph 常数", () => {

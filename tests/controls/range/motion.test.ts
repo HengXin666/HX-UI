@@ -2,19 +2,14 @@
  * range 族共用数学: 时长 / bounce 到 stiffness / damping / mass 的换算保留过冲与时长, 指数跟随, 松手速度.
  */
 import { describe, expect, it } from "vitest";
-import {
-	CRITICAL_SETTLE,
-	expFollow,
-	overshootOf,
-	pushSample,
-	settleRoot,
-	snap,
-	springFromDuration,
-	springFromStiffness,
-	velocityOf,
-	type MotionSample,
-} from "@src/controls/range/motion";
+import { pushSample, snap, velocityOf, type MotionSample } from "@src/controls/range/math";
+import { CRITICAL_SETTLE, RANGE_BOUNCE_RANGE, RANGE_FIT } from "@src/controls/range/tokens";
+import { approach as expFollow, overshootOf, settleRoot, springFromDuration as fitDuration, springFromStiffness as fitStiffness } from "@src/motion";
 import { simulate } from "./helpers";
+
+/** range 族在 src/motion 上的写法: 时长换算带 RANGE_FIT, 刚度写法钳 bounce. */
+const springFromDuration = (durationS: number, bounce: number, mass = 1) => fitDuration(durationS, bounce, { ...RANGE_FIT, mass });
+const springFromStiffness = (stiffness: number, bounce: number, mass = 1) => fitStiffness(stiffness, bounce, { mass, bounceRange: RANGE_BOUNCE_RANGE });
 
 describe("springFromDuration", () => {
 	it("临界阻尼的落定根就是规格的 9.23", () => {

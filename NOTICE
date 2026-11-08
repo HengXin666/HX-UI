@@ -134,6 +134,24 @@ HX-UI (docs-site staging, repository-declared Playwright, pr-assets publication)
 and `scripts/record_docs.ts` is new. The full MIT license text is in
 `.agents/skills/record-browser-gif/LICENSE`.
 
+--------------------------------------------------------------------------------
+React Bits (acknowledgement; no code included)
+--------------------------------------------------------------------------------
+Copyright (c) 2026 David Haz
+Source:  https://github.com/DavidHDev/react-bits
+         (studied at upstream commit 4dc7b5b7772e1217c8fb8d2a7aa074302180e5b4)
+License: MIT + Commons Clause License Condition v1.0
+
+The interactive controls under `src/controls/` (press, choice, range, compose
+and dismiss) take their behavioural specification from the React Bits "Micro"
+components: the tuning constants, prop lists and interaction descriptions
+recorded in `docs/research/catalog/micro.md` and `docs/research/react-bits.md`.
+No React Bits source code is copied, ported or redistributed. Every control is
+an independent implementation on HX-UI's own motion engine (`src/motion`),
+with HX-UI's own component names; each file header names the Micro entry it
+was specified from. The Commons Clause forbids redistributing the components
+themselves or a ported version, which is why only the specification is used.
+
 ================================================================================
 
 This product also builds on the Model Context Protocol specification

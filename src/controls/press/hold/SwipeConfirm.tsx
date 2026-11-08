@@ -7,7 +7,7 @@ import { ease } from "../../../craft/ease";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { springFromDuration, springFromStiffness } from "../../../motion/spring/fit";
-import { FADE_MS, MS_PER_SECOND, PERCENT, PLAIN_EASE, PRESS_EASE_OUT, clamp, shakeFrames, transitionOf } from "../tokens";
+import { FADE_MS, MS_PER_SECOND, PERCENT, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FIT, clamp, shakeFrames, transitionOf } from "../tokens";
 import { useDrivenValue } from "../../../motion/drive/use-driven-value";
 
 /** 拇指与轨道内壁的间距. */
@@ -24,7 +24,7 @@ export const SWIPE_MASS = 0.9;
 /** speed 到 stiffness 的系数: 规格只给了 speed=50, 换算由本库定, 默认得到 400. */
 export const SWIPE_SPEED_STIFFNESS = 8;
 /** 归位锚点弹簧 0.3s, bounce 0. */
-export const SWIPE_ANCHOR = springFromDuration(0.3, 0);
+export const SWIPE_ANCHOR = springFromDuration(0.3, 0, PRESS_FIT);
 /** 回弹 bounce 的上限. */
 export const SWIPE_RETURN_BOUNCE_MAX = 0.5;
 export const SWIPE_TIMING = {

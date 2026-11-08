@@ -6,7 +6,7 @@ import { useRef, useState, type JSX, type PointerEvent, type ReactNode } from "r
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { springFromDuration } from "../../../motion/spring/fit";
-import { DOUBLE, FADE_MS, HALF, MS_PER_SECOND, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, clamp, transitionOf } from "../tokens";
+import { DOUBLE, FADE_MS, HALF, MS_PER_SECOND, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, PRESS_FIT, clamp, transitionOf } from "../tokens";
 import { useDrivenValue } from "../../../motion/drive/use-driven-value";
 
 /** 本文件内重复出现的字面量, 只写一次. */
@@ -153,7 +153,7 @@ export function PullSend({
   };
 
   const recoilTo = (vx: number, vy: number): void => {
-    const spec = springFromDuration(PULL_RECOIL_S, recoil);
+    const spec = springFromDuration(PULL_RECOIL_S, recoil, PRESS_FIT);
     px.spring(0, spec, vx);
     py.spring(0, spec, vy);
   };

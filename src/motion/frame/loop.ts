@@ -42,14 +42,16 @@ export function frameDelta(now: number, last: number, options: FrameClockOptions
 export function createFrameLoop(tick?: FrameTick, options: FrameClockOptions = {}): FrameLoop {
   let frame = 0;
   let last = 0;
+  /** 每次 stop 或重新排帧加一. 回调里用它判断自己是否已被打断, 不依赖 rAF 句柄是否复用. */
+  let generation = 0;
   let current = tick;
 
   const loop = (now: number): void => {
     const dt = frameDelta(now, last, options);
     last = now;
-    const token = frame;
+    const token = generation;
     const keep = current?.(dt, now) ?? false;
-    if (frame !== token) return;
+    if (generation !== token) return;
     if (keep) {
       frame = requestAnimationFrame(loop);
       return;
@@ -61,6 +63,7 @@ export function createFrameLoop(tick?: FrameTick, options: FrameClockOptions = {
   const wake = (): void => {
     if (frame || typeof requestAnimationFrame === "undefined") return;
     last = 0;
+    generation += 1;
     frame = requestAnimationFrame(loop);
   };
 
@@ -72,6 +75,7 @@ export function createFrameLoop(tick?: FrameTick, options: FrameClockOptions = {
     wake,
     stop: () => {
       if (frame) cancelAnimationFrame(frame);
+      generation += 1;
       frame = 0;
       last = 0;
     },

@@ -23,6 +23,8 @@ export const QUICK_MS = 120;
 export const SHAKE_STEPS = [0, -1, 0.8, -0.6, 0.4, -0.2, 0] as const;
 
 export const MS_PER_SECOND = 1000;
+/** press 族 "时长 + bounce" 换算的固有频率区间 (rad/s), 并入 src/motion 前即如此. */
+export const PRESS_FIT = { omegaRange: [0.1, 2000] } as const;
 export const PERCENT = 100;
 export const HALF = 0.5;
 export const DOUBLE = 2;

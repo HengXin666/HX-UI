@@ -4,7 +4,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { springFromDuration } from "@src/controls/choice/physics";
+import { CHOICE_FIT } from "@src/controls/choice/tone";
+import { springFromDuration as fitDuration } from "@src/motion";
 import { CHIME_SIZES, CHIME_WARP, CHIME_WOBBLE, ChimeToggle, chimeFrames, chimePassOffset } from "@src/controls/choice/toggle/ChimeToggle";
 import { PLUSH_MAX_STRETCH, PLUSH_TAP_SLOP, PlushSwitch, plushPositionSpring, plushStretchFor } from "@src/controls/choice/toggle/PlushSwitch";
 import { TALLY_RULE_END, TALLY_SWELL, TALLY_VISUAL_DURATION, TallyCheck, tallySprings } from "@src/controls/choice/toggle/TallyCheck";
@@ -97,9 +98,9 @@ describe("TallyCheck", () => {
 	it("规格常数与换算: 勾线弹簧比填充更早落定", () => {
 		expect([TALLY_VISUAL_DURATION, TALLY_RULE_END, TALLY_SWELL]).toEqual([0.2, 0.84, 0.35]);
 		const springs = tallySprings(0.2);
-		expect(springs.fill).toEqual(springFromDuration(0.2, 0.2));
+		expect(springs.fill).toEqual(fitDuration(0.2, 0.2, CHOICE_FIT));
 		expect(springs.tick.stiffness).toBeGreaterThan(springs.fill.stiffness);
-		expect(springs.strike).toEqual(springFromDuration(0.2, 0));
+		expect(springs.strike).toEqual(fitDuration(0.2, 0, CHOICE_FIT));
 	});
 
 	it("点击切换 role=checkbox 并回调", async () => {

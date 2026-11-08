@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { stepSpring } from "../../../src/craft/spring";
-import { overshootOf, projectFlick, springFromFeel } from "../../../src/controls/dismiss/feel";
+import { projectFlick } from "../../../src/controls/dismiss/feel";
+import { overshootOf, springFromVisualDuration as springFromFeel } from "../../../src/motion";
 import { DrawerRow } from "../../../src/controls/dismiss/swipe/DrawerRow";
 import { FlickNotice } from "../../../src/controls/dismiss/swipe/FlickNotice";
 import { noticeDismissed, noticeDrag, noticeTimings, rowDrag, rowRelease } from "../../../src/controls/dismiss/swipe/swipe-math";

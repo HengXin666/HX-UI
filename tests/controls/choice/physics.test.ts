@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from "vitest";
 import { stepSpring, type SpringSpec } from "@src/craft/spring";
-import { overshootOf, SpringDriver, springFromBounce, springFromDuration, stepExact } from "@src/controls/choice/physics";
+import { CHOICE_FIT } from "@src/controls/choice/tone";
+import { overshootOf, SpringDriver, springFromDuration as fitDuration, springFromStiffness, stepSpringExact as stepExact } from "@src/motion";
+
+/** choice 族在 src/motion 上的写法. */
+const springFromDuration = (durationS: number, bounce: number, mass = 1) => fitDuration(durationS, bounce, { ...CHOICE_FIT, mass });
+const springFromBounce = (stiffness: number, mass: number, bounce: number) => springFromStiffness(stiffness, bounce, { mass });
 import { manualFrames } from "./support";
 
 /** 60fps 一帧. */

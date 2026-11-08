@@ -4,7 +4,10 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { NUDGE_LEAN_PX, NUDGE_RETURN_BOUNCE, NudgeField, nudgeMultiplier, rubberOffset } from "@src/controls/range/input/NudgeField";
-import { springFromDuration } from "@src/controls/range/motion";
+import { RANGE_FIT } from "@src/controls/range/tokens";
+import { springFromDuration as fitDuration } from "@src/motion";
+
+const springFromDuration = (durationS: number, bounce: number, mass = 1) => fitDuration(durationS, bounce, { ...RANGE_FIT, mass });
 import { mockReducedMotion, simulate } from "./helpers";
 
 describe("NudgeField 常数", () => {

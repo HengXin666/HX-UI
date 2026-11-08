@@ -17,7 +17,7 @@ import {
 	coastStep,
 	knobSpring,
 } from "@src/controls/range/input/ArcKnob";
-import { overshootOf } from "@src/controls/range/motion";
+import { overshootOf } from "@src/motion";
 import { mockReducedMotion, simulate } from "./helpers";
 
 describe("ArcKnob 常数", () => {
