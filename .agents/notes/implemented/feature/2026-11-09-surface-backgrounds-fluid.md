@@ -10,6 +10,9 @@ Decision-ID: surface-backgrounds-fluid
 - `src/surface/backgrounds/fluid/MoltenMetal.tsx`
 - `src/surface/backgrounds/fluid/molten-metal-shader.ts`
 - `tests/surface/backgrounds/fluid/molten-metal.test.tsx`
+- `src/surface/backgrounds/fluid/Balatro.tsx`
+- `src/surface/backgrounds/fluid/balatro-shader.ts`
+- `tests/surface/backgrounds/fluid/balatro.test.tsx`
 
 ## Problem
 
@@ -27,6 +30,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. fluid 路收以液体
 | LiquidEther | `LiquidEther` | 采用: 稳定流体四通道 (速度: 投影后半拉格朗日自平流, 粘性衰减, 指针 / 自动 / 点击的力; 散度; 压力 32 次 Jacobi, 以上一帧的解热启动; 染料: 按投影后速度平流, 留存率 0.5^(dt / (0.35 + persistence^2 * 12))). 压力梯度不能写回速度缓冲 (每个通道只写自己), 所以投影滞后到下一帧速度通道开头扣掉, 染料通道自己算一次投影后的速度, 结果与同帧投影一致. 上屏: 浓度经 smoothstep(0.08, 0.5) 当不透明度, 快处 mix(0.85, 0.1, smoothstep(0.7, 1.6, 速度)) 镂空, 1 - exp(-max(速度 - 0.75, 0) * 1.2) 发热, 流速沿调色板取色. 自动演示在指针停下 autoResumeDelay 后沿利萨如曲线搅动, 0.8 秒爬升; 入场 1.4 秒横扫一笔; 点击按 1400 * (mouseForce / 20) 外推. 减弱动效改画一张静态噪声流. MAX_CELLS 上限不落地 (通道缩放在构建时固定, 由 resolution 与 DPR 上限间接控制). ENGINE-GAP: 内核在不支持半浮点渲染目标时退到 RGBA8, 速度与压力按 512 / 256 的范围编码后精度不足, 流体会发涩. |
 | Ferrofluid | `Ferrofluid` | 采用: 斜视 (tilt 48 度) 的液面, 六角排布的锥形尖刺 (锐度为锥形指数), 高度由漂移的三维值噪声磁场 smoothstep(0.44, 0.86, n) 决定, flowDirection 映射为图样漂移, 指针处高斯抬升 (跟手 1 - exp(-dt / mouseDampening), 强度 tau 0.35), 点击放出一圈脉冲 (包络 smoothstep(0, 0.08, t) * exp(-1.1 t)). 全屏片元射线步进 72 步加 5 次二分求交, 菲涅耳 F0 0.06, 环境 mix(0.3, 1, smoothstep(-0.25, 0.3, r.z)), 边缘光 pow(1 - abs(dot(rd, n)), 3), 远处按距离淡出. 入场 2.4 秒尖刺长出. 射线步进件默认 dpr 1. ENGINE-GAP: 条目的 Canvas2D 叠层 (阴影预烘) 不做, 阴影与雾在同一片元里近似. |
 | MoltenMetal | `MoltenMetal` | 采用: 1 到 6 层旋涡扭曲 (旋转角 swirl * 0.55 / i * sin(半径)) 后取 4 阶分形当高度 l, 8 档脊线按屏幕导数 footprint = 0.5 * length(dFdx, dFdy) 抗锯齿, 导数当法线出金属高光; 颜色沿至多 6 色调色板 smoothstep 插值, colorMode 偏置 molten 0.5 / ember 0.3 / frost 0.7. 指针拖尾 16 点 (0.06 秒采样, 0.9 秒寿命, 权重 (1 - age / life)^2), 热点跟手 tau 0.33, 在场 tau 0.25; 点击耀斑最多 8 个, 包络 (1 - exp(-age / 0.07)) 乘寿命 1.8 秒的平滑落下; 受热处烧成 coreColor (默认 foreground). 入场 2.4 秒前沿自下而上漫开 (reveal = smoothstep(-1, 1, 前沿距离), 前沿亮边 0.2 * exp(-d^2 * 1.5)), 进度过 0.4 才开始流动. 默认 colors primary, backgroundColor background, 另加 transparent. ENGINE-GAP: 条目的 Canvas2D 拖尾预烘不做, 拖尾点直接进 uniform 数组. |
+| Balatro | `Balatro` | 采用: 坐标先按 pixelSize (CSS 像素乘 dpr) 取块心, 经离屏搅动场位移与至多 4 个点击旋涡 (强度 0.15 秒拧起, exp(-1.2 t) 松开, 3 秒寿命) 扭过, 再按 spin - swirl * 20 * (r - r^2 / 2) 旋转, 放大 30 / scale 后做 detail 次正弦折叠; 颜料量 paint = clamp(|q| * 0.035 * contrastMod, 0, 2), contrastMod = 0.25 * contrast + 0.5 * swirl + 1.2, 三色权重 c1 = 1 - contrastMod * abs(1 - paint), c2 = 1 - contrastMod * abs(paint), c3 = 1 - min(1, c1 + c2), 底色份额 0.3 / contrast, 高光 (lighting - 0.2) * max(5 c1 - 4, 0) + lighting * max(5 c2 - 4, 0). 流动相位 time * 7, 自转 time * rotationSpeed * 0.2. 搅动场格子 8 CSS 像素, 本帧指针线段按半径 90 CSS 像素高斯推开颜料, 每帧乘 exp(-dt / 1.6), 位移按 0.5 + 0.5v 编码. 指针转向 tau 0.8, 入场 2.2 秒从中心旋开. crt 做桶形弯曲, 扫描线与暗角. 默认 color1 primary, color2 accent, color3 background. maxDevicePixelRatio 并入公共 dpr. |
 
 ## Alternatives considered
 

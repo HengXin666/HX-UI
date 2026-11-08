@@ -3,3 +3,4 @@ export { LiquidChrome, type LiquidChromeProps } from "./LiquidChrome";
 export { LiquidEther, type LiquidEtherProps } from "./LiquidEther";
 export { Ferrofluid, type FerrofluidProps } from "./Ferrofluid";
 export { MoltenMetal, type MoltenMetalProps } from "./MoltenMetal";
+export { Balatro, type BalatroProps } from "./Balatro";
