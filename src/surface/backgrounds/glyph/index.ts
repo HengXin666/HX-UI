@@ -4,3 +4,4 @@ export { GradientASCII, type GradientASCIIProps } from "./GradientASCII";
 export { LetterGlitch, type LetterGlitchProps } from "./LetterGlitch";
 export { FaultyTerminal, type FaultyTerminalProps } from "./FaultyTerminal";
 export { CRTWarp, type CRTWarpProps } from "./CRTWarp";
+export { PixelBlast, type PixelBlastProps } from "./PixelBlast";

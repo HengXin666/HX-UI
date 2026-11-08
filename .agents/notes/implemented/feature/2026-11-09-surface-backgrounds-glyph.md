@@ -14,6 +14,7 @@ Decision-ID: surface-backgrounds-glyph
 - `src/surface/backgrounds/glyph/LetterGlitch.tsx`
 - `src/surface/backgrounds/glyph/FaultyTerminal.tsx`
 - `src/surface/backgrounds/glyph/CRTWarp.tsx`
+- `src/surface/backgrounds/glyph/PixelBlast.tsx`
 
 ## Problem
 
@@ -34,6 +35,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. glyph 路收以像素
 | LetterGlitch | `LetterGlitch` | 采用: 字符集, 静息换字 0.2 次每秒并按两层噪声 (0.65 / 0.35, 指数 2.03) 以 flow 调制, 闪烁频率 0.1 * glitchAmount ** 1.6, smooth 时按 exp(-4 * age / fade) 淡出, 指针搅动按 1400 像素每秒封顶, 入场 1.4 秒. 上游的逐格 CPU 状态 (延迟, 衰减, 游走者) 换成按格哈希把闪烁事件排在时间轴上的无状态着色器; tear 撕裂寿命 0.6 秒与格子尺寸 (高 = fontSize * (1 + 0.5 * spacing), 宽 = 0.6 倍高) 为本库定. lightMode 不单列, 换色靠 token. |
 | FaultyTerminal | `FaultyTerminal` | 采用: 三种字形画法 (blocks / dots / characters), 点击 glitch 0.7 秒与 degauss 1.6 秒, 入场 2 秒按 smoothstep 逐格亮起, 噪声首层幅度 0.5 * noiseAmp, 圆点半径 0.36 + 0.06 * on, 乱码翻动 1.2 + scramble * 18, 指针增亮 1 + mouseGlow * 1.3, 余辉 persistence ** (dt * 60), 暗角边宽 0.04 + 0.22 * vignette. 管线分两段: 满分辨率屏幕通道 (乒乓, 自带余辉) 与上屏后期 (弯曲, 色差, 5x5 辉光, 扫描线, 抖动). tint 默认换成 foreground token, 另加 backgroundColor (默认 background) 垫底; 指针坐标按平面屏幕计, 不随弯曲反算. |
 | CRTWarp | `CRTWarp` | 采用: 四种荫罩 (none / aperture / shadow / slot), 格宽高比 0.56, 入场 1.6 秒逐行预热且荧光按 rise = dt / 0.22 上升, 点击垂直翻滚 0.8 秒 (接缝 smoothstep(0, 0.05) 消隐, 首尾 0.08 渐入), 余辉 persistence ** (dt * 60) 且减弱动效时为 0, 工频干扰 0.24 * interference, 闪烁 0.1 * flicker, 暗角 mix(1, smoothstep(0, 1, 1 - 2 * r^2), vignette). 管线分满分辨率内容通道 (乒乓余辉, columns 分格, 四种波场变体量化成 levels 级) 与上屏后期 (弯曲, 圆角, 色移, 5x5 辉光, 荫罩, 扫描线, 颗粒). 上游 speed 默认 0.5 折进着色器时钟, 公共 speed 默认 1; 指针的弹簧质点换成内核的平滑在场程度, 表现为磁偏拉扯并加大色移; lightMode 不单列, 换色靠 token. |
+| PixelBlast | `PixelBlast` | 采用: 六种形状 (square / circle / triangle / diamond / cross / ring), 三种悬停 (none / grow / reveal), 入场 1.8 秒按 1 - (1 - t) ** 2.4 缓出由中心向外显影 (前沿 smoothstep(front + 0.04, front - 0.06, r)), 形状边长 0.5 * sqrt(覆盖度), 十字臂长 0.42 * s 与臂宽 0.13 * s + 0.02, 柔化 smoothstep(-0.12 * softness, 0.12 * softness, margin), 尺寸抖动 1 + (h - 0.5) * jitter. 图案场为五层梯度噪声按 Bayer 8 阈值判亮; 点击上限从 10 收到内核队列的 8, 涟漪寿命 3 秒为本库定; 上游的透视平面与 LOD / 景深淡出没做, 只铺平面; 图案振幅区间 RANGE_MIN / RANGE_MAX 换成直接归一化到 0..1 覆盖度. |
 
 ## Alternatives considered
 
