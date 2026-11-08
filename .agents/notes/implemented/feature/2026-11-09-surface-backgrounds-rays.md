@@ -24,6 +24,8 @@ Decision-ID: surface-backgrounds-rays
 - `src/surface/backgrounds/rays/lightning-shader.ts`
 - `src/surface/backgrounds/rays/PrismaticBurst.tsx`
 - `src/surface/backgrounds/rays/prismatic-burst-shader.ts`
+- `src/surface/backgrounds/rays/Prism.tsx`
+- `src/surface/backgrounds/rays/prism-shader.ts`
 
 ## Problem
 
@@ -50,6 +52,7 @@ Backgrounds 全量落地分七路, rays 路收以光束, 光柱, 闪电, 棱镜�
 | Lightfall | `Lightfall` | 四层视差竖向光痕下落, 每列 streakCount 条, 尾巴 exp(-tail * behind) 乘 (1 - smoothstep(0.5, 0.95, behind / (0.5 * period))) 与 (1 - smoothstep(1.2, 3.2, tail * behind)) 截断, 列宽软边 smoothstep(0.72 * edge, edge), 列宽小于 1.6 到 3.2 像素时 lod 成整体光, 头部高斯辉光, 闪烁, 调色板最多 8 色按列哈希取色, 均色背景微光. 入场 2.6s 自上而下揭开, 按住冲刺 (升 2.2 / 降 1.6, 下落 1 + warp * 9 倍, 光痕拉长), 下落行程 dt * 0.1 * fallSpeed, 视差跟手时间常数 mouseDampening, 透镜跟手 6, 在场 4 / 2. ENGINE-GAP: 四级降采样泛光以峰值处解析增益近似. 规格的 speed 改名 fallSpeed, backgroundColor 不给时透明叠加. |
 | Lightning | `Lightning` | 域扭曲 (WARP 2.1) 加 5 层值噪声的折线电光, 斜率修正的近似法向距离, 远处按 reach 估计剔除 (1 - smoothstep(reach * 0.6, reach, estimate)), 每条最多 3 叉, 分叉渐细 pow(1 - along, 1.6) * smoothstep(0, 0.2, along). 周期 PERIOD 8 的四分之一为一轮闪现, 显示窗 smoothstep(0, 0.03) * (1 - smoothstep(0.3, 0.42)), 稳态抖闪 0.82 + 0.18 sin sin, 起闪爆亮照亮天空. 芯线 smoothstep(gCore ± gPixel), 发白 hot = core + smoothstep(6, 20, e) * 0.55, 描边 smoothstep(1, 3.6), 辉光 1 - exp(-e * 0.35). 点击落雷读内核点击队列 (最多 4 道), 先导 0.11s 下行后爆闪, 寿命 1.3s. 揭开线 1.1 - 2.4 * intro (入场 1.2s 本库定), 下端偏向指针 (速率 5 本库定). 规格的 speed 由公共 speed 承担. 默认色 primary. |
 | PrismaticBurst | `PrismaticBurst` | 体积步进 44 步的放射光束: 方向上两层 3D 值噪声成束, 阈值 edge = 0.5 - 0.35 (rayWidth - 1), rayCount 梳齿 smoothstep(0.15, 0.95, 0.5 + 0.5 cos(n * ang)), 每步 0.05 / (0.4 + stepLen) 累积, 沿半径光谱 (无调色板时余弦光谱, 有则至多 8 色循环插值) 着色, 沿半径扭转 twist, 噪声弯折 distort 随深度 smoothstep(0.35, 3.0) 生长, 中心压暗 centerFade, 起点按哈希抖动加颗粒. 三种转动 rotate / rotate3d / hover (ANIMATIONS 0 / 1 / 2), 朝向跟手时间常数 hoverDampness. 相位 phase += dt * speed * (1 + rush) + kick * dt, 点击冲量 2.5 衰减速率 3 (本库定), 点击光环寿命 1.5s 最多 4 个. 入场 2.4s 星形前沿 streak = 0.5 + 0.22 sin(5a + 1.3) + 0.16 sin(13a + 4.1) + 0.12 sin(29a + 2.2), lift = smoothstep(front, front - 0.5, r). 画质 0.35 / 0.5 / 0.7, 下限 0.2, resolution 覆盖. ENGINE-GAP: 四级泛光以峰值解析增益 glow 近似; mixBlendMode 交给 className. 规格的 speed 改名 burstSpeed. |
+| Prism | `Prism` | 采用: 正四棱锥有符号距离 (height 3.5, baseWidth 5.5), 相机 z = -9 沿视线步进 72 步 (上限 22), 步长 d = 0.04 + 0.3 * abs(sdf + 噪声扰动 0.15 noise), 每步累积 色 / d, 乘 0.0022 glow 后按 saturation 1.5 加饱和; 取色相位 0.18 freq * length(p) + 0.08 freq * p.y - 0.25 时钟 + hueShift, 无调色板时余弦连续光谱, 有则至多 8 色循环插值 (规格烘焙 64 格纹理改为片元直插). 三种转动 rotate / hover / rotate3d (rotate3d 加 0.6 / 0.4 正弦俯仰横滚), 时钟倍率 timeScale 0.5; 惯性跟随 follow = 1 - (1 - inertia)^(60 dt) (inertia 默认 0.05), 指针牵动偏航 0.35 / 俯仰 0.2 弧度乘 hoverStrength 2 (非 hover 模式再乘 0.25, 本库定), 横滚跟指针横向速度, 离开后 roll *= 0.9^(60 dt) 回正; 入场 1.4s 由 0.75 倍放大并淡入. scale 3.6, resolution 0.5 乘到公共 dpr, offset 按 CSS 像素平移. 减弱动效只画一帧. |
 
 ## Alternatives considered
 

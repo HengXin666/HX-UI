@@ -7,3 +7,4 @@ export { LightTunnel, type LightTunnelProps, type TunnelFlow } from "./LightTunn
 export { Lightfall, type LightfallProps } from "./Lightfall";
 export { Lightning, type LightningProps } from "./Lightning";
 export { PrismaticBurst, type PrismaticBurstProps } from "./PrismaticBurst";
+export { Prism, type PrismProps } from "./Prism";
