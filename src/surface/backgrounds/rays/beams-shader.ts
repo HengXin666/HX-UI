@@ -48,13 +48,14 @@ void main() {
   float twist = u_twist * sin(along * HX_PI + u_time * 0.3);
   float rough = hx_vnoise(vec2(id * 3.1, along * 2.0 + u_time * 0.2)) - 0.5;
   float slope = clamp(sin(asin(clamp(f * 1.96, -0.98, 0.98)) + twist) * u_depth, -0.98, 0.98);
-  float tilt = u_depth * 0.6 * cos(phase) + rough * 0.25 * u_var;
+  float tilt = u_depth * 0.28 * cos(phase) + rough * 0.25 * u_var;
   vec3 local = normalize(vec3(slope, tilt, sqrt(max(1.0 - slope * slope, 0.0))));
   vec3 n = vec3(hx_rot(-u_turn) * local.xy, local.z);
 
   vec2 here = v_uv;
   vec2 lamp = u_light.xy;
-  vec3 l = normalize(vec3((lamp - here) * u_res / min(u_res.x, u_res.y), 0.7));
+  vec2 toward = (lamp - mix(vec2(0.5), here, 0.35)) * u_res / min(u_res.x, u_res.y);
+  vec3 l = normalize(vec3(toward * 1.4, 0.55));
   vec3 v = vec3(0.0, 0.0, 1.0);
   vec3 h = normalize(l + v);
   float nl = max(dot(n, l), 0.0);
@@ -74,13 +75,13 @@ void main() {
   float pixel = 1.0 / max(u_width, 1.0);
   float seam = 0.5 - abs(f);
   float blend = 1.0 - 0.5 * (1.0 - smoothstep(0.0, pixel * 1.5, seam));
-  float diffuse = u_fill * (0.35 + 0.65 * nl) * 0.25;
+  float diffuse = u_fill * (0.35 + 0.65 * nl) * 0.45;
   float bloom = u_glow * 0.35 * pow(nh, 12.0) * (1.0 + u_light.z);
-  float energy = (diffuse + spec * 0.6 + bloom) * blend * u_bright;
+  float energy = (diffuse + spec * 1.6 + bloom) * blend * u_bright * 2.0;
   energy *= 0.85 + 0.3 * u_light.z * exp(-4.0 * length((lamp - here) * u_res / min(u_res.x, u_res.y)));
 
   float sweep = u_intro * 1.6 - 0.3;
-  float reveal = smoothstep(sweep, sweep - 0.3, 1.0 - v_uv.y * 0.6 - v_uv.x * 0.4);
+  float reveal = 1.0 - smoothstep(sweep - 0.3, sweep, 1.0 - v_uv.y * 0.6 - v_uv.x * 0.4);
   energy *= reveal * rays_edge(v_uv);
   energy += hx_grain(frag, u_time) * u_grain * 0.08 * energy;
   o_color = rays_compose(u_color * max(energy, 0.0));

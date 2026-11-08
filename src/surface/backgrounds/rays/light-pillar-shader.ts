@@ -85,7 +85,7 @@ void main() {
     float height = exp(-pow(q.y / span, 2.0) * 2.0);
     float weight = 1.0 / d;
     vec3 tint = mix(u_bottom, u_top, smoothstep(0.0, 1.0, along));
-    float mask = smoothstep(u_reveal, u_reveal - 0.9, 1.0 - along);
+    float mask = 1.0 - smoothstep(u_reveal - 0.9, u_reveal, 1.0 - along);
     float pulse = 0.0;
     for (int j = 0; j < TAP_SLOTS; j++) {
       if (float(j) >= u_tap_count || u_pulse_on < 0.5) break;

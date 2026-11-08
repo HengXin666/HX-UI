@@ -3,3 +3,4 @@ export { Beams, type BeamsProps } from "./Beams";
 export { LightRays, type LightRaysProps } from "./LightRays";
 export { SideRays, type SideRaysProps } from "./SideRays";
 export { LightPillar, type LightPillarProps } from "./LightPillar";
+export { LightTunnel, type LightTunnelProps, type TunnelFlow } from "./LightTunnel";
