@@ -20,6 +20,8 @@ Decision-ID: surface-backgrounds-rays
 - `src/surface/backgrounds/rays/light-tunnel-shader.ts`
 - `src/surface/backgrounds/rays/Lightfall.tsx`
 - `src/surface/backgrounds/rays/lightfall-shader.ts`
+- `src/surface/backgrounds/rays/Lightning.tsx`
+- `src/surface/backgrounds/rays/lightning-shader.ts`
 
 ## Problem
 
@@ -44,6 +46,7 @@ Backgrounds 全量落地分七路, rays 路收以光束, 光柱, 闪电, 棱镜�
 | LightPillar | `LightPillar` | 单通道射线步进 56 步, 扭转噪声柱累积 1 / d 辉光, 顶底两色渐变, 自转时钟 0.96 * rotationSpeed, 五次曲线入场 2.1s 自下而上揭开 (遮罩软边 0.9), 点击亮环沿柱上行 (寿命 1.4s), 视角跟手 2.4, 在场 3, 画质档 0.35 / 0.5 / 0.6. ENGINE-GAP: 规格的独立合成 / 泛光通道以峰值处解析增益近似; mixBlendMode 交给 className. 默认色 primary / accent-2. |
 | LightTunnel | `LightTunnel` | 极坐标线缆隧道, 深度 1 / r, 线缆按 hash 明暗 (variance 0.9), 脉冲头 exp(-(lead / head)^2) 尾 exp(-lead / tail) 分段, 远处线缆像素级时 lod 化成整体光 (smoothstep(4, 1.2, spacing)), 近 / 远淡出, reach 1 - exp(-depth * 0.55) 驱动由外向内揭开 1.8s, 漂移 (speed + 0.2), 指针拉弯中段 tau 0.6s. 规格的 speed 与公共时钟倍率重名, 改名 drift. |
 | Lightfall | `Lightfall` | 四层视差竖向光痕下落, 每列 streakCount 条, 尾巴 exp(-tail * behind) 乘 (1 - smoothstep(0.5, 0.95, behind / (0.5 * period))) 与 (1 - smoothstep(1.2, 3.2, tail * behind)) 截断, 列宽软边 smoothstep(0.72 * edge, edge), 列宽小于 1.6 到 3.2 像素时 lod 成整体光, 头部高斯辉光, 闪烁, 调色板最多 8 色按列哈希取色, 均色背景微光. 入场 2.6s 自上而下揭开, 按住冲刺 (升 2.2 / 降 1.6, 下落 1 + warp * 9 倍, 光痕拉长), 下落行程 dt * 0.1 * fallSpeed, 视差跟手时间常数 mouseDampening, 透镜跟手 6, 在场 4 / 2. ENGINE-GAP: 四级降采样泛光以峰值处解析增益近似. 规格的 speed 改名 fallSpeed, backgroundColor 不给时透明叠加. |
+| Lightning | `Lightning` | 域扭曲 (WARP 2.1) 加 5 层值噪声的折线电光, 斜率修正的近似法向距离, 远处按 reach 估计剔除 (1 - smoothstep(reach * 0.6, reach, estimate)), 每条最多 3 叉, 分叉渐细 pow(1 - along, 1.6) * smoothstep(0, 0.2, along). 周期 PERIOD 8 的四分之一为一轮闪现, 显示窗 smoothstep(0, 0.03) * (1 - smoothstep(0.3, 0.42)), 稳态抖闪 0.82 + 0.18 sin sin, 起闪爆亮照亮天空. 芯线 smoothstep(gCore ± gPixel), 发白 hot = core + smoothstep(6, 20, e) * 0.55, 描边 smoothstep(1, 3.6), 辉光 1 - exp(-e * 0.35). 点击落雷读内核点击队列 (最多 4 道), 先导 0.11s 下行后爆闪, 寿命 1.3s. 揭开线 1.1 - 2.4 * intro (入场 1.2s 本库定), 下端偏向指针 (速率 5 本库定). 规格的 speed 由公共 speed 承担. 默认色 primary. |
 
 ## Alternatives considered
 
