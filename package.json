@@ -60,6 +60,8 @@
     "typecheck": "tsc --noEmit",
     "check:ui": "node scripts/quality/index.ts check --mode all --rule PROJECT-UI-PALETTE,PROJECT-UI-HEX,PROJECT-UI-RGB,PROJECT-UI-LINE-1PX,PROJECT-UI-BW,PROJECT-UI-TRANSITION-ALL,PROJECT-UI-BUTTON-TYPE,PROJECT-UI-ICON-DECLARED,PROJECT-UI-DEV-DIARY,PROJECT-UI-JSX-COMMENT-LEAK --out scripts/.hx_code_quality/reports/ui",
     "check:smoke": "node scripts/check-smoke.ts",
+    "docs:props": "node scripts/docs-props.ts",
+    "check:docs-props": "node scripts/docs-props.ts --check",
     "check:smoke:strict": "node scripts/check-smoke.ts --strict",
     "check:shell": "node scripts/check-shell.ts",
     "check:blueprint": "node scripts/check-blueprint.mjs",

@@ -59,6 +59,13 @@ export const GATES: Gate[] = [
     args: [NODE_BIN, "scripts/check-api-snapshot.mjs"],
   },
   {
+    id: "docs-props",
+    group: GROUP_LIB,
+    label: "文档页 Props 表与源码类型一致 (props.gen.json 由 scripts/docs-props.ts 生成, 改了组件属性要重新生成)",
+    cwd: REPO_CWD,
+    args: [NODE_BIN, "scripts/docs-props.ts", "--check"],
+  },
+  {
     id: "api-version",
     group: GROUP_LIB,
     label: "公共符号变化必须伴随版本号变化",

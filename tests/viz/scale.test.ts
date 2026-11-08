@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dealDelays, extent, linePath, linearScale, niceStep, niceTicks, punchDomain, zeroDomain } from "../../src/viz/scale";
+import { dealDelays, extent, linePath, linearScale, niceStep, niceTicks, punchDomain, revealSeries, zeroDomain } from "../../src/viz/scale";
 import { edgeLength, layoutFlow, walkOrder } from "../../src/viz/flow/flow-layout";
 
 describe("scale", () => {
@@ -77,5 +77,30 @@ describe("flow layout", () => {
     const a = { x: 0, y: 0 };
     const b = { x: 100, y: 50 };
     expect(edgeLength(a, b)).toBeGreaterThanOrEqual(Math.hypot(100, 50) - 1e-6);
+  });
+});
+
+describe("revealSeries", () => {
+  const points = [
+    [0, 100],
+    [50, 50],
+    [100, 0],
+  ] as const;
+  const values = [0, 10, 30];
+
+  it("clamps to the ends", () => {
+    expect(revealSeries(points, values, -1)).toEqual({ points: [[0, 100]], value: 0 });
+    expect(revealSeries(points, values, 2)).toEqual({ points: [...points], value: 30 });
+  });
+
+  it("interpolates the tip and the readout between two points", () => {
+    const half = revealSeries(points, values, 0.75);
+    expect(half.points).toHaveLength(3);
+    expect(half.points[2]).toEqual([75, 25]);
+    expect(half.value).toBe(20);
+  });
+
+  it("returns nothing for an empty series", () => {
+    expect(revealSeries([], [], 0.5)).toEqual({ points: [], value: undefined });
   });
 });

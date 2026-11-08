@@ -101,7 +101,7 @@ reg.node({
 
 | 层 | 目录 | 内容 |
 | --- | --- | --- |
-| 令牌与皮肤 | `tokens.css` / `base.css` / `skins/` | 语义令牌 (`@layer hx.tokens`), 可选全局重置 (`@layer hx.base`), 六套皮肤与三档密度 (`data-skin` / `data-density`) |
+| 令牌与皮肤 | `tokens.css` / `base.css` / `skins/` | 语义令牌 (`@layer hx.tokens`), 可选全局重置 (`@layer hx.base`), 七套皮肤与三档密度 (`data-skin` / `data-density`) |
 | 运行时 | `provider/` / `locale/` / `hooks/` | `HxProvider` / `createTheme` / `useTheme` / `getThemeScript`; `LocaleProvider` / `useLocale` / `format*`; 16 个共享 hook |
 | 基础件与版式件 | `primitives/` / `layout/` / `box/` | radix 之上的基础件, 页面版式, Stack / Grid / Bento 布局原语 |
 | 质感 | `typography/` / `media/` / `effects/` / `motion/` | 营销排版, 图片视频与外框, 背景遮罩 (`MeshGradient` / `Grain` / `Beam` ...), 入场与滚动动效 |
