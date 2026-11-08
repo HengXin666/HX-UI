@@ -1,65 +1,67 @@
-import { useEffect, useRef, useState, type JSX } from "react";
+import { useEffect, useState, type CSSProperties, type JSX } from "react";
 import { BUTTON_TYPE } from "@hx/ui";
-import { DOCS, GROUPS, WIDE_PAGES, type DocEntry } from "../src/nav";
-import { DocsNav } from "../src/nav/DocsNav";
-import { PageNav } from "../src/components/PageNav";
-import { TableOfContents } from "../src/components/TableOfContents";
-import { renderDoc } from "./render-doc";
+import { HEADER_PX } from "./home/shots/stage";
+import { CATALOG, findEntry } from "./docs/catalog";
+import { INDEX_ID, INSTALL_ID, SHELL } from "./docs/constants";
+import { GenericPage } from "./docs/fallback/GenericPage";
+import { IndexPage } from "./docs/index/IndexPage";
+import { InstallGuide } from "./docs/install/InstallGuide";
+import { SpecPage } from "./docs/page/SpecPage";
+import { Rail } from "./docs/rail/Rail";
+import { RightRail } from "./docs/rail/RightRail";
 
-/** 组件文档外壳: 侧栏, 正文, 本页目录. 窄屏时侧栏收进顶栏的「打开导航」. */
+/** 两侧栏吸顶: 顶栏下留一档外边距, 高度减去上下两档. */
+const STICKY: CSSProperties = { top: HEADER_PX + SHELL.gutter, height: `calc(100svh - ${HEADER_PX + SHELL.gutter * 2}px)` };
+
+/**
+ * 文档外壳, 对标 reactbits.dev 组件页: 左栏圆角卡 (目录), 中栏正文, 右栏安装卡与本页目录.
+ * 页面整体随窗口滚动, 两侧栏吸顶; 窄屏时左栏收进顶栏的 "打开导航" 抽屉, 右栏隐藏.
+ */
 export function DocsFrame({
   id,
   onGo,
-  wide,
   mobileNavOpen,
   setMobileNavOpen,
 }: {
   readonly id: string;
   readonly onGo: (id: string) => void;
-  readonly wide: boolean;
+  readonly wide?: boolean;
   readonly mobileNavOpen: boolean;
   readonly setMobileNavOpen: (open: boolean) => void;
 }): JSX.Element {
-  const entry = DOCS.find((item) => item.id === id) ?? DOCS[0];
-  const index = DOCS.findIndex((item) => item.id === entry.id);
-  const [openGroups, setOpenGroups] = useState<readonly string[]>(() => [entry.group]);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const entry = id === INDEX_ID ? undefined : (findEntry(id) ?? CATALOG[0]);
+  const [article, setArticle] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    setOpenGroups((prev) => (prev.includes(entry.group) ? prev : [...prev, entry.group]));
     setMobileNavOpen(false);
-    contentRef.current?.scrollTo({ top: 0 });
-  }, [entry.group, entry.id, setMobileNavOpen]);
+    window.scrollTo({ top: 0 });
+  }, [id, setMobileNavOpen]);
 
-  const toggle = (group: string): void => {
-    setOpenGroups((prev) => (prev.includes(group) ? prev.filter((item) => item !== group) : [...prev, group]));
-  };
+  let body: JSX.Element;
+  if (!entry) body = <IndexPage onGo={onGo} />;
+  else if (entry.id === INSTALL_ID) body = <InstallGuide onGo={onGo} />;
+  else if (entry.spec) body = <SpecPage key={entry.id} entry={entry} spec={entry.spec} onGo={onGo} />;
+  else body = <GenericPage key={entry.id} entry={entry} onGo={onGo} />;
 
   return (
-    <div className="flex min-h-0 flex-1">
+    <div className="flex w-full flex-1 items-start">
       {mobileNavOpen ? (
         <button type={BUTTON_TYPE} aria-label="关闭导航" className="fixed inset-0 z-30 bg-background/70 md:hidden" onClick={() => setMobileNavOpen(false)} />
       ) : null}
       <aside
         id="docs-navigation"
-        className={`${mobileNavOpen ? "flex" : "hidden"} fixed inset-y-12 left-0 z-40 w-64 flex-col border-r border-border bg-background md:static md:flex md:w-60`}
+        aria-label="组件导航"
+        style={STICKY}
+        className={`${mobileNavOpen ? "fixed left-3 z-40 block w-[min(320px,calc(100vw-24px))]" : "hidden"} shrink-0 md:sticky md:ml-4 md:block md:w-64`}
       >
-        <DocsNav groups={GROUPS} docs={DOCS} active={entry.id} openGroups={openGroups} onToggle={toggle} onGo={onGo} />
+        <Rail active={entry?.id ?? INDEX_ID} onGo={onGo} />
       </aside>
-      <main className="flex min-w-0 flex-1">
-        <div ref={contentRef} className="h-[calc(100svh-3rem)] min-w-0 flex-1 overflow-y-auto">
-          <div className={"mx-auto flex w-full gap-10 px-4 py-8 md:px-8 " + (WIDE_PAGES.has(entry.id) ? "max-w-[1720px]" : wide ? "max-w-[1100px]" : "max-w-[880px]")}>
-            <article className="w-full min-w-0 flex-1">
-              <p className="text-xs font-medium text-muted-foreground">{entry.group}</p>
-              <h1 className="mt-1 text-3xl font-semibold tracking-tight">{entry.label}</h1>
-              <p className="mt-2 max-w-[62ch] text-sm leading-relaxed text-muted-foreground">{entry.desc}</p>
-              <div className="mt-8">{renderDoc(entry as DocEntry)}</div>
-              <PageNav prev={DOCS[index - 1]} next={DOCS[index + 1]} onGo={onGo} />
-            </article>
-            <TableOfContents container={contentRef.current} deps={entry.id} className="hidden w-48 shrink-0 xl:block" />
-          </div>
-        </div>
+      <main ref={setArticle} className="min-w-0 flex-1 px-4 pt-8 pb-24 md:pr-8 md:pl-8 lg:pl-12 xl:pt-10">
+        <div className="mx-auto w-full max-w-[1100px]">{body}</div>
       </main>
+      <aside aria-label="本页信息" style={STICKY} className="mr-8 hidden w-[300px] shrink-0 overflow-y-auto xl:sticky xl:block">
+        <RightRail importName={entry?.spec?.importName} source={entry?.spec?.source} container={article} deps={id} />
+      </aside>
     </div>
   );
 }

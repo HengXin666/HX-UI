@@ -1,0 +1,42 @@
+/* ============================================================================
+ * 门面暗色皮肤 face: 文档站门面 (docs/face) 的默认暗色.
+ * 取值对着 reactbits.dev 的实拍取样: 底 rgb(18 15 23), 卡面高一档, 沉一档的色带, 1px 细边, 次级字灰.
+ * 只覆盖语义令牌, 组件不写色值. 根元素带 data-face 时生效; 用户在皮肤页选了别的 data-skin 时让位.
+ * 亮色不覆盖, 回到默认亮色令牌, 主题键切过去照样可读.
+ * ==========================================================================*/
+
+:root[data-face]:not([data-skin]):not([data-mode="light"]) {
+  color-scheme: dark;
+  --background: #120f17;
+  --foreground: #e9e7ee;
+  --card: #1b1820;
+  --card-foreground: #e9e7ee;
+  --popover: #1e1b24;
+  --popover-foreground: #e9e7ee;
+  --primary: #a855f7;
+  --primary-foreground: #ffffff;
+  --link: #c4a1ff;
+  --secondary: #221f29;
+  --secondary-foreground: #e9e7ee;
+  --muted: #141218;
+  --muted-foreground: #9a97a2;
+  --accent: #26232d;
+  --accent-foreground: #f4f2f7;
+  --heading: #f7f6f9;
+  --control-hover: #2a2731;
+  --border: #2a2731;
+  --border-muted: #211e27;
+  --border-subtle: #1f1c25;
+  --border-strong: #3a3642;
+  --input: #2e2a35;
+  --ring: #b98cff;
+  --surface-sunken: #0e0b13;
+  --surface-raised: #1b1820;
+  --surface-overlay: #221f28;
+  --primary-subtle: rgb(168 85 247 / 0.16);
+  --primary-glow: rgb(168 85 247 / 0.32);
+  --accent-2: #5eead4;
+  --accent-2-foreground: #0e0b13;
+  --accent-2-subtle: rgb(94 234 212 / 0.14);
+  --font-display: var(--font-sans);
+}

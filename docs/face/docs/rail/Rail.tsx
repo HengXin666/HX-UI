@@ -1,0 +1,116 @@
+import { useEffect, useMemo, useRef, useState, type JSX } from "react";
+import { BUTTON_TYPE, cn } from "@hx/ui";
+import { CATALOG, CATALOG_GROUPS, CATEGORIES, COMPONENTS, categoryOf, type CategoryId } from "../catalog";
+import { CARD, ICON, ICON_SM, ICON_XS, INDEX_ID } from "../constants";
+
+/** 普通左键单击才走站内路由, 带修饰键时交给浏览器开新标签. */
+function plainClick(event: { button: number; metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey: boolean }): boolean {
+  return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+}
+
+/**
+ * 左栏圆角卡: 浏览全部, 分类图标页签, 过滤输入, 分组列表. 卡本身吸顶, 只有列表滚动;
+ * 当前项进入视口中部, 换页时不必再找.
+ */
+export function Rail({ active, onGo }: { readonly active: string; readonly onGo: (id: string) => void }): JSX.Element {
+  const activeEntry = CATALOG.find((entry) => entry.id === active);
+  const [category, setCategory] = useState<CategoryId>("all");
+  const [query, setQuery] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const groups = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const current = CATEGORIES.find((item) => item.id === category) ?? CATEGORIES[0];
+    return CATALOG_GROUPS.map((group) => ({
+      group,
+      items: CATALOG.filter(
+        (entry) =>
+          entry.group === group &&
+          current.match(group) &&
+          (!needle || entry.label.toLowerCase().includes(needle) || entry.id.includes(needle)),
+      ),
+    })).filter((section) => section.items.length > 0);
+  }, [category, query]);
+
+  useEffect(() => {
+    const node = listRef.current?.querySelector<HTMLElement>("[aria-current=page]");
+    const list = listRef.current;
+    if (node && list) list.scrollTop = node.offsetTop - list.clientHeight / 2;
+  }, [active]);
+
+  return (
+    <div className={cn(CARD, "flex h-full min-h-0 flex-col p-3.5")}>
+      <a
+        href={`#/${INDEX_ID}`}
+        onClick={(event) => {
+          if (!plainClick(event)) return;
+          event.preventDefault();
+          onGo(INDEX_ID);
+        }}
+        aria-current={active === INDEX_ID ? "page" : undefined}
+        className="flex h-10 items-center gap-2 rounded-xl border border-border/60 bg-muted/50 px-3 text-[13px] font-medium text-foreground transition-colors hover:bg-muted"
+      >
+        <span aria-hidden className={cn(ICON.grid, ICON_XS)} />
+        {active === INDEX_ID ? "正在浏览全部组件" : "浏览全部组件"}
+      </a>
+
+      <div role="tablist" aria-label="组件分类" className="mt-3 flex items-center gap-0.5 rounded-xl border border-border/60 p-1">
+        {CATEGORIES.map((item) => (
+          <button
+            key={item.id}
+            type={BUTTON_TYPE}
+            role="tab"
+            aria-selected={category === item.id}
+            aria-label={item.label}
+            title={item.label}
+            onClick={() => setCategory(item.id)}
+            className="grid h-8 flex-1 place-items-center rounded-lg text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-muted aria-selected:text-foreground"
+          >
+            <span aria-hidden className={cn(item.icon, ICON_SM)} />
+          </button>
+        ))}
+      </div>
+
+      <label className="mt-3 flex h-9 items-center gap-2 rounded-xl border border-border/60 px-3 text-muted-foreground focus-within:border-ring/60">
+        <span aria-hidden className={cn(ICON.search, ICON_XS)} />
+        <input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder={`过滤 ${COMPONENTS.length} 个组件...`}
+          aria-label="过滤组件"
+          className="min-w-0 flex-1 bg-transparent text-[12px] text-foreground outline-none placeholder:text-muted-foreground"
+        />
+      </label>
+
+      <div ref={listRef} className="relative mt-4 min-h-0 flex-1 overflow-y-auto pr-1 [mask-image:linear-gradient(to_bottom,transparent,var(--foreground)_24px,var(--foreground)_calc(100%-32px),transparent)]">
+        <nav aria-label="组件目录" className="flex flex-col gap-4 py-3">
+          {groups.map(({ group, items }) => (
+            <div key={group}>
+              <p className="mb-1.5 text-[13px] text-muted-foreground">{group}</p>
+              <ul className="flex flex-col">
+                {items.map((entry) => (
+                  <li key={entry.id}>
+                    <a
+                      href={`#/${entry.id}`}
+                      aria-current={entry.id === active ? "page" : undefined}
+                      onClick={(event) => {
+                        if (!plainClick(event)) return;
+                        event.preventDefault();
+                        onGo(entry.id);
+                      }}
+                      className="block truncate py-[7px] text-[13.5px] text-foreground/90 transition-colors hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-primary"
+                    >
+                      {entry.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {groups.length === 0 ? <p className="text-[12px] text-muted-foreground">没有匹配的组件</p> : null}
+        </nav>
+      </div>
+      {activeEntry ? <span className="sr-only">当前分类 {categoryOf(activeEntry.group).label}</span> : null}
+    </div>
+  );
+}

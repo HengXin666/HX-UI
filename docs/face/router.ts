@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DOCS } from "../src/nav";
+import { isShellRoute } from "./docs/catalog";
 
 export const FACE_HOME = "home";
 export const FACE_PREVIEW = "preview";
@@ -14,7 +14,7 @@ export type FaceRoute =
   | { readonly kind: "preview"; readonly which: typeof PREVIEW_FIELD | typeof PREVIEW_KILN }
   | { readonly kind: "doc"; readonly id: string };
 
-/** 空地址和 #/home 都是首页. 不把空 hash 改写成某个组件页. */
+/** 空地址和 #/home 都是首页. 不把空 hash 改写成某个组件页. 文档外壳认得的 id (目录条目与组件索引) 进文档. */
 export function readFaceRoute(): FaceRoute {
   const raw = window.location.hash.replace(/^#\/?/, "").trim();
   if (!raw || raw === FACE_HOME) return { kind: "home" };
@@ -24,7 +24,7 @@ export function readFaceRoute(): FaceRoute {
     return { kind: "preview", which: rest };
   }
   const id = head ?? "";
-  return DOCS.some((entry) => entry.id === id) ? { kind: "doc", id } : { kind: "home" };
+  return isShellRoute(id) ? { kind: "doc", id } : { kind: "home" };
 }
 
 export function useFaceRoute(): [FaceRoute, (id: string) => void] {

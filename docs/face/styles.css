@@ -1,4 +1,5 @@
 /* 文档站门面的样式入口. 先带上原来的文档站样式 (图标登记, 库源码扫描, Markdown 表),
-   再把本目录的类名交给 Tailwind. 不改 docs/src/styles.css. */
+   再把本目录的类名交给 Tailwind. 不改 docs/src/styles.css. 门面暗色皮肤在 skin/face.css. */
 @import "../src/styles.css";
+@import "./skin/face.css";
 @source "./**/*.{ts,tsx}";
