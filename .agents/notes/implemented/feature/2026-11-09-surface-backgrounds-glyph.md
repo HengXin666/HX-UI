@@ -18,6 +18,8 @@ Decision-ID: surface-backgrounds-glyph
 - `src/surface/backgrounds/glyph/PixelSnow.tsx`
 - `src/surface/backgrounds/glyph/Radar.tsx`
 - `src/surface/backgrounds/glyph/radar-shader.ts`
+- `src/surface/backgrounds/glyph/Scanner.tsx`
+- `src/surface/backgrounds/glyph/scanner-shader.ts`
 
 ## Problem
 
@@ -41,6 +43,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. glyph 路收以像素
 | PixelBlast | `PixelBlast` | 采用: 六种形状 (square / circle / triangle / diamond / cross / ring), 三种悬停 (none / grow / reveal), 入场 1.8 秒按 1 - (1 - t) ** 2.4 缓出由中心向外显影 (前沿 smoothstep(front + 0.04, front - 0.06, r)), 形状边长 0.5 * sqrt(覆盖度), 十字臂长 0.42 * s 与臂宽 0.13 * s + 0.02, 柔化 smoothstep(-0.12 * softness, 0.12 * softness, margin), 尺寸抖动 1 + (h - 0.5) * jitter. 图案场为五层梯度噪声按 Bayer 8 阈值判亮; 点击上限从 10 收到内核队列的 8, 涟漪寿命 3 秒为本库定; 上游的透视平面与 LOD / 景深淡出没做, 只铺平面; 图案振幅区间 RANGE_MIN / RANGE_MAX 换成直接归一化到 0..1 覆盖度. |
 | PixelSnow | `PixelSnow` | 采用: 雪花图案边长 9 (snowflake / star / dot / crystal / mixed), 景深 5 层, 入场 1.4 秒, 体内 Bayer 4 阈值 (b + 0.5) / 16 抖动三级明暗 body = 0.94 - 0.13 * 级, 积雪增长 (0.25 + density * 0.9) * dt * min(1, speed). ENGINE-GAP: 上游的 CPU 粒子 (至多 4000 片, 速度, 推开与携带积分) 换成按层格子哈希的无状态着色器, 每格至多一片; 指针推开改成以指针为心的径向拉伸加附近减淡, 不随指针速度携带. 积雪用八分之一分辨率的乒乓高度场 (高度上限占画面 0.16, 增长折算系数 0.04, 指针融化每秒 1.5 为本库定). 底透明, 颜色默认 foreground token, lightMode 不单列; 上游 speed 与 opacity, paused, dpr 走公共 props. |
 | Radar | `Radar` | 采用: 两种模式 (sweep / pulse), 极坐标网格含 ringCount 6 道距离环, 外环, 每度刻度 (5 度与 15 度加长到 0.035 / 0.055, 刻度过密按 smoothstep(2.5, 5) 淡出), spokeCount 12 根辐条, 正方位轴与外框 1.065; 扫描一圈 4 秒 (本库定, 随公共 speed), 扫过处余亮 exp(-behind / trail) (trail 默认 0.35), 杂波为 4 阶分形成团 smoothstep(0.5, 0.78) 按 clutter 0.35 撒点; 目标上限 16 (默认 6), 沿慢速漂移轨道运动, 被扫到时亮起并保留 4 次历史回波 (0.25 递减). 指针在盘内出现锁定框并按 exp(-d^2 / 0.01) 点亮附近目标; 入场 2.2s 依次画出环, 外环, 辐条, 刻度与扫描. tilt 钳在 0..70 度按 cos 纵向压扁, centerY 自上而下给; backgroundColor 默认 transparent 不铺底, 叠在宿主背景上. 颗粒 0.03, fade 外缘淡出. 减弱动效只画一帧. |
+| Scanner | `Scanner` | 采用: 三种扫描方向 (vertical / horizontal / diagonal), 条纹为正弦 (frequency 2, scale 1.5) 加梯度噪声起伏 (ripple 0.22) 后按 bandDensity 11 等距取线, 线宽 lineWidth 1.2 按 fwidth 抗锯齿, 每条亮度 0.62 + 0.38 * 哈希, 过密时 smoothstep(0.2, 0.55) 淡成平均灰; 扫描行程 -1.3..1.3, 速度 sweepSpeed 0.25, 前沿宽 0.1 sweepWidth 用 color3 (foreground) 高光, 扫过处余亮 exp(-behind / (0.6 trail)), 余亮从 color1 (primary) 过渡到 color2 (accent) 并按 colorSpread 0.7 铺展. 指针附近 exp(-d^2 / 0.03) 条纹鼓起并增亮; 点击回波最多 6 个, 外扩 0.55 每秒, 环宽 0.12 + 0.1 age, 亮度 exp(-0.9 age) * smoothstep(0, 0.12, age), 寿命 5s; 入场 2s 由扫描起点一侧展开. 扫描线 0.5, 颗粒 0.04, 暗角 0.3. 上游 speed 默认 0.5 折进着色器时钟, 公共 speed 默认 1. 减弱动效只画一帧. |
 
 ## Alternatives considered
 

@@ -7,3 +7,4 @@ export { CRTWarp, type CRTWarpProps } from "./CRTWarp";
 export { PixelBlast, type PixelBlastProps } from "./PixelBlast";
 export { PixelSnow, type PixelSnowProps } from "./PixelSnow";
 export { Radar, type RadarProps } from "./Radar";
+export { Scanner, type ScannerProps } from "./Scanner";
