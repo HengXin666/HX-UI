@@ -21,7 +21,6 @@ export interface DocEntry {
  */
 const GROUP = {
   start: "上手",
-  gallery: "展示画廊",
   actions: "按钮与操作",
   form: "表单输入",
   picker: "选择器",
@@ -46,10 +45,6 @@ const START = `
 install ~ 安装与使用 ~ 引入组件, 接入样式, 切换主题, 部署文档站
 tokens ~ 设计令牌 ~ 颜色, 圆角, 阴影, 字号, 间距与动效
 skins ~ 皮肤与密度 ~ 七套皮肤一键换气质, 紧凑 / 舒适 / 宽松三档密度
-`;
-
-const GALLERY = `
-gallery ~ 展示画廊 ~ 用动效, 便当格, 光斑与指标卡拼成的落地页与仪表盘, 亮暗两套主题
 `;
 
 const ACTIONS = `
@@ -166,6 +161,7 @@ blocks-commerce-trade ~ 电商交易 ~ 商品详情, 购物车, 结账步骤与�
 blocks-docs ~ 文档站区块 ~ 文档外壳, 目录, 上下页, API 表与提示框
 blocks-portfolio ~ 作品集区块 ~ 个人首屏, 粘性侧栏, 经历时间线, 项目栅格与文章列表
 page ~ 整页描述 ~ 用 definePage 描述一整页: 调区块顺序, 开关区块, 改标题, 源码即描述对象
+gallery ~ 展示画廊 ~ 用动效, 便当格, 光斑与指标卡拼成的落地页与仪表盘, 亮暗两套主题
 `;
 
 const CONVERSATION = `
@@ -241,7 +237,6 @@ function section(group: string, list: string): DocEntry[] {
 
 export const DOCS: readonly DocEntry[] = [
   ...section(GROUP.start, START),
-  ...section(GROUP.gallery, GALLERY),
   ...section(GROUP.actions, ACTIONS),
   ...section(GROUP.form, FORM),
   ...section(GROUP.picker, PICKER),

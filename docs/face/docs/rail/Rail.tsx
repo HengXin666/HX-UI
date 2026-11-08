@@ -10,6 +10,8 @@ function plainClick(event: { button: number; metaKey: boolean; ctrlKey: boolean;
 
 /** 分组展开与收起: 行高从 0fr 过渡到 1fr 并淡入, 减弱动效时直接切换. */
 const FOLD = "grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none";
+/** 与 FOLD 的 duration-200 一致. */
+const FOLD_MS = 200;
 
 /**
  * 左栏圆角卡: 浏览全部, 分类图标页签, 过滤输入, 按 catalog 分组的可折叠列表. 卡本身吸顶, 只有列表滚动;
@@ -52,10 +54,30 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
     })).filter((section) => section.items.length > 0);
   }, [category, query]);
 
+  /** 当前项滚到列表中部. 所在组刚展开时行高还在过渡, 过渡结束再对一次, 否则可滚高度不够会停在半路. */
   useEffect(() => {
-    const node = listRef.current?.querySelector<HTMLElement>("[aria-current=page]");
     const list = listRef.current;
-    if (node && list) list.scrollTop = node.offsetTop - list.clientHeight / 2;
+    if (!list) return;
+    const center = (): void => {
+      const node = list.querySelector<HTMLElement>("[aria-current=page]");
+      if (node) list.scrollTop = node.offsetTop - list.clientHeight / 2;
+    };
+    center();
+    if (!activeOpen) return;
+    const panel = list.querySelector<HTMLElement>("[aria-current=page]")?.closest<HTMLElement>("[data-fold]");
+    if (!panel) return;
+    // 链接的 transition-colors 也会冒泡上来, 只认面板自己的行高过渡; 组本来就开着时不会有, 稍后撤掉监听.
+    const settle = (event: TransitionEvent): void => {
+      if (event.target !== panel || event.propertyName !== "grid-template-rows") return;
+      center();
+      panel.removeEventListener("transitionend", settle);
+    };
+    panel.addEventListener("transitionend", settle);
+    const drop = window.setTimeout(() => panel.removeEventListener("transitionend", settle), FOLD_MS * 2);
+    return () => {
+      window.clearTimeout(drop);
+      panel.removeEventListener("transitionend", settle);
+    };
   }, [active, activeOpen]);
 
   return (
@@ -131,7 +153,7 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
                     className={cn(ICON.down, ICON_XS, "transition-transform duration-200 ease-out motion-reduce:transition-none", !expanded && "-rotate-90")}
                   />
                 </button>
-                <div id={panel} inert={!expanded} className={cn(FOLD, expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                <div id={panel} data-fold inert={!expanded} className={cn(FOLD, expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
                   <ul className="flex min-h-0 flex-col overflow-hidden">
                     {items.map((entry) => (
                       <li key={entry.id}>
