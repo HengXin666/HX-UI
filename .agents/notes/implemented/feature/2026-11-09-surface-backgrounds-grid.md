@@ -10,6 +10,7 @@ Decision-ID: surface-backgrounds-grid
 - `src/surface/backgrounds/grid/DotGrid.tsx`
 - `src/surface/backgrounds/grid/ShapeGrid.tsx`
 - `src/surface/backgrounds/grid/GridDistortion.tsx`
+- `src/surface/backgrounds/grid/GridMotion.tsx`
 - `src/surface/backgrounds/grid/tokens.ts`
 
 ## Problem
@@ -28,6 +29,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. grid 路收以格点,
 | DotGrid | `DotGrid` | 采用: 弹簧格点在 JS 侧积分 (半隐式欧拉, 子步上限 24, 最长 1/120s, 稳定上限 sqrt(k + 8c) + d + 8v), 回位角频率 2pi / returnDuration, 阻尼比 1 - bounce, 邻点位移耦合 tension * k / 2 与速度粘滞, 指针推力系数 0.35, 点击冲击波 (寿命 0.6s, 环带 1.5 格, 本库定). 位移与速度每帧打包成一格一纹素的 RGBA8 小纹理经 textures 上传, 片元按九宫格查点位, 点径随能量膨胀 (swell), 沿速度拉长 (smoothstep(8, 70, speed) * stretch). 8 位量程: 位移 2 格, 速度 40 格每秒, 只影响显示精度, 积分保持 float. 兜底为 CSS 径向渐变平铺的静态点阵. |
 | ShapeGrid | `ShapeGrid` | 采用: Canvas2D, 方 / 六角 / 圆 / 三角四种格形 (OFFSET 32768 拼格键, 编号随滚动不变), 滚动 speed * 60 像素每秒, 光斑弹簧 220 / 阻尼比 0.85 追指针, 强度逼近速率 10 / 5, 照度 smoothstep(reach, 0.15 reach); 拖尾按 trail 指数衰减, 点击级联亮环 (寿命 1.2s, 12 格每秒, 本库定), 透视倾斜相机距离 FAR 2.5 倍长边. 底线按透明度分 8 桶合并描边 (四边淡出与入场都走分桶), 亮格逐个填充描边加 shadowBlur 光晕. 规格的 speed 与公共时钟倍率同名, 改名 scrollSpeed; MAX_PIXELS 由内核的 maxEdge 代替; rainbow 用 JS 色相环换 color(srgb ...) 串. |
 | GridDistortion | `GridDistortion` | 采用: 粗网格位移场 (横向 grid 格, 纵向按宽高比) 在 JS 侧积分, 指针速度按 drag / push / swirl 写入半径内格子 (增益 GAIN 18), 每帧按 relaxation^(dt * 60) 回弹, 静止时幽灵量以 dt 上升, 动起来 3 倍速退去, 驱动 idle 晃动; 场打包成 RGBA8 小纹理, 片元在 texelFetch 块状与双线性平滑间按 softness 混, chroma 错开 R / B, 点击涟漪取内核 u_taps (寿命 1.6s), 图像就绪后 0.6s 由中心揭开. imageSrc 缺省时用 fromColor / toColor 渐变底加细网格, 便于不带图也能用. |
+| GridMotion | `GridMotion` | 采用: 纯 DOM (useDomBackdrop, BackdropShell 不放画布), 舞台按旋转角取外接矩形再放 1.12 倍盖住画面, 行高平分, 瓦片宽 = 行高 * aspectRatio, 每行瓦片数 = ceil(舞台宽 / 步长) + 条目数 + 1, 平移折回 [-周期, 0) 无缝循环. 滚动 scrollSpeed 像素每秒 (规格的 speed 与公共时钟倍率同名, 改名), left / right / alternate; 视差按指针横向偏移 * parallax * 160px, 行越往下越深, 各行惯性 0.45 / 0.7 / 0.55 / 0.85s 轮换 (本库定); 光斑照度 1 - smoothstep(0.25, 1, d / (0.35 长边)) 乘指针在场, 亮度以 0.22s 跟随, 指针在场时光斑外压暗 dim, 灰度模式光斑处复彩; 入场 0.9s 由 1.06 倍淡入落位, 四边淡出走 mask-image 径向渐变. theme 由语义 token 代替 (tileColor 默认 muted, textColor 默认 foreground); 光斑求距按平面旋转算, 不计 tilt 透视. |
 
 ## Alternatives considered
 
