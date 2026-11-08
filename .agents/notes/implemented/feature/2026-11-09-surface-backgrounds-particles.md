@@ -10,6 +10,7 @@ Decision-ID: surface-backgrounds-particles
 - `src/surface/backgrounds/particles/tokens.ts`
 - `src/surface/backgrounds/particles/Particles.tsx`
 - `src/surface/backgrounds/particles/Galaxy.tsx`
+- `src/surface/backgrounds/particles/Hyperspeed.tsx`
 
 ## Problem
 
@@ -25,6 +26,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. particles 路收以�
 | --- | --- | --- |
 | Particles | `Particles` | Canvas2D 透视投影 (FOCAL = 1 / tan 7.5 度, NEAR 0.1, FAR 100), 点径 base * (1 + 随机) / 深度; 四种点形, 闪烁 (0.6 幅度, 6 + 14r 频率), 入场 1.8s 逐点错峰, 冲击波 520 px/s 宽 46 寿命 1.5s 推 56px 上限 4 个, 悬停 parallax / repel / attract, 近点连线 (900 点 / 9000 线), 漂移 up / down / forward. ENGINE-GAP: 点数上限 4000 (规格 20000), 景深以放大加变淡近似. pixelRatio 并入公共 dpr. |
 | Galaxy | `Galaxy` | WebGL2 全屏片元: 最多 8 层视差星格循环推进 (层深 fract(i / layers + depth)), 每格一颗星 (光核 0.05 * glow / d 加十字与 45 度十字光芒, 大星阈值 smoothstep(0.9, 1, size)), 层淡入淡出 depth * smoothstep(1, 0.9, depth); 指针跟随 tau 0.325s 推开星场, 点击跃迁 boost 衰减 exp(-1.3 dt), 期间飞行乘 (1 + 14 boost); 入场 2.2s 由中心向外点亮. starColors 收 token (最多 4 个, 规格 MAX_COLORS), hueShift 默认改为 0 以保留 token 原色; saturation 改为相对 token 色的增减; lightMode 画带色相的暗点; transparent=false 铺 background token; disableAnimation 并入 paused. |
+| Hyperspeed | `Hyperspeed` | WebGL2 全屏片元: 视线与路面求交, 路中心横移 curvature * z^2 * bend(行程) 成弯道 (straight / winding / turbulent), 每侧 lanes 条车道上的车灯对按行程哈希成光带 (对向 1.65 倍, 同向 0.35 倍相对速度), 车道虚线, 两侧灯杆逐根投影带灯头光晕, 尘线由消失点放射; 雾从 TRAVEL 的 1/4 到 TRAVEL (400). 按住加速: boost 升 0.28s / 落 0.85s, 视场弹簧 90 / 13 拉向 boostFov, 指针横移镜头 tau 0.35s. ENGINE-GAP: 无实例化网格与真泛光 (宽高斯光晕近似), 车灯贴路面; 规格 MAX_CARS / MAX_DUST 不适用. |
 
 ## Alternatives considered
 
