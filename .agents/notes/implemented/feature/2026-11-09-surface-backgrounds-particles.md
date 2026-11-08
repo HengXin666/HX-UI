@@ -20,6 +20,9 @@ Decision-ID: surface-backgrounds-particles
 - `src/surface/backgrounds/particles/magnet-lines-field.ts`
 - `src/surface/backgrounds/particles/GhostFibers.tsx`
 - `src/surface/backgrounds/particles/ghost-fibers-shader.ts`
+- `src/surface/backgrounds/particles/AeroShards.tsx`
+- `src/surface/backgrounds/particles/aero-shards-shader.ts`
+- `src/surface/backgrounds/particles/aero-shards-field.ts`
 
 ## Problem
 
@@ -41,6 +44,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. particles 路收以�
 | GradientBlinds | `GradientBlinds` | WebGL2 全屏片元: 坐标按 angle 旋转后分成 min(blindCount, 宽 / blindMinWidth) 片百叶, 透视把横坐标映到 x (1 + p) / (1 + p x); 每片内坡度 ramp 受轻摆 (sway * 0.25 正弦) 与点击涟漪倾斜, 压痕 relief * 0.38 * smoothstep(0.62, 1, ramp), 片缝按像素抗锯齿变暗, 受光沿 shine * ramp^6 (shineDirection 翻转); 色板 (最多 MAX_COLORS 8) 沿条带方向平滑渐变, gradientSpeed 以 dt * 0.06 在 0..2 内平移, mirrorGradient 改为来回; 指针聚光跟随 mouseDampening, 在场 0.35s, 聚光处坡度压平 1 - 0.6 spot 并加辉光 glow * 0.4; 点击涟漪最近 MAX_WAVES 4 个, 寿命 RIPPLE_SECONDS 1.6; distortAmount 以 0.01 倍正弦扭曲条带; 双哈希平均颗粒 noise; 入场 1.8s 从左向右展开, presence smoothstep(0, 0.65). |
 | MagnetLines | `MagnetLines` | Canvas2D 短线网格 (spacing 30 CSS 像素, 或按 rows / columns 排满, containerSize 限定居中方块): 每根是角弹簧, 刚度 (6 + 42 (1 - inertia)^2)^2, 阻尼 2 sqrt(k) (1 - 0.75 bounce), 子步 1/240s, 目标差按 PI (line) 或 2 PI (arrow / needle) 折回; 朝向 point / orbit / repel / flow (flow 顺指针航向, 航向 0.25s 跟随), 影响在 FAR (4) 的 0.45..1 倍 (以 radius 为界) 平滑落到 0, 影响外回到 baseAngle 加 scatter 散布并按 fade 变淡; 指针 0.035s 跟随, idle 时李萨如巡游 0.6s 跟随; 靠近时 stretch 拉长, reach 挪近, 混入强调色, rainbow 按朝向转色相 (YIQ 旋转); 点击脉冲环 520 px/s, 环宽 48, 寿命 2s, 扫过拧 0.34 圈乘 ripple; 入场波 700 px/s 由中心外扩, 每根 1.1s 内显形并缓出 0.65 圈; edgeFade 靠边变淡. ENGINE-GAP: 上限 8000 根 (规格 MAX_LINES 30000), 无深度透视. |
 | GhostFibers | `GhostFibers` | 采用: WebGL2 全屏片元, 至多 4 层纤维带 (默认 3), 每层 threads 根 (默认 72, 上限 256, 本库定), 带身两层正弦起伏 (waves 1) 并沿带扭转 phi = 2.4 u twist + 2 PI roll (twist 1.2, rollSpeed 0.15 圈每秒, rotation 18 度), 片元按扭转后的横截坐标解析求最近纤维, 纤维距小于线宽时改按覆盖率 w * 1.77 / spacing * (1 + 0.6 foldGlow) 出亮度, 折叠处挤密发亮并加带外光晕 0.1 foldGlow exp(-edge / 0.05); 纤维画法 dots / dashes / lines, 沿带流动相位 += dt * flow * 12 (flow 0.4); 透视 1 / max(0.35, 1 - 2.2 perspective z) (默认 0.65), 景深按 abs(z - 0.2 focusDepth) 加宽线宽 (depthOfField 0.85); 颜色按 gradient depth / along / across 从 glowColor (primary) 混到 secondaryColor (accent), lineColor (foreground) 作亮芯; 光尘 26 格哈希按 particles 0.5 撒点闪烁. 帧长上限 0.05s, 指针跟随 0.08s, 在场升 0.3s 落 0.6s 取规格原式; hoverEffect focus 按 exp(-d^2 / 0.35^2) 提亮 2.1 倍, part 在半径 0.35 内推开 0.09; 入场 2.6s 自左向右按哈希错峰显出. tips 露出带两端. 减弱动效只画一帧, 滚转与流动归零. ENGINE-GAP: 上游实例化点 / 段与 5 级泛光加散景不做, 泛光以带外指数光晕近似, 散景以景深加宽线宽近似. |
+| AeroShards | `AeroShards` | 采用: WebGL2 全屏片元, JS 侧积分至多 FLOATS (24) 片碎片并以 vec4 uniform 数组远到近传入; 相机 CAMERA 4, 透视倍率 FOCUS (3.1) / (CAMERA - z), 景深按视距偏离 SHARD_FOCUS 2.75 乘 depthOfField 加软边; 子步 1/120s 阻尼弹簧拉向漂浮家位置 (billow 正弦起伏), 刚度 24 * (1 - gather * 0.95); 按住 gather 以 0.3s 升起 / 松开 0.2s 落回, 碎片顺着变软的弹簧聚成指针处的小团; 按横向速度横滚 (上限 MAX_BANK 1, 0.15s 跟随), twist 自转; 指针高斯排斥 (mouseStrength) 与镜头视差 (parallax, 0.4s 跟随); 点击冲量半径 0.9 推开并放光环 (最近 MAX_RINGS 4 个, 寿命 RING_SECONDS 2.6); 入场 INTRO_SECONDS 3.4 错峰升起淡入; 片元逐片求带切角的剪影, 磨边法线偏移取背景近似折射, 菲涅耳边光与随横滚滑动的高光带, 远处雾 smoothstep(3.5, 12, 视距), 单级宽光晕, MARKER_FLOATS 8 个 plus / dots 漂浮标记, 颗粒与暗角; 材质 glass / frosted / crystal, 摆位 full / center / left / right, lightMode. ENGINE-GAP: 无 WebGPU 实例化 (规格 count 1300 收到 24), 无真折射与厚度, 泛光只一级 (规格 BLOOM_LEVELS 4), 无片间投影. |
 
 ## Alternatives considered
 

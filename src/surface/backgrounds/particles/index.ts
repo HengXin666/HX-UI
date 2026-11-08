@@ -7,3 +7,4 @@ export { Ballpit, type BallpitProps } from "./Ballpit";
 export { GradientBlinds, type GradientBlindsProps } from "./GradientBlinds";
 export { MagnetLines, type MagnetLinesProps } from "./MagnetLines";
 export { GhostFibers, type GhostFibersProps } from "./GhostFibers";
+export { AeroShards, type AeroShardsProps } from "./AeroShards";
