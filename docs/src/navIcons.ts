@@ -2,6 +2,8 @@
 import { NAV_ICON } from "@hx/ui";
 import { NAV_ICON_SHIELD_WARNING } from "../../src/constants/polish";
 const SETTINGS_ICON = "icon-[solar--settings-linear]";
+/** 代码类页面 (代码块, 开源站, linear 复刻) 共用的导航图标. */
+const CODE_ICON = "icon-[solar--code-square-linear]";
 
 /**
  * 每个文档页的导航图标.
@@ -30,7 +32,7 @@ export const NAV_ICONS: Record<string, string> = {
   charts: "icon-[solar--chart-2-linear]",
   stepper: "icon-[solar--checklist-minimalistic-linear]",
   toast: "icon-[solar--bell-linear]",
-  "code-block": "icon-[solar--code-square-linear]",
+  "code-block": CODE_ICON,
   card: "icon-[solar--card-linear]",
   badge: "icon-[solar--tag-linear]",
   "sidebar-nav": NAV_ICON.widget,
@@ -104,14 +106,14 @@ export const NAV_ICONS: Record<string, string> = {
   "templates-dashboard": "icon-[solar--chart-2-linear]",
   "templates-console": "icon-[solar--server-square-linear]",
   "page-saas": "icon-[solar--rocket-2-linear]",
-  "page-opensource": "icon-[solar--code-square-linear]",
+  "page-opensource": CODE_ICON,
   "page-pricing": "icon-[solar--tag-price-linear]",
   "page-commerce-home": "icon-[solar--shop-linear]",
   "page-product": "icon-[solar--box-linear]",
   "page-portfolio": "icon-[solar--user-id-linear]",
   "page-docsite": "icon-[solar--notebook-linear]",
   "page-dashboard": "icon-[solar--widget-4-linear]",
-  "page-clone-linear": "icon-[solar--code-square-linear]",
+  "page-clone-linear": CODE_ICON,
   // UI 丰富度改造 (2026-11-01 补): 动效, 布局原语, 视觉效果, 富交互件
   motion: "icon-[solar--play-circle-linear]",
   box: "icon-[solar--widget-6-linear]",
@@ -138,6 +140,9 @@ export const NAV_ICONS: Record<string, string> = {
   "blocks-commerce-trade": "icon-[solar--cart-large-2-linear]",
   "blocks-docs": "icon-[solar--document-text-linear]",
   "blocks-portfolio": "icon-[solar--user-id-linear]",
+  // 舞台页: 可视化层与页面描述层
+  viz: "icon-[solar--graph-up-linear]",
+  page: "icon-[solar--documents-linear]",
 };
 
 export const DEFAULT_NAV_ICON = NAV_ICON.widget;

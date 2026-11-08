@@ -165,6 +165,7 @@ blocks-commerce-browse ~ 电商浏览 ~ 商品卡, 栅格, 横滑轨道, 类目,
 blocks-commerce-trade ~ 电商交易 ~ 商品详情, 购物车, 结账步骤与搜索结果
 blocks-docs ~ 文档站区块 ~ 文档外壳, 目录, 上下页, API 表与提示框
 blocks-portfolio ~ 作品集区块 ~ 个人首屏, 粘性侧栏, 经历时间线, 项目栅格与文章列表
+page ~ 整页描述 ~ 用 definePage 描述一整页: 调区块顺序, 开关区块, 改标题, 源码即描述对象
 `;
 
 const CONVERSATION = `
@@ -193,8 +194,13 @@ proxy-chain ~ 代理链路 ~ 入口, 策略与实体
 browser-live ~ 浏览器预览 ~ 多副本实时预览与远程操作
 `;
 
+/**
+ * 图表组末尾的 viz 是可视化层的舞台页: 舞台, 道具台, 源码三截.
+ * .agents/notes/implemented/feature/2026-11-08-docs-viz-page-stage.md
+ */
 const CHARTS = `
 charts ~ 图表 ~ 折线, 面积, 柱状, 饼与雷达图
+viz ~ 数据可视化 ~ 趋势线, 柱状, 环形, 流程图, 漏斗与时间线的舞台: 拖道具看中断与回程, 源码一键复制
 `;
 
 const AGENT = `
@@ -267,6 +273,7 @@ export const TEMPLATE_GROUP: string = GROUP.templates;
 /** 整页示例所在页面, 内容区放宽到 1720px. */
 export const WIDE_PAGES: ReadonlySet<string> = new Set([
   "gallery",
+  "page",
   "templates-chat",
   "templates-settings",
   "templates-dashboard",

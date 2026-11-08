@@ -67,6 +67,7 @@ import { EffectsPage } from "./pages/effects/EffectsPage";
 import { SkinsPage } from "./pages/skins/SkinsPage";
 import { WidgetsPage } from "./pages/widgets/WidgetsPage";
 import { GalleryPage } from "./pages/gallery/GalleryPage";
+import { VizStagePage } from "./pages/stage/VizStagePage"; import { PageStagePage } from "./pages/stage/PageStagePage";
 import * as L from "./pages/blocks";
 import { useShellLayout } from "./useShellLayout";
 
@@ -135,7 +136,7 @@ function renderPage(entry: DocEntry): JSX.Element {
     case "effects": return <EffectsPage />;
     case "skins": return <SkinsPage />;
     case "widgets": return <WidgetsPage />;
-    case "gallery": return <GalleryPage />;
+    case "gallery": return <GalleryPage />; case "viz": return <VizStagePage />; case "page": return <PageStagePage />;
     case "display-type": return <L.DisplayTypePage />;
     case "media-image": return <L.ImagePage />; case "media-themed-image": return <L.ThemedImagePage />; case "media-video": return <L.VideoPage />;
     case "media-gallery": return <L.MediaGalleryPage />; case "media-lightbox": return <L.LightboxPage />; case "media-frames": return <L.FramesPage />;
