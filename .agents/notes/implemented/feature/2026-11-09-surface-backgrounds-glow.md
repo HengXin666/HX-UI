@@ -13,6 +13,7 @@ Decision-ID: surface-backgrounds-glow
 - `src/surface/backgrounds/glow/Silk.tsx`
 - `src/surface/backgrounds/glow/Grainient.tsx`
 - `src/surface/backgrounds/glow/Iridescence.tsx`
+- `src/surface/backgrounds/glow/Plasma.tsx`
 
 ## Problem
 
@@ -32,6 +33,7 @@ Backgrounds 全量落地分七路, glow 路收以柔光, 光幕, 渐变流动为
 | Silk | `Silk` | 两层正弦褶皱 (宽褶 + 细褶按 ripple 混入) 经正弦域扭曲 (wave) 叠成绸面, 中心差分求法线; relief = 1 + (dot(normal, toLight) - toLight.z) * 1.8 * depth 与 gloss = pow(dot(normal, halfway), 48) * smoothstep(0.25, 0.85, n), fold / specular 取 smoothstep(0.28, 0.9) / smoothstep(0.72, 0.98) 取规格原式. 入场 2.2s 五次缓动由中心显出, 流动相位 0.1 * 时钟 (默认速度 5) 入场时多推 INTRO_RUSH 1.6 再收回; 跟随速率 10, 拖拽混合 4, 触碰 3.5 / 1.4, 光源跟随 3 (换成 tau); 点击涟漪读 u_taps, 寿命 1.6s. 兜底为双色斜向渐变. |
 | Grainient | `Grainient` | 色标上限 8, 在 Oklab 里插值 (段内 shaped = smoothstep(0.5 - edge, 0.5 + edge, f), edge = 0.5 * softness), linear / radial 两型 (TYPES 0 / 1), bands > 1 时三角波往返; 分形噪声扭曲 (flow) 加丝光细纹 (silk), 流动相位 0.16 * 时钟; contrast 作用于 L, saturation 作用于 ab, 亮底模式 L 向 1 提 LIFT 0.2 (自管, 不走 GLOW_GLSL 的压墨). 入场 1.6s 由首色外扩 (lab = mix(ramp[0], lab, smoothstep(0, 1, reveal * 1.5 - length(uv - 0.5) * 0.6)) 取规格原式). 指针跟随 tau 0.06, 动时每 STIR_STEP 0.06s 落一个搅动点 (STIR_STEP 内长成, 寿命 1.3s, 上限 24, JS 侧队列打包成 vec4 数组); 点击旋涡读 u_taps 最近 4 次, 寿命 2.6s. 颗粒按 grainSize * dpr 取格, grainAnimated 关时不跳. 兜底为色标线性渐变. |
 | Iridescence | `Iridescence` | 两段: 搅动场通道 (rg 存速度, 每帧乘 exp(-dt * 1.4), 指针处按跟随速度注入, 倍率 0.0625) 与上屏. 上屏逐层 (detail 钳到 1..12) 正弦扭曲叠出油膜干涉相位, 余弦色盘换虹彩, saturation / contrast / brightness 后乘 color, 加一道薄膜高光 (sheen). 指针跟随速率 5, 在场速率 4 (换成 tau), amplitude 牵动整片纹理; 点击旋涡读 u_taps 最近 6 次, 寿命 3.2s, ease = exp(-age * 1.35) - exp(-age * 10) 与强度 3 * ease * fade * (0.21 / radius)^2 取规格原式. resolution 乘在像素比上限 2 上. 默认 color 为 token foreground, 兜底为主色系渐变. ENGINE-GAP: 规格的搅动场固定 48 列 (FIELD_COLUMNS), 内核通道只有静态倍率, 列数随画布宽变. |
+| Plasma | `Plasma` | 两段: 体积通道 (倍率 = quality 钳到 0.1..1) 让视线穿过沿深度扭转 (twist) 的四层正弦湍流 (wave), 32 步累积发光密度 peak 与色带相位 band, 存 peak / 4 防 8 位截断; 上屏 level = 1 - exp(-peak) 与 hot = smoothstep(1, 3, peak) 取规格原式, 热芯按 shine 泛白. direction forward / reverse 换穿行方向, softness 换光片锐度 1 - softness. 视角弹簧 40 * (goal - yaw) - 11 * velocity 取规格原式, 热点进 / 离 4 / 2, 位置跟随 8 (换成 tau); 入场 1.6s 由中心外扩. 默认颗粒 0.04. ENGINE-GAP: MAX_VOLUME_PIXELS 需按画布尺寸动态定通道倍率, 内核 PassSpec.scale 是静态的. |
 
 ## Alternatives considered
 
