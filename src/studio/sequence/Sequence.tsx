@@ -20,7 +20,7 @@ import {
   SHOT_VIEWPORT_AMOUNT,
   type ShotMove,
   type ShotPace,
-} from "../moves";
+} from "../../motion/shots";
 
 interface ShotContextValue {
   pace: ShotPace;

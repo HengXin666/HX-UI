@@ -63,8 +63,18 @@ export default function Landing() {
 
 ## 4. 第二阶段
 
-1. `src/craft`, `src/studio/moves.ts`, `src/primitives/motion.ts` 等物理迁入 `src/motion`, 旧路径留一版 deprecate 转发后删除, `src/entry/motion.ts` 随之变成普通桶.
-2. 删除 `src/studio/figures.ts` 的数字别名, 字面量就地写回 (重复字面量已按文件计数).
-3. `src/constants` 下按版本号命名的区块常量文件按区块域改名.
-4. `scripts/gates` 下的 .mjs 迁 .ts, 清掉 HC-EXT 历史项.
-5. 文档站为 viz 与 page 加舞台和道具台, 并按 PR GIF 规约录制演示.
+已做 (2026-11-08):
+
+1. 镜头语言 `src/studio/moves.ts` 迁入 `src/motion/shots.ts` (L2), 字面量就地写回; 旧路径留一版 `export *` 转发, `@hx/ui/motion` 直接转出 shots.
+2. `src/studio/figures.ts` 的数字别名在 studio 与 motion 里全部写回字面量. 只剩文档站首页 `docs/face` 用的六个, 那边改完后删整个文件.
+3. `src/constants` 下按版本号命名的区块常量按域改名: site, marketing-hero / features / proof / pricing / developer, commerce-browse / trade, docs, dashboard, portfolio. 旧文件名留一版转发. 区块与文档页的 import 没有批量改: 质量门把被改文件的历史债按新增算, 批量改 import 会一次带出约 117 条旧 Error (常量重复, 绝对路径, 导入环, 超长文件). 各区块目录下次改动时顺手换 import, 转发清空后删除.
+
+不做:
+
+- `src/primitives/motion.ts` (减弱动效判断, 布局位移) 留在 L1. 原语 (presence, carousel, motion-list) 自己要用, 搬上 L2 会让依赖朝上走. `@hx/ui/motion` 只转出.
+
+还没做:
+
+1. `src/craft` 物理迁入 `src/motion`: 文档站首页正在改 craft, 等那边收工.
+2. `scripts/gates` 下的 .mjs 迁 .ts, 清掉 HC-EXT 历史项.
+3. 文档站为 viz 与 page 加舞台和道具台, 并按 PR GIF 规约录制演示.

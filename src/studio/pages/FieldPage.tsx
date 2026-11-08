@@ -12,7 +12,7 @@ import { Display } from "../../typography/Display";
 import { Eyebrow } from "../../typography/Eyebrow";
 import { Lead } from "../../typography/Lead";
 import { HX_LEAD, STUDIO_CLASS } from "../classes";
-import { SHOT_DEPTH, SHOT_MOVE, SHOT_PACE } from "../moves";
+import { SHOT_DEPTH, SHOT_MOVE, SHOT_PACE } from "../../motion/shots";
 import { Shot, ShotSequence } from "../sequence/Sequence";
 import { ShotLayer, ShotPlate } from "../sequence/Plate";
 import { Metric } from "../viz/Metric";

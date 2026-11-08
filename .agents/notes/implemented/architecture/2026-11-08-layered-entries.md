@@ -33,4 +33,4 @@ HX-UI 已经有控件, 区块, 运动和两张样板页, 但对使用方仍是�
 
 ## Consequences
 
-使用方按层 import, 页面描述在编译期检查. `package.json` 的 exports 多出四个子路径, 构建产物路径不变 (tsc 本来就编译整个 src). 运动的物理迁移, `src/studio/figures.ts` 数字别名清理, `src/constants` 下按版本号命名的区块常量文件改名, 以及文档站舞台和 GIF 留到第二阶段, 分层与路线见 `docs/architecture/layers.md`.
+使用方按层 import, 页面描述在编译期检查. `package.json` 的 exports 多出四个子路径, 构建产物路径不变 (tsc 本来就编译整个 src). 第二阶段已把镜头语言迁入 `src/motion/shots.ts`, 清掉 studio 的数字别名, 区块常量按域改名 (旧名留一版转发). craft 的物理迁移, gates 迁 .ts, 文档站舞台和 GIF 还没做, 分层与路线见 `docs/architecture/layers.md` 第 4 节.

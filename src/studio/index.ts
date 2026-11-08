@@ -10,7 +10,7 @@ export {
   type ShotFrame,
   type ShotMove,
   type ShotPace,
-} from "./moves";
+} from "../motion/shots";
 export { Shot, ShotSequence, type ShotProps, type ShotSequenceProps } from "./sequence/Sequence";
 export { ShotLayer, ShotPlate, type ShotLayerProps, type ShotPlateProps } from "./sequence/Plate";
 export { Spark, type SparkProps } from "./viz/Spark";

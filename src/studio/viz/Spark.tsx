@@ -5,8 +5,7 @@ import type { JSX } from "react";
 import { HEALTH_LABEL } from "../../constants/gallery";
 import { SVG_CURRENT_COLOR, SVG_NONE, SVG_NON_SCALING_STROKE } from "../../constants/polish";
 import { useMotionTokens } from "../../motion/presets";
-import { SHOT_ARC_S, SPARK_BOX, sparkPath } from "../moves";
-import { F06 } from "../figures";
+import { SHOT_ARC_S, SPARK_BOX, sparkPath } from "../../motion/shots";
 
 export interface SparkProps {
   /** 至少两个点. 少于此数不画线, 读屏标签仍在. */
@@ -39,7 +38,7 @@ export function Spark({ values, label, className }: SparkProps): JSX.Element {
           vectorEffect={SVG_NON_SCALING_STROKE}
           initial={reduced ? false : { pathLength: 0 }}
           whileInView={{ pathLength: 1 }}
-          viewport={{ once: true, amount: F06 }}
+          viewport={{ once: true, amount: 0.6 }}
           transition={reduced ? { duration: 0 } : { duration: SHOT_ARC_S, ease: tokens.ease.emphasized }}
         />
       ) : null}

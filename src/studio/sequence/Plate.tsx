@@ -21,7 +21,7 @@ import {
   SHOT_VIEWPORT_AMOUNT,
   type ShotDepth,
   type ShotDrive,
-} from "../moves";
+} from "../../motion/shots";
 
 const PlateProgress = createContext<MotionValue<number> | null>(null);
 

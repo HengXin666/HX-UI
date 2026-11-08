@@ -1,6 +1,10 @@
 import { NUMBER_CLASS } from "../constants/polish";
 
-/** 工作室页面共用的语义类名. 颜色只走令牌, 边框保持 1px, 不写 transition-all. */
+/**
+ * 工作室页面共用的语义类名. 颜色只走令牌, 边框保持 1px, 不写 transition-all.
+ *
+ * .agents/notes/implemented/feature/2026-11-06-studio-shot-language.md
+ */
 export const STUDIO_CLASS = {
   page: "bg-background text-foreground",
   wrap: "mx-auto w-full max-w-6xl px-5 md:px-8",

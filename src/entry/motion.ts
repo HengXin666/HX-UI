@@ -15,15 +15,15 @@ export {
   THUMB_PRESS_SCALE,
   TOOLTIP_DELAY_MS,
 } from "../craft";
-export { dealDelay, SHOT_DEPTH, SHOT_DRIVE, SHOT_MOVE, SHOT_PACE, type ShotDepth, type ShotDrive, type ShotFrame, type ShotMove, type ShotPace } from "../studio/moves";
+export * from "../motion/shots";
 export { Shot, ShotSequence, type ShotProps, type ShotSequenceProps } from "../studio/sequence/Sequence";
 export { ShotLayer, ShotPlate, type ShotLayerProps, type ShotPlateProps } from "../studio/sequence/Plate";
 export { prefersReducedMotion, playLayout, readLayout, type LayoutBox } from "../primitives/motion";
 
 /**
  * 三档可中断弹簧按名字取用, 与 docs/research/craft.md 的合同同名.
- * 运动分散在 motion, craft, studio 与 primitives 四处, 这个入口把它们收成一条 @hx/ui/motion,
- * 物理迁移留到第二阶段, 现在只做转发.
+ * 镜头语言 (原 studio/moves) 已迁入 src/motion/shots.ts. craft 的物理迁移等文档站首页那边收工后再做, 现在转发.
+ * primitives/motion 的减弱动效判断与布局位移留在 L1: 原语自己要用, 搬上 L2 会让依赖朝上走, 这里只转出.
  *
  * .agents/notes/implemented/architecture/2026-11-08-layered-entries.md
  */

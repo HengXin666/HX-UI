@@ -15,8 +15,7 @@ import { Display } from "../../typography/Display";
 import { Eyebrow } from "../../typography/Eyebrow";
 import { Lead } from "../../typography/Lead";
 import { STUDIO_CLASS } from "../classes";
-import { F016, F088, N126, F48 } from "../figures";
-import { SHOT_MOVE, SHOT_PACE } from "../moves";
+import { SHOT_MOVE, SHOT_PACE } from "../../motion/shots";
 import { Shot, ShotSequence } from "../sequence/Sequence";
 import { ShotPlate } from "../sequence/Plate";
 import { Compare } from "../viz/Compare";
@@ -39,8 +38,8 @@ export interface KilnPageProps {
   className?: string;
 }
 
-const KILN_SCORE = F48;
-const KILN_REVIEWS = N126;
+const KILN_SCORE = 4.8;
+const KILN_REVIEWS = 126;
 
 /**
  * 窑四号: 一只滤杯的商品页. 画廊是机位里的器物, 购买面板是同一页的流程.
@@ -123,7 +122,7 @@ function KilnVessel({ glaze }: { glaze: string }): JSX.Element {
       <path
         d="M50 36h60l10 18H40L50 36zm-12 18h84l14 132c2 14-10 22-24 22H48c-14 0-26-8-24-22L38 54z"
         fill={SVG_CURRENT_COLOR}
-        fillOpacity={iron ? F088 : F016}
+        fillOpacity={iron ? 0.88 : 0.16}
         stroke={SVG_CURRENT_COLOR}
         strokeWidth={1}
       />

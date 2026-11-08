@@ -9,7 +9,7 @@ Decision-ID: blocks-portfolio-v111
 - `src/blocks/portfolio/StickyProfileLayout.tsx`
 - `src/blocks/portfolio/parts/useScrollSpy.ts`
 - `src/blocks/portfolio/extras/HoverPreviewLink.tsx`
-- `src/constants/blocks-portfolio-v111.ts`
+- `src/constants/blocks-portfolio.ts`
 - `docs/src/pages/blocks/portfolio-v111/PortfolioV111Page.tsx`
 
 ## Problem
@@ -22,7 +22,7 @@ Decision-ID: blocks-portfolio-v111
 - 目录 `src/blocks/portfolio/`: 5 个区块 + index.ts 共 6 个直接文件; 共享零件进 `parts/`
   (PortfolioMedia, SocialLinks, TagList, ProjectCard, useScrollSpy, groupPosts), 附带件进 `extras/` (HoverPreviewLink).
 - 数据类型 (ProfileData, ExperienceItem, ProjectItem, PostItem, 两个版式枚举) 追加到 `src/blocks/_shared/types.ts`,
-  区块只从那里 import 类型; 取值与全部视觉类名放 `src/constants/blocks-portfolio-v111.ts`, 区块内无颜色 / 字号 / 间距字面量.
+  区块只从那里 import 类型; 取值与全部视觉类名放 `src/constants/blocks-portfolio.ts`, 区块内无颜色 / 字号 / 间距字面量.
 - 每个区块包 BlockShell (props 继承 BlockBaseProps), 标题组走 renderSectionHeading; 正文 (bio, 经历描述, 项目描述, 文章行) 一律包 Prose.
 - StickyProfileLayout: 容器查询 @5xl 起左栏 sticky + max-h-dvh, 否则堆叠并隐藏导航 (设计文档 3.3 用容器查询而非视口断点);
   scrollspy 是 IntersectionObserver (rootMargin 判定带), 多节同时可见取文档顺序靠前者, 全部离开时保留上次结果; 当前项 aria-current="location".

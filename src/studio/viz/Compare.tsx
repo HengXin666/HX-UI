@@ -4,7 +4,6 @@ import type { JSX } from "react";
 import { STACK_DIRECTION } from "../../constants/box";
 import { cn } from "../../primitives/utils";
 import { HX_LEAD, STUDIO_CLASS } from "../classes";
-import { SCOPE_COL } from "../figures";
 
 export interface CompareColumn {
   id: string;
@@ -36,13 +35,13 @@ export function Compare({ caption, columns, rows, className, classNames }: Compa
         <caption className="mb-3 text-left text-sm font-medium text-foreground">{caption}</caption>
         <thead>
           <tr>
-            <th scope={SCOPE_COL} className="sticky left-0 bg-background px-3 py-2 font-medium text-muted-foreground">
+            <th scope={"col"} className="sticky left-0 bg-background px-3 py-2 font-medium text-muted-foreground">
               项目
             </th>
             {columns.map((column) => (
               <th
                 key={column.id}
-                scope={SCOPE_COL}
+                scope={"col"}
                 data-state={column.featured ? HX_LEAD : undefined}
                 className={cn("px-3 py-2 font-medium", column.featured ? STUDIO_CLASS.ink : STUDIO_CLASS.quiet, column.featured && classNames?.featured)}
               >

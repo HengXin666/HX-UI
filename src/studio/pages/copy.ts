@@ -2,77 +2,43 @@ import { PRICE_PERIOD } from "../../constants/commerce";
 import { LOCALE_ZH_CN } from "../../constants/locale";
 import { HX_SCOPE_COLOR } from "../../constants/provider";
 import { TEXT_TONE } from "../../constants/typography";
-import {
-  COLOR_MUTED,
-  CURRENCY_CNY,
-  F064,
-  F69,
-  F071,
-  F72,
-  F074,
-  F78,
-  F08,
-  F083,
-  F086,
-  F088,
-  F09,
-  F091,
-  F092,
-  F104b,
-  F48,
-  F86,
-  F91,
-  N4,
-  N11,
-  N12,
-  N18,
-  N21,
-  N24,
-  N27,
-  N29,
-  N33,
-  N36,
-  N40,
-  N96,
-  N268,
-} from "../figures";
 
 /** 整页模板的语言. 价格, 标题判定与读屏共用这一处. */
 export const STUDIO_LOCALE = LOCALE_ZH_CN;
 
-export const STUDIO_CURRENCY = CURRENCY_CNY;
+export const STUDIO_CURRENCY = "CNY";
 
 export const FIELD_PLAN = { solo: "solo", studio: "studio", org: "org" } as const;
 
-export const FIELD_PRICE = { studio: N36, org: N96 } as const;
+export const FIELD_PRICE = { studio: 36, org: 96 } as const;
 
-export const KILN_PRICE = N268;
+export const KILN_PRICE = 268;
 
 export const FIELD_METRICS = [
   {
     label: "决定落地的中位天数",
-    value: F064,
+    value: 6.4,
     from: 0,
     delta: "上个季度是 11 天",
     tone: TEXT_TONE.success,
-    series: [N11, F104b, F91, F86, F78, F72, F69, F064],
+    series: [11, 10.4, 9.1, 8.6, 7.8, 7.2, 6.9, 6.4],
   },
   {
     label: "周记按时写完",
-    value: F092,
+    value: 0.92,
     from: 0,
     format: { style: "percent", minimumFractionDigits: 0, maximumFractionDigits: 0 } as const,
     delta: "按已关闭的周计算",
     tone: TEXT_TONE.neutral,
-    series: [F071, F074, F08, F083, F086, F088, F09, F092],
+    series: [0.71, 0.74, 0.8, 0.83, 0.86, 0.88, 0.9, 0.92],
   },
   {
     label: "仍未拍板的事项",
-    value: N18,
-    from: N40,
+    value: 18,
+    from: 40,
     delta: "其中 4 条超过两周",
     tone: TEXT_TONE.danger,
-    series: [N40, N36, N33, N29, N27, N24, N21, N18],
+    series: [40, 36, 33, 29, 27, 24, 21, 18],
   },
 ] as const;
 
@@ -114,14 +80,14 @@ export const FIELD_QUOTE = {
 } as const;
 
 export const KILN_GLAZE = [
-  { value: "ash", label: "灰釉", color: COLOR_MUTED },
+  { value: "ash", label: "灰釉", color: "var(--muted)" },
   { value: "iron", label: "铁釉", color: HX_SCOPE_COLOR },
   { value: "grit", label: "砂釉", color: "var(--secondary)" },
 ] as const;
 
 export const KILN_SIZE = [
-  { value: "01", label: "01", stock: N12 },
-  { value: "02", label: "02", stock: N4 },
+  { value: "01", label: "01", stock: 12 },
+  { value: "02", label: "02", stock: 4 },
 ] as const;
 
 export const KILN_STEP = { glaze: "glaze", count: "how-many", ship: "ship" } as const;

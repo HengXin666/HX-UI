@@ -3,7 +3,7 @@
 import { motion } from "motion/react";
 import { useRef, type JSX, type KeyboardEvent } from "react";
 import { BUTTON_TYPE } from "../../constants";
-import { ONBOARDING_SLOTS } from "../../constants/blocks-dashboard-v110";
+import { ONBOARDING_SLOTS } from "../../constants/blocks-dashboard";
 import { MEDIA_KEY } from "../../constants/media";
 import { LIVE_POLITE } from "../../constants/widgets";
 import { ORIENTATION, STEP_BACK } from "../../constants/ui";
@@ -11,10 +11,9 @@ import { useControllableState } from "../../hooks/state/useControllableState";
 import { useMotionTokens } from "../../motion/presets";
 import { cn } from "../../primitives/utils";
 import { STUDIO_CLASS } from "../classes";
-import { SHOT_BEAT_S, SHOT_VIEWPORT_AMOUNT } from "../moves";
-import { N2 } from "../figures";
+import { SHOT_BEAT_S, SHOT_VIEWPORT_AMOUNT } from "../../motion/shots";
 
-const ARIA_STEP = ONBOARDING_SLOTS[ONBOARDING_SLOTS.length - N2];
+const ARIA_STEP = ONBOARDING_SLOTS[ONBOARDING_SLOTS.length - 2];
 
 export interface ProcessStep {
   id: string;

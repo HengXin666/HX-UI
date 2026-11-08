@@ -6,7 +6,8 @@ Decision-ID: studio-shot-language
 
 ## Code
 
-- `src/studio/moves.ts`
+- `src/motion/shots.ts`
+- `src/studio/classes.ts`
 - `src/studio/sequence/Sequence.tsx`
 - `src/studio/viz/Metric.tsx`
 - `src/studio/pages/FieldPage.tsx`

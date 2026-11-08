@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { dealDelay, SHOT_PACE } from "../../../src/studio/moves.ts";
-import { N4, N5 } from "../../../src/studio/figures.ts";
+import { dealDelay, SHOT_PACE } from "../../../src/motion/shots.ts";
 
 /**
  * 发牌节奏的后段间隔比前段短.
@@ -9,7 +8,7 @@ import { N4, N5 } from "../../../src/studio/figures.ts";
  * .agents/notes/implemented/feature/2026-11-06-studio-shot-language.md
  */
 export function dealPaceTightens(): void {
-  const count = N5;
+  const count = 5;
   let prev = 0;
   let first = 0;
   let last = 0;
@@ -25,8 +24,9 @@ export function dealPaceTightens(): void {
 
 /** 等间隔节奏随序号增加. */
 export function evenPaceSteps(): void {
-  const early = dealDelay(1, N4, SHOT_PACE.even);
-  const later = dealDelay(N4 - 1, N4, SHOT_PACE.even);
+  const count = 4;
+  const early = dealDelay(1, count, SHOT_PACE.even);
+  const later = dealDelay(count - 1, count, SHOT_PACE.even);
   assert.ok(later > early);
 }
 
