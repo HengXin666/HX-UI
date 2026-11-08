@@ -44,13 +44,27 @@ export const VIZ_SHOT = {
 
 /**
  * 镜头卡里的弹簧. node: DiagramCascadeBuild 节点 (190 / 14). pop: TimelineTravel 弹卡 (160 / 11 / 0.9, 明显过冲).
- * needle: NeedleSweepSelftest 回程, 约 8 度过冲后落真值.
+ * 指针回程的弹簧阻尼随行程变, 见 VIZ_NEEDLE 与 needleSpring.
  */
 export const VIZ_SPRING = {
   node: { stiffness: 190, damping: 14, mass: 1 },
   pop: { stiffness: 160, damping: 11, mass: 0.9 },
-  needle: { stiffness: 200, damping: 15, mass: 1 },
 } as const;
+
+/**
+ * NeedleSweepSelftest 回程弹簧的原值 (源码 1266a3e 第 56 到 63 行): stiffness 120, mass 1,
+ * 阻尼按 "落过头 8 度" 反算. 超调比 p = 8 / 行程 (度), 上限 0.5, 阻尼比 zeta = -ln p / sqrt(pi^2 + ln^2 p).
+ */
+export const VIZ_NEEDLE = { stiffness: 120, mass: 1, overshoot: 8, maxRatio: 0.5 } as const;
+
+/** 给定回程行程 (度) 的指针弹簧. 行程越短阻尼越小, 过冲的角度保持 8 度左右. */
+export function needleSpring(travel: number): { stiffness: number; damping: number; mass: number } {
+  const p = Math.min(VIZ_NEEDLE.maxRatio, VIZ_NEEDLE.overshoot / Math.max(travel, Number.EPSILON));
+  const lp = Math.log(p);
+  const zeta = -lp / Math.sqrt(Math.PI * Math.PI + lp * lp);
+  const damping = 2 * zeta * Math.sqrt(VIZ_NEEDLE.stiffness * VIZ_NEEDLE.mass);
+  return { stiffness: VIZ_NEEDLE.stiffness, damping, mass: VIZ_NEEDLE.mass };
+}
 
 /** 流程脉冲在当前节点变化后走几趟就停, 之后真静止. */
 export const VIZ_PULSE_PASSES = 2;

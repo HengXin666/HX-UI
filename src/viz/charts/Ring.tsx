@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "motion/react";
-import { useState, type JSX, type ReactNode } from "react";
+import { useEffect, useRef, useState, type JSX, type ReactNode } from "react";
 import { NumberRoll } from "../../craft/NumberRoll";
 import { cn } from "../../primitives/utils";
 import { ratio } from "../scale";
-import { VIZ_BOX, VIZ_CLASS, VIZ_SHOT, VIZ_SPRING } from "../tokens";
+import { needleSpring, VIZ_BOX, VIZ_CLASS, VIZ_SHOT } from "../tokens";
 import { useVizStage } from "../use-stage";
 
 export interface RingProps {
@@ -33,7 +33,7 @@ const PIVOT = { originX: "50%", originY: "50%" } as const;
 
 /**
  * 环形进度, 入场是仪表自检 (video-shotcraft gauge-readout-moves 的 needle-sweep-selftest):
- * 先 400ms ease-out 甩满整圈, 再用回程弹簧带一点过冲落到真值, 落定那一刻中心数字才开始滚 (先亮量程再报数).
+ * 先 400ms ease-out 甩满整圈, 再用回程弹簧落到真值 (stiffness 120, 阻尼按行程反算成过冲约 8 度, 与卡的源码相同), 落定那一刻中心数字才开始滚 (先亮量程再报数).
  * 之后改值从当前位置用同一个弹簧继续. 轨道与进度都是 1px 线, 端点实心点随组旋转. 读屏走 progressbar 语义.
  */
 export function Ring({ value, max = DEFAULT_MAX, label, children, size = DEFAULT_SIZE, delay = 0, className, classNames }: RingProps): JSX.Element {
@@ -44,10 +44,16 @@ export function Ring({ value, max = DEFAULT_MAX, label, children, size = DEFAULT
   const radius = center - VIZ_BOX.pad;
   const settled = swept || stage.reduced;
   const shown = !stage.shown ? 0 : settled ? part : 1;
+  // 回程从满圈出发, 之后的改值从上一次落定的位置出发; 行程决定阻尼.
+  const from = useRef(1);
+  const travel = Math.abs(from.current - part) * FULL_TURN;
+  useEffect(() => {
+    if (settled) from.current = part;
+  }, [settled, part]);
   const motionFor = settled
     ? stage.reduced
       ? stage.update
-      : { type: "spring" as const, ...VIZ_SPRING.needle }
+      : { type: "spring" as const, ...needleSpring(travel) }
     : { duration: VIZ_SHOT.sweep, ease: stage.ease, delay };
   const onSwept = (): void => {
     if (stage.shown && !settled) setSwept(true);

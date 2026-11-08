@@ -47,7 +47,7 @@ export default function Landing() {
 | 组件 | 镜头卡 | 落到库里 |
 |---|---|---|
 | `Trend` / `BarChart` | chart-live-moves 的 axis-rescale-shock | 越界先按旧比例冲出画框 14f, 停 18f 让人看见轴坏了, 再 200ms 重标; 旧刻度滑到新位置淡出, 新刻度从旧位置滑进来 |
-| `Ring` / `RingRow` | gauge-readout-moves 的 needle-sweep-selftest | 入场 12f ease-out 甩满整圈, 回程弹簧过冲落真值, 落定后数字才滚; 一排表错峰 4f |
+| `Ring` / `RingRow` | gauge-readout-moves 的 needle-sweep-selftest | 入场 12f ease-out 甩满整圈, 回程弹簧 stiffness 120 / mass 1, 阻尼按行程反算成过冲约 8 度 (同卡源码 dampingFor), 落定后数字才滚; 一排表错峰 4f |
 | `FlowGraph` | canvas-materialize-moves 的 diagram-cascade | 列间 22f, 兄弟 5f, 连线比子节点早 10f 描出 16f; 节点从左侧端口用 190 / 14 弹簧拉出, 不从中心缩放 |
 | `Funnel` | gauge-readout-moves 的落定报数 | 条落定那一刻数值才滚, 转化率随之淡入 |
 | `Timeline` | timeline-travel 的弹卡 | 以轨道一侧为轴从 0.6 立起, 弹簧 160 / 11 / 0.9 明显过冲, 刚露头就起弹 |
