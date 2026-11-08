@@ -23,6 +23,9 @@ Decision-ID: surface-backgrounds-fluid
 - `src/surface/backgrounds/fluid/magic-rings-motion.ts`
 - `src/surface/backgrounds/fluid/magic-rings-shader.ts`
 - `tests/surface/backgrounds/fluid/magic-rings.test.tsx`
+- `src/surface/backgrounds/fluid/Topography.tsx`
+- `src/surface/backgrounds/fluid/topography-shader.ts`
+- `tests/surface/backgrounds/fluid/topography.test.tsx`
 
 ## Problem
 
@@ -44,6 +47,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. fluid 路收以液体
 | Orb | `Orb` | 采用: 屏幕坐标从焦距 3.2 的相机射到按 tiltX / tiltY 倾斜的平面上, 半径 r0 = (0.62 + 0.07 * 噪声 * wobble) * (1 + 0.12 * 脉冲) 的光环, 亮度 1 / (1 + d * a) 只取内侧 (smoothstep(r0 * 1.05, r0, len)), 内侧按 reach 渐隐出体积, 外侧泛光 1 / (1 + d^2 * 160 / glow); 朝指针一侧按 reach * facing * smoothstep(0.25, 0.65, r) 隆起. JS 侧: 悬停 tau 0.16, 贴近 tau 0.12 涨到 hoverIntensity, 伸向指针弹簧 (刚度 70, 阻尼 7), 悬停时每秒自转 0.3 * hover, 尾迹头部以 1 - exp(-6 dt) 转向指针 (无指针时匀速绕行), 尾迹 smoothstep(0, 0.35, lag) * exp(-2.6 lag / trail); 点击给脉冲弹簧 (170 / 11) 初速 4 并放出 1.2 秒扩到满的回声环, 闪亮按 exp(-2.5 dt) 衰减; 入场 1.1 秒. 颜色 1 到 3 个沿环流转, hue 用 YIQ 旋转. 默认 colors primary, accent. |
 | EvilEye | `EvilEye` | 采用: 极坐标方向乘 2.2 与 r * 3 - t 取三层三维值噪声 (0.6 / 0.3 / 0.1) 烧火焰, flames = smoothstep(0.35, 0.95, n + distanceMask * 0.55) * max(distanceMask + 0.35, 0), distanceMask = 1 - length(uv); 虹膜环半径 0.3 + 0.04 (n - 0.5), 环宽 irisWidth * 0.4, 环内放射纹 smoothstep(0.45, 0.85, 噪声); 竖缝瞳孔按 (9, 2.3) 压缩, 外圈光晕按 (0.5, 1.5) 椭圆压缩后平方乘 glowIntensity * 2, 能量过 0.9 起泛白. 瞳孔跟手 tau 0.2s, 偏移上限 0.15, 目标为指针偏移乘 pupilFollow 并封顶为 1, 离场回正; 减弱动效只画一帧且瞳孔居中. 默认 intensity 1.5, pupilSize 0.6, irisWidth 0.25, glowIntensity 0.35, scale 0.8, eyeColor primary, backgroundColor background; lightMode 在浅底上画深色眼. 条目的噪声纹理改为片元内三维值噪声, 不上传纹理. |
 | MagicRings | `MagicRings` | 采用: 环数上限 RINGS_MAX 12 (默认 6), 半径 baseRadius 0.35 + radiusStep 0.1 * i; pulse 模式每环错开 0.5s 出生, 周期 3.45s 内向外推 expansion * 2.6, 亮度包络 min(smoothstep(0, 0.7, t), 1 - smoothstep(0.5, 3.25, t)); breathe 按 0.5 expansion 正弦起伏. 每环取细芯 1 - smoothstep(0.5w, 1.5w, d) 加光晕 (glow * 1.5w / (d + 1.5w))^2, 沿角度按 pow(0.5 + 0.5 cos, taper) 渐细, 色散分 rgb 偏移 0.012 dispersion, 峰值经 1 - exp(-peak) 压缩并在 smoothstep(1.4, 3.6) 处泛白; 颜色沿序号从 color (primary) 混到 colorTwo (accent). 跟手弹簧刚度 70, 阻尼临界的 0.9, 子步 1/240s; 悬停弹簧刚度 40 临界阻尼, 放大到 hoverScale 1.2 并按 exp(-6 d^2) 在指针附近增亮; 点击爆环最多 3 个, 寿命 1.1s, 扩散 0.9 短边每秒; 入场每环 smoothstep(0.12 i, 0.12 i + 0.9) 依次亮起. 减弱动效时 pulse 退为 breathe 画一帧, 不跟手不爆环. ENGINE-GAP: 条目的 128 段环带网格与 Canvas2D 叠层改为片元解析画环, tilt 只做竖向压扁不做透视. |
+| Topography | `Topography` | 采用: 相机绕注视点 ORBIT 9 以 tilt 32 度俯视, 视场 0.32, 射线步进 96 步加 5 次二分求交 (最远 160), 地形为两层三维值噪声 (0.62 / 0.26) 加 detail 细碎起伏, 基础频率 0.45, 高度 1.7 * elevation, morph 0.2 驱动演化, 沿 direction (forward / backward / left / right) 以 1.2 世界单位每场秒流动. 等高线 f = h / 高度 * lineCount (默认 22), 按 fwidth 定宽 lineWidth 1.2 CSS 像素, 每 5 条主线加粗 0.8 倍, 景深 soft = 1 + min(3 depthOfField * abs(1 - ORBIT / depth), 4) 加宽变淡, 过密处 smoothstep(0.3, 0.75) 淡出, 指数光晕 glow 0.6, 远处五次曲线雾化 fog 0.35, 近处按 foreground 0.2 变淡. 指针处高斯隆起 (hoverEffect lift / sink / none, mouseStrength 0.6, mouseRadius 1), 拖尾 8 点每 0.08s 采样寿命 trail * 3s 线性衰减; 点击脉冲最多 4 个, 0.1s 升起后 exp(-0.9 t) 衰减, 寿命 3s; 相机按 parallax 0.5 偏转, tau 0.4s, 满幅 0.12 弧度; 入场 2.8s 地形自平面 smoothstep 隆起. 默认 speed 0.25, dpr 1. 减弱动效只画一帧, 清掉拖尾与脉冲. ENGINE-GAP: 条目的网格地形, 4 级泛光与 256 格雕刻纹理改为全屏片元射线步进, 泛光以等高线外指数光晕近似, 雕刻改 8 点高斯隆起, 景深只加宽变淡不做模糊. |
 
 ## Alternatives considered
 
