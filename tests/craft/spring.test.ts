@@ -13,8 +13,11 @@ describe("stepSpring", () => {
     }
     expect(current).toBeLessThan(1);
     expect(velocity).toBeLessThan(0);
+    // 换目标后速度沿用而不是清零: 同一位置从静止起步的那一步作对照, 带着向下速度的一步回得更慢.
     const flipped = stepSpring(current, velocity, 1, SPRING_PRESS, 16);
-    expect(flipped.velocity).toBeLessThan(0);
+    const fromRest = stepSpring(current, 0, 1, SPRING_PRESS, 16);
+    expect(flipped.velocity).toBeLessThan(fromRest.velocity);
+    expect(flipped.current).toBeLessThan(fromRest.current);
     expect(flipped.current).not.toBe(PRESS_SCALE);
   });
 
