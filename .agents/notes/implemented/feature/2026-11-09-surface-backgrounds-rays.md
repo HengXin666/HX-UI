@@ -12,6 +12,8 @@ Decision-ID: surface-backgrounds-rays
 - `src/surface/backgrounds/rays/beams-shader.ts`
 - `src/surface/backgrounds/rays/LightRays.tsx`
 - `src/surface/backgrounds/rays/light-rays-shader.ts`
+- `src/surface/backgrounds/rays/SideRays.tsx`
+- `src/surface/backgrounds/rays/side-rays-shader.ts`
 
 ## Problem
 
@@ -32,6 +34,7 @@ Backgrounds 全量落地分七路, rays 路收以光束, 光柱, 闪电, 棱镜�
 | --- | --- | --- |
 | Beams | `Beams` | 平行凸起光带的曲面法线 + GGX 高光 + Schlick 菲涅尔 (0.028 + 0.972 (1 - vh)^5), 接缝暗线 (pixel * 1.5), 入场 1.6s, 光源跟手速率 7, reach 升 3.2 / 降 1.8, 像素预算 1.6M. 光源静止时自己绕圈 (本库定). |
 | LightRays | `LightRays` | 角向两层值噪声成束, 阈值 0.62 按 raySharpness 锐化, 源头辉光 smoothstep(-0.2, 0.6, cos), 雾气 0.65 / 0.35 两层, 指针影子 smoothstep(0.97, 1.25, along) * exp(-trail * 1.1), 点击外扩脉冲最多 4 个 (读内核点击队列). 开场 1.8s, 转向 tau 0.2s, 影子 0.08 / 0.25 / 0.5s, 像素预算 2.4M. 规格里减弱动效时 0.35 倍速常驻, 此处按内核约定只画一帧. |
+| SideRays | `SideRays` | 侧向扇形双色光束: 两层值噪声 0.7 / 0.3 成束, fwidth 抗锯齿 smoothstep(0.12, 0.45), 聚光 1 + z * exp(-((a - x) / y)^2), 衰减 1 / (1 + (r / 0.4)^falloff), 揭开 1.6s, 高光泛白 smoothstep(0.7, 1) * 0.55, 浮尘闪烁 0.55 + 0.45 sin. 朝向用临界阻尼弹簧 (刚度 18), 聚光跟手速率 6, 偏离上限 spread * 1.5. 默认时钟倍率 2.5 落在公共 speed. 默认色 primary / foreground. |
 
 ## Alternatives considered
 
