@@ -12,6 +12,7 @@ Decision-ID: surface-backgrounds-grid
 - `src/surface/backgrounds/grid/GridDistortion.tsx`
 - `src/surface/backgrounds/grid/GridMotion.tsx`
 - `src/surface/backgrounds/grid/GridScan.tsx`
+- `src/surface/backgrounds/grid/RippleGrid.tsx`
 - `src/surface/backgrounds/grid/tokens.ts`
 
 ## Problem
@@ -32,6 +33,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. grid 路收以格点,
 | GridDistortion | `GridDistortion` | 采用: 粗网格位移场 (横向 grid 格, 纵向按宽高比) 在 JS 侧积分, 指针速度按 drag / push / swirl 写入半径内格子 (增益 GAIN 18), 每帧按 relaxation^(dt * 60) 回弹, 静止时幽灵量以 dt 上升, 动起来 3 倍速退去, 驱动 idle 晃动; 场打包成 RGBA8 小纹理, 片元在 texelFetch 块状与双线性平滑间按 softness 混, chroma 错开 R / B, 点击涟漪取内核 u_taps (寿命 1.6s), 图像就绪后 0.6s 由中心揭开. imageSrc 缺省时用 fromColor / toColor 渐变底加细网格, 便于不带图也能用. |
 | GridMotion | `GridMotion` | 采用: 纯 DOM (useDomBackdrop, BackdropShell 不放画布), 舞台按旋转角取外接矩形再放 1.12 倍盖住画面, 行高平分, 瓦片宽 = 行高 * aspectRatio, 每行瓦片数 = ceil(舞台宽 / 步长) + 条目数 + 1, 平移折回 [-周期, 0) 无缝循环. 滚动 scrollSpeed 像素每秒 (规格的 speed 与公共时钟倍率同名, 改名), left / right / alternate; 视差按指针横向偏移 * parallax * 160px, 行越往下越深, 各行惯性 0.45 / 0.7 / 0.55 / 0.85s 轮换 (本库定); 光斑照度 1 - smoothstep(0.25, 1, d / (0.35 长边)) 乘指针在场, 亮度以 0.22s 跟随, 指针在场时光斑外压暗 dim, 灰度模式光斑处复彩; 入场 0.9s 由 1.06 倍淡入落位, 四边淡出走 mask-image 径向渐变. theme 由语义 token 代替 (tileColor 默认 muted, textColor 默认 foreground); 光斑求距按平面旋转算, 不计 tilt 透视. |
 | GridScan | `GridScan` | 采用: 全屏片元把视线与贴合画面的隧道 (半宽 = 宽高比, 半高 1, 深 depth) 四壁求交, 眼位在口前 EYE_DISTANCE 1.25, 超深处落在尽头墙; 壁面坐标上画网格线 (线宽按像素, fwidth 在 0.1..0.4 之间退成平均覆盖防摩尔纹, 虚线 / 点线同样在挤密时退成 0.5), 深度淡出 exp(-depthFade * 2 z / depth), 打光 1 / (1 + 0.9 z^2) 按 shading 混; 扫描面由 JS 按时长 (钳 0.3..20) 与停顿 (钳 0..30) 排程, 进出各 8% 淡入淡出, forward / backward / pingpong, 拖尾 exp(-behind / trail) * smoothstep(-w, 0.5w, behind); 交点闪烁 0.75 + 0.25 sin(t (3 + 5r) + 40r) 只在格距 5..10px 以上出现; 地面按掠射角反光; 眼位视差 tau 0.08, 指针光斑 tau 0.25; 点击取内核 u_taps 最近 4 个 (MAX_PINGS) 在壁面打外扩环与尾迹, 寿命 2.4s, clickEffect 另有 scan (从头重扫); 入场 2.2s 由近到远亮起. enableWebcam / showPreview / modelsPath (人脸追踪要从 CDN 拉模型) 不做; enableGyro 为 ENGINE-GAP (内核指针没有 deviceorientation). |
+| RippleGrid | `RippleGrid` | 采用: 全屏片元把屏幕点 (CSS 像素, 中心为原点) 按 tilt 反投影到后仰平面 (焦距取长边, 地平线处 smoothstep(0, 0.35 长边, depth) 淡出), 再按 rotation 转到格面; lines / dots / cross 三种样式 (点径 1.7 线宽, 十字臂长 0.16 格), 格子挤密时 1 - smoothstep(0.18, 0.5, fwidth) 淡出. 涟漪 (上限 MAX_RIPPLES 12, 走 { list, size: 4 } 数组 uniform, 不受内核 8 个点击的限制) 由 JS 调度: autoRipple center / random (可复现的线性同余序列) / none 按 rippleInterval 放, 新点击放满强度, 指针移动每 0.16s 留 0.3 强度小涟漪 (本库定), 寿命 3s, 波前 260 * rippleSpeed 像素每秒, 波长 1.1 格 * rippleSize (本库定); 波形 sin 乘高斯包络乘 1 / (1 + d / 5 波长) 扩散与 smoothstep(0, 0.9 波长, d) 源点静区, 沿径向推格线并提亮. 光晕随指针按 6 / 2.5 每秒升降, 入场 1.6s 由中心铺开 (边缘带 4 格), lightMode 把光晕改为压暗. 兜底为 color-mix 线色的静态方格. |
 
 ## Alternatives considered
 
