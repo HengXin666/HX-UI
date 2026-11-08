@@ -21,6 +21,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. fluid 路收以液体
 | 规格条目 | 组件 | 取舍 |
 | --- | --- | --- |
 | LiquidChrome | `LiquidChrome` | 采用: 1 到 8 层正弦扭曲出液面, 有限差分取斜率当法线, 反射一个摄影棚环境 (柔光箱, 地平线亮带, 条目里的 lobe / streak / rise 形状), 粗糙度用 4 次抖动采样 (t 从 -0.375 步进 0.25) 近似, f0 = mix(1, tint, smoothstep(0.05, 0.6, 斜率)) * 0.92. 涟漪是离屏波动方程 (格子 4 CSS 像素, 每帧两步对应 1/120 秒步长), 拖动按速度注入, 点击注入一圈大的. 入场振幅 1.8 秒涨满. color 默认 foreground, 另加 backgroundColor (默认 background); lightMode 以底色为主只做明暗. maxDevicePixelRatio 并入公共 dpr. |
+| LiquidEther | `LiquidEther` | 采用: 稳定流体四通道 (速度: 投影后半拉格朗日自平流, 粘性衰减, 指针 / 自动 / 点击的力; 散度; 压力 32 次 Jacobi, 以上一帧的解热启动; 染料: 按投影后速度平流, 留存率 0.5^(dt / (0.35 + persistence^2 * 12))). 压力梯度不能写回速度缓冲 (每个通道只写自己), 所以投影滞后到下一帧速度通道开头扣掉, 染料通道自己算一次投影后的速度, 结果与同帧投影一致. 上屏: 浓度经 smoothstep(0.08, 0.5) 当不透明度, 快处 mix(0.85, 0.1, smoothstep(0.7, 1.6, 速度)) 镂空, 1 - exp(-max(速度 - 0.75, 0) * 1.2) 发热, 流速沿调色板取色. 自动演示在指针停下 autoResumeDelay 后沿利萨如曲线搅动, 0.8 秒爬升; 入场 1.4 秒横扫一笔; 点击按 1400 * (mouseForce / 20) 外推. 减弱动效改画一张静态噪声流. MAX_CELLS 上限不落地 (通道缩放在构建时固定, 由 resolution 与 DPR 上限间接控制). ENGINE-GAP: 内核在不支持半浮点渲染目标时退到 RGBA8, 速度与压力按 512 / 256 的范围编码后精度不足, 流体会发涩. |
 
 ## Alternatives considered
 
