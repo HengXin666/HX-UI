@@ -4,3 +4,4 @@ export { DotGrid, type DotGridProps } from "./DotGrid";
 export { ShapeGrid, type ShapeGridProps } from "./ShapeGrid";
 export { GridDistortion, type GridDistortionProps } from "./GridDistortion";
 export { GridMotion, type GridMotionProps } from "./GridMotion";
+export { GridScan, type GridScanProps } from "./GridScan";
