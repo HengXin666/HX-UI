@@ -1,5 +1,5 @@
 /** DictateButton 展开区的波形: 条数, 宽度与画布绘制. */
-import { fitCanvas, inkOf } from "../../kinetics";
+import { fitCanvas, inkOf } from "../../canvas";
 import { DICTATE, HALF } from "../../tokens";
 
 /** 展开区能放下的波形条数. */

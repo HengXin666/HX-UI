@@ -1,6 +1,6 @@
 // RipStub 的存根拖动: 平滑指针速度, 按阻力打折拉伸并偏转, 超过 stretch 撕下, 未撕松手给票身反冲.
 import { useRef, type PointerEvent, type RefObject } from "react";
-import { approach } from "../../../feel";
+import { approach } from "../../../../../motion/spring/follow";
 import { RIP } from "../../../tokens";
 import { ripAngle, ripPull, ripTorn } from "../../discard-math";
 import type { RipSim } from "./rip-sim";

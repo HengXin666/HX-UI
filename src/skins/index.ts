@@ -2,7 +2,7 @@
  * 皮肤层桶文件: 皮肤与密度的名称清单, 以及把选择写进 DOM 的辅助函数.
  *
  * 只操作 document.documentElement 的 data-* 属性, 不引任何依赖, 不碰组件.
- * 样式在同目录 index.css (foundation + 五套皮肤 + density), 由集成任务接进 src/styles.css.
+ * 样式在同目录 index.css (foundation + 六套皮肤 + density), 由集成任务接进 src/styles.css.
  * 服务端渲染 (无 document) 时所有写入函数静默返回, 读取函数返回默认值.
  */
 import {

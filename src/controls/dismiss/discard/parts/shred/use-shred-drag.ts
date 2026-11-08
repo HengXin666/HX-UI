@@ -1,6 +1,7 @@
 // ShredBin 的卡片拖动: 跟手平移与按速度倾斜, 拖过刀口即待送入, 未送入时按中心位置上下重排.
 import { useRef, type PointerEvent, type RefObject } from "react";
-import { approach, clamp } from "../../../feel";
+import { approach } from "../../../../../motion/spring/follow";
+import { clamp } from "../../../feel";
 import { SHRED } from "../../../tokens";
 import { feedArmed, moveItem, reorderIndex } from "../../discard-math";
 import type { CardSim } from "./shred-sim";

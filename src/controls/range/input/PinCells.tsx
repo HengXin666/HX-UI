@@ -3,16 +3,14 @@
 import { useEffect, useRef, useState, type JSX } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { SpringChannels } from "../channels";
-import { MS_PER_S, springFromDuration } from "../motion";
-import { toneVar, type RangeTone } from "../tokens";
-import { useFrameLoop } from "../use-frame-loop";
+import { SpringChannels } from "../../../motion/drive/channels";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { springFromDuration } from "../../../motion/spring/fit";
+import { exactStepper } from "../../../motion/spring/step";
+import { MS_PER_S, RANGE_DT_CAP_MS, RANGE_FIT, toneVar, type RangeTone } from "../tokens";
 import { PinSlot } from "./parts/PinSlot";
 import { PIN_CHECK_DELAY, PIN_CHECK_OUT_S, PIN_CHECK_RISE, PIN_CHECK_SPRING_S, PIN_RETURN_DELAY, PIN_SINK_DELAY, PIN_SINK_FADE, PIN_SINK_SPRING_S, PIN_SINK_STEP, PIN_WASH_IN, PIN_WASH_OUT, PIN_WASH_OUT_DELAY, cleanCode, type PinStatus } from "./parts/pin-spec";
 
-/** 本文件内重复出现的字面量, 只写一次. */
-const N_0_3 = 0.3;
-const N_8 = 8;
 const CHECK = "check";
 
 /*
@@ -76,11 +74,11 @@ export function PinCells({
 	digitTone = "background",
 	dangerTone = "destructive",
 	slotSize = 44,
-	gap = N_8,
+	gap = 8,
 	radius = 12,
 	bounce = 0.2,
-	settle = N_0_3,
-	rise = N_8,
+	settle = 0.3,
+	rise = 8,
 	cascade = 20,
 	ariaLabel = "One-time code",
 	className,
@@ -89,15 +87,15 @@ export function PinCells({
 	const [inner, setInner] = useState(() => cleanCode(defaultValue, length));
 	const code = cleanCode(value ?? inner, length);
 	const [focused, setFocused] = useState(false);
-	const channels = useRef(new SpringChannels());
+	const channels = useRef(new SpringChannels(exactStepper(RANGE_DT_CAP_MS)));
 	const loop = useFrameLoop();
 	const glyphs = useRef<Array<HTMLSpanElement | null>>([]);
 	const check = useRef<SVGSVGElement>(null);
 	const prevCode = useRef(code);
 	const prevStatus = useRef<PinStatus>("idle");
 	const success = status === "success";
-	const dropSpring = springFromDuration(settle, bounce);
-	const sinkSpring = springFromDuration(PIN_SINK_SPRING_S, 0);
+	const dropSpring = springFromDuration(settle, bounce, RANGE_FIT);
+	const sinkSpring = springFromDuration(PIN_SINK_SPRING_S, 0, RANGE_FIT);
 
 	const paint = (): void => {
 		const ch = channels.current;
@@ -138,7 +136,7 @@ export function PinCells({
 			const had = i < before.length && before[i] === code[i];
 			if (i >= code.length || had) continue;
 			if (reduced) ch.jump(`d${i}`, 1, dropSpring);
-			else ch.aim(`d${i}`, 1, dropSpring, now, batch * cascade, 0);
+			else ch.aim(`d${i}`, 1, dropSpring, { now, delayMs: batch * cascade, from: 0 });
 			batch += 1;
 		}
 		run();
@@ -153,11 +151,11 @@ export function PinCells({
 			for (let k = 0; k < length; k += 1) ch.jump(`s${k}`, success ? 1 : 0, sinkSpring);
 			ch.jump(CHECK, success ? 1 : 0, sinkSpring);
 		} else if (success) {
-			for (let k = 0; k < length; k += 1) ch.aim(`s${k}`, 1, sinkSpring, now, (PIN_SINK_DELAY + k * PIN_SINK_STEP) * MS_PER_S);
-			ch.aim(CHECK, 1, springFromDuration(PIN_CHECK_SPRING_S, bounce), now, PIN_CHECK_DELAY * MS_PER_S);
+			for (let k = 0; k < length; k += 1) ch.aim(`s${k}`, 1, sinkSpring, { now, delayMs: (PIN_SINK_DELAY + k * PIN_SINK_STEP) * MS_PER_S });
+			ch.aim(CHECK, 1, springFromDuration(PIN_CHECK_SPRING_S, bounce, RANGE_FIT), { now, delayMs: PIN_CHECK_DELAY * MS_PER_S });
 		} else if (was === "success") {
-			ch.aim(CHECK, 0, springFromDuration(PIN_CHECK_OUT_S, 0), now);
-			for (let k = 0; k < length; k += 1) ch.aim(`s${k}`, 0, sinkSpring, now, PIN_RETURN_DELAY * MS_PER_S);
+			ch.aim(CHECK, 0, springFromDuration(PIN_CHECK_OUT_S, 0, RANGE_FIT), { now });
+			for (let k = 0; k < length; k += 1) ch.aim(`s${k}`, 0, sinkSpring, { now, delayMs: PIN_RETURN_DELAY * MS_PER_S });
 		}
 		run();
 	}, [status, reduced]);

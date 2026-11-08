@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type CSSProperties, type JSX, type Keyboar
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { DOUBLE, FADE_MS, LINEAR_EASE, PERCENT, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, transitionOf } from "../tokens";
-import { useMotionValue } from "../use-motion-value";
+import { useDrivenValue } from "../../../motion/drive/use-driven-value";
 
 /** 按下到松开短于它算轻点, 走 onTap 而不是回退. */
 export const HOLD_TAP_MS = 250;
@@ -109,7 +109,7 @@ export function HoldConfirm({
   const pulse = useRef<HTMLSpanElement>(null);
   const resetTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
-  const progress = useMotionValue(0, false, (value) => {
+  const progress = useDrivenValue(0, false, (value) => {
     if (value < 1 || !holding.current) return;
     holding.current = false;
     setHeld(false);

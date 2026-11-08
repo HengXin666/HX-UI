@@ -1,4 +1,4 @@
-import { approach } from "../kinetics";
+import { approach } from "../../../motion/spring/follow";
 import { DEVELOP, HALF, MS_PER_S } from "../tokens";
 
 /** 显影进度追随: stageMs 内走完约 95% (tau = stageMs / 3), 目标改了下一帧生效. */

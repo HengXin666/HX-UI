@@ -3,9 +3,12 @@
 import { useEffect, useRef, useState, type CSSProperties, type JSX, type KeyboardEvent, type PointerEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { CRITICAL_SETTLE, MS_PER_S, clamp, smoothstep, snap, stepSpringFine } from "../motion";
-import { DURATION_VAR, toneVar, type RangeTone } from "../tokens";
-import { useFrameLoop } from "../use-frame-loop";
+import type { SpringSpec } from "../../../craft/spring";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { springFromOmega } from "../../../motion/spring/fit";
+import { stepSpringExact } from "../../../motion/spring/step";
+import { clamp, smoothstep, snap } from "../math";
+import { CRITICAL_SETTLE, DURATION_VAR, MS_PER_S, RANGE_DT_CAP_MS, toneVar, type RangeTone } from "../tokens";
 import { keyStep, PERCENT } from "./keys";
 
 /*
@@ -20,19 +23,16 @@ export const SWELL_FULL_SPEED = 320;
 export const SWELL_MIN_REACH = 1.5;
 /** 振幅低于它且上一帧也低于它时不重绘. */
 export const SWELL_FLAT = 0.002;
-/** 速度平滑弹簧的阻尼倍数 (过阻尼, 不回弹). */
-export const SWELL_SPEED_DAMPING = 2.5;
+/** 速度平滑弹簧的阻尼比 (过阻尼, 不回弹), 即阻尼 = 2.5 omega. */
+export const SWELL_SPEED_RATIO = 1.25;
 
 /** 规格的 head / speed 两条弹簧换算到 stiffness / damping / mass. */
-export function swellSprings(glide: number, smoothingMs: number): {
-	head: { stiffness: number; damping: number; mass: number };
-	speed: { stiffness: number; damping: number; mass: number };
-} {
+export function swellSprings(glide: number, smoothingMs: number): { head: SpringSpec; speed: SpringSpec } {
 	const w0 = SWELL_SETTLE / Math.max(glide, Number.EPSILON);
 	const wv = SWELL_SETTLE / Math.max(smoothingMs / MS_PER_S, Number.EPSILON);
 	return {
-		head: { stiffness: w0 * w0, damping: 2 * w0, mass: 1 },
-		speed: { stiffness: wv * wv, damping: SWELL_SPEED_DAMPING * wv, mass: 1 },
+		head: springFromOmega(w0),
+		speed: springFromOmega(wv, SWELL_SPEED_RATIO),
 	};
 }
 
@@ -147,9 +147,9 @@ export function SwellSlider({
 			return;
 		}
 		loop.start((dt) => {
-			const h = stepSpringFine(head.current.x, head.current.v, target, springs.head, dt);
+			const h = stepSpringExact(head.current.x, head.current.v, target, springs.head, dt, RANGE_DT_CAP_MS);
 			head.current = { x: h.current, v: h.velocity };
-			const s = stepSpringFine(speed.current.x, speed.current.v, h.velocity, springs.speed, dt);
+			const s = stepSpringExact(speed.current.x, speed.current.v, h.velocity, springs.speed, dt, RANGE_DT_CAP_MS);
 			speed.current = { x: s.current, v: s.velocity };
 			paint(true);
 			return !(h.resting && Math.abs(speed.current.x) < SWELL_FLAT);

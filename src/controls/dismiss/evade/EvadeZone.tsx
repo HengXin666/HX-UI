@@ -4,9 +4,10 @@
 import { useEffect, useRef, useState, type CSSProperties, type JSX, type PointerEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { makeAxis, snapAxis, springFromFeel, stepAxis } from "../feel";
+import { makeAxis, snapAxis, stepAxis } from "../../../motion/drive/axis";
+import { springFromVisualDuration } from "../../../motion/spring/fit";
 import { DISMISS_EASE_OUT, EVADE } from "../tokens";
-import { useFrameLoop } from "../use-frame";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { crossedCountLine, fleeOffset, keepInside, type EvadeAxis, type EvadeWall } from "./evade-math";
 
 /** 本文件内重复出现的字面量, 只写一次. */
@@ -85,8 +86,8 @@ export function EvadeZone({
 
 	const frame = useFrameLoop((dtMs) => {
 		const spec = fleeing.current
-			? springFromFeel(fleeDuration / MS, 0)
-			: springFromFeel(returnDuration / MS, returnBounce);
+			? springFromVisualDuration(fleeDuration / MS, 0)
+			: springFromVisualDuration(returnDuration / MS, returnBounce);
 		const a = stepAxis(x.current, spec, dtMs);
 		const b = stepAxis(y.current, spec, dtMs);
 		paint();

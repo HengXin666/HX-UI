@@ -17,6 +17,12 @@ export const V105_INTL = { percent: "percent" } as const;
 /** FAQ 版式列数. 2 = 标题左, 问答右. */
 export const FAQ_COLUMNS = { single: 1, split: 2 } as const;
 
+/** FAQ 问答形态: 原生 details (无 JS 可展开) / 库 Accordion (展开带高度动画). */
+export const FAQ_VARIANT = { details: "details", accordion: "accordion" } as const;
+
+/** Faq 内部部件的 classNames 槽位 (与 BlockShell 的 root / container / content / backdrop 并列). */
+export const FAQ_SLOTS = ["item", "summary", "answer", "list", "split", "aside"] as const;
+
 /** 对比矩阵单元格的值种类 (渲染分派用). */
 export const MATRIX_CELL = { yes: "yes", no: "no", text: "text", icon: "icon" } as const;
 
@@ -107,6 +113,13 @@ export const FAQ_CLASS = {
   groupGap: "flex flex-col gap-8",
   groupTitle: "mb-2",
   contact: "mt-10 flex flex-col items-start gap-3 rounded-(--card-radius) bg-muted p-6 text-start sm:flex-row sm:items-center sm:justify-between",
+} as const;
+
+/** FAQ accordion 形态的默认类名: 列表仍用 FAQ_CLASS.list 的分隔线, 项自身不再画底边. */
+export const FAQ_ACCORDION_CLASS = {
+  item: "border-b-0",
+  trigger: "gap-4 py-4 text-start text-base",
+  answer: "text-base",
 } as const;
 
 /** 区块自有文案 (BlockLabels 之外). 按语言子标签取包, 未命中回到 zh. */

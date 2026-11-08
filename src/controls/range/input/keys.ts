@@ -1,4 +1,4 @@
-import { clamp } from "../motion";
+import { clamp } from "../math";
 
 export const PERCENT = 100;
 /** PageUp / PageDown 一次走的步数, 与 primitives/slider 一致. */

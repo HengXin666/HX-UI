@@ -4,9 +4,8 @@ import { useEffect, useRef, useState, type CSSProperties, type JSX } from "react
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { prefersReducedMotion } from "../../../primitives/motion";
 import { cn } from "../../../primitives/utils";
-import { MS_PER_S } from "../motion";
-import { playLoop } from "../use-frame-loop";
-import { DURATION_VAR, MOVE_MS, RANGE_EASE, toneVar, type RangeTone } from "../tokens";
+import { playLoop } from "../../../motion/frame/play-loop";
+import { DURATION_VAR, MOVE_MS, MS_PER_S, RANGE_EASE, toneVar, type RangeTone } from "../tokens";
 import { DEFAULT_GRID_PATTERN, GRID_MARKS, GRID_REDUCED_MS, gridLevels, type GridPattern, type GridSize } from "./grid-patterns";
 
 /** 本文件内重复出现的字面量, 只写一次. */

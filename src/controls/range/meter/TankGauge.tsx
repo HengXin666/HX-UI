@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState, type JSX, type KeyboardEvent, type PointerEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { MS_PER_S, clamp } from "../motion";
-import { QUICK_FADE_MS, toneVar, type RangeTone } from "../tokens";
-import { useFrameLoop } from "../use-frame-loop";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { clamp } from "../math";
+import { MS_PER_S, QUICK_FADE_MS, toneVar, type RangeTone } from "../tokens";
 import { TANK_BIG, TANK_STEP, stepTank, surfacePath, type TankState } from "./tank-sim";
 
 /** 本文件内重复出现的字面量, 只写一次. */

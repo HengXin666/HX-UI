@@ -1,6 +1,6 @@
 // ShredBin 卡片堆的布局状态: 元素与模拟表, 量高度, 按顺序排出各槽位顶边, 每次渲染后落位并唤醒逐帧循环.
 import { useLayoutEffect, useRef, type RefObject } from "react";
-import { snapAxis } from "../../../feel";
+import { snapAxis } from "../../../../../motion/drive/axis";
 import { paintCard } from "./shred-paint";
 import { newCardSim, type CardSim } from "./shred-sim";
 

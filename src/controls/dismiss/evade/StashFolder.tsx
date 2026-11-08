@@ -4,9 +4,10 @@
 import { useEffect, useId, useMemo, useRef, useState, type JSX, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { makeAxis, springFromFeel, stepAxis } from "../feel";
+import { makeAxis, stepAxis } from "../../../motion/drive/axis";
+import { springFromVisualDuration } from "../../../motion/spring/fit";
 import { DISMISS_EASE_OUT, STASH } from "../tokens";
-import { useFrameLoop } from "../use-frame";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { closeDelays, driftForce, layoutChips, liveDelay, openCurve } from "./evade-math";
 import { FolderFace } from "./parts/FolderFace";
 import { STASH_CLOSE_MS, STASH_OPEN_MS, chipTransform, chipTransition } from "./parts/stash-motion";
@@ -59,7 +60,7 @@ const DEFAULT_ITEMS: readonly StashItem[] = [
 const DRIFT_PX = 40;
 const MASS_PX = 100;
 /** 纸片回到槽位的弹簧: 规格交给 matter-js 约束, 未给数值, 这里取 0.6s, bounce 0.2. */
-const HOME_SPRING = springFromFeel(0.6, 0.2);
+const HOME_SPRING = springFromVisualDuration(0.6, 0.2);
 const MS = 1000;
 const FOLD_SCALE = 0.6;
 const BREATH_PX = 3;

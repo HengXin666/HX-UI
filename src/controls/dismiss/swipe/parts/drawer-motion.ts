@@ -1,5 +1,7 @@
 // DrawerRow 行面的运动状态机: 静止, 开合弹簧, 整行划走的定时补间. 每帧推进一次.
-import { snapAxis, springFromFeel, stepAxis, tween, type Axis } from "../../feel";
+import { snapAxis, stepAxis, type Axis } from "../../../../motion/drive/axis";
+import { springFromVisualDuration } from "../../../../motion/spring/fit";
+import { tween } from "../../feel";
 import { ROW } from "../../tokens";
 
 const SPRING = "spring";
@@ -32,7 +34,7 @@ export function stepDrawerMotion(m: DrawerMotion, x: Axis, dt: number, now: numb
 		return { next: DRAWER_IDLE, running: false };
 	}
 	if (m.kind !== SPRING) return { next: m, running: false };
-	const step = stepAxis(x, springFromFeel(m.duration, m.bounce), dt);
+	const step = stepAxis(x, springFromVisualDuration(m.duration, m.bounce), dt);
 	paint(step.current);
 	return step.resting ? { next: DRAWER_IDLE, running: false } : { next: m, running: true };
 }

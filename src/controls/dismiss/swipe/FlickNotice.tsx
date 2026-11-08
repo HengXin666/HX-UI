@@ -4,9 +4,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type JSX, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { makeAxis, snapAxis } from "../feel";
+import { makeAxis, snapAxis } from "../../../motion/drive/axis";
 import { DISMISS_EASE_OUT, NOTICE } from "../tokens";
-import { useFrameLoop } from "../use-frame";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { NoticeCard, type NoticeFuse, type NoticeTone } from "./parts/NoticeCard";
 import { fuseLeft, noticeFadeOpacity, stepNoticeY } from "./parts/notice-motion";
 import { useNoticeDrag } from "./parts/use-notice-drag";

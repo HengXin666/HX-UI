@@ -1,4 +1,5 @@
-import { approach, clamp, smoothstep } from "../feel";
+import { approach } from "../../../motion/spring/follow";
+import { clamp, smoothstep } from "../feel";
 import { CRUSH, RIP, SHRED } from "../tokens";
 
 /** 本文件内重复出现的字面量, 只写一次. */

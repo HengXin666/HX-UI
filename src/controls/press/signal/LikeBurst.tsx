@@ -8,7 +8,7 @@ import { PRESS_SCALE } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { DOUBLE, FADE_MS, HALF, PERCENT, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, transitionOf } from "../tokens";
-import { useMotionValue } from "../use-motion-value";
+import { useDrivenValue } from "../../../motion/drive/use-driven-value";
 
 /** 粒子外飞占整段时长的比例, 其后只淡出. */
 export const LIKE_OUT = 0.4;
@@ -88,8 +88,8 @@ export function LikeBurst({
   const [pressed, setPressed] = useState(false);
   const shown = count + (liked && !defaultLiked ? 1 : 0) - (!liked && defaultLiked ? 1 : 0);
   const previous = useRef(shown);
-  const burst = useMotionValue(1, reduced);
-  const roll = useMotionValue(1, reduced);
+  const burst = useDrivenValue(1, reduced);
+  const roll = useDrivenValue(1, reduced);
   const Icon = ICONS[icon];
   const glyph = size * HALF;
 

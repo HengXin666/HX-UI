@@ -1,5 +1,5 @@
 // ArcKnob 的圆弧几何: 极坐标点, SVG 圆弧路径, 指针位置到读数的换算.
-import { clamp } from "../../motion";
+import { clamp } from "../../math";
 
 const TWO = 2;
 const HALF_TURN = 180;

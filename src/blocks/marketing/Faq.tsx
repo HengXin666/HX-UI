@@ -1,15 +1,15 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
 import * as React from "react";
-import { FAQ_CLASS as C, FAQ_COLUMNS, V105_CLASS as K, V105_SLOT, pickV105Text, type V105Text } from "../../constants/blocks-marketing-v105";
-import { IconSlot } from "../../layout/Icon";
+import { BLOCK_DEFAULT } from "../../constants/blocks";
+import { FAQ_CLASS as C, FAQ_COLUMNS, FAQ_SLOTS, FAQ_VARIANT, V105_CLASS as K, V105_SLOT, pickV105Text, type V105Text } from "../../constants/blocks-marketing-pricing";
 import { Input } from "../../primitives/input";
 import { cn } from "../../primitives/utils";
-import { BlockShell } from "../_shared/BlockShell";
+import { BlockShell, resolveSlots } from "../_shared/BlockShell";
 import { useBlocks } from "../_shared/BlocksProvider";
 import { CtaButton, SectionHeading, renderSectionHeading } from "../_shared/SectionHeading";
-import type { BlockBaseProps, Cta, Rich, SectionHeadingData } from "../_shared/types";
+import type { BlockBaseProps, BlockShellSlot, BlockShellState, Cta, Rich, SectionHeadingData, SlotClassNames } from "../_shared/types";
+import { FaqList } from "./faq/FaqList";
 
 export interface FaqItem {
   /** 锚点 id (可直链到某个问题). */
@@ -35,7 +35,14 @@ export interface FaqContact {
   cta: Cta;
 }
 
-export interface FaqProps extends BlockBaseProps {
+export type FaqVariant = (typeof FAQ_VARIANT)[keyof typeof FAQ_VARIANT];
+
+/** Faq 部件槽位. summary 在 accordion 形态里落到触发按钮; split 改双栏比例, aside 是左栏 (默认 sticky). */
+export type FaqSlot = (typeof FAQ_SLOTS)[number];
+
+export interface FaqProps extends Omit<BlockBaseProps, "classNames"> {
+  /** 外壳 slot + 部件 slot 的类名, 与默认类名合并 (同类工具类后者胜出); 函数形态收到 BlockShell 状态. */
+  classNames?: SlotClassNames<BlockShellSlot | FaqSlot, BlockShellState>;
   heading?: SectionHeadingData;
   items?: FaqItem[];
   /** 显式分组; 给了就忽略 items. */
@@ -47,6 +54,8 @@ export interface FaqProps extends BlockBaseProps {
   /** "还有问题? 联系我们" 尾部 CTA. */
   contact?: FaqContact;
   messages?: Partial<V105Text>;
+  /** details 原生展开 (默认) / accordion 用库 Accordion, 展开收起带高度动画. */
+  variant?: FaqVariant;
   ref?: React.Ref<HTMLElement>;
 }
 
@@ -71,44 +80,6 @@ function haystack(item: FaqItem, locale: string): string {
   return parts.filter(Boolean).join(" ").toLocaleLowerCase(locale);
 }
 
-/** 原生 details: 无 JS 也能展开; 搜索时命中项默认展开. */
-function FaqEntry({ item, expand }: { item: FaqItem; expand: boolean }): React.JSX.Element {
-  return (
-    <details id={item.id} data-slot={V105_SLOT.faqItem} className={C.item} open={item.open || expand || undefined}>
-      <summary className={C.summary}>
-        <span>{item.q}</span>
-        <IconSlot source={ChevronDown} className={C.chevron} />
-      </summary>
-      <div className={C.answer}>{item.a}</div>
-    </details>
-  );
-}
-
-function FaqList({ groups, query, text }: { groups: FaqGroup[]; query: string; text: V105Text }): React.JSX.Element {
-  const visible = groups.filter((group) => group.items.length > 0);
-  if (visible.length === 0) {
-    return (
-      <p role="status" className={K.muted}>
-        {text.noResults}
-      </p>
-    );
-  }
-  return (
-    <div className={C.groupGap}>
-      {visible.map((group, gi) => (
-        <section key={typeof group.title === "string" ? group.title : gi} data-slot={V105_SLOT.faqGroup}>
-          {group.title !== undefined && <h3 className={cn(K.groupTitle, C.groupTitle)}>{group.title}</h3>}
-          <div className={C.list}>
-            {group.items.map((item, ii) => (
-              <FaqEntry key={`${item.id ?? ii}-${query !== ""}`} item={item} expand={query !== ""} />
-            ))}
-          </div>
-        </section>
-      ))}
-    </div>
-  );
-}
-
 function ContactCard({ contact }: { contact: FaqContact }): React.JSX.Element {
   return (
     <div data-slot={V105_SLOT.faqContact} className={C.contact}>
@@ -123,7 +94,9 @@ function ContactCard({ contact }: { contact: FaqContact }): React.JSX.Element {
 
 /**
  * 常见问题: 单栏或双栏 (标题左, 问答右), 分类分组, 搜索过滤, 原生 details 兜底 (无 JS 可展开, 利于 SEO),
- * 尾部"还有问题? 联系我们" CTA.
+ * 尾部"还有问题? 联系我们" CTA. variant="accordion" 换成库 Accordion; classNames 给各部位追加样式.
+ *
+ * .agents/notes/implemented/feature/2026-11-08-library-gaps.md
  */
 export function Faq({
   heading,
@@ -133,6 +106,8 @@ export function Faq({
   searchable = false,
   contact,
   messages,
+  variant = FAQ_VARIANT.details,
+  classNames,
   labels: _labels,
   ref,
   ...shell
@@ -146,6 +121,9 @@ export function Faq({
     () => (query ? all.map((group) => ({ ...group, items: group.items.filter((item) => haystack(item, locale).includes(query)) })) : all),
     [all, query, locale],
   );
+  const state: BlockShellState = { tone: shell.tone ?? BLOCK_DEFAULT.tone, pad: shell.pad ?? BLOCK_DEFAULT.pad, width: shell.width ?? BLOCK_DEFAULT.width, align: shell.align ?? BLOCK_DEFAULT.align };
+  const cls: Partial<Record<FaqSlot, string>> = resolveSlots(classNames, state);
+  const shellClassNames = classNames as BlockBaseProps["classNames"];
   const split = columns === FAQ_COLUMNS.split;
   const titleId = React.useId();
   const body = (
@@ -155,21 +133,21 @@ export function Faq({
           <Input type="search" value={raw} onChange={(event) => setRaw(event.target.value)} placeholder={text.searchFaq} aria-label={text.searchFaq} />
         </div>
       )}
-      <FaqList groups={filtered} query={query} text={text} />
+      <FaqList groups={filtered} query={query} text={text} variant={variant} classNames={cls} />
       {contact && <ContactCard contact={contact} />}
     </div>
   );
   if (!split || !heading) {
     return (
-      <BlockShell ref={ref} heading={heading} renderHeading={renderSectionHeading} {...shell}>
+      <BlockShell ref={ref} heading={heading} renderHeading={renderSectionHeading} {...shell} classNames={shellClassNames}>
         {body}
       </BlockShell>
     );
   }
   return (
-    <BlockShell ref={ref} {...shell} aria-labelledby={shell["aria-labelledby"] ?? titleId}>
-      <div className={C.split} data-columns={columns}>
-        <div className={C.aside}>
+    <BlockShell ref={ref} {...shell} classNames={shellClassNames} aria-labelledby={shell["aria-labelledby"] ?? titleId}>
+      <div className={cn(C.split, cls.split)} data-columns={columns}>
+        <div className={cn(C.aside, cls.aside)}>
           <SectionHeading {...heading} titleId={titleId} />
         </div>
         {body}

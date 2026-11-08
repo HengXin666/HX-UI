@@ -6,7 +6,7 @@
 import { useEffect, useMemo, useRef, useState, type JSX, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { useSpringChannels } from "../kinetics";
+import { useSpringChannels } from "../../../motion/drive/use-spring-channels";
 import { HALF, PX, TURN, colorVar, type HxColor } from "../tokens";
 import { TURN_AXIS, nearestFace, settleTurn, showsBack, spinOf, velocityOf, type TurnAxis, type TurnSample } from "./parts/turn-math";
 

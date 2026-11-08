@@ -4,6 +4,7 @@
 import { FileIcon, PencilIcon, SearchIcon, TerminalIcon, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties, type JSX, type RefObject } from "react";
 import { PRESS_SCALE } from "../../../craft/tokens";
+import { createFrameLoop } from "../../../motion/frame/loop";
 import { prefersReducedMotion } from "../../../primitives/motion";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
@@ -81,13 +82,12 @@ export function RunChip({
     if (!running) return undefined;
     started.current = performance.now();
     setElapsed(0);
-    let frame = 0;
-    const tick = (now: number): void => {
+    const loop = createFrameLoop((_dt, now) => {
       setElapsed(now - started.current);
-      frame = requestAnimationFrame(tick);
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+      return true;
+    });
+    loop.wake();
+    return loop.stop;
   }, [running]);
 
   useEffect(() => {

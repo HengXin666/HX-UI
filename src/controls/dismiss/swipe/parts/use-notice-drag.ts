@@ -1,6 +1,8 @@
 // FlickNotice 的下划手势: 过阈值才起拖并暂停计时, 跟手带阻尼; 松手够远或够快就甩出淡掉, 否则弹回 (减弱动效时补间回位).
 import { useRef, type PointerEvent, type RefObject } from "react";
-import { snapAxis, tween, VelocityTracker, type Axis } from "../../feel";
+import { snapAxis, type Axis } from "../../../../motion/drive/axis";
+import { createFrameLoop } from "../../../../motion/frame/loop";
+import { tween, VelocityTracker } from "../../feel";
 import { NOTICE } from "../../tokens";
 import { noticeDismissed, noticeDrag, noticeStarted } from "../swipe-math";
 
@@ -64,13 +66,12 @@ export function useNoticeDrag(o: NoticeDragOptions): NoticeDrag {
 	/** 减弱动效时不用弹簧, 按 fadeMs 线性补间回 0. */
 	const tweenHome = (from: number): void => {
 		const start = performance.now();
-		const settleTween = (): void => {
+		createFrameLoop(() => {
 			const t = performance.now() - start;
 			snapAxis(o.y.current, tween(from, 0, t, NOTICE.fadeMs));
 			o.paint();
-			if (t < NOTICE.fadeMs) requestAnimationFrame(settleTween);
-		};
-		requestAnimationFrame(settleTween);
+			return t < NOTICE.fadeMs;
+		}).wake();
 	};
 
 	const onPointerEnd = (event: PointerEvent<HTMLDivElement>): void => {

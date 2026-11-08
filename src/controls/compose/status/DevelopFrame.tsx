@@ -6,9 +6,11 @@
 import { useEffect, useLayoutEffect, useRef, useState, type JSX, type ReactNode } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { fitCanvas, inkOf, useFrameLoop } from "../kinetics";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { fitCanvas, inkOf } from "../canvas";
 import {
   BUTTON_TYPE,
+  COMPOSE_FRAME,
   COMPOSE_EASE_IN_OUT,
   COMPOSE_EASE_OUT,
   CSS_PROP,
@@ -101,14 +103,15 @@ export function DevelopFrame({
     drawVeil(ctx, canvas.clientWidth, canvas.clientHeight, sim.current.progress, sim.current.phase, { veil, ink: inkOf(root) }, sweep && !reduced && sweeping(status));
   };
 
-  const kick = useFrameLoop(!reduced, (dt) => {
+  const { wake: kick } = useFrameLoop((dtMs) => {
+    const dt = dtMs / MS_PER_S;
     const state = sim.current;
     state.progress = developApproach(state.progress, target, dt, stageDuration);
     state.phase = (state.phase + DEVELOP.sweepPerS * dt) % 1;
     paint();
     setShown((was) => (blurFor(was) === blurFor(state.progress) ? was : state.progress));
     return state.progress !== target || (sweep && sweeping(status));
-  });
+  }, { ...COMPOSE_FRAME, active: !reduced });
 
   useLayoutEffect(() => {
     if (reduced) {

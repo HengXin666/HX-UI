@@ -6,8 +6,8 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ChangeEvent, type JSX, type KeyboardEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { useFrameLoop } from "../kinetics";
-import { BUTTON_TYPE, COMPOSE_EASE_OUT, COMPOSER, CSS_PROP, HALF, transitionOf } from "../tokens";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { BUTTON_TYPE, COMPOSE_EASE_OUT, COMPOSE_FRAME, COMPOSER, CSS_PROP, HALF, MS_PER_S, transitionOf } from "../tokens";
 import { ListeningBars, SendGlyph, SourcePicker, popIn, type ComposerSource } from "./composer-parts";
 import { FLOW_REST, composerHeight, drawFlow, stepFlow, type Flow } from "./parts/composer-flow";
 
@@ -91,8 +91,8 @@ export function ComposerField({
     setRows(Math.max(1, Math.round(inner / COMPOSER.line)));
   }, [text]);
 
-  const kick = useFrameLoop(ambient && !reduced, (dt) => {
-    flow.current = stepFlow(flow.current, dt);
+  const { wake: kick } = useFrameLoop((dtMs) => {
+    flow.current = stepFlow(flow.current, dtMs / MS_PER_S);
     drawFlow(canvasRef.current, flow.current);
     const idle = flow.current.energy < COMPOSER.idle && flow.current.pulse < COMPOSER.idle;
     if (idle && !focused) {
@@ -100,7 +100,7 @@ export function ComposerField({
       return false;
     }
     return true;
-  });
+  }, { ...COMPOSE_FRAME, active: ambient && !reduced });
 
   useEffect(() => {
     if (focused) kick();

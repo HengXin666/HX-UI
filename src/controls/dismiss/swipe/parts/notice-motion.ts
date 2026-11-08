@@ -1,11 +1,12 @@
 // FlickNotice 的逐帧计算: 卡片纵向弹簧 (甩出或回弹), 甩出后的淡出进度, 引信剩余比例.
-import { springFromFeel, stepAxis, type Axis } from "../../feel";
+import { stepAxis, type Axis } from "../../../../motion/drive/axis";
+import { springFromVisualDuration } from "../../../../motion/spring/fit";
 import { NOTICE } from "../../tokens";
 
 /** 纵向弹簧一步. 拖动中不动; 甩出走无回弹的快弹簧, 否则按 settleBounce 回弹. 返回是否仍在动. */
 export function stepNoticeY(y: Axis, throwing: boolean, dragging: boolean, settleBounce: number, dt: number): boolean {
 	if (dragging || !(throwing || y.current !== y.target || y.velocity !== 0)) return false;
-	const spec = throwing ? springFromFeel(NOTICE.throwDurationS, 0) : springFromFeel(NOTICE.settleDurationS, settleBounce);
+	const spec = throwing ? springFromVisualDuration(NOTICE.throwDurationS, 0) : springFromVisualDuration(NOTICE.settleDurationS, settleBounce);
 	return !stepAxis(y, spec, dt).resting;
 }
 

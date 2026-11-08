@@ -1,7 +1,8 @@
 /** CueTip 气泡的两路弹簧层: 热切换时从上一个气泡位置滑过来, 以及倾斜角. 每帧直接写 DOM. */
 import { useLayoutEffect, useMemo, type RefObject } from "react";
-import { springFromDuration, useSpringChannels, type SpringChannels } from "../../../kinetics";
-import { CUE, PX } from "../../../tokens";
+import { useSpringChannels, type SpringChannelsHandle } from "../../../../../motion/drive/use-spring-channels";
+import { springFromDuration } from "../../../../../motion/spring/fit";
+import { COMPOSE_FIT, CUE, MS_PER_S, PX } from "../../../tokens";
 import { warmth } from "./cue-warmth";
 
 const AXIS_X = "x";
@@ -18,9 +19,9 @@ interface CueTravelOptions {
   readonly reduced: boolean;
 }
 
-export function useCueTravel({ travelRef, leanRef, bubbleRef, travel, open, warmOpen, reduced }: CueTravelOptions): SpringChannels<"lean" | "x" | "y"> {
+export function useCueTravel({ travelRef, leanRef, bubbleRef, travel, open, warmOpen, reduced }: CueTravelOptions): SpringChannelsHandle<"lean" | "x" | "y"> {
   const specs = useMemo(() => {
-    const glide = springFromDuration(travel, CUE.travelBounce);
+    const glide = springFromDuration(travel / MS_PER_S, CUE.travelBounce, COMPOSE_FIT);
     return { lean: CUE.leanSpring, x: glide, y: glide };
   }, [travel]);
   const channels = useSpringChannels(

@@ -6,9 +6,9 @@ import { useEffect, useId, useRef, useState, type JSX, type ReactNode } from "re
 import { ease } from "../../../craft/ease";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { dampedSpring, springFromDuration } from "../spring-fit";
+import { springFromDuration, springFromStiffness } from "../../../motion/spring/fit";
 import { FADE_MS, MS_PER_SECOND, PERCENT, PLAIN_EASE, PRESS_EASE_OUT, clamp, shakeFrames, transitionOf } from "../tokens";
-import { useMotionValue } from "../use-motion-value";
+import { useDrivenValue } from "../../../motion/drive/use-driven-value";
 
 /** 拇指与轨道内壁的间距. */
 export const SWIPE_PAD = 4;
@@ -72,8 +72,8 @@ export interface SwipeConfirmProps {
 export function swipeSprings(speed: number, returnBounce: number) {
   const k = speed * SWIPE_SPEED_STIFFNESS;
   return {
-    commit: dampedSpring(k, SWIPE_MASS, 1),
-    home: dampedSpring(k, SWIPE_MASS, 1 - clamp(returnBounce, 0, SWIPE_RETURN_BOUNCE_MAX)),
+    commit: springFromStiffness(k, 0, { mass: SWIPE_MASS }),
+    home: springFromStiffness(k, returnBounce, { mass: SWIPE_MASS, bounceRange: [0, SWIPE_RETURN_BOUNCE_MAX] }),
   };
 }
 
@@ -112,7 +112,7 @@ export function SwipeConfirm({
   const thumb = height - SWIPE_PAD * 2;
   const travel = Math.max(0, width - thumb - SWIPE_PAD * 2);
   const springs = swipeSprings(speed, returnBounce);
-  const x = useMotionValue(0, reduced);
+  const x = useDrivenValue(0, reduced);
   const drag = useRef<{ startX: number; from: number; lastX: number; lastT: number; v: number } | null>(null);
   const track = useRef<HTMLDivElement>(null);
   const knob = useRef<HTMLButtonElement>(null);

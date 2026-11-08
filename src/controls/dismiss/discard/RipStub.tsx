@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type JSX, type PointerEvent, type ReactNod
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { RIP } from "../tokens";
-import { useFrameLoop } from "../use-frame";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { RipPerforation } from "./parts/rip/RipPerforation";
 import { jagged } from "./parts/rip/rip-shape";
 import { freshRipSim, releaseStub, stepRipSim, type RipSim } from "./parts/rip/rip-sim";

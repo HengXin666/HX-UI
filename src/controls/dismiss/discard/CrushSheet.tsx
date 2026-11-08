@@ -4,9 +4,11 @@
 import { useEffect, useId, useRef, useState, type CSSProperties, type JSX, type KeyboardEvent, type PointerEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { clamp, makeAxis, snapAxis, springFromSettle, stepAxis, type Axis } from "../feel";
+import { makeAxis, snapAxis, stepAxis, type Axis } from "../../../motion/drive/axis";
+import { springFromOmega } from "../../../motion/spring/fit";
+import { clamp } from "../feel";
 import { CRUSH } from "../tokens";
-import { useFrameLoop } from "../use-frame";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { creaseWeight, crushLighting, crushScale } from "./discard-math";
 
 /** 本文件内重复出现的字面量, 只写一次. */
@@ -112,8 +114,8 @@ export function CrushSheet({
 	};
 
 	const loop = useFrameLoop((dtMs) => {
-		const main = springFromSettle(held.current ? crumpleDuration : releaseDuration, CRUSH.settleRate, CRUSH.settleFloorS);
-		const side = springFromSettle(CRUSH.sideDurationS, CRUSH.settleRate, CRUSH.settleFloorS);
+		const main = springFromOmega(CRUSH.settleRate / Math.max(CRUSH.settleFloorS, held.current ? crumpleDuration : releaseDuration));
+		const side = springFromOmega(CRUSH.settleRate / Math.max(CRUSH.settleFloorS, CRUSH.sideDurationS));
 		light.current.target = crushLighting(amount.current.current, memory.current.current);
 		let moving = false;
 		for (const [axis, spec] of [

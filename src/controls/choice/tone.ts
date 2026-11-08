@@ -33,6 +33,14 @@ export const SPEC_EASE_POP = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 /** 分段摆动曲线 (BellToggle SEG_EASE). */
 export const SPEC_EASE_SEGMENT = "cubic-bezier(0.77, 0, 0.175, 1)";
 export const EASE_PLAIN = "ease";
+/** 秒转毫秒. 规格里的弹簧时长是秒, CSS 与 WAAPI 用毫秒. */
+export const MS_PER_S = 1000;
+/** 本族 "时长 + bounce" 换算的口径: 落定包络取 (1 + x) e^(-zeta x), 时长下限 1e-9s. 积分一律用解析解 stepSpringExact. */
+export const CHOICE_FIT = { envelope: "linear", minDurationS: 1e-9 } as const;
+
+export function toMs(seconds: number): number {
+	return seconds * MS_PER_S;
+}
 export const EASE_PLAIN_OUT = "ease-out";
 
 /** 一段 CSS transition 声明: 属性 + 毫秒 + 曲线. 多段用逗号拼接. */

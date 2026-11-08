@@ -4,9 +4,9 @@
 import { useEffect, useRef, useState, type CSSProperties, type JSX, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { makeAxis, snapAxis } from "../feel";
+import { makeAxis, snapAxis } from "../../../motion/drive/axis";
 import { DISMISS_EASE_OUT, ROW } from "../tokens";
-import { useFrameLoop } from "../use-frame";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { DrawerActions, type DismissTone, type DrawerRowAction } from "./parts/DrawerActions";
 import { DRAWER_IDLE, drawerSpring, stepDrawerMotion, type DrawerMotion } from "./parts/drawer-motion";
 import { useDrawerDrag } from "./parts/use-drawer-drag";

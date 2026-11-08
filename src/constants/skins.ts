@@ -3,9 +3,10 @@
  */
 
 /**
- * 六套皮肤. default 即现状, 其余五套以 [data-skin="<name>"] 覆盖语义令牌.
+ * 七套皮肤. default 即现状, 其余六套以 [data-skin="<name>"] 覆盖语义令牌.
  *
  * .agents/notes/implemented/feature/2026-11-02-skins-density.md
+ * .agents/notes/implemented/feature/2026-11-08-library-gaps.md
  */
 export const SKIN = {
   default: "default",
@@ -14,6 +15,7 @@ export const SKIN = {
   fintech: "fintech",
   emerald: "emerald",
   retail: "retail",
+  midnight: "midnight",
 } as const;
 
 export type SkinName = (typeof SKIN)[keyof typeof SKIN];
@@ -60,6 +62,7 @@ export const SKIN_LIST: ReadonlyArray<{
     desc: "Nike / Apple 式, 强对比, 零装饰, 圆角 0 或很大",
     variants: [SKIN_VARIANT.sharp, SKIN_VARIANT.round],
   },
+  { name: SKIN.midnight, label: "午夜紫", desc: "文档站门面同款, 紫调近黑底, 紫色主色, 青绿第二强调; 亮色沿用默认" },
 ];
 
 /** 密度清单: 名称, 中文标签, 适用场景. */

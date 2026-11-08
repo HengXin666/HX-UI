@@ -4,10 +4,12 @@ import { useEffect, useRef, type CSSProperties, type JSX } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { prefersReducedMotion } from "../../../primitives/motion";
 import { cn } from "../../../primitives/utils";
-import { SpringChannels } from "../channels";
-import { springFromDuration } from "../motion";
-import { DURATION_VAR, MOVE_MS, RANGE_EASE, toneVar, type RangeTone } from "../tokens";
-import { playLoop, useFrameLoop } from "../use-frame-loop";
+import { SpringChannels } from "../../../motion/drive/channels";
+import { playLoop } from "../../../motion/frame/play-loop";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { springFromDuration } from "../../../motion/spring/fit";
+import { exactStepper } from "../../../motion/spring/step";
+import { DURATION_VAR, MOVE_MS, RANGE_DT_CAP_MS, RANGE_EASE, RANGE_FIT, toneVar, type RangeTone } from "../tokens";
 
 /** 本文件内重复出现的字面量, 只写一次. */
 const PENDING = "pending";
@@ -112,7 +114,7 @@ export function TaskGlyph({
 	const reduced = useReducedMotion();
 	const ring = useRef<SVGCircleElement>(null);
 	const icon = useRef<SVGSVGElement>(null);
-	const channels = useRef(new SpringChannels());
+	const channels = useRef(new SpringChannels(exactStepper(RANGE_DT_CAP_MS)));
 	const loop = useFrameLoop();
 	const r = (VIEW - strokeWidth) / TWO;
 	const circumference = TWO * Math.PI * r;
@@ -138,7 +140,7 @@ export function TaskGlyph({
 	}, [status, reduced]);
 
 	useEffect(() => {
-		const spring = springFromDuration(GLYPH_UI_SPRING_S, 0);
+		const spring = springFromDuration(GLYPH_UI_SPRING_S, 0, RANGE_FIT);
 		const ch = channels.current;
 		const write = (): void => {
 			if (icon.current) icon.current.style.transform = `scale(${ch.value(SCALE_KEY, 1)})`;
@@ -148,7 +150,7 @@ export function TaskGlyph({
 			write();
 			return;
 		}
-		ch.aim(SCALE_KEY, 1, spring, performance.now(), 0, Math.min(ch.value(SCALE_KEY, 1), GLYPH_UI_FROM));
+		ch.aim(SCALE_KEY, 1, spring, { now: performance.now(), from: Math.min(ch.value(SCALE_KEY, 1), GLYPH_UI_FROM) });
 		loop.start((dt, now) => {
 			const busy = ch.step(dt, now);
 			write();

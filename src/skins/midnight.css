@@ -1,0 +1,61 @@
+/* ============================================================================
+ * 皮肤 midnight: 午夜紫, 与文档站门面的暗色同值
+ * 底色是带紫调的近黑 #120f17, 卡面高一档, 沉一档的色带, 1px 细边, 主色 #a855f7, 青绿做第二强调.
+ * 亮色不另配: 只给阴影参数, 语义色回到默认亮色令牌, 与门面切到亮色时一致.
+ * 只覆盖令牌; 阴影与渐变公式见 foundation.css.
+ * .agents/notes/implemented/feature/2026-11-08-library-gaps.md
+ * ==========================================================================*/
+
+[data-skin="midnight"][data-skin] {
+  --radius: 0.5rem;
+  --font-display: var(--font-sans);
+  --effect-intensity: 1;
+}
+
+[data-skin="midnight"]:not([data-mode="light"]) {
+  color-scheme: dark;
+  --background: #120f17;
+  --foreground: #e9e7ee;
+  --card: #1b1820;
+  --card-foreground: #e9e7ee;
+  --popover: #1e1b24;
+  --popover-foreground: #e9e7ee;
+  --primary: #a855f7;
+  --primary-foreground: #ffffff;
+  --link: #c4a1ff;
+  --secondary: #221f29;
+  --secondary-foreground: #e9e7ee;
+  --muted: #141218;
+  --muted-foreground: #9a97a2;
+  --accent: #26232d;
+  --accent-foreground: #f4f2f7;
+  --heading: #f7f6f9;
+  --control-hover: #2a2731;
+  --border: #2a2731;
+  --border-muted: #211e27;
+  --border-subtle: #1f1c25;
+  --border-strong: #3a3642;
+  --input: #2e2a35;
+  --ring: #b98cff;
+  --surface-sunken: #0e0b13;
+  --surface-raised: #1b1820;
+  --surface-overlay: #221f28;
+  --primary-subtle: rgb(168 85 247 / 0.16);
+  --primary-glow: rgb(168 85 247 / 0.32);
+  --accent-2: #5eead4;
+  --accent-2-foreground: #0e0b13;
+  --accent-2-subtle: rgb(94 234 212 / 0.14);
+  /* 阴影参数贴近默认暗色那六档 (纯黑, 约 2 倍透明度) */
+  --skin-shadow: 0 0 0;
+  --skin-shadow-a: 2;
+  --skin-shadow-blur: 1;
+}
+
+[data-skin="midnight"][data-mode="light"],
+[data-mode="light"] [data-skin="midnight"] {
+  color-scheme: light;
+  /* 阴影参数贴近默认亮色那六档 (hsl(213 30% 20%), 约一半透明度) */
+  --skin-shadow: 36 49 66;
+  --skin-shadow-a: 0.5;
+  --skin-shadow-blur: 1;
+}

@@ -124,3 +124,27 @@ export function dealDelays(count: number, first: number, last: number): number[]
 export function ratio(part: number, whole: number): number {
   return whole === 0 ? 0 : part / whole;
 }
+
+/** 按进度截出的折线: 截到的点 (末点是插值点) 与该处的插值读数. */
+export interface Reveal {
+  points: Point[];
+  value: number | undefined;
+}
+
+/**
+ * 按 0..1 的进度截折线. 进度按点序均分 (x 本就均分, 所以等于横向进度), 越界夹到两端.
+ * 0 只剩首点, 1 原样返回全部点; 末点与读数都在相邻两点间线性插值.
+ */
+export function revealSeries(points: readonly Point[], values: readonly number[], progress: number): Reveal {
+  const count = Math.min(points.length, values.length);
+  if (count === 0) return { points: [], value: undefined };
+  const at = Math.min(1, Math.max(0, progress)) * (count - 1);
+  const index = Math.floor(at);
+  const t = at - index;
+  const head = points.slice(0, index + 1);
+  if (t <= 0 || index >= count - 1) return { points: head, value: values[index] };
+  const [x0, y0] = points[index];
+  const [x1, y1] = points[index + 1];
+  const tip: Point = [x0 + (x1 - x0) * t, y0 + (y1 - y0) * t];
+  return { points: [...head, tip], value: values[index] + (values[index + 1] - values[index]) * t };
+}

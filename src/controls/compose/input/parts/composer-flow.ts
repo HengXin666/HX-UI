@@ -1,5 +1,6 @@
 /** ComposerField 底边流光: 打字能量与提交脉冲的逐帧模拟, 画布绘制, 行数到高度的换算. */
-import { approach, decay, fitCanvas, inkOf } from "../../kinetics";
+import { approach, decay } from "../../../../motion/spring/follow";
+import { fitCanvas, inkOf } from "../../canvas";
 import { COMPOSER, HALF } from "../../tokens";
 
 /** 流光段占底边宽度的比例与静止时的基础透明度. */

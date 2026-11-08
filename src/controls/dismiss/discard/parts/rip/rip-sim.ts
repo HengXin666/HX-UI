@@ -1,6 +1,7 @@
 // RipStub 的逐帧模拟状态与一步推进: 悬停倾斜弹簧, 撕下后的落体, 未撕时存根回位, 票身反冲.
 import { stepSpring } from "../../../../../craft/spring";
-import { approach, clamp } from "../../../feel";
+import { approach } from "../../../../../motion/spring/follow";
+import { clamp } from "../../../feel";
 import { RIP } from "../../../tokens";
 import { fallStep, recoilStep } from "../../discard-math";
 

@@ -66,6 +66,7 @@ export const SOCIAL_DEFAULT = {
   carouselPerView: 2,
   marqueeRows: 1,
   marqueeDuration: 60,
+  marqueeDirection: "horizontal",
   caseVariant: "tabs",
   changelogVariant: "list",
   changelogGroup: "none",
@@ -165,7 +166,14 @@ export const TESTIMONIALS_CLASS = {
   marqueeItem: "w-[min(24rem,85cqw)] self-stretch",
   marqueePaused: "[&_.hx-marquee-track]:[animation-play-state:paused]",
   marqueeBar: "flex justify-end",
+  /** 纵向: 外层给容器查询, 内层网格按列数逐级展开; 高度可由 className 覆盖. */
+  marqueeVertical: "@container",
+  marqueeColumns: "grid h-[min(40rem,80svh)] items-start gap-6 overflow-hidden",
+  marqueeColumnItem: "w-full",
 } as const;
+
+/** 纵向跑马灯的列显隐: 与 SOCIAL_COLS_CLASS 同档, 窄屏只留第一列. 下标即列序. */
+export const MARQUEE_LANE_CLASS = ["", "hidden @2xl:flex", "hidden @5xl:flex", "hidden @6xl:flex"] as const;
 
 /** CaseStudies: tabs / accordion 与面板. */
 export const CASE_CLASS = {

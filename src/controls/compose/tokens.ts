@@ -24,6 +24,10 @@ export const DPR_CAP = 2;
 export const FIRST_FRAME_S = 0.016;
 export const HALF = 2;
 export const MS_PER_S = 1000;
+/** 本族 "时长 + bounce" 换算的口径: 落定判据取常见 UI 动画库的 duration 包络, 时长下限 1ms. */
+export const COMPOSE_FIT = { envelope: "slope", minDurationS: 1 / MS_PER_S } as const;
+/** 本族画布帧循环的口径: 帧长上限, 第一帧帧长, 页面隐藏时停帧. 回调里的 dt 自行换成秒. */
+export const COMPOSE_FRAME = { maxDtMs: DT_CAP_S * MS_PER_S, firstFrameMs: FIRST_FRAME_S * MS_PER_S, pauseWhenHidden: true } as const;
 
 /** 像素与字号的尺子. 规格里同一个数在多件里各有含义, 只在这里写一次. */
 export const SCALE = { s3: 3, s4: 4, s6: 6, s8: 8, s10: 10, s12: 12, s14: 14, s16: 16, s22: 22 } as const;

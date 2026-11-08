@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState, type CSSProperties, type JSX, type KeyboardEvent, type PointerEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { clamp, decimalsOf, snap, springFromDuration, stepSpringFine, MS_PER_S } from "../motion";
-import { DURATION_VAR, RANGE_EASE, toneVar, type RangeTone } from "../tokens";
-import { useFrameLoop } from "../use-frame-loop";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { springFromDuration } from "../../../motion/spring/fit";
+import { stepSpringExact } from "../../../motion/spring/step";
+import { clamp, decimalsOf, snap } from "../math";
+import { DURATION_VAR, MS_PER_S, RANGE_DT_CAP_MS, RANGE_EASE, RANGE_FIT, toneVar, type RangeTone } from "../tokens";
 import { KEY, keyStep, PERCENT } from "./keys";
 import { NudgeDelta } from "./parts/NudgeDelta";
 import { NUDGE_LEAN_PX, NUDGE_RETURN_BOUNCE, NUDGE_SIZES, nudgeMultiplier, rubberOffset, scrubTo, type NudgeSize } from "./parts/nudge-scrub";
@@ -108,9 +110,9 @@ export function NudgeField({
 			offset.current.v = 0;
 			return;
 		}
-		const spring = springFromDuration(returnDuration / MS_PER_S, NUDGE_RETURN_BOUNCE);
+		const spring = springFromDuration(returnDuration / MS_PER_S, NUDGE_RETURN_BOUNCE, RANGE_FIT);
 		loop.start((dt) => {
-			const s = stepSpringFine(offset.current.x, offset.current.v, 0, spring, dt);
+			const s = stepSpringExact(offset.current.x, offset.current.v, 0, spring, dt, RANGE_DT_CAP_MS);
 			offset.current.v = s.velocity;
 			writeOffset(s.current);
 			return !s.resting;

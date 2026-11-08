@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type CSSProperties, type JSX, type MouseEv
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { DOUBLE, MS_PER_SECOND, PERCENT, PRESS_EASE_OUT, clamp } from "../tokens";
-import { useMotionValue } from "../use-motion-value";
+import { useDrivenValue } from "../../../motion/drive/use-driven-value";
 
 /** 升降与倾斜共用的弹簧: 刚度 380, 阻尼 10, 质量 1 (规格原值, 已是引擎参数). */
 export const LIFT_SPRING = { stiffness: 380, damping: 10, mass: 1 } as const;
@@ -76,8 +76,8 @@ export function Liftoff({
   style,
 }: LiftoffProps): JSX.Element {
   const reduced = useReducedMotion();
-  const y = useMotionValue(0, reduced);
-  const tilt = useMotionValue(0, reduced);
+  const y = useDrivenValue(0, reduced);
+  const tilt = useDrivenValue(0, reduced);
   const [airborne, setAirborne] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const body = useRef<HTMLButtonElement>(null);

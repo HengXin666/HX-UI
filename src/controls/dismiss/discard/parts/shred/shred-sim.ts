@@ -1,5 +1,7 @@
 // ShredBin 的逐帧模拟: 堆叠卡片的位置弹簧与拖动回落, 送入中纸张的居中, 进纸, 顿挫与碎条.
-import { approach, clamp, makeAxis, stepAxis, type Axis } from "../../../feel";
+import { makeAxis, stepAxis, type Axis } from "../../../../../motion/drive/axis";
+import { approach } from "../../../../../motion/spring/follow";
+import { clamp } from "../../../feel";
 import { SHRED } from "../../../tokens";
 import { cutStrips, makeStrip, stepStrip, tugAfter, type Strip } from "../../discard-math";
 

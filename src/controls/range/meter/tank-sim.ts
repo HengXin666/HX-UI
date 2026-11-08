@@ -1,4 +1,4 @@
-import { clamp } from "../motion";
+import { clamp } from "../math";
 
 /** 本文件内重复出现的字面量, 只写一次. */
 const TWO = 2;

@@ -5,7 +5,10 @@ import { useEffect, useLayoutEffect, useReducer, useRef, useState, type JSX, typ
 import { PRESS_SCALE } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { SpringDriver, springFromBounce } from "../physics";
+import type { SpringSpec } from "../../../craft/spring";
+import { SpringDriver } from "../../../motion/drive/driver";
+import { springFromStiffness } from "../../../motion/spring/fit";
+import { stepSpringExact } from "../../../motion/spring/step";
 import { PROP_BACKGROUND, PROP_COLOR, PROP_OPACITY, PROP_TRANSFORM, PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
 
 /** 尺寸档: [高, 字号, 横向内边距]. */
@@ -42,15 +45,15 @@ export interface GelItem {
 /** 一次跨 far 项的三层弹簧与起步延迟 (秒). inFlight 时不再错峰. */
 export function gelPlan(far: number, stiffness: number, bounce: number, stagger: number, inFlight: boolean): {
 	readonly delayS: number;
-	readonly layers: ReadonlyArray<{ x: ReturnType<typeof springFromBounce>; squash: ReturnType<typeof springFromBounce>; squashDelayS: number }>;
+	readonly layers: ReadonlyArray<{ x: SpringSpec; squash: SpringSpec; squashDelayS: number }>;
 } {
 	const k = stiffness * (1 - GEL_FAR_SOFTEN * Math.min(far, GEL_FAR_CAP));
 	const delayS = inFlight ? 0 : (far * stagger) / MS_PER_S;
 	return {
 		delayS,
 		layers: LAYERS.map((j) => ({
-			x: springFromBounce(k * (1 + GEL_LAYER.stiffen * j), GEL_MASS - GEL_LAYER.massStep * j, Math.min(GEL_LAYER.bounceCap, bounce + GEL_LAYER.bounceStep * j)),
-			squash: springFromBounce(k * (1 - GEL_LAYER.squashSoften * j), GEL_MASS + GEL_LAYER.squashMassStep * j, bounce),
+			x: springFromStiffness(k * (1 + GEL_LAYER.stiffen * j), Math.min(GEL_LAYER.bounceCap, bounce + GEL_LAYER.bounceStep * j), { mass: GEL_MASS - GEL_LAYER.massStep * j }),
+			squash: springFromStiffness(k * (1 - GEL_LAYER.squashSoften * j), bounce, { mass: GEL_MASS + GEL_LAYER.squashMassStep * j }),
 			squashDelayS: delayS + GEL_LAYER.squashDelayS * j,
 		})),
 	};
@@ -108,7 +111,7 @@ export function GelRadio({
 	const [height, fontSize, padX] = GEL_SIZES[size];
 	const [, redraw] = useReducer((n: number) => n + 1, 0);
 	const layers = useRef<Layer[] | null>(null);
-	if (!layers.current) layers.current = LAYERS.map(() => ({ x: new SpringDriver(0, redraw), w: new SpringDriver(0, redraw), sy: new SpringDriver(1, redraw) }));
+	if (!layers.current) layers.current = LAYERS.map(() => ({ x: new SpringDriver(0, redraw, stepSpringExact), w: new SpringDriver(0, redraw, stepSpringExact), sy: new SpringDriver(1, redraw, stepSpringExact) }));
 	const refs = useRef<Array<HTMLButtonElement | null>>([]);
 	const previous = useRef<number | null>(null);
 	const [pressed, setPressed] = useState<number | null>(null);

@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion"
 import { cn } from "../../../primitives/utils";
 import { clamp } from "../feel";
 import { SHRED } from "../tokens";
-import { useFrameLoop } from "../use-frame";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { moveItem, stackDelay } from "./discard-math";
 import { ShredStrips } from "./parts/shred/ShredStrips";
 import { paintCard, paintFeed } from "./parts/shred/shred-paint";

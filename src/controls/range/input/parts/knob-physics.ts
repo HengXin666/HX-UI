@@ -1,5 +1,9 @@
 // ArcKnob 的读数物理: 手感常数, 弹簧换算, 惯性衰减, 以及 跟随 / 滑行 / 吸附 三态的逐帧推进.
-import { DT_CAP_S, MS_PER_S, clamp, expFollow, springFromStiffness, stepSpringFine } from "../../motion";
+import { springFromStiffness } from "../../../../motion/spring/fit";
+import { approach } from "../../../../motion/spring/follow";
+import { stepSpringExact } from "../../../../motion/spring/step";
+import { clamp } from "../../math";
+import { DT_CAP_S, MS_PER_S, RANGE_BOUNCE_RANGE, RANGE_DT_CAP_MS } from "../../tokens";
 
 /** 盘心死区半径 (px). 指针离圆心这么近时角度不可靠, 不更新目标. */
 export const KNOB_DEAD_PX = 44;
@@ -39,7 +43,7 @@ export interface KnobState {
 
 /** 规格的 speed 解释为弹簧固有角频率 (rad/s), stiffness = speed^2, 阻尼 = 临界 * (1 - bounce). */
 export function knobSpring(speed: number, bounce: number): ReturnType<typeof springFromStiffness> {
-	return springFromStiffness(speed * speed, bounce);
+	return springFromStiffness(speed * speed, bounce, { bounceRange: RANGE_BOUNCE_RANGE });
 }
 
 /** 惯性一帧: 速度按 DECEL^(dt * 60) 衰减. */
@@ -58,7 +62,7 @@ export interface KnobStepOptions {
 /** 推进一帧. 返回是否已完全静止 (读数与彗尾都停了). */
 export function stepKnob(s: KnobState, dtMs: number, { speed, momentum, flickBounce, snapFraction }: KnobStepOptions): boolean {
 	const dt = clamp(dtMs / MS_PER_S, 0, DT_CAP_S);
-	if (s.mode === "follow") s.r = expFollow(s.r, s.target, dt, KNOB_TAU_FOLLOW);
+	if (s.mode === "follow") s.r = approach(s.r, s.target, dt, KNOB_TAU_FOLLOW);
 	else if (s.mode === "coast") {
 		s.r += s.v * dt * momentum;
 		s.v = coastStep(s.v, dt);
@@ -70,14 +74,14 @@ export function stepKnob(s: KnobState, dtMs: number, { speed, momentum, flickBou
 			s.mode = SPRING;
 		}
 	} else if (s.mode === SPRING) {
-		const next = stepSpringFine(s.r, s.v, s.target, knobSpring(speed, s.bounce), dtMs);
+		const next = stepSpringExact(s.r, s.v, s.target, knobSpring(speed, s.bounce), dtMs, RANGE_DT_CAP_MS);
 		s.r = next.current;
 		s.v = next.velocity;
 		if (next.resting) s.mode = IDLE;
 	}
 	const vRaw = dt === 0 ? 0 : (s.r - s.rPrev) / dt;
 	s.rPrev = s.r;
-	s.tail = expFollow(s.tail, vRaw, dt, KNOB_TAU_V);
+	s.tail = approach(s.tail, vRaw, dt, KNOB_TAU_V);
 	const quiet = s.mode === IDLE && Math.abs(s.tail) < COAST_STOP;
 	if (quiet) s.tail = 0;
 	return quiet;

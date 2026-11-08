@@ -1,6 +1,7 @@
 // DrawerRow 的横向拖动: 先判轴, 横向才接管; 拖动中跟手带阻尼, 越过 commitAt 震动提示; 松手按惯性投射决定开, 合或划走.
 import { useRef, type PointerEvent, type RefObject } from "react";
-import { snapAxis, VelocityTracker, type Axis } from "../../feel";
+import { snapAxis, type Axis } from "../../../../motion/drive/axis";
+import { VelocityTracker } from "../../feel";
 import { ROW } from "../../tokens";
 import { rowDrag, rowRelease } from "../swipe-math";
 

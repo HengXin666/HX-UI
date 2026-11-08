@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState, type JSX, type KeyboardEvent, type PointerEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { clamp, pushSample, snap, velocityOf, type MotionSample } from "../motion";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { clamp, pushSample, snap, velocityOf, type MotionSample } from "../math";
 import { toneVar, type RangeTone } from "../tokens";
-import { useFrameLoop } from "../use-frame-loop";
 import { keyStep } from "./keys";
 import { arcPath, polar, pointerToFraction } from "./parts/arc-geometry";
 import { KNOB_DEAD_PX, KNOB_DRAG_PX, KNOB_STALE_MS, KNOB_V_FLICK, KNOB_V_FULL, stepKnob, type KnobState } from "./parts/knob-physics";

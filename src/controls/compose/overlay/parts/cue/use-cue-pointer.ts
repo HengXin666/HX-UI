@@ -1,6 +1,6 @@
 /** CueTip 的指针处理: 按横扫速度给气泡加倾斜弹簧, 触屏长按弹出, 滑开 holdSlop 取消. */
 import { useEffect, useRef, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
-import type { SpringChannels } from "../../../kinetics";
+import type { SpringChannelsHandle } from "../../../../../motion/drive/use-spring-channels";
 import { CUE, MS_PER_S, type CueSide } from "../../../tokens";
 import { leanFor } from "./cue-warmth";
 
@@ -8,7 +8,7 @@ const POINTER_TOUCH = "touch";
 const LEAN = "lean";
 
 interface CuePointerOptions {
-  readonly channels: SpringChannels<"lean" | "x" | "y">;
+  readonly channels: SpringChannelsHandle<"lean" | "x" | "y">;
   /** 弹出计时器, 与悬停延迟共用. */
   readonly openTimer: RefObject<number>;
   readonly lean: number;

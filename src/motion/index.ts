@@ -39,3 +39,28 @@ export {
   type OrchestrationPresetName,
   type OrchestrationRole,
 } from "./orchestration";
+export {
+  MIN_DAMPING_RATIO,
+  SETTLE_RESIDUAL,
+  dampingRatio,
+  overshootOf,
+  settleRoot,
+  springFromDuration,
+  springFromOmega,
+  springFromStiffness,
+  springFromVisualDuration,
+  type DurationFitOptions,
+  type SettleEnvelope,
+  type StiffnessFitOptions,
+  type VisualFitOptions,
+} from "./spring/fit";
+export { exactStepper, stepSpringExact, type SpringIntegrator } from "./spring/step";
+export { approach, decay } from "./spring/follow";
+export { FIRST_FRAME_MS, createFrameLoop, frameDelta, type FrameClockOptions, type FrameLoop, type FrameTick } from "./frame/loop";
+export { useFrameLoop, type FrameLoopOptions } from "./frame/use-frame-loop";
+export { playLoop } from "./frame/play-loop";
+export { makeAxis, snapAxis, stepAxis, type Axis } from "./drive/axis";
+export { SpringChannels, type AimOptions } from "./drive/channels";
+export { useSpringChannels, type SpringChannelsHandle } from "./drive/use-spring-channels";
+export { SpringDriver, useSpringValue, type DriveOptions } from "./drive/driver";
+export { useDrivenValue, type DrivenValue } from "./drive/use-driven-value";

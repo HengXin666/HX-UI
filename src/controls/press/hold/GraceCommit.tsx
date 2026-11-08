@@ -6,7 +6,7 @@ import { PRESS_SCALE } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, transitionOf } from "../tokens";
-import { useMotionValue } from "../use-motion-value";
+import { useDrivenValue } from "../../../motion/drive/use-driven-value";
 
 export const GRACE_DEFAULTS = { radius: 22, undoWindow: 4000, crossfadeMs: 200 } as const;
 /** 引线是 1px 线, 与库的线宽规则一致. */
@@ -86,7 +86,7 @@ export function GraceCommit({
     onPhaseChange?.(next);
   };
 
-  const burn = useMotionValue(0, false, (value) => {
+  const burn = useDrivenValue(0, false, (value) => {
     if (value < 1) return;
     onFuseEnd?.();
     if (commitOn !== ON_PRESS) onCommit?.();

@@ -10,14 +10,14 @@ import {
   type CarouselPerView,
   type QuoteClampLines,
   type SocialColumns,
-} from "../../constants/blocks-marketing-v104";
+} from "../../constants/blocks-marketing-proof";
 import { cn } from "../../primitives/utils";
 import { BlockShell } from "../_shared/BlockShell";
 import { useBlockLabels } from "../_shared/BlocksProvider";
 import { renderSectionHeading } from "../_shared/SectionHeading";
 import type { BlockBaseProps, Logo, Person, Rich, SectionHeadingData } from "../_shared/types";
 import { TestimonialCard } from "./social-proof/TestimonialCard";
-import { TestimonialCarousel, TestimonialMarquee } from "./social-proof/TestimonialTracks";
+import { TestimonialCarousel, TestimonialMarquee, type TestimonialMarqueeProps } from "./social-proof/TestimonialTracks";
 
 export type TestimonialsVariant = (typeof TESTIMONIALS_VARIANT)[keyof typeof TESTIMONIALS_VARIANT];
 
@@ -48,7 +48,8 @@ export interface TestimonialsProps extends BlockBaseProps {
   /** 评分满分. 默认 5. */
   ratingMax?: number;
   carousel?: { perView?: CarouselPerView; loop?: boolean };
-  marquee?: { rows?: number; duration?: number; pauseOnHover?: boolean };
+  /** marquee 形态的参数; direction 与 durations 见 TestimonialMarquee. */
+  marquee?: Pick<TestimonialMarqueeProps, "rows" | "duration" | "durations" | "direction" | "pauseOnHover">;
   ref?: React.Ref<HTMLElement>;
 }
 
@@ -97,6 +98,8 @@ export function Testimonials({
         slides={items.map((item) => card(item, false))}
         rows={marquee?.rows}
         duration={marquee?.duration}
+        durations={marquee?.durations}
+        direction={marquee?.direction}
         pauseOnHover={marquee?.pauseOnHover}
         labels={labels}
       />

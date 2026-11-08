@@ -5,8 +5,11 @@ import { useEffect, useId, useState, type JSX } from "react";
 import { PRESS_SCALE } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { springFromDuration, toMs, useSpringValue } from "../physics";
-import { PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
+import type { SpringSpec } from "../../../craft/spring";
+import { useSpringValue } from "../../../motion/drive/driver";
+import { springFromDuration } from "../../../motion/spring/fit";
+import { stepSpringExact } from "../../../motion/spring/step";
+import { CHOICE_FIT, PX, SPEC_EASE_OUT, toMs, toneVar, transition, type ChoiceTone } from "../tone";
 
 /** 本文件内重复出现的字面量, 只写一次. */
 const PAREN_CLOSE = ")";
@@ -53,11 +56,11 @@ export interface TallyCheckProps {
 }
 
 /** 勾选的三根弹簧: 填充按 bounce 回弹, 勾线比填充早落定, 删除线不回弹. */
-export function tallySprings(bounce: number): { fill: ReturnType<typeof springFromDuration>; tick: ReturnType<typeof springFromDuration>; strike: ReturnType<typeof springFromDuration> } {
+export function tallySprings(bounce: number): { fill: SpringSpec; tick: SpringSpec; strike: SpringSpec } {
 	return {
-		fill: springFromDuration(TALLY_VISUAL_DURATION, bounce),
-		tick: springFromDuration(TALLY_VISUAL_DURATION * TALLY_RULE_END, bounce),
-		strike: springFromDuration(TALLY_VISUAL_DURATION, 0),
+		fill: springFromDuration(TALLY_VISUAL_DURATION, bounce, CHOICE_FIT),
+		tick: springFromDuration(TALLY_VISUAL_DURATION * TALLY_RULE_END, bounce, CHOICE_FIT),
+		strike: springFromDuration(TALLY_VISUAL_DURATION, 0, CHOICE_FIT),
 	};
 }
 
@@ -90,9 +93,9 @@ export function TallyCheck({
 	const [inner, setInner] = useState(defaultChecked);
 	const on = checked ?? inner;
 	const [pressed, setPressed] = useState(false);
-	const [fill, fillDriver] = useSpringValue(on ? 1 : 0);
-	const [tick, tickDriver] = useSpringValue(on ? 1 : 0);
-	const [rule, ruleDriver] = useSpringValue(on ? 1 : 0);
+	const [fill, fillDriver] = useSpringValue(on ? 1 : 0, stepSpringExact);
+	const [tick, tickDriver] = useSpringValue(on ? 1 : 0, stepSpringExact);
+	const [rule, ruleDriver] = useSpringValue(on ? 1 : 0, stepSpringExact);
 
 	useEffect(() => {
 		const target = on ? 1 : 0;

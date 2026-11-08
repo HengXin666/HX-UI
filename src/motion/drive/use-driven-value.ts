@@ -2,13 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { stepSpring, type SpringSpec } from "../../craft/spring";
-import { MS_PER_SECOND } from "./tokens";
+import { createFrameLoop, type FrameLoop } from "../frame/loop";
+import type { SpringIntegrator } from "../spring/step";
 
-const FIRST_FRAME_MS = 16;
-const IDLE = "idle";
-
-/** 一个可中断的动值: 弹簧或定时补间, 都从当前值和当前速度出发. */
-export interface MotionValue {
+/**
+ * 一个可中断的动值: 弹簧或定时补间, 都从当前值和当前速度出发. 值写进 React 状态.
+ * reduced 为真时所有动画直接落到终值; 落定 (弹簧静止或补间走完) 时回调 onSettle.
+ *
+ * .agents/notes/implemented/feature/2026-11-08-motion-spring-frame.md
+ */
+export interface DrivenValue {
   readonly value: number;
   /** 弹簧走向 target. 可带初速度 (单位/秒). 中途再调用不清速度. */
   readonly spring: (target: number, spec: SpringSpec, velocity?: number) => void;
@@ -32,86 +35,71 @@ interface Drive {
   curve: (t: number) => number;
 }
 
+const IDLE = "idle";
+const SPRING = "spring";
+const TWEEN = "tween";
+const MS_PER_S = 1000;
 const linear = (t: number): number => t;
 
 /**
- * 按压族唯一的 rAF 驱动. 弹簧一步交给 craft/spring 的 stepSpring, 本身只管帧和中断.
- * reduced 为真时所有动画直接落到终值.
- *
  * @param initial 初值.
  * @param reduced 是否减弱动效.
- * @param onSettle 动画落定 (弹簧静止或补间走完) 时回调.
+ * @param onSettle 动画落定时回调.
+ * @param integrate 弹簧积分器, 默认 craft 的半隐式 stepSpring.
  */
-export function useMotionValue(initial: number, reduced: boolean, onSettle?: (value: number) => void): MotionValue {
+export function useDrivenValue(initial: number, reduced: boolean, onSettle?: (value: number) => void, integrate: SpringIntegrator = stepSpring): DrivenValue {
   const [value, setValue] = useState(initial);
   const current = useRef(initial);
   const speed = useRef(0);
   const drive = useRef<Drive>({ kind: IDLE, from: initial, target: initial, ms: 0, elapsed: 0, curve: linear });
-  const frame = useRef(0);
-  const last = useRef(0);
   const paused = useRef(false);
   const settle = useRef(onSettle);
   settle.current = onSettle;
-
-  const stop = (): void => {
-    if (frame.current) cancelAnimationFrame(frame.current);
-    frame.current = 0;
-  };
+  const integrateRef = useRef(integrate);
+  integrateRef.current = integrate;
+  const loop = useRef<FrameLoop | null>(null);
 
   const write = (next: number): void => {
     current.current = next;
     setValue(next);
   };
 
-  const finish = (): void => {
-    drive.current.kind = IDLE;
-    speed.current = 0;
-    write(drive.current.target);
-    stop();
-    settle.current?.(drive.current.target);
-  };
-
-  const tick = (now: number): void => {
-    const dt = last.current ? now - last.current : FIRST_FRAME_MS;
-    last.current = now;
-    const d = drive.current;
-    if (d.kind === "spring" && d.spec) {
-      const step = stepSpring(current.current, speed.current, d.target, d.spec, dt);
-      speed.current = step.velocity;
-      write(step.current);
-      if (step.resting) {
+  if (!loop.current) {
+    const finish = (): void => {
+      drive.current.kind = IDLE;
+      speed.current = 0;
+      write(drive.current.target);
+      loop.current?.stop();
+      settle.current?.(drive.current.target);
+    };
+    loop.current = createFrameLoop((dt) => {
+      const d = drive.current;
+      if (d.kind === SPRING && d.spec) {
+        const step = integrateRef.current(current.current, speed.current, d.target, d.spec, dt);
+        speed.current = step.velocity;
+        write(step.current);
+        if (!step.resting) return true;
         finish();
-        return;
+        return false;
       }
-    } else if (d.kind === "tween") {
+      if (d.kind !== TWEEN) return false;
       if (!paused.current) d.elapsed += dt;
       const t = Math.min(1, d.elapsed / d.ms);
       const prev = current.current;
       write(d.from + (d.target - d.from) * d.curve(t));
-      speed.current = dt > 0 ? ((current.current - prev) / dt) * MS_PER_SECOND : 0;
-      if (t >= 1) {
-        finish();
-        return;
-      }
-    } else {
-      stop();
-      return;
-    }
-    frame.current = requestAnimationFrame(tick);
-  };
+      speed.current = dt > 0 ? ((current.current - prev) / dt) * MS_PER_S : 0;
+      if (t < 1) return true;
+      finish();
+      return false;
+    });
+  }
 
-  const wake = (): void => {
-    if (frame.current) return;
-    last.current = 0;
-    frame.current = requestAnimationFrame(tick);
-  };
-
-  useEffect(() => stop, []);
+  useEffect(() => () => loop.current?.stop(), []);
 
   const jump = (next: number): void => {
     drive.current = { ...drive.current, kind: IDLE, target: next };
     speed.current = 0;
-    stop();
+    loop.current?.stop();
     write(next);
   };
 
@@ -130,8 +118,8 @@ export function useMotionValue(initial: number, reduced: boolean, onSettle?: (va
         return;
       }
       if (velocity !== undefined) speed.current = velocity;
-      drive.current = { kind: "spring", spec, from: current.current, target, ms: 0, elapsed: 0, curve: linear };
-      wake();
+      drive.current = { kind: SPRING, spec, from: current.current, target, ms: 0, elapsed: 0, curve: linear };
+      loop.current?.wake();
     },
     tween: (target, ms, curve = linear) => {
       if (reduced || ms <= 0) {
@@ -139,8 +127,8 @@ export function useMotionValue(initial: number, reduced: boolean, onSettle?: (va
         settle.current?.(target);
         return;
       }
-      drive.current = { kind: "tween", from: current.current, target, ms, elapsed: 0, curve };
-      wake();
+      drive.current = { kind: TWEEN, from: current.current, target, ms, elapsed: 0, curve };
+      loop.current?.wake();
     },
   };
 }

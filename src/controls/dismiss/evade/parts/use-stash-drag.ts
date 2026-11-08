@@ -1,6 +1,7 @@
 // StashFolder 的纸片拖动: 过 dragMin 才起拖, 限制在文件夹上方的活动区内; 没拖动的松手算选中, 拖过的松手回到槽位.
 import { useRef, type PointerEvent, type RefObject } from "react";
-import { clamp, snapAxis, type Axis } from "../../feel";
+import { snapAxis, type Axis } from "../../../../motion/drive/axis";
+import { clamp } from "../../feel";
 import { STASH } from "../../tokens";
 import type { ChipSlot } from "../evade-math";
 

@@ -5,14 +5,15 @@ import { useEffect, useId, useRef, useState, type JSX, type KeyboardEvent } from
 import { PRESS_SCALE } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { springFromDuration, useSpringValue } from "../physics";
-import { EASE_PLAIN, PROP_BACKGROUND, PROP_TRANSFORM, PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
+import { useSpringValue } from "../../../motion/drive/driver";
+import { springFromDuration } from "../../../motion/spring/fit";
+import { stepSpringExact } from "../../../motion/spring/step";
+import { CHOICE_FIT, EASE_PLAIN, MS_PER_S, PROP_BACKGROUND, PROP_TRANSFORM, PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
 import { DriftMenu } from "./parts/DriftMenu";
 import { DRIFT_MS, DRIFT_NONE, DRIFT_PAD, DRIFT_SHIFT_PX, DRIFT_SIZES, driftOffset, type DriftOption, type DriftSize } from "./parts/drift-spec";
 import { useDriftPop } from "./parts/use-drift-pop";
 
 const PAREN_CLOSE = ")";
-const MS_PER_S = 1000;
 const FLIP = 180;
 const CHEVRON_PX = 14;
 const NONE = DRIFT_NONE;
@@ -81,7 +82,7 @@ export function DriftSelect({
 	const [mounted, setMounted] = useState(false);
 	const [active, setActive] = useState(NONE);
 	const [pressed, setPressed] = useState(false);
-	const [y, yDriver] = useSpringValue(DRIFT_PAD);
+	const [y, yDriver] = useSpringValue(DRIFT_PAD, stepSpringExact);
 	const root = useRef<HTMLDivElement>(null);
 	const menu = useRef<HTMLDivElement>(null);
 	const valueText = useRef<HTMLSpanElement>(null);
@@ -94,7 +95,7 @@ export function DriftSelect({
 		remembered.current = i;
 		const target = driftOffset(i, optionHeight);
 		if (instant || reduced) yDriver.jump(target);
-		else yDriver.to(target, springFromDuration(glideDuration / MS_PER_S, 0));
+		else yDriver.to(target, springFromDuration(glideDuration / MS_PER_S, 0, CHOICE_FIT));
 	};
 
 	const show = (): void => {

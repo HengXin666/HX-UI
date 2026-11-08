@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import { useResizeObserver } from "../../hooks/dom/useResizeObserver";
 import { cn } from "../../primitives/utils";
-import { areaPath, extent, linePath, linearScale, niceDomain, niceTicks, project, punchDomain, type Domain } from "../scale";
+import { areaPath, extent, linePath, linearScale, niceDomain, niceTicks, project, punchDomain, revealSeries, type Domain } from "../scale";
 import { VIZ_BOX, VIZ_CLASS, VIZ_PUNCH, VIZ_TICKS } from "../tokens";
 import { useShockDomain } from "../use-shock";
 import { useVizStage } from "../use-stage";
@@ -19,6 +19,11 @@ export interface TrendProps {
   area?: boolean;
   /** 图区高度 (px). */
   height?: number;
+  /**
+   * 受控进度 0..1. 给了就停用内部入场时钟, 线长, 面积, 末点和读数都画到这个进度 (读数取插值);
+   * 不给时按视口自己播. 减弱动效时视为 1.
+   */
+  progress?: number;
   className?: string;
   classNames?: { root?: string; plot?: string; readout?: string };
 }
@@ -26,14 +31,18 @@ export interface TrendProps {
 const DEFAULT_HEIGHT = 160;
 const SVG_FILL_NONE = "none";
 const NON_SCALING = "non-scaling-stroke";
+const INSTANT = { duration: 0 } as const;
 
 /**
  * 趋势线, 带坐标轴冲击 (video-shotcraft chart-live-moves 的 axis-rescale-shock):
  * 末值冲出当前 domain 时, 先按旧比例冲出画框 (约 470ms), 停一拍 (600ms) 让人看见轴坏了,
  * 再 200ms 重标: 旧刻度滑到新位置淡出, 新刻度从旧位置滑进来, 线被压回框内, 末点放一圈 1px 扩散标记.
  * 未越界的更新只移动线, 不动网格. 首次进入视口用 pathLength 描线. 读屏只读最新值.
+ * 给 progress 时由外部时钟逐帧驱动, 不描线也不走弹簧, 读数不进 aria-live.
+ *
+ * .agents/notes/implemented/feature/2026-11-08-library-gaps.md
  */
-export function Trend({ values, label, format, area = true, height = DEFAULT_HEIGHT, className, classNames }: TrendProps): JSX.Element {
+export function Trend({ values, label, format, area = true, height = DEFAULT_HEIGHT, progress, className, classNames }: TrendProps): JSX.Element {
   const stage = useVizStage<HTMLDivElement>(1);
   const targetRef = useRef<Domain | null>(null);
   const target = useMemo(() => {
@@ -44,14 +53,17 @@ export function Trend({ values, label, format, area = true, height = DEFAULT_HEI
   }, [values]);
   const shock = useShockDomain(target, stage.reduced);
   const ticks = useMemo(() => niceTicks(shock.domain, VIZ_TICKS), [shock.domain]);
-  const points = project(values, shock.domain, VIZ_BOX);
+  const all = project(values, shock.domain, VIZ_BOX);
+  const controlled = progress !== undefined;
+  const reveal = controlled ? revealSeries(all, values, stage.reduced ? 1 : progress) : { points: all, value: values[values.length - 1] };
+  const points = reveal.points;
   const line = linePath(points);
   const fill = area ? areaPath(points, VIZ_BOX.height - VIZ_BOX.pad) : "";
   const range: Domain = [VIZ_BOX.height - VIZ_BOX.pad, VIZ_BOX.pad];
   const yOf = (domain: Domain, tick: number): number => (linearScale(domain, range)(tick) / VIZ_BOX.height) * height;
   const show = format ?? ((input: number) => input.toLocaleString());
   const last = points[points.length - 1];
-  const latest = values[values.length - 1];
+  const latest = reveal.value;
   const ring = VIZ_PUNCH.to + VIZ_PUNCH.to;
   const [plotRef, rect] = useResizeObserver<HTMLDivElement>();
   const lastPunch = useRef(0);
@@ -59,7 +71,7 @@ export function Trend({ values, label, format, area = true, height = DEFAULT_HEI
   useEffect(() => {
     lastPunch.current = shock.punch;
   }, [shock.punch]);
-  const move = shock.pending ? stage.shock : rescaling ? stage.rescale : stage.update;
+  const move = controlled ? INSTANT : shock.pending ? stage.shock : rescaling ? stage.rescale : stage.update;
 
   return (
     <figure ref={stage.ref} data-slot="hx-trend" data-state={shock.pending ? "shock" : undefined} className={cn(VIZ_CLASS.figure, className, classNames?.root)}>
@@ -93,8 +105,8 @@ export function Trend({ values, label, format, area = true, height = DEFAULT_HEI
               stroke="currentColor"
               strokeWidth={1}
               vectorEffect={NON_SCALING}
-              initial={stage.reduced ? false : { pathLength: 0, d: line }}
-              animate={{ pathLength: stage.shown ? 1 : 0, d: line }}
+              initial={stage.reduced || controlled ? false : { pathLength: 0, d: line }}
+              animate={{ pathLength: stage.shown || controlled ? 1 : 0, d: line }}
               transition={{ pathLength: stage.draw, d: move }}
             />
           ) : null}
@@ -123,7 +135,7 @@ export function Trend({ values, label, format, area = true, height = DEFAULT_HEI
           </motion.span>
         ) : null}
       </div>
-      <p aria-live="polite" className={cn(VIZ_CLASS.live, classNames?.readout)}>
+      <p aria-live={controlled ? undefined : "polite"} className={cn(VIZ_CLASS.live, classNames?.readout)}>
         {latest !== undefined ? show(latest) : null}
       </p>
     </figure>

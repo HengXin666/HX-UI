@@ -5,9 +5,9 @@ import { SendIcon } from "lucide-react";
 import { useRef, useState, type JSX, type PointerEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { springFromDuration } from "../spring-fit";
+import { springFromDuration } from "../../../motion/spring/fit";
 import { DOUBLE, FADE_MS, HALF, MS_PER_SECOND, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, clamp, transitionOf } from "../tokens";
-import { useMotionValue } from "../use-motion-value";
+import { useDrivenValue } from "../../../motion/drive/use-driven-value";
 
 /** 本文件内重复出现的字面量, 只写一次. */
 const NEG_ONE = -1;
@@ -114,8 +114,8 @@ export function PullSend({
   className,
 }: PullSendProps): JSX.Element {
   const reduced = useReducedMotion();
-  const px = useMotionValue(0, reduced);
-  const py = useMotionValue(0, reduced);
+  const px = useDrivenValue(0, reduced);
+  const py = useDrivenValue(0, reduced);
   const [armed, setArmed] = useState(false);
   const [shot, setShot] = useState<{ x: number; y: number; id: number } | null>(null);
   const gesture = useRef<{ origin: Sample; samples: Sample[]; kind: PointerKind; pulling: boolean } | null>(null);

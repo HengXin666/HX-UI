@@ -5,8 +5,10 @@ import { useEffect, useLayoutEffect, useRef, useState, type JSX, type ReactNode 
 import { PRESS_SCALE } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { springFromDuration, useSpringValue } from "../physics";
-import { EASE_PLAIN_OUT, PROP_BACKGROUND, PROP_COLOR, PROP_OPACITY, PROP_TRANSFORM, PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
+import { useSpringValue } from "../../../motion/drive/driver";
+import { springFromDuration } from "../../../motion/spring/fit";
+import { stepSpringExact } from "../../../motion/spring/step";
+import { CHOICE_FIT, EASE_PLAIN_OUT, PROP_BACKGROUND, PROP_COLOR, PROP_OPACITY, PROP_TRANSFORM, PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
 import { ChimeBell } from "./parts/ChimeBell";
 import { CHIME_CLAPPER_DELAY_MS, CHIME_MS, CHIME_REVEAL_DURATION, CHIME_SIZES, CHIME_WAVE_MS, CHIME_WAVE_SHIFT_PX, CHIME_WOBBLE, type ChimeSize } from "./parts/chime-spec";
 import { chimeFrames, chimePassOffset, currentAngle } from "./parts/chime-swing";
@@ -99,7 +101,7 @@ export function ChimeToggle({
 	const waveRight = useRef<HTMLSpanElement>(null);
 	const measureOff = useRef<HTMLSpanElement>(null);
 	const measureOn = useRef<HTMLSpanElement>(null);
-	const [width, widthDriver] = useSpringValue(0);
+	const [width, widthDriver] = useSpringValue(0, stepSpringExact);
 	const first = useRef(true);
 
 	const labelWidth = (state: boolean): number => (state ? measureOn.current : measureOff.current)?.offsetWidth ?? 0;
@@ -111,7 +113,7 @@ export function ChimeToggle({
 			widthDriver.jump(target);
 			return;
 		}
-		widthDriver.to(target, springFromDuration(CHIME_REVEAL_DURATION, revealBounce));
+		widthDriver.to(target, springFromDuration(CHIME_REVEAL_DURATION, revealBounce, CHOICE_FIT));
 		// 只在开关或文案变化时重新量
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [on, offLabel, onLabel, size, reduced]);

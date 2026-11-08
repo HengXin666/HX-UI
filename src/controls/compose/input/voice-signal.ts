@@ -1,4 +1,4 @@
-import { approach } from "../kinetics";
+import { approach } from "../../../motion/spring/follow";
 import { DICTATE, HALF, MS_PER_S } from "../tokens";
 
 /**

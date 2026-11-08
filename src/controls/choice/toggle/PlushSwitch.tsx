@@ -4,7 +4,8 @@
 import { useEffect, useId, useRef, useState, type JSX, type PointerEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { SpringDriver } from "../physics";
+import { SpringDriver } from "../../../motion/drive/driver";
+import { stepSpringExact } from "../../../motion/spring/step";
 import { PX, toneVar, transition, type ChoiceTone } from "../tone";
 import { PLUSH_FLOW_SPRING, PLUSH_STRETCH_SPEED, PLUSH_SWELL_SPRING, PLUSH_TAP_SLOP, PLUSH_THUMB_INSET, plushPositionSpring, plushStretchFor, plushThumbBox, plushTrack } from "./parts/plush-physics";
 
@@ -89,12 +90,12 @@ export function PlushSwitch({
 	stretchRef.current = stretch;
 	const drivers = useRef<{ x: SpringDriver; stretch: SpringDriver; swell: SpringDriver; scale: SpringDriver } | null>(null);
 	if (!drivers.current) {
-		const stretchDriver = new SpringDriver(0, setStretched);
+		const stretchDriver = new SpringDriver(0, setStretched, stepSpringExact);
 		const xDriver: SpringDriver = new SpringDriver(x, (value) => {
 			setX(value);
 			stretchDriver.to(plushStretchFor(xDriver.velocity, stretchRef.current), PLUSH_FLOW_SPRING);
-		});
-		drivers.current = { x: xDriver, stretch: stretchDriver, swell: new SpringDriver(1, setSwell), scale: new SpringDriver(1, setScale) };
+		}, stepSpringExact);
+		drivers.current = { x: xDriver, stretch: stretchDriver, swell: new SpringDriver(1, setSwell, stepSpringExact), scale: new SpringDriver(1, setScale, stepSpringExact) };
 	}
 	const drag = useRef<Drag | null>(null);
 	const swallowClick = useRef(false);

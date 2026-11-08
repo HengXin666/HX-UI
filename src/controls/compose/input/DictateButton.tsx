@@ -6,8 +6,8 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { useFrameLoop } from "../kinetics";
-import { BUTTON_TYPE, COMPOSE_EASE_OUT, CSS_PROP, DICTATE, HALF, MS_PER_S, PX, colorVar, transitionOf, type HxColor } from "../tokens";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
+import { BUTTON_TYPE, COMPOSE_EASE_OUT, COMPOSE_FRAME, CSS_PROP, DICTATE, HALF, MS_PER_S, PX, colorVar, transitionOf, type HxColor } from "../tokens";
 import { closeMic, freshLive, openMic, type Live } from "./parts/dictate-mic";
 import { WAVE_BARS, WAVE_PITCH, drawWave } from "./parts/dictate-wave";
 import { useDictateGesture } from "./parts/use-dictate-gesture";
@@ -134,7 +134,8 @@ export function DictateButton({
 
   useEffect(() => () => closeMic(live.current), []);
 
-  useFrameLoop(listening, (dt, now) => {
+  useFrameLoop((dtMs, now) => {
+    const dt = dtMs / MS_PER_S;
     const state = live.current;
     const source = state.analyser && state.bins ? (state.analyser.getByteFrequencyData(state.bins), micLevel(state.bins)) : simulatedLevel((now - state.startedAt) / MS_PER_S);
     state.env = followEnvelope(state.env, source, dt, attack, release);
@@ -145,7 +146,7 @@ export function DictateButton({
     const canvas = canvasRef.current;
     if (waveform && canvas) drawWave(canvas, state.history, barLevel(state.env, sensitivity, floor));
     return listeningRef.current;
-  });
+  }, { ...COMPOSE_FRAME, active: listening });
 
   const { pressed, onPointerDown, onPointerMove, onPointerUp, onKeyDown } = useDictateGesture({
     mode,

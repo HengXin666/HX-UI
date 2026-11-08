@@ -48,3 +48,16 @@ export const FADE_MS = 200;
 export const FAST_MS = 120;
 export const MOVE_MS = 160;
 export const QUICK_FADE_MS = 150;
+
+export const MS_PER_S = 1000;
+/** 帧间隔上限 (秒), 切后台回来不让积分一步飞出去. 本族的解析弹簧也用它. */
+export const DT_CAP_S = 0.05;
+export const RANGE_DT_CAP_MS = DT_CAP_S * MS_PER_S;
+/** bounce 上限, 再高阻尼比趋零, 弹簧停不下来. */
+export const MAX_BOUNCE = 0.9;
+/** 本族 "时长 + bounce" 换算的口径: 阻尼比不低于 1 - MAX_BOUNCE, 其余取 src/motion 默认. */
+export const RANGE_FIT = { minDampingRatio: 1 - MAX_BOUNCE } as const;
+/** 刻度盘写法 (刚度 + bounce) 先把 bounce 钳进这个区间. */
+export const RANGE_BOUNCE_RANGE = [0, MAX_BOUNCE] as const;
+/** 临界阻尼下 (1 + x) e^-x = 0.001 的根, 即 omega * T. 规格里写作 9.23. */
+export const CRITICAL_SETTLE = 9.23;

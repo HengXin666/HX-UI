@@ -5,7 +5,8 @@ import { useEffect, useLayoutEffect, useReducer, useRef, useState, type JSX, typ
 import { PRESS_SCALE } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { SpringDriver } from "../physics";
+import { SpringDriver } from "../../../motion/drive/driver";
+import { stepSpringExact } from "../../../motion/spring/step";
 import { PROP_COLOR, PROP_OPACITY, PROP_TRANSFORM, PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
 import { elasticUiSpring, glideEdges, type ElasticEdges } from "./parts/elastic-edges";
 import { ELASTIC_MS, ELASTIC_SIZES, elasticThumbBox, type ElasticItem, type ElasticSize, type ElasticSlot } from "./parts/elastic-spec";
@@ -76,7 +77,7 @@ export function ElasticSegment({
 	const [height, fontSize, padX] = ELASTIC_SIZES[size];
 	const [, redraw] = useReducer((n: number) => n + 1, 0);
 	const edges = useRef<ElasticEdges | null>(null);
-	if (!edges.current) edges.current = { left: new SpringDriver(0, redraw), right: new SpringDriver(0, redraw) };
+	if (!edges.current) edges.current = { left: new SpringDriver(0, redraw, stepSpringExact), right: new SpringDriver(0, redraw, stepSpringExact) };
 	const track = useRef<HTMLDivElement>(null);
 	const refs = useRef<Array<HTMLButtonElement | null>>([]);
 	const placed = useRef(false);
