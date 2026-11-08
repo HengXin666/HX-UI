@@ -1,6 +1,8 @@
 /**
  * 文档页 Props 表的数据源: 从 src/index.ts 的公开组件读出参数类型, 抽成 JSON.
- * 只抽文档页用到的组件: docs/face/docs/specs (递归) 里各页的 importName 与 parts, 其余导出与它们解耦.
+ * 根入口只抽文档页用到的组件: docs/face/docs/specs (递归) 里各页的 importName 与 parts, 其余导出与它们解耦.
+ * 子路径入口 SUBPATH_FULL 里的层 (./surface 含 ./backgrounds) 只从子路径发布, 没有别的契约保护, 所以全量抽:
+ * 每个首字母大写, 第一个参数有自有属性的导出都进 JSON. 名字与根入口重名时以根入口为准.
  * 只收组件自己声明的属性与它包装的无头库 (Radix 等) 的属性; @types/react 里的 DOM 属性不收, 那些是原生语义.
  * 默认值读参数解构的初始值, 说明读属性上的 JSDoc.
  * 用法: node scripts/docs-props.ts 写 docs/face/docs/props/props.gen.json;
@@ -53,7 +55,20 @@ function targets(): Set<string> {
 
 const config = ts.getParsedCommandLineOfConfigFile(path.join(ROOT, "tsconfig.json"), {}, { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => undefined });
 if (!config) throw new Error("docs-props: 读不到 tsconfig.json");
-const program = ts.createProgram([ENTRY], { ...config.options, noEmit: true });
+/** 全量抽 props 的子路径入口 (相对 package.json exports 的键). ./surface 已经 re-export ./backgrounds, 两个都列上, 以后拆开也不漏. */
+const SUBPATH_FULL = ["./backgrounds", "./surface"];
+const COMPONENT_NAME = /^[A-Z]/;
+const pkg = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8")) as { exports?: Record<string, { types?: string } | string> };
+const subEntries = SUBPATH_FULL.map((key) => {
+  const spec = pkg.exports?.[key];
+  const types = typeof spec === "object" ? spec.types : undefined;
+  if (!types) throw new Error(`docs-props: package.json exports 里没有 ${key}`);
+  const base = path.join(ROOT, types.replace(/^\.\/dist\//, "src/").replace(/\.d\.ts$/, ""));
+  const file = [`${base}.ts`, `${base}.tsx`].find((f) => existsSync(f));
+  if (!file) throw new Error(`docs-props: 子路径 ${key} 找不到源码入口`);
+  return file;
+});
+const program = ts.createProgram([ENTRY, ...subEntries], { ...config.options, noEmit: true });
 const checker = program.getTypeChecker();
 const entry = program.getSourceFile(ENTRY);
 if (!entry) throw new Error("docs-props: 读不到 src/index.ts");
@@ -144,6 +159,22 @@ for (const symbol of moduleSymbol ? checker.getExportsOfModule(moduleSymbol) : [
   const rows = rowsOf(decl);
   if (rows && rows.length > 0) result[name] = rows;
 }
+let subCount = 0;
+for (const file of subEntries) {
+  const source = program.getSourceFile(file);
+  const sym = source ? checker.getSymbolAtLocation(source) : undefined;
+  for (const symbol of sym ? checker.getExportsOfModule(sym) : []) {
+    const name = symbol.getName();
+    if (!COMPONENT_NAME.test(name) || name in result) continue;
+    const decl = implementation(symbol);
+    if (!decl) continue;
+    const rows = rowsOf(decl);
+    if (rows && rows.length > 0) {
+      result[name] = rows;
+      subCount += 1;
+    }
+  }
+}
 
 const missing = [...wanted].filter((name) => !(name in result));
 if (missing.length > 0) {
@@ -158,8 +189,8 @@ if (CHECK) {
     console.error("docs-props: props.gen.json 与源码类型不一致, 跑 node scripts/docs-props.ts 重新生成");
     process.exit(1);
   }
-  console.log(`docs-props: 通过 (${Object.keys(sorted).length} 个组件)`);
+  console.log(`docs-props: 通过 (${Object.keys(sorted).length} 个组件, 其中子路径 ${subCount} 个)`);
 } else {
   writeFileSync(OUT, text);
-  console.log(`docs-props: 写入 ${Object.keys(sorted).length} 个组件`);
+  console.log(`docs-props: 写入 ${Object.keys(sorted).length} 个组件, 其中子路径 ${subCount} 个`);
 }

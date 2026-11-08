@@ -41,6 +41,10 @@
       "types": "./dist/surface/backgrounds/index.d.ts",
       "import": "./dist/surface/backgrounds/index.js"
     },
+    "./surface": {
+      "types": "./dist/surface/index.d.ts",
+      "import": "./dist/surface/index.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./tokens.css": "./dist/tokens.css",
     "./base.css": "./dist/base.css",

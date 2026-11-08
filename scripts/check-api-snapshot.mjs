@@ -3,6 +3,8 @@
  * 公共 API 快照.
  *
  * 从 src/index.ts 出发, 把具名再导出展开, 星号桶继续往下读, 得到排序后的符号表.
+ * 子路径入口 (package.json exports 里带 types 的每一项, 如 ./backgrounds, ./surface) 同样展开, 各占一段;
+ * 不收子路径的话, 只从子路径发布的整层 (surface / backgrounds) 没有任何契约保护.
  * 和 scripts/gates/baselines/api-surface.txt 比对. 表面变了就必须带上新快照,
  * 这样「多导出一个名字」会在 diff 里被看见, 而不是埋在 export * 里面.
  *
@@ -46,6 +48,7 @@ function collect(file, seen, names, stars) {
   if (seen.has(rel)) return;
   seen.add(rel);
   const text = strip(fs.readFileSync(file, "utf8"));
+  for (const match of text.matchAll(/export\s+\*\s+as\s+([A-Za-z0-9_]+)\s+from/g)) names.add(match[1]);
   for (const match of text.matchAll(/export\s+\*\s+from\s+"(\.[^"]+)"/g)) {
     stars.push(`${rel} -> ${match[1]}`);
     const target = resolveModule(file, match[1]);
@@ -59,20 +62,49 @@ function collect(file, seen, names, stars) {
   }
 }
 
+/** package.json exports 里的子路径入口: types 指向 dist/<x>.d.ts, 源码是 src/<x>.ts(x). 根入口 "." 单独处理. */
+function subpathEntries() {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8"));
+  const out = [];
+  for (const [key, value] of Object.entries(pkg.exports ?? {})) {
+    if (key === "." || typeof value !== "object" || !value || typeof value.types !== "string") continue;
+    const base = value.types.replace(/^\.\/dist\//, "src/").replace(/\.d\.ts$/, "");
+    const file = [`${base}.ts`, `${base}.tsx`].map((f) => path.join(ROOT, f)).find((f) => fs.existsSync(f));
+    if (!file) {
+      console.error(`check-api-snapshot: 子路径 ${key} 找不到源码入口 (${base}.ts)`);
+      process.exit(1);
+    }
+    out.push({ key, file });
+  }
+  return out.sort((a, b) => a.key.localeCompare(b.key));
+}
+
 const names = new Set();
 const stars = [];
 collect(ENTRY, new Set(), names, stars);
-const body = [
+const lines = [
   "# 具名符号. 星号桶已展开, 下面的 STAR 行只标记桶还在.",
   ...[...names].sort(),
   "# STAR",
   ...[...new Set(stars)].sort(),
-].join("\n") + "\n";
+];
+const counts = [`. ${names.size}`];
+let total = names.size;
+for (const { key, file } of subpathEntries()) {
+  const subNames = new Set();
+  const subStars = [];
+  collect(file, new Set(), subNames, subStars);
+  lines.push(`# ENTRY ${key} (${path.relative(ROOT, file)})`, ...[...subNames].sort(), "# STAR", ...[...new Set(subStars)].sort());
+  for (const star of subStars) stars.push(star);
+  counts.push(`${key} ${subNames.size}`);
+  total += subNames.size;
+}
+const body = lines.join("\n") + "\n";
 
 if (UPDATE) {
   fs.mkdirSync(path.dirname(SNAPSHOT), { recursive: true });
   fs.writeFileSync(SNAPSHOT, body);
-  console.log(`check-api-snapshot: 已写入 ${path.relative(ROOT, SNAPSHOT)} (${names.size} 个符号)`);
+  console.log(`check-api-snapshot: 已写入 ${path.relative(ROOT, SNAPSHOT)} (${total} 个符号; ${counts.join(", ")})`);
   process.exit(0);
 }
 
@@ -89,4 +121,4 @@ if (saved !== body) {
   process.exit(1);
 }
 
-console.log(`check-api-snapshot: 通过 (${names.size} 个符号, ${new Set(stars).size} 个星号桶)`);
+console.log(`check-api-snapshot: 通过 (${total} 个符号, ${new Set(stars).size} 个星号桶; ${counts.join(", ")})`);
