@@ -1,3 +1,4 @@
+import { useState, type JSX } from "react";
 import { DataTable, type DataTableColumn } from "@hx/ui";
 import tableRaw from "../../../../src/layout/DataTable.tsx?raw";
 import { range, text, toggle, type PageSpec, type Values } from "./types";
@@ -24,7 +25,17 @@ const ACCOUNTS: readonly Account[] = [
 ];
 
 const COLUMNS: readonly DataTableColumn<Account>[] = [
-  { key: "user", header: "用户名", cellClassName: "font-mono text-[12px]" },
+  {
+    key: "user",
+    header: "用户名",
+    cellClassName: "font-mono text-[12px]",
+    // 行内链接: 点它只走链接, 不触发 onRowClick (DataTable 的事件边界), 文档站外壳检查 check-shell 依赖这一格
+    render: (row) => (
+      <a href={`https://github.com/${row.user}`} target="_blank" rel="noreferrer" className="underline underline-offset-2">
+        {row.user}
+      </a>
+    ),
+  },
   { key: "region", header: "出口", cellClassName: "text-muted-foreground" },
   { key: "age", header: "年龄", numeric: true, render: (row) => `${row.age.toFixed(1)}d` },
 ];
@@ -37,8 +48,29 @@ function tableProps(values: Values): Record<string, unknown> {
     rows: ACCOUNTS.slice(0, Number(values.count)),
     loading: values.loading,
     bare: values.bare,
-    onRowClick: values.clickable ? () => undefined : undefined,
+    clickable: values.clickable,
   };
+}
+
+const NO_PICK = "(没点过行)";
+
+interface DemoProps {
+  readonly rows: readonly Account[];
+  readonly clickable?: boolean;
+  readonly title?: string;
+  readonly loading?: boolean;
+  readonly bare?: boolean;
+}
+
+/** 主舞台: 整行可点时把点到的行写到表下, 行内链接不算点行. */
+function TableDemo({ clickable, ...rest }: DemoProps): JSX.Element {
+  const [pick, setPick] = useState(NO_PICK);
+  return (
+    <div className="mx-auto w-full max-w-[640px] p-6">
+      <DataTable columns={COLUMNS} rowKey={(row) => row.user} onRowClick={clickable ? (row) => setPick(row.user) : undefined} {...rest} />
+      {clickable ? <div className="mt-2 font-mono text-[11.5px] text-muted-foreground">点过的行: {pick}</div> : null}
+    </div>
+  );
 }
 
 function tableUsage(values: Values): string {
@@ -67,7 +99,7 @@ export const DATA_TABLE: PageSpec = {
     range("count", "行数", [0, ACCOUNTS.length, 1], ACCOUNTS.length, "演示数据的行数, 调到 0 看空态."),
     toggle("loading", "加载中", false, "渲染成骨架行, 表格高度不会在数据到达时跳一下."),
     toggle("bare", "去掉卡片", false, "不包 Card, 直接是一张表, 放进已有容器时用."),
-    toggle("clickable", "整行可点", false, "传 onRowClick 后整行可点, 也可以用键盘聚焦与回车."),
+    toggle("clickable", "整行可点", true, "传 onRowClick 后整行可点, 也可以用键盘聚焦与回车."),
   ],
   propDesc: {
     columns: "列定义: key, header, render, width, align, numeric.",
@@ -82,11 +114,7 @@ export const DATA_TABLE: PageSpec = {
     tableClassName: "<table> 本身的类名.",
   },
   toProps: tableProps,
-  render: (props) => (
-    <div className="mx-auto w-full max-w-[640px] p-6">
-      <DataTable columns={COLUMNS} rowKey={(row) => row.user} {...(props as { rows: readonly Account[] })} />
-    </div>
-  ),
+  render: (props) => <TableDemo {...(props as unknown as DemoProps)} />,
   usage: tableUsage,
   examples: [
     {
