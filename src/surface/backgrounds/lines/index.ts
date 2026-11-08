@@ -4,3 +4,4 @@ export { FluxLines, type FluxLinesProps } from "./FluxLines";
 export { LineWaves, type LineWavesProps } from "./LineWaves";
 export { Threads, type ThreadsProps } from "./Threads";
 export { WebThreads, type WebThreadsProps } from "./WebThreads";
+export { Waves, type WavesProps } from "./Waves";

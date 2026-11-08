@@ -16,6 +16,8 @@ Decision-ID: surface-backgrounds-lines
 - `src/surface/backgrounds/lines/threads-shader.ts`
 - `src/surface/backgrounds/lines/WebThreads.tsx`
 - `src/surface/backgrounds/lines/web-threads-shader.ts`
+- `src/surface/backgrounds/lines/Waves.tsx`
+- `src/surface/backgrounds/lines/waves-shader.ts`
 
 ## Problem
 
@@ -36,6 +38,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族, 分七路并行. line
 | LineWaves | `LineWaves` | 采用: MAX_RIPPLES 4, INTRO 1.8s (扫线 span = 0.5 sqrt(aspect^2 + 1), reveal = 1 - smoothstep(sweep - 0.6, sweep, x)), 时钟倍率 2.5 与 speed 默认 0.3, 颜色循环 0.05 cycleSpeed, 扭曲 w = 0.6 sin(q.x 0.55 + 0.4t + 0.6 sin(q.y 0.9 - 0.28t)), 漂移 0.7 (0.18 sin(1.6x - 0.33t + 0.7) + 0.1 sin(3.1x + 0.21t)), 高光带 center 0.5 (0.2 sin 0.17t + 0.08 sin(0.29t + 1.3)) 宽 0.13 highlightWidth, crowd = smoothstep(0.18, 0.5, fwidth), shimmer 噪声 mix 0.5, 涟漪 fade = exp(-1.3 age) smoothstep(0, 0.12, age), 跟手 tau 0.1 s 透镜在场 tau 0.2 s. 三色 uniform 换成调色板 ln_cycle (至多 8 色); 透镜半径 0.22, 推开 0.03, 涟漪 0.6 短边/s 环宽 0.05 本库定; fold 与 PIXEL_BUDGET 交给内核 DPR / 最长边上限. |
 | Threads | `Threads` | 采用: 包络 smoothstep(split, max(0.7, split + 0.2), x), blur = smoothstep(split, split + 0.05, x) * perc, 纵向 0.5 + (perc - 0.5) distance + 噪声 / 2 * 振幅, 线宽 7 thickness px (1 - perc), alpha = 1 - smoothstep(0, 1, perc^0.3) taper, 覆盖率按线宽 / 绘制宽守恒, 跟手 tau 1/3 s, 拨开在场 tau 1/4 s 且 parting > 0 才响应, speed 默认 0.6. 上游线带网格改为片元逐线求距离 (至多 128 条, 本库定), 覆盖率用 1 - (1 - a)(1 - b) 叠加防止发白成片; 拨开半径 0.18 与位移 0.12, 虚化 5 px softness 本库定; MAX_RENDER_DIM 交给内核最长边上限. |
 | WebThreads | `WebThreads` | 采用: MAX_THREADS 24, MAX_COLORS 6, MAX_SURGES 3, SURGE 1.6s 逐线错开 0.05s, STROKE 1.25s 与 staggerFor = min(0.12, 0.9 / (n - 1)) 的逐线描出, born = smoothstep(-0.05, 0.03, head), amp = 1 + i taper, 结点 spacing 1 / nodes 与 twist = depth smoothstep(0, 0.07, |x - hub|), depth = 0.5 + 0.5 cos(z), core = smoothstep(0.5, 2.2, energy) 混芯色, focal = smoothstep(2, 9, energy fade) 0.25, speed 默认 0.2, 光晕 glow / d^falloff. 收拢包络 |sin(PI x nodes)|^pinch, 光晕缩放 0.15, 指针拉线 (tau 0.12 s, 力度 0.35) 与 pulses 的自动光点 (0.25 pulses 每秒) 本库定; backgroundColor 不给时透明. |
+| Waves | `Waves` | 采用: 线距 spacing 10 CSS 像素, 线宽 1, 位移场两层梯度噪声 (尺度 0.0028 scale, 0.55 / 0.45 混合), 方向角 n * twist * 2.2 + m * variation * 2, 幅度 amplitude 32 CSS 像素; 虚线周期 WAVES_CELL 12; 跟手 tau 0.045s 与在场 tau 0.06s 取条目原式, 指针推挤半径 175 按 exp(-d^2 / r^2) 衰减; 拖动甩出为弹簧, 阻尼比 zeta = 1 - bounce (默认 0.5), omega = 2 PI / returnDuration (默认 1.4s), 子步 min(16, max(1, ceil(dt / min(1/120, 0.6 / omega)))); 点击涟漪至多 8 个, 640 px/s 外扩, 环宽 64, 衰减 exp(-1.2 age); 染色 heat = smoothstep(0, 1, 0.8 energy) 从 lineColor (foreground) 混到 accentColor (primary); 入场 2.2s 由中间向两侧长出. 指针速度换弹簧目标系数 WAVES_DRAG 0.06 本库定; backgroundColor 不给时透明, lightMode 线收到 0.85, mixBlendMode 交宿主 style. 减弱动效只画一帧, 弹簧归零. |
 
 ## Alternatives considered
 
