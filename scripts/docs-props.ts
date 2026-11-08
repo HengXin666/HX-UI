@@ -1,6 +1,6 @@
 /**
  * 文档页 Props 表的数据源: 从 src/index.ts 的公开组件读出参数类型, 抽成 JSON.
- * 只抽文档页用到的组件: docs/face/docs/specs 里各页的 importName 与 parts, 其余导出与它们解耦.
+ * 只抽文档页用到的组件: docs/face/docs/specs (递归) 里各页的 importName 与 parts, 其余导出与它们解耦.
  * 只收组件自己声明的属性与它包装的无头库 (Radix 等) 的属性; @types/react 里的 DOM 属性不收, 那些是原生语义.
  * 默认值读参数解构的初始值, 说明读属性上的 JSDoc.
  * 用法: node scripts/docs-props.ts 写 docs/face/docs/props/props.gen.json;
@@ -24,6 +24,18 @@ const SPECS_DIR = path.join(FACE_DOCS, "specs");
 const IMPORT_NAME = /importName: "(\w+)"/g;
 const PARTS = /parts: \[([^\]]*)\]/g;
 const QUOTED = /"(\w+)"/g;
+const SPEC_FILE = /\.tsx?$/;
+
+/** specs 目录下所有 .ts / .tsx, 递归进子目录 (按页拆分的 core-*.tsx, block-*.tsx 等, 以后再分子目录也不漏). */
+function specFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const item of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    const full = path.join(dir, item.name);
+    if (item.isDirectory()) out.push(...specFiles(full));
+    else if (SPEC_FILE.test(item.name)) out.push(full);
+  }
+  return out;
+}
 
 /**
  * 各组件页声明的导出名: importName 与 parts 里的每一项.
@@ -31,8 +43,8 @@ const QUOTED = /"(\w+)"/g;
  */
 function targets(): Set<string> {
   const names = new Set<string>();
-  for (const file of readdirSync(SPECS_DIR).filter((name) => name.endsWith(".tsx"))) {
-    const text = readFileSync(path.join(SPECS_DIR, file), "utf8");
+  for (const file of specFiles(SPECS_DIR)) {
+    const text = readFileSync(file, "utf8");
     for (const m of text.matchAll(IMPORT_NAME)) names.add(m[1]);
     for (const m of text.matchAll(PARTS)) for (const q of m[1].matchAll(QUOTED)) names.add(q[1]);
   }

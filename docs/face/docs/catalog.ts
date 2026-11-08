@@ -40,7 +40,7 @@ export const CATALOG_GROUPS: readonly string[] = [START, ...Object.values(SPEC_G
 /** 组件 (不含上手的说明页) 的条目, 索引页与 "N 个组件" 计数用. */
 export const COMPONENTS: readonly CatalogEntry[] = CATALOG.filter((entry) => entry.group !== START);
 
-const BLOCK_GROUPS = new Set(["区块", "模板", "展示画廊", "页面版式", "蓝图"]);
+const BLOCK_GROUPS = new Set(["区块", "模板", "页面版式", "蓝图"]);
 const TEXT_GROUPS = new Set<string>([SPEC_GROUP.text, "排版"]);
 const EFFECT_GROUPS = new Set<string>([SPEC_GROUP.effect, "动效与质感"]);
 

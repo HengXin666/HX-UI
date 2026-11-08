@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type JSX } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type JSX } from "react";
 import { InputGroup, InputGroupAddon, InputGroupInput, ToggleGroup, ToggleGroupItem, cn } from "@hx/ui";
 import { CATALOG, CATALOG_GROUPS, CATEGORIES, COMPONENTS, categoryOf, type CategoryId } from "../catalog";
 import { CARD, ICON, ICON_SM, ICON_XS, INDEX_ID } from "../constants";
@@ -8,15 +8,35 @@ function plainClick(event: { button: number; metaKey: boolean; ctrlKey: boolean;
   return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }
 
+/** 分组展开与收起: 行高从 0fr 过渡到 1fr 并淡入, 减弱动效时直接切换. */
+const FOLD = "grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none";
+
 /**
- * 左栏圆角卡: 浏览全部, 分类图标页签, 过滤输入, 分组列表. 卡本身吸顶, 只有列表滚动;
- * 当前项进入视口中部, 换页时不必再找.
+ * 左栏圆角卡: 浏览全部, 分类图标页签, 过滤输入, 按 catalog 分组的可折叠列表. 卡本身吸顶, 只有列表滚动;
+ * 默认只展开当前页所在组, 换页时那组自动展开, 当前项进入视口中部. 过滤时命中的组全部展开.
  */
 export function Rail({ active, onGo }: { readonly active: string; readonly onGo: (id: string) => void }): JSX.Element {
   const activeEntry = CATALOG.find((entry) => entry.id === active);
   const [category, setCategory] = useState<CategoryId>("all");
   const [query, setQuery] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const foldId = useId();
+  const activeGroup = activeEntry?.group;
+  const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set(activeGroup ? [activeGroup] : []));
+  const filtering = query.trim() !== "";
+  const isOpen = (group: string): boolean => filtering || open.has(group);
+  const activeOpen = activeGroup !== undefined && open.has(activeGroup);
+  const toggle = (group: string): void =>
+    setOpen((prev) => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group);
+      else next.add(group);
+      return next;
+    });
+
+  useEffect(() => {
+    if (activeGroup) setOpen((prev) => (prev.has(activeGroup) ? prev : new Set(prev).add(activeGroup)));
+  }, [activeGroup]);
 
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -36,7 +56,7 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
     const node = listRef.current?.querySelector<HTMLElement>("[aria-current=page]");
     const list = listRef.current;
     if (node && list) list.scrollTop = node.offsetTop - list.clientHeight / 2;
-  }, [active]);
+  }, [active, activeOpen]);
 
   return (
     <div className={cn(CARD, "flex h-full min-h-0 flex-col p-3.5")}>
@@ -92,30 +112,48 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
       </InputGroup>
 
       <div ref={listRef} className="relative mt-4 min-h-0 flex-1 overflow-y-auto pr-1 [mask-image:linear-gradient(to_bottom,transparent,var(--foreground)_24px,var(--foreground)_calc(100%-32px),transparent)]">
-        <nav aria-label="组件目录" className="flex flex-col gap-4 py-3">
-          {groups.map(({ group, items }) => (
-            <div key={group}>
-              <p className="mb-1.5 text-[13px] text-muted-foreground">{group}</p>
-              <ul className="flex flex-col">
-                {items.map((entry) => (
-                  <li key={entry.id}>
-                    <a
-                      href={`#/${entry.id}`}
-                      aria-current={entry.id === active ? "page" : undefined}
-                      onClick={(event) => {
-                        if (!plainClick(event)) return;
-                        event.preventDefault();
-                        onGo(entry.id);
-                      }}
-                      className="block truncate py-[7px] text-[13.5px] text-foreground/90 transition-colors hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-primary"
-                    >
-                      {entry.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+        <nav aria-label="组件目录" className="flex flex-col gap-1 py-3">
+          {groups.map(({ group, items }, index) => {
+            const expanded = isOpen(group);
+            const panel = `${foldId}-${index}`;
+            return (
+              <div key={group}>
+                <button
+                  type="button"
+                  aria-expanded={expanded}
+                  aria-controls={panel}
+                  onClick={() => toggle(group)}
+                  className="flex w-full items-center justify-between gap-2 py-1.5 text-left text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <span className="truncate">{group}</span>
+                  <span
+                    aria-hidden
+                    className={cn(ICON.down, ICON_XS, "transition-transform duration-200 ease-out motion-reduce:transition-none", !expanded && "-rotate-90")}
+                  />
+                </button>
+                <div id={panel} inert={!expanded} className={cn(FOLD, expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
+                  <ul className="flex min-h-0 flex-col overflow-hidden">
+                    {items.map((entry) => (
+                      <li key={entry.id}>
+                        <a
+                          href={`#/${entry.id}`}
+                          aria-current={entry.id === active ? "page" : undefined}
+                          onClick={(event) => {
+                            if (!plainClick(event)) return;
+                            event.preventDefault();
+                            onGo(entry.id);
+                          }}
+                          className="block truncate py-[7px] text-[13.5px] text-foreground/90 transition-colors hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-primary"
+                        >
+                          {entry.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            );
+          })}
           {groups.length === 0 ? <p className="text-[12px] text-muted-foreground">没有匹配的组件</p> : null}
         </nav>
       </div>
