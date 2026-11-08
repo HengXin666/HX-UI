@@ -5,10 +5,10 @@ import { useEffect, useId, useRef, useState, type CSSProperties, type JSX, type 
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { makeAxis, snapAxis, stepAxis, type Axis } from "../../../motion/drive/axis";
+import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { springFromOmega } from "../../../motion/spring/fit";
 import { clamp } from "../feel";
 import { CRUSH } from "../tokens";
-import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { creaseWeight, crushLighting, crushScale } from "./discard-math";
 
 /** 本文件内重复出现的字面量, 只写一次. */
@@ -228,9 +228,7 @@ export function CrushSheet({
 				onLostPointerCapture={onPointerEnd}
 				onKeyDown={onKeyDown}
 				onKeyUp={onKeyUp}
-				onBlur={() => {
-					if (held.current) setHeld(false, true);
-				}}
+				onBlur={() => held.current && setHeld(false, true)}
 				className="relative touch-none rounded-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
 			>
 				<div ref={sheetRef} className="relative overflow-hidden rounded-sm bg-card" style={{ width, height, filter: `url(#${filterId})` }}>

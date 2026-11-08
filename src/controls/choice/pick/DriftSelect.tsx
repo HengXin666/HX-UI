@@ -9,13 +9,12 @@ import { useSpringValue } from "../../../motion/drive/driver";
 import { springFromDuration } from "../../../motion/spring/fit";
 import { stepSpringExact } from "../../../motion/spring/step";
 import { CHOICE_FIT, EASE_PLAIN, MS_PER_S, PROP_BACKGROUND, PROP_TRANSFORM, PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
+import { DriftChevron } from "./parts/DriftChevron";
 import { DriftMenu } from "./parts/DriftMenu";
 import { DRIFT_MS, DRIFT_NONE, DRIFT_PAD, DRIFT_SHIFT_PX, DRIFT_SIZES, driftOffset, type DriftOption, type DriftSize } from "./parts/drift-spec";
 import { useDriftPop } from "./parts/use-drift-pop";
 
 const PAREN_CLOSE = ")";
-const FLIP = 180;
-const CHEVRON_PX = 14;
 const NONE = DRIFT_NONE;
 
 export { DRIFT_GAP, DRIFT_MENU_GAP, DRIFT_MS, DRIFT_PAD, driftOffset, type DriftOption, type DriftSize } from "./parts/drift-spec";
@@ -208,18 +207,7 @@ export function DriftSelect({
 				<span ref={valueText} className={cn("truncate", !shown && "text-muted-foreground")}>
 					{shown ? shown.label : placeholder}
 				</span>
-				<svg
-					aria-hidden
-					viewBox="0 0 16 16"
-					width={CHEVRON_PX}
-					height={CHEVRON_PX}
-					fill="none"
-					stroke="currentColor"
-					strokeWidth={1}
-					style={{ transform: "rotate(" + (open ? FLIP : 0) + "deg)", transition: transition(PROP_TRANSFORM, reduced ? 0 : DRIFT_MS.chevron, SPEC_EASE_OUT) }}
-				>
-					<path d="M4 6l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
-				</svg>
+				<DriftChevron open={open} reduced={reduced} />
 			</button>
 			{mounted ? (
 				<DriftMenu

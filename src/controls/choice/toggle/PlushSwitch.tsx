@@ -103,8 +103,7 @@ export function PlushSwitch({
 	useEffect(() => {
 		const d = drivers.current;
 		return () => {
-			if (!d) return;
-			for (const driver of Object.values(d)) driver.stop();
+			if (d) for (const driver of Object.values(d)) driver.stop();
 		};
 	}, []);
 
@@ -219,11 +218,8 @@ export function PlushSwitch({
 				onPointerEnter={() => hover(true)}
 				onPointerLeave={() => hover(false)}
 				onClick={() => {
-					if (swallowClick.current) {
-						swallowClick.current = false;
-						return;
-					}
-					commit(!on);
+					if (!swallowClick.current) commit(!on);
+					swallowClick.current = false;
 				}}
 			>
 				<span
