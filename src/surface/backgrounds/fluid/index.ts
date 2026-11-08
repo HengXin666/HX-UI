@@ -6,3 +6,4 @@ export { MoltenMetal, type MoltenMetalProps } from "./MoltenMetal";
 export { Balatro, type BalatroProps } from "./Balatro";
 export { Orb, type OrbProps } from "./Orb";
 export { EvilEye, type EvilEyeProps } from "./EvilEye";
+export { MagicRings, type MagicRingsProps } from "./MagicRings";

@@ -19,6 +19,10 @@ Decision-ID: surface-backgrounds-fluid
 - `src/surface/backgrounds/fluid/EvilEye.tsx`
 - `src/surface/backgrounds/fluid/evil-eye-shader.ts`
 - `tests/surface/backgrounds/fluid/evil-eye.test.tsx`
+- `src/surface/backgrounds/fluid/MagicRings.tsx`
+- `src/surface/backgrounds/fluid/magic-rings-motion.ts`
+- `src/surface/backgrounds/fluid/magic-rings-shader.ts`
+- `tests/surface/backgrounds/fluid/magic-rings.test.tsx`
 
 ## Problem
 
@@ -39,6 +43,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族. fluid 路收以液体
 | Balatro | `Balatro` | 采用: 坐标先按 pixelSize (CSS 像素乘 dpr) 取块心, 经离屏搅动场位移与至多 4 个点击旋涡 (强度 0.15 秒拧起, exp(-1.2 t) 松开, 3 秒寿命) 扭过, 再按 spin - swirl * 20 * (r - r^2 / 2) 旋转, 放大 30 / scale 后做 detail 次正弦折叠; 颜料量 paint = clamp(|q| * 0.035 * contrastMod, 0, 2), contrastMod = 0.25 * contrast + 0.5 * swirl + 1.2, 三色权重 c1 = 1 - contrastMod * abs(1 - paint), c2 = 1 - contrastMod * abs(paint), c3 = 1 - min(1, c1 + c2), 底色份额 0.3 / contrast, 高光 (lighting - 0.2) * max(5 c1 - 4, 0) + lighting * max(5 c2 - 4, 0). 流动相位 time * 7, 自转 time * rotationSpeed * 0.2. 搅动场格子 8 CSS 像素, 本帧指针线段按半径 90 CSS 像素高斯推开颜料, 每帧乘 exp(-dt / 1.6), 位移按 0.5 + 0.5v 编码. 指针转向 tau 0.8, 入场 2.2 秒从中心旋开. crt 做桶形弯曲, 扫描线与暗角. 默认 color1 primary, color2 accent, color3 background. maxDevicePixelRatio 并入公共 dpr. |
 | Orb | `Orb` | 采用: 屏幕坐标从焦距 3.2 的相机射到按 tiltX / tiltY 倾斜的平面上, 半径 r0 = (0.62 + 0.07 * 噪声 * wobble) * (1 + 0.12 * 脉冲) 的光环, 亮度 1 / (1 + d * a) 只取内侧 (smoothstep(r0 * 1.05, r0, len)), 内侧按 reach 渐隐出体积, 外侧泛光 1 / (1 + d^2 * 160 / glow); 朝指针一侧按 reach * facing * smoothstep(0.25, 0.65, r) 隆起. JS 侧: 悬停 tau 0.16, 贴近 tau 0.12 涨到 hoverIntensity, 伸向指针弹簧 (刚度 70, 阻尼 7), 悬停时每秒自转 0.3 * hover, 尾迹头部以 1 - exp(-6 dt) 转向指针 (无指针时匀速绕行), 尾迹 smoothstep(0, 0.35, lag) * exp(-2.6 lag / trail); 点击给脉冲弹簧 (170 / 11) 初速 4 并放出 1.2 秒扩到满的回声环, 闪亮按 exp(-2.5 dt) 衰减; 入场 1.1 秒. 颜色 1 到 3 个沿环流转, hue 用 YIQ 旋转. 默认 colors primary, accent. |
 | EvilEye | `EvilEye` | 采用: 极坐标方向乘 2.2 与 r * 3 - t 取三层三维值噪声 (0.6 / 0.3 / 0.1) 烧火焰, flames = smoothstep(0.35, 0.95, n + distanceMask * 0.55) * max(distanceMask + 0.35, 0), distanceMask = 1 - length(uv); 虹膜环半径 0.3 + 0.04 (n - 0.5), 环宽 irisWidth * 0.4, 环内放射纹 smoothstep(0.45, 0.85, 噪声); 竖缝瞳孔按 (9, 2.3) 压缩, 外圈光晕按 (0.5, 1.5) 椭圆压缩后平方乘 glowIntensity * 2, 能量过 0.9 起泛白. 瞳孔跟手 tau 0.2s, 偏移上限 0.15, 目标为指针偏移乘 pupilFollow 并封顶为 1, 离场回正; 减弱动效只画一帧且瞳孔居中. 默认 intensity 1.5, pupilSize 0.6, irisWidth 0.25, glowIntensity 0.35, scale 0.8, eyeColor primary, backgroundColor background; lightMode 在浅底上画深色眼. 条目的噪声纹理改为片元内三维值噪声, 不上传纹理. |
+| MagicRings | `MagicRings` | 采用: 环数上限 RINGS_MAX 12 (默认 6), 半径 baseRadius 0.35 + radiusStep 0.1 * i; pulse 模式每环错开 0.5s 出生, 周期 3.45s 内向外推 expansion * 2.6, 亮度包络 min(smoothstep(0, 0.7, t), 1 - smoothstep(0.5, 3.25, t)); breathe 按 0.5 expansion 正弦起伏. 每环取细芯 1 - smoothstep(0.5w, 1.5w, d) 加光晕 (glow * 1.5w / (d + 1.5w))^2, 沿角度按 pow(0.5 + 0.5 cos, taper) 渐细, 色散分 rgb 偏移 0.012 dispersion, 峰值经 1 - exp(-peak) 压缩并在 smoothstep(1.4, 3.6) 处泛白; 颜色沿序号从 color (primary) 混到 colorTwo (accent). 跟手弹簧刚度 70, 阻尼临界的 0.9, 子步 1/240s; 悬停弹簧刚度 40 临界阻尼, 放大到 hoverScale 1.2 并按 exp(-6 d^2) 在指针附近增亮; 点击爆环最多 3 个, 寿命 1.1s, 扩散 0.9 短边每秒; 入场每环 smoothstep(0.12 i, 0.12 i + 0.9) 依次亮起. 减弱动效时 pulse 退为 breathe 画一帧, 不跟手不爆环. ENGINE-GAP: 条目的 128 段环带网格与 Canvas2D 叠层改为片元解析画环, tilt 只做竖向压扁不做透视. |
 
 ## Alternatives considered
 
