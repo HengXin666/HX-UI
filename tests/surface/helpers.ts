@@ -38,3 +38,25 @@ export function stubRect(el: Element, rect: { left: number; top: number; width: 
 	(el as HTMLElement).getBoundingClientRect = () =>
 		({ ...rect, x: rect.left, y: rect.top, right: rect.left + rect.width, bottom: rect.top + rect.height, toJSON: () => rect }) as DOMRect;
 }
+
+/** 让 2d 上下文返回一个记录调用名的空壳 (属性可写), webgl2 返回 null. 返回还原函数. */
+export function recordCanvas2d(calls: string[]): () => void {
+	const original = HTMLCanvasElement.prototype.getContext;
+	const stub = new Proxy(
+		{},
+		{
+			get: (_t, key) => {
+				if (key === "then") return undefined;
+				if (key === "getImageData") return () => ({ data: new Uint8ClampedArray(4) });
+				return (..._args: unknown[]) => calls.push(String(key));
+			},
+			set: () => true,
+		},
+	);
+	HTMLCanvasElement.prototype.getContext = function getContext(kind: string) {
+		return kind === "2d" ? stub : null;
+	} as typeof original;
+	return () => {
+		HTMLCanvasElement.prototype.getContext = original;
+	};
+}
