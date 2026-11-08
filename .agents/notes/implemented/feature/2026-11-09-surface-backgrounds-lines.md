@@ -9,6 +9,7 @@ Decision-ID: surface-backgrounds-lines
 - `src/surface/backgrounds/lines/index.ts`
 - `src/surface/backgrounds/lines/tokens.ts`
 - `src/surface/backgrounds/lines/FloatingLines.tsx`
+- `src/surface/backgrounds/lines/FluxLines.tsx`
 
 ## Problem
 
@@ -25,6 +26,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族, 分七路并行. line
 | 规格条目 | 组件 | 取舍 |
 | --- | --- | --- |
 | FloatingLines | `FloatingLines` | 采用: MAX_LINES 24, MAX_CLICKS 3, INTRO 1.8s, 旋涡 turn = 1.9 * smoothstep(0, 0.23, age) * exp(-(age - 0.23) * 1.1), spread = 0.3 * (1 + 0.55 age), 抗锯齿 0.75 dpr, 光晕 tight 1 / (2.6 dpr) 与 wide 1 / (11 dpr), lift 1 + 0.8 near, 左右 edgeFade. 跟手阻尼 1 - (1 - d)^(60 dt) 换成等价时间常数走 approach. 组位置收数字 (居中坐标纵向), mixBlendMode 默认 normal 而非 screen (token 色在明暗主题都可读). |
+| FluxLines | `FluxLines` | 采用: INTRO 1.8s, ref = 700 / max(scale, 0.05), 平流 200 px/s 乘 speed (默认 0.5), band = 5 rimWidth, reveal = smoothstep(0.2, 0.85, ...), core = smoothstep(line + 0.75, line - 0.75, px) * max(smoothstep(0.08, 0.6, glow), reveal), 磁铁强弱 tau 0.3s, 跟手 tau = mouseDampening. 线为流向坐标系里噪声扭曲场的等值线 (每参考尺度 16 条, 本库定), 第二层噪声给线身亮段 (pow sharpness). 旋涡常数本库定 (1.6 转, 0.2s 起, 1.4 衰减). transparent false 时铺 backgroundColor token. |
 
 ## Alternatives considered
 
