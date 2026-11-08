@@ -7,3 +7,4 @@ export { GridMotion, type GridMotionProps } from "./GridMotion";
 export { GridScan, type GridScanProps } from "./GridScan";
 export { RippleGrid, type RippleGridProps } from "./RippleGrid";
 export { MicroSlats, type MicroSlatsProps } from "./MicroSlats";
+export { AcidSquares, type AcidSquaresProps } from "./AcidSquares";
