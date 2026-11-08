@@ -18,6 +18,8 @@ Decision-ID: surface-backgrounds-rays
 - `src/surface/backgrounds/rays/light-pillar-shader.ts`
 - `src/surface/backgrounds/rays/LightTunnel.tsx`
 - `src/surface/backgrounds/rays/light-tunnel-shader.ts`
+- `src/surface/backgrounds/rays/Lightfall.tsx`
+- `src/surface/backgrounds/rays/lightfall-shader.ts`
 
 ## Problem
 
@@ -41,6 +43,7 @@ Backgrounds 全量落地分七路, rays 路收以光束, 光柱, 闪电, 棱镜�
 | SideRays | `SideRays` | 侧向扇形双色光束: 两层值噪声 0.7 / 0.3 成束, fwidth 抗锯齿 smoothstep(0.12, 0.45), 聚光 1 + z * exp(-((a - x) / y)^2), 衰减 1 / (1 + (r / 0.4)^falloff), 揭开 1.6s, 高光泛白 smoothstep(0.7, 1) * 0.55, 浮尘闪烁 0.55 + 0.45 sin. 朝向用临界阻尼弹簧 (刚度 18), 聚光跟手速率 6, 偏离上限 spread * 1.5. 默认时钟倍率 2.5 落在公共 speed. 默认色 primary / foreground. |
 | LightPillar | `LightPillar` | 单通道射线步进 56 步, 扭转噪声柱累积 1 / d 辉光, 顶底两色渐变, 自转时钟 0.96 * rotationSpeed, 五次曲线入场 2.1s 自下而上揭开 (遮罩软边 0.9), 点击亮环沿柱上行 (寿命 1.4s), 视角跟手 2.4, 在场 3, 画质档 0.35 / 0.5 / 0.6. ENGINE-GAP: 规格的独立合成 / 泛光通道以峰值处解析增益近似; mixBlendMode 交给 className. 默认色 primary / accent-2. |
 | LightTunnel | `LightTunnel` | 极坐标线缆隧道, 深度 1 / r, 线缆按 hash 明暗 (variance 0.9), 脉冲头 exp(-(lead / head)^2) 尾 exp(-lead / tail) 分段, 远处线缆像素级时 lod 化成整体光 (smoothstep(4, 1.2, spacing)), 近 / 远淡出, reach 1 - exp(-depth * 0.55) 驱动由外向内揭开 1.8s, 漂移 (speed + 0.2), 指针拉弯中段 tau 0.6s. 规格的 speed 与公共时钟倍率重名, 改名 drift. |
+| Lightfall | `Lightfall` | 四层视差竖向光痕下落, 每列 streakCount 条, 尾巴 exp(-tail * behind) 乘 (1 - smoothstep(0.5, 0.95, behind / (0.5 * period))) 与 (1 - smoothstep(1.2, 3.2, tail * behind)) 截断, 列宽软边 smoothstep(0.72 * edge, edge), 列宽小于 1.6 到 3.2 像素时 lod 成整体光, 头部高斯辉光, 闪烁, 调色板最多 8 色按列哈希取色, 均色背景微光. 入场 2.6s 自上而下揭开, 按住冲刺 (升 2.2 / 降 1.6, 下落 1 + warp * 9 倍, 光痕拉长), 下落行程 dt * 0.1 * fallSpeed, 视差跟手时间常数 mouseDampening, 透镜跟手 6, 在场 4 / 2. ENGINE-GAP: 四级降采样泛光以峰值处解析增益近似. 规格的 speed 改名 fallSpeed, backgroundColor 不给时透明叠加. |
 
 ## Alternatives considered
 
