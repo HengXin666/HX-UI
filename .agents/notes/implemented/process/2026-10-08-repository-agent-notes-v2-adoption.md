@@ -13,9 +13,9 @@ Decision-ID: repository-agent-notes-v2-adoption
 - `docs/src/components/DocKit.tsx`
 - `scripts/check-shell.ts`
 - `scripts/e2e/run.mjs`
-- `scripts/gates/run.mjs`
-- `scripts/gates/frontend/check-line-budget.mjs`
-- `scripts/gates/shared/check-lanes.mjs`
+- `scripts/gates/run.ts`
+- `scripts/gates/frontend/check-line-budget.ts`
+- `scripts/gates/shared/check-lanes.ts`
 - `src/index.ts`
 - `src/blueprint/demo.ts`
 - `src/charts/Charts.tsx`

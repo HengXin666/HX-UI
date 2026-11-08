@@ -1,59 +1,43 @@
-#!/usr/bin/env node
 /**
- * 单文件行数上限 (架构维度) + 存量棘轮。
+ * 单文件行数上限 (ts<=450 / tsx<=250, 取 2026-10-04 本仓 p90 附近) + 存量棘轮.
+ * 已超标文件登记在 baselines/line-budget.json, 以当前值为上限, 只许降不许涨; 阈值与基线进指纹.
  *
- * ## 拦什么
- *
- * 一个文件长到几百行之后, 每次改动都会碰到与本次目的无关的逻辑, review 也只能靠
- * 肉眼扫。本仓的读数 (2026-10-04, 命令见下):
- *
- *   git ls-files "*.tsx" | xargs wc -l | ...   → n=93, median=128, p75=200, p90=250, max=801
- *   git ls-files "*.ts"  | xargs wc -l | ...   → n=24, median=171, p75=334, p90=422, max=533
- *
- * 上限取 p90 附近 (tsx 250 / ts 450): 允许绝大多数文件自由生长, 只卡住最离谱的那几个。
- * "tsx 是页面与组件, ts 里有纯逻辑模块, 两者分布不同" 是分开定阈值的理由, 不是抄来的。
- *
- * ## 棘轮怎么用 (存量不因老债直接全仓红)
- *
- * 已经超标的 12 个文件全部登记在 baselines/line-budget.json, 各自以**当前值**为上限。
- * 于是第一次接入就是全绿, 而它们**只许降不许涨**  涨 1 行即 FAIL。
- *
- * ## 为什么阈值与基线进指纹
- *
- * 否则"放松一条门禁"只是改一个数字, 在 diff 里毫不起眼。见 check-fingerprint.mjs。
- *
- * 用法:
- *   node scripts/gates/frontend/check-line-budget.mjs              # 检查
- *   node scripts/gates/frontend/check-line-budget.mjs --update     # 显式降水位 (只许降)
- * 扫描根: CHECK_UI_ROOT (默认仓库根); 基线可用 CHECK_UI_BASELINE 覆盖 (探针用)。
+ * 用法: node scripts/gates/frontend/check-line-budget.ts [--update]  (--update 只许降水位)
+ * 扫描根: CHECK_UI_ROOT (默认仓库根); 基线可用 CHECK_UI_BASELINE 覆盖 (探针用).
  * 退出码: 0=通过 / 1=违规 / 2=输入坏了
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { EXIT_TOOL, GIT, JSON_INDENT, NEWLINE, REPO_UP_FROM_GATE_SUBDIR, UTF8, WALK_SKIP } from "../../constants/gates.ts";
 
 const HERE = import.meta.dirname;
-const ROOT = process.env.CHECK_UI_ROOT ? path.resolve(process.env.CHECK_UI_ROOT) : path.resolve(HERE, "..", "..", "..");
+const ROOT = process.env.CHECK_UI_ROOT ? path.resolve(process.env.CHECK_UI_ROOT) : path.resolve(HERE, REPO_UP_FROM_GATE_SUBDIR);
 const BASELINE = process.env.CHECK_UI_BASELINE
   ? path.resolve(process.env.CHECK_UI_BASELINE)
   : path.join(ROOT, "scripts", "gates", "baselines", "line-budget.json");
 
 const UPDATE = process.argv.includes("--update");
 
-/** 行数口径: 换行符个数 (与 `wc -l` 一致)。测法写在这里, 免得两处算法不同。 
+/** 行数口径: 换行符个数 (与 `wc -l` 一致). 测法写在这里, 免得两处算法不同.
  * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
  */
-function linesOf(file) {
-  return fs.readFileSync(file, "utf8").split("\n").length - 1;
+function linesOf(file: string): number {
+  return fs.readFileSync(file, UTF8).split(NEWLINE).length - 1;
 }
 
-function listFiles() {
-  const r = spawnSync("git", ["ls-files", "*.ts", "*.tsx"], { cwd: ROOT, encoding: "utf8" });
-  if (r.status === 0) return (r.stdout ?? "").split("\n").map((s) => s.trim()).filter(Boolean);
+/**
+ * 待量的 ts / tsx 文件: 优先 git ls-files, 夹具无 git 时遍历目录.
+ *
+ * .agents/notes/implemented/process/2026-11-08-gates-ts.md
+ */
+function listFiles(): string[] {
+  const r = spawnSync(GIT, ["ls-files", "*.ts", "*.tsx"], { cwd: ROOT, encoding: UTF8 });
+  if (r.status === 0) return (r.stdout ?? "").split(NEWLINE).map((s) => s.trim()).filter(Boolean);
   // 探针夹具可能是无 git 的目录树
-  const out = [];
-  const SKIP = new Set(["node_modules", ".git", "dist", ".vite", ".bpprobe"]);
-  (function walk(dir) {
+  const out: string[] = [];
+  const SKIP = new Set(WALK_SKIP);
+  (function walk(dir: string): void {
     for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       if (SKIP.has(e.name)) continue;
       const full = path.join(dir, e.name);
@@ -64,27 +48,32 @@ function listFiles() {
   return out;
 }
 
+/** 上限按扩展名分档: tsx 是页面与组件, ts 里有纯逻辑模块, 两者分布不同. */
+function kindOf(file: string): string {
+  return file.endsWith(".tsx") ? "tsx" : "ts";
+}
+
 if (!fs.existsSync(BASELINE)) {
   console.error(`check-line-budget: 基线不存在 (${BASELINE})`);
-  console.error(`  初始化: node scripts/gates/frontend/check-line-budget.mjs --update`);
-  process.exit(2);
+  console.error(`  初始化: node scripts/gates/frontend/check-line-budget.ts --update`);
+  process.exit(EXIT_TOOL);
 }
-let base;
+let base: { limits?: Record<string, number>; frozen?: Record<string, number> };
 try {
-  base = JSON.parse(fs.readFileSync(BASELINE, "utf8"));
+  base = JSON.parse(fs.readFileSync(BASELINE, UTF8));
 } catch (err) {
   console.error(`check-line-budget: 基线无法解析: ${err.message}`);
-  process.exit(2);
+  process.exit(EXIT_TOOL);
 }
-const LIMITS = base.limits ?? { ts: 450, tsx: 250 };
-const FROZEN = base.frozen ?? {};
+const LIMITS: Record<string, number> = base.limits ?? { ts: 450, tsx: 250 };
+const FROZEN: Record<string, number> = base.frozen ?? {};
 
 const files = listFiles();
 const measured = files.map((f) => ({ file: f, lines: linesOf(path.join(ROOT, f)) }));
 
 if (UPDATE) {
-  const frozen = {};
-  const over = measured.filter((m) => m.lines > (LIMITS[m.file.endsWith(".tsx") ? "tsx" : "ts"] ?? Infinity));
+  const frozen: Record<string, number> = {};
+  const over = measured.filter((m) => m.lines > (LIMITS[kindOf(m.file)] ?? Infinity));
   over.sort((a, b) => b.lines - a.lines).forEach((m) => (frozen[m.file] = m.lines));
   // 棘轮只许降: 已有条目的上限只能变小, 不允许 --update 顺手抬高
   const raised = Object.keys(frozen).filter((f) => FROZEN[f] !== undefined && frozen[f] > FROZEN[f]);
@@ -94,14 +83,14 @@ if (UPDATE) {
     console.error("  水位要涨说明文件变长了  先拆文件, 而不是改基线。");
     process.exit(1);
   }
-  fs.writeFileSync(BASELINE, JSON.stringify({ ...base, limits: LIMITS, frozen }, null, 2) + "\n");
+  fs.writeFileSync(BASELINE, JSON.stringify({ ...base, limits: LIMITS, frozen }, null, JSON_INDENT) + NEWLINE);
   console.log(`check-line-budget: 已更新水位 (冻结 ${Object.keys(frozen).length} 个文件, 只降不升)`);
   process.exit(0);
 }
 
-const violations = [];
+const violations: Array<{ file: string; rule: string; msg: string; hint: string }> = [];
 for (const m of measured) {
-  const limit = LIMITS[m.file.endsWith(".tsx") ? "tsx" : "ts"];
+  const limit = LIMITS[kindOf(m.file)];
   const frozen = FROZEN[m.file];
   if (frozen !== undefined) {
     if (m.lines > frozen) {

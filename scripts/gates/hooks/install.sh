@@ -3,7 +3,7 @@
 #
 # 为什么不直接把钩子提交进 .git/hooks: 那个目录不在版本控制里, 抄一份进去
 # 就没有 diff、没有 review、也不会随仓库更新。所以真身在 scripts/gates/hooks/,
-# 这里只做符号链接; 门禁本身的定义在 scripts/gates/registry.mjs (唯一真源)。
+# 这里只做符号链接; 门禁本身的定义在 scripts/gates/registry.ts (唯一真源)。
 #
 # 用法: bash scripts/gates/hooks/install.sh [--dry-run]
 set -uo pipefail
@@ -42,6 +42,6 @@ done
 
 if [ "$dry" = "0" ]; then
   echo ""
-  echo "验证: git commit 时会自动跑 node scripts/gates/run.mjs --staged"
+  echo "验证: git commit 时会自动跑 node scripts/gates/run.ts --staged"
   echo "跳过:  git commit --no-verify  (CI 仍会跑同一套)"
 fi

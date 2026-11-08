@@ -12,7 +12,7 @@
     "check:smoke": "node ../scripts/check-smoke.ts",
     "check:shell": "node ../scripts/check-shell.ts",
     "verify": "npm run typecheck && npm run check:icons && npm run build && npm run check:smoke && npm run check:shell",
-    "gates": "node ../scripts/gates/run.mjs --group docs,shape,browser",
+    "gates": "node ../scripts/gates/run.ts --group docs,shape,browser",
     "gates:install-hooks": "bash ../scripts/gates/hooks/install.sh"
   },
   "dependencies": {

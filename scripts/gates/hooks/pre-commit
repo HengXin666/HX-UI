@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # pre-commit  提交前跑"与本轮相关的秒级门禁"。
 #
-# 为什么薄: 判据定义只有一份 (scripts/gates/registry.mjs), 这个钩子只负责
+# 为什么薄: 判据定义只有一份 (scripts/gates/registry.ts), 这个钩子只负责
 # "什么时候跑、跑哪些分组"。任何把命令抄进钩子的做法都会让两份定义慢慢分叉 
 # 分叉不会报错, 只会让某个检查点悄悄少跑几条。
 #
@@ -20,10 +20,10 @@ repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || {
 cd "$repo_root"
 
 # 门禁总线不在 (例如旧克隆) 时给出可操作的提示, 而不是静默放行
-if [ ! -f "scripts/gates/run.mjs" ]; then
-  echo "pre-commit: 找不到 scripts/gates/run.mjs  门禁总线未安装, 本次提交未经验证" >&2
+if [ ! -f "scripts/gates/run.ts" ]; then
+  echo "pre-commit: 找不到 scripts/gates/run.ts  门禁总线未安装, 本次提交未经验证" >&2
   echo "            CI 会跑同一套检查; 本地要恢复请确认脚本已检出。" >&2
   exit 0
 fi
 
-exec node scripts/gates/run.mjs --checkpoint pre-commit
+exec node scripts/gates/run.ts --checkpoint pre-commit

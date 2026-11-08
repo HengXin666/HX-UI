@@ -8,7 +8,7 @@ Decision-ID: pr3-quality-gates-ci-fixes
 
 - `scripts/quality/checks/code.ts`
 - `scripts/quality/runtime/run.ts`
-- `scripts/gates/shared/check-fingerprint.mjs`
+- `scripts/gates/shared/check-fingerprint.ts`
 - `scripts/check-blueprint.mjs`
 - `scripts/e2e/run.mjs`
 - `docs/src/blueprint-demo-fallback/dsh.ts`

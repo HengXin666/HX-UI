@@ -86,7 +86,7 @@ check-smoke: 通过 (41/41 页渲染正常)      ← exit 0
 
 ## 三、本轮接线的门禁（每条的 判据 / 检查点 / 自证）
 
-唯一注册表在 `scripts/gates/registry.mjs`，唯一入口 `scripts/gates/run.mjs`。
+唯一注册表在 `scripts/gates/registry.ts`，唯一入口 `scripts/gates/run.ts`。
 
 | id | 分组 | 判据真源 | 检查点 |
 |---|---|---|---|
@@ -95,13 +95,13 @@ check-smoke: 通过 (41/41 页渲染正常)      ← exit 0
 | `blueprint` | lib | `scripts/check-blueprint.mjs` 的 171 条 `ok()` | 同上 |
 | `docs-typecheck` | docs | `docs/tsconfig.json`（**本轮新建的入口**） | 同上 |
 | `icons` | docs | `docs/scripts/check-icons.mjs` + iconify 图标集 JSON | 同上 |
-| `registry` | docs | `scripts/gates/frontend/check-docs-registry.mjs` + `docs-registry-allow.json` | 同上 |
+| `registry` | docs | `scripts/gates/frontend/check-docs-registry.ts` + `docs-registry-allow.json` | 同上 |
 | `line-budget` | shape | `scripts/gates/baselines/line-budget.json` | 同上 |
 | `docs-build` | browser | `docs/vite.config.ts`；**产出 `dist`** | pre-push / CI |
 | `smoke` / `shell` | browser | 各自脚本；`requires: dist`（**只认本次运行产出的 dist**） | pre-push / CI |
-| `lanes` | guard | `scripts/gates/lanes.mjs` | pre-push / CI |
+| `lanes` | guard | `scripts/gates/lanes.ts` | pre-push / CI |
 | `fingerprint` | guard | `scripts/gates/gate-fingerprint.json` | pre-push / CI |
-| `probe` | probe | `scripts/gates/shared/probe-gates.mjs` | **只在 CI 与手动** |
+| `probe` | probe | `scripts/gates/shared/probe-gates.ts` | **只在 CI 与手动** |
 
 `--all` 实测：**13 条全绿，35.4s**（2026-10-04）。
 
@@ -134,7 +134,7 @@ ts : n=24  median=171  p75=334  p90=422  max=533
 | `docs/src/pages/SettingsPageDemo.tsx` | 260 |
 | `src/layout/CodeBlock.tsx` | 251 |
 
-### 检查点怎么分工（决策记录在 `scripts/gates/lanes.mjs` 的 `CHECKPOINTS`）
+### 检查点怎么分工（决策记录在 `scripts/gates/lanes.ts` 的 `CHECKPOINTS`）
 
 | 检查点 | 跑哪些组 | 实测 | 为什么不含别的 |
 |---|---|---|---|
@@ -149,17 +149,17 @@ ts : n=24  median=171  p75=334  p90=422  max=533
 
 ```mermaid
 flowchart TD
-    E["编辑 src/ 或 docs/"] --> PC["git commit<br/>.git/hooks/pre-commit → run.mjs --checkpoint pre-commit"]
+    E["编辑 src/ 或 docs/"] --> PC["git commit<br/>.git/hooks/pre-commit → run.ts --checkpoint pre-commit"]
     PC --> L1["lib: typecheck / ui-rules / blueprint"]
     PC --> L2["docs: docs-typecheck / icons / registry"]
     PC --> L3["shape: line-budget 棘轮"]
-    L1 --> P["git push<br/>pre-push → run.mjs --checkpoint pre-push"]
+    L1 --> P["git push<br/>pre-push → run.ts --checkpoint pre-push"]
     L2 --> P
     L3 --> P
     P --> B["browser: docs-build (produces dist)"]
     B --> B2["smoke / shell (requires dist)"]
     P --> G["guard: lanes 覆盖 / fingerprint"]
-    P --> CI[".github/workflows/quality.yml<br/>run.mjs --all --strict"]
+    P --> CI[".github/workflows/quality.yml<br/>run.ts --all --strict"]
     G --> CI
     CI --> PR["probe: 17 条负向 + 接线探针"]
     PR --> RP{"分支保护<br/>(未核实: 托管端设置无法在本机验证)"}
@@ -240,7 +240,7 @@ flowchart TD
    `[".agents/**", "*.md"]`，而本仓在父仓眼里只是一个 gitlink `components/HX-UI` 
    不匹配任何 guarded 模式。实测 `verify-coverage.ts --base HEAD` 输出
    `ok — 142 guarded path(s) changed with a note in the same change`，对这 15 个新增文件
-   **一条都没管**。所以本轮把设计理由写在了代码注释、`scripts/gates/lanes.mjs` 的
+   **一条都没管**。所以本轮把设计理由写在了代码注释、`scripts/gates/lanes.ts` 的
    `CHECKPOINTS` 与本文档里，而不是伪造一篇够不到作用的 note。要不要给 HX-UI 自己装一套
    决策记录，属于裁决项。
 3. **`check-blueprint.mjs` 的 171 条断言在本轮取证期间一度是红的**（并行编辑
@@ -266,9 +266,9 @@ npm run gates:push                 # 推送档 (+browser+guard, 实测约 29s)
 npm run gates:all                  # 全部分组 + --strict
 npm run gates:probe                # 18 条负向/接线探针 (实测全过)
 npm run gates:fingerprint          # 指纹 (严格度 + 接线; 9 条来源)
-node scripts/gates/frontend/check-line-budget.mjs   # 行数棘轮
-node scripts/gates/shared/check-lanes.mjs           # 分流覆盖
-node scripts/gates/shared/check-fingerprint.mjs --update   # 有意放松时才跑
+node scripts/gates/frontend/check-line-budget.ts   # 行数棘轮
+node scripts/gates/shared/check-lanes.ts           # 分流覆盖
+node scripts/gates/shared/check-fingerprint.ts --update   # 有意放松时才跑
 npm run gates:install-hooks        # 装一次 pre-commit / pre-push
 ```
 

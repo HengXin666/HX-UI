@@ -15,7 +15,7 @@ set -uo pipefail
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 cd "$repo_root"
 
-if [ ! -f "scripts/gates/run.mjs" ]; then
+if [ ! -f "scripts/gates/run.ts" ]; then
   echo "pre-push: 找不到门禁总线, 本次推送未经验证" >&2
   exit 0
 fi
@@ -26,4 +26,4 @@ if [ -z "$base" ]; then
   base="HEAD~1"
 fi
 
-exec node scripts/gates/run.mjs --checkpoint pre-push --from "$base"
+exec node scripts/gates/run.ts --checkpoint pre-push --from "$base"

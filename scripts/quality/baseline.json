@@ -17696,20 +17696,6 @@
         "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
     },
     {
-        "ruleId": "HC-EXT",
-        "path": "scripts/gates/frontend/check-docs-registry.mjs",
-        "fingerprint": "9a10aef0d5bb0d71c3e76d2afbb10f5e479580d93afef8052d8e65bb0b93f1fd",
-        "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
-        "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
-    },
-    {
-        "ruleId": "HC-EXT",
-        "path": "scripts/gates/frontend/check-line-budget.mjs",
-        "fingerprint": "64c13635e956b0eb892a71b770594998274d564c83da86f7b8b35a315b4702ca",
-        "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
-        "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
-    },
-    {
         "ruleId": "PROJECT-NO-ABS-PATH",
         "path": "scripts/gates/hooks/install.sh",
         "fingerprint": "7cadb90f63b0a2e6dcc4aa49ac6241b0b83076f0d81b52b2bd51f5f708e239f2",
@@ -17720,48 +17706,6 @@
         "ruleId": "PROJECT-NO-ABS-PATH",
         "path": "scripts/gates/hooks/install.sh",
         "fingerprint": "cac4b1b44ccc6fe73aad4ee3e58c6c45a2e679f860b79447f522843dcf8cd6a1",
-        "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
-        "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
-    },
-    {
-        "ruleId": "HC-EXT",
-        "path": "scripts/gates/lanes.mjs",
-        "fingerprint": "a3e9a2ac3029735f40298416f21bae72f122c8b31bb801b95bfdd3787e987f75",
-        "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
-        "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
-    },
-    {
-        "ruleId": "HC-EXT",
-        "path": "scripts/gates/registry.mjs",
-        "fingerprint": "abde5cf7b707847f08ae5f0d31465b911c38654c8539f580d631f431b0741adb",
-        "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
-        "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
-    },
-    {
-        "ruleId": "HC-EXT",
-        "path": "scripts/gates/run.mjs",
-        "fingerprint": "3f0d36325c765faa9f17d3963b5c89e104f44c372ebec98ec1a10cc4a1f8ab65",
-        "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
-        "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
-    },
-    {
-        "ruleId": "HC-EXT",
-        "path": "scripts/gates/shared/check-fingerprint.mjs",
-        "fingerprint": "92ed83bee6b36553ac2a21d48c21fdbafcf0edcadd066d907b8f12ddcc2c2cf5",
-        "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
-        "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
-    },
-    {
-        "ruleId": "HC-EXT",
-        "path": "scripts/gates/shared/check-lanes.mjs",
-        "fingerprint": "da05a0fccaba592194206513ee74d066139aec0971a6928fe1f3eceb7bce6fe5",
-        "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
-        "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
-    },
-    {
-        "ruleId": "HC-EXT",
-        "path": "scripts/gates/shared/probe-gates.mjs",
-        "fingerprint": "427b456a1b8b1ae416641de7384186ecdf727a793b5ffd52a67df90d7e068f54",
         "reason": "Existing at trusted base 65f8e76 before the quality gate was migrated onto the new main",
         "approvedBy": "HengXin666 (task instruction: separate historical violations with a baseline, review each entry)"
     },
