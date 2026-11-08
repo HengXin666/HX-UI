@@ -18,6 +18,8 @@ Decision-ID: surface-backgrounds-lines
 - `src/surface/backgrounds/lines/web-threads-shader.ts`
 - `src/surface/backgrounds/lines/Waves.tsx`
 - `src/surface/backgrounds/lines/waves-shader.ts`
+- `src/surface/backgrounds/lines/SlicedWaves.tsx`
+- `src/surface/backgrounds/lines/sliced-waves-shader.ts`
 
 ## Problem
 
@@ -39,6 +41,7 @@ L3 surface 层要落地 react-bits 的 Backgrounds 全族, 分七路并行. line
 | Threads | `Threads` | 采用: 包络 smoothstep(split, max(0.7, split + 0.2), x), blur = smoothstep(split, split + 0.05, x) * perc, 纵向 0.5 + (perc - 0.5) distance + 噪声 / 2 * 振幅, 线宽 7 thickness px (1 - perc), alpha = 1 - smoothstep(0, 1, perc^0.3) taper, 覆盖率按线宽 / 绘制宽守恒, 跟手 tau 1/3 s, 拨开在场 tau 1/4 s 且 parting > 0 才响应, speed 默认 0.6. 上游线带网格改为片元逐线求距离 (至多 128 条, 本库定), 覆盖率用 1 - (1 - a)(1 - b) 叠加防止发白成片; 拨开半径 0.18 与位移 0.12, 虚化 5 px softness 本库定; MAX_RENDER_DIM 交给内核最长边上限. |
 | WebThreads | `WebThreads` | 采用: MAX_THREADS 24, MAX_COLORS 6, MAX_SURGES 3, SURGE 1.6s 逐线错开 0.05s, STROKE 1.25s 与 staggerFor = min(0.12, 0.9 / (n - 1)) 的逐线描出, born = smoothstep(-0.05, 0.03, head), amp = 1 + i taper, 结点 spacing 1 / nodes 与 twist = depth smoothstep(0, 0.07, |x - hub|), depth = 0.5 + 0.5 cos(z), core = smoothstep(0.5, 2.2, energy) 混芯色, focal = smoothstep(2, 9, energy fade) 0.25, speed 默认 0.2, 光晕 glow / d^falloff. 收拢包络 |sin(PI x nodes)|^pinch, 光晕缩放 0.15, 指针拉线 (tau 0.12 s, 力度 0.35) 与 pulses 的自动光点 (0.25 pulses 每秒) 本库定; backgroundColor 不给时透明. |
 | Waves | `Waves` | 采用: 线距 spacing 10 CSS 像素, 线宽 1, 位移场两层梯度噪声 (尺度 0.0028 scale, 0.55 / 0.45 混合), 方向角 n * twist * 2.2 + m * variation * 2, 幅度 amplitude 32 CSS 像素; 虚线周期 WAVES_CELL 12; 跟手 tau 0.045s 与在场 tau 0.06s 取条目原式, 指针推挤半径 175 按 exp(-d^2 / r^2) 衰减; 拖动甩出为弹簧, 阻尼比 zeta = 1 - bounce (默认 0.5), omega = 2 PI / returnDuration (默认 1.4s), 子步 min(16, max(1, ceil(dt / min(1/120, 0.6 / omega)))); 点击涟漪至多 8 个, 640 px/s 外扩, 环宽 64, 衰减 exp(-1.2 age); 染色 heat = smoothstep(0, 1, 0.8 energy) 从 lineColor (foreground) 混到 accentColor (primary); 入场 2.2s 由中间向两侧长出. 指针速度换弹簧目标系数 WAVES_DRAG 0.06 本库定; backgroundColor 不给时透明, lightMode 线收到 0.85, mixBlendMode 交宿主 style. 减弱动效只画一帧, 弹簧归零. |
+| SlicedWaves | `SlicedWaves` | 采用: MAX_RIBBONS 6 (默认 3), 竖条间距 28 CSS 像素占宽 barWidth 0.5, 透视 FOCAL 1.1 与 DISTANCE 2.6, 缩放 s = 3.7 / (3.7 + perspective * curve * u^2 * 2) (默认 0.45 / 0.5), 飘带高 0.26, 间距 spread 0.1, 起伏 amplitude 0.1 * sin(3 frequency u + 0.8t + 1.3 i), 竖向边缘按 erf 近似高斯虚化 (blur 0.6), slices 横切成段; 叠加后 1 - exp(-1.4 peak brightness) 压缩 (brightness 1.25), smoothstep(1.1, 3.2) 处泛白 0.75; 抬起在场进 / 离 tau 0.25 / 0.6s, 位置 tau 0.12s, 抬起 0.12 exp(-(3 (u - x))^2); 聚焦弹簧 v += (36 (target - focus) - 11 v) dt 取条目原式, 聚焦飘带提亮 1 + 0.6 exp(-(2.5 d)^2); 入场 1.5s 条身从中线长出. 默认色 accent / primary / ring (调色板至多 8 色按飘带序分布), position 0.78, 颗粒 0.08, fade 左右淡出. 减弱动效只画一帧, 抬起与聚焦直接落到指针. |
 
 ## Alternatives considered
 
