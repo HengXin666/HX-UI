@@ -3,3 +3,4 @@ export { PillTabs, type BarItem, type PillIndicator, type PillTabsProps } from "
 export { MagnifyDock, type DockItem, type MagnifyDockProps } from "./dock/MagnifyDock";
 export { ProximityRail, type ProximityRailProps } from "./rail/ProximityRail";
 export { GooTabs, type GooTabsProps } from "./bar/GooTabs";
+export { GlassTiles, type GlassTile, type GlassTilesProps } from "./tile/GlassTiles";

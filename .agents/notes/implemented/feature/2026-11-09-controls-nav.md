@@ -11,6 +11,7 @@ Decision-ID: controls-nav
 - `src/controls/nav/dock/MagnifyDock.tsx`, `src/controls/nav/dock/parts/dock-math.ts` (react-bits Components/Dock)
 - `src/controls/nav/rail/ProximityRail.tsx`, `src/controls/nav/rail/parts/rail-spec.ts` (react-bits Components/LineSidebar)
 - `src/controls/nav/bar/GooTabs.tsx`, `src/controls/nav/bar/parts/goo-spec.ts` (react-bits Components/GooeyNav)
+- `src/controls/nav/tile/GlassTiles.tsx`, `src/controls/nav/tile/parts/glass-spec.ts` (react-bits Components/GlassIcons)
 
 ## Problem
 
@@ -48,3 +49,7 @@ L2 controls 层缺一组导航件: 胶囊导航条, 放大坞, 黏液导航条, 
 ## GooTabs (规格 Components/GooeyNav)
 
 换选时旧胶囊按弹簧缩回, 一串液滴 (默认 15, 上限 32) 沿三次贝塞尔弧线从旧项飞向新项, 飞到一半最细; 新胶囊在 min(最短时长 / 3, 0.12s) 后按弹簧长出, 回弹取 wobble / 2. 液滴时长按规格 max(0.15, base * (0.62 + r * 0.32) + variance * r * 0.6), 随机数用按换选次数播种的 mulberry32, 可复现. 悬停块按 80ms 时间常数淡入淡出. 液滴与胶囊放在同一层, 用 SVG 滤镜 (模糊 2 + gooeyness * 8, alpha 阈值 18 / -7) 粘成一体. ENGINE-GAP: 规格的 WebGL 黏液高光与投影不做. 减弱动效不放液滴, 胶囊直接落定.
+
+## GlassTiles (规格 Components/GlassIcons)
+
+每格一块语义色背板 (tilt 倾斜, offset 错位, circle 右上圆, none) 衬在磨砂玻璃面后; 背板角度与位移按 0.5 + spread 放大, 悬停再放大 1.5 倍. 入场按规格 STAGGER 0.07s 错峰, 用临界阻尼弹簧从下沉 0.1 倍尺寸浮起. 悬停 press 缩到 0.94, lift 抬 0.08 倍尺寸, 都走弹簧, 键盘聚焦同悬停. 标签显隐按规格 0.3s outQuint. 方向键按网格走行列, 越界不动. useReducedMotion 首帧恒为 false, 入场前同步再查 prefersReducedMotion. ENGINE-GAP: 规格的 WebGL 折射, 斜面与色散不做, 玻璃改为 backdrop-blur (frost * 24px) 加 1px 边与渐变光泽.
