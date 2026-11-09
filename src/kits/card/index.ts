@@ -4,3 +4,4 @@
  * .agents/notes/implemented/feature/2026-11-10-kits-card.md
  */
 export { LAMP_DEFAULTS, LampCard, lampFollowTau, lampGradient, lampReach, type LampCardProps, type LampShape } from "./LampCard";
+export { EDGE_DEFAULTS, EDGE_SWEEP_MS, EdgeGlow, edgeAngle, edgeCone, edgeLevel, edgeProximity, edgeSweep, type EdgeGlowProps } from "./EdgeGlow";
