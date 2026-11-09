@@ -8,6 +8,7 @@ Decision-ID: kits-stack
 
 - `src/kits/stack/tokens.ts`, `src/kits/stack/index.ts`
 - `src/kits/stack/PopList.tsx`, `src/kits/stack/parts/list-spec.ts` (react-bits Components/AnimatedList)
+- `src/kits/stack/ScrollPile.tsx`, `src/kits/stack/parts/pile-spec.ts` (react-bits Components/ScrollStack)
 
 ## Problem
 
@@ -24,3 +25,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## PopList (规格 Components/AnimatedList)
 
 列表项滚进视口时按批错峰入场: 同一次视口回调里进来的项按序号排, 每项延迟 stagger (默认 0.05s) 只加在位移与透明度上, 模糊不延迟 (规格 transitionDelay "d, d, 0s"). 过渡为位移 620ms 回弹缓出 (CURVE.backOutSoft, 规格 (0.34, 1.4, 0.64, 1)), 透明度 300ms outQuint, 模糊 200ms ease. animation 取 pop (缩小加模糊), slide (下移), fade, none; 未入场姿态的具体数值规格未给, HX 自定. animateOnce 为假时滚出视口收回, 再进来重放. 选中底板以弹簧 (380 / 34, HX 自定; 规格只给了 240Hz 细分) 跟随选中项的位置与高度. 悬停可选中 (selectOnHover), 方向键与 Home / End 移动并滚到可见, loop 时首尾相接, Enter 与点击回调 onItemSelect. 上下渐隐层按距边缘 fadeSize (56px) 的比例淡出, 过渡 200ms ease. 读屏语义为 listbox 与 option, aria-activedescendant 指向选中项. theme 与 accentColor 换成语义色 accentTone. 减弱动效时全部直接在位, 无过渡, 底板跳到位.
+
+## ScrollPile (规格 Components/ScrollStack)
+
+卡片在自己的滚动容器里纵向排开 (间距 itemDistance 100px). 第 i 张在滚动到 布局上沿 - 钉住线 - i × itemStackDistance (24px) 时钉住, 之后补位移停在线上, 直到最后一张钉住再过 holdDistance (200px) 整叠一起离开. 钉住线 stackPosition 收 px 或视口百分比 (默认 15%). 被后面的卡盖上的进度 p 从自己钉住到末张钉住线性走完, 卡缩到 baseScale + i × itemScale (0.8, 0.05), 压暗 dimAmount × p (亮度滤镜), rotationAmount × i × p 转动, tiltAmount × p 后仰, 已被几张盖住就模糊 blurAmount 的几倍. 滚轮在 smoothScroll 时接管, 位置按规格 current += (goal - current)(1 - 0.9^(dt × 60)) 帧率无关地追目标; 拖滚动条, 触摸或键盘带来的外部滚动立即放弃平滑. 末张钉住时 onStackComplete 回调一次. useWindowScroll (跟随页面滚动) 与 snap 未做. 减弱动效时滚轮交给原生滚动, 无模糊, 转动与后仰, 钉住与缩放保留 (随滚动位置, 不是动画).

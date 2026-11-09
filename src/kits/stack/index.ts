@@ -4,3 +4,4 @@
  * .agents/notes/implemented/feature/2026-11-10-kits-stack.md
  */
 export { LIST_DEFAULTS, PopList, edgeFades, listPose, listStep, revealDelay, type ListAnimation, type PopListProps } from "./PopList";
+export { PILE_DEFAULTS, ScrollPile, pileComplete, pilePose, pileSmooth, pinAt, stackOffset, type PilePose, type ScrollPileProps } from "./ScrollPile";
