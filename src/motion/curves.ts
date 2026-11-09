@@ -17,6 +17,14 @@ export const CURVE = {
   lift: [0.3, 0.8, 0.3, 1],
   /** 弹出: 越过终点约 8% 再收回. 坞栏标签弹出. */
   popOut: [0.2, 1.25, 0.4, 1],
+  /** 四次缓出 (GSAP power3.out): 介于 outCubic 与 outQuint 之间. 菜单项入场. */
+  outQuart: [0.25, 1, 0.5, 1],
+  /** 三次缓出 (GSAP power2.out): 较柔的落定. 次要元素淡入. */
+  outCubic: [0.33, 1, 0.68, 1],
+  /** 四次缓入 (GSAP power3.in): 起步慢, 收尾快. 菜单离场. */
+  inQuart: [0.5, 0, 0.75, 0],
+  /** 流入: 前段很陡, 尾段长而平. 跑马带滑入. */
+  flow: [0.2, 0.9, 0.2, 1],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 
 export type CurveName = keyof typeof CURVE;
