@@ -8,6 +8,7 @@ Decision-ID: kits-gallery
 
 - `src/kits/gallery/tokens.ts`, `src/kits/gallery/index.ts`
 - `src/kits/gallery/FoldGallery.tsx` (react-bits Components/AccordionGallery)
+- `src/kits/gallery/SpringCarousel.tsx`, `src/kits/gallery/parts/carousel-spec.ts`, `src/kits/gallery/parts/use-drag.ts` (react-bits Components/Carousel)
 
 ## Problem
 
@@ -26,3 +27,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## FoldGallery (规格 Components/AccordionGallery)
 
 一排面板, 展开项的 flex-grow 取 ratio (n - 1) / (1 - ratio), 使它占总长 expandRatio (默认 0.52), 其余 grow 1; flex-grow 过渡 0.6s outQuart (规格 power3.out). 展开项的色条与标题按 60ms 错峰淡入归位, 收起项左移 14px 用 0.6 倍时长淡出; 未展开项可去色. 悬停或点击切换 (trigger), 焦点进入也切换, 方向键循环移动并移焦. 规格的 parallax 与 tilt (面板内图片随切换位移和转动) 不做, 只做比例与标签. 减弱动效时直接切换.
+
+## SpringCarousel (规格 Components/Carousel)
+
+位置是一路弹簧 (规格 STIFFNESS 150, DAMPING 24, 质量 1), 单位是张; 每张 translateX(偏移 × 100%), 循环时偏移取环上最近值. 拖拽过 5px 才算拖, 拖动时直接写位置; 松手时拖过宽度 20% 或速度过 0.3px/ms 就翻一页, 甩出速度换算成张/秒交给弹簧, 中途改目标保留速度. 自动播放 (默认 4s, 规格未给) 在悬停, 聚焦, 拖拽与页面隐藏时暂停. 方向键翻页, 指示点宽度过渡 320ms lift. 规格的 EFFECTS 与 THEMES (视觉主题) 不做. 减弱动效时直接跳页, 不自动播放.

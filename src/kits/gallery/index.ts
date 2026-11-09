@@ -4,3 +4,4 @@
  * .agents/notes/implemented/feature/2026-11-09-kits-gallery.md
  */
 export { FOLD_DEFAULTS, FoldGallery, foldGrow, type FoldGalleryProps, type FoldItem } from "./FoldGallery";
+export { CAROUSEL_SPRING, SpringCarousel, releaseTarget, slideOffset, type CarouselSlide, type SpringCarouselProps } from "./SpringCarousel";
