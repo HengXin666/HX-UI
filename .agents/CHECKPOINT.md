@@ -4,13 +4,13 @@
 
 ## 顺序
 
-controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 → kits card 9 + stage3d 3 → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push) → surface 余量 30 件.
+controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 + stage3d 3 → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push) → surface 余量 30 件.
 推送由用户做, 这里只 commit. 每件单独提交, pre-commit 13/13 + 本件 vitest 全绿才提.
 
 ## 已裁定 (不再待定)
 
 - 焦点环: outline 1px + offset 2px + ring 色, 代码只引用 `craft/tokens.ts` 的 `FOCUS_RING`. craft.md 已写「焦点环与线宽」. 不改 rules, 不改 baseline. 已提交的老控件 ring-1 在收口统一换.
-- 曲线: craft EASE 之外的规格曲线收在 `src/motion/curves.ts` (`CURVE`: outQuint, outStrong, inOutQuart, backOutSoft, lift, popOut, outQuart, outCubic, inQuart, flow), 族内不留 cubic-bezier 副本. GSAP powerN 对应 N+1 次 (power2 = outCubic, power3 = outQuart / inQuart, power4 = outQuint); back.out 用 craft `EASE.overshoot`. 暂不进 motion 公共出口, 收口 0.10.0 一并导出并 `check-api-snapshot --update`.
+- 曲线: craft EASE 之外的规格曲线收在 `src/motion/curves.ts` (`CURVE`: outQuint, outStrong, inOutQuart, backOutSoft, lift, popOut, outQuart, outCubic, inQuart, flow, outExpo, inOutCubic, settle), 族内不留 cubic-bezier 副本. GSAP powerN 对应 N+1 次 (power2 = outCubic, power3 = outQuart / inQuart, power4 = outQuint); back.out 用 craft `EASE.overshoot`. 暂不进 motion 公共出口, 收口 0.10.0 一并导出并 `check-api-snapshot --update`.
 - TallyRoll 过冲: 在 tallyOvershoot 内按实际峰值反解到 ≤ 0.06 位, 不放宽合同.
 - 规格里的 WebGL 场 (GooeyNav, GlassIcons) 不照搬: SVG 黏液滤镜 / backdrop-blur, 代码里 ENGINE-GAP 标出.
 
@@ -54,16 +54,35 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 位置 `src/kits/gallery/`, 测试 `tests/kits/gallery/`, note `.agents/notes/implemented/feature/2026-11-09-kits-gallery.md`. 族 tokens 目前转出导航族的工具 (useNavMotion 等), 收口并进 src/motion. 只维护族 index.ts; src/kits/index.ts 与 ./kits 子路径, package.json 一律留到收口 (用户裁定).
 
+## 状态: kits stack 8 件 + glass 2 件 (全部已提, 门禁 13/13)
+
+| 规格 | HX 名 | 提交 |
+|---|---|---|
+| AnimatedList | PopList (+ 族 tokens, parts/list-spec) | a956a6d |
+| ScrollStack | ScrollPile | 553ef36 |
+| Stack | SwipeStack | 67c75ea |
+| CardSwap | CycleDeck | 5e2a795 |
+| BounceCards | SpreadCards | 25bd3ae |
+| Masonry | FlowMasonry (CURVE 补 settle) | 501bc5d |
+| ChromaGrid | TintGrid | a0dedeb |
+| MagicBento | GlowBento (不做粒子星点) | cca4bb0 |
+| FluidGlass | LensGlass (+ glass tokens, ENGINE-GAP) | 8008e9b |
+| GlassSurface | FrostPanel (ENGINE-GAP) | f793d4b |
+
+位置 `src/kits/stack/`, `src/kits/glass/`, 测试 `tests/kits/stack/`, `tests/kits/glass/`, note `.agents/notes/implemented/feature/2026-11-10-kits-{stack,glass}.md`. stack tokens 转出 gallery tokens 与 use-drag, 补 omegaSpring / bounceSpring / TAU; glass tokens 转出 stack tokens. 测试支持 `tests/kits/stack/support.ts` (含假 IntersectionObserver), glass 测试也引它.
+
 ## 下一步
 
-kits stack 8 (AnimatedList, ScrollStack, Stack, CardSwap, BounceCards, Masonry, ChromaGrid, MagicBento) + glass 2 (FluidGlass, GlassSurface). stage3d 三件 (Lanyard, ModelViewer, InfiniteMenu) 不引 three, 缺 3D / 模型加载的部分标 ENGINE-GAP 并写清缺什么 (用户裁定).
+kits card 9 + stage3d 3, **等用户确认再开**. stage3d 三件 (Lanyard, ModelViewer, InfiniteMenu) 不引 three, 缺 3D / 模型加载的部分标 ENGINE-GAP 并写清缺什么 (用户裁定).
 
 ## 收口待办 (不要提前做)
 
 - `tallyOvershoot` 缓存 Map 无上限, 考虑量化键或 LRU.
 - 老控件 ring-1 统一换 FOCUS_RING; nav / menu 之外各族 tokens 里的 cubic-bezier 副本 (choice/tone, press/tokens, range/tokens, compose/tokens, dismiss/tokens) 改引用 CURVE.
 - motion 出口加 CURVE / cssCurve, 升 0.10.0.
-- 各族帧循环 (use-nav-motion, range motion.ts 等) 并进 src/motion.
+- 各族帧循环 (use-nav-motion, range motion.ts 等) 并进 src/motion; nav / gallery / stack / glass 的族 tokens 合并.
+- `tests/kits/support.ts` 与 `tests/kits/stack/support.ts` 合并进公共测试支持.
+- `use-drag.ts` 补单测; BlendSlider 测试的 fake Animation 补 `finish()`.
 
 ## 已知坑
 
@@ -77,4 +96,6 @@ kits stack 8 (AnimatedList, ScrollStack, Stack, CardSwap, BounceCards, Masonry, 
 - 测试里 vi.useFakeTimers 要放在 manualFrames 之前并只 fake setTimeout / clearTimeout, 否则与 performance.now 的 spy 互相包裹, 栈溢出.
 - kits 测试共用 `tests/kits/support.ts` (转出 nav 的 manualFrames 等). setState 发生在 rAF 回调里时, 测试里 flush 要包 act.
 - 同一 index.ts 分件提交时先删掉别的件的导出行, 提完补回.
+- ui-rules 的 HEX / RGB 规则扫整个 src (含 .ts 与字符串): 阴影, 遮罩, SVG 位移图一律用 token, color-mix 或 CSS 颜色关键字 (black / white / red / transparent).
+- jsdom 的 Event.timeStamp 恒为 0, 拖拽速度测试要 spy performance.now; cssstyle 会丢掉含 color-mix 的 background 简写, 测试改读自定义属性.
 - 规格只取 `docs/research/catalog/components-1.md` / `components-2.md`; 上游 MIT + Commons Clause, 只当规格, 自写自命名.
