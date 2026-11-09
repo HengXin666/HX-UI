@@ -4,7 +4,7 @@
 
 ## 顺序
 
-controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 + stage3d 3 → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push) → surface 余量 30 件.
+controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push) → surface 余量 30 件.
 推送由用户做, 这里只 commit. 每件单独提交, pre-commit 13/13 + 本件 vitest 全绿才提.
 
 ## 已裁定 (不再待定)
@@ -71,9 +71,25 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 位置 `src/kits/stack/`, `src/kits/glass/`, 测试 `tests/kits/stack/`, `tests/kits/glass/`, note `.agents/notes/implemented/feature/2026-11-10-kits-{stack,glass}.md`. stack tokens 转出 gallery tokens 与 use-drag, 补 omegaSpring / bounceSpring / TAU; glass tokens 转出 stack tokens. 测试支持 `tests/kits/stack/support.ts` (含假 IntersectionObserver), glass 测试也引它.
 
+## 状态: kits card 9 件 (全部已提, 门禁 13/13)
+
+| 规格 | HX 名 | 提交 |
+|---|---|---|
+| SpotlightCard | LampCard (+ 族 tokens: follow, cardPoint) | 778e1e7 |
+| BorderGlow | EdgeGlow | 7531778 |
+| TiltedCard | TiltCard (+ parts/tilt 族内共用倾斜) | a3b06ef |
+| ProfileCard | BadgeCard | d349c4d |
+| PixelCard | PixelBloom (canvas2d) | 47573c3 |
+| HoloCard | FoilCard (ENGINE-GAP) | 0a4e61e |
+| ReflectiveCard | MirrorCard (ENGINE-GAP) | c6fed2f |
+| DecayCard | FrayCard (ENGINE-GAP) | 28f2c0c |
+| Folder | FileFolder (ENGINE-GAP) | 1d314e6 |
+
+位置 `src/kits/card/`, 测试 `tests/kits/card/` (support.ts 转出 stack support, 补 boxOf), note `.agents/notes/implemented/feature/2026-11-10-kits-card.md`. card tokens 转出 stack tokens. FoilCard 的光谱用 CSS 颜色关键字 (royalblue 等), 不是语义色, note 里写了理由.
+
 ## 下一步
 
-kits card 9 + stage3d 3, **等用户确认再开**. stage3d 三件 (Lanyard, ModelViewer, InfiniteMenu) 不引 three, 缺 3D / 模型加载的部分标 ENGINE-GAP 并写清缺什么 (用户裁定).
+kits stage3d 3 (Lanyard, ModelViewer, InfiniteMenu): 不引 three, 缺顶点通道 / 模型加载的部分标 ENGINE-GAP 并写清缺什么 (用户裁定). 做完单独报一次.
 
 ## 收口待办 (不要提前做)
 
