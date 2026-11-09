@@ -10,6 +10,7 @@ Decision-ID: controls-compose
 - `src/controls/compose/input/ComposerField.tsx`
 - `src/controls/compose/overlay/CueTip.tsx`
 - `src/controls/compose/status/ReasoningTrace.tsx`
+- `src/controls/compose/input/ArcField.tsx`, `src/controls/compose/input/parts/arc-geometry.ts` (react-bits Components/CurvedInput)
 
 ## Problem
 
@@ -32,3 +33,7 @@ L2 controls 层缺一组对话与输入相关的交互件: 输入条, 语音听�
 ## Consequences
 
 主线接入时从 `src/controls/compose/index.ts` 导出, 本次不改 src/index.ts. kinetics.ts 与其它三族的换算, 帧循环重复, 下一步统一并进 src/motion 后删掉族内副本. CueTip 的热切换滑移按上一个气泡的屏幕位置计算, 跨滚动容器时以收起瞬间的位置为准.
+
+## ArcField (规格 Components/CurvedInput)
+
+整条输入框沿抛物线 y = 4 bend u (1 - u) 下垂, 外框, 文字基线与提交按钮取同一条曲线, 按钮沿切线旋转. 外框线宽规格 1.5, 按库规则固定 1px; 投影收成 none / sm / md / lg 四档. 能读 selectionStart 的输入类型按光标位置切片, email / number 读不到光标, 按交互推断. 焦点环用 FOCUS_RING. 减弱动效下显隐切换直接到终值.
