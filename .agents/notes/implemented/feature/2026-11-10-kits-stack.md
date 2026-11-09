@@ -11,6 +11,7 @@ Decision-ID: kits-stack
 - `src/kits/stack/ScrollPile.tsx`, `src/kits/stack/parts/pile-spec.ts` (react-bits Components/ScrollStack)
 - `src/kits/stack/SwipeStack.tsx`, `src/kits/stack/parts/swipe-spec.ts` (react-bits Components/Stack)
 - `src/kits/stack/CycleDeck.tsx`, `src/kits/stack/parts/swap-spec.ts` (react-bits Components/CardSwap)
+- `src/kits/stack/SpreadCards.tsx`, `src/kits/stack/parts/bounce-spec.ts` (react-bits Components/BounceCards)
 
 ## Problem
 
@@ -39,3 +40,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## CycleDeck (规格 Components/CardSwap)
 
 卡片在透视 900px 的台面上沿右上斜向纵深排开 (每层 cardDistance 60px, verticalDistance 70px, 纵深 1.5 倍横距), 统一 skewY. 每隔 delay (默认 4000ms, 下限 400ms) 最前一张按离场弹簧落出台面下沿 (卡高 + PAD 32px), 450ms / speed 后排到最后; 其余同时按 0.05s / speed 错峰前移 (规格 card.hold). 最前一张可拖, 松手时拖过卡片短边的 0.3 或速度超过 700px/s 即换牌, 否则弹回. 指针在台面上带动整台视差 (满幅 8 度, HX 自定), 弹簧 omega 2pi × 1.1, zeta 1; 悬停张开到 1.15 倍, 弹簧 omega 2pi × 1.4, zeta 0.9 (规格同). 离场弹簧临界阻尼 omega 2pi × 1.6, 归位 omega 2pi × 1.2 zeta 0.72, 规格只给了名字, 数值 HX 自定, 都乘 speed. 悬停 (pauseOnHover), 聚焦, 拖拽, 离屏 (IntersectionObserver) 与页面隐藏时暂停. 挂载时整台淡入 420ms ease-out. Enter 与右键手动换牌, 点击回调 onCardClick, 换牌回调 onChange 并播报前牌 label. 规格的 THEMES 与 DEFAULT_ITEMS 视觉主题不取. 减弱动效时不自动轮换, 无视差与张开, 换牌直接到位.
+
+## SpreadCards (规格 Components/BounceCards)
+
+一排照片卡以中间为轴横向错开 spread (85px), 转角按交替系数 1, 0.5, -0.3, -1, 0.2 乘 rotation (10 度; 规格 PATTERN 的形状), arc 让两侧沿抛物线下沉; poses 可整组覆盖 (规格 transformStyles 收 CSS 串, 这里收 x, y, 转角数值). 挂上后延迟 animationDelay (0.5s) 按 animationStagger (0.06s) 错峰从 0 弹出, 劲度 170; 指针或焦点停在一张上时它摆正并放大 hoverScale (1.06), 两侧各推开 pushDistance (160px), 劲度 210. 两档弹簧的阻尼都按规格 2 (1 - 0.85 bounciness) sqrt(劲度), bounciness 默认 0.6. 阴影随悬停加深, 过渡 0.3s ease, 阴影用主题 token. 每张是按钮, 方向键左右移焦, 点击回调 onCardClick. borderColor 换成语义色 borderTone. 减弱动效时不弹出, 换位直接到位.
