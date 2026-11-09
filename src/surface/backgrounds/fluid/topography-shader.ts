@@ -1,5 +1,6 @@
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 Topography 条目, 实现为 HX 自有.
 import { GLSL_HASH, GLSL_NOISE, GLSL_UTIL, fragmentSource } from "../../backdrop/kernel/glsl";
+import { BLOOM_ENCODE } from "../bloom";
 
 /** 视场 (弧度, 半角的正切近似), 长焦压缩出等高线的层叠感. */
 export const TOPO_FOV = 0.32;
@@ -23,6 +24,8 @@ export const TOPO_PULSE_LIFE = 3;
 /** 射线步进步数与二分细化次数. */
 export const TOPO_MARCH_STEPS = 96;
 export const TOPO_REFINE_STEPS = 5;
+/** 泛光: 规格 BLOOM_LEVELS 4; 亮部阈值, 软膝与强度增益本库定, 强度为 glow * 增益. */
+export const TOPO_BLOOM = { levels: 4, threshold: 0.2, knee: 0.3, gain: 2 } as const;
 
 export type TopoDirection = "forward" | "backward" | "left" | "right";
 /** 地形流动方向. */
@@ -65,10 +68,12 @@ export function topoTrailWeight(age: number, trail: number): number {
   return 1 - age / life;
 }
 
-/** 斜视的地形: 分形高度场射线步进求交, 等高线按屏幕导数定宽, 景深加宽, 过密处淡出, 主等高线加粗, 远处雾化. */
-export const TOPO_FRAGMENT = fragmentSource(`
+/**
+ * 斜视地形的离屏场景: 分形高度场射线步进求交, 等高线按屏幕导数定宽, 景深加宽, 过密处淡出, 主等高线加粗, 远处雾化.
+ * 写出线性线光 u_color * ink 与覆盖率 clamp(ink) (bloom_encode), 未命中处为 0. 须以画布原尺寸 (sceneScale 1) 跑, 片元坐标与 u_res 同尺度.
+ */
+export const TOPO_SCENE = fragmentSource(`
 uniform vec3 u_color;
-uniform vec3 u_bg;
 uniform float u_lines;
 uniform float u_width;
 uniform float u_major;
@@ -78,7 +83,6 @@ uniform float u_detail;
 uniform float u_tilt;
 uniform vec2 u_flow;
 uniform float u_morph;
-uniform float u_glow;
 uniform float u_dof;
 uniform float u_fog;
 uniform float u_front;
@@ -155,7 +159,7 @@ void main() {
     t += max(gap * 0.6, 0.02 + t * 0.004);
     if (t > FAR) break;
   }
-  if (!hit) { o_color = vec4(u_bg, 1.0); return; }
+  if (!hit) { o_color = bloom_encode(vec3(0.0), 0.0); return; }
   float hi = t;
   for (int k = 0; k < ${TOPO_REFINE_STEPS}; k++) {
     float mid = 0.5 * (lo + hi);
@@ -177,13 +181,32 @@ void main() {
   float line = (1.0 - smoothstep(width * soft - 0.5, width * soft + 0.75, d)) / soft;
   float crowd = smoothstep(0.3, 0.75, density * max(width, soft));
   line *= 1.0 - crowd * 0.85;
-  float halo = exp(-d / max(width * 5.0, 1.0)) * u_glow * 0.35 * (1.0 - crowd);
   float sun = max(dot(n, normalize(vec3(-0.4, 0.5, 0.75))), 0.0);
   float level = mix(0.45, 1.05, smoothstep(0.0, 1.1, h)) * mix(0.35, 1.25, sun * sun) * (1.0 + 0.6 * major);
   vec2 fade = vec2(ORBIT * (1.0 + 1.5 * (1.0 - u_fog)), ORBIT * (2.0 + 10.0 * (1.0 - u_fog)));
   float far = 1.0 - smoother((depth - fade.x) / max(fade.y - fade.x, 1e-3));
   float near = mix(1.0, smoothstep(ORBIT * 0.55, ORBIT * 0.95, depth), clamp(u_front * 2.0, 0.0, 1.0));
-  float ink = (line * level + halo) * far * near * u_bright;
-  o_color = vec4(mix(u_bg, u_color, clamp(ink, 0.0, 1.0)) + u_color * max(ink - 1.0, 0.0) * 0.3, 1.0);
+  float ink = line * level * far * near * u_bright;
+  o_color = bloom_encode(u_color * ink, clamp(ink, 0.0, 1.0));
 }
-`, GLSL_HASH, GLSL_NOISE, GLSL_UTIL);
+`, GLSL_HASH, GLSL_NOISE, GLSL_UTIL, BLOOM_ENCODE);
+
+/** 上屏: 底色上按覆盖率铺线色, 线光过 1 的部分按 0.3 溢出, 再加泛光. */
+const TOPO_COMPOSITE = `
+uniform vec3 u_color;
+uniform vec3 u_bg;
+void main() {
+  vec4 s = bloom_scene(v_uv);
+  vec3 over = max(s.rgb - u_color * s.a, 0.0) * 0.3;
+  o_color = vec4(mix(u_bg, u_color, s.a) + over + bloom_glow(v_uv), 1.0);
+}
+`;
+
+/**
+ * Topography 的上屏片元.
+ *
+ * @param compositeGlsl bloomPyramid 返回的 compositeGlsl.
+ */
+export function topoComposite(compositeGlsl: string): string {
+  return fragmentSource(TOPO_COMPOSITE, compositeGlsl);
+}

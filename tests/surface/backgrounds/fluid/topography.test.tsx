@@ -1,11 +1,12 @@
 /**
- * fluid 路 Topography: 入场, 脉冲与拖尾的纯函数, 方向常数, 着色器接线, 内核状态, 减弱动效只画一帧, 无 WebGL 时兜底.
+ * fluid 路 Topography: 入场, 脉冲与拖尾的纯函数, 方向常数, 着色器接线, 四级泛光金字塔, 内核状态, 减弱动效只画一帧, 无 WebGL 时兜底.
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { bloomPyramid } from "@src/surface/backgrounds/bloom";
 import { Topography } from "@src/surface/backgrounds/fluid/Topography";
 import {
-  TOPO_DIRECTIONS, TOPO_FOV, TOPO_FRAGMENT, TOPO_FREQUENCY, TOPO_HEIGHT, TOPO_HOVER_SIGN, TOPO_INTRO_SECONDS, TOPO_MAX_PULSES, TOPO_ORBIT, TOPO_PULSE_LIFE, topoIntro,
+  TOPO_BLOOM, topoComposite, TOPO_DIRECTIONS, TOPO_FOV, TOPO_SCENE, TOPO_FREQUENCY, TOPO_HEIGHT, TOPO_HOVER_SIGN, TOPO_INTRO_SECONDS, TOPO_MAX_PULSES, TOPO_ORBIT, TOPO_PULSE_LIFE, topoIntro,
   topoPulse, topoTrailWeight,
 } from "@src/surface/backgrounds/fluid/topography-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../../backdrop/helpers";
@@ -49,9 +50,17 @@ describe("Topography 纯函数与常数", () => {
     expect(topoTrailWeight(0, 0)).toBe(0);
   });
   it("着色器: 射线步进加二分, 过密淡出, 主线加粗", () => {
-    expect(TOPO_FRAGMENT).toContain("float mid = 0.5 * (lo + hi);");
-    expect(TOPO_FRAGMENT).toContain("float crowd = smoothstep(0.3, 0.75, density * max(width, soft));");
-    expect(TOPO_FRAGMENT).toContain("mix(0.45, 1.05, smoothstep(0.0, 1.1, h)) * mix(0.35, 1.25, sun * sun) * (1.0 + 0.6 * major)");
+    expect(TOPO_SCENE).toContain("float mid = 0.5 * (lo + hi);");
+    expect(TOPO_SCENE).toContain("float crowd = smoothstep(0.3, 0.75, density * max(width, soft));");
+    expect(TOPO_SCENE).toContain("mix(0.45, 1.05, smoothstep(0.0, 1.1, h)) * mix(0.35, 1.25, sun * sun) * (1.0 + 0.6 * major)");
+  });
+  it("泛光: 场景离屏写出线光, 不再有解析光晕, 上屏铺底色并合成四级泛光", () => {
+    expect(TOPO_BLOOM).toEqual({ levels: 4, threshold: 0.2, knee: 0.3, gain: 2 });
+    expect(TOPO_SCENE).toContain("o_color = bloom_encode(u_color * ink, clamp(ink, 0.0, 1.0));");
+    expect(TOPO_SCENE).not.toContain("halo");
+    expect(TOPO_SCENE).not.toContain("u_glow");
+    const composite = topoComposite(bloomPyramid({ scene: TOPO_SCENE, levels: TOPO_BLOOM.levels }).compositeGlsl);
+    expect(composite).toContain("mix(u_bg, u_color, s.a) + over + bloom_glow(v_uv)");
   });
 });
 
@@ -67,6 +76,12 @@ describe("Topography 渲染", () => {
       vi.advanceTimersByTime(200);
     });
     expect(draws(calls)).toBeGreaterThan(before);
+  });
+  it("静态帧画场景, 四级金字塔与上屏共 6 次; glow 为 0 时级数不变", () => {
+    const calls: string[] = [];
+    restore.push(mockWebgl2(calls));
+    render(<Topography reducedMotion glow={0} />);
+    expect(draws(calls)).toBe(6);
   });
   it("减弱动效: 只画静态帧", () => {
     const calls: string[] = [];

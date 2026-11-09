@@ -1,7 +1,9 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 Topography 条目, 实现为 HX 自有.
-// ENGINE-GAP: 条目用网格地形, 4 级泛光与 256 格雕刻纹理; 这里在全屏片元里对高度场射线步进,
-// 泛光近似为等高线外的指数光晕, 雕刻纹理改为 8 个拖尾采样点的高斯隆起, 景深只加宽变淡不做模糊.
+// 已补 (2026-11-09): 条目的 4 级泛光 (BLOOM_LEVELS) 改走 ../bloom.ts: 等高线在离屏场景通道里射线步进并写出线光,
+// 软膝亮部提取, 四级 13 点降采样, 上屏帐篷核上采样合成到底色上, 不再以等高线外的指数光晕近似; 泛光强度随 glow.
+// ENGINE-GAP: 条目用网格地形与 256 格雕刻纹理; 这里在全屏片元里对高度场射线步进, 雕刻纹理改为 8 个拖尾采样点的高斯隆起,
+// 景深只加宽变淡不做模糊.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -11,9 +13,10 @@ import { fallbackGradient } from "../../backdrop/kernel/fallback";
 import { approach } from "../../backdrop/kernel/math";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
+import { bloomPyramid } from "../bloom";
 import {
-  TOPO_DIRECTIONS, TOPO_FRAGMENT, TOPO_HOVER_SIGN, TOPO_MAX_PULSES, TOPO_SAMPLE_SECONDS, TOPO_TRAIL, topoIntro, topoPulse, topoTrailWeight, type TopoDirection,
-  type TopoHover,
+  TOPO_BLOOM, TOPO_DIRECTIONS, TOPO_HOVER_SIGN, TOPO_MAX_PULSES, TOPO_SAMPLE_SECONDS, TOPO_TRAIL, topoComposite, topoIntro, topoPulse,
+  topoTrailWeight, TOPO_SCENE, type TopoDirection, type TopoHover,
 } from "./topography-shader";
 
 export interface TopographyProps extends BackdropCommonProps {
@@ -41,7 +44,7 @@ export interface TopographyProps extends BackdropCommonProps {
   readonly direction?: TopoDirection;
   /** 地形自身演化快慢, 默认 0.2. */
   readonly morph?: number;
-  /** 等高线光晕, 默认 0.6. */
+  /** 等高线泛光强度 (四级降采样泛光), 默认 0.6. */
   readonly glow?: number;
   /** 景深 (离对焦距离越远线越宽越淡), 默认 0.4. */
   readonly depthOfField?: number;
@@ -99,7 +102,7 @@ interface TopoState {
 }
 
 /**
- * 地形等高线: 斜视的分形地形沿 direction 流动, 等高线按屏幕导数定宽, 主线加粗, 景深加宽, 过密处淡出, 远处雾化;
+ * 地形等高线: 斜视的分形地形沿 direction 流动, 等高线按屏幕导数定宽, 主线加粗, 景深加宽, 过密处淡出, 远处雾化, 线光叠四级降采样泛光;
  * 指针处地形隆起并留下拖尾, 点击推开一圈波, 相机随指针轻微偏转. 减弱动效只画一帧.
  *
  * .agents/notes/implemented/feature/2026-11-09-surface-backgrounds-fluid.md
@@ -153,36 +156,39 @@ export function Topography(props: TopographyProps): JSX.Element {
     return [s.lookX, s.lookY];
   };
 
+  const pyramid = bloomPyramid({
+    scene: TOPO_SCENE, levels: TOPO_BLOOM.levels, threshold: TOPO_BLOOM.threshold, knee: TOPO_BLOOM.knee, strength: Math.max(glow, 0) * TOPO_BLOOM.gain,
+    sceneUniforms: (frame) => {
+      const flow = TOPO_DIRECTIONS[direction] ?? TOPO_DIRECTIONS.forward;
+      const grow = topoIntro(frame.elapsed, !frame.reduced);
+      const presence = frame.reduced ? 0 : frame.pointer.presence;
+      return {
+        u_color: frame.colors[0] ?? GREY,
+        u_lines: Math.max(1, lineCount),
+        u_width: lineWidth,
+        u_major: majorLines,
+        u_elev: Math.max(elevation * grow, 0.02),
+        u_scale: scale,
+        u_detail: detail,
+        u_tilt: tilt,
+        u_flow: [flow[0] * frame.time * FLOW_RATE, flow[1] * frame.time * FLOW_RATE],
+        u_morph: morph,
+        u_dof: depthOfField,
+        u_fog: Math.max(0, Math.min(1, fog)),
+        u_front: foreground,
+        u_bright: brightness * grow,
+        u_look: lookOf(frame),
+        u_hover: [frame.pointer.x, frame.pointer.y, (TOPO_HOVER_SIGN[hoverEffect] ?? 0) * mouseStrength * presence, Math.max(mouseRadius, 0.05)],
+        u_marks: { list: marksOf(frame), size: 4 },
+        u_pulses: { list: pulsesOf(frame), size: 4 },
+      };
+    },
+  });
   const handle = useShaderBackdrop(
     {
-      fragment: TOPO_FRAGMENT,
-      uniforms: (frame) => {
-        const flow = TOPO_DIRECTIONS[direction] ?? TOPO_DIRECTIONS.forward;
-        const grow = topoIntro(frame.elapsed, !frame.reduced);
-        const presence = frame.reduced ? 0 : frame.pointer.presence;
-        return {
-          u_color: frame.colors[0] ?? GREY,
-          u_bg: frame.colors[1] ?? GREY,
-          u_lines: Math.max(1, lineCount),
-          u_width: lineWidth,
-          u_major: majorLines,
-          u_elev: Math.max(elevation * grow, 0.02),
-          u_scale: scale,
-          u_detail: detail,
-          u_tilt: tilt,
-          u_flow: [flow[0] * frame.time * FLOW_RATE, flow[1] * frame.time * FLOW_RATE],
-          u_morph: morph,
-          u_glow: glow,
-          u_dof: depthOfField,
-          u_fog: Math.max(0, Math.min(1, fog)),
-          u_front: foreground,
-          u_bright: brightness * grow,
-          u_look: lookOf(frame),
-          u_hover: [frame.pointer.x, frame.pointer.y, (TOPO_HOVER_SIGN[hoverEffect] ?? 0) * mouseStrength * presence, Math.max(mouseRadius, 0.05)],
-          u_marks: { list: marksOf(frame), size: 4 },
-          u_pulses: { list: pulsesOf(frame), size: 4 },
-        };
-      },
+      fragment: topoComposite(pyramid.compositeGlsl),
+      passes: pyramid.passes,
+      uniforms: (frame) => ({ u_color: frame.colors[0] ?? GREY, u_bg: frame.colors[1] ?? GREY, ...pyramid.uniforms }),
     },
     { ...options, colors: [color, backgroundColor] },
   );
