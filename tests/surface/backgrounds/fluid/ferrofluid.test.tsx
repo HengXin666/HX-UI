@@ -1,12 +1,16 @@
 /**
- * fluid 路 Ferrofluid: 脉冲包络, 跟手份额, 流向常数, 着色器接线, 内核状态, 减弱动效只画一帧, 无 WebGL 时兜底.
+ * fluid 路 Ferrofluid: 脉冲包络, 跟手份额, 流向常数, 阴影预烘, 着色器接线, 内核状态, 减弱动效只画一帧, 无 WebGL 时兜底.
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Ferrofluid } from "@src/surface/backgrounds/fluid/Ferrofluid";
-import { FERRO_F0, FERRO_FLOW, FERRO_FRAGMENT, FERRO_INTRO_SECONDS, FERRO_PULSE_LIFE, ferroFollow, ferroPulse } from "@src/surface/backgrounds/fluid/ferrofluid-shader";
+import {
+  FERRO_F0, FERRO_FLOW, FERRO_FRAGMENT, FERRO_INTRO_SECONDS, FERRO_LIGHT, FERRO_PULSE_LIFE, FERRO_SHADE_SIZE, ferroFollow, ferroPulse, ferroShadeBytes, ferroShadow,
+} from "@src/surface/backgrounds/fluid/ferrofluid-shader";
+import { bakeBytes } from "@src/surface/backgrounds/fluid/prebake";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../../backdrop/helpers";
 import { recordCanvas2d } from "../../helpers";
+import { mockWebgl2And2d } from "./prebake-helpers";
 
 let restore: Array<() => void> = [];
 beforeEach(() => {
@@ -37,9 +41,29 @@ describe("Ferrofluid 纯函数与常数", () => {
     expect(ferroFollow(0.016, 0)).toBe(1);
     expect(ferroFollow(0.15, 0.15)).toBeCloseTo(1 - Math.exp(-1), 9);
   });
-  it("着色器: 射线步进加二分细化", () => {
+  it("着色器: 射线步进加二分细化, 采样预烘阴影, 按像素角与雾距淡出", () => {
     expect(FERRO_FRAGMENT).toContain("float mid = 0.5 * (lo + hi);");
     expect(FERRO_FRAGMENT).toContain("smoothstep(0.44, 0.86, n)");
+    expect(FERRO_FRAGMENT).toContain("uniform sampler2D u_shade;");
+    expect(FERRO_FRAGMENT).toContain("smoothstep(3.0, 8.0, 1.0 / max(hi * pixelAngle, 1e-5))");
+  });
+  it("预烘字节: 第 0 行在上, 按 (u, v) 取值", () => {
+    const bytes = bakeBytes(2, 2, (u, v) => [u, v, 0, 1]);
+    expect([bytes[0], bytes[1], bytes[3]]).toEqual([64, 191, 255]);
+    expect([bytes[12], bytes[13]]).toEqual([191, 64]);
+  });
+  it("阴影: 背光一侧被遮, 迎光一侧与远处不遮, 越高越暗", () => {
+    const [lx, ly] = FERRO_LIGHT;
+    expect(ferroShadow(-lx * 1.4, -ly * 1.4, 6, 2.5)).toBeLessThan(0.6);
+    expect(ferroShadow(lx * 1.4, ly * 1.4, 6, 2.5)).toBe(1);
+    expect(ferroShadow(3.9, -3.9, 6, 2.5)).toBe(1);
+    expect(ferroShadow(-lx * 1.4, -ly * 1.4, 6, 2.5)).toBeLessThanOrEqual(ferroShadow(-lx * 1.4, -ly * 1.4, 1.5, 2.5));
+  });
+  it("阴影预烘图: 96 见方, 三档透光率, alpha 满", () => {
+    const bytes = ferroShadeBytes(2.5);
+    expect(bytes.length).toBe(FERRO_SHADE_SIZE * FERRO_SHADE_SIZE * 4);
+    expect(bytes[3]).toBe(255);
+    expect(bytes[0]).toBe(255);
   });
 });
 
@@ -55,6 +79,18 @@ describe("Ferrofluid 渲染", () => {
       vi.advanceTimersByTime(200);
     });
     expect(draws(calls)).toBeGreaterThan(before);
+  });
+  it("阴影图只烘一次, 只上传一次", () => {
+    const calls: string[] = [];
+    const ctxCalls: string[] = [];
+    restore.push(mockWebgl2And2d(calls, ctxCalls), mockReducedMotion(false));
+    mockIntersection();
+    render(<Ferrofluid />);
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(ctxCalls.filter((c) => c === "putImageData")).toHaveLength(1);
+    expect(calls.filter((c) => c === "texImage2D")).toHaveLength(1);
   });
   it("减弱动效: 只画静态帧", () => {
     const calls: string[] = [];

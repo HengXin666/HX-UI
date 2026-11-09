@@ -1,6 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 Ferrofluid 条目, 实现为 HX 自有.
-// ENGINE-GAP: 条目的 Canvas2D 叠层 (尖刺阴影预烘) 不做, 阴影与雾都在同一个射线步进的片元里近似.
+// 已补 (2026-11-09): 尖刺阴影改为 Canvas2D 预烘 (三档高度的透光率画进一张 96 像素画布, 经 ShaderSpec.textures 上传, 只在 sharpness 变时重烘),
+// 片元按尖刺高度插值采样; 远处按条目的像素角与雾距淡出.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -10,7 +11,10 @@ import { glowFallback } from "../../backdrop/kernel/fallback";
 import { approach } from "../../backdrop/kernel/math";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
-import { FERRO_FLOW, FERRO_FRAGMENT, FERRO_INTRO_SECONDS, FERRO_STRENGTH_TAU, ferroFollow, ferroPulse, type FerroFlow } from "./ferrofluid-shader";
+import {
+  FERRO_FLOW, FERRO_FRAGMENT, FERRO_INTRO_SECONDS, FERRO_SHADE_SIZE, FERRO_STRENGTH_TAU, ferroFollow, ferroPulse, ferroShadeBytes, type FerroFlow,
+} from "./ferrofluid-shader";
+import { paintBytes } from "./prebake";
 
 export interface FerrofluidProps extends BackdropCommonProps {
   /** 高光色, 第一个照低处, 第二个照尖端. 默认 foreground. */
@@ -75,9 +79,14 @@ interface FerroState {
   strength: number;
 }
 
+interface FerroShade {
+  sharp: number;
+  canvas: HTMLCanvasElement | null;
+}
+
 /**
  * 磁流体: 斜视的液面上六角排布的尖刺, 高度跟着一张漂移的磁场图样起落, 指针处尖刺抬升, 点击放出一圈脉冲.
- * 全屏片元射线步进求交 (72 步加 5 次二分), 近黑液面只靠菲涅耳与环境亮带反光.
+ * 全屏片元射线步进求交 (72 步加 5 次二分), 近黑液面只靠菲涅耳与环境亮带反光; 尖刺阴影取 Canvas2D 预烘的透光率图.
  *
  * .agents/notes/implemented/feature/2026-11-09-surface-backgrounds-fluid.md
  */
@@ -91,6 +100,17 @@ export function Ferrofluid(props: FerrofluidProps): JSX.Element {
   const { options, rest, opacity, children } = splitCommon({ ...common, speed, dpr });
   const palette = color ? [color] : colors.slice(0, 2);
   const state = useRef<FerroState>({ x: 0.5, y: 0.5, strength: 0 });
+  const shade = useRef<FerroShade>({ sharp: Number.NaN, canvas: null });
+
+  /** 预烘图只随 sharpness 变; 同一张画布对象让内核跳过重复上传. */
+  const shadeOf = (): HTMLCanvasElement | null => {
+    const s = shade.current;
+    if (s.sharp !== sharpness) {
+      s.sharp = sharpness;
+      s.canvas = paintBytes(FERRO_SHADE_SIZE, FERRO_SHADE_SIZE, ferroShadeBytes(sharpness));
+    }
+    return s.canvas;
+  };
 
   const cursorOf = (frame: BackdropFrame): number[] => {
     const s = state.current;
@@ -138,8 +158,10 @@ export function Ferrofluid(props: FerrofluidProps): JSX.Element {
           u_grow: grow * grow * (3 - 2 * grow),
           u_light: lightMode,
           u_transparent: transparent,
+          u_has_shade: shadeOf() ? 1 : 0,
         };
       },
+      textures: () => ({ u_shade: shadeOf() }),
     },
     { ...options, colors: [...palette, backgroundColor] },
   );
