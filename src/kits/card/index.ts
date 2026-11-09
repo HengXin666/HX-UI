@@ -8,3 +8,4 @@ export { EDGE_DEFAULTS, EDGE_SWEEP_MS, EdgeGlow, edgeAngle, edgeCone, edgeLevel,
 export { TILTED_DEFAULTS, TiltCard, glarePose, isTap, tiltSpring, tiltTarget, tipAngle, type TiltCardProps } from "./TiltCard";
 export { BADGE_DEFAULTS, BadgeCard, badgeHolo, badgeIntro, badgeParallax, type BadgeCardProps } from "./BadgeCard";
 export { PIXEL_VARIANTS, PixelBloom, buildField, hash01, pixelSize, stepField, stepSpot, type PixelBloomProps, type PixelOrigin, type PixelShape, type PixelTrigger, type PixelVariant } from "./PixelBloom";
+export { FOIL_SPECTRUM, FoilCard, foilIdle, foilPattern, foilRainbow, foilShift, type FoilCardProps, type FoilPreset } from "./FoilCard";
