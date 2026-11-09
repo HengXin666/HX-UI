@@ -1,10 +1,13 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 Hyperspeed 条目, 实现为 HX 自有.
-// ENGINE-GAP: 上游是 three 的实例化车灯 / 灯杆网格加泛光; 内核只有全屏片元, 本件在片元里做路面求交算光带, 灯杆与尘线逐个投影, 没有真泛光 (以宽高斯光晕近似), 车灯贴在路面上而非离地.
+// ENGINE-GAP: 上游是 three 的实例化车灯 / 灯杆网格; 内核只有全屏片元, 无实例化与顶点缓冲, 本件在片元里做路面求交算光带, 灯杆与尘线逐个投影, 车灯贴在路面上而非离地.
+// 已补 (2026-11-09): 泛光改走 ../bloom.ts 的离屏金字塔 (场景离屏通道写线性光与覆盖率, 软膝亮部提取阈值 0.6 / 膝 0.5, 四级 13 点降采样,
+// 上屏帐篷核上采样合成, 泛光峰值并入覆盖率), 强度 glow * 1.5; 车灯带外的宽高斯光晕减半 (0.08 到 0.04) 只作近处光晕.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell, glowFallback, splitCommon, useShaderBackdrop, type BackdropCommonProps, type BackdropFrame } from "../../backdrop/kernel";
-import { CURVE_KIND, HYPERSPEED, HYPERSPEED_FRAGMENT, makeHyperspeedState, stepHyperspeed, type HyperspeedCurve } from "./hyperspeed-shader";
+import { bloomPyramid } from "../bloom";
+import { CURVE_KIND, HYPERSPEED, HYPERSPEED_FRAGMENT, hyperspeedComposite, makeHyperspeedState, stepHyperspeed, type HyperspeedCurve } from "./hyperspeed-shader";
 import { DEG, HALF, paletteUniform } from "./tokens";
 
 export interface HyperspeedProps extends BackdropCommonProps {
@@ -36,7 +39,7 @@ export interface HyperspeedProps extends BackdropCommonProps {
   readonly poleHeight?: number;
   /** 尘线条数, 默认 100, 0 关闭. */
   readonly dust?: number;
-  /** 光晕强度, 默认 0.6. */
+  /** 光晕与泛光强度, 默认 0.6. */
   readonly glow?: number;
   /** 湿路面反光强度, 默认 0.5. */
   readonly reflections?: number;
@@ -63,7 +66,7 @@ const DEFAULT_POLES = ["accent"] as const;
 /**
  * 夜间公路光速背景: 镜头沿弯道前行, 对向车头灯与同向车尾灯拖成光带, 两侧灯杆后掠, 尘线从消失点放射.
  * 按住加速: 速度一阶升到 (1 + boost) 倍 (升 0.28s, 落 0.85s), 视场按弹簧 (90 / 13) 拉到 boostFov; 指针左右带动镜头横移.
- * 减弱动效时只画一帧.
+ * 场景在离屏通道里画, 亮部经四级降采样金字塔泛光后上屏合成. 减弱动效时只画一帧.
  */
 export function Hyperspeed(props: HyperspeedProps): JSX.Element {
   const {
@@ -127,7 +130,14 @@ export function Hyperspeed(props: HyperspeedProps): JSX.Element {
     };
   };
 
-  const handle = useShaderBackdrop({ fragment: HYPERSPEED_FRAGMENT, uniforms }, { ...options, colors: [...heads, ...tails, ...lamps, roadColor, lineColor] });
+  const pyramid = bloomPyramid({
+    scene: HYPERSPEED_FRAGMENT, sceneUniforms: uniforms, levels: HYPERSPEED.bloomLevels,
+    threshold: HYPERSPEED.bloomThreshold, knee: HYPERSPEED.bloomKnee, strength: Math.max(0, glow) * HYPERSPEED.bloomGain,
+  });
+  const handle = useShaderBackdrop(
+    { fragment: hyperspeedComposite(pyramid.compositeGlsl), passes: pyramid.passes, uniforms: () => pyramid.uniforms },
+    { ...options, colors: [...heads, ...tails, ...lamps, roadColor, lineColor] },
+  );
   return (
     <BackdropShell handle={handle} fallback={glowFallback("background", tails[0] ?? "primary")} opacity={opacity} {...rest}>
       {children}

@@ -1,10 +1,10 @@
 /**
- * Hyperspeed: 加速 / 视场弹簧 / 转向的状态推进, WebGL2 渲染, 兜底与减弱动效静帧.
+ * Hyperspeed: 加速 / 视场弹簧 / 转向的状态推进, 离屏场景加泛光金字塔, WebGL2 渲染, 兜底与减弱动效静帧.
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Hyperspeed } from "@src/surface/backgrounds/particles/Hyperspeed";
-import { CURVE_KIND, HYPERSPEED, HYPERSPEED_FRAGMENT, makeHyperspeedState, stepHyperspeed } from "@src/surface/backgrounds/particles/hyperspeed-shader";
+import { CURVE_KIND, HYPERSPEED, HYPERSPEED_FRAGMENT, hyperspeedComposite, makeHyperspeedState, stepHyperspeed } from "@src/surface/backgrounds/particles/hyperspeed-shader";
 import { mockWebgl2 } from "../../backdrop/helpers";
 import { mockReducedMotion, recordCanvas2d, useFakeClock } from "../../helpers";
 
@@ -18,6 +18,16 @@ describe("Hyperspeed 纯函数", () => {
     expect([HYPERSPEED.fovStiffness, HYPERSPEED.fovDamping, HYPERSPEED.steerTau]).toEqual([90, 13, 0.35]);
     expect(CURVE_KIND.straight).toBe(0);
     expect(HYPERSPEED_FRAGMENT).toContain("uniform vec3 u_heads[8]");
+  });
+
+  it("场景离屏写线性光与覆盖率, 上屏合成四级泛光", () => {
+    expect([HYPERSPEED.bloomLevels, HYPERSPEED.bloomThreshold, HYPERSPEED.bloomKnee, HYPERSPEED.bloomGain]).toEqual([4, 0.6, 0.5, 1.5]);
+    expect(HYPERSPEED_FRAGMENT).toContain("o_color = bloom_encode(col, clamp(alpha, 0.0, 1.0));");
+    expect(HYPERSPEED_FRAGMENT).not.toContain("u_bloom");
+    expect(HYPERSPEED_FRAGMENT).not.toContain("gl_FragCoord");
+    const composite = hyperspeedComposite("// pyramid");
+    expect(composite.startsWith("#version 300 es")).toBe(true);
+    expect(composite).toContain("bloom_glow(v_uv)");
   });
 
   it("加速升快落慢, 视场被弹簧拉向目标, 行程随加速变快", () => {
@@ -69,7 +79,7 @@ describe("Hyperspeed 渲染", () => {
     const { container } = render(<Hyperspeed />);
     expect((container.firstElementChild as HTMLElement).dataset.backdropPlan).toBe("still");
     const before = calls.filter((c) => c === "drawArrays").length;
-    expect(before).toBeGreaterThan(0);
+    expect(before).toBe(1 + HYPERSPEED.bloomLevels + 1);
     act(() => vi.advanceTimersByTime(500));
     expect(calls.filter((c) => c === "drawArrays").length).toBe(before);
     restoreMotion();

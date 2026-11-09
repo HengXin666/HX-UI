@@ -1,5 +1,7 @@
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 Hyperspeed 条目, 实现为 HX 自有.
+// 场景在离屏通道里画, 泛光走 ../bloom.ts 的降采样金字塔.
 import { fragmentSource, GLSL_HASH, GLSL_UTIL } from "../../backdrop/kernel";
+import { BLOOM_ENCODE } from "../bloom";
 
 export type HyperspeedCurve = "straight" | "winding" | "turbulent";
 
@@ -21,6 +23,11 @@ export const HYPERSPEED = {
   cruise: 60,
   /** 本库定: 每侧最多车道数 (着色器循环上限). */
   maxLanes: 6,
+  /** 本库定: 泛光金字塔级数, 亮部阈值 / 软膝, glow prop 到泛光强度的倍率. */
+  bloomLevels: 4,
+  bloomThreshold: 0.6,
+  bloomKnee: 0.5,
+  bloomGain: 1.5,
 } as const;
 
 /** 弯道的形状系数: 路中心横移 = curvature * z^2 * k * bend(travel). */
@@ -134,7 +141,7 @@ vec3 hx_lights(float u, float depth, float pixel, out float energy) {
       float we = max(w, pixel * depth * 1.5);
       float core = exp(-pow(du / we, 2.0)) * (w / we);
       float sheen = exp(-pow(du / (we * 4.0), 2.0)) * u_reflect * 0.15;
-      float halo = exp(-pow(du / (we * 10.0), 2.0)) * u_glow * 0.08;
+      float halo = exp(-pow(du / (we * 10.0), 2.0)) * u_glow * 0.04;
       float e = (core + sheen + halo) * mix(0.25, 1.0, along);
       vec3 tint = side == 0 ? hx_pick(u_heads, u_head_count, h * 6.13) : hx_pick(u_tails, u_tail_count, h * 6.13);
       col += tint * e;
@@ -145,7 +152,7 @@ vec3 hx_lights(float u, float depth, float pixel, out float energy) {
 }
 
 void main() {
-  vec2 p = (gl_FragCoord.xy - 0.5 * u_res) / (0.5 * u_res.y);
+  vec2 p = (v_uv * u_res - 0.5 * u_res) / (0.5 * u_res.y);
   vec3 ray = normalize(vec3(p, -u_focal));
   float pixel = 2.0 / (u_focal * u_res.y);
   vec3 col = vec3(0.0);
@@ -206,10 +213,31 @@ void main() {
     col += u_line * streak;
     alpha += streak;
   }
-  alpha = clamp(alpha, 0.0, 1.0);
-  o_color = vec4(clamp(col / max(alpha, 1e-3), 0.0, 1.0), alpha);
+  o_color = bloom_encode(col, clamp(alpha, 0.0, 1.0));
 }
 `;
 
-/** Hyperspeed 的上屏片元: 光线打在路面上算车流光带, 竖杆与尘线逐个投影, 全程无三角网格. */
-export const HYPERSPEED_FRAGMENT = fragmentSource(BODY, GLSL_HASH, GLSL_UTIL);
+/** 上屏主体: 场景线性光加泛光, 泛光的峰值同样记进覆盖率, 再按覆盖率出光 (无泛光时与原上屏一致). */
+const COMPOSITE = `
+void main() {
+  vec4 scene = bloom_scene(v_uv);
+  vec3 glow = bloom_glow(v_uv);
+  float alpha = clamp(scene.a + max(glow.r, max(glow.g, glow.b)), 0.0, 1.0);
+  o_color = vec4(clamp((scene.rgb + glow) / max(alpha, 1e-3), 0.0, 1.0), alpha);
+}
+`;
+
+/**
+ * Hyperspeed 的离屏场景片元: 光线打在路面上算车流光带, 竖杆与尘线逐个投影, 全程无三角网格.
+ * 以 bloom_encode 写出未压缩的线性光与覆盖率, 由泛光金字塔 (../bloom.ts) 降采样模糊.
+ */
+export const HYPERSPEED_FRAGMENT = fragmentSource(BODY, GLSL_HASH, GLSL_UTIL, BLOOM_ENCODE);
+
+/**
+ * Hyperspeed 的上屏片元: 读场景与泛光金字塔合成.
+ *
+ * @param compositeGlsl bloomPyramid 返回的 compositeGlsl.
+ */
+export function hyperspeedComposite(compositeGlsl: string): string {
+  return fragmentSource(COMPOSITE, compositeGlsl);
+}
