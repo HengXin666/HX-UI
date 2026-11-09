@@ -1,5 +1,6 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 LiquidEther 条目, 实现为 HX 自有.
+// ENGINE-GAP: 内核在不支持半浮点渲染目标时退到 RGBA8, 速度与压力按 512 / 256 的范围编码后精度不足, 流体会发涩.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
