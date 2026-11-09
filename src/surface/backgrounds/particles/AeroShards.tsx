@@ -1,6 +1,8 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 AeroShards 条目, 实现为 HX 自有.
-// ENGINE-GAP: 上游是 WebGPU 3D 实例化玻璃碎片 (约 1300 片) 加真折射, 深度排序遮挡与 4 级泛光; 内核只有 WebGL2 全屏片元, 本件在 JS 里积分至多 24 片 (FLOATS) 并以 uniform 数组传入, 片元逐片求平面剪影, 折射以磨边法线偏移取背景近似, 泛光只做一级宽光晕, 无片间投影与真实厚度.
+// ENGINE-GAP: 上游是 WebGPU 3D 实例化玻璃碎片 (约 1300 片) 加真折射与深度排序遮挡; 内核只有 WebGL2 全屏片元, 无实例化 / 顶点缓冲 / 深度缓冲, 本件在 JS 里积分至多 24 片 (FLOATS) 并以 uniform 数组远到近传入, 片元逐片求平面剪影, 折射以磨边法线偏移取背景近似, 无片间投影与真实厚度; 景深是逐片弥散, 不是按深度缓冲的后处理模糊.
+// 已补 (2026-11-09): 单级宽光晕换成 ../bloom.ts 的四级离屏金字塔 (规格 BLOOM_LEVELS 4; 场景离屏写预乘光与覆盖率, 软膝阈值 0.3 / 膝 0.3, 强度 glow * 2,
+// 泛光峰值并入覆盖率, 暗角 / 颗粒 / 入场淡入移到上屏); 景深除剪影软边外, 失焦片的菲涅耳边光, 高光带与折射偏移按弥散圈同比变宽变淡 (近似景深模糊片内细节).
 
 import { useRef, type JSX } from "react";
 import { BackdropShell, glowFallback, splitCommon, useShaderBackdrop, type BackdropCommonProps, type BackdropFrame } from "../../backdrop/kernel";
@@ -8,7 +10,8 @@ import {
   AERO, MARKER_STYLES, MATERIALS, makeShards, packShards, pulseShards, ringList, stepShards,
   type AeroShardsMarkers, type AeroShardsMaterial, type AeroShardsPlacement, type Shard,
 } from "./aero-shards-field";
-import { AERO_SHARDS_FRAGMENT } from "./aero-shards-shader";
+import { AERO_SHARDS_FRAGMENT, aeroShardsComposite } from "./aero-shards-shader";
+import { bloomPyramid } from "../bloom";
 import { follow, HALF, introProgress } from "./tokens";
 
 export interface AeroShardsProps extends BackdropCommonProps {
@@ -40,7 +43,7 @@ export interface AeroShardsProps extends BackdropCommonProps {
   readonly scale?: number;
   /** 景深强度 (离对焦距离越远越虚), 默认 0.75. */
   readonly depthOfField?: number;
-  /** 光晕强度, 默认 0.35. */
+  /** 泛光强度 (四级降采样金字塔), 默认 0.35. */
   readonly glow?: number;
   /** 胶片颗粒, 默认 0.06. */
   readonly grain?: number;
@@ -77,7 +80,7 @@ const CAMERA_TAU = 0.4;
 
 /**
  * 漂浮玻璃碎片: 一群带磨边的玻璃片在景深里缓缓漂浮自转, 横向移动时横滚; 指针排斥并带镜头视差, 点击把附近碎片推开并放出光环,
- * 按住时碎片顺着变软的弹簧聚到指针处, 松手散回. 背景上漂着十字或点状标记. 减弱动效时只画一帧.
+ * 按住时碎片顺着变软的弹簧聚到指针处, 松手散回. 背景上漂着十字或点状标记; 亮部经四级降采样金字塔泛光. 减弱动效时只画一帧.
  */
 export function AeroShards(props: AeroShardsProps): JSX.Element {
   const {
@@ -138,17 +141,25 @@ export function AeroShards(props: AeroShardsProps): JSX.Element {
       u_light: lightMode ? 1 : 0,
       u_material: [...(MATERIALS[material] ?? MATERIALS.glass)],
       u_dof: Math.max(0, depthOfField),
-      u_glow: Math.max(0, glow),
-      u_grain: Math.max(0, grain),
-      u_vignette: Math.max(0, vignette),
       u_markers: MARKER_STYLES[markers] ?? MARKER_STYLES.plus,
       u_intro: introProgress(frame.elapsed, AERO.introSeconds * HALF, intro && !frame.reduced),
       u_cam: [c.camX, c.camY],
     };
   };
 
+  const pyramid = bloomPyramid({
+    scene: AERO_SHARDS_FRAGMENT, sceneUniforms: uniforms, levels: AERO.bloomLevels,
+    threshold: AERO.bloomThreshold, knee: AERO.bloomKnee, strength: Math.max(0, glow) * AERO.bloomGain,
+  });
+  const composite = (frame: BackdropFrame) => ({
+    ...pyramid.uniforms,
+    u_bg_alpha: opaque ? 1 : 0,
+    u_grain: Math.max(0, grain),
+    u_vignette: Math.max(0, vignette),
+    u_intro: introProgress(frame.elapsed, AERO.introSeconds * HALF, intro && !frame.reduced),
+  });
   const handle = useShaderBackdrop(
-    { fragment: AERO_SHARDS_FRAGMENT, uniforms },
+    { fragment: aeroShardsComposite(pyramid.compositeGlsl), passes: pyramid.passes, uniforms: composite },
     { ...options, colors: [shardColor, accentColor, inkColor, opaque ? backgroundColor : "background"] },
   );
   return (

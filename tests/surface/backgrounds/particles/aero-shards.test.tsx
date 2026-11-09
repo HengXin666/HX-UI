@@ -7,7 +7,7 @@ import { AeroShards } from "@src/surface/backgrounds/particles/AeroShards";
 import {
   AERO, MARKER_STYLES, makeShards, packShards, pulseShards, ringList, scaleAt, shardIntro, shardStiffness, stepShards,
 } from "@src/surface/backgrounds/particles/aero-shards-field";
-import { AERO_SHARDS_FRAGMENT } from "@src/surface/backgrounds/particles/aero-shards-shader";
+import { AERO_SHARDS_FRAGMENT, aeroShardsComposite } from "@src/surface/backgrounds/particles/aero-shards-shader";
 import { mockWebgl2 } from "../../backdrop/helpers";
 import { mockReducedMotion, recordCanvas2d, useFakeClock } from "../../helpers";
 
@@ -28,6 +28,19 @@ describe("AeroShards 纯函数", () => {
     expect(scaleAt(0)).toBeCloseTo(3.1 / 4, 9);
     expect(AERO_SHARDS_FRAGMENT).toContain("uniform vec4 u_sa[24]");
     expect(AERO_SHARDS_FRAGMENT).toContain("uniform vec4 u_rings[4]");
+  });
+
+  it("四级泛光金字塔 (BLOOM_LEVELS) 取代单级光晕; 失焦片的片内细节随弥散圈变软; 暗角 / 颗粒 / 入场在上屏", () => {
+    expect([AERO.bloomThreshold, AERO.bloomKnee, AERO.bloomGain]).toEqual([0.3, 0.3, 2]);
+    expect(AERO_SHARDS_FRAGMENT).toContain("o_color = bloom_encode(pc, clamp(alpha, 0.0, 1.0));");
+    expect(AERO_SHARDS_FRAGMENT).not.toContain("haloTint");
+    expect(AERO_SHARDS_FRAGMENT).not.toContain("u_bloom");
+    expect(AERO_SHARDS_FRAGMENT).toContain("smoothstep(0.0, 0.25 + blur * 1.5, bevel)");
+    expect(AERO_SHARDS_FRAGMENT).toContain("float sw = 0.12 + blur * 1.2;");
+    const composite = aeroShardsComposite("// pyramid");
+    expect(composite).toContain("bloom_glow(v_uv)");
+    expect(composite).toContain("uniform float u_vignette");
+    expect(composite).toContain("alpha * u_intro");
   });
 
   it("撒片可复现, 数量钳到 FLOATS, 摆位决定横向区间", () => {
@@ -121,7 +134,7 @@ describe("AeroShards 渲染", () => {
     const { container } = render(<AeroShards markers="dots" material="frosted" />);
     expect((container.firstElementChild as HTMLElement).dataset.backdropPlan).toBe("still");
     const before = calls.filter((c) => c === "drawArrays").length;
-    expect(before).toBeGreaterThan(0);
+    expect(before).toBe(1 + AERO.bloomLevels + 1);
     act(() => vi.advanceTimersByTime(500));
     expect(calls.filter((c) => c === "drawArrays").length).toBe(before);
     restoreMotion();

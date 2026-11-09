@@ -24,8 +24,12 @@ export const AERO = {
   /** 规格 MAX_RINGS / RING_SECONDS: 点击环个数与寿命. */
   maxRings: 4,
   ringSeconds: 2.6,
-  /** 规格 BLOOM_LEVELS (本件只做一级, 见 ENGINE-GAP). */
+  /** 规格 BLOOM_LEVELS: 泛光金字塔级数 (../bloom.ts). */
   bloomLevels: 4,
+  /** 本库定: 亮部软膝阈值 / 膝 (玻璃体色本身偏暗, 阈值放低让边光与高光带也起泛光), glow prop 到泛光强度的倍率. */
+  bloomThreshold: 0.3,
+  bloomKnee: 0.3,
+  bloomGain: 2,
   /** 规格: 子步 1/120s. */
   substep: 1 / 120,
   /** 规格: 按住时 gather 以 0.3s 升向 hold, 松开以 0.2s 落回 0. */
