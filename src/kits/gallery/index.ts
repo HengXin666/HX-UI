@@ -12,3 +12,4 @@ export { DOME_DEFAULTS, SphereWall, domeCells, domeDecay, domeFling, domeRadius,
 export { FLEX_SPRING, FlexReel, flexEnergyStep, flexEnergyTarget, flexPose, type FlexItem, type FlexReelProps } from "./FlexReel";
 export { BLEND_DEFAULTS, BlendSlider, blendFrames, type BlendItem, type BlendSliderProps, type BlendTransition } from "./BlendSlider";
 export { HELIX_DEFAULTS, HelixScroll, helixAdvance, helixPose, type HelixItem, type HelixLook, type HelixPose, type HelixScrollProps } from "./HelixScroll";
+export { POSTER_DEFAULTS, PosterFlight, posterPose, posterSkew, posterY, smoothRate, type PosterAxis, type PosterFlightProps, type PosterItem } from "./PosterFlight";

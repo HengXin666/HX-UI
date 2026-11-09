@@ -16,6 +16,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/FlexReel.tsx`, `src/kits/gallery/parts/flex-spec.ts` (react-bits Components/FlexCarousel)
 - `src/kits/gallery/BlendSlider.tsx`, `src/kits/gallery/parts/blend-spec.ts` (react-bits Components/MorphSlider)
 - `src/kits/gallery/HelixScroll.tsx`, `src/kits/gallery/parts/helix-spec.ts` (react-bits Components/InfiniteSpiral)
+- `src/kits/gallery/PosterFlight.tsx`, `src/kits/gallery/parts/poster-spec.ts` (react-bits Components/FlyingPosters)
 
 ## Problem
 
@@ -66,3 +67,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## HelixScroll (规格 Components/InfiniteSpiral)
 
 卡片沿竖直螺旋排布: 第 i 张高 i × verticalSpacing, 转 360 / cardsPerTurn 度一张, 绕半径 radius; 整条按 count × spacing 循环. 自动模式下螺旋按规格 speed (60fps 每帧 px, 默认 0.55) 匀速上升或下降, 前进时同步转动; 滚动模式下前进量跟容器相对视口的位置. 边缘度 = |y| / 半高: 透明度 1 - smoothstep(1 - edgeFade, 1, 边缘度), 模糊 edgeBlur × smoothstep(0.35, 1, 边缘度) (规格同式), 中央放大到 centerScale (默认 1.2). 屏幕外不跑帧, pauseOnHover 时悬停暂停. 规格的 cardTilt, cardRadius, imageFit, grayscale 交给内容自理. 减弱动效时自动模式不动, 滚动模式照常跟手.
+
+## PosterFlight (规格 Components/FlyingPosters)
+
+海报排成一列或几列循环带 (alternate 时相邻列反向), 滚轮与竖向拖拽推目标位置, 实际位置按规格的帧率无关跟随 1 - (1 - scrollEase)^(dt × 60) 追上 (默认 0.01); 速度与倾斜按规格的 1 - exp(-rate × dt) 平滑 (速率 8 与 6). 每张海报穿过视口时绕所选轴 (vertical 转 rotateY, horizontal 转 rotateX, diagonal 两轴同转) 从 -rotation/2 转到 rotation/2 (默认 180); 速度越快斜切越大 (distortion × 速度 / 400 度, 限 20 度); lean 让整层随速度倾斜; fade 让上下边缘渐隐. speed 为自动滚动 px/s. ENGINE-GAP: 规格在 WebGL 里用自带相机投影 (cameraFov, cameraZ) 按速度弯曲海报网格, 并做明暗与圆角遮罩, 内核没有顶点通道, 这里用 CSS 透视加整张旋转与斜切近似. pageScroll 联动页面滚动不做. 减弱动效时位置直接跳, 无斜切与倾斜, 不自动滚.
