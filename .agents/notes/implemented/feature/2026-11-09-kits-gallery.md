@@ -15,6 +15,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/SphereWall.tsx`, `src/kits/gallery/parts/dome-spec.ts` (react-bits Components/DomeGallery)
 - `src/kits/gallery/FlexReel.tsx`, `src/kits/gallery/parts/flex-spec.ts` (react-bits Components/FlexCarousel)
 - `src/kits/gallery/BlendSlider.tsx`, `src/kits/gallery/parts/blend-spec.ts` (react-bits Components/MorphSlider)
+- `src/kits/gallery/HelixScroll.tsx`, `src/kits/gallery/parts/helix-spec.ts` (react-bits Components/InfiniteSpiral)
 
 ## Problem
 
@@ -61,3 +62,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## BlendSlider (规格 Components/MorphSlider)
 
 新一幅叠在旧一幅上用 Web Animations 进场, 1.1s inOutCubic (规格 power2.inOut, CURVE 新增); 四种转场: melt 由模糊 14px 淡入, ripple 由中心圆形 clip-path 扩开, shear 由前进方向一侧 inset 扫入, swirl 由转 10 度放大 1.15 淡入. 标题以 0.66 倍时长 outExpo (规格 (0.16, 1, 0.3, 1), CURVE 新增) 上升淡入, 指示条宽度 0.45 倍时长. 中途再翻页时先把进行中的转场 finish 再起新的; 没有 Element.animate 时直接落定. 按钮, 指示点, 方向键, 横扫 40px 翻页; 自动播放 4s, 悬停聚焦暂停. ENGINE-GAP: 规格的噪声位移溶解, 色差 (aberration), 暗角与 drift 在 WebGL 片元着色器里, 内核没有片元通道, 这里换成 filter / clip-path / transform 关键帧. 减弱动效时只淡入且不超过 0.4s (规格同), 标题不动.
+
+## HelixScroll (规格 Components/InfiniteSpiral)
+
+卡片沿竖直螺旋排布: 第 i 张高 i × verticalSpacing, 转 360 / cardsPerTurn 度一张, 绕半径 radius; 整条按 count × spacing 循环. 自动模式下螺旋按规格 speed (60fps 每帧 px, 默认 0.55) 匀速上升或下降, 前进时同步转动; 滚动模式下前进量跟容器相对视口的位置. 边缘度 = |y| / 半高: 透明度 1 - smoothstep(1 - edgeFade, 1, 边缘度), 模糊 edgeBlur × smoothstep(0.35, 1, 边缘度) (规格同式), 中央放大到 centerScale (默认 1.2). 屏幕外不跑帧, pauseOnHover 时悬停暂停. 规格的 cardTilt, cardRadius, imageFit, grayscale 交给内容自理. 减弱动效时自动模式不动, 滚动模式照常跟手.

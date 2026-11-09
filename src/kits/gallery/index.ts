@@ -11,3 +11,4 @@ export { DEPTH_DEFAULTS, DepthDeck, depthPose, depthRank, type DepthCard, type D
 export { DOME_DEFAULTS, SphereWall, domeCells, domeDecay, domeFling, domeRadius, type DomeCell, type SphereImage, type SphereWallProps } from "./SphereWall";
 export { FLEX_SPRING, FlexReel, flexEnergyStep, flexEnergyTarget, flexPose, type FlexItem, type FlexReelProps } from "./FlexReel";
 export { BLEND_DEFAULTS, BlendSlider, blendFrames, type BlendItem, type BlendSliderProps, type BlendTransition } from "./BlendSlider";
+export { HELIX_DEFAULTS, HelixScroll, helixAdvance, helixPose, type HelixItem, type HelixLook, type HelixPose, type HelixScrollProps } from "./HelixScroll";
