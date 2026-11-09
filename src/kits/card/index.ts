@@ -11,3 +11,4 @@ export { PIXEL_VARIANTS, PixelBloom, buildField, hash01, pixelSize, stepField, s
 export { FOIL_SPECTRUM, FoilCard, foilIdle, foilPattern, foilRainbow, foilShift, type FoilCardProps, type FoilPreset } from "./FoilCard";
 export { MIRROR_DEFAULTS, MIRROR_INTRO_MS, MirrorCard, mirrorFilter, mirrorMetal, mirrorSheen, type MirrorCardProps } from "./MirrorCard";
 export { FRAY_BLEED, FRAY_DEFAULTS, FrayCard, frayFrequency, frayScale, frayWanted, type FrayCardProps, type FrayScope } from "./FrayCard";
+export { FOLDER_BOOK, FOLDER_FLAP, FOLDER_MAX_ITEMS, FileFolder, coverAngle, itemPose, type FileFolderProps, type FolderItem, type FolderPose, type ItemPose } from "./FileFolder";
