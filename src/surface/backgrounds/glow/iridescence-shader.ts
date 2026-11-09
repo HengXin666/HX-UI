@@ -2,7 +2,7 @@
 import { fragmentSource, GLSL_HASH, GLSL_UTIL } from "../../backdrop/kernel/glsl";
 import { GLOW_GLSL } from "./glow-kit";
 
-/** 规格的搅动场列数 (FIELD_COLUMNS); 这里是离屏通道, 按画布宽取倍率, 见组件头 ENGINE-GAP. */
+/** 规格的搅动场列数 (FIELD_COLUMNS); 这里是离屏通道, 倍率取 48 / 画布宽, 恰 48 列. */
 export const IRIDESCENCE_FIELD_COLUMNS = 48;
 /** 同时生效的点击旋涡上限 (规格 MAX_SWIRLS). */
 export const IRIDESCENCE_MAX_SWIRLS = 6;

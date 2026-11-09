@@ -1,6 +1,6 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 Iridescence 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格的搅动场是固定 48 列 (FIELD_COLUMNS) 的 JS 网格, 内核离屏通道只有相对画布的静态倍率, 这里取 FIELD_SCALE 倍率的乒乓通道, 列数随画布宽变.
+// 已补 (2026-11-09): 规格的搅动场固定 48 列 (FIELD_COLUMNS): 乒乓通道倍率取 48 / 画布设备像素宽 (PassSpec.scale 为 getter, 每次 resize 读画布), 恰 48 列, 行数随宽高比.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -10,16 +10,16 @@ import type { UniformMap } from "../../backdrop/kernel/gl";
 import { clamp } from "../../backdrop/kernel/math";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
-import { createFollower, DEG, finishUniforms, LIGHT, stepFollower, tauOf, type Follower } from "./glow-kit";
+import { canvasPixels, createFollower, DEG, finishUniforms, LIGHT, stepFollower, tauOf, type Follower } from "./glow-kit";
 import {
-  IRIDESCENCE_FIELD, IRIDESCENCE_FIELD_DECAY, IRIDESCENCE_FIELD_FRAGMENT, IRIDESCENCE_FOLLOW_RATE, IRIDESCENCE_FRAGMENT, IRIDESCENCE_MAX_DETAIL,
+  IRIDESCENCE_FIELD, IRIDESCENCE_FIELD_COLUMNS, IRIDESCENCE_FIELD_DECAY, IRIDESCENCE_FIELD_FRAGMENT, IRIDESCENCE_FOLLOW_RATE, IRIDESCENCE_FRAGMENT, IRIDESCENCE_MAX_DETAIL,
   IRIDESCENCE_PRESENCE_RATE,
 } from "./iridescence-shader";
 
 /** 默认着色: 语义 token foreground (暗底下近白, 即基本不改虹彩本色). */
 export const IRIDESCENCE_DEFAULT_COLOR = "foreground";
-/** 搅动场通道倍率 (本库定, 约合 1/16 画布). */
-export const IRIDESCENCE_FIELD_SCALE = 0.0625;
+/** 画布尺寸未知时的搅动场倍率 (本库定, 约合 1/16 画布); 内核随后按真实尺寸 resize 时换成恰 48 列. */
+const UNKNOWN_FIELD_SCALE = 0.0625;
 /** 规格 dpr = min(devicePixelRatio, 2) * resolution 里的 2. */
 const DPR_CAP = 2;
 /** 兜底色标: 语义 token 名. */
@@ -79,6 +79,15 @@ export function iridescenceDpr(resolution: number, dpr?: number): number {
   return (dpr ?? DPR_CAP) * clamp(resolution, 0.1, 1);
 }
 
+/**
+ * 搅动场通道倍率: 48 / 画布设备像素宽, 内核 feedbackSize 取整后恰为 FIELD_COLUMNS 列, 行数随宽高比; 画布窄于 48 像素时为 1 (每像素一格).
+ *
+ * @param width 画布设备像素宽, 0 表示未知.
+ */
+export function iridescenceFieldScale(width: number): number {
+  return width > 0 ? Math.min(1, IRIDESCENCE_FIELD_COLUMNS / width) : UNKNOWN_FIELD_SCALE;
+}
+
 /** 搅动场通道 uniform: 衰减 exp(-dt * 1.4), 指针位置与速度注入. 纯函数. */
 export function iridescenceFieldUniforms(frame: Pick<BackdropFrame, "dt">, follower: Follower, stir: number): UniformMap {
   return {
@@ -130,7 +139,9 @@ export function Iridescence(props: IridescenceProps): JSX.Element {
         {
           name: IRIDESCENCE_FIELD,
           fragment: IRIDESCENCE_FIELD_FRAGMENT,
-          scale: IRIDESCENCE_FIELD_SCALE,
+          get scale() {
+            return iridescenceFieldScale(canvasPixels(handle.canvasRef.current)[0]);
+          },
           uniforms: (frame) => {
             const presence = tauOf(IRIDESCENCE_PRESENCE_RATE);
             stepFollower(follower.current, frame, { move: tauOf(IRIDESCENCE_FOLLOW_RATE), enter: presence, leave: presence }, interactive);
