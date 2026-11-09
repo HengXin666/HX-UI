@@ -66,3 +66,31 @@ export const WAKE_DRIFT_SWAY = 0.6;
 export const WAKE_SETTLE_SHARE = 3;
 /** 点击爆开时偏移最多放大到的倍数增量. */
 export const WAKE_BURST_PUSH = 1.5;
+
+/** 制图字: 回弹刚度 320, 弹性 0.4 时阻尼按 2√k (1 - 0.96 x 弹性); 入场延迟 0.15s; 点击踢开向两侧每格衰减 0.62; 描边亮度分 8 档. */
+export const DRAFT_SPRING = 320;
+export const DRAFT_BOUNCE_SHARE = 0.96;
+export const DRAFT_INTRO_DELAY_S = 0.15;
+export const DRAFT_KICK_DECAY = 0.62;
+export const DRAFT_FALLOFF_STEPS = 8;
+/** 制图字的 props 默认值: 感应半径 200px, 柔度 0.7, 虚线 4 / 2, 线宽 1.5, 弹性 0.4, 速度 1, 字重 600. */
+export const DRAFT_DEFAULTS = {
+  reach: 200,
+  softness: 0.7,
+  dashLength: 4,
+  dashGap: 2,
+  strokeWidth: 1.5,
+  bounce: 0.4,
+  speed: 1,
+  fontSize: "clamp(3rem, 12vw, 9rem)",
+  fontWeight: 600,
+} as const;
+/** 跟随时间常数 (秒): 拖动跟手 0.03, 选框位置 0.08, 选框显隐 0.1, 描边 0.09, 辅助线 0.14. */
+export const DRAFT_TAU_S = { grab: 0.03, glide: 0.08, frame: 0.1, outline: 0.09, guide: 0.14 } as const;
+/** 打字入场每格时长 (秒, speed 为 1 时). */
+export const DRAFT_TYPE_STEP_S = 0.06;
+/** 点击踢开的初速度 (px/s, 向上) 与判定为点击的最大位移 (px). */
+export const DRAFT_KICK_PX_S = 520;
+export const DRAFT_CLICK_SLOP_PX = 3;
+/** 选框比字形外扩 (px). */
+export const DRAFT_FRAME_PAD_PX = 4;
