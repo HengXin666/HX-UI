@@ -1,6 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 MagicRings 条目, 实现为 HX 自有.
-// ENGINE-GAP: 条目用 128 段的环带网格加 Canvas2D 叠层, 这里在全屏片元里按半径距离解析地画环, 倾斜只做竖向压扁不做透视.
+// 已补 (2026-11-09): tilt 改为真透视 (片元里相机射线与倾斜平面解析求交, 线宽按屏幕导数保持像素粗细, 等效 128 段环带网格);
+// 环带截面 (细芯加光晕) 走 Canvas2D 预烘的一行纹理, 经 ShaderSpec.textures 上传一次.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -12,7 +13,8 @@ import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
 import {
   RINGS_BURST_LIFE, RINGS_BURST_SPEED, RINGS_MAX_BURSTS, ringsBurstLife, ringsLayout, stepRingsSpring, type RingsMotion, type RingsSpring,
 } from "./magic-rings-motion";
-import { RINGS_FRAGMENT } from "./magic-rings-shader";
+import { RINGS_FRAGMENT, RINGS_PROFILE_SIZE, ringsProfileBytes } from "./magic-rings-shader";
+import { paintBytes } from "./prebake";
 
 export interface MagicRingsProps extends BackdropCommonProps {
   /** 内环颜色, 默认 primary. */
@@ -39,7 +41,7 @@ export interface MagicRingsProps extends BackdropCommonProps {
   readonly rotation?: number;
   /** 自转 (弧度每秒), 默认 0. */
   readonly spin?: number;
-  /** 俯仰 (度), 默认 0. */
+  /** 俯仰 (度): 环所在平面绕水平轴倾斜, 带透视, 正值上方远离观者, 限 ±85. 默认 0. */
   readonly tilt?: number;
   /** 色散, 默认 0. */
   readonly dispersion?: number;
@@ -73,7 +75,7 @@ const DEFAULT_RINGS = 6;
 const GREY: Rgb = [0.5, 0.5, 0.5];
 
 /**
- * 魔法环: 一组同心发光环, pulse 模式下按 0.5 秒错开依次出生, 3.45 秒一周期向外推开并熄灭;
+ * 魔法环: 倾斜平面上 (真透视) 的一组同心发光环, pulse 模式下按 0.5 秒错开依次出生, 3.45 秒一周期向外推开并熄灭;
  * 悬停放大增亮 (临界阻尼弹簧), 可选环心跟手 (刚度 70, 1/240 秒子步), 点击放出爆环 (1.1 秒, 0.9 单位每秒).
  * 减弱动效只画一帧静止的环.
  *
@@ -87,6 +89,17 @@ export function MagicRings(props: MagicRingsProps): JSX.Element {
   } = props;
   const { options, rest, opacity, children } = splitCommon(common);
   const spring = useRef<RingsSpring>({ x: 0, y: 0, vx: 0, vy: 0, hover: 0, hoverVelocity: 0 });
+  const profile = useRef<{ canvas: HTMLCanvasElement | null; baked: boolean }>({ canvas: null, baked: false });
+
+  /** 截面预烘图与 props 无关, 每个实例只烘一次; 同一张画布对象让内核只上传一次. */
+  const profileOf = (): HTMLCanvasElement | null => {
+    const p = profile.current;
+    if (!p.baked) {
+      p.baked = true;
+      p.canvas = paintBytes(RINGS_PROFILE_SIZE, 1, ringsProfileBytes());
+    }
+    return p.canvas;
+  };
 
   const offsetOf = (frame: BackdropFrame): readonly [number, number] => {
     const { pointer, fit } = frame;
@@ -137,8 +150,10 @@ export function MagicRings(props: MagicRingsProps): JSX.Element {
           u_zoom: 1 + (hoverScale - 1) * hover,
           u_boost: hoverIntensity * hover,
           u_aim: [ox - s.x, oy - s.y],
+          u_has_profile: profileOf() ? 1 : 0,
         };
       },
+      textures: () => ({ u_profile: profileOf() }),
     },
     { ...options, colors: [color, colorTwo] },
   );

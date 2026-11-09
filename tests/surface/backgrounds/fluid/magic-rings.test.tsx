@@ -1,5 +1,5 @@
 /**
- * fluid 路 MagicRings: 环的包络, 布局, 跟手弹簧的纯函数, 规格常数, 着色器接线, 内核状态, 减弱动效只画一帧, 无 WebGL 时兜底.
+ * fluid 路 MagicRings: 环的包络, 布局, 跟手弹簧, 倾斜平面透视与截面预烘的纯函数, 规格常数, 着色器接线, 内核状态, 减弱动效只画一帧, 无 WebGL 时兜底.
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,9 +8,12 @@ import {
   RINGS_BURST_LIFE, RINGS_BURST_SPEED, RINGS_CYCLE, RINGS_DAMPING, RINGS_DEPTH, RINGS_MAX, RINGS_MAX_BURSTS, RINGS_STAGGER, ringsBurstLife, ringsLayout,
   ringsPulseLife, stepRingsSpring, type RingsLayout,
 } from "@src/surface/backgrounds/fluid/magic-rings-motion";
-import { RINGS_FRAGMENT } from "@src/surface/backgrounds/fluid/magic-rings-shader";
+import {
+  RINGS_FRAGMENT, RINGS_PROFILE_REACH, RINGS_PROFILE_SIZE, ringsOnTilted, ringsProfile, ringsProfileBytes,
+} from "@src/surface/backgrounds/fluid/magic-rings-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../../backdrop/helpers";
 import { recordCanvas2d } from "../../helpers";
+import { mockWebgl2And2d } from "./prebake-helpers";
 
 let restore: Array<() => void> = [];
 beforeEach(() => {
@@ -56,10 +59,33 @@ describe("MagicRings 纯函数与常数", () => {
     expect(s.y).toBeCloseTo(-0.1, 3);
     expect(s.hover).toBeCloseTo(1, 2);
   });
-  it("着色器: 环与爆环数组, 峰值压缩", () => {
+  it("倾斜平面: 0 度时恒等, 倾斜后上远下近, 越过地平线为 null", () => {
+    const flat = ringsOnTilted(0.3, -0.2, 0);
+    expect(flat?.[0]).toBeCloseTo(0.3, 9);
+    expect(flat?.[1]).toBeCloseTo(-0.2, 9);
+    const top = ringsOnTilted(0, 0.3, 60);
+    const bottom = ringsOnTilted(0, -0.3, 60);
+    expect(top?.[1] ?? 0).toBeGreaterThan(0.3);
+    expect(Math.abs(bottom?.[1] ?? 0)).toBeLessThan(Math.abs(top?.[1] ?? 0));
+    expect(ringsOnTilted(0.1, 0, 60)?.[0]).toBeCloseTo(0.1, 9);
+    expect(ringsOnTilted(0, 1, 80)).toBeNull();
+  });
+  it("截面预烘: 细芯在线宽内, 光晕按平方根存, 末端为 0", () => {
+    expect(ringsProfile(0)).toEqual([1, 1]);
+    expect(ringsProfile(2)[0]).toBe(0);
+    expect(ringsProfile(1.5)[1]).toBeCloseTo(0.5, 9);
+    expect(ringsProfile(RINGS_PROFILE_REACH)[1]).toBe(0);
+    const bytes = ringsProfileBytes();
+    expect(bytes.length).toBe(RINGS_PROFILE_SIZE * 4);
+    expect(bytes[(RINGS_PROFILE_SIZE - 1) * 4 + 1]).toBe(0);
+  });
+  it("着色器: 环与爆环数组, 峰值压缩, 倾斜平面求交与截面纹理", () => {
+    expect(RINGS_FRAGMENT).toContain("uniform sampler2D u_profile;");
+    expect(RINGS_FRAGMENT).toContain("float stretch = 1.0 / max(length(vec2(dFdx(len0), dFdy(len0))), 1e-6);");
+    expect(RINGS_FRAGMENT).not.toContain("plane.y /=");
     expect(RINGS_FRAGMENT).toContain("uniform vec4 u_rings[12];");
     expect(RINGS_FRAGMENT).toContain("vec3 level = 1.0 - exp(-peak);");
-    expect(RINGS_FRAGMENT).toContain("float boost = 1.0 + 1.6 * nearness(plane)");
+    expect(RINGS_FRAGMENT).toContain("float boost = 1.0 + 1.6 * nearness(plane, aim)");
   });
 });
 
@@ -75,6 +101,18 @@ describe("MagicRings 渲染", () => {
       vi.advanceTimersByTime(200);
     });
     expect(draws(calls)).toBeGreaterThan(before);
+  });
+  it("截面图只烘一次, 只上传一次", () => {
+    const calls: string[] = [];
+    const ctxCalls: string[] = [];
+    restore.push(mockWebgl2And2d(calls, ctxCalls), mockReducedMotion(false));
+    mockIntersection();
+    render(<MagicRings tilt={40} />);
+    act(() => {
+      vi.advanceTimersByTime(300);
+    });
+    expect(ctxCalls.filter((c) => c === "putImageData")).toHaveLength(1);
+    expect(calls.filter((c) => c === "texImage2D")).toHaveLength(1);
   });
   it("减弱动效: 只画静态帧", () => {
     const calls: string[] = [];
