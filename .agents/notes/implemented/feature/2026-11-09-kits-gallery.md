@@ -9,6 +9,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/tokens.ts`, `src/kits/gallery/index.ts`
 - `src/kits/gallery/FoldGallery.tsx` (react-bits Components/AccordionGallery)
 - `src/kits/gallery/SpringCarousel.tsx`, `src/kits/gallery/parts/carousel-spec.ts`, `src/kits/gallery/parts/use-drag.ts` (react-bits Components/Carousel)
+- `src/kits/gallery/RingCarousel.tsx`, `src/kits/gallery/parts/ring-spec.ts` (react-bits Components/CircularCarousel)
 
 ## Problem
 
@@ -31,3 +32,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## SpringCarousel (规格 Components/Carousel)
 
 位置是一路弹簧 (规格 STIFFNESS 150, DAMPING 24, 质量 1), 单位是张; 每张 translateX(偏移 × 100%), 循环时偏移取环上最近值. 拖拽过 5px 才算拖, 拖动时直接写位置; 松手时拖过宽度 20% 或速度过 0.3px/ms 就翻一页, 甩出速度换算成张/秒交给弹簧, 中途改目标保留速度. 自动播放 (默认 4s, 规格未给) 在悬停, 聚焦, 拖拽与页面隐藏时暂停. 方向键翻页, 指示点宽度过渡 320ms lift. 规格的 EFFECTS 与 THEMES (视觉主题) 不做. 减弱动效时直接跳页, 不自动播放.
+
+## RingCarousel (规格 Components/CircularCarousel)
+
+卡片绕竖轴围成一圈 (CSS 3D, rotateY 加 translateZ), 半径取使卡片不重叠的 (w + gap) / (2 tan(pi / n)), 不小于 1.2 倍卡宽. 角度是一路临界阻尼弹簧 (规格 SPRING 118, 阻尼 2 sqrt(118)); 拖拽每 px 转 0.25 度, 松手按甩出速度预估落点并吸到最近一项; 滚轮与方向键一次一项, 点卡片走最短路转过去. 巡航: 无人操作时角速度按 0.6s 时间常数 (规格 1 - exp(-dt / tau) 写法) 爬到 cruiseSpeed 匀速自转, 一碰就停. 屏幕外 (IntersectionObserver) 与页面隐藏时巡航不跑帧. 规格的切片拼图入场 (TILES 8, OVERLAP 2.5, INTRO_LENGTH) 与换图切片动画 (SWAP_LENGTH) 不做. 减弱动效时直接转到位, 不巡航.
