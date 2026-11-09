@@ -12,6 +12,7 @@ Decision-ID: kits-stack
 - `src/kits/stack/SwipeStack.tsx`, `src/kits/stack/parts/swipe-spec.ts` (react-bits Components/Stack)
 - `src/kits/stack/CycleDeck.tsx`, `src/kits/stack/parts/swap-spec.ts` (react-bits Components/CardSwap)
 - `src/kits/stack/SpreadCards.tsx`, `src/kits/stack/parts/bounce-spec.ts` (react-bits Components/BounceCards)
+- `src/kits/stack/FlowMasonry.tsx`, `src/kits/stack/parts/masonry-spec.ts` (react-bits Components/Masonry)
 
 ## Problem
 
@@ -44,3 +45,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## SpreadCards (规格 Components/BounceCards)
 
 一排照片卡以中间为轴横向错开 spread (85px), 转角按交替系数 1, 0.5, -0.3, -1, 0.2 乘 rotation (10 度; 规格 PATTERN 的形状), arc 让两侧沿抛物线下沉; poses 可整组覆盖 (规格 transformStyles 收 CSS 串, 这里收 x, y, 转角数值). 挂上后延迟 animationDelay (0.5s) 按 animationStagger (0.06s) 错峰从 0 弹出, 劲度 170; 指针或焦点停在一张上时它摆正并放大 hoverScale (1.06), 两侧各推开 pushDistance (160px), 劲度 210. 两档弹簧的阻尼都按规格 2 (1 - 0.85 bounciness) sqrt(劲度), bounciness 默认 0.6. 阴影随悬停加深, 过渡 0.3s ease, 阴影用主题 token. 每张是按钮, 方向键左右移焦, 点击回调 onCardClick. borderColor 换成语义色 borderTone. 减弱动效时不弹出, 换位直接到位.
+
+## FlowMasonry (规格 Components/Masonry)
+
+卡片按 高 / 宽 比 (ratio) 依次放进当前最矮的一列, 列数可固定, 不给时按容器宽自动 (1500 / 1000 / 600 / 400px 断点取 5 / 4 / 3 / 2 列, HX 自定). 容器宽 (ResizeObserver) 或项变化时各卡以弹簧换位, omega 取规格的 2pi / duration (duration 默认 0.6s), zeta 规格未给数值, HX 取 1 (换位不过冲), 换位保留速度. 容器进入视口时逐张错峰 stagger (0.05s) 从 animateFrom 方向 (bottom / top / left / right / center / random) 偏移 80px 飞入 (规格从视口外飞入, 这里改为固定距离), 同时每张在 duration 内按三次缓出揭开透明度, blurToFocus 时模糊从 12px 收到 0 (规格同式). 悬停缩放 hoverScale (0.95) 0.25s, 阴影 0.5s, 曲线为新增的 CURVE.settle (规格 (0.2, 0.8, 0.2, 1)). 有 href 的项渲染为链接, 否则为按钮, 点击回调 onItemClick. 规格的 colorShiftOnHover 与图片视差 (PARALLAX) 未做. 减弱动效时直接在位, 无飞入, 揭开与换位动画.

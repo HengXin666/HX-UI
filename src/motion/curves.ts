@@ -29,6 +29,8 @@ export const CURVE = {
   outExpo: [0.16, 1, 0.3, 1],
   /** 三次缓入缓出 (GSAP power2.inOut): 两端柔和. 整幅转场. */
   inOutCubic: [0.65, 0, 0.35, 1],
+  /** 落定: 比 flow 起步稍缓, 尾段同样长而平. 瀑布流卡片悬停与换位. */
+  settle: [0.2, 0.8, 0.2, 1],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 
 export type CurveName = keyof typeof CURVE;

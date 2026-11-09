@@ -8,3 +8,4 @@ export { PILE_DEFAULTS, ScrollPile, pileComplete, pilePose, pileSmooth, pinAt, s
 export { SWIPE_DEFAULTS, SwipeStack, exitVector, leanDeg, rotateOrder, shouldSend, slotPose, type SwipeCard, type SwipeLayout, type SwipeStackProps } from "./SwipeStack";
 export { CycleDeck, SWAP_DEFAULTS, swapPointer, swapShouldCycle, swapSlot, swapStagger, type CycleCard, type CycleDeckProps } from "./CycleDeck";
 export { BOUNCE_DEFAULTS, SpreadCards, hoverPose, popDelay, restPose, type BouncePose, type SpreadCardsProps, type SpreadImage } from "./SpreadCards";
+export { FlowMasonry, MASONRY_DEFAULTS, autoColumns, fromOffset, masonryLayout, revealEase, type FlowMasonryProps, type MasonryCell, type MasonryFrom, type MasonryItem } from "./FlowMasonry";
