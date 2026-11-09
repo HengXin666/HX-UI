@@ -7,11 +7,12 @@ import type { BackdropFrame } from "@src/surface/backdrop/kernel";
 import { createPointerState } from "@src/surface/backdrop/kernel";
 import { MicroSlats, slatsFallback } from "@src/surface/backgrounds/grid/MicroSlats";
 import {
-  createSlatFluidDrive, inkKeep, MAX_SPLATS, MICRO_SLATS_FLUID, SLAT_INK_PASS, SLAT_VELOCITY_PASS, stepSlatFluid,
+  createSlatFluidDrive, inkKeep, MAX_SPLATS, MICRO_SLATS_FLUID, SLAT_INK_PASS, SLAT_VELOCITY_PASS, slatFluidScale, stepSlatFluid,
 } from "@src/surface/backgrounds/grid/micro-slats-fluid";
 import { MICRO_SLATS, MICRO_SLATS_FRAGMENT, resolveSwell, SWELL_PRESETS } from "@src/surface/backgrounds/grid/micro-slats-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../../backdrop/helpers";
 import { recordCanvas2d } from "../../helpers";
+import { feedbackSize } from "@src/surface/backdrop/kernel/feedback";
 
 let restore: Array<() => void> = [];
 beforeEach(() => {
@@ -25,6 +26,30 @@ afterEach(() => {
 });
 
 const draws = (calls: string[]): number => calls.filter((c) => c === "drawArrays").length;
+
+/** 宿主量成 cssWidth x cssHeight (像素比 1), 假 webgl2 记下每次 texImage2D 的宽高. */
+function sizedWebgl2(cssWidth: number, cssHeight: number): { sizes: Array<readonly [number, number]>; undo: () => void } {
+  const sizes: Array<readonly [number, number]> = [];
+  const original = HTMLCanvasElement.prototype.getContext;
+  const gl = new Proxy({}, {
+    get: (_target, key) => (...args: unknown[]) => {
+      if (key === "texImage2D") sizes.push([Number(args[3]), Number(args[4])]);
+      return {};
+    },
+  });
+  HTMLCanvasElement.prototype.getContext = function getContext(kind: string) {
+    return kind === "webgl2" ? gl : null;
+  } as typeof original;
+  const box = { width: cssWidth, height: cssHeight, x: 0, y: 0, top: 0, left: 0, right: cssWidth, bottom: cssHeight, toJSON: () => ({}) };
+  const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(box as DOMRect);
+  return {
+    sizes,
+    undo: () => {
+      HTMLCanvasElement.prototype.getContext = original;
+      rect.mockRestore();
+    },
+  };
+}
 const opts = { interactive: true, strength: 1, size: 40 };
 function frameAt(elapsed: number, still = false): BackdropFrame {
   return { time: elapsed, dt: still ? 0 : 1 / 60, elapsed, fit: { width: 1920, height: 1080, scale: 1 }, pointer: createPointerState(), colors: [], reduced: still, still };
@@ -34,11 +59,20 @@ describe("MicroSlats 纯函数", () => {
   it("规格常数与着色器接线", () => {
     expect([MICRO_SLATS_FLUID.size, MICRO_SLATS_FLUID.pressureSteps, MICRO_SLATS_FLUID.splatForce, MICRO_SLATS_FLUID.splashJets]).toEqual([96, 16, 6900, 3]);
     expect(MICRO_SLATS.pixelBudget).toBe(4.5e6);
-    expect(MICRO_SLATS_FLUID.size / 1920).toBeCloseTo(MICRO_SLATS_FLUID.scale, 6);
     expect(MAX_SPLATS).toBe(4);
     expect(SLAT_VELOCITY_PASS).toContain("uniform sampler2D u_curl;");
     expect(SLAT_INK_PASS).toContain("u_splat_ink[4]");
     expect(MICRO_SLATS_FRAGMENT).toContain("uniform sampler2D u_ink;");
+  });
+
+  it("流体格长边恰 96 格, 短边随宽高比", () => {
+    for (const [w, h] of [[1920, 1080], [1366, 768], [2400, 1350], [768, 1366], [500, 500]] as const) {
+      const [cols, rows] = feedbackSize(w, h, slatFluidScale(w, h));
+      expect(Math.max(cols, rows)).toBe(MICRO_SLATS_FLUID.size);
+      expect(Math.min(cols, rows)).toBe(Math.round((Math.min(w, h) * MICRO_SLATS_FLUID.size) / Math.max(w, h)));
+    }
+    expect(slatFluidScale(80, 40)).toBe(1);
+    expect(slatFluidScale(0, 0)).toBeGreaterThan(0);
   });
 
   it("浪况预设, 显式项覆盖, 未知名落到 swell", () => {
@@ -61,7 +95,7 @@ describe("MicroSlats 纯函数", () => {
     expect(f.count).toBe(1);
     expect(f.splats[0]).toBeCloseTo(0.3, 6);
     expect(f.splats[2]).toBeGreaterThan(0);
-    expect(f.radius).toBeCloseTo((40 * MICRO_SLATS_FLUID.scale) / 2, 6);
+    expect(f.radius).toBeCloseTo((40 * MICRO_SLATS_FLUID.size) / 1920 / 2, 6);
     expect(stepSlatFluid(createSlatFluidDrive(), { ...frame, dt: 0, still: true }, opts).count).toBe(0);
     expect(stepSlatFluid(createSlatFluidDrive(), frame, { ...opts, interactive: false }).count).toBe(0);
   });
@@ -98,6 +132,16 @@ describe("MicroSlats 渲染", () => {
     const delta = draws(calls) - before;
     expect(delta).toBeGreaterThan(0);
     expect(delta % (MICRO_SLATS_FLUID.pressureSteps + 5)).toBe(0);
+  });
+
+  it("五个流体通道的缓冲都按这次 resize 的画布取长边 96 格, 光标半径跟着换算", () => {
+    const gl = sizedWebgl2(1366, 768);
+    restore.push(gl.undo, mockReducedMotion(true));
+    render(<MicroSlats />);
+    expect(gl.sizes.slice(-10)).toEqual(Array.from({ length: 10 }, () => [96, 54]));
+    const frame = { ...frameAt(2), fit: { width: 1366, height: 768, scale: 1 } };
+    Object.assign(frame.pointer, { inside: true, x: 0.3, y: 0.6, vx: 1, vy: 0 });
+    expect(stepSlatFluid(createSlatFluidDrive(), frame, opts).radius).toBeCloseTo((40 * 96) / 1366 / 2, 6);
   });
 
   it("减弱动效只画一帧", () => {

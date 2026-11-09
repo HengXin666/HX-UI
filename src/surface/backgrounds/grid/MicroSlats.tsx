@@ -1,16 +1,18 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 MicroSlats 条目, 实现为 HX 自有.
-// ENGINE-GAP: 流体格固定 96 格在内核里只能按画布比例近似 (见 micro-slats-fluid.ts 文件头); PIXEL_BUDGET 由内核 dpr 上限与 maxEdge 代替.
+// ENGINE-GAP: 规格的 PIXEL_BUDGET 4.5e6 要按 CSS 面积定画布像素比 (min(dpr, 2, sqrt(BUDGET / 面积))); useShaderBackdrop 在渲染时展开 options, dpr 在 measure 时已是定值, 这里由内核 dpr 上限 2 与 maxEdge 2400 代替 (宽屏比预算紧, 近方形且长边超 2121 设备像素时超预算).
+// 已补 (2026-11-09): 流体格恰 FLUID_SIZE 96 格 (五个通道的 PassSpec.scale 为 getter, 每次 resize 按画布设备像素长边取 96 / 长边). 规格的 canvas2d 逐帧绘制条目未写画什么, 百叶由上屏片元直接画出, 不另起 2D 层.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
 import { splitCommon, type BackdropCommonProps } from "../../backdrop/kernel/common";
 import { cssColorOf } from "../../backdrop/kernel/color";
+import type { PassSpec } from "../../backdrop/kernel/shader";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
 import {
   createSlatFluidDrive, inkKeep, MICRO_SLATS_FLUID, SLAT_CURL_PASS, SLAT_DIVERGENCE_PASS, SLAT_INK_PASS, SLAT_PRESSURE_PASS, SLAT_VELOCITY_PASS,
-  stepSlatFluid, type SlatSplats,
+  slatFluidScale, stepSlatFluid, type SlatSplats,
 } from "./micro-slats-fluid";
 import { MICRO_SLATS, MICRO_SLATS_FRAGMENT, resolveSwell, type SwellPresetName } from "./micro-slats-shader";
 import { cssAngleDir, DEG, introProgress, rgbAt } from "./tokens";
@@ -96,7 +98,14 @@ export function MicroSlats(props: MicroSlatsProps): JSX.Element {
   const drive = useRef(createSlatFluidDrive());
   const splats = useRef<SlatSplats>(NO_SPLATS);
   const swell = resolveSwell(preset, { scale, speed: waveSpeed, direction, chop, stretch, glint, contrast, perspective, fog });
-  const fluidScale = MICRO_SLATS_FLUID.scale;
+  // 内核先把 canvas.width / height 设成 fit 再调 resize(fit), getter 读画布即这次 resize 的尺寸.
+  const sized = (pass: Omit<PassSpec, "scale">): PassSpec => ({
+    ...pass,
+    get scale() {
+      const canvas = handle.canvasRef.current;
+      return slatFluidScale(canvas?.width ?? 0, canvas?.height ?? 0);
+    },
+  });
   const splatUniforms = () => {
     const f = splats.current;
     return { u_splats: { list: f.splats, size: 4 as const }, u_splat_count: f.count, u_radius: f.radius };
@@ -128,25 +137,23 @@ export function MicroSlats(props: MicroSlatsProps): JSX.Element {
       fragment: MICRO_SLATS_FRAGMENT,
       uniforms,
       passes: [
-        { name: "u_curl", fragment: SLAT_CURL_PASS, scale: fluidScale },
-        {
+        sized({ name: "u_curl", fragment: SLAT_CURL_PASS }),
+        sized({
           name: "u_vel",
           fragment: SLAT_VELOCITY_PASS,
-          scale: fluidScale,
           uniforms: (frame) => {
             splats.current = stepSlatFluid(drive.current, frame, { interactive, strength: Math.max(0, cursorStrength), size: Math.max(1, cursorSize) });
             const keep = frame.dt > 0 ? Math.exp(-frame.dt * MICRO_SLATS_FLUID.drag) : 1;
             return { ...splatUniforms(), u_dt: frame.dt, u_swirl: Math.max(0, swirl) * MICRO_SLATS_FLUID.swirlGain, u_keep_v: keep };
           },
-        },
-        { name: "u_div", fragment: SLAT_DIVERGENCE_PASS, scale: fluidScale },
-        { name: "u_press", fragment: SLAT_PRESSURE_PASS, scale: fluidScale, iterations: MICRO_SLATS_FLUID.pressureSteps },
-        {
+        }),
+        sized({ name: "u_div", fragment: SLAT_DIVERGENCE_PASS }),
+        sized({ name: "u_press", fragment: SLAT_PRESSURE_PASS, iterations: MICRO_SLATS_FLUID.pressureSteps }),
+        sized({
           name: "u_ink",
           fragment: SLAT_INK_PASS,
-          scale: fluidScale,
           uniforms: (frame) => ({ ...splatUniforms(), u_splat_ink: { list: splats.current.ink, size: 1 as const }, u_dt: frame.dt, u_keep: inkKeep(trail, frame.dt) }),
-        },
+        }),
       ],
     },
     { ...options, colors: [color, glintColor, backgroundColor] },

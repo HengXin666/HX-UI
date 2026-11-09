@@ -1,11 +1,11 @@
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 MicroSlats 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格的流体格是固定 FLUID_SIZE 96 格; 内核的离屏通道只按画布比例缩放, 这里取 FLUID_SCALE 0.05 (长边 1920 设备像素时正好 96 格) 近似.
+// 已补 (2026-11-09): 规格的流体格固定 FLUID_SIZE 96 格: 各通道倍率取 96 / 画布设备像素长边 (slatFluidScale), 长边恰 96 格, 短边随宽高比.
 import { fragmentSource } from "../../backdrop/kernel/glsl";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 
 /** 流体规格常数与本库定的系数. */
 export const MICRO_SLATS_FLUID = {
-  /** 规格的流体格数 (长边参考). */
+  /** 规格的流体格数 (FLUID_SIZE): 长边恰这么多格, 短边随宽高比. */
   size: 96,
   /** 压力 Jacobi 迭代次数. */
   pressureSteps: 16,
@@ -13,8 +13,6 @@ export const MICRO_SLATS_FLUID = {
   splatForce: 6900,
   /** 点击喷出的射流数. */
   splashJets: 3,
-  /** 状态缓冲相对画布的缩放 (见文件头 ENGINE-GAP). */
-  scale: 0.05,
   /** 速度编码范围 (格每秒), 8 位缓冲也存得下负值. */
   velocityRange: 256,
   /** 压力编码范围. */
@@ -30,6 +28,20 @@ export const MICRO_SLATS_FLUID = {
   /** 速度的轻阻尼 (每秒, 本库定). */
   drag: 0.6,
 } as const;
+
+/** 画布尺寸未知时的通道倍率 (长边 1920 设备像素时的 96 格); 内核随后按真实尺寸 resize 时换成恰 96 格. */
+const UNKNOWN_FLUID_SCALE = MICRO_SLATS_FLUID.size / 1920;
+
+/**
+ * 流体通道倍率: 96 / 画布设备像素长边, 内核 feedbackSize 取整后长边恰 FLUID_SIZE 格; 画布长边不足 96 像素时为 1 (每像素一格).
+ *
+ * @param width 画布设备像素宽, 0 表示未知.
+ * @param height 画布设备像素高.
+ */
+export function slatFluidScale(width: number, height: number): number {
+  const edge = Math.max(width, height);
+  return edge > 0 ? Math.min(1, MICRO_SLATS_FLUID.size / edge) : UNKNOWN_FLUID_SCALE;
+}
 
 /** 一帧最多注入的 splat 数: 指针一个加射流. */
 export const MAX_SPLATS = 1 + MICRO_SLATS_FLUID.splashJets;
@@ -73,7 +85,7 @@ export function stepSlatFluid(drive: SlatFluidDrive, frame: Pick<BackdropFrame, 
   const splats = new Float32Array(MAX_SPLATS * 4);
   const ink = new Float32Array(MAX_SPLATS);
   const { dt, fit, pointer: p } = frame;
-  const cells = fit.scale * MICRO_SLATS_FLUID.scale;
+  const cells = fit.scale * slatFluidScale(fit.width, fit.height);
   const radius = Math.max(1, (o.size * cells) / 2);
   let count = 0;
   if (frame.still || dt <= 0 || !o.interactive) return { splats, ink, count, radius };

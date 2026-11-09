@@ -4,7 +4,7 @@ import { FLUID_COMMON } from "./micro-slats-fluid";
 
 /** 规格常数与本库定的系数. */
 export const MICRO_SLATS = {
-  /** 规格的像素预算 (设备像素面积), 由内核的 dpr 上限与 maxEdge 代替, 只作记录. */
+  /** 规格的像素预算 (设备像素面积), 由内核的 dpr 上限与 maxEdge 代替 (见组件头 ENGINE-GAP), 只作记录. */
   pixelBudget: 4.5e6,
   /** scale 为 1 时一个世界单位的 CSS 像素 (本库定). */
   worldUnit: 90,
