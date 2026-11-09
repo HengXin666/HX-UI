@@ -48,3 +48,33 @@
 - 建议: 库里收一套对应的皮肤 (例如 `face` 或 `midnight`), 进 SKIN_LIST; 门面随后改成默认写这个 data-skin, 删掉 face.css.
 - 已补: 皮肤 `midnight` (`src/skins/midnight.css`, `SKIN.midnight`, 进 `SKIN_LIST`), 暗色令牌逐项同 face.css, 亮色回到默认亮色令牌.
 - 门面切换: 门面入口在根元素默认写 `data-skin="midnight"` (或调 `applySkin(SKIN.midnight)`), 用户在皮肤页另选时照常覆盖; 删掉 `docs/face/skin/face.css` 及其引入, `data-face` 若只为这份样式服务也一并去掉.
+
+## 需要先定内核决策
+
+2026-11-09. surface Backgrounds 第二轮补 ENGINE-GAP 时, 下面四件不动. 它们缺的不是某个着色器写法, 而是 `src/surface/backdrop/kernel` 没有的绘制方式: 内核只有全屏片元 (含离屏通道与纹理上传) 和 Canvas2D, 没有顶点缓冲, 实例化绘制, 点精灵, 深度缓冲. 加任何一种都要改内核公共头 (`ShaderSpec` / `BackdropFrame` 只加不改的约束之外还要新的渲染器工厂), 三路 surface 都依赖它, 所以先定内核决策, 再回头补这四件. 同一决策落地后, Hyperspeed, GhostFibers, AeroShards, MagnetLines 剩下的实例化部分也一起补.
+
+待定的决策: 内核是否加一条 "实例化几何" 渲染方式 (WebGL2 `drawArraysInstanced` + 每实例属性缓冲 + 深度缓冲, 可选与现有离屏通道共用泛光); 若加, 定公共 uniform, 实例数据的更新接口 (JS 每帧写 Float32Array 或纹理里算位置), 以及与 Canvas2D 兜底的关系.
+
+### AcidSquares (grid)
+
+- 库件: `src/surface/backgrounds/grid/AcidSquares.tsx`
+- 缺口: 规格是实例化三维网格 (MESH 150 / 210 / 280 细分, uViewProj 投影), 柱面有逐格细分形变与网格 LOD. 现为逐像素视线步进方柱高度场, quality 只换步进上限, 柱高按格取样, 远处以混向平均色代替 LOD.
+- 为什么这轮补不了: 片元步进做不出柱面内细分形变, 加步数只换来更贵的近似; 真要对上规格需要顶点网格与深度缓冲.
+
+### Antigravity (particles)
+
+- 库件: `src/surface/backgrounds/particles/Antigravity.tsx`
+- 缺口: 规格是 WebGL 实例化的三维小体 (胶囊 / 球 / 盒 / 四面体) 带逐体光照. 现为 Canvas2D 二维剪影, 深度只体现为尺寸与雾.
+- 为什么这轮补不了: 逐体光照需要每个小体的法线与朝向; Canvas2D 只能画剪影, 全屏片元对上千个小体逐像素求交代价过高. 需要实例化通道.
+
+### Ballpit (particles)
+
+- 库件: `src/surface/backgrounds/particles/Ballpit.tsx`
+- 缺口: 规格是 WebGL 实例化球体带 PBR 光照, 环境反射与球间阴影. 现为 Canvas2D 按深度排序画透视圆, 光照以径向渐变 + 高光 + 菲涅耳边光近似, 无球间投影.
+- 为什么这轮补不了: 球间阴影与环境反射需要深度缓冲或逐像素对全部球求交; 后者在球数上百时片元成本按球数线性增长, 在集显上掉帧. 需要实例化通道与深度缓冲.
+
+### Particles (particles)
+
+- 库件: `src/surface/backgrounds/particles/Particles.tsx`
+- 缺口: 规格 20000 点, 点精灵带真景深模糊. 现为 Canvas2D 逐点透视投影, 上限 4000, 景深以放大加变淡近似.
+- 为什么这轮补不了: Canvas2D 每帧画 20000 个带透明度的点保不住 60 帧; 点精灵与按深度的模糊半径要顶点通道. 需要点精灵或实例化通道.
