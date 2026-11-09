@@ -6,3 +6,4 @@
 export { LAMP_DEFAULTS, LampCard, lampFollowTau, lampGradient, lampReach, type LampCardProps, type LampShape } from "./LampCard";
 export { EDGE_DEFAULTS, EDGE_SWEEP_MS, EdgeGlow, edgeAngle, edgeCone, edgeLevel, edgeProximity, edgeSweep, type EdgeGlowProps } from "./EdgeGlow";
 export { TILTED_DEFAULTS, TiltCard, glarePose, isTap, tiltSpring, tiltTarget, tipAngle, type TiltCardProps } from "./TiltCard";
+export { BADGE_DEFAULTS, BadgeCard, badgeHolo, badgeIntro, badgeParallax, type BadgeCardProps } from "./BadgeCard";
