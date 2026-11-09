@@ -1,10 +1,10 @@
 /**
- * rays 路 PrismaticBurst: 常数与纯函数, WebGL2 上屏, 减弱动效只画一帧, 拿不到上下文时 CSS 兜底.
+ * rays 路 PrismaticBurst: 常数与纯函数, 四级泛光金字塔, WebGL2 上屏, 减弱动效只画一帧, 拿不到上下文时 CSS 兜底.
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PrismaticBurst } from "@src/surface/backgrounds/rays/PrismaticBurst";
-import { burstPhaseStep, burstScale, PRISMATIC_BURST, PRISMATIC_BURST_FRAGMENT } from "@src/surface/backgrounds/rays/prismatic-burst-shader";
+import { burstBloomStrength, burstPhaseStep, burstScale, PRISMATIC_BURST, PRISMATIC_BURST_SCENE } from "@src/surface/backgrounds/rays/prismatic-burst-shader";
 import { mockReducedMotion, mockWebgl2, useFakeClock } from "../../backdrop/helpers";
 import { recordCanvas2d } from "../../helpers";
 
@@ -29,8 +29,26 @@ describe("PrismaticBurst", () => {
     expect(PRISMATIC_BURST.animations).toEqual({ rotate: 0, rotate3d: 1, hover: 2 });
     expect(burstPhaseStep(1, 0.5, 0.5, 1, 2)).toBeCloseTo(1 + 0.5 * 0.5 * 2 + 2 * 0.5, 6);
     expect([burstScale("low"), burstScale("high"), burstScale("medium", 0.1), burstScale("low", 0.9)]).toEqual([0.35, 0.7, 0.2, 0.9]);
-    expect(PRISMATIC_BURST_FRAGMENT).toContain("0.5 - 0.35 * (u_ray_width - 1.0)");
-    expect(PRISMATIC_BURST_FRAGMENT).toContain("smoothstep(0.15, 0.95, comb)");
+    expect(PRISMATIC_BURST_SCENE).toContain("0.5 - 0.35 * (u_ray_width - 1.0)");
+    expect(PRISMATIC_BURST_SCENE).toContain("smoothstep(0.15, 0.95, comb)");
+  });
+
+  it("泛光: 级数随画质, glow 为强度增量, 不再有峰值解析增益", () => {
+    expect(PRISMATIC_BURST.bloomLevels).toEqual({ low: 2, medium: 3, high: 4 });
+    expect([PRISMATIC_BURST.bloomThreshold, PRISMATIC_BURST.bloomKnee, PRISMATIC_BURST.bloomBase, PRISMATIC_BURST.bloomGain]).toEqual([0.4, 0.4, 0.3, 1.5]);
+    expect([burstBloomStrength(0), burstBloomStrength(1), burstBloomStrength(-1)]).toEqual([0.3, 1.8, 0]);
+    expect(PRISMATIC_BURST_SCENE).toContain("o_color = bloom_encode(energy, 1.0);");
+    expect(PRISMATIC_BURST_SCENE).not.toContain("u_glow");
+  });
+
+  it.each([
+    ["low", 4],
+    ["high", 6],
+  ] as const)("quality=%s 的静态帧画 %i 次 (步进 + 泛光级 + 上屏)", (quality, count) => {
+    const calls: string[] = [];
+    restore.push(mockWebgl2(calls), mockReducedMotion(true));
+    render(<PrismaticBurst quality={quality} />);
+    expect(draws(calls)).toBe(count);
   });
 
   it("WebGL2 下上屏并持续出帧", () => {

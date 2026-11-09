@@ -1,5 +1,7 @@
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 PrismaticBurst 条目, 实现为 HX 自有.
+// 光束 (BURST) 在按画质缩放的离屏通道里步进, 泛光 (DOWNSAMPLE / BLUR) 走 ../bloom.ts 的降采样金字塔.
 import { fragmentSource, GLSL_HASH, GLSL_NOISE, GLSL_UTIL } from "../../backdrop/kernel/glsl";
+import { BLOOM_ENCODE, BLOOM_TIER_LEVELS } from "../bloom";
 import { RAYS_COMPOSE } from "./field";
 
 /** PrismaticBurst 的命名常数. 括号里是条目原名或 "本库定". */
@@ -21,6 +23,14 @@ export const PRISMATIC_BURST = {
   kickDecay: 3,
   /** 调色板上限 (本库定). */
   maxColors: 8,
+  /** 画质档到泛光级数 (BLOOM_LEVELS 为高档的 4, 低 / 中档本库定). */
+  bloomLevels: BLOOM_TIER_LEVELS,
+  /** 泛光亮部阈值与软膝 (本库定, 对应旧解析增益的 smoothstep(0.3, 1.5, peak) 区间). */
+  bloomThreshold: 0.4,
+  bloomKnee: 0.4,
+  /** 泛光强度 = bloomBase + glow * bloomGain (本库定: glow 为 0 时仍留一层底泛光). */
+  bloomBase: 0.3,
+  bloomGain: 1.5,
 } as const;
 
 export type BurstAnimation = keyof typeof PRISMATIC_BURST.animations;
@@ -29,6 +39,11 @@ export type BurstQuality = keyof typeof PRISMATIC_BURST.quality;
 /** 一步相位推进: phase += dt * speed * (1 + rush) + kick * dt. */
 export function burstPhaseStep(phase: number, dt: number, speed: number, rush: number, kick: number): number {
   return phase + dt * speed * (1 + rush) + kick * dt;
+}
+
+/** 泛光强度: 底泛光加 glow 的增量, 不小于 0. */
+export function burstBloomStrength(glow: number): number {
+  return Math.max(0, PRISMATIC_BURST.bloomBase + glow * PRISMATIC_BURST.bloomGain);
 }
 
 /** 渲染比例: 显式 resolution 优先, 否则取画质档, 不低于 MIN_SCALE. */
@@ -51,7 +66,6 @@ uniform float u_twist;
 uniform float u_flow;
 uniform float u_center_fade;
 uniform float u_grain;
-uniform float u_glow;
 uniform vec2 u_offset;
 uniform float u_intro;
 uniform float u_burst_on;
@@ -139,12 +153,14 @@ void main() {
   }
   vec3 energy = col * u_intensity * lift;
   float peak = max(energy.r, max(energy.g, energy.b));
-  energy += energy * u_glow * smoothstep(0.3, 1.5, peak);
   energy += vec3(hx_grain(v_uv * unit, u_phase)) * u_grain * 0.05 * smoothstep(0.001, 0.32, peak);
   energy *= rays_edge(v_uv);
-  o_color = rays_compose(energy);
+  o_color = bloom_encode(energy, 1.0);
 }
 `;
 
-/** PrismaticBurst 的上屏片元: 体积步进的放射光束, 沿径向光谱着色, 扭转与噪声弯折, 星形前沿揭开, 点击光环外扩. */
-export const PRISMATIC_BURST_FRAGMENT = fragmentSource(BODY, GLSL_HASH, GLSL_NOISE, GLSL_UTIL, RAYS_COMPOSE);
+/**
+ * PrismaticBurst 的离屏场景片元: 体积步进的放射光束, 沿径向光谱着色, 扭转与噪声弯折, 星形前沿揭开, 点击光环外扩.
+ * 输出编码后的线性光, 上屏程序合成场景与泛光金字塔.
+ */
+export const PRISMATIC_BURST_SCENE = fragmentSource(BODY, GLSL_HASH, GLSL_NOISE, GLSL_UTIL, RAYS_COMPOSE, BLOOM_ENCODE);

@@ -1,7 +1,8 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 PrismaticBurst 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格的四级降采样模糊泛光 (BLOOM_LEVELS / DOWNSAMPLE / BLUR) 以峰值处的解析增益 (glow) 近似;
-// mixBlendMode 交给使用方的 className. 规格的 speed 与公共时钟倍率重名, 改名 burstSpeed.
+// 已补 (2026-11-09): 规格的四级降采样模糊泛光 (BLOOM_LEVELS / DOWNSAMPLE / BLUR) 改走 ../bloom.ts 的离屏金字塔:
+// 光束在按 quality / resolution 缩放的离屏通道里步进, 上屏合成泛光 (quality 低 / 中 / 高 取 2 / 3 / 4 级),
+// glow 由峰值解析增益改为泛光强度的增量. mixBlendMode 交给使用方的 className. 规格的 speed 与公共时钟倍率重名, 改名 burstSpeed.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -9,8 +10,11 @@ import { splitCommon, type BackdropCommonProps } from "../../backdrop/kernel/com
 import { fallbackGradient } from "../../backdrop/kernel/fallback";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
-import { followStep, introProgress, paletteList, qualityDpr } from "./field";
-import { burstPhaseStep, burstScale, PRISMATIC_BURST, PRISMATIC_BURST_FRAGMENT, type BurstAnimation, type BurstQuality } from "./prismatic-burst-shader";
+import { bloomPyramid } from "../bloom";
+import { followStep, introProgress, paletteList, raysBloomFragment } from "./field";
+import {
+  burstBloomStrength, burstPhaseStep, burstScale, PRISMATIC_BURST, PRISMATIC_BURST_SCENE, type BurstAnimation, type BurstQuality,
+} from "./prismatic-burst-shader";
 
 export interface PrismaticBurstProps extends BackdropCommonProps {
   /** 调色板 (最多 8 色): token 名或 CSS 颜色; 不给时用连续光谱. */
@@ -35,7 +39,7 @@ export interface PrismaticBurstProps extends BackdropCommonProps {
   readonly centerFade?: number;
   /** 颗粒 0..1. */
   readonly grain?: number;
-  /** 峰值处的泛光增益. */
+  /** 泛光强度的增量 (0 时只有底泛光). */
   readonly glow?: number;
   /** 中心偏移 (短边为 1). */
   readonly offset?: { readonly x?: number; readonly y?: number };
@@ -49,9 +53,9 @@ export interface PrismaticBurstProps extends BackdropCommonProps {
   readonly intro?: boolean;
   /** 四边淡出宽度 0..1. */
   readonly fade?: number;
-  /** 渲染比例档位. */
+  /** 画质档位: 决定步进通道的渲染比例与泛光级数. */
   readonly quality?: BurstQuality;
-  /** 显式渲染比例, 覆盖 quality. */
+  /** 显式步进通道渲染比例, 覆盖 quality 的比例 (泛光级数仍随 quality). */
   readonly resolution?: number;
 }
 
@@ -96,7 +100,6 @@ export function PrismaticBurst(props: PrismaticBurstProps): JSX.Element {
       u_colors: paletteList(frame.colors, PRISMATIC_BURST.maxColors),
       u_color_count: palette.length,
       u_fade: fade,
-      u_backdrop: [0, 0, 0, 0],
       u_phase: phase,
       u_intensity: intensity,
       u_orient: [s.yaw * reach + tumble * Math.sin(phase * 0.5) * 0.6, -s.pitch * reach + tumble * Math.sin(phase * 0.37 + 1) * 0.5, spin],
@@ -108,16 +111,20 @@ export function PrismaticBurst(props: PrismaticBurstProps): JSX.Element {
       u_flow: flow,
       u_center_fade: centerFade,
       u_grain: grain,
-      u_glow: glow,
       u_offset: [offset?.x ?? 0, offset?.y ?? 0],
       u_intro: introProgress(frame.elapsed, PRISMATIC_BURST.introSeconds, intro),
       u_burst_on: clickBurst ? 1 : 0,
     };
   };
 
+  const tier = quality in PRISMATIC_BURST.quality ? quality : "high";
+  const pyramid = bloomPyramid({
+    scene: PRISMATIC_BURST_SCENE, sceneUniforms: uniforms, levels: PRISMATIC_BURST.bloomLevels[tier], sceneScale: burstScale(tier, resolution),
+    threshold: PRISMATIC_BURST.bloomThreshold, knee: PRISMATIC_BURST.bloomKnee, strength: burstBloomStrength(glow),
+  });
   const handle = useShaderBackdrop(
-    { fragment: PRISMATIC_BURST_FRAGMENT, uniforms },
-    { ...options, colors: palette, dpr: qualityDpr(options.dpr, burstScale(quality, resolution)) },
+    { fragment: raysBloomFragment(pyramid.compositeGlsl), passes: pyramid.passes, uniforms: () => ({ u_backdrop: [0, 0, 0, 0], u_fade: fade, ...pyramid.uniforms }) },
+    { ...options, colors: palette },
   );
   return (
     <BackdropShell handle={handle} fallback={fallbackGradient(palette.length > 0 ? palette : ["primary", "accent", "accent-2"])} opacity={opacity} {...rest}>
