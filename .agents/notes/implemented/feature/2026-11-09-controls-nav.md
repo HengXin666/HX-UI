@@ -10,6 +10,7 @@ Decision-ID: controls-nav
 - `src/controls/nav/bar/PillTabs.tsx`, `src/controls/nav/bar/parts/pill-spec.ts`, `src/controls/nav/bar/parts/bar-entry.tsx` (react-bits Components/PillNav)
 - `src/controls/nav/dock/MagnifyDock.tsx`, `src/controls/nav/dock/parts/dock-math.ts` (react-bits Components/Dock)
 - `src/controls/nav/rail/ProximityRail.tsx`, `src/controls/nav/rail/parts/rail-spec.ts` (react-bits Components/LineSidebar)
+- `src/controls/nav/bar/GooTabs.tsx`, `src/controls/nav/bar/parts/goo-spec.ts` (react-bits Components/GooeyNav)
 
 ## Problem
 
@@ -43,3 +44,7 @@ L2 controls 层缺一组导航件: 胶囊导航条, 放大坞, 黏液导航条, 
 ## ProximityRail (规格 Components/LineSidebar)
 
 竖排条目, 指针靠近的几条按距离衰减 (linear / smooth / sharp) 向右推 maxShift, 刻度线从 tickScale 倍拉到全长; 强度用规格的 1 - exp(-dt / tau) 趋近, tau = smoothing 100ms, 帧长上限交给帧循环. 活动项刻度线恒为全长并用强调色. 键盘聚焦的条目按指针正对处理, 上下方向键与 Home / End 移焦点并跳过禁用项; 条目有 href 是链接. 规格源码没有减弱动效处理, 本件减弱时强度直接落定.
+
+## GooTabs (规格 Components/GooeyNav)
+
+换选时旧胶囊按弹簧缩回, 一串液滴 (默认 15, 上限 32) 沿三次贝塞尔弧线从旧项飞向新项, 飞到一半最细; 新胶囊在 min(最短时长 / 3, 0.12s) 后按弹簧长出, 回弹取 wobble / 2. 液滴时长按规格 max(0.15, base * (0.62 + r * 0.32) + variance * r * 0.6), 随机数用按换选次数播种的 mulberry32, 可复现. 悬停块按 80ms 时间常数淡入淡出. 液滴与胶囊放在同一层, 用 SVG 滤镜 (模糊 2 + gooeyness * 8, alpha 阈值 18 / -7) 粘成一体. ENGINE-GAP: 规格的 WebGL 黏液高光与投影不做. 减弱动效不放液滴, 胶囊直接落定.
