@@ -1,6 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 MoltenMetal 条目, 实现为 HX 自有.
-// ENGINE-GAP: 条目的 Canvas2D 拖尾预烘不做, 拖尾改为 16 个采样点直接进片元 uniform 数组.
+// 已补 (2026-11-09): 指针拖尾改为 Canvas2D 预烘 (molten-metal-trail: 两张低分辨率画布轮换, 每次更新淡出后沿路径盖高斯热斑,
+// 经 ShaderSpec.textures 每帧换身份重新上传), 去掉 16 个采样点的上限.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -11,9 +12,9 @@ import { approach } from "../../backdrop/kernel/math";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
 import {
-  MOLTEN_BALANCE, MOLTEN_FOLLOW_TAU, MOLTEN_FRAGMENT, MOLTEN_MAX_COLORS, MOLTEN_MAX_FLARES, MOLTEN_PRESENCE_TAU, MOLTEN_SAMPLE_SECONDS, MOLTEN_TRAIL,
-  moltenFlare, moltenReveal, moltenTrailWeight, type MoltenMode,
+  MOLTEN_BALANCE, MOLTEN_FOLLOW_TAU, MOLTEN_FRAGMENT, MOLTEN_MAX_COLORS, MOLTEN_MAX_FLARES, MOLTEN_PRESENCE_TAU, moltenFlare, moltenReveal, type MoltenMode,
 } from "./molten-metal-shader";
+import { MoltenTrail } from "./molten-metal-trail";
 
 export interface MoltenMetalProps extends BackdropCommonProps {
   /** 金属调色板, 最多 6 色, token 名或 CSS 颜色. 默认 primary. */
@@ -71,19 +72,13 @@ const DEFAULT_BRIGHTNESS = 1.3;
 const DEFAULT_DRIFT = 0.3;
 const DEFAULT_GRAIN = 0.05;
 const DEFAULT_STRENGTH = 0.5;
+/** 拖尾画布 alpha 换算成热度. */
+const TRAIL_GAIN = 1.1;
 /** scale prop 换算成片元里的平面单位. */
 const SCALE_TO_PLANE = 0.75;
 const GREY: Rgb = [0.5, 0.5, 0.5];
 
-interface TrailPoint {
-  readonly x: number;
-  readonly y: number;
-  readonly at: number;
-}
-
 interface MoltenState {
-  trail: TrailPoint[];
-  sampledAt: number;
   x: number;
   y: number;
   presence: number;
@@ -91,7 +86,7 @@ interface MoltenState {
 
 /**
  * 熔融金属: 旋涡扭曲的分形高度场, 脊线与屏幕导数法线出金属光泽, 沿调色板取色;
- * 指针拖尾 (16 点, 0.06 秒采样, 0.9 秒寿命) 与点击耀斑 (1.8 秒) 把金属烧到芯色. 减弱动效只画一帧, 不加热.
+ * 指针拖尾 (Canvas2D 预烘, 0.06 秒采样, 0.9 秒淡出) 与点击耀斑 (1.8 秒) 把金属烧到芯色. 减弱动效只画一帧, 不加热.
  *
  * .agents/notes/implemented/feature/2026-11-09-surface-backgrounds-fluid.md
  */
@@ -104,30 +99,27 @@ export function MoltenMetal(props: MoltenMetalProps): JSX.Element {
   } = props;
   const { options, rest, opacity, children } = splitCommon({ ...common, speed });
   const palette = (colors.length > 0 ? colors : DEFAULT_COLORS).slice(0, MOLTEN_MAX_COLORS);
-  const state = useRef<MoltenState>({ trail: [], sampledAt: -1, x: 0.5, y: 0.5, presence: 0 });
+  const state = useRef<MoltenState>({ x: 0.5, y: 0.5, presence: 0 });
+  const trail = useRef<MoltenTrail | null>(null);
+  const trailOf = (): MoltenTrail => {
+    trail.current = trail.current ?? new MoltenTrail();
+    return trail.current;
+  };
 
-  const trailOf = (frame: BackdropFrame): number[] => {
+  /** 推进热点与拖尾画布; 在 uniforms 里调用, 内核同一帧随后取 textures 时拿到的就是新画布. */
+  const heatOf = (frame: BackdropFrame): number => {
     const s = state.current;
-    const { pointer, elapsed } = frame;
+    const { pointer } = frame;
     if (frame.reduced) {
-      s.trail = [];
       s.presence = 0;
     } else {
       s.presence = approach(s.presence, pointer.inside ? 1 : 0, frame.dt, MOLTEN_PRESENCE_TAU);
       s.x = approach(s.x, pointer.x, frame.dt, MOLTEN_FOLLOW_TAU);
       s.y = approach(s.y, pointer.y, frame.dt, MOLTEN_FOLLOW_TAU);
-      if (pointer.inside && elapsed - s.sampledAt >= MOLTEN_SAMPLE_SECONDS) {
-        s.sampledAt = elapsed;
-        s.trail = [...s.trail, { x: pointer.x, y: pointer.y, at: elapsed }].slice(-MOLTEN_TRAIL);
-      }
     }
-    const list = new Array<number>(MOLTEN_TRAIL * 4).fill(0);
-    s.trail.forEach((point, i) => {
-      list[i * 4] = point.x;
-      list[i * 4 + 1] = point.y;
-      list[i * 4 + 2] = moltenTrailWeight(elapsed - point.at) * 0.6;
-    });
-    return list;
+    const t = trailOf();
+    t.step(frame);
+    return t.image ? TRAIL_GAIN : 0;
   };
 
   const flaresOf = (frame: BackdropFrame): number[] => {
@@ -148,7 +140,7 @@ export function MoltenMetal(props: MoltenMetalProps): JSX.Element {
       fragment: MOLTEN_FRAGMENT,
       uniforms: (frame) => {
         const ramp = palette.flatMap((_, i) => [...(frame.colors[i] ?? GREY)]);
-        const trail = trailOf(frame);
+        const trailGain = heatOf(frame);
         const s = state.current;
         return {
           u_colors: { list: [...ramp, ...new Array<number>((MOLTEN_MAX_COLORS - palette.length) * 3).fill(0)], size: 3 },
@@ -169,13 +161,14 @@ export function MoltenMetal(props: MoltenMetalProps): JSX.Element {
           u_offset: [offsetX, offsetY],
           u_drift: drift,
           u_grain: grain,
-          u_trail: { list: trail, size: 4 },
+          u_trail_gain: trailGain,
           u_flares: { list: flaresOf(frame), size: 4 },
           u_hot: [s.x, s.y, s.presence * 0.5, frame.reduced ? 0 : mouseStrength * 2],
           u_reveal: [0, moltenReveal(frame.elapsed, intro && !frame.reduced)],
           u_light: lightMode,
         };
       },
+      textures: () => ({ u_trail_map: trail.current?.image }),
     },
     { ...options, colors: [...palette, coreColor, backgroundColor] },
   );

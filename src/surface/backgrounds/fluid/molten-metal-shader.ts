@@ -3,13 +3,11 @@ import { GLSL_HASH, GLSL_NOISE, GLSL_UTIL, fragmentSource } from "../../backdrop
 
 /** 调色板最多几色. */
 export const MOLTEN_MAX_COLORS = 6;
-/** 指针拖尾的采样点数. */
-export const MOLTEN_TRAIL = 16;
 /** 同时存活的点击耀斑数 (与内核记住的点击数一致). */
 export const MOLTEN_MAX_FLARES = 8;
-/** 拖尾采样间隔 (秒). */
+/** 拖尾采样间隔 (秒): 每隔这么久沿指针路径往拖尾画布补一串热斑. */
 export const MOLTEN_SAMPLE_SECONDS = 0.06;
-/** 拖尾点的寿命 (秒). */
+/** 拖尾寿命 (秒): 拖尾画布在这段时间里淡到约 5%. */
 export const MOLTEN_TRAIL_SECONDS = 0.9;
 /** 点击耀斑的寿命 (秒). */
 export const MOLTEN_FLARE_SECONDS = 1.8;
@@ -26,16 +24,8 @@ export type MoltenMode = "molten" | "ember" | "frost";
 /** 调色板取色的偏置: 熔融居中, 余烬偏暗端, 霜冻偏亮端. */
 export const MOLTEN_BALANCE: Readonly<Record<MoltenMode, number>> = { molten: 0.5, ember: 0.3, frost: 0.7 };
 
-/**
- * 拖尾点权重: 寿命内按 (1 - age / life)^2 衰减, 之外为 0.
- *
- * @param age 采样以来的秒数.
- */
-export function moltenTrailWeight(age: number): number {
-  if (age < 0 || age >= MOLTEN_TRAIL_SECONDS) return 0;
-  const left = 1 - age / MOLTEN_TRAIL_SECONDS;
-  return left * left;
-}
+/** 拖尾画布 alpha 低于这里当作已冷却: 8 位画布反复淡出会停在小值上, 片元先减去它. */
+export const MOLTEN_TRAIL_FLOOR = 0.04;
 
 /**
  * 点击耀斑包络: 1 - exp(-age / 0.07) 迅速升起, 寿命内平滑落下.
@@ -59,7 +49,7 @@ export function moltenReveal(elapsed: number, intro: boolean): number {
   return Math.min(1, Math.max(0, elapsed / MOLTEN_INTRO_SECONDS));
 }
 
-/** 熔融金属场: 多层旋涡扭曲的分形高度, 屏幕导数取脊线与法线, 指针拖尾与点击耀斑加热到芯色. */
+/** 熔融金属场: 多层旋涡扭曲的分形高度, 屏幕导数取脊线与法线, 指针拖尾 (预烘画布 u_trail_map 的 alpha) 与点击耀斑加热到芯色. */
 export const MOLTEN_FRAGMENT = fragmentSource(`
 uniform vec3 u_colors[${MOLTEN_MAX_COLORS}];
 uniform float u_color_count;
@@ -79,7 +69,8 @@ uniform float u_rotation;
 uniform vec2 u_offset;
 uniform float u_drift;
 uniform float u_grain;
-uniform vec4 u_trail[${MOLTEN_TRAIL}];
+uniform sampler2D u_trail_map;
+uniform float u_trail_gain;
 uniform vec4 u_flares[${MOLTEN_MAX_FLARES}];
 uniform vec4 u_hot;
 uniform vec2 u_reveal;
@@ -105,13 +96,8 @@ float field(vec2 p, float t) {
 
 float heatAt(vec2 uv) {
   vec2 aspect = vec2(u_res.x / min(u_res.x, u_res.y), u_res.y / min(u_res.x, u_res.y));
-  float heat = 0.0;
-  for (int i = 0; i < ${MOLTEN_TRAIL}; i++) {
-    vec4 f = u_trail[i];
-    if (f.z <= 0.0) continue;
-    vec2 d = (uv - f.xy) * aspect;
-    heat += f.z * exp(-dot(d, d) / 0.006);
-  }
+  float trail = u_trail_gain > 0.0 ? texture(u_trail_map, uv).a : 0.0;
+  float heat = max(trail - ${MOLTEN_TRAIL_FLOOR}, 0.0) / ${(1 - MOLTEN_TRAIL_FLOOR).toFixed(2)} * u_trail_gain;
   vec2 dh = (uv - u_hot.xy) * aspect;
   heat += u_hot.z * exp(-dot(dh, dh) / 0.012);
   for (int i = 0; i < ${MOLTEN_MAX_FLARES}; i++) {
