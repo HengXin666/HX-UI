@@ -4,7 +4,7 @@
 
 ## 顺序
 
-controls 15 件 (已齐) → kits gallery 11 → kits stack 8 + glass 2 → kits card 9 + stage3d 3 → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push) → surface 余量 30 件.
+controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 → kits card 9 + stage3d 3 → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push) → surface 余量 30 件.
 推送由用户做, 这里只 commit. 每件单独提交, pre-commit 13/13 + 本件 vitest 全绿才提.
 
 ## 已裁定 (不再待定)
@@ -36,9 +36,27 @@ controls 15 件 (已齐) → kits gallery 11 → kits stack 8 + glass 2 → kits
 
 各族 note: `.agents/notes/implemented/feature/2026-11-08-controls-{press,range,compose,choice}.md`, `2026-11-09-controls-nav.md`.
 
+## 状态: kits gallery 11 件 (全部已提, 门禁 13/13)
+
+| 规格 | HX 名 | 提交 |
+|---|---|---|
+| AccordionGallery | FoldGallery (+ 族 tokens) | 2854e46 |
+| Carousel | SpringCarousel (+ parts/use-drag) | ca582db |
+| CircularCarousel | RingCarousel | 9a0bd97 |
+| CircularGallery | BendGallery (ENGINE-GAP) | 339e579 |
+| DepthCarousel | DepthDeck | 95e17f4 |
+| DomeGallery | SphereWall | 939f527 |
+| FlexCarousel | FlexReel (ENGINE-GAP) | a1469dc |
+| MorphSlider | BlendSlider (ENGINE-GAP, CURVE 补 outExpo / inOutCubic) | 007e932 |
+| InfiniteSpiral | HelixScroll | 51eaf23 |
+| FlyingPosters | PosterFlight (ENGINE-GAP) | 01cde77 |
+| DriftWall | DriftColumns | f087651 |
+
+位置 `src/kits/gallery/`, 测试 `tests/kits/gallery/`, note `.agents/notes/implemented/feature/2026-11-09-kits-gallery.md`. 族 tokens 目前转出导航族的工具 (useNavMotion 等), 收口并进 src/motion. 只维护族 index.ts; src/kits/index.ts 与 ./kits 子路径, package.json 一律留到收口 (用户裁定).
+
 ## 下一步
 
-kits gallery 11 件. 开工前先从 `.hark/plan.md` 取件单与 HX 名, 规格读 `docs/research/catalog/components-*.md`.
+kits stack 8 (AnimatedList, ScrollStack, Stack, CardSwap, BounceCards, Masonry, ChromaGrid, MagicBento) + glass 2 (FluidGlass, GlassSurface). stage3d 三件 (Lanyard, ModelViewer, InfiniteMenu) 不引 three, 缺 3D / 模型加载的部分标 ENGINE-GAP 并写清缺什么 (用户裁定).
 
 ## 收口待办 (不要提前做)
 
@@ -57,5 +75,6 @@ kits gallery 11 件. 开工前先从 `.hark/plan.md` 取件单与 HX 名, 规格
 - ui-rules 的 BUTTON-TYPE 静态检查看不到展开属性里的 type: 链接或按钮用 `nav/parts/link-or-button.tsx` 的 LinkOrButton, 不要写动态 Tag.
 - line-budget: tsx ≤ 250 行, ts ≤ 450.
 - 测试里 vi.useFakeTimers 要放在 manualFrames 之前并只 fake setTimeout / clearTimeout, 否则与 performance.now 的 spy 互相包裹, 栈溢出.
+- kits 测试共用 `tests/kits/support.ts` (转出 nav 的 manualFrames 等). setState 发生在 rAF 回调里时, 测试里 flush 要包 act.
 - 同一 index.ts 分件提交时先删掉别的件的导出行, 提完补回.
 - 规格只取 `docs/research/catalog/components-1.md` / `components-2.md`; 上游 MIT + Commons Clause, 只当规格, 自写自命名.
