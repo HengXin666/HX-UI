@@ -9,6 +9,7 @@ Decision-ID: controls-nav
 - `src/controls/nav/tokens.ts`, `src/controls/nav/parts/use-nav-motion.ts`, `src/controls/nav/index.ts`
 - `src/controls/nav/bar/PillTabs.tsx`, `src/controls/nav/bar/parts/pill-spec.ts`, `src/controls/nav/bar/parts/bar-entry.tsx` (react-bits Components/PillNav)
 - `src/controls/nav/dock/MagnifyDock.tsx`, `src/controls/nav/dock/parts/dock-math.ts` (react-bits Components/Dock)
+- `src/controls/nav/rail/ProximityRail.tsx`, `src/controls/nav/rail/parts/rail-spec.ts` (react-bits Components/LineSidebar)
 
 ## Problem
 
@@ -38,3 +39,7 @@ L2 controls 层缺一组导航件: 胶囊导航条, 放大坞, 黏液导航条, 
 ## MagnifyDock (规格 Components/Dock)
 
 指针附近的图标按余弦钟形放大 (中心导数为 0, 指针抖动不跳), 每格一根弹簧, 规格默认 0.1 / 150 / 12 并按规格夹取下限; 低质量高阻尼弹簧在 16ms 帧上会数值振荡, 所以积分按 craft 能接受的最细 8ms 子步. 点选后起跳 (上抛走 CURVE.lift, 落地走 CURVE.popOut), 按住 450ms 触发 onItemHold 且这次点击不算选中. 工具栏语义, 漫游 tabindex. ENGINE-GAP: 规格的嵌套菜单要锚点定位与焦点陷阱, 本件只给长按回调.
+
+## ProximityRail (规格 Components/LineSidebar)
+
+竖排条目, 指针靠近的几条按距离衰减 (linear / smooth / sharp) 向右推 maxShift, 刻度线从 tickScale 倍拉到全长; 强度用规格的 1 - exp(-dt / tau) 趋近, tau = smoothing 100ms, 帧长上限交给帧循环. 活动项刻度线恒为全长并用强调色. 键盘聚焦的条目按指针正对处理, 上下方向键与 Home / End 移焦点并跳过禁用项; 条目有 href 是链接. 规格源码没有减弱动效处理, 本件减弱时强度直接落定.
