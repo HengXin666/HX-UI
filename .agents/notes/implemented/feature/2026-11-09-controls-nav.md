@@ -15,6 +15,7 @@ Decision-ID: controls-nav
 - `src/controls/nav/menu/parts/use-menu-open.ts`, `src/controls/nav/parts/link-or-button.tsx` (menu 族共用)
 - `src/controls/nav/menu/PillBurst.tsx`, `src/controls/nav/menu/parts/burst-spec.ts` (react-bits Components/BubbleMenu)
 - `src/controls/nav/menu/DeckNav.tsx`, `src/controls/nav/menu/parts/deck-spec.ts` (react-bits Components/CardNav)
+- `src/controls/nav/menu/LayerDrawer.tsx`, `src/controls/nav/menu/parts/drawer-spec.ts` (react-bits Components/StaggeredMenu)
 
 ## Problem
 
@@ -68,3 +69,7 @@ L2 controls 层缺一组导航件: 胶囊导航条, 放大坞, 黏液导航条, 
 ## DeckNav (规格 Components/CardNav)
 
 顶栏 (汉堡开关, 标志, 行动按钮) 展开成一排卡片. 外框高度用弹簧撑到顶栏加卡片区实高, 弹簧按 springFromDuration(0.5 / speed, bounce) 拟合, 可中断; 卡片按规格错峰 min(stagger 钳到 0.3, 0.7 / (n - 1)) 从下沉 0.3 倍卡高处升起, 0.45s outQuint; 收起时卡片一起 0.2s 淡出, 外框弹回顶栏高. openOn 为 hover 时指针进出整条开合. 卡片区用 auto-fit 网格, 窄容器自动换行 (规格的 NARROW 560 断点由网格承担). 规格的页面入场 intro (820ms) 不做. 减弱动效时高度直接落定, 卡片无位移.
+
+## LayerDrawer (规格 Components/StaggeredMenu)
+
+侧边抽屉. 打开时按一条时间线走: 色层 (layerTones) 依次滑入, 0.5s outQuint (规格 power4.out) 错峰 70ms; 面板接在层后 80ms 滑入 0.65s; 条目文字在面板起步 150ms 后从下沉 140% 并转 10 度处升起, 1s outQuint 错峰 100ms; 序号 0.6s outCubic (power2.out) 错峰 80ms 淡入; 社交区排在条目后, 链接 0.55s outQuart (power3.out) 从下沉 25px 处升起. 收起时所有层一起 0.32s inQuart (power3.in) 滑出, 不错峰. 开关的加号打开转到 225 度 (0.8s outQuint), 收起回 0 度 (0.35s inOutQuart). 规格用 GSAP 时间轴, 这里全换成带延迟的 CSS 过渡, 打断时从当前值续走. 规格源码没有减弱动效处理, 本件减弱时无位移与延迟.
