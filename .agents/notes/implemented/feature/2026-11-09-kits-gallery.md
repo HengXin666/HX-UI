@@ -10,6 +10,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/FoldGallery.tsx` (react-bits Components/AccordionGallery)
 - `src/kits/gallery/SpringCarousel.tsx`, `src/kits/gallery/parts/carousel-spec.ts`, `src/kits/gallery/parts/use-drag.ts` (react-bits Components/Carousel)
 - `src/kits/gallery/RingCarousel.tsx`, `src/kits/gallery/parts/ring-spec.ts` (react-bits Components/CircularCarousel)
+- `src/kits/gallery/BendGallery.tsx`, `src/kits/gallery/parts/bend-spec.ts` (react-bits Components/CircularGallery)
 
 ## Problem
 
@@ -36,3 +37,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## RingCarousel (规格 Components/CircularCarousel)
 
 卡片绕竖轴围成一圈 (CSS 3D, rotateY 加 translateZ), 半径取使卡片不重叠的 (w + gap) / (2 tan(pi / n)), 不小于 1.2 倍卡宽. 角度是一路临界阻尼弹簧 (规格 SPRING 118, 阻尼 2 sqrt(118)); 拖拽每 px 转 0.25 度, 松手按甩出速度预估落点并吸到最近一项; 滚轮与方向键一次一项, 点卡片走最短路转过去. 巡航: 无人操作时角速度按 0.6s 时间常数 (规格 1 - exp(-dt / tau) 写法) 爬到 cruiseSpeed 匀速自转, 一碰就停. 屏幕外 (IntersectionObserver) 与页面隐藏时巡航不跑帧. 规格的切片拼图入场 (TILES 8, OVERLAP 2.5, INTRO_LENGTH) 与换图切片动画 (SWAP_LENGTH) 不做. 减弱动效时直接转到位, 不巡航.
+
+## BendGallery (规格 Components/CircularGallery)
+
+卡片排成循环长廊, 每张按距中心的横向偏移 x 落在半径 width / bend 的圆弧上: 下沉 r - sqrt(r^2 - x^2), 转角 asin(x / r); bend 为负时向上拱. 滚轮, 拖拽, 方向键只推目标位置, 实际位置按规格的帧率无关跟随 1 - (1 - scrollEase)^(dt × 60) 追上 (默认 0.05). 滚轮停 140ms 后与拖拽松手后吸附到最近一项 (snap). autoScroll 按规格每秒推进 0.25 × autoScroll 个间距. ENGINE-GAP: 规格用 WebGL 网格让卡片本身弯曲, 外加波纹, 阴影, 边缘渐隐和画布文字, 内核没有顶点通道, 这里只做整卡沿弧摆放与转向, 标题是 DOM 文字. 规格的 openOnClick 放大与 intro 入场不做. 减弱动效时位置直接跳到目标, 不自动滚动.
