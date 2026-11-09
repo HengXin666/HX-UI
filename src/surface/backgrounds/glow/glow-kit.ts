@@ -1,5 +1,6 @@
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 与 backgrounds-2.md 的 glow 路条目 (Aurora 等着色器场) 共用部分, 实现为 HX 自有.
 import type { Rgb } from "../../backdrop/kernel/color";
+import { feedbackSize } from "../../backdrop/kernel/feedback";
 import type { UniformList } from "../../backdrop/kernel/gl";
 import { approach, clamp } from "../../backdrop/kernel/math";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
@@ -120,4 +121,36 @@ vec4 glow_finish(vec3 ink, float density, vec2 frag) {
 /** 收尾三个 uniform. */
 export function finishUniforms(lightMode: boolean, fade: number, grain: number): { u_light: number; u_fade: number; u_grain: number } {
   return { u_light: lightMode ? 1 : 0, u_fade: fade, u_grain: grain };
+}
+
+/**
+ * 画布当前的设备像素尺寸, 没有画布时为 [0, 0]. 内核的 measure 先把 canvas.width / height 设成 fit 再调 renderer.resize(fit),
+ * 重建渲染器时 resize(s.fit) 也与画布同尺寸, 所以在 PassSpec.scale 的 getter 里读它, 得到的正是这一次 resize 的 fit.
+ */
+export function canvasPixels(canvas: HTMLCanvasElement | null): readonly [number, number] {
+  return canvas ? [canvas.width, canvas.height] : [0, 0];
+}
+
+/** 封顶收缩的最多轮数 (四舍五入多出的至多一行一列, 几轮就够). */
+const CAP_ROUNDS = 32;
+const CAP_SHRINK = 0.995;
+
+/**
+ * 通道倍率按像素上限封顶: 取 min(scale, sqrt(maxPixels / 画布面积)), 再按内核 feedbackSize 的取整收到不超上限. 画布尺寸未知时原样返回.
+ *
+ * @param scale 想要的倍率 (quality 一类).
+ * @param width 画布设备像素宽.
+ * @param height 画布设备像素高.
+ * @param maxPixels 通道像素数上限.
+ */
+export function capPassScale(scale: number, width: number, height: number, maxPixels: number): number {
+  const area = width * height;
+  if (!(area > 0) || !(maxPixels > 0)) return scale;
+  let s = Math.min(scale, Math.sqrt(maxPixels / area));
+  for (let i = 0; i < CAP_ROUNDS; i += 1) {
+    const [w, h] = feedbackSize(width, height, s);
+    if (w * h <= maxPixels) break;
+    s *= CAP_SHRINK;
+  }
+  return s;
 }

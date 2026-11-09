@@ -1,6 +1,6 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 DarkVeil 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格的场像素上限 MAX_FIELD_PIXELS 要按画布尺寸动态定通道缩放, 内核 PassSpec.scale 是静态倍率, 这里只按 quality 取倍率 (画布最长边仍受内核 maxEdge 上限).
+// 已补 (2026-11-09): 规格的场像素上限 MAX_FIELD_PIXELS 按画布尺寸动态定场通道倍率 (PassSpec.scale 为 getter, 每次 resize 读画布设备像素), 场不超 90 万像素.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -12,9 +12,9 @@ import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
 import {
   DARK_VEIL_DRAG_RATE, DARK_VEIL_FIELD, DARK_VEIL_FIELD_FRAGMENT, DARK_VEIL_FOLLOW_RATE, DARK_VEIL_FRAGMENT, DARK_VEIL_INTRO_SECONDS, DARK_VEIL_LIGHT_RATE,
-  DARK_VEIL_TOUCH_RATE,
+  DARK_VEIL_MAX_FIELD_PIXELS, DARK_VEIL_TOUCH_RATE,
 } from "./dark-veil-shader";
-import { createFollower, DEG, finishUniforms, introProgress, NEUTRAL, stepFollower, tauOf, type Follower } from "./glow-kit";
+import { canvasPixels, capPassScale, createFollower, DEG, finishUniforms, introProgress, NEUTRAL, stepFollower, tauOf, type Follower } from "./glow-kit";
 
 /** 默认墨色: 语义 token 名. */
 export const DARK_VEIL_DEFAULT_COLOR = "primary";
@@ -76,9 +76,15 @@ export interface VeilLight {
   y: number;
 }
 
-/** 场通道倍率: quality 钳到 0.1..1. */
-export function veilFieldScale(quality: number): number {
-  return clamp(quality, QUALITY_RANGE[0], QUALITY_RANGE[1]);
+/**
+ * 场通道倍率: quality 钳到 0.1..1, 再按规格 MAX_FIELD_PIXELS 封顶 (画布尺寸未知时只按 quality).
+ *
+ * @param quality 分辨率倍率.
+ * @param width 画布设备像素宽.
+ * @param height 画布设备像素高.
+ */
+export function veilFieldScale(quality: number, width = 0, height = 0): number {
+  return capPassScale(clamp(quality, QUALITY_RANGE[0], QUALITY_RANGE[1]), width, height, DARK_VEIL_MAX_FIELD_PIXELS);
 }
 
 /** 场通道 uniform. 纯函数. */
@@ -129,7 +135,9 @@ export function DarkVeil(props: DarkVeilProps): JSX.Element {
         {
           name: DARK_VEIL_FIELD,
           fragment: DARK_VEIL_FIELD_FRAGMENT,
-          scale: veilFieldScale(quality),
+          get scale() {
+            return veilFieldScale(quality, ...canvasPixels(handle.canvasRef.current));
+          },
           uniforms: (frame) => {
             const taus = { move: tauOf(DARK_VEIL_FOLLOW_RATE), drag: tauOf(DARK_VEIL_DRAG_RATE), enter: tauOf(DARK_VEIL_TOUCH_RATE.enter), leave: tauOf(DARK_VEIL_TOUCH_RATE.leave) };
             stepFollower(follower.current, frame, taus, interactive);

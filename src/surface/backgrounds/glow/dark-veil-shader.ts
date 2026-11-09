@@ -18,7 +18,7 @@ export const DARK_VEIL_LIGHT_RATE = 4;
 export const DARK_VEIL_FIELD = "u_veil";
 
 /**
- * 场通道: 域扭曲分形噪声作高度, 写出 (高度, 两向梯度, 拖拽涟漪). 分辨率由 quality 决定, 上屏程序双线性放大.
+ * 场通道: 域扭曲分形噪声作高度, 写出 (高度, 两向梯度, 拖拽涟漪). 分辨率由 quality 决定并受 MAX_FIELD_PIXELS 封顶, 上屏程序双线性放大.
  */
 const FIELD_BODY = `
 uniform float u_scale;
