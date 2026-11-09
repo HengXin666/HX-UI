@@ -94,3 +94,27 @@ export const DRAFT_KICK_PX_S = 520;
 export const DRAFT_CLICK_SLOP_PX = 3;
 /** 选框比字形外扩 (px). */
 export const DRAFT_FRAME_PAD_PX = 4;
+
+/** 盖章光标: 帧长上限 0.05s, 收尾缩小系数 0.55 (shrink 的规格值域上限), 移除间隔下限 5ms. */
+export const STAMP_MAX_DT_S = 0.05;
+export const STAMP_MIN_REMOVAL_S = 0.005;
+/** 盖章光标的 props 默认值: 间距 88px, 最多 7 个, 退场 0.5s, 停下后每 30ms 收一个, 缩小 0.5, 淡出 0.6, 平滑 0.3, 字号 28px, 字重 600. */
+export const STAMP_DEFAULTS = {
+  spacing: 88,
+  maxPoints: 7,
+  exitDuration: 0.5,
+  removalInterval: 30,
+  shrink: 0.5,
+  fade: 0.6,
+  smoothing: 0.3,
+  fontSize: 28,
+  fontWeight: 600,
+} as const;
+/** smoothing 换成一阶跟随时间常数 (秒) 的系数: tau = smoothing x 它. */
+export const STAMP_SMOOTH_TAU_S = 0.1;
+/** 弹出时长 (秒) 与漂浮幅度 (px), 漂浮角速度 (rad/s). */
+export const STAMP_POP_S = 0.18;
+export const STAMP_FLOAT_PX = 4;
+export const STAMP_FLOAT_RATE = 2.2;
+/** 指针停下多久 (秒) 后开始逐个收章. */
+export const STAMP_IDLE_S = 0.12;

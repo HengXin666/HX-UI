@@ -6,3 +6,5 @@ export { burstAt, driftLead, echoLook, followChain, pointerLead, wakeCount, wake
 export { WakeText, type WakeTextProps } from "./WakeText";
 export { draftDamping, kickShare, nearestGlyph, outlineAmount, springBack, typeShown, type Glyph2 } from "./parts/draft";
 export { DraftText, type DraftTextProps } from "./DraftText";
+export { removalTick, stampAngle, stampContent, stampFloat, stampLook } from "./parts/stamp";
+export { StampTrail, type StampTrailProps } from "./StampTrail";
