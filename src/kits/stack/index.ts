@@ -10,3 +10,4 @@ export { CycleDeck, SWAP_DEFAULTS, swapPointer, swapShouldCycle, swapSlot, swapS
 export { BOUNCE_DEFAULTS, SpreadCards, hoverPose, popDelay, restPose, type BouncePose, type SpreadCardsProps, type SpreadImage } from "./SpreadCards";
 export { FlowMasonry, MASONRY_DEFAULTS, autoColumns, fromOffset, masonryLayout, revealEase, type FlowMasonryProps, type MasonryCell, type MasonryFrom, type MasonryItem } from "./FlowMasonry";
 export { CHROMA_DEFAULTS, TintGrid, chromaFollow, chromaMask, chromaPower, type ChromaReveal, type TintGridProps, type TintItem } from "./TintGrid";
+export { BENTO_DEFAULTS, GlowBento, bentoColumns, bentoEase, bentoPose, bentoProximity, bentoSpan, type BentoItem, type BentoSpan, type GlowBentoProps } from "./GlowBento";

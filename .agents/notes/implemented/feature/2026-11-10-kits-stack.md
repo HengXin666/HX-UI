@@ -14,6 +14,7 @@ Decision-ID: kits-stack
 - `src/kits/stack/SpreadCards.tsx`, `src/kits/stack/parts/bounce-spec.ts` (react-bits Components/BounceCards)
 - `src/kits/stack/FlowMasonry.tsx`, `src/kits/stack/parts/masonry-spec.ts` (react-bits Components/Masonry)
 - `src/kits/stack/TintGrid.tsx`, `src/kits/stack/parts/chroma-spec.ts` (react-bits Components/ChromaGrid)
+- `src/kits/stack/GlowBento.tsx`, `src/kits/stack/parts/bento-spec.ts` (react-bits Components/MagicBento)
 
 ## Problem
 
@@ -54,3 +55,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## TintGrid (规格 Components/ChromaGrid)
 
 卡片网格 (columns 3, 每列至少 minCardWidth 180px, gap 12px, 卡片 aspectRatio 3 / 2, 圆角 22px) 上盖一层不接指针的去色层: backdrop-filter grayscale(grayscale) brightness(1 - dim) (默认 1 与 0.12). 指针在网格上时去色层的遮罩在指针处挖出半径 radius (260px) 的圆, 内圈 (1 - softness) 全透, 外缘渐到全遮 (softness 0.6), 露出原色. 圆心按时间常数 damping × 0.32 s (damping 0.45, 下限 0.01s) 追指针, 写法同规格 1 - exp(-dt / tau). 显色强度乘到半径上, 指针进入时以 0.2s 升起 (HX 自定, 规格只给了回落), 离开时以 fadeOut (0.6s) 回落到全遮. reveal 取 card 时去色层整层全遮, 只把悬停或聚焦的卡抬到层上方显色. 悬停或聚焦的卡带随指针移动的内辉光 (不透明度 glow 0.5) 与边框辉光 (borderGlow 1, 色由 tone 定, color-mix 到 --border), 过渡 0.3s ease; 去色层滤镜过渡 0.25s ease. 遮罩用 black / transparent 关键字, 不写色值. 每张卡有 href 时为链接, 否则为按钮, 点击回调 onItemClick; showInfo 显示标题, 副标题与 handle. 规格的 frame 外框未做. 减弱动效时聚光直接贴指针, 显色即开即关.
+
+## GlowBento (规格 Components/MagicBento)
+
+便当格: columns (4) 列, 行高 rowHeight (200px), gap 12px, 圆角 20px; 容器窄时按每格最窄 MIN_CELL 150px 减列, 跨两列以上的格合宽不到 MIN_PAIR 200px 收成一列 (span.col / span.row 给跨格). 指针下一团半径 spotlightRadius (300px) 的光斑, 圆心以 tau 0.05s 追指针, 亮起 tau 0.12s, 熄灭 0.4s; 离光斑圆心 spotlightRadius 内的格子边框按到格子矩形的距离线性发光 (边框辉光用 mask exclude 只露 2px 边). 悬停或聚焦格的热度升 tau 0.14s 降 0.32s (规格同), 驱动格底色混入主题色 6% × 热度 (过渡 200ms ease), enableTilt 时按格内指针倾斜至多 TILT 6 度, enableMagnetism 时吸附至多 MAGNET 6px, 都乘热度. 帧间隔上限 0.05s. intro 时容器 15% 可见后逐格错峰 STAGGER 80ms 入场: 透明度 420ms CURVE.outQuint, 位移与缩放 760ms CURVE.backOutSoft (规格 --mb-spring 同值); 起点下移 16px 缩 0.96 是 HX 自定. clickEffect 在点击处放一圈直径为格对角线两倍的波纹, 1.1s (规格 wave.duration) 放大淡出后移除. textAutoHide 时描述限两行. 有 href 的格为链接, 否则为按钮, 点击回调 onItemClick. 不做: enableStars 与 particleCount (要 canvas 粒子), 规格的 THEMES 主题与格内插画动画 (draw / grow / packet 等关键帧). 减弱动效或 disableAnimations 时无入场, 倾斜, 吸附与波纹, 光斑直接贴指针.
