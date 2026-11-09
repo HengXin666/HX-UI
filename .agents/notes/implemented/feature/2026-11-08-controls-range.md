@@ -10,6 +10,7 @@ Decision-ID: controls-range
 - `src/controls/range/input/keys.ts`
 - `src/controls/range/meter/tank-sim.ts`
 - `src/controls/range/status/grid-patterns.ts`
+- `src/controls/range/meter/TallyRoll.tsx`, `src/controls/range/meter/tally-digits.ts` (react-bits Components/Counter)
 
 ## Problem
 
@@ -32,3 +33,8 @@ L2 controls 层缺一组取值, 刻度与状态类控件: 圆弧刻度盘, 可�
 ## Consequences
 
 主线接入时从 `src/controls/range/index.ts` 导出, 本次不改 src/index.ts. motion.ts, channels.ts, use-frame-loop.ts 与 press, dismiss, compose 三族各自的换算和帧循环是重复实现, 下一步统一并进 src/motion 后删掉族内副本.
+
+## TallyRoll (规格 Components/Counter)
+
+每位一条 0 到 9 的条带, 高位先动, 停在整数格; 千分位与小数点是静止槽, 位的键按右侧位数定, 改值时同一位从当前小数位置继续滚, 不从 0 重播. 外层时钟线性, 曲线用 craft 的 digitEase, 时长 DIGIT_MS 700, 位间错峰 min(stagger, 时长 40% / (n-1)).
+过冲合同 0.06 位不放宽. digitEase 的参数是阻尼振荡的名义过冲, 尾段补偿项会把实际峰值抬高 (参数 0.06 时实测峰值 0.086), 所以 tallyOvershoot 按实际峰值二分反解参数 (粗扫 400 点, 峰值附近三分细化), bounce 线性映射到目标峰值, 上限 0.06; 结果按目标值缓存. 读屏只读终值, 条带 aria-hidden; 减弱动效不建条带, 直接写终值.
