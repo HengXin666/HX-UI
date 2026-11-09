@@ -1,5 +1,7 @@
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 Lightfall 条目, 实现为 HX 自有.
+// 场景在离屏通道里画, 泛光走 ../bloom.ts 的四级降采样金字塔.
 import { fragmentSource, GLSL_HASH, GLSL_NOISE, GLSL_UTIL } from "../../backdrop/kernel/glsl";
+import { BLOOM_ENCODE } from "../bloom";
 import { RAYS_COMPOSE } from "./field";
 
 /** Lightfall 的命名常数. 括号里是条目原名或 "本库定". */
@@ -22,6 +24,13 @@ export const LIGHTFALL = {
   touchOut: 2,
   /** 深度层数 (本库定). */
   layers: 4,
+  /** 泛光金字塔级数 (BLOOM_LEVELS). */
+  bloomLevels: 4,
+  /** 泛光亮部阈值与软膝 (本库定, 对应旧解析增益的 smoothstep(0.5, 2.0, peak) 区间). */
+  bloomThreshold: 0.8,
+  bloomKnee: 0.6,
+  /** bloom prop 到泛光强度的倍率 (本库定). */
+  bloomGain: 2,
 } as const;
 
 /** 冲刺一步: 按住时以 2.2 的速率升向 1, 松开以 1.6 降回 0. */
@@ -51,7 +60,6 @@ uniform float u_zoom;
 uniform float u_bg_glow;
 uniform float u_head;
 uniform float u_depth;
-uniform float u_bloom;
 uniform vec2 u_view;
 uniform vec4 u_lens;
 uniform float u_lens_amount;
@@ -115,13 +123,14 @@ void main() {
   mean /= max(u_color_count, 1.0);
   light += mean * u_bg_glow * (0.6 + 0.4 * v_uv.y) * (1.0 + u_warp);
   light *= u_glow * (1.0 + u_warp * 0.6);
-  float peak = max(light.r, max(light.g, light.b));
-  light += light * u_bloom * smoothstep(0.5, 2.0, peak);
   float reveal = smoothstep(0.0, 0.12, v_uv.y - (1.0 - 1.15 * u_intro));
   light *= reveal * rays_edge(v_uv);
-  o_color = rays_compose(light);
+  o_color = bloom_encode(light, 1.0);
 }
 `;
 
-/** Lightfall 的上屏片元: 四层视差的下落光痕, 头部辉光, 尾长随冲刺拉长, 指针透镜把周围光痕推开. */
-export const LIGHTFALL_FRAGMENT = fragmentSource(BODY, GLSL_HASH, GLSL_NOISE, GLSL_UTIL, RAYS_COMPOSE);
+/**
+ * Lightfall 的离屏场景片元: 四层视差的下落光痕, 头部辉光, 尾长随冲刺拉长, 指针透镜把周围光痕推开.
+ * 输出编码后的线性光, 由泛光金字塔 (../bloom.ts) 降采样模糊后在上屏程序里合成.
+ */
+export const LIGHTFALL_SCENE = fragmentSource(BODY, GLSL_HASH, GLSL_NOISE, GLSL_UTIL, RAYS_COMPOSE, BLOOM_ENCODE);

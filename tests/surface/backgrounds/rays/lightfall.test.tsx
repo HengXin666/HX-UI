@@ -1,10 +1,10 @@
 /**
- * rays 路 Lightfall: 常数与纯函数, WebGL2 上屏, 减弱动效只画一帧, 拿不到上下文时 CSS 兜底.
+ * rays 路 Lightfall: 常数与纯函数, 四级泛光金字塔, WebGL2 上屏, 减弱动效只画一帧, 拿不到上下文时 CSS 兜底.
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Lightfall } from "@src/surface/backgrounds/rays/Lightfall";
-import { dampFollow, LIGHTFALL, LIGHTFALL_FRAGMENT, warpStep } from "@src/surface/backgrounds/rays/lightfall-shader";
+import { dampFollow, LIGHTFALL, LIGHTFALL_SCENE, warpStep } from "@src/surface/backgrounds/rays/lightfall-shader";
 import { mockReducedMotion, mockWebgl2, useFakeClock } from "../../backdrop/helpers";
 import { recordCanvas2d } from "../../helpers";
 
@@ -31,8 +31,21 @@ describe("Lightfall", () => {
     expect(warpStep(0.4, true, 0)).toBe(0.4);
     expect(dampFollow(0.15, 0.15)).toBeCloseTo(1 - Math.exp(-1), 6);
     expect(dampFollow(0.1, 0)).toBe(1);
-    expect(LIGHTFALL_FRAGMENT).toContain("smoothstep(1.6, 3.2, spacingPx)");
-    expect(LIGHTFALL_FRAGMENT).toContain("smoothstep(0.72 * edge, edge");
+    expect(LIGHTFALL_SCENE).toContain("smoothstep(1.6, 3.2, spacingPx)");
+    expect(LIGHTFALL_SCENE).toContain("smoothstep(0.72 * edge, edge");
+  });
+
+  it("场景离屏, 四级降采样泛光 (BLOOM_LEVELS), 不再有峰值解析增益", () => {
+    expect([LIGHTFALL.bloomLevels, LIGHTFALL.bloomThreshold, LIGHTFALL.bloomKnee, LIGHTFALL.bloomGain]).toEqual([4, 0.8, 0.6, 2]);
+    expect(LIGHTFALL_SCENE).toContain("o_color = bloom_encode(light, 1.0);");
+    expect(LIGHTFALL_SCENE).not.toContain("u_bloom");
+  });
+
+  it("每帧画场景, 四级金字塔与上屏共 6 次", () => {
+    const calls: string[] = [];
+    restore.push(mockWebgl2(calls), mockReducedMotion(true));
+    render(<Lightfall bloom={0.5} />);
+    expect(draws(calls)).toBe(6);
   });
 
   it("WebGL2 下上屏并持续出帧", () => {

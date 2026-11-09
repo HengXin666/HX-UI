@@ -1,6 +1,7 @@
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 与 backgrounds-2.md 的 Beams / LightRays / SideRays / LightPillar / LightTunnel / Lightfall / Lightning / PrismaticBurst / Prism 条目, 实现为 HX 自有.
 import type { Rgb } from "../../backdrop/kernel/color";
 import type { UniformList } from "../../backdrop/kernel/gl";
+import { fragmentSource, GLSL_HASH, GLSL_UTIL } from "../../backdrop/kernel/glsl";
 import { clamp } from "../../backdrop/kernel/math";
 
 /** 光场的出光模式: 默认按覆盖率带透明度叠在任意底色上; 给了底色则屏幕混合后铺满. */
@@ -24,6 +25,23 @@ vec3 rays_saturate(vec3 c, float amount) {
   return max(mix(vec3(hx_luma(c)), c, amount), 0.0);
 }
 `;
+
+/** 泛光合成的上屏主体: 场景解码加泛光 (泛光同样随四边淡出), 再按 rays_compose 出光. */
+const RAYS_BLOOM_MAIN = `
+void main() {
+  vec4 scene = bloom_scene(v_uv);
+  o_color = rays_compose(scene.rgb + bloom_glow(v_uv) * rays_edge(v_uv));
+}
+`;
+
+/**
+ * rays 路泛光件的上屏片元: 读离屏场景与泛光金字塔 (见 ../bloom.ts), 合成后按 rays_compose 出光.
+ *
+ * @param compositeGlsl bloomPyramid 返回的 compositeGlsl.
+ */
+export function raysBloomFragment(compositeGlsl: string): string {
+  return fragmentSource(RAYS_BLOOM_MAIN, GLSL_HASH, GLSL_UTIL, RAYS_COMPOSE, compositeGlsl);
+}
 
 /** 光源方位名到归一化坐标 (y 朝上). 0.02 / 0.98 让光源略出画, 避免光心正好压在边上. */
 export const RAY_ORIGINS = {

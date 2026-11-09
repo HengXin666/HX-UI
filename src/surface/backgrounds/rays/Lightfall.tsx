@@ -1,6 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 Lightfall 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格的四级降采样模糊泛光 (BLOOM_LEVELS / DOWNSAMPLE / BLUR) 以片元内峰值处的解析增益近似.
+// 已补 (2026-11-09): 规格的四级降采样模糊泛光 (BLOOM_LEVELS / DOWNSAMPLE / BLUR) 改走 ../bloom.ts 的离屏金字塔
+// (场景离屏通道, 软膝亮部提取, 四级 13 点降采样, 上屏帐篷核上采样合成), 不再以峰值处解析增益近似; bloom prop 为泛光强度.
 // 规格的 speed 与公共时钟倍率重名, 改名 fallSpeed; backgroundColor 不给时透明叠加 (规格默认的灰底交给使用方).
 
 import { useRef, type JSX } from "react";
@@ -9,8 +10,9 @@ import { splitCommon, type BackdropCommonProps } from "../../backdrop/kernel/com
 import { glowFallback } from "../../backdrop/kernel/fallback";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
-import { backdropOf, followStep, introProgress, paletteList } from "./field";
-import { dampFollow, LIGHTFALL, LIGHTFALL_FRAGMENT, warpStep } from "./lightfall-shader";
+import { bloomPyramid } from "../bloom";
+import { backdropOf, followStep, introProgress, paletteList, raysBloomFragment } from "./field";
+import { dampFollow, LIGHTFALL, LIGHTFALL_SCENE, warpStep } from "./lightfall-shader";
 
 export interface LightfallProps extends BackdropCommonProps {
   /** 光痕调色板 (最多 8 色): token 名或 CSS 颜色. */
@@ -38,7 +40,7 @@ export interface LightfallProps extends BackdropCommonProps {
   readonly headGlow?: number;
   /** 层间纵深 0..1, 越大远层越暗越密. */
   readonly depth?: number;
-  /** 峰值处的泛光增益. */
+  /** 泛光强度 (四级降采样模糊泛光叠回画面的比例). */
   readonly bloom?: number;
   /** 指针视差强度. */
   readonly mouseStrength?: number;
@@ -91,7 +93,6 @@ export function Lightfall(props: LightfallProps): JSX.Element {
     return {
       u_colors: paletteList(frame.colors.slice(0, palette.length), LIGHTFALL.maxColors),
       u_color_count: palette.length,
-      u_backdrop: backdropOf(frame.colors, palette.length, backgroundColor !== undefined),
       u_fade: fade,
       u_travel: frame.time * LIGHTFALL.travelRate * fallSpeed + s.rush,
       u_twinkle_clock: frame.time,
@@ -105,7 +106,6 @@ export function Lightfall(props: LightfallProps): JSX.Element {
       u_bg_glow: backgroundGlow,
       u_head: headGlow,
       u_depth: depth,
-      u_bloom: bloom,
       u_view: [s.vx, s.vy],
       u_lens: [s.lx, s.ly, mouseRadius, s.touch],
       u_lens_amount: lens,
@@ -114,8 +114,20 @@ export function Lightfall(props: LightfallProps): JSX.Element {
     };
   };
 
+  const pyramid = bloomPyramid({
+    scene: LIGHTFALL_SCENE, sceneUniforms: uniforms, levels: LIGHTFALL.bloomLevels,
+    threshold: LIGHTFALL.bloomThreshold, knee: LIGHTFALL.bloomKnee, strength: bloom * LIGHTFALL.bloomGain,
+  });
   const handle = useShaderBackdrop(
-    { fragment: LIGHTFALL_FRAGMENT, uniforms },
+    {
+      fragment: raysBloomFragment(pyramid.compositeGlsl),
+      passes: pyramid.passes,
+      uniforms: (frame) => ({
+        u_backdrop: backdropOf(frame.colors, palette.length, backgroundColor !== undefined),
+        u_fade: fade,
+        ...pyramid.uniforms,
+      }),
+    },
     { ...options, colors: backgroundColor === undefined ? palette : [...palette, backgroundColor] },
   );
   return (
