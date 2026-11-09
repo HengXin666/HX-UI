@@ -101,7 +101,7 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 `src/controls/index.ts`, `src/kits/index.ts` 汇各族; package.json exports 加 `./controls`, `./kits`, 版本 0.10.0 (lock 同步); motion 出口加 CURVE / cssCurve / CurveName; docs-props 全量抽两条子路径; api 快照按子路径分段并重记 0.10.0 哈希; CHANGELOG 0.10.0 段. note `.agents/notes/implemented/architecture/2026-11-10-controls-kits-entries.md`. 收口遗留三项 (根段 1608 无 ArcField, CHANGELOG 件名, vitest 527/527) 已核清.
 
-## 状态: surface Text 4 件 (全部已提, 门禁 13/13, 未推)
+## 状态: surface Text 4 件 (全部已提, 门禁 13/13, 已推)
 
 | 规格 | HX 名 | 提交 |
 |---|---|---|
@@ -111,19 +111,47 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | TextCursor | StampTrail (区域组件, 包 children) | 6314864 |
 
 位置 `src/surface/text/pointer/`, 测试 `tests/surface/text/pointer-{extrude,wake,draft,stamp}.test.tsx` (pointer 族 33 测, text 全量 72/72), note `.agents/notes/implemented/feature/2026-11-10-surface-text-pointer.md`. 颜色只收语义 token 名 (ExtrudeTone), 落成 var(--name).
-用户裁定 (2026-11-10): 4 件齐前只维护族 index; **齐了一次性接进 src/surface/index.ts (加 `export * from "./text/pointer"`), check-api-snapshot --update, 只升一次版本, CHANGELOG 记一段**. 这一步尚未做, 等用户点头版本号 (提议 0.11.0).
-待推: a4b4665, 6812374, 692f600, 19de31b, d86a8b3, 6314864 (+ 本 CHECKPOINT 提交). 用户推.
+接入: f63f04c (src/surface/index.ts 加 ./text/pointer, api 快照 ./surface 422 / 根段 1608, 0.11.0, CHANGELOG 0.11.0). 用户已推到 69aaee8 (20/20); f63f04c 起未推.
 
-## 正在做
+## 正在做: Animations 26 件 (用户 2026-11-10 02:01 裁定)
 
-无. Text 4 件已提完, 已报用户 (2026-11-10 02:0x).
+分段提交, 每段齐了报用户一次, 用户推. 段内每件单独提交 (pre-commit 13/13 + 本件 vitest), 不 push. 段内只维护各自族 index, 段尾一次性接 surface 导出 + api 快照 + 升 minor 版本 + CHANGELOG, 单独一个接入提交 (同 f63f04c 的做法).
+已做过的 12 件不再做: AnimatedContent / FadeContent (motion/Reveal), ClickSpark (TapSparks), Crosshair (ReticleLines), GlareHover (SheenCard), ImageTrail (PhotoWake), Magnet (Attract), TargetCursor (LockOnCursor), GradualBlur (EdgeBlur), PixelSwap / PixelTransition (TileFlip, MosaicSwap), ScrollExpand (ScrollWiden).
 
-## 下一步
+规格名 -> HX 名 (规格见 docs/research/catalog/animations.md):
 
-1. 接入 pointer 族到 src/surface/index.ts + api 快照 + 版本 (等用户定版本号).
-2. Animations 26 件 (24 件 + HalftoneReveal, DitherVeil) 单独一段: 先从 docs/research/catalog/animations.md 列出规格名 -> HX 名映射记入本文件, 逐件提交, 段尾报用户.
-- 规矩: 只借规格的常数与 props 自写; 内核公共头不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么. 每件单独提交 (pre-commit 13/13 + 本件 vitest), 不 push.
-- **待办, 别丢**: 已提交老控件的 ring-1 统一换 FOCUS_RING (原定收口做, 未做). 单独一个提交.
+| 段 | 规格 | HX 名 | 状态 |
+|---|---|---|---|
+| A | LogoLoop | MarkRail | |
+| A | OrbitImages | OrbitRing | |
+| A | StarBorder | CometBorder | |
+| A | Noise | GrainLayer | |
+| A | StickerPeel | PeelSticker | |
+| A | ElectricBorder | SparkEdge | |
+| A | PixelTrail | CellTrail | |
+| B | BlobCursor | MeldCursor | |
+| B | GlowCursor | HaloCursor | |
+| B | GhostCursor | HazeCursor | |
+| B | SwarmCursor | FlockCursor | |
+| B | Ribbons | StreamerCursor | |
+| B | CursorGrid | NudgeGrid | |
+| C | SplashCursor | InkSplash | |
+| C | MetaBalls | MergeBlobs | |
+| C | MetallicPaint | ChromeMark | |
+| C | LaserFlow | BeamFlow | |
+| C | RippleDistortion | RippleLens | |
+| C | ShapeBlur | SoftShape | |
+| C | ElectricLogo | SparkMark | |
+| D | HalftoneReveal | DotReveal | |
+| D | DitherVeil | BayerVeil | |
+| D | CrystalizedBall | PrismOrb | |
+| D | Cubes | CubeField | |
+| D | ElasticMesh | SpringMesh | |
+| D | Strands | FiberStrands | |
+
+分段按技法粗分 (A DOM/SVG/Canvas2D, B 光标画布, C WebGL 片元, D reveal 与 3D), 读到规格后可微调, 改了就改本表.
+- 规矩: 只借规格的常数与 props 自写; 内核公共头不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么; 颜色只走语义 token; 不引 three.
+- **Animations 全部完成后**: 已提交老控件的 ring-1 统一换 FOCUS_RING, 单独一个提交 (用户 02:01 裁定排在这段后面).
 
 ## 后续收尾 (本次收口未做)
 
