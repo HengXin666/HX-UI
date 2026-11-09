@@ -11,6 +11,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/SpringCarousel.tsx`, `src/kits/gallery/parts/carousel-spec.ts`, `src/kits/gallery/parts/use-drag.ts` (react-bits Components/Carousel)
 - `src/kits/gallery/RingCarousel.tsx`, `src/kits/gallery/parts/ring-spec.ts` (react-bits Components/CircularCarousel)
 - `src/kits/gallery/BendGallery.tsx`, `src/kits/gallery/parts/bend-spec.ts` (react-bits Components/CircularGallery)
+- `src/kits/gallery/DepthDeck.tsx`, `src/kits/gallery/parts/depth-spec.ts` (react-bits Components/DepthCarousel)
 
 ## Problem
 
@@ -41,3 +42,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## BendGallery (规格 Components/CircularGallery)
 
 卡片排成循环长廊, 每张按距中心的横向偏移 x 落在半径 width / bend 的圆弧上: 下沉 r - sqrt(r^2 - x^2), 转角 asin(x / r); bend 为负时向上拱. 滚轮, 拖拽, 方向键只推目标位置, 实际位置按规格的帧率无关跟随 1 - (1 - scrollEase)^(dt × 60) 追上 (默认 0.05). 滚轮停 140ms 后与拖拽松手后吸附到最近一项 (snap). autoScroll 按规格每秒推进 0.25 × autoScroll 个间距. ENGINE-GAP: 规格用 WebGL 网格让卡片本身弯曲, 外加波纹, 阴影, 边缘渐隐和画布文字, 内核没有顶点通道, 这里只做整卡沿弧摆放与转向, 标题是 DOM 文字. 规格的 openOnClick 放大与 intro 入场不做. 减弱动效时位置直接跳到目标, 不自动滚动.
+
+## DepthDeck (规格 Components/DepthCarousel)
+
+当前牌在最前; 往后第 k 张 (k < visibleCards) 右移 k × spread, 后退 k × depth, 转 tilt (方向随 tiltDirection), 透明度 1 - k × falloff, 模糊按 k 线性到 blur; 更后面的叠在最后一张的位置并隐去; 翻过的牌左移 2 × spread 淡出. 默认值取规格 (300 × 380, depth 220, spread 90, tilt 22, perspective 1400, visibleCards 4, falloff 0.2, blur 6). 位置, 透明度, 模糊用 CSS 过渡 700ms outQuart (规格 power3.out), 打断时从当前值续走, 规格的 GSAP 时间轴不需要. 按钮, 指示点, 方向键, 滚轮 (按半个过渡时长节流), 横向拖拽翻页; 自动播放 3.2s, 悬停与聚焦时暂停. 规格的 tint 与 radius 交给内容自理. 减弱动效时直接换位.

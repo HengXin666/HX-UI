@@ -7,3 +7,4 @@ export { FOLD_DEFAULTS, FoldGallery, foldGrow, type FoldGalleryProps, type FoldI
 export { CAROUSEL_SPRING, SpringCarousel, releaseTarget, slideOffset, type CarouselSlide, type SpringCarouselProps } from "./SpringCarousel";
 export { RING_SPRING, RingCarousel, cruiseVelocity, ringActive, ringRadius, ringStep, ringTarget, type RingCarouselProps, type RingItem } from "./RingCarousel";
 export { BEND_DEFAULTS, BendGallery, arcPlace, followFactor, type BendGalleryProps, type BendItem } from "./BendGallery";
+export { DEPTH_DEFAULTS, DepthDeck, depthPose, depthRank, type DepthCard, type DepthDeckProps, type DepthLook, type DepthPose } from "./DepthDeck";
