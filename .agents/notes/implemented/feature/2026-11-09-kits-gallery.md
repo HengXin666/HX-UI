@@ -17,6 +17,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/BlendSlider.tsx`, `src/kits/gallery/parts/blend-spec.ts` (react-bits Components/MorphSlider)
 - `src/kits/gallery/HelixScroll.tsx`, `src/kits/gallery/parts/helix-spec.ts` (react-bits Components/InfiniteSpiral)
 - `src/kits/gallery/PosterFlight.tsx`, `src/kits/gallery/parts/poster-spec.ts` (react-bits Components/FlyingPosters)
+- `src/kits/gallery/DriftColumns.tsx`, `src/kits/gallery/parts/drift-spec.ts` (react-bits Components/DriftWall)
 
 ## Problem
 
@@ -71,3 +72,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## PosterFlight (规格 Components/FlyingPosters)
 
 海报排成一列或几列循环带 (alternate 时相邻列反向), 滚轮与竖向拖拽推目标位置, 实际位置按规格的帧率无关跟随 1 - (1 - scrollEase)^(dt × 60) 追上 (默认 0.01); 速度与倾斜按规格的 1 - exp(-rate × dt) 平滑 (速率 8 与 6). 每张海报穿过视口时绕所选轴 (vertical 转 rotateY, horizontal 转 rotateX, diagonal 两轴同转) 从 -rotation/2 转到 rotation/2 (默认 180); 速度越快斜切越大 (distortion × 速度 / 400 度, 限 20 度); lean 让整层随速度倾斜; fade 让上下边缘渐隐. speed 为自动滚动 px/s. ENGINE-GAP: 规格在 WebGL 里用自带相机投影 (cameraFov, cameraZ) 按速度弯曲海报网格, 并做明暗与圆角遮罩, 内核没有顶点通道, 这里用 CSS 透视加整张旋转与斜切近似. pageScroll 联动页面滚动不做. 减弱动效时位置直接跳, 无斜切与倾斜, 不自动滚.
+
+## DriftColumns (规格 Components/DriftWall)
+
+卡片按序分到 columns 列, 每列内容复制一份首尾相接, 以自己的速度循环漂移 (默认 30px/s, 列系数 1, 0.8, 1.15, 0.9 轮换; alternate 时奇数列反向), 偏移按一份内容高取模. 指针或焦点进入一列时该列速度按 160ms 时间常数降到 0, 离开后按 280ms 回到原速 (规格 1 - exp(-dt / tau) 同值). 悬停卡片上浮 4px 放大 1.02, 标题淡入, dimOthers 时其余卡片淡到 0.55, 过渡 420ms outQuint (规格 (0.22, 1, 0.36, 1)). 复制的那份不进 Tab 序, 对读屏隐藏. 屏幕外不跑帧. 规格的速度与列数默认未进目录, 这里自定. 减弱动效时不漂移, 无过渡.
