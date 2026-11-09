@@ -14,6 +14,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/DepthDeck.tsx`, `src/kits/gallery/parts/depth-spec.ts` (react-bits Components/DepthCarousel)
 - `src/kits/gallery/SphereWall.tsx`, `src/kits/gallery/parts/dome-spec.ts` (react-bits Components/DomeGallery)
 - `src/kits/gallery/FlexReel.tsx`, `src/kits/gallery/parts/flex-spec.ts` (react-bits Components/FlexCarousel)
+- `src/kits/gallery/BlendSlider.tsx`, `src/kits/gallery/parts/blend-spec.ts` (react-bits Components/MorphSlider)
 
 ## Problem
 
@@ -56,3 +57,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## FlexReel (规格 Components/FlexCarousel)
 
 循环卡带, 位置 (单位: 张) 是一路临界阻尼弹簧, 刚度按规格分模式: 点选, 方向键与松手 55, 滚轮 80, 阻尼 2 sqrt(k). 运动速度换成能量 (速度 6 张/秒为满), 按规格的不对称时间常数上升 70ms, 回落 350ms; 能量越大, 两侧卡片越朝运动反方向 rotateY (最多 28 度, 越靠边越多) 并收缩 6%, 停下后舒展回平. 拖拽直接写位置, 松手按速度预估落点吸附; 滚轮停 140ms 后吸附. ENGINE-GAP: 规格在 OGL 着色器里按能量弯曲卷边卡片网格, 并做色散与 12 采样模糊, 内核没有顶点通道与多采样后处理, 这里只做整卡转向与收缩. 规格的 INTRO_DURATION 入场与 BEND_PRESETS 不做. 减弱动效时直接到位, 无能量形变.
+
+## BlendSlider (规格 Components/MorphSlider)
+
+新一幅叠在旧一幅上用 Web Animations 进场, 1.1s inOutCubic (规格 power2.inOut, CURVE 新增); 四种转场: melt 由模糊 14px 淡入, ripple 由中心圆形 clip-path 扩开, shear 由前进方向一侧 inset 扫入, swirl 由转 10 度放大 1.15 淡入. 标题以 0.66 倍时长 outExpo (规格 (0.16, 1, 0.3, 1), CURVE 新增) 上升淡入, 指示条宽度 0.45 倍时长. 中途再翻页时先把进行中的转场 finish 再起新的; 没有 Element.animate 时直接落定. 按钮, 指示点, 方向键, 横扫 40px 翻页; 自动播放 4s, 悬停聚焦暂停. ENGINE-GAP: 规格的噪声位移溶解, 色差 (aberration), 暗角与 drift 在 WebGL 片元着色器里, 内核没有片元通道, 这里换成 filter / clip-path / transform 关键帧. 减弱动效时只淡入且不超过 0.4s (规格同), 标题不动.

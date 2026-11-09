@@ -25,6 +25,10 @@ export const CURVE = {
   inQuart: [0.5, 0, 0.75, 0],
   /** 流入: 前段很陡, 尾段长而平. 跑马带滑入. */
   flow: [0.2, 0.9, 0.2, 1],
+  /** 指数缓出: 起步极快, 尾段极长. 幻灯标题与指示条换位. */
+  outExpo: [0.16, 1, 0.3, 1],
+  /** 三次缓入缓出 (GSAP power2.inOut): 两端柔和. 整幅转场. */
+  inOutCubic: [0.65, 0, 0.35, 1],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
 
 export type CurveName = keyof typeof CURVE;
