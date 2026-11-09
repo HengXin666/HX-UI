@@ -4,7 +4,7 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { GhostFibers } from "@src/surface/backgrounds/particles/GhostFibers";
-import { FIBERS, FIBERS_FRAGMENT, makeFiberState, stepFibers } from "@src/surface/backgrounds/particles/ghost-fibers-shader";
+import { FIBERS, FIBERS_FRAGMENT, fibersComposite, makeFiberState, stepFibers } from "@src/surface/backgrounds/particles/ghost-fibers-shader";
 import { mockWebgl2 } from "../../backdrop/helpers";
 import { mockReducedMotion, recordCanvas2d, useFakeClock } from "../../helpers";
 
@@ -20,6 +20,17 @@ describe("GhostFibers 纯函数", () => {
     expect(FIBERS.hovers).toEqual({ focus: 0, part: 1, none: 2 });
     expect(FIBERS_FRAGMENT.startsWith("#version 300 es")).toBe(true);
     expect(FIBERS_FRAGMENT).toContain("uniform vec3 u_hover");
+  });
+
+  it("散景: 失焦的点 / 段混成盘边略亮的圆盘; 场景离屏写压缩前线性光, 上屏加泛光再压缩", () => {
+    expect(FIBERS_FRAGMENT).toContain("smoothstep(0.25, 0.7, blur)");
+    expect(FIBERS_FRAGMENT).toContain("(0.94 + 0.08 * smoothstep(0.55, 0.95, rho))");
+    expect(FIBERS_FRAGMENT).toContain("o_color = bloom_encode(col * 1.3, 1.0);");
+    expect(FIBERS_FRAGMENT).not.toContain("hx_tonemap(col");
+    expect([FIBERS.bloomLevels, FIBERS.bloomThreshold, FIBERS.bloomKnee]).toEqual([4, 0.775, 0.425]);
+    expect(FIBERS.bloomThreshold - FIBERS.bloomKnee).toBeCloseTo(0.35, 9);
+    expect(FIBERS.bloomThreshold + FIBERS.bloomKnee).toBeCloseTo(1.2, 9);
+    expect(fibersComposite("// pyramid")).toContain("hx_tonemap(bloom_scene(v_uv).rgb + bloom_glow(v_uv))");
   });
 
   it("流动 dt * flow * 12, 滚转 dt * rollSpeed, 帧长钳 0.05s; 指针 0.08s 跟随, 在场升快落慢", () => {
@@ -70,7 +81,7 @@ describe("GhostFibers 渲染", () => {
     const { container } = render(<GhostFibers fiberStyle="lines" />);
     expect((container.firstElementChild as HTMLElement).dataset.backdropPlan).toBe("still");
     const before = calls.filter((c) => c === "drawArrays").length;
-    expect(before).toBeGreaterThan(0);
+    expect(before).toBe(1 + FIBERS.bloomLevels + 1);
     act(() => vi.advanceTimersByTime(500));
     expect(calls.filter((c) => c === "drawArrays").length).toBe(before);
     restoreMotion();

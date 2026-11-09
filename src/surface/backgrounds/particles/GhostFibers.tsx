@@ -1,10 +1,13 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 GhostFibers 条目, 实现为 HX 自有.
-// ENGINE-GAP: 上游把每根纤维画成实例化的点 / 段并做多级泛光 (BLOOM_LEVELS 5) 与散景; 内核只有全屏片元, 本件在片元里解析求最近纤维 (折叠处纤维挤密改按覆盖率出亮度), 泛光以纤维带外的指数光晕近似, 散景以景深加宽线宽近似.
+// ENGINE-GAP: 上游把每根纤维画成实例化的点 / 段 (点精灵); 内核只有全屏片元, 无实例化与点精灵, 本件在片元里解析求最近纤维 (折叠处纤维挤密改按覆盖率出亮度), 每像素只取最近一根, 失焦纤维之间不互相叠盘; 规格 BLOOM_LEVELS 5 收到共用金字塔上限 4 级.
+// 已补 (2026-11-09): 泛光改走 ../bloom.ts 的离屏金字塔 (场景离屏写色调压缩前的线性光, 软膝亮部提取阈值 0.775 / 膝 0.425 对应规格 smoothstep(0.35, 1.2, peak),
+// 四级降采样, 上屏加泛光后再压缩色调, 强度 0.9); 散景按规格把失焦 (smoothstep(0.25, 0.7, blur)) 的点 / 段混成半径 1.25 倍线宽的圆盘, 盘边略亮 (0.94 + 0.08 smoothstep(0.55, 0.95, rho)), 景深仍以加宽线宽近似.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell, glowFallback, splitCommon, useShaderBackdrop, type BackdropCommonProps, type BackdropFrame } from "../../backdrop/kernel";
-import { FIBERS, FIBERS_FRAGMENT, makeFiberState, stepFibers, type FiberGradient, type FiberHover, type FiberStyle } from "./ghost-fibers-shader";
+import { bloomPyramid } from "../bloom";
+import { FIBERS, FIBERS_FRAGMENT, fibersComposite, makeFiberState, stepFibers, type FiberGradient, type FiberHover, type FiberStyle } from "./ghost-fibers-shader";
 import { DEG, introProgress } from "./tokens";
 
 export interface GhostFibersProps extends BackdropCommonProps {
@@ -67,7 +70,7 @@ const HALF_GREY = 0.5;
 
 /**
  * 幽灵纤维: 几层扭转起伏的纤维带在画面里缓慢滚转, 每层由几十根细纤维组成, 折叠处纤维挤在一起发亮;
- * 纤维上的点或段沿带流动, 周围漂着光尘, 指针处提亮或把纤维拨开, 入场自左向右显出. 减弱动效时只画一帧.
+ * 纤维上的点或段沿带流动, 失焦处散成圆盘, 周围漂着光尘, 指针处提亮或把纤维拨开, 入场自左向右显出; 亮部经降采样金字塔泛光. 减弱动效时只画一帧.
  */
 export function GhostFibers(props: GhostFibersProps): JSX.Element {
   const {
@@ -119,7 +122,14 @@ export function GhostFibers(props: GhostFibersProps): JSX.Element {
     };
   };
 
-  const handle = useShaderBackdrop({ fragment: FIBERS_FRAGMENT, uniforms }, { ...options, colors: [glowColor, lineColor, secondaryColor] });
+  const pyramid = bloomPyramid({
+    scene: FIBERS_FRAGMENT, sceneUniforms: uniforms, levels: FIBERS.bloomLevels,
+    threshold: FIBERS.bloomThreshold, knee: FIBERS.bloomKnee, strength: FIBERS.bloomStrength,
+  });
+  const handle = useShaderBackdrop(
+    { fragment: fibersComposite(pyramid.compositeGlsl), passes: pyramid.passes, uniforms: () => pyramid.uniforms },
+    { ...options, colors: [glowColor, lineColor, secondaryColor] },
+  );
   return (
     <BackdropShell handle={handle} fallback={glowFallback(BACKGROUND_TOKEN, glowColor)} opacity={opacity} {...rest}>
       {children}

@@ -1,5 +1,7 @@
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 GhostFibers 条目, 实现为 HX 自有.
+// 场景在离屏通道里画, 泛光走 ../bloom.ts 的降采样金字塔.
 import { fragmentSource, GLSL_HASH, GLSL_UTIL } from "../../backdrop/kernel";
+import { BLOOM_ENCODE, BLOOM_MAX_LEVELS } from "../bloom";
 
 export type FiberStyle = "dots" | "dashes" | "lines";
 export type FiberGradient = "depth" | "along" | "across";
@@ -21,6 +23,13 @@ export const FIBERS = {
   maxLayers: 4,
   maxThreads: 256,
   waveRate: 0.5,
+  /** 规格 BLOOM_LEVELS 5, 共用金字塔上限 4 级; 规格亮部 smoothstep(0.35, 1.2, peak) 折成软膝阈值 0.775 / 膝 0.425; 泛光强度本库定. */
+  bloomLevels: Math.min(5, BLOOM_MAX_LEVELS),
+  bloomThreshold: 0.775,
+  bloomKnee: 0.425,
+  bloomStrength: 0.9,
+  /** 规格散景: 失焦量 smoothstep(0.25, 0.7) 混向圆盘, 盘边 0.94 + 0.08 smoothstep(0.55, 0.95, rho) 略亮; 盘半径为线宽倍数 (本库定). */
+  bokehRadius: 1.25,
 } as const;
 
 /** 纤维推进状态: 流动相位, 滚转相位, 平滑后的指针与在场程度. */
@@ -56,6 +65,8 @@ export function stepFibers(s: FiberState, dt: number, flow: number, rollSpeed: n
   s.hy += (py - s.hy) * k;
   s.presence += (goal - s.presence) * (1 - Math.exp(-h / (goal > s.presence ? FIBERS.presenceIn : FIBERS.presenceOut)));
 }
+
+const FIBERS_BOKEH = FIBERS.bokehRadius.toFixed(2);
 
 const BODY = `
 uniform float u_layers;
@@ -120,8 +131,13 @@ vec3 hx_ribbon(vec2 p, float L, float seedL, out float energy) {
   float avg = min(3.0, w * 1.77 / spacing * (1.0 + u_fold * 0.6));
   float tw = 0.5 + 0.5 * sin(u_time * (1.0 + seed * 3.0) + seed * 20.0);
   float q = u * u_density * 34.0 - u_flow * (0.6 + seed * 0.8) + seed * 7.0;
-  float mask = mix(hx_mask(q), 1.0, smoothstep(w * 3.0, w, spacing));
-  float I = mix(avg, core * mask, smoothstep(w, w * 3.0, spacing)) * inside;
+  float dense = smoothstep(w * 3.0, w, spacing);
+  float mask = mix(hx_mask(q), 1.0, dense);
+  float al = u_style < 0.2 ? (fract(q) - 0.5) / max(u_density * 34.0, 0.001) * (1.0 - dense) : 0.0;
+  float rho = length(vec2(al, d)) / max(w * ${FIBERS_BOKEH}, 1e-6);
+  float bokeh = (1.0 - smoothstep(0.82, 1.0, rho)) * (0.94 + 0.08 * smoothstep(0.55, 0.95, rho)) * (u_style < 0.2 ? 1.0 : mask);
+  float shape = mix(core * mask, bokeh, smoothstep(0.25, 0.7, blur));
+  float I = mix(avg, shape, smoothstep(w, w * 3.0, spacing)) * inside;
   I *= (0.45 + 0.55 * tw) / (1.0 + blur * 1.5) * mix(0.35, 1.0, seed) * persp;
   float aspectHalf = 0.5 * u_res.x / min(u_res.x, u_res.y);
   float un = u / (2.0 * aspectHalf);
@@ -133,11 +149,11 @@ vec3 hx_ribbon(vec2 p, float L, float seedL, out float energy) {
   float tint = u_grad < 0.5 ? zt : u_grad < 1.5 ? smoothstep(-0.9, 0.9, un * 2.0) : clamp(vk * 0.5 + 0.5, 0.0, 1.0);
   vec3 hue = mix(u_glow, u_second, tint);
   energy = I;
-  return hue * (I + halo * smoothstep(0.0, 0.6, u_intro)) + u_line * core * mask * inside * 0.35 * (1.0 - blur);
+  return hue * (I + halo * smoothstep(0.0, 0.6, u_intro)) + u_line * shape * inside * 0.35 * (1.0 - blur);
 }
 
 void main() {
-  vec2 p = hx_centered(gl_FragCoord.xy) / max(u_scale, 0.05);
+  vec2 p = hx_centered(v_uv * u_res) / max(u_scale, 0.05);
   vec2 m = (u_hover.xy - 0.5) * u_res / min(u_res.x, u_res.y) / max(u_scale, 0.05);
   p = hx_rot(-u_rot) * p;
   m = hx_rot(-u_rot) * m;
@@ -165,11 +181,30 @@ void main() {
     float spark = exp(-dot(g - c, g - c) / (r * r)) * (0.35 + 0.65 * tw) * mix(0.4, 1.0, h.y) * smoothstep(0.3, 1.0, u_intro);
     col += mix(u_glow, u_second, h.y) * spark * 0.8;
   }
-  col = hx_tonemap(col * 1.3);
+  o_color = bloom_encode(col * 1.3, 1.0);
+}
+`;
+
+/** 上屏主体: 场景线性光加泛光后再压缩色调, 按峰值出覆盖率 (无泛光时与原上屏一致). */
+const COMPOSITE = `
+void main() {
+  vec3 col = hx_tonemap(bloom_scene(v_uv).rgb + bloom_glow(v_uv));
   float a = clamp(max(col.r, max(col.g, col.b)) * 1.15, 0.0, 1.0);
   o_color = vec4(clamp(col / max(a, 1e-3), 0.0, 1.0), a);
 }
 `;
 
-/** GhostFibers 的上屏片元: 若干层扭转的纤维带, 每层由 threads 根纤维组成, 解析求最近纤维, 折叠处纤维挤密自然发亮. */
-export const FIBERS_FRAGMENT = fragmentSource(BODY, GLSL_HASH, GLSL_UTIL);
+/**
+ * GhostFibers 的离屏场景片元: 若干层扭转的纤维带, 每层由 threads 根纤维组成, 解析求最近纤维, 折叠处纤维挤密自然发亮;
+ * 失焦的点 / 段混向散景圆盘. 以 bloom_encode 写出未压缩的线性光, 由泛光金字塔 (../bloom.ts) 降采样模糊.
+ */
+export const FIBERS_FRAGMENT = fragmentSource(BODY, GLSL_HASH, GLSL_UTIL, BLOOM_ENCODE);
+
+/**
+ * GhostFibers 的上屏片元: 读场景与泛光金字塔合成.
+ *
+ * @param compositeGlsl bloomPyramid 返回的 compositeGlsl.
+ */
+export function fibersComposite(compositeGlsl: string): string {
+  return fragmentSource(COMPOSITE, GLSL_HASH, GLSL_UTIL, compositeGlsl);
+}
