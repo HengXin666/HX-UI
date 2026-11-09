@@ -13,6 +13,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/BendGallery.tsx`, `src/kits/gallery/parts/bend-spec.ts` (react-bits Components/CircularGallery)
 - `src/kits/gallery/DepthDeck.tsx`, `src/kits/gallery/parts/depth-spec.ts` (react-bits Components/DepthCarousel)
 - `src/kits/gallery/SphereWall.tsx`, `src/kits/gallery/parts/dome-spec.ts` (react-bits Components/DomeGallery)
+- `src/kits/gallery/FlexReel.tsx`, `src/kits/gallery/parts/flex-spec.ts` (react-bits Components/FlexCarousel)
 
 ## Problem
 
@@ -51,3 +52,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## SphereWall (规格 Components/DomeGallery)
 
 图片铺在球内壁 (CSS 3D, 观者在球心): segments 列 × 5 带, 带距取列距与 30 度的较小者, 相邻带错开半格, 图片按序循环. 半径取容器短边 × fit (0.5), 夹在 [minRadius 600, maxRadius], 随 ResizeObserver 更新. 拖拽转动球面, 竖向限幅 maxVerticalRotationDeg; 松手速度夹到规格 MAX_V 1.4px/ms, 按 exp(-dragDampening × dt) 衰减 (dragDampening 默认 2). 方向键每次转 10 度. 点图放大成中央对话框 (opacity 与 scale 过渡 enlargeTransitionMs), Escape 或点遮罩关闭并还焦点到原图. 规格 DEFAULTS 里 dragSensitivity, maxVerticalRotationDeg, segments, enlargeTransitionMs 的值未进目录, 这里自定 0.2 deg/px, 8 deg, 20, 300ms. 规格的 @use-gesture 换成族内 use-drag, 放大时从原格飞到中央的动画不做. 减弱动效时无惯性, 放大无过渡.
+
+## FlexReel (规格 Components/FlexCarousel)
+
+循环卡带, 位置 (单位: 张) 是一路临界阻尼弹簧, 刚度按规格分模式: 点选, 方向键与松手 55, 滚轮 80, 阻尼 2 sqrt(k). 运动速度换成能量 (速度 6 张/秒为满), 按规格的不对称时间常数上升 70ms, 回落 350ms; 能量越大, 两侧卡片越朝运动反方向 rotateY (最多 28 度, 越靠边越多) 并收缩 6%, 停下后舒展回平. 拖拽直接写位置, 松手按速度预估落点吸附; 滚轮停 140ms 后吸附. ENGINE-GAP: 规格在 OGL 着色器里按能量弯曲卷边卡片网格, 并做色散与 12 采样模糊, 内核没有顶点通道与多采样后处理, 这里只做整卡转向与收缩. 规格的 INTRO_DURATION 入场与 BEND_PRESETS 不做. 减弱动效时直接到位, 无能量形变.

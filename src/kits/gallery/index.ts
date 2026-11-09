@@ -9,3 +9,4 @@ export { RING_SPRING, RingCarousel, cruiseVelocity, ringActive, ringRadius, ring
 export { BEND_DEFAULTS, BendGallery, arcPlace, followFactor, type BendGalleryProps, type BendItem } from "./BendGallery";
 export { DEPTH_DEFAULTS, DepthDeck, depthPose, depthRank, type DepthCard, type DepthDeckProps, type DepthLook, type DepthPose } from "./DepthDeck";
 export { DOME_DEFAULTS, SphereWall, domeCells, domeDecay, domeFling, domeRadius, type DomeCell, type SphereImage, type SphereWallProps } from "./SphereWall";
+export { FLEX_SPRING, FlexReel, flexEnergyStep, flexEnergyTarget, flexPose, type FlexItem, type FlexReelProps } from "./FlexReel";
