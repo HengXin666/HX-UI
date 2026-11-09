@@ -16,10 +16,10 @@ export const FOIL_IDLE_AMP = 0.3;
 export const FOIL_IDLE_PERIOD_S = 7;
 
 /**
- * 彩虹色带: 规格着色器的蓝, 青, 绿, 黄, 橙, 玫红六段 (HoloCard.jsx:60-64). 这是箔面的物理光谱, 不随主题,
- * 用 CSS 颜色关键字逼近各段, 不写色值函数.
+ * 彩虹色带: 规格着色器的光谱 (HoloCard.jsx:60-64) 改用主题的光谱阶梯令牌 --spectrum-1..6 (src/tokens.css),
+ * 亮暗两套各自给值, 皮肤可覆盖; 这里只引用变量.
  */
-export const FOIL_SPECTRUM = ["royalblue", "deepskyblue", "lawngreen", "gold", "darkorange", "crimson"] as const;
+export const FOIL_SPECTRUM = ["var(--spectrum-1)", "var(--spectrum-2)", "var(--spectrum-3)", "var(--spectrum-4)", "var(--spectrum-5)", "var(--spectrum-6)"] as const;
 
 export function foilRainbow(angleDeg: number): string {
   const list = [...FOIL_SPECTRUM, FOIL_SPECTRUM[0]];

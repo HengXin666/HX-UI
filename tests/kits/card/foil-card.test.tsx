@@ -1,6 +1,8 @@
 /**
  * kits/card: FoilCard (规格 HoloCard). 色带, 图案, 闲置漂移, 色带横移, 倾斜与放大, 翻面, 闲置, 减弱动效.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FOIL_SPECTRUM, FoilCard, foilIdle, foilPattern, foilRainbow, foilShift } from "@src/kits/card/FoilCard";
@@ -14,12 +16,22 @@ afterEach(() => {
 });
 
 describe("FoilCard 纯函数", () => {
-  it("色带六段闭合, 只用关键字", () => {
+  it("色带六段闭合, 只引用光谱令牌", () => {
     const g = foilRainbow(90);
-    expect(g.startsWith("linear-gradient(90deg, royalblue 0.0%")).toBe(true);
-    expect(g.endsWith("royalblue 100.0%)")).toBe(true);
+    expect(g.startsWith("linear-gradient(90deg, var(--spectrum-1) 0.0%")).toBe(true);
+    expect(g.endsWith("var(--spectrum-1) 100.0%)")).toBe(true);
     expect(FOIL_SPECTRUM).toHaveLength(6);
-    expect(g).not.toMatch(/#|rgb|hsl|oklch/);
+    expect(g.replace(/var\(--spectrum-\d\)/g, "")).not.toMatch(/#|rgb|hsl|oklch|[a-z]{4,}\s\d/);
+  });
+
+  it("光谱令牌在亮暗两套里都有值", () => {
+    const css = readFileSync(resolve("src/tokens.css"), "utf8");
+    for (const mode of [':root, [data-mode="dark"] {', '[data-mode="light"] {']) {
+      const at = css.indexOf(`${mode}\n    --spectrum-1:`);
+      expect(at, mode).toBeGreaterThan(0);
+      const body = css.slice(at, css.indexOf("}", at));
+      for (let i = 1; i <= 6; i += 1) expect(body).toMatch(new RegExp(`--spectrum-${i}: var\\(--palette-`));
+    }
   });
 
   it("图案随 scale 放大格距", () => {

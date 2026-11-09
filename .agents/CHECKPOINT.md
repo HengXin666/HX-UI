@@ -85,7 +85,7 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | DecayCard | FrayCard (ENGINE-GAP) | 28f2c0c |
 | Folder | FileFolder (ENGINE-GAP) | 1d314e6 |
 
-位置 `src/kits/card/`, 测试 `tests/kits/card/` (support.ts 转出 stack support, 补 boxOf), note `.agents/notes/implemented/feature/2026-11-10-kits-card.md`. card tokens 转出 stack tokens. FoilCard 的光谱用 CSS 颜色关键字 (royalblue 等), 不是语义色, note 里写了理由.
+位置 `src/kits/card/`, 测试 `tests/kits/card/` (support.ts 转出 stack support, 补 boxOf), note `.agents/notes/implemented/feature/2026-11-10-kits-card.md`. card tokens 转出 stack tokens. FoilCard 的光谱引用 tokens.css 新增的 --spectrum-1..6 (亮暗两套).
 
 ## 下一步
 

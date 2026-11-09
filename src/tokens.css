@@ -379,6 +379,34 @@
     --ring-glow: 0 0 0 1px var(--ring), 0 0 10px 0 var(--primary-glow);
   }
 
+  /* ============================================================================
+   * 光谱阶梯 --spectrum-1..6
+   * ----------------------------------------------------------------------------
+   * 全息箔, 彩虹边光这类 "物理光谱" 效果用的六阶色相环: 蓝, 青, 绿, 黄, 红, 紫, 首尾相接.
+   * 不是功能色 (成功 / 警告 / 危险), 只给装饰性的分光效果用; 组件按序号引用, 不挑具体色相.
+   * 暗色取色板偏亮的阶 (暗底上要亮才像反光), 亮色取更深的阶 (白底上保住饱和与对比).
+   * 皮肤可整体覆盖这六个令牌换一套光谱.
+   * .agents/notes/implemented/feature/2026-11-10-kits-card.md
+   * ==========================================================================*/
+
+  :root, [data-mode="dark"] {
+    --spectrum-1: var(--palette-blue-400);
+    --spectrum-2: var(--palette-cyan-400);
+    --spectrum-3: var(--palette-green-400);
+    --spectrum-4: var(--palette-yellow-300);
+    --spectrum-5: var(--palette-red-400);
+    --spectrum-6: var(--palette-purple-400);
+  }
+
+  [data-mode="light"] {
+    --spectrum-1: var(--palette-blue-600);
+    --spectrum-2: var(--palette-cyan-500);
+    --spectrum-3: var(--palette-green-600);
+    --spectrum-4: var(--palette-yellow-500);
+    --spectrum-5: var(--palette-red-600);
+    --spectrum-6: var(--palette-purple-600);
+  }
+
   /* 玻璃的模糊半径与主题无关, 只定义一次 */
   :root {
     --blur-glass: 16px;
