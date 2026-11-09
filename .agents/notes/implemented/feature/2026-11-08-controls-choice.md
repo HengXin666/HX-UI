@@ -11,6 +11,7 @@ Decision-ID: controls-choice
 - `src/controls/choice/pick/GelRadio.tsx`
 - `src/controls/choice/rate/LiftRating.tsx`
 - `src/controls/choice/pick/ReelPicker.tsx`, `src/controls/choice/pick/parts/reel-spec.ts`, `src/controls/choice/pick/parts/use-reel-drag.ts` (react-bits Components/OptionWheel)
+- `src/controls/choice/steps/StepTrail.tsx`, `src/controls/choice/steps/parts/TrailDot.tsx`, `src/controls/choice/steps/parts/trail-spec.ts` (react-bits Components/Stepper)
 
 ## Problem
 
@@ -44,3 +45,8 @@ Decision-ID: controls-choice
 ## ReelPicker (规格 Components/OptionWheel)
 
 竖向滚轮选择: 每行按到中心的距离取位移, 倾斜, 透明度与模糊, 环绕取整. 规格用 tau = smoothing 的指数趋近, 换成可中断的临界阻尼弹簧, 固有频率 2 / tau; 帧长上限 0.05s. 拖动, 滚轮, 方向键三路共用同一个目标值. 声音 (soundVolume) 不落地. 焦点环用 FOCUS_RING.
+
+## StepTrail (规格 Components/Stepper)
+
+步骤条: 指示点 (完成画勾, 当前步放大 1.12, 其余序号) 加连线填充, 下方内容区换步时滑入并跟高. 规格用时间轴跑的三段 (连线填充 560ms 带回弹, 高度 480ms, 滑入 360ms) 换成按时长拟合的可中断弹簧. 两条 CSS 曲线引用 motion/curves 的 backOutSoft 与 outQuint, 不留私有副本. 焦点环用 FOCUS_RING.
+减弱动效: 填充与高度直接到终值, 指示点不放大, 过渡 0ms, 勾不描画. useReducedMotion 首帧恒为 false, 挂上即完成的勾会在首帧被描; 所以 TrailCheck 描画前再同步问一次 prefersReducedMotion.

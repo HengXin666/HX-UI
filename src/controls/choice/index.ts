@@ -3,3 +3,4 @@ export * from "./toggle";
 export * from "./pick";
 export * from "./rate";
 export { ReelPicker, type ReelPickerProps } from "./pick/ReelPicker";
+export { StepTrail, type StepTrailProps } from "./steps/StepTrail";
