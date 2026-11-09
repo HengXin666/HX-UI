@@ -127,7 +127,13 @@ writeFileSync(path.join(DIST, "__shell_probe.html"), readFileSync(path.join(DIST
 
 function run(url, width = 1400) {
   return new Promise((resolve) => {
-    const child = spawn(chromium, ["--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=15000", `--window-size=${width},900`, "--dump-dom", url], { stdio: [IGNORE, PIPE, IGNORE] });
+    // 同 check-smoke: headless chromium 里的 KDE 集成扩展会拉 plasma-browser-integration-host,
+    // 而该 host 在此环境里没有 DISPLAY, Qt xcb 插件初始化失败会 qFatal abort 刷 coredump。
+    // 钉 QT_QPA_PLATFORM=offscreen 给它一个可用的平台插件, 从源头断掉这条崩溃循环。
+    const child = spawn(chromium, ["--headless=new", "--no-sandbox", "--disable-gpu", "--virtual-time-budget=15000", `--window-size=${width},900`, "--dump-dom", url], {
+      stdio: [IGNORE, PIPE, IGNORE],
+      env: { ...process.env, QT_QPA_PLATFORM: "offscreen" },
+    });
     let out = "";
     child.stdout.on(DATA_EVENT, (d) => (out += d));
     child.on("close", () => resolve(out));

@@ -119,6 +119,7 @@ function render(chromium, url) {
       "--headless=new",
       "--no-sandbox",
       "--disable-gpu",
+      "--disable-extensions",
       "--disable-dev-shm-usage",
       "--hide-scrollbars",
       "--virtual-time-budget=7000",
@@ -127,7 +128,15 @@ function render(chromium, url) {
       "--dump-dom",
       url,
     ];
-    const child = spawn(chromium, args, { stdio: [IGNORE, PIPE, PIPE] });
+    // headless chromium 会装上系统级 external extension (plasma-browser-integration 提供的
+    // KDE 浏览器集成), 该扩展按 native-messaging 清单去拉 plasma-browser-integration-host;
+    // 而 host 在这个进程环境里拿不到 DISPLAY, Qt 的 xcb 平台插件初始化失败 -> qFatal abort
+    // (每次冒烟都刷一个 core dump)。两个办法叠加: 环境里钉 offscreen 让 host 有平台插件可用,
+    // 同时 --disable-extensions 从源头不让扩展加载。
+    const child = spawn(chromium, args, {
+      stdio: [IGNORE, PIPE, PIPE],
+      env: { ...process.env, QT_QPA_PLATFORM: "offscreen" },
+    });
     let out = "";
     let err = "";
     child.stdout.on(DATA_EVENT, (d) => (out += d));
