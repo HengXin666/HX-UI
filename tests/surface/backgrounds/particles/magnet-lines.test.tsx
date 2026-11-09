@@ -5,7 +5,7 @@ import { act, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { MagnetLines } from "@src/surface/backgrounds/particles/MagnetLines";
 import {
-  dampingOf, hueTurn, influenceAt, introAt, layoutGrid, MAGNET, makeNeedles, modeAngle, pulseAt, springAngle, stiffnessOf,
+  dampingOf, depthLook, hueTurn, influenceAt, introAt, layoutGrid, MAGNET, makeNeedles, modeAngle, pulseAt, springAngle, stiffnessOf,
 } from "@src/surface/backgrounds/particles/magnet-lines-field";
 import { mockWebgl2 } from "../../backdrop/helpers";
 import { mockReducedMotion, recordCanvas2d, stubRect, useFakeClock } from "../../helpers";
@@ -59,12 +59,39 @@ describe("MagnetLines 纯函数", () => {
   });
 });
 
+describe("MagnetLines 深度透视", () => {
+  it("近层原样, 远层按 1 / (1 + amount) 缩放, 透明度为缩放的 1.5 次方, 视差近正远负; amount 0 为平面", () => {
+    const near = depthLook(0, 4, 0.6);
+    const far = depthLook(3, 4, 0.6);
+    expect(near.scale).toBe(1);
+    expect(far.scale).toBeCloseTo(1 / 1.6, 9);
+    expect(far.alpha).toBeCloseTo((1 / 1.6) ** 1.5, 9);
+    expect(near.shift).toBeGreaterThan(0);
+    expect(far.shift).toBeLessThan(0);
+    expect(depthLook(2, 4, 0)).toEqual({ scale: 1, alpha: 1, shift: 0 });
+    expect(depthLook(3, 4, 5).scale).toBeCloseTo(0.5, 9);
+    expect(depthLook(0, 1, 0.6).scale).toBe(1);
+  });
+
+  it("每根线落在一层, order 是由远到近的分桶排列且覆盖全部线, 同种子可复现", () => {
+    const n = makeNeedles(500, 0, 0.3, 7);
+    const again = makeNeedles(500, 0, 0.3, 7);
+    expect(Array.from(n.layer)).toEqual(Array.from(again.layer));
+    expect(new Set(n.layer).size).toBe(MAGNET.depthLayers);
+    expect([...n.order].sort((a, b) => a - b)).toEqual(Array.from({ length: 500 }, (_, i) => i));
+    const seq = Array.from(n.order, (i) => n.layer[i]);
+    expect(seq.every((l, j) => j === 0 || l <= seq[j - 1])).toBe(true);
+    expect(seq[0]).toBe(MAGNET.depthLayers - 1);
+    expect(Array.from(makeNeedles(20, 0, 0, 1, 1).layer).every((l) => l === 0)).toBe(true);
+  });
+});
+
 describe("MagnetLines 渲染", () => {
   it("Canvas2D 可用时 live 并持续出帧, 指针与点击不报错", () => {
     useFakeClock();
     const calls: string[] = [];
     const restore = recordCanvas2d(calls);
-    const { container } = render(<MagnetLines shape="arrow" />);
+    const { container } = render(<MagnetLines shape="arrow" depth={0.8} />);
     const host = container.firstElementChild as HTMLElement;
     stubRect(host, { left: 0, top: 0, width: 200, height: 120 });
     expect(host.dataset.backdropStatus).toBe("live");

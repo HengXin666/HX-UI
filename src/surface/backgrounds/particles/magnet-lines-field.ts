@@ -25,7 +25,30 @@ export const MAGNET = {
   /** 本库定: 脉冲环宽 (CSS 像素) 与寿命 (秒). */
   pulseWidth: 48,
   pulseLife: 2,
+  /** 本库定: 深度透视分层数 (Canvas2D 按层由远到近画, 每层一次线宽), 远层视差位移占指针偏离中心的比例. */
+  depthLayers: 4,
+  depthParallax: 0.04,
 } as const;
+
+/** 一层深度的观感: 透视缩放 (线长线宽), 透明度, 视差权重 (近层正, 远层负). */
+export interface DepthLook {
+  readonly scale: number;
+  readonly alpha: number;
+  readonly shift: number;
+}
+
+/**
+ * 深度透视: 第 layer 层 (0 最近, layers - 1 最远) 的 z = layer / (layers - 1), 缩放 1 / (1 + amount z),
+ * 透明度为缩放的 1.5 次方, 视差权重为缩放减去中间深度的缩放. amount 为 0 时各层一样.
+ *
+ * @param layer 层号. @param layers 层数. @param amount 透视强度, 钳到 0..1.
+ */
+export function depthLook(layer: number, layers: number, amount: number): DepthLook {
+  const a = Math.min(1, Math.max(0, amount));
+  const z = layers > 1 ? Math.min(1, Math.max(0, layer / (layers - 1))) : 0;
+  const scale = 1 / (1 + a * z);
+  return { scale, alpha: Math.pow(scale, 1.5), shift: scale - 1 / (1 + a * 0.5) };
+}
 
 /**
  * 角弹簧刚度: inertia 越大越软; inertia 不大于 0 或减弱动效时为 0 (直接到位).
@@ -115,22 +138,34 @@ export function layoutGrid(width: number, height: number, spacing: number, rows?
   return { cols, rows: rs, dx, dy, ox: dx / 2, oy: dy / 2 };
 }
 
-/** 每根线的状态: 角度, 角速度, 散布偏角. */
+/** 每根线的状态: 角度, 角速度, 散布偏角, 深度层; order 为由远到近的绘制顺序 (按层分桶, 层内保持网格序). */
 export interface MagnetNeedles {
   readonly count: number;
   readonly angle: Float32Array;
   readonly velocity: Float32Array;
   readonly jitter: Float32Array;
+  readonly layer: Uint8Array;
+  readonly order: Uint32Array;
 }
 
-export function makeNeedles(count: number, base: number, scatter: number, seed: number): MagnetNeedles {
+export function makeNeedles(count: number, base: number, scatter: number, seed: number, layers: number = MAGNET.depthLayers): MagnetNeedles {
   const rand = seeded(seed);
+  const deep = seeded(seed ^ 0x9e3779b9);
   const n = Math.max(0, Math.min(MAGNET.maxLines, count));
-  const s: MagnetNeedles = { count: n, angle: new Float32Array(n), velocity: new Float32Array(n), jitter: new Float32Array(n) };
+  const nl = Math.max(1, Math.min(255, Math.floor(layers)));
+  const s: MagnetNeedles = {
+    count: n, angle: new Float32Array(n), velocity: new Float32Array(n), jitter: new Float32Array(n), layer: new Uint8Array(n), order: new Uint32Array(n),
+  };
+  const sizes = new Uint32Array(nl);
   for (let i = 0; i < n; i += 1) {
     s.jitter[i] = (rand() * 2 - 1) * Math.PI * scatter;
     s.angle[i] = base + s.jitter[i];
+    s.layer[i] = Math.min(nl - 1, Math.floor(deep() * nl));
+    sizes[s.layer[i]] += 1;
   }
+  const start = new Uint32Array(nl);
+  for (let l = nl - 2; l >= 0; l -= 1) start[l] = start[l + 1] + sizes[l + 1];
+  for (let i = 0; i < n; i += 1) s.order[start[s.layer[i]]++] = i;
   return s;
 }
 

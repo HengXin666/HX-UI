@@ -1,11 +1,12 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 MagnetLines 条目, 实现为 HX 自有.
-// ENGINE-GAP: 上游用 WebGL 实例化短线 (上限 30000) 并带一点深度透视; 本件用 Canvas2D 逐根描线, 上限 8000 根, 无深度透视.
+// ENGINE-GAP: 上游用 WebGL 实例化短线 (上限 30000); 本件用 Canvas2D 逐根描线, 上限 8000 根.
+// 已补 (2026-11-09): 深度透视. 每根线随机落在 4 个深度层之一, 按层由远到近画, 远层线更短更细更淡, 随指针做轻微视差 (depth prop).
 
 import { useRef, type JSX } from "react";
 import { BackdropShell, fallbackGradient, splitCommon, useCanvasBackdrop, type BackdropCommonProps, type BackdropFrame } from "../../backdrop/kernel";
 import {
-  dampingOf, hueTurn, influenceAt, introAt, layoutGrid, MAGNET, makeNeedles, modeAngle, pulseAt, springAngle, stiffnessOf, type MagnetMode, type MagnetNeedles,
+  dampingOf, depthLook, hueTurn, influenceAt, introAt, layoutGrid, MAGNET, makeNeedles, modeAngle, pulseAt, springAngle, stiffnessOf, type MagnetMode, type MagnetNeedles,
   type MagnetShape,
 } from "./magnet-lines-field";
 import { clearFrame, DEG, follow, HALF, inkOf, mixRgb, pickColor, smooth, TURN, wrapAngle } from "./tokens";
@@ -55,6 +56,8 @@ export interface MagnetLinesProps extends BackdropCommonProps {
   readonly intro?: boolean;
   /** 指针不在时让磁点自己巡游, 默认 false. */
   readonly idle?: boolean;
+  /** 深度透视强度 0..1: 远层线更短更细更淡, 随指针轻微视差; 0 为平面. 默认 0.6. */
+  readonly depth?: number;
 }
 
 interface Core {
@@ -73,13 +76,13 @@ const SEED = 5113;
 
 /**
  * 磁力线: 一张短线网格, 每根是一个角弹簧, 朝向由指针按模式给出 (指向, 绕行, 背离或顺流), 影响半径外回到静止朝向并变淡;
- * 点击放出一圈脉冲把扫过的线拧一下, 入场由中心向外转着显形. 减弱动效时直接到位只画一帧.
+ * 点击放出一圈脉冲把扫过的线拧一下, 入场由中心向外转着显形. 线分几层深度, 由远到近画出一点透视. 减弱动效时直接到位只画一帧.
  */
 export function MagnetLines(props: MagnetLinesProps): JSX.Element {
   const {
     spacing = 30, rows, columns, containerSize, lineColor = "muted-foreground", accentColor = "primary", lineWidth = 2, lineHeight = 18, baseAngle = -10,
     mode = "orbit", shape = "line", rainbow = false, radius = 200, fade = 0.65, edgeFade = 0, stretch = 0.4, reach = 0, scatter = 0, inertia = 0.35,
-    bounce = 0.3, ripple = 0.3, clickPulse = true, intro = true, idle = false, ...common
+    bounce = 0.3, ripple = 0.3, clickPulse = true, intro = true, idle = false, depth = 0.6, ...common
   } = props;
   const { options, rest, opacity, children } = splitCommon(common);
   const core = useRef<Core>({ needles: null, key: "", tx: 0, ty: 0, heading: 0, wander: 0 });
@@ -127,9 +130,17 @@ export function MagnetLines(props: MagnetLinesProps): JSX.Element {
     const hues = rainbow ? Array.from({ length: STEPS }, (_, i) => inkOf(hueTurn(mixRgb(ink, accent, HALF), (i / STEPS) * TURN))) : [];
     const north = inkOf(accent);
     const edge = edgeFade * Math.min(box.w, box.h) * HALF;
+    const looks = Array.from({ length: MAGNET.depthLayers }, (_, l) => depthLook(l, MAGNET.depthLayers, depth));
+    const sway = -MAGNET.depthParallax * reach0;
     ctx.lineCap = "round";
-    ctx.lineWidth = Math.max(0.5, lineWidth * sc);
-    for (let i = 0; i < s.count; i += 1) {
+    let layer = -1;
+    for (let j = 0; j < s.count; j += 1) {
+      const i = s.order[j];
+      const look = looks[s.layer[i]] ?? looks[0];
+      if (s.layer[i] !== layer) {
+        layer = s.layer[i];
+        ctx.lineWidth = Math.max(0.5, lineWidth * sc * look.scale);
+      }
       const col = i % grid.cols;
       const row = Math.floor(i / grid.cols);
       let x = box.x + grid.ox + col * grid.dx;
@@ -148,10 +159,12 @@ export function MagnetLines(props: MagnetLinesProps): JSX.Element {
         x += (dx / d) * reach * infl * Math.min(grid.dx, grid.dy) * HALF;
         y += (dy / d) * reach * infl * Math.min(grid.dx, grid.dy) * HALF;
       }
+      x += (c.tx - cx) * sway * look.shift;
+      y += (c.ty - cy) * sway * look.shift;
       const edgeK = edge > 0 ? smooth(0, edge, Math.min(x - box.x, box.x + box.w - x, y - box.y, box.y + box.h - y)) : 1;
-      ctx.globalAlpha = enter.shown * edgeK * (1 - fade * (1 - infl));
+      ctx.globalAlpha = enter.shown * edgeK * (1 - fade * (1 - infl)) * look.alpha;
       if (ctx.globalAlpha <= 0.01) continue;
-      const half = lineHeight * (1 + stretch * infl) * HALF * sc;
+      const half = lineHeight * (1 + stretch * infl) * HALF * sc * look.scale;
       const ux = Math.cos(a) * half;
       const uy = Math.sin(a) * half;
       const px = x * sc;
