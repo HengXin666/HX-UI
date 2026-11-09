@@ -97,20 +97,21 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 三件都标 ENGINE-GAP (缺顶点通道, 网格, 模型加载, 实例化渲染), 见 `.agents/notes/implemented/feature/2026-11-10-kits-stage3d.md`.
 
-## 状态: 收口完成 (2026-11-10), 已提交未推送
+## 状态: 收口完成并已推送 (8048ab1, 2026-11-10 pre-push 20/20); surface 未开工
 
 `src/controls/index.ts`, `src/kits/index.ts` 汇各族; package.json exports 加 `./controls`, `./kits`, 版本 0.10.0 (lock 同步); motion 出口加 CURVE / cssCurve / CurveName; docs-props 全量抽两条子路径; api 快照按子路径分段并重记 0.10.0 哈希; CHANGELOG 0.10.0 段. note `.agents/notes/implemented/architecture/2026-11-10-controls-kits-entries.md`.
 
 ## 正在做
 
-无. 收口已提交 (2026-11-10), gates:push 20/20 ALL PASS (TMPDIR=/tmp). 等用户推送: 未推送提交 778e1e7 .. 收口提交 (git log origin/main..HEAD 查).
+无. 收口 8048ab1 已由用户推送 (2026-11-10 01:31 CST). surface 30 件用户已下令开工, 但尚未写任何代码.
 
-## 下一步
+## 下一步: surface 余量 30 件 (用户 2026-11-10 裁定)
 
-1. 用户推送后开 surface 余量 30 件 (规格 docs/research/catalog/components-{1,2}.md).
-2. 下面 "后续收尾" 另排.
-
-surface 余量 30 件. 下面 "后续收尾" 里的项 (族 tokens 并入 src/motion 等) 另排.
+- 范围: Animations 余 24 件 + HalftoneReveal + DitherVeil (共 26); TextAnimations 4 件: DepthText, EchoText, TechText, TextCursor. 规格见 docs/research/catalog/components-{1,2}.md, 先列出 Animations 余 24 件的规格名 -> HX 名映射, 记入本文件.
+- 顺序: 先 TextAnimations 4 件, 再 Animations (沿用本文件既有顺序; 如无则按 catalog 顺序).
+- 规矩: 只借规格的常数与 props 自写, 不移植代码; 内核公共头 (src/index.ts 等公共导出头) 不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么. 每件单独提交 (pre-commit 13/13 + 本件 vitest), 不 push; 每段 (Text 4 件一段, Animations 分段) 完成后报告用户一次, 用户推.
+- 颜色/焦点环/曲线规则同 kits (见已知坑).
+- 收口遗留待核 (已随 8048ab1 推出): api 快照根段是否误含 ArcField/ArcFieldProps (根段应为 1608); CHANGELOG 0.10.0 的 controls 件名清单; 单跑 npx vitest run tests/kits tests/motion tests/controls. 开 surface 前先查, 有误单独 fix 提交. 下面 "后续收尾" 里的项 (族 tokens 并入 src/motion 等) 另排.
 
 ## 后续收尾 (本次收口未做)
 
