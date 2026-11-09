@@ -13,6 +13,7 @@ Decision-ID: kits-stack
 - `src/kits/stack/CycleDeck.tsx`, `src/kits/stack/parts/swap-spec.ts` (react-bits Components/CardSwap)
 - `src/kits/stack/SpreadCards.tsx`, `src/kits/stack/parts/bounce-spec.ts` (react-bits Components/BounceCards)
 - `src/kits/stack/FlowMasonry.tsx`, `src/kits/stack/parts/masonry-spec.ts` (react-bits Components/Masonry)
+- `src/kits/stack/TintGrid.tsx`, `src/kits/stack/parts/chroma-spec.ts` (react-bits Components/ChromaGrid)
 
 ## Problem
 
@@ -49,3 +50,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## FlowMasonry (规格 Components/Masonry)
 
 卡片按 高 / 宽 比 (ratio) 依次放进当前最矮的一列, 列数可固定, 不给时按容器宽自动 (1500 / 1000 / 600 / 400px 断点取 5 / 4 / 3 / 2 列, HX 自定). 容器宽 (ResizeObserver) 或项变化时各卡以弹簧换位, omega 取规格的 2pi / duration (duration 默认 0.6s), zeta 规格未给数值, HX 取 1 (换位不过冲), 换位保留速度. 容器进入视口时逐张错峰 stagger (0.05s) 从 animateFrom 方向 (bottom / top / left / right / center / random) 偏移 80px 飞入 (规格从视口外飞入, 这里改为固定距离), 同时每张在 duration 内按三次缓出揭开透明度, blurToFocus 时模糊从 12px 收到 0 (规格同式). 悬停缩放 hoverScale (0.95) 0.25s, 阴影 0.5s, 曲线为新增的 CURVE.settle (规格 (0.2, 0.8, 0.2, 1)). 有 href 的项渲染为链接, 否则为按钮, 点击回调 onItemClick. 规格的 colorShiftOnHover 与图片视差 (PARALLAX) 未做. 减弱动效时直接在位, 无飞入, 揭开与换位动画.
+
+## TintGrid (规格 Components/ChromaGrid)
+
+卡片网格 (columns 3, 每列至少 minCardWidth 180px, gap 12px, 卡片 aspectRatio 3 / 2, 圆角 22px) 上盖一层不接指针的去色层: backdrop-filter grayscale(grayscale) brightness(1 - dim) (默认 1 与 0.12). 指针在网格上时去色层的遮罩在指针处挖出半径 radius (260px) 的圆, 内圈 (1 - softness) 全透, 外缘渐到全遮 (softness 0.6), 露出原色. 圆心按时间常数 damping × 0.32 s (damping 0.45, 下限 0.01s) 追指针, 写法同规格 1 - exp(-dt / tau). 显色强度乘到半径上, 指针进入时以 0.2s 升起 (HX 自定, 规格只给了回落), 离开时以 fadeOut (0.6s) 回落到全遮. reveal 取 card 时去色层整层全遮, 只把悬停或聚焦的卡抬到层上方显色. 悬停或聚焦的卡带随指针移动的内辉光 (不透明度 glow 0.5) 与边框辉光 (borderGlow 1, 色由 tone 定, color-mix 到 --border), 过渡 0.3s ease; 去色层滤镜过渡 0.25s ease. 遮罩用 black / transparent 关键字, 不写色值. 每张卡有 href 时为链接, 否则为按钮, 点击回调 onItemClick; showInfo 显示标题, 副标题与 handle. 规格的 frame 外框未做. 减弱动效时聚光直接贴指针, 显色即开即关.
