@@ -2630,6 +2630,17 @@ CRTWarp
 CRTWarpProps
 ColorBends
 ColorBendsProps
+DRAFT_BOUNCE_SHARE
+DRAFT_CLICK_SLOP_PX
+DRAFT_DEFAULTS
+DRAFT_FALLOFF_STEPS
+DRAFT_FRAME_PAD_PX
+DRAFT_INTRO_DELAY_S
+DRAFT_KICK_DECAY
+DRAFT_KICK_PX_S
+DRAFT_SPRING
+DRAFT_TAU_S
+DRAFT_TYPE_STEP_S
 DROP_DEFAULTS
 DROP_FALL_S
 DROP_SCATTER_SHARE
@@ -2642,16 +2653,36 @@ DotField
 DotFieldProps
 DotGrid
 DotGridProps
+DraftText
+DraftTextProps
 DropText
 DropTextProps
 EDGE_BLUR
 EDGE_CURVES
+EXTRUDE_DEFAULTS
+EXTRUDE_FADE_FLOOR
+EXTRUDE_FLOAT_EASE
+EXTRUDE_FLOAT_PERIOD_S
+EXTRUDE_FLOAT_SHARE
+EXTRUDE_INTRO_MS
+EXTRUDE_MAX_LAYERS
+EXTRUDE_ORBIT_PITCH
+EXTRUDE_ORBIT_PITCH_RATE
+EXTRUDE_OUTLINE_PX
+EXTRUDE_PRESS_EXTRA
+EXTRUDE_PUSH_SPRING
+EXTRUDE_REF_HZ
+EXTRUDE_REST
+EXTRUDE_SHADOW
 EdgeBlur
 EdgeBlurProps
 EdgeCurve
 EdgeSide
 EvilEye
 EvilEyeProps
+ExtrudeText
+ExtrudeTextProps
+ExtrudeTone
 FLAP_CHARSETS
 FLAP_DEFAULTS
 FLAP_MIN_FLIP_S
@@ -2684,6 +2715,7 @@ Galaxy
 GalaxyProps
 GhostFibers
 GhostFibersProps
+Glyph2
 GradientASCII
 GradientASCIIProps
 GradientBlinds
@@ -2813,6 +2845,14 @@ SHUFFLE_DEFAULTS
 SPARK
 SPARK_EASINGS
 STAGGER_PRESETS
+STAMP_DEFAULTS
+STAMP_FLOAT_PX
+STAMP_FLOAT_RATE
+STAMP_IDLE_S
+STAMP_MAX_DT_S
+STAMP_MIN_REMOVAL_S
+STAMP_POP_S
+STAMP_SMOOTH_TAU_S
 Scanner
 ScannerProps
 ScramblePointer
@@ -2851,6 +2891,8 @@ SparkShape
 StaggerText
 StaggerTextProps
 StaggerVariant
+StampTrail
+StampTrailProps
 SurfaceLayer
 SurfaceLayerProps
 SurfaceTone
@@ -2872,6 +2914,7 @@ TileFlipProps
 TileGrid
 TilePattern
 TileTrigger
+Tilt
 Topography
 TopographyProps
 TraceText
@@ -2882,8 +2925,22 @@ TypePhase
 TypeText
 TypeTextProps
 TypeTiming
+Vec
 WAKE
+WAKE_BURST_GAP_MS
+WAKE_BURST_LIFE_MS
+WAKE_BURST_PUSH
+WAKE_DEFAULTS
+WAKE_DRIFT_IDLE_MS
+WAKE_DRIFT_PERIOD_MS
+WAKE_DRIFT_SWAY
+WAKE_MAX_ECHOES
+WAKE_SETTLE_SHARE
 WIDEN
+WakeDirection
+WakeEase
+WakeText
+WakeTextProps
 Waves
 WavesProps
 WebThreads
@@ -2891,16 +2948,25 @@ WebThreadsProps
 attractPull
 attractSpring
 bandCenter
+burstAt
 burstLongest
 cellNoise
 clamp
 cosineEase
+draftDamping
 drawBurst
+driftLead
 dropPose
+echoLook
+extrudeIntro
+extrudeLayers
 foldQuarter
+followChain
 inkOf
+kickShare
 layerBlur
 layerMask
+layerOpacity
 locate
 lockBox
 makePointer
@@ -2909,13 +2975,20 @@ marqueePath
 mix
 mosaicAmount
 mosaicRate
+nearestGlyph
 nextFocus
 orbitAngle
+orbitTilt
+outlineAmount
 outsideDistance
 padBoard
+pointerLead
+pointerTilt
 powerOut
 pushBurst
+pushTarget
 quantize
+removalTick
 reticleTau
 scrambleLocks
 scrambleUntil
@@ -2924,9 +2997,15 @@ seeded
 sheenPhase
 shiftSlice
 shinePhase
+smoothingStep
 smoothstep
 sparkLife
 sparkReach
+springBack
+stampAngle
+stampContent
+stampFloat
+stampLook
 stepReticle
 streakGradient
 strongest
@@ -2939,8 +3018,11 @@ toPixels
 traceAt
 typeCycle
 typeFrame
+typeShown
 usePointerTrack
 useScramblePointer
+wakeCount
+wakeEase
 wakePhase
 wakeSlots
 widenFrame
@@ -2958,9 +3040,11 @@ src/surface/index.ts -> ./backgrounds
 src/surface/index.ts -> ./pointer
 src/surface/index.ts -> ./reveal
 src/surface/index.ts -> ./text/glyph
+src/surface/index.ts -> ./text/pointer
 src/surface/index.ts -> ./text/scroll
 src/surface/index.ts -> ./text/stagger
 src/surface/text/glyph/index.ts -> ./tokens
+src/surface/text/pointer/index.ts -> ./tokens
 src/surface/text/scroll/index.ts -> ./tokens
 src/surface/text/stagger/index.ts -> ./tokens
 # ENTRY ./viz (src/viz/index.ts)

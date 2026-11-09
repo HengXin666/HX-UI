@@ -16,6 +16,15 @@
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
+## [0.11.0] - 2026-11-10
+
+`@hx/ui/surface` 新收 text/pointer 族 4 件, 是 react-bits TextAnimations 余量中跟随指针的文字效果. 行为规格取自 `docs/research/catalog/textanimations.md`, 实现为 HX 自有, 组件名换成本库自己的. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
+
+### Added
+
+- `@hx/ui/surface`: `ExtrudeText` (DepthText, 逐层堆叠的立体字, 随指针或自转倾斜), `WakeText` (EchoText, 跟随指针的残影字链, 点击散开), `DraftText` (TechText, DOM + SVG 的制图字: 近邻描边, 选框与坐标, 可拖动回弹), `StampTrail` (TextCursor, 区域内沿指针路径盖字章, 停下后逐个收走). 一并导出各件的纯函数 (`extrudeLayers`, `followChain`, `nearestGlyph`, `stampLook` 等) 与 `EXTRUDE_*` / `WAKE_*` / `DRAFT_*` / `STAMP_*` 常数. 颜色只收语义 token 名. 不引 three / 画布 / 动画库.
+- 契约: api 快照 `./surface` 段与 docs-props 随之更新.
+
 ## [0.10.0] - 2026-11-10
 
 新增两个子路径 `@hx/ui/controls` 与 `@hx/ui/kits`, 收 react-bits Components 余量的 48 件中的 controls 15 件与 kits 33 件. 行为规格取自 `docs/research/catalog/components-1.md` / `-2.md`, 实现为 HX 自有, 组件名换成本库自己的. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.

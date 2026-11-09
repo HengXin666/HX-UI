@@ -5143,6 +5143,148 @@
    "required": false
   }
  ],
+ "DraftText": [
+  {
+   "name": "text",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "tone",
+   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "default": "\"current\"",
+   "desc": "正文颜色与制图线颜色 (语义 token 名).",
+   "required": false
+  },
+  {
+   "name": "accentTone",
+   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "default": "\"primary\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "reach",
+   "type": "number",
+   "default": "200",
+   "desc": "指针感应半径 (px).",
+   "required": false
+  },
+  {
+   "name": "softness",
+   "type": "number",
+   "default": "0.7",
+   "desc": "描边过渡的柔度, 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "dashLength",
+   "type": "number",
+   "default": "4",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "dashGap",
+   "type": "number",
+   "default": "2",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "strokeWidth",
+   "type": "number",
+   "default": "1.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "guides",
+   "type": "boolean",
+   "default": "true",
+   "desc": "十字辅助线.",
+   "required": false
+  },
+  {
+   "name": "selection",
+   "type": "boolean",
+   "default": "true",
+   "desc": "选框.",
+   "required": false
+  },
+  {
+   "name": "labels",
+   "type": "boolean",
+   "default": "true",
+   "desc": "选框上的字与坐标标签.",
+   "required": false
+  },
+  {
+   "name": "draggable",
+   "type": "boolean",
+   "default": "true",
+   "desc": "字形可拖, 松手回弹.",
+   "required": false
+  },
+  {
+   "name": "bounce",
+   "type": "number",
+   "default": "0.4",
+   "desc": "回弹弹性, 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "clickKick",
+   "type": "boolean",
+   "default": "true",
+   "desc": "点击时字形向上踢开, 向两侧衰减.",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "\"type\" | \"none\"",
+   "default": "\"none\"",
+   "desc": "none 直接显示; type 逐字打出.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "1",
+   "desc": "入场速度倍数.",
+   "required": false
+  },
+  {
+   "name": "fontSize",
+   "type": "string",
+   "default": "\"clamp(3rem, 12vw, 9rem)\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "fontWeight",
+   "type": "number",
+   "default": "600",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "as",
+   "type": "ElementType",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
  "DrawerRow": [
   {
    "name": "children",
@@ -6208,6 +6350,155 @@
    "type": "boolean",
    "default": "-",
    "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
+ "ExtrudeText": [
+  {
+   "name": "text",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "layers",
+   "type": "number",
+   "default": "34",
+   "desc": "叠层数, 钳到 1 到 64.",
+   "required": false
+  },
+  {
+   "name": "depth",
+   "type": "number",
+   "default": "2.4",
+   "desc": "相邻两层的间距 (px), 总厚度 = layers x depth.",
+   "required": false
+  },
+  {
+   "name": "faceTone",
+   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "default": "\"current\"",
+   "desc": "正面颜色.",
+   "required": false
+  },
+  {
+   "name": "depthTone",
+   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "default": "\"primary\"",
+   "desc": "侧面 (叠层) 颜色.",
+   "required": false
+  },
+  {
+   "name": "gradientDepth",
+   "type": "boolean",
+   "default": "false",
+   "desc": "叠层由前往后渐隐.",
+   "required": false
+  },
+  {
+   "name": "tilt",
+   "type": "number",
+   "default": "7.5",
+   "desc": "最大倾角 (度).",
+   "required": false
+  },
+  {
+   "name": "pointerTracking",
+   "type": "boolean",
+   "default": "true",
+   "desc": "倾角跟随指针.",
+   "required": false
+  },
+  {
+   "name": "smoothing",
+   "type": "number",
+   "default": "0.14",
+   "desc": "每 60Hz 帧的跟随比例, 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "perspective",
+   "type": "number",
+   "default": "900",
+   "desc": "透视距离 (px).",
+   "required": false
+  },
+  {
+   "name": "autoOrbit",
+   "type": "boolean",
+   "default": "true",
+   "desc": "指针不在时自己慢慢摆.",
+   "required": false
+  },
+  {
+   "name": "orbitSpeed",
+   "type": "number",
+   "default": "0.35",
+   "desc": "自转角速度 (rad/s).",
+   "required": false
+  },
+  {
+   "name": "hoverPush",
+   "type": "number",
+   "default": "0",
+   "desc": "悬停时多推出的厚度 (相对原厚度). 按下另加 0.25.",
+   "required": false
+  },
+  {
+   "name": "float",
+   "type": "boolean",
+   "default": "false",
+   "desc": "上下漂浮.",
+   "required": false
+  },
+  {
+   "name": "fontSize",
+   "type": "string",
+   "default": "\"clamp(3rem, 10vw, 8rem)\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "fontWeight",
+   "type": "number",
+   "default": "900",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "shadow",
+   "type": "boolean",
+   "default": "true",
+   "desc": "最深一层投一道深度色的影.",
+   "required": false
+  },
+  {
+   "name": "outline",
+   "type": "boolean",
+   "default": "false",
+   "desc": "正面描一圈深度色的边.",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "true",
+   "desc": "挂上时厚度从 0 长出来.",
+   "required": false
+  },
+  {
+   "name": "as",
+   "type": "ElementType",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
    "required": false
   }
  ],
@@ -23894,6 +24185,141 @@
    "required": false
   }
  ],
+ "StampTrail": [
+  {
+   "name": "text",
+   "type": "string",
+   "default": "-",
+   "desc": "盖下去的字.",
+   "required": true
+  },
+  {
+   "name": "mode",
+   "type": "\"stamp\" | \"trail\"",
+   "default": "\"stamp\"",
+   "desc": "stamp 每枚整段原文; trail 逐字轮换.",
+   "required": false
+  },
+  {
+   "name": "spacing",
+   "type": "number",
+   "default": "88",
+   "desc": "两枚之间的路程 (px).",
+   "required": false
+  },
+  {
+   "name": "maxPoints",
+   "type": "number",
+   "default": "7",
+   "desc": "同时最多几枚, 多出的最早一枚退场.",
+   "required": false
+  },
+  {
+   "name": "followMouseDirection",
+   "type": "boolean",
+   "default": "true",
+   "desc": "章随移动方向转.",
+   "required": false
+  },
+  {
+   "name": "keepUpright",
+   "type": "boolean",
+   "default": "true",
+   "desc": "转向时保持正立.",
+   "required": false
+  },
+  {
+   "name": "randomFloat",
+   "type": "boolean",
+   "default": "true",
+   "desc": "章轻轻漂浮.",
+   "required": false
+  },
+  {
+   "name": "exitDuration",
+   "type": "number",
+   "default": "0.5",
+   "desc": "退场时长 (秒).",
+   "required": false
+  },
+  {
+   "name": "removalInterval",
+   "type": "number",
+   "default": "30",
+   "desc": "指针停下后每隔多少毫秒收一枚.",
+   "required": false
+  },
+  {
+   "name": "shrink",
+   "type": "number",
+   "default": "0.5",
+   "desc": "退场时缩小与淡出的比例, 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "fade",
+   "type": "number",
+   "default": "0.6",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "smoothing",
+   "type": "number",
+   "default": "0.3",
+   "desc": "跟手平滑, 0 为紧跟.",
+   "required": false
+  },
+  {
+   "name": "popIn",
+   "type": "boolean",
+   "default": "true",
+   "desc": "新章弹出.",
+   "required": false
+  },
+  {
+   "name": "hideCursor",
+   "type": "boolean",
+   "default": "false",
+   "desc": "在区域内隐藏系统光标.",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "default": "\"current\"",
+   "desc": "章的颜色 (语义 token 名).",
+   "required": false
+  },
+  {
+   "name": "fontSize",
+   "type": "number",
+   "default": "28",
+   "desc": "章的字号 (px) 与字重.",
+   "required": false
+  },
+  {
+   "name": "fontWeight",
+   "type": "number",
+   "default": "600",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "区域里的正文.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
  "StashFolder": [
   {
    "name": "items",
@@ -26995,6 +27421,148 @@
    "name": "as",
    "type": "ElementType",
    "default": "\"span\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "WakeText": [
+  {
+   "name": "text",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "echoes",
+   "type": "number",
+   "default": "12",
+   "desc": "残影层数, 钳到 0 到 32.",
+   "required": false
+  },
+  {
+   "name": "lag",
+   "type": "number",
+   "default": "0.24",
+   "desc": "每 60Hz 帧留下的比例, 越大拖得越长.",
+   "required": false
+  },
+  {
+   "name": "offset",
+   "type": "number",
+   "default": "36",
+   "desc": "最远一层的偏移 (px).",
+   "required": false
+  },
+  {
+   "name": "direction",
+   "type": "\"left\" | \"right\" | \"up\" | \"down\"",
+   "default": "\"right\"",
+   "desc": "漂移时残影朝哪边.",
+   "required": false
+  },
+  {
+   "name": "fade",
+   "type": "number",
+   "default": "0.72",
+   "desc": "第一层的不透明度, 往后线性降到 0.",
+   "required": false
+  },
+  {
+   "name": "blur",
+   "type": "number",
+   "default": "3",
+   "desc": "最后一层的模糊 (px).",
+   "required": false
+  },
+  {
+   "name": "tint",
+   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "default": "\"accent-2\"",
+   "desc": "残影颜色 (语义 token 名); 给了 echoColors 时按层轮换.",
+   "required": false
+  },
+  {
+   "name": "echoColors",
+   "type": "readonly ExtrudeTone[]",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "echoStyle",
+   "type": "\"outline\" | \"solid\"",
+   "default": "\"solid\"",
+   "desc": "solid 实心; outline 只描边.",
+   "required": false
+  },
+  {
+   "name": "echoScale",
+   "type": "number",
+   "default": "1",
+   "desc": "最后一层的缩放.",
+   "required": false
+  },
+  {
+   "name": "mode",
+   "type": "\"pointer\" | \"both\" | \"drift\"",
+   "default": "\"both\"",
+   "desc": "drift 自己漂; pointer 只跟指针; both 指针停下一会儿后回到漂移.",
+   "required": false
+  },
+  {
+   "name": "clickBurst",
+   "type": "boolean",
+   "default": "true",
+   "desc": "点击时残影依次爆开.",
+   "required": false
+  },
+  {
+   "name": "cursorRadius",
+   "type": "number",
+   "default": "320",
+   "desc": "指针影响半径 (px).",
+   "required": false
+  },
+  {
+   "name": "duration",
+   "type": "number",
+   "default": "900",
+   "desc": "领头点换目标后的回位时长 (毫秒).",
+   "required": false
+  },
+  {
+   "name": "ease",
+   "type": "\"linear\" | \"ease-out\" | \"ease-in-out\"",
+   "default": "\"ease-out\"",
+   "desc": "爆开包络的曲线.",
+   "required": false
+  },
+  {
+   "name": "fontSize",
+   "type": "string",
+   "default": "\"clamp(3rem, 10vw, 8rem)\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "fontWeight",
+   "type": "number",
+   "default": "800",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "as",
+   "type": "ElementType",
+   "default": "-",
    "desc": "",
    "required": false
   },
