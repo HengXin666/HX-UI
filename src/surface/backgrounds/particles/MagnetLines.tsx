@@ -1,7 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 MagnetLines 条目, 实现为 HX 自有.
-// ENGINE-GAP: 上游用 WebGL 实例化短线 (上限 30000); 本件用 Canvas2D 逐根描线, 上限 8000 根.
-// 已补 (2026-11-09): 深度透视. 每根线随机落在 4 个深度层之一, 按层由远到近画, 远层线更短更细更淡, 随指针做轻微视差 (depth prop).
+// 已补 (2026-11-09): 深度透视. 每根线随机落在 4 个深度层之一, 由远到近分层绘制, 远层更短更细更淡, 随指针轻微分层视差 (depth prop, 0 为平面).
+// ENGINE-GAP (仍做不了, 需内核实例化通道): 上游 WebGL 实例化短线, 上限 30000; 这里 Canvas2D 逐根描线, 上限 8000 根.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell, fallbackGradient, splitCommon, useCanvasBackdrop, type BackdropCommonProps, type BackdropFrame } from "../../backdrop/kernel";

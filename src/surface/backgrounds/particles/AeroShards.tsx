@@ -1,8 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 AeroShards 条目, 实现为 HX 自有.
-// ENGINE-GAP: 上游是 WebGPU 3D 实例化玻璃碎片 (约 1300 片) 加真折射与深度排序遮挡; 内核只有 WebGL2 全屏片元, 无实例化 / 顶点缓冲 / 深度缓冲, 本件在 JS 里积分至多 24 片 (FLOATS) 并以 uniform 数组远到近传入, 片元逐片求平面剪影, 折射以磨边法线偏移取背景近似, 无片间投影与真实厚度; 景深是逐片弥散, 不是按深度缓冲的后处理模糊.
-// 已补 (2026-11-09): 单级宽光晕换成 ../bloom.ts 的四级离屏金字塔 (规格 BLOOM_LEVELS 4; 场景离屏写预乘光与覆盖率, 软膝阈值 0.3 / 膝 0.3, 强度 glow * 2,
-// 泛光峰值并入覆盖率, 暗角 / 颗粒 / 入场淡入移到上屏); 景深除剪影软边外, 失焦片的菲涅耳边光, 高光带与折射偏移按弥散圈同比变宽变淡 (近似景深模糊片内细节).
+// 已补 (2026-11-09): 泛光换成 ../bloom.ts 四级离屏金字塔 (阈值 0.3 / 膝 0.3, 强度 glow * 2, 暗角 / 颗粒 / 入场移到上屏); 近似景深: 失焦片的剪影软边, 菲涅耳边光, 高光带与折射偏移按弥散圈同比变宽变淡.
+// ENGINE-GAP (仍做不了, 需内核实例化 / 顶点 / 深度缓冲): 上游 WebGPU 实例化约 1300 片, 这里至多 24 片经 uniform 远到近传入; 无真折射与厚度, 无片间投影; 景深不是按深度缓冲的后处理模糊.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell, glowFallback, splitCommon, useShaderBackdrop, type BackdropCommonProps, type BackdropFrame } from "../../backdrop/kernel";

@@ -1,9 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 Topography 条目, 实现为 HX 自有.
-// 已补 (2026-11-09): 条目的 4 级泛光 (BLOOM_LEVELS) 改走 ../bloom.ts: 等高线在离屏场景通道里射线步进并写出线光,
-// 软膝亮部提取, 四级 13 点降采样, 上屏帐篷核上采样合成到底色上, 不再以等高线外的指数光晕近似; 泛光强度随 glow.
-// ENGINE-GAP: 条目用网格地形与 256 格雕刻纹理; 这里在全屏片元里对高度场射线步进, 雕刻纹理改为 8 个拖尾采样点的高斯隆起,
-// 景深只加宽变淡不做模糊.
+// 已补 (2026-11-09): 4 级泛光 (BLOOM_LEVELS) 走 ../bloom.ts, 等高线离屏射线步进写线光, 软膝亮部提取加四级降采样, 上屏合成; 不再用指数光晕近似.
+// ENGINE-GAP (仍做不了): 条目的网格地形要顶点通道, 这里以全屏片元对高度场射线步进; 256 格雕刻纹理以 8 个拖尾点的高斯隆起代替; 景深只加宽变淡, 不做按深度模糊.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";

@@ -1,8 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 GhostFibers 条目, 实现为 HX 自有.
-// ENGINE-GAP: 上游把每根纤维画成实例化的点 / 段 (点精灵); 内核只有全屏片元, 无实例化与点精灵, 本件在片元里解析求最近纤维 (折叠处纤维挤密改按覆盖率出亮度), 每像素只取最近一根, 失焦纤维之间不互相叠盘; 规格 BLOOM_LEVELS 5 收到共用金字塔上限 4 级.
-// 已补 (2026-11-09): 泛光改走 ../bloom.ts 的离屏金字塔 (场景离屏写色调压缩前的线性光, 软膝亮部提取阈值 0.775 / 膝 0.425 对应规格 smoothstep(0.35, 1.2, peak),
-// 四级降采样, 上屏加泛光后再压缩色调, 强度 0.9); 散景按规格把失焦 (smoothstep(0.25, 0.7, blur)) 的点 / 段混成半径 1.25 倍线宽的圆盘, 盘边略亮 (0.94 + 0.08 smoothstep(0.55, 0.95, rho)), 景深仍以加宽线宽近似.
+// 已补 (2026-11-09): 泛光走 ../bloom.ts 离屏金字塔 (色调压缩前线性光, 阈值 0.775 / 膝 0.425 对应规格 smoothstep(0.35, 1.2, peak), 强度 0.9, 上屏加泛光后再压缩色调); 散景按规格把失焦点 / 段混成 1.25 倍线宽圆盘, 盘边略亮; 景深以加宽线宽近似.
+// ENGINE-GAP (仍做不了, 需内核实例化 / 点精灵): 上游每根纤维是实例化点 / 段; 这里片元解析求最近纤维, 每像素只取一根, 失焦圆盘之间不互相叠加; 规格 BLOOM_LEVELS 5 收到共用金字塔上限 4 级.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell, glowFallback, splitCommon, useShaderBackdrop, type BackdropCommonProps, type BackdropFrame } from "../../backdrop/kernel";

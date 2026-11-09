@@ -1,7 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 MicroSlats 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格的 PIXEL_BUDGET 4.5e6 要按 CSS 面积定画布像素比 (min(dpr, 2, sqrt(BUDGET / 面积))); useShaderBackdrop 在渲染时展开 options, dpr 在 measure 时已是定值, 这里由内核 dpr 上限 2 与 maxEdge 2400 代替 (宽屏比预算紧, 近方形且长边超 2121 设备像素时超预算).
-// 已补 (2026-11-09): 流体格恰 FLUID_SIZE 96 格 (五个通道的 PassSpec.scale 为 getter, 每次 resize 按画布设备像素长边取 96 / 长边). 规格的 canvas2d 逐帧绘制条目未写画什么, 百叶由上屏片元直接画出, 不另起 2D 层.
+// 已补 (2026-11-09): 流体格恰 FLUID_SIZE 96 格 (五个通道的 PassSpec.scale 为 getter, 每次 resize 取 96 / 画布设备像素长边). 规格的 canvas2d 条目未写画什么, 百叶由上屏片元直接画出, 不另起 2D 层.
+// ENGINE-GAP (仍做不了): PIXEL_BUDGET 4.5e6 要按 CSS 面积定画布像素比; useShaderBackdrop 渲染时展开 options, dpr 在 measure 时已定, 由内核 dpr 上限 2 与 maxEdge 2400 代替 (宽屏比预算紧, 近方形且长边超 2121 设备像素时超预算).
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";

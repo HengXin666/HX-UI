@@ -1,8 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 Hyperspeed 条目, 实现为 HX 自有.
-// ENGINE-GAP: 上游是 three 的实例化车灯 / 灯杆网格; 内核只有全屏片元, 无实例化与顶点缓冲, 本件在片元里做路面求交算光带, 灯杆与尘线逐个投影, 车灯贴在路面上而非离地.
-// 已补 (2026-11-09): 泛光改走 ../bloom.ts 的离屏金字塔 (场景离屏通道写线性光与覆盖率, 软膝亮部提取阈值 0.6 / 膝 0.5, 四级 13 点降采样,
-// 上屏帐篷核上采样合成, 泛光峰值并入覆盖率), 强度 glow * 1.5; 车灯带外的宽高斯光晕减半 (0.08 到 0.04) 只作近处光晕.
+// 已补 (2026-11-09): 泛光走 ../bloom.ts 离屏金字塔 (阈值 0.6 / 膝 0.5, 强度 glow * 1.5, 泛光峰值并入覆盖率); 车灯带外宽高斯光晕减半 (0.08 到 0.04), 只作近处光晕. 规格无景深 / 散景, 不加.
+// ENGINE-GAP (仍做不了, 需内核实例化 / 顶点缓冲): 上游是实例化车灯 / 灯杆网格; 这里片元里路面求交算光带, 灯杆与尘线逐个投影, 车灯贴在路面上而非离地.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell, glowFallback, splitCommon, useShaderBackdrop, type BackdropCommonProps, type BackdropFrame } from "../../backdrop/kernel";
