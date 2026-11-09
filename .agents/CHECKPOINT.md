@@ -97,24 +97,33 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 三件都标 ENGINE-GAP (缺顶点通道, 网格, 模型加载, 实例化渲染), 见 `.agents/notes/implemented/feature/2026-11-10-kits-stage3d.md`.
 
-## 状态: 收口完成并已推送 (8048ab1, 2026-11-10 pre-push 20/20); surface 未开工
+## 状态: 收口完成并已推送 (8048ab1, 2026-11-10 pre-push 20/20)
 
-`src/controls/index.ts`, `src/kits/index.ts` 汇各族; package.json exports 加 `./controls`, `./kits`, 版本 0.10.0 (lock 同步); motion 出口加 CURVE / cssCurve / CurveName; docs-props 全量抽两条子路径; api 快照按子路径分段并重记 0.10.0 哈希; CHANGELOG 0.10.0 段. note `.agents/notes/implemented/architecture/2026-11-10-controls-kits-entries.md`.
+`src/controls/index.ts`, `src/kits/index.ts` 汇各族; package.json exports 加 `./controls`, `./kits`, 版本 0.10.0 (lock 同步); motion 出口加 CURVE / cssCurve / CurveName; docs-props 全量抽两条子路径; api 快照按子路径分段并重记 0.10.0 哈希; CHANGELOG 0.10.0 段. note `.agents/notes/implemented/architecture/2026-11-10-controls-kits-entries.md`. 收口遗留三项 (根段 1608 无 ArcField, CHANGELOG 件名, vitest 527/527) 已核清.
+
+## 状态: surface Text 4 件 (全部已提, 门禁 13/13, 未推)
+
+| 规格 | HX 名 | 提交 |
+|---|---|---|
+| DepthText | ExtrudeText (新开 text/pointer 族 + tokens) | 692f600 |
+| EchoText | WakeText | 19de31b |
+| TechText | DraftText (DOM + SVG, 不用画布) | d86a8b3 |
+| TextCursor | StampTrail (区域组件, 包 children) | 6314864 |
+
+位置 `src/surface/text/pointer/`, 测试 `tests/surface/text/pointer-{extrude,wake,draft,stamp}.test.tsx` (pointer 族 33 测, text 全量 72/72), note `.agents/notes/implemented/feature/2026-11-10-surface-text-pointer.md`. 颜色只收语义 token 名 (ExtrudeTone), 落成 var(--name).
+用户裁定 (2026-11-10): 4 件齐前只维护族 index; **齐了一次性接进 src/surface/index.ts (加 `export * from "./text/pointer"`), check-api-snapshot --update, 只升一次版本, CHANGELOG 记一段**. 这一步尚未做, 等用户点头版本号 (提议 0.11.0).
+待推: a4b4665, 6812374, 692f600, 19de31b, d86a8b3, 6314864 (+ 本 CHECKPOINT 提交). 用户推.
 
 ## 正在做
 
-无. 收口 8048ab1 已由用户推送 (2026-11-10 01:31 CST). surface 30 件用户已下令开工; 下一件 DepthText, 尚未写任何代码 (2026-11-10 01:33).
+无. Text 4 件已提完, 已报用户 (2026-11-10 02:0x).
 
-## 下一步: surface 余量 30 件 (用户 2026-11-10 裁定)
+## 下一步
 
-- 范围: Animations 余 24 件 + HalftoneReveal + DitherVeil (共 26); TextAnimations 4 件: DepthText, EchoText, TechText, TextCursor. 规格见 docs/research/catalog/components-{1,2}.md, 先列出 Animations 余 24 件的规格名 -> HX 名映射, 记入本文件.
-- 顺序: 先 TextAnimations 4 件, 再 Animations (沿用本文件既有顺序; 如无则按 catalog 顺序).
-- 规矩: 只借规格的常数与 props 自写, 不移植代码; 内核公共头 (src/index.ts 等公共导出头) 不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么. 每件单独提交 (pre-commit 13/13 + 本件 vitest), 不 push; 每段 (Text 4 件一段, Animations 分段) 完成后报告用户一次, 用户推.
-- 颜色/焦点环/曲线规则同 kits (见已知坑).
-- 用户 2026-11-10 01:33 确认已落定: 焦点环 (outline 1px + offset 2px, 色走 FOCUS_RING), CURVE/cssCurve/CurveName 已从 motion 出口导出, TallyRoll 过冲 ≤0.06.
-- **仍未核 (与上面不是同三项, 用户核的不是这几条)**: api 快照根段是否误含 ArcField/ArcFieldProps (根段应 1608); CHANGELOG 0.10.0 controls 件名清单; 单跑 npx vitest run tests/kits tests/motion tests/controls. 开 DepthText 前先花几分钟查掉, 有误单独 fix 提交.
+1. 接入 pointer 族到 src/surface/index.ts + api 快照 + 版本 (等用户定版本号).
+2. Animations 26 件 (24 件 + HalftoneReveal, DitherVeil) 单独一段: 先从 docs/research/catalog/animations.md 列出规格名 -> HX 名映射记入本文件, 逐件提交, 段尾报用户.
+- 规矩: 只借规格的常数与 props 自写; 内核公共头不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么. 每件单独提交 (pre-commit 13/13 + 本件 vitest), 不 push.
 - **待办, 别丢**: 已提交老控件的 ring-1 统一换 FOCUS_RING (原定收口做, 未做). 单独一个提交.
-- 分段: 第一段 Text 4 件 DepthText → EchoText → TechText → TextCursor, 全提完报用户一次; 第二段 Animations 26 件单独报.
 
 ## 后续收尾 (本次收口未做)
 
@@ -126,8 +135,15 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 ## 已知坑
 
+- 提交信息文件要用 lane 绝对路径: `git commit -F /home/hx/Loli/code/AI-Code/gpt-json-to-token/HX-Jungle/var/hark-scratch/team-3e95a864-030c-4206-9a5d-9e26522abdac/m-xxx.txt` (`hxfs put scratch/...` 写到 lane, 仓库里的相对 scratch/ 不存在, commit 会在门禁跑完后才报读不到文件).
+- hxfs exec 不许 `git rm`; 删文件先 `rm`, 再 `git add -A -- <目录>`.
+- 单跑门禁脚本要 `env TMPDIR=/tmp npx tsx scripts/gates/frontend/check-line-budget.ts` (tsx 的 IPC 管道在 lane TMPDIR 下路径过长).
+- 测试文件也受 line-budget 250 行; 一族多件时按件拆测试文件.
+- 假时钟下 `await toHaveNoSeriousA11yViolations()` 会超时: 先 `vi.useRealTimers()` 再 await.
+- 沙箱重置会清掉 /workspace/work 下的本地草稿: 写完立刻 put 进仓库, 别留本地.
+
 - 门禁 smoke 要 `TMPDIR=/tmp` (lane 的 TMPDIR 路径过长, chromium 崩, 128 页 0B).
-- 沙箱 home 重置后 hxfs 消失: `curl -fsSL https://fs.lolioa.com/.hxfs/71d06cb7fe8b4f7f14ad | sh`.
+- 沙箱 home 重置后 hxfs 消失: `curl -fsSL https://fs.lolioa.com/.hxfs/a90ac7468961d18caa44 | sh (installer 写 ~/.bashrc 会报 Permission denied, 无碍; 用 `export PATH=$HOME/.hxfs/bin:$PATH`)`.
 
 - hxfs exec 首词白名单: 不能 `bash`; 多步用 `git ... && ...` 直接串. 提交: `git add -- <files> && git commit -q -F <scratch>/msg`, msg 经 `hxfs put scratch/...`.
 - hxfs put 不建目录: 新目录先 `hxfs exec "mkdir -p ..."`.
