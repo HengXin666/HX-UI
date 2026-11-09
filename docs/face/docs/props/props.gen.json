@@ -342,7 +342,7 @@
    "name": "glow",
    "type": "number",
    "default": "-",
-   "desc": "光晕强度, 默认 0.35.",
+   "desc": "泛光强度 (四级降采样金字塔), 默认 0.35.",
    "required": false
   },
   {
@@ -6272,6 +6272,13 @@
    "required": false
   },
   {
+   "name": "enableGyro",
+   "type": "boolean",
+   "default": "-",
+   "desc": "用陀螺仪 (deviceorientation) 的倾斜带动眼位做视差, 默认 false. 指针在场时以指针为准, 减弱动效时不响应. iOS 需授权: 在组件内第一次按下时请求, 不在挂载时弹窗.",
+   "required": false
+  },
+  {
    "name": "children",
    "type": "ReactNode",
    "default": "-",
@@ -6692,7 +6699,7 @@
    "name": "glow",
    "type": "number",
    "default": "-",
-   "desc": "光晕强度, 默认 0.6.",
+   "desc": "光晕与泛光强度, 默认 0.6.",
    "required": false
   },
   {
@@ -7209,7 +7216,7 @@
    "name": "bloom",
    "type": "number",
    "default": "-",
-   "desc": "峰值处的泛光增益.",
+   "desc": "泛光强度 (降采样模糊泛光叠回画面的比例).",
    "required": false
   },
   {
@@ -7272,7 +7279,7 @@
    "name": "quality",
    "type": "\"low\" | \"medium\" | \"high\"",
    "default": "-",
-   "desc": "渲染比例档位.",
+   "desc": "画质档位: 决定步进通道的渲染比例与泛光级数.",
    "required": false
   },
   {
@@ -7852,7 +7859,7 @@
    "name": "bloom",
    "type": "number",
    "default": "-",
-   "desc": "峰值处的泛光增益.",
+   "desc": "泛光强度 (四级降采样模糊泛光叠回画面的比例).",
    "required": false
   },
   {
@@ -9007,7 +9014,7 @@
    "name": "tilt",
    "type": "number",
    "default": "-",
-   "desc": "俯仰 (度), 默认 0.",
+   "desc": "俯仰 (度): 环所在平面绕水平轴倾斜, 带透视, 正值上方远离观者, 限 ±85. 默认 0.",
    "required": false
   },
   {
@@ -9290,6 +9297,13 @@
    "type": "boolean",
    "default": "-",
    "desc": "指针不在时让磁点自己巡游, 默认 false.",
+   "required": false
+  },
+  {
+   "name": "depth",
+   "type": "number",
+   "default": "-",
+   "desc": "深度透视强度 0..1: 远层线更短更细更淡, 随指针轻微视差; 0 为平面. 默认 0.6.",
    "required": false
   },
   {
@@ -11531,7 +11545,7 @@
    "name": "glow",
    "type": "number",
    "default": "-",
-   "desc": "外圈光晕, 默认 1.",
+   "desc": "外圈光晕, 同时是泛光强度的倍率, 默认 1.",
    "required": false
   },
   {
@@ -11885,7 +11899,7 @@
    "name": "glow",
    "type": "number",
    "default": "-",
-   "desc": "峰值处的泛光增益.",
+   "desc": "泛光强度的增量 (0 时只有底泛光).",
    "required": false
   },
   {
@@ -11934,14 +11948,14 @@
    "name": "quality",
    "type": "\"low\" | \"medium\" | \"high\"",
    "default": "-",
-   "desc": "渲染比例档位.",
+   "desc": "画质档位: 决定步进通道的渲染比例与泛光级数.",
    "required": false
   },
   {
    "name": "resolution",
    "type": "number",
    "default": "-",
-   "desc": "显式渲染比例, 覆盖 quality.",
+   "desc": "显式步进通道渲染比例, 覆盖 quality 的比例 (泛光级数仍随 quality).",
    "required": false
   },
   {
@@ -15583,7 +15597,7 @@
    "name": "glow",
    "type": "number",
    "default": "-",
-   "desc": "等高线光晕, 默认 0.6.",
+   "desc": "等高线泛光强度 (四级降采样泛光), 默认 0.6.",
    "required": false
   },
   {
