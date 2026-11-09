@@ -12,6 +12,8 @@ Decision-ID: controls-nav
 - `src/controls/nav/rail/ProximityRail.tsx`, `src/controls/nav/rail/parts/rail-spec.ts` (react-bits Components/LineSidebar)
 - `src/controls/nav/bar/GooTabs.tsx`, `src/controls/nav/bar/parts/goo-spec.ts` (react-bits Components/GooeyNav)
 - `src/controls/nav/tile/GlassTiles.tsx`, `src/controls/nav/tile/parts/glass-spec.ts` (react-bits Components/GlassIcons)
+- `src/controls/nav/menu/parts/use-menu-open.ts`, `src/controls/nav/parts/link-or-button.tsx` (menu 族共用)
+- `src/controls/nav/menu/PillBurst.tsx`, `src/controls/nav/menu/parts/burst-spec.ts` (react-bits Components/BubbleMenu)
 
 ## Problem
 
@@ -53,3 +55,11 @@ L2 controls 层缺一组导航件: 胶囊导航条, 放大坞, 黏液导航条, 
 ## GlassTiles (规格 Components/GlassIcons)
 
 每格一块语义色背板 (tilt 倾斜, offset 错位, circle 右上圆, none) 衬在磨砂玻璃面后; 背板角度与位移按 0.5 + spread 放大, 悬停再放大 1.5 倍. 入场按规格 STAGGER 0.07s 错峰, 用临界阻尼弹簧从下沉 0.1 倍尺寸浮起. 悬停 press 缩到 0.94, lift 抬 0.08 倍尺寸, 都走弹簧, 键盘聚焦同悬停. 标签显隐按规格 0.3s outQuint. 方向键按网格走行列, 越界不动. useReducedMotion 首帧恒为 false, 入场前同步再查 prefersReducedMotion. ENGINE-GAP: 规格的 WebGL 折射, 斜面与色散不做, 玻璃改为 backdrop-blur (frost * 24px) 加 1px 边与渐变光泽.
+
+## menu 族共用: use-menu-open
+
+四件展开菜单共用一个开合钩子: 受控 / 非受控; 阶段 closed -> entering -> open -> closing -> closed. 入场时在 layout effect 里读一次布局, 让起始样式先落定, 再切终态, CSS 过渡才有起点; 收起时保留挂载 exitMs 再卸载, 减弱动效时立即卸载. Escape 关闭并把焦点还给开关, 点外部关闭 (可关). 条目壳 LinkOrButton 有 href 是链接, 否则是 type=button.
+
+## PillBurst (规格 Components/BubbleMenu)
+
+开关一按, 胶囊链接按 i * 0.12s 错峰加 ±0.05s 抖动从 0 弹到原尺寸, 曲线取 craft EASE.overshoot (对应规格 back.out), 时长 0.5s; 收起时一起缩回, 0.2s inQuart (规格 power3.in). 规格抖动用 Math.random, 这里换成黄金分割序列, 同一列表每次节奏一致. 悬停胶囊转正放大 1.06, 配色 0.3s ease. 开关两条 1px 线交叉成叉, aria-expanded / aria-controls. 规格源码没有减弱动效处理, 本件减弱时无缩放与延迟.
