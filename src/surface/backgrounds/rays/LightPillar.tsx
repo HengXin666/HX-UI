@@ -1,7 +1,8 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 LightPillar 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格是射线步进 + 独立合成通道 (泛光); 此处单通道片元内步进 56 步, 泛光以峰值处的解析增益近似.
-// mixBlendMode 交给使用方的 className, resolution 由 quality 档位与公共 dpr 承担.
+// 已补 (2026-11-09): 规格的射线步进 + 独立合成 / 泛光通道: 步进 56 步改在按 quality 比例缩放的离屏通道里跑,
+// 上屏程序以 ../bloom.ts 的降采样金字塔合成泛光 (quality 低 / 中 / 高 取 2 / 3 / 4 级), 不再以峰值处解析增益近似.
+// mixBlendMode 交给使用方的 className, resolution 由 quality 档位 (步进通道比例) 与公共 dpr 承担.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -9,8 +10,9 @@ import { splitCommon, type BackdropCommonProps } from "../../backdrop/kernel/com
 import { glowFallback } from "../../backdrop/kernel/fallback";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
-import { followStep, introProgress, qualityDpr, radians, rgbAt } from "./field";
-import { LIGHT_PILLAR, LIGHT_PILLAR_FRAGMENT, quintic, type PillarQuality } from "./light-pillar-shader";
+import { bloomPyramid } from "../bloom";
+import { followStep, introProgress, radians, raysBloomFragment, rgbAt } from "./field";
+import { LIGHT_PILLAR, LIGHT_PILLAR_SCENE, quintic, type PillarQuality } from "./light-pillar-shader";
 
 export interface LightPillarProps extends BackdropCommonProps {
   /** 柱顶光色: token 名或 CSS 颜色. */
@@ -28,7 +30,7 @@ export interface LightPillarProps extends BackdropCommonProps {
   readonly clickPulse?: boolean;
   /** 每步辉光系数. */
   readonly glowAmount?: number;
-  /** 峰值处的泛光增益. */
+  /** 泛光强度 (降采样模糊泛光叠回画面的比例). */
   readonly bloom?: number;
   /** 柱宽. */
   readonly pillarWidth?: number;
@@ -46,7 +48,7 @@ export interface LightPillarProps extends BackdropCommonProps {
   readonly fade?: number;
   /** 是否播放 2.1 秒的自下而上揭开. */
   readonly intro?: boolean;
-  /** 渲染比例档位. */
+  /** 画质档位: 决定步进通道的渲染比例与泛光级数. */
   readonly quality?: PillarQuality;
 }
 
@@ -83,7 +85,6 @@ export function LightPillar(props: LightPillarProps): JSX.Element {
       u_intensity: intensity,
       u_flow: flow,
       u_glow: glowAmount,
-      u_bloom: bloom,
       u_width: pillarWidth,
       u_height: pillarHeight,
       u_tilt: radians(pillarRotation),
@@ -96,10 +97,15 @@ export function LightPillar(props: LightPillarProps): JSX.Element {
     };
   };
 
-  const scale = Math.max(LIGHT_PILLAR.minScale, LIGHT_PILLAR.quality[quality] ?? LIGHT_PILLAR.quality.high);
+  const tier = quality in LIGHT_PILLAR.quality ? quality : "high";
+  const pyramid = bloomPyramid({
+    scene: LIGHT_PILLAR_SCENE, sceneUniforms: uniforms, levels: LIGHT_PILLAR.bloomLevels[tier],
+    sceneScale: Math.max(LIGHT_PILLAR.minScale, LIGHT_PILLAR.quality[tier]),
+    threshold: LIGHT_PILLAR.bloomThreshold, knee: LIGHT_PILLAR.bloomKnee, strength: bloom * LIGHT_PILLAR.bloomGain,
+  });
   const handle = useShaderBackdrop(
-    { fragment: LIGHT_PILLAR_FRAGMENT, uniforms },
-    { ...options, colors: [topColor, bottomColor], dpr: qualityDpr(options.dpr, scale) },
+    { fragment: raysBloomFragment(pyramid.compositeGlsl), passes: pyramid.passes, uniforms: () => ({ u_backdrop: [0, 0, 0, 0], u_fade: fade, ...pyramid.uniforms }) },
+    { ...options, colors: [topColor, bottomColor] },
   );
   return (
     <BackdropShell handle={handle} fallback={glowFallback("background", topColor)} opacity={opacity} {...rest}>

@@ -1,10 +1,10 @@
 /**
- * rays 路 LightPillar: 常数与纯函数, WebGL2 上屏, 减弱动效只画一帧, 拿不到上下文时 CSS 兜底.
+ * rays 路 LightPillar: 常数与纯函数, 离屏步进 + 泛光合成, WebGL2 上屏, 减弱动效只画一帧, 拿不到上下文时 CSS 兜底.
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LightPillar } from "@src/surface/backgrounds/rays/LightPillar";
-import { LIGHT_PILLAR, LIGHT_PILLAR_FRAGMENT, quintic } from "@src/surface/backgrounds/rays/light-pillar-shader";
+import { LIGHT_PILLAR, LIGHT_PILLAR_SCENE, quintic } from "@src/surface/backgrounds/rays/light-pillar-shader";
 import { mockReducedMotion, mockWebgl2, useFakeClock } from "../../backdrop/helpers";
 import { recordCanvas2d } from "../../helpers";
 
@@ -27,7 +27,25 @@ describe("LightPillar", () => {
     expect(LIGHT_PILLAR.quality).toEqual({ low: 0.35, medium: 0.5, high: 0.6 });
     expect([LIGHT_PILLAR.introSeconds, LIGHT_PILLAR.pulseLife, LIGHT_PILLAR.minScale, LIGHT_PILLAR.spin, LIGHT_PILLAR.followRate, LIGHT_PILLAR.touchRate]).toEqual([2.1, 1.4, 0.25, 0.96, 2.4, 3]);
     expect([quintic(0), quintic(0.5), quintic(1)]).toEqual([0, 0.5, 1]);
-    expect(LIGHT_PILLAR_FRAGMENT).toContain("1.0 / d");
+    expect(LIGHT_PILLAR_SCENE).toContain("1.0 / d");
+  });
+
+  it("步进离屏, 泛光级数随画质 2 / 3 / 4, 不再有峰值解析增益", () => {
+    expect(LIGHT_PILLAR.bloomLevels).toEqual({ low: 2, medium: 3, high: 4 });
+    expect([LIGHT_PILLAR.bloomThreshold, LIGHT_PILLAR.bloomKnee, LIGHT_PILLAR.bloomGain]).toEqual([0.6, 0.5, 2]);
+    expect(LIGHT_PILLAR_SCENE).toContain("o_color = bloom_encode(energy, 1.0);");
+    expect(LIGHT_PILLAR_SCENE).not.toContain("u_bloom");
+  });
+
+  it.each([
+    ["low", 4],
+    ["medium", 5],
+    ["high", 6],
+  ] as const)("quality=%s 的静态帧画 %i 次 (步进 + 泛光级 + 上屏)", (quality, count) => {
+    const calls: string[] = [];
+    restore.push(mockWebgl2(calls), mockReducedMotion(true));
+    render(<LightPillar quality={quality} />);
+    expect(draws(calls)).toBe(count);
   });
 
   it("WebGL2 下上屏并持续出帧", () => {

@@ -1,5 +1,7 @@
 // 行为规格参照 docs/research/catalog/backgrounds-1.md 的 LightPillar 条目, 实现为 HX 自有.
+// 射线步进 (MARCH) 在按画质缩放的离屏通道里跑, 合成 / 泛光 (COMPOSITE) 走 ../bloom.ts 的金字塔与上屏程序.
 import { fragmentSource, GLSL_HASH, GLSL_NOISE, GLSL_UTIL } from "../../backdrop/kernel/glsl";
+import { BLOOM_ENCODE, BLOOM_TIER_LEVELS } from "../bloom";
 import { RAYS_COMPOSE } from "./field";
 
 /** LightPillar 的命名常数. 括号里是条目原名或 "本库定". */
@@ -18,6 +20,13 @@ export const LIGHT_PILLAR = {
   followRate: 2.4,
   /** 指针在场程度的速率 (touch, 1 - exp(-dt * 3)). */
   touchRate: 3,
+  /** 画质档到泛光级数 (本库定: 低档省掉最宽两级). */
+  bloomLevels: BLOOM_TIER_LEVELS,
+  /** 泛光亮部阈值与软膝 (本库定, 对应旧解析增益的 smoothstep(0.4, 2.0, peak) 区间). */
+  bloomThreshold: 0.6,
+  bloomKnee: 0.5,
+  /** bloom prop 到泛光强度的倍率 (本库定). */
+  bloomGain: 2,
 } as const;
 
 export type PillarQuality = keyof typeof LIGHT_PILLAR.quality;
@@ -34,7 +43,6 @@ uniform float u_clock;
 uniform float u_intensity;
 uniform float u_flow;
 uniform float u_glow;
-uniform float u_bloom;
 uniform float u_width;
 uniform float u_height;
 uniform float u_tilt;
@@ -99,11 +107,13 @@ void main() {
   }
   vec3 energy = glow * 1.4 * u_intensity * (1.0 + u_view.z * 0.15);
   float peak = max(energy.r, max(energy.g, energy.b));
-  energy += energy * u_bloom * smoothstep(0.4, 2.0, peak);
   energy *= smoothstep(0.0, 0.05, peak) * rays_edge(v_uv);
-  o_color = rays_compose(energy);
+  o_color = bloom_encode(energy, 1.0);
 }
 `;
 
-/** LightPillar 的上屏片元: 单通道射线步进, 沿扭转噪声柱累积 1 / d 辉光, 自下而上揭开, 点击脉冲沿柱上行. */
-export const LIGHT_PILLAR_FRAGMENT = fragmentSource(BODY, GLSL_HASH, GLSL_NOISE, GLSL_UTIL, RAYS_COMPOSE);
+/**
+ * LightPillar 的离屏步进片元 (MARCH): 射线步进 56 步, 沿扭转噪声柱累积 1 / d 辉光, 自下而上揭开, 点击脉冲沿柱上行.
+ * 输出编码后的线性光, 上屏程序合成场景与泛光金字塔 (COMPOSITE).
+ */
+export const LIGHT_PILLAR_SCENE = fragmentSource(BODY, GLSL_HASH, GLSL_NOISE, GLSL_UTIL, RAYS_COMPOSE, BLOOM_ENCODE);
