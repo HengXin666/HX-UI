@@ -7,9 +7,11 @@ import { splitCommon, type BackdropCommonProps } from "../../backdrop/kernel/com
 import { glowFallback } from "../../backdrop/kernel/fallback";
 import { clamp, smoothstep } from "../../backdrop/kernel/math";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
+import { useReducedMotionPreference } from "../../backdrop/kernel/use-reduced-motion";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
 import { GRID_SCAN, GRID_SCAN_FRAGMENT, SCAN_LINE_STYLES, type ScanLineStyle } from "./grid-scan-shader";
 import { enumOf, follow, introProgress, rgbAt, type Follower } from "./tokens";
+import { stepTilt, useDeviceTilt } from "./use-device-tilt";
 
 /** 扫描方向: 由近及远, 由远及近, 来回. */
 export type ScanDirection = "forward" | "backward" | "pingpong";
@@ -53,6 +55,11 @@ export interface GridScanProps extends BackdropCommonProps {
   /** 自动循环扫描; 关闭时只在点击 (clickEffect 为 scan) 后扫一次. */
   readonly autoScan?: boolean;
   readonly clickEffect?: ScanClickEffect;
+  /**
+   * 用陀螺仪 (deviceorientation) 的倾斜带动眼位做视差, 默认 false. 指针在场时以指针为准, 减弱动效时不响应.
+   * iOS 需授权: 在组件内第一次按下时请求, 不在挂载时弹窗.
+   */
+  readonly enableGyro?: boolean;
 }
 
 /** 扫描状态: 扫描起点 (场时钟) 与已处理到的最近一次点击时刻. */
@@ -90,8 +97,9 @@ export function scanPlane(
  * 隧道扫描网格: 视线与贴合画面的隧道四壁求交, 壁上画实线 / 虚线 / 点线网格与交点闪烁,
  * 一道扫描光面沿深度推进并留拖尾, 地面反光, 指针带动眼位做视差并照亮所指壁面, 点击打出外扩环或重扫.
  * 入场时网格由近到远亮起 (2.2 秒).
- * 规格的 enableWebcam / showPreview / modelsPath (人脸追踪, 要从 CDN 拉模型) 与 enableGyro 不做,
- * ENGINE-GAP: 内核指针只有 pointer 事件, 没有 deviceorientation.
+ * enableGyro 打开时, 设备倾斜 (deviceorientation, 以首次读数为中性姿态, 平滑后) 在指针不在场时带动眼位.
+ * 规格的 enableWebcam / showPreview / modelsPath (人脸追踪, 要从 CDN 拉模型) 不做.
+ * 已补 (2026-11-09): 组件层 use-device-tilt 监听 deviceorientation 驱动 u_eye 视差 (enableGyro), iOS 在首次按下时请求授权, 减弱动效不响应.
  *
  * .agents/notes/implemented/feature/2026-11-09-surface-backgrounds-grid.md
  */
@@ -99,19 +107,25 @@ export function GridScan(props: GridScanProps): JSX.Element {
   const {
     linesColor = "border", scanColor = "primary", cells = 8, lineThickness = 1, lineStyle = "solid", depth = 3, depthFade = 0.6, parallax = 1,
     points = true, reflection = 0.35, shading = 0.7, scanDirection = "forward", scanDuration = 2.4, scanDelay = 1.6, scanWidth = 1, trail = 0.5,
-    glow = 0.6, autoScan = true, clickEffect = "ping", ...common
+    glow = 0.6, autoScan = true, clickEffect = "ping", enableGyro = false, ...common
   } = props;
   const { options, rest, opacity, children } = splitCommon(common);
   const eyeX = useRef<Follower>({ value: 0 });
   const eyeY = useRef<Follower>({ value: 0 });
   const hover = useRef<Follower>({ value: 0 });
+  const systemReduced = useReducedMotionPreference();
+  const gyroOn = enableGyro && !(common.reducedMotion ?? systemReduced);
   const clock = useRef<ScanClock>({ origin: autoScan ? 0 : null, seenTap: Number.NEGATIVE_INFINITY });
 
   const uniforms = (frame: BackdropFrame) => {
     const p = frame.pointer;
-    const lean = p.inside ? parallax * 0.35 : 0;
-    follow(eyeX.current, -(p.x - 0.5) * 2 * lean * (frame.fit.width / Math.max(frame.fit.height, 1)), frame.dt, GRID_SCAN.eyeTau);
-    follow(eyeY.current, -(p.y - 0.5) * 2 * lean, frame.dt, GRID_SCAN.eyeTau);
+    const t = tilt.current;
+    const [tx, ty] = gyroOn && !frame.reduced ? stepTilt(t, frame.dt) : [0, 0];
+    const useTilt = !p.inside && gyroOn && t.active && !frame.reduced;
+    const lean = p.inside || useTilt ? parallax * 0.35 : 0;
+    const [sx, sy] = p.inside ? [(p.x - 0.5) * 2, (p.y - 0.5) * 2] : [tx, ty];
+    follow(eyeX.current, -sx * lean * (frame.fit.width / Math.max(frame.fit.height, 1)), frame.dt, GRID_SCAN.eyeTau);
+    follow(eyeY.current, -sy * lean, frame.dt, GRID_SCAN.eyeTau);
     follow(hover.current, p.inside ? 1 : 0, frame.dt, GRID_SCAN.hoverTau);
     const latest = p.taps[p.taps.length - 1];
     const c = clock.current;
@@ -148,6 +162,7 @@ export function GridScan(props: GridScanProps): JSX.Element {
   };
 
   const handle = useShaderBackdrop({ fragment: GRID_SCAN_FRAGMENT, uniforms }, { ...options, colors: [linesColor, scanColor] });
+  const tilt = useDeviceTilt(handle.hostRef, gyroOn);
   return (
     <BackdropShell handle={handle} fallback={glowFallback("background", scanColor)} opacity={opacity} {...rest}>
       {children}
