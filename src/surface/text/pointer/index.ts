@@ -2,3 +2,5 @@
 export * from "./tokens";
 export { extrudeIntro, extrudeLayers, layerOpacity, orbitTilt, pointerTilt, pushTarget, smoothingStep, type Tilt } from "./parts/extrude";
 export { ExtrudeText, type ExtrudeTextProps, type ExtrudeTone } from "./ExtrudeText";
+export { burstAt, driftLead, echoLook, followChain, pointerLead, wakeCount, wakeEase, type Vec, type WakeDirection, type WakeEase } from "./parts/wake";
+export { WakeText, type WakeTextProps } from "./WakeText";

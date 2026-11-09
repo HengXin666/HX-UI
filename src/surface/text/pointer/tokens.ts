@@ -39,3 +39,30 @@ export const EXTRUDE_SHADOW = { y: 0.08, blur: 0.24, mix: 45 } as const;
 export const EXTRUDE_OUTLINE_PX = 1;
 /** 倾角与推深的静止阈值: 都小于它时帧循环停下, 等指针唤醒. */
 export const EXTRUDE_REST = 0.001;
+
+/** 残影字: 漂移一周 7200ms, 指针停下 2600ms 后回到漂移, 点击爆开每层 1100ms, 层间隔 80ms. */
+export const WAKE_DRIFT_PERIOD_MS = 7200;
+export const WAKE_DRIFT_IDLE_MS = 2600;
+export const WAKE_BURST_LIFE_MS = 1100;
+export const WAKE_BURST_GAP_MS = 80;
+/** 残影字的 props 默认值: 12 层, 拖尾 0.24, 偏移 36px, 不透明度 0.72, 模糊 3px, 指针半径 320px, 回位 900ms, 字重 800. */
+export const WAKE_DEFAULTS = {
+  echoes: 12,
+  lag: 0.24,
+  offset: 36,
+  fade: 0.72,
+  blur: 3,
+  echoScale: 1,
+  cursorRadius: 320,
+  duration: 900,
+  fontSize: "clamp(3rem, 10vw, 8rem)",
+  fontWeight: 800,
+} as const;
+/** 层数上限. */
+export const WAKE_MAX_ECHOES = 32;
+/** 漂移时偏移方向左右摆动的最大角度 (弧度). */
+export const WAKE_DRIFT_SWAY = 0.6;
+/** 回位时长换成一阶跟随时间常数: 时长内走完约 95%. */
+export const WAKE_SETTLE_SHARE = 3;
+/** 点击爆开时偏移最多放大到的倍数增量. */
+export const WAKE_BURST_PUSH = 1.5;
