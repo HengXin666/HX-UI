@@ -4,7 +4,7 @@ import { GLOW_GLSL } from "./glow-kit";
 
 /** 入场时长秒 (规格 INTRO_SECONDS). */
 export const PLASMA_INTRO_SECONDS = 1.6;
-/** 体积通道像素上限 (规格 MAX_VOLUME_PIXELS), 见组件头 ENGINE-GAP. */
+/** 体积通道像素上限 (规格 MAX_VOLUME_PIXELS): 画布再大, 体积通道也不超过这个像素数. */
 export const PLASMA_MAX_VOLUME_PIXELS = 1600000;
 /** 视角弹簧刚度与阻尼 (规格 40 * (goal - yaw) - 11 * velocity). */
 export const PLASMA_SPRING = { stiffness: 40, damping: 11 } as const;

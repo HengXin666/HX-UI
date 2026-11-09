@@ -1,6 +1,6 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 Plasma 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格的体积像素上限 MAX_VOLUME_PIXELS 要按画布尺寸动态定通道缩放, 内核 PassSpec.scale 是静态倍率, 这里只按 quality 取倍率 (画布最长边仍受内核 maxEdge 上限).
+// 已补 (2026-11-09): 规格的体积像素上限 MAX_VOLUME_PIXELS 按画布尺寸动态定体积通道倍率 (PassSpec.scale 为 getter, 每次 resize 读画布设备像素), 体积不超 160 万像素.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -10,9 +10,9 @@ import type { UniformMap } from "../../backdrop/kernel/gl";
 import { approach, clamp } from "../../backdrop/kernel/math";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
-import { finishUniforms, introProgress, NEUTRAL, tauOf } from "./glow-kit";
+import { canvasPixels, capPassScale, finishUniforms, introProgress, NEUTRAL, tauOf } from "./glow-kit";
 import {
-  PLASMA_FRAGMENT, PLASMA_HEAT_FOLLOW_RATE, PLASMA_HEAT_RATE, PLASMA_INTRO_SECONDS, PLASMA_SPRING, PLASMA_VOLUME, PLASMA_VOLUME_FRAGMENT,
+  PLASMA_FRAGMENT, PLASMA_HEAT_FOLLOW_RATE, PLASMA_HEAT_RATE, PLASMA_INTRO_SECONDS, PLASMA_MAX_VOLUME_PIXELS, PLASMA_SPRING, PLASMA_VOLUME, PLASMA_VOLUME_FRAGMENT,
 } from "./plasma-shader";
 
 /** 默认光色: 语义 token 名. */
@@ -103,9 +103,15 @@ export function stepPlasmaRig(rig: PlasmaRig, frame: Pick<BackdropFrame, "dt" | 
   }
 }
 
-/** 体积通道倍率: quality 钳到 0.1..1. */
-export function plasmaVolumeScale(quality: number): number {
-  return clamp(quality, QUALITY_RANGE[0], QUALITY_RANGE[1]);
+/**
+ * 体积通道倍率: quality 钳到 0.1..1, 再按规格 MAX_VOLUME_PIXELS 封顶 (画布尺寸未知时只按 quality).
+ *
+ * @param quality 分辨率倍率.
+ * @param width 画布设备像素宽.
+ * @param height 画布设备像素高.
+ */
+export function plasmaVolumeScale(quality: number, width = 0, height = 0): number {
+  return capPassScale(clamp(quality, QUALITY_RANGE[0], QUALITY_RANGE[1]), width, height, PLASMA_MAX_VOLUME_PIXELS);
 }
 
 /** 体积通道 uniform. softness 换成光片锐度 1 - softness. 纯函数. */
@@ -154,7 +160,9 @@ export function Plasma(props: PlasmaProps): JSX.Element {
         {
           name: PLASMA_VOLUME,
           fragment: PLASMA_VOLUME_FRAGMENT,
-          scale: plasmaVolumeScale(quality),
+          get scale() {
+            return plasmaVolumeScale(quality, ...canvasPixels(handle.canvasRef.current));
+          },
           uniforms: (frame) => {
             stepPlasmaRig(rig.current, frame, interactive);
             return plasmaVolumeUniforms(rig.current, settings);

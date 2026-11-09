@@ -10,6 +10,7 @@ import {
 import { PLASMA_FRAGMENT, PLASMA_INTRO_SECONDS, PLASMA_MAX_VOLUME_PIXELS, PLASMA_VOLUME } from "@src/surface/backgrounds/glow/plasma-shader";
 import { mockReducedMotion, mockWebgl2, useFakeClock } from "../../backdrop/helpers";
 import { recordCanvas2d } from "../../helpers";
+import { feedbackSize } from "@src/surface/backdrop/kernel/feedback";
 
 const BASE: PlasmaSettings = { direction: "reverse", scale: 1, twist: 1, wave: 1, softness: 0.25, shine: 1, brightness: 1, intro: true };
 
@@ -24,6 +25,30 @@ afterEach(() => {
 });
 
 const draws = (calls: string[]): number => calls.filter((c) => c === "drawArrays").length;
+
+/** 宿主量成 cssWidth x cssHeight (像素比 1), 假 webgl2 记下每次 texImage2D 的宽高. */
+function sizedWebgl2(cssWidth: number, cssHeight: number): { sizes: Array<readonly [number, number]>; undo: () => void } {
+  const sizes: Array<readonly [number, number]> = [];
+  const original = HTMLCanvasElement.prototype.getContext;
+  const gl = new Proxy({}, {
+    get: (_target, key) => (...args: unknown[]) => {
+      if (key === "texImage2D") sizes.push([Number(args[3]), Number(args[4])]);
+      return {};
+    },
+  });
+  HTMLCanvasElement.prototype.getContext = function getContext(kind: string) {
+    return kind === "webgl2" ? gl : null;
+  } as typeof original;
+  const box = { width: cssWidth, height: cssHeight, x: 0, y: 0, top: 0, left: 0, right: cssWidth, bottom: cssHeight, toJSON: () => ({}) };
+  const rect = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(box as DOMRect);
+  return {
+    sizes,
+    undo: () => {
+      HTMLCanvasElement.prototype.getContext = original;
+      rect.mockRestore();
+    },
+  };
+}
 
 describe("Plasma 纯函数", () => {
   it("规格常数", () => {
@@ -53,9 +78,28 @@ describe("Plasma 纯函数", () => {
     expect(u.u_intro).toBeCloseTo(0.5, 6);
     expect(u.u_heat).toEqual([0.5, 0.5, 0]);
   });
+
+  it("体积像素按 MAX_VOLUME_PIXELS 封顶: 大画布收倍率, 小画布只按 quality", () => {
+    const capped = plasmaVolumeScale(0.75, 2400, 1600);
+    expect(capped).toBeLessThan(0.75);
+    const [w, h] = feedbackSize(2400, 1600, capped);
+    expect(w * h).toBeLessThanOrEqual(PLASMA_MAX_VOLUME_PIXELS);
+    expect(w * h).toBeGreaterThan(PLASMA_MAX_VOLUME_PIXELS * 0.99);
+    expect(plasmaVolumeScale(0.75, 1280, 720)).toBe(0.75);
+    expect(plasmaVolumeScale(1, 0, 0)).toBe(1);
+  });
 });
 
 describe("Plasma 渲染", () => {
+  it("体积通道的缓冲按这次 resize 的画布尺寸封顶", () => {
+    const gl = sizedWebgl2(2400, 1600);
+    restore.push(gl.undo, mockReducedMotion(true));
+    render(<Plasma data-testid="host" />);
+    const [w, h] = gl.sizes[gl.sizes.length - 1];
+    expect(w * h).toBeLessThanOrEqual(PLASMA_MAX_VOLUME_PIXELS);
+    expect(w * h).toBeGreaterThan(PLASMA_MAX_VOLUME_PIXELS * 0.99);
+  });
+
   it("WebGL2 可用时 live, 每帧先跑体积通道再上屏", () => {
     const calls: string[] = [];
     restore.push(mockWebgl2(calls), mockReducedMotion(false));
