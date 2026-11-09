@@ -60,6 +60,17 @@ export const EASE = {
 
 export type EaseName = keyof typeof EASE;
 
+/**
+ * EASE 之外的规格曲线 (outQuint 0.22,1,0.36,1 等) 收在 src/motion/curves.ts 的 CURVE 表里,
+ * 控件按名字引用, 不在族内留 "cubic-bezier(...)" 副本.
+ */
+
+/**
+ * 焦点环: outline 1px, 偏移 2px, ring 色. 线宽守全局 1px, 可见度靠颜色与偏移, 不靠加粗.
+ * outline 不占布局, 不随 transform 缩放. 见 docs/research/craft.md「焦点环与线宽」.
+ */
+export const FOCUS_RING = "outline-none focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-ring";
+
 /** 颜色过渡, 与 tokens.css 的 --duration-fast 同一条. */
 export const COLOR_MS = MOTION_DURATION_FALLBACK_MS.fast;
 export const THUMB_MS = 267;

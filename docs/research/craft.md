@@ -18,7 +18,14 @@
 
 时长: press 90, release 140, color 120, thumb 267, digit 700, hold 1000. 积分 dt 钳在 8ms 到 34ms. 减弱动效时时长变 0, 直接写终值, 焦点环仍在.
 
-共用规则: 按下与松开是两段. 可中断, 从当前值和当前速度继续, 不从 0 重播. 120ms 内再次按下只改目标. pointercancel 与 pointerup 同路. 焦点环 2px, 偏移 2px. 禁用 120ms 内透明度到 0.45, scale 保持 1. 位移只用 transform. 颜色只用语义令牌. 线宽 1px.
+共用规则: 按下与松开是两段. 可中断, 从当前值和当前速度继续, 不从 0 重播. 120ms 内再次按下只改目标. pointercancel 与 pointerup 同路. 焦点环见下方「焦点环与线宽」. 禁用 120ms 内透明度到 0.45, scale 保持 1. 位移只用 transform. 颜色只用语义令牌. 线宽 1px.
+
+### 焦点环与线宽
+
+焦点环统一写成 outline 1px, outline-offset 2px, 颜色 ring. 本文早先写的 "焦点环 2px" 指环的厚度, 与门禁 (ui-rules) 管的 border / ring / outline / divide 线宽 1px 冲突; 裁定按门禁走 1px, 不改 rules, 不改 baseline.
+可见度靠两样补足, 不靠加粗: ring 用深一档的语义色, 2px 的偏移让环和控件边之间留出一圈底色.
+用 outline 不用 box-shadow 的 ring: outline 不占布局, 不被 overflow 裁掉, 也不跟着 transform 缩放, 正好满足 "环不跟着缩放".
+代码里只引用 craft/tokens.ts 的 FOCUS_RING, 不各自拼串. 已提交的老控件仍是 ring-1, 收口时统一换成 FOCUS_RING.
 
 ## 按钮
 
@@ -64,7 +71,7 @@
 |---|---|---|---|
 | 静止 | border | 无 |  |
 | hover | foreground 的 40% | 无 | 120ms out |
-| focus | ring | 环 2px / 偏移 2px | 120ms, 不缩放 |
+| focus | ring | outline 1px / 偏移 2px | 120ms, 不缩放 |
 | 按下 | 不变 | 无 | 输入框不缩小 |
 | disabled | border | 无 | opacity 0.45, 120ms |
 | 错误 | destructive | 无 | 边 120ms, 不抖动 |
@@ -90,7 +97,7 @@
 
 ## 对话框
 
-遮罩 180ms opacity 0 到 1, out. 面板 200ms, scale 0.98 到 1, y 8px 到 0, overshoot 只给面板一次. 关闭反向, 140ms in, 无过冲. 打开未完成时按 Esc, 从当前 scale 走向关闭, 不先播完打开. 焦点落在面板内第一个可聚焦元素, 环使用同一套 2px. 背景滚动锁住. 减弱动效下面板直接在终态.
+遮罩 180ms opacity 0 到 1, out. 面板 200ms, scale 0.98 到 1, y 8px 到 0, overshoot 只给面板一次. 关闭反向, 140ms in, 无过冲. 打开未完成时按 Esc, 从当前 scale 走向关闭, 不先播完打开. 焦点落在面板内第一个可聚焦元素, 环使用同一套 outline 1px + 偏移 2px. 背景滚动锁住. 减弱动效下面板直接在终态.
 
 ## 首页镜头
 
