@@ -9,6 +9,7 @@ Decision-ID: kits-stage3d
 - `src/kits/stage3d/tokens.ts`, `src/kits/stage3d/index.ts`
 - `src/kits/stage3d/SwingLanyard.tsx`, `src/kits/stage3d/parts/rope.ts` (react-bits Components/Lanyard)
 - `src/kits/stage3d/OrbitViewer.tsx`, `src/kits/stage3d/parts/orbit.ts` (react-bits Components/ModelViewer)
+- `src/kits/stage3d/SphereMenu.tsx`, `src/kits/stage3d/parts/sphere.ts` (react-bits Components/InfiniteMenu)
 
 ## Problem
 
@@ -33,3 +34,9 @@ ENGINE-GAP: 规格是 three 场景 (FOV 24) 里的 3D 刚体: 卡是有厚度 (T
 转台查看器: 容器按视场 30 度设 CSS perspective (半高 / tan 15 度), 舞台是 preserve-3d 的 DOM 立体内容 (children, 以舞台中心为原点). 拖拽每 px 转 0.0065 rad (规格 DRAG_SPEED), 松手按速度惯性, 每帧乘 exp(-4.5 dt); 自转 autoRotate (默认开, autoRotateSpeed 0.35 rad/s HX 自定) 的速度按 2/s 趋近, 拖拽与复位时停; turntable 时俯仰按 4/s 回到 tilt (10) 度; 滚轮缩放, 每 100 单位 10%, 钳到 minZoom (0.5) .. maxZoom (2), 按 8/s 趋近; 指针视差最大 0.08 rad 按 6/s 趋近; 双击或 Home / 0 复位到 initialYaw / initialPitch, 按 7/s 趋近 (以上速率均照规格). 俯仰钳 ±1.2 rad (规格 PITCH_LIMIT 数值未摘录, HX 自定). 单帧上限 0.05s. 入场进度 1.3s, 容器淡入 0.6s ease (规格同), intro="none" 时不淡入. 键盘: 方向键各转 0.2 rad, + / - 缩放 1.15 倍 (HX 自定). 容器 role=group, aria-roledescription "3D viewer", aria-label 为 alt, 可聚焦. 减弱动效时不自转, 无惯性与视差, 缩放直接到位, 不淡入.
 
 ENGINE-GAP: 规格用 @react-three/fiber 与 three 加载 glTF / GLB 模型 (src), 渲染网格, PBR 材质, 灯光, 环境贴图与阴影, 按模型包围盒自动取景. 本件不加载任何模型: src 只透传在 data-src 上, 有 poster 时显示 poster 图, 否则只转调用方给的 DOM 立体内容 (用 rotateY / translateZ 搭的面); 没有网格, 法线, 材质与光照, 也不能按包围盒取景. 补上需要顶点通道与模型加载: glTF 解析 (二进制缓冲, accessor, 节点树), WebGL2 网格渲染与 PBR 着色器, 以及环境光照 (IBL); 这正是 three 提供的部分, 按用户裁定不引入.
+
+## SphereMenu (规格 Components/InfiniteMenu)
+
+球面菜单: count (160, 规格同) 个格子按斐波那契球面铺开, items 循环填入, 每格一个 DOM 元素经 rotateY(经度) rotateX(-纬度) translateZ(半径) 贴在球上, 背面隐藏. 半径为高 height (520) × 0.42 × zoom / 1.65, 格边长随格数缩放, 乘 tileSize (0.63), 圆角 roundness (0.2) × 50% (换算 HX 自定). 拖拽 0.005 rad/px 转球 (yaw / pitch, 俯仰钳 ±1.3 rad, HX 自定), 角速度按 exp(-30 dt) 跟手 (规格同); 松手按 exp(-(6 - 5 inertia) dt) 衰减 (inertia 0.6, 规格同), 慢于 0.35 rad/s (HX 自定) 时吸附最朝前的格, 吸附按 6/s 趋近 (规格同); 那一格对应的项就是当前项, 停下时回调 onActiveChange. 移动时镜头后退 0.18 × pullBack (1) (退后量 HX 自定), 按 4.5/s 趋近 (规格同). 格子透明度 smoothstep(0.02, 0.4, 朝前程度), 聚焦 smoothstep(0.93, 0.997) (规格同); 非聚焦格按 dim (0.5) 压暗, grayscale 时非聚焦格去色. 显现 0.7s (规格同). autoplay (3) s 空闲后转到下一项. 键盘: 方向键上一项 / 下一项 (转到该项最朝前的那格), Enter / 空格或双击打开当前项 (onItemClick, 否则跳 href). 外层 role=listbox, aria-activedescendant 指向隐藏的 option 列表 (每项 title). showInfo 时底部显示当前项标题与描述, renderInfo 可替换, 切换过渡 0.45s outQuint (规格同). 减弱动效时无显现与惯性, 吸附直接到位, 不自动播放. 规格的 stretch (按速度拉伸格子), theme / accentColor / backgroundColor (交给 token), intro 的球体展开动画 (这里只做透明度显现) 未做.
+
+ENGINE-GAP: 规格是 WebGL 实例化渲染 (uOrientation 四元数轨迹球, uProjection, uCamera, uTileRadius, uSpin, uStretch, uShift): 一次绘制全部格子, 顶点着色器按角速度把格子沿运动方向拉伸 (stretch), 片元着色器做圆角遮罩与边缘抗锯齿, 图片走纹理图集 (canvas2d 拼图), 球体用四元数自由旋转 (无俯仰上限, 无万向锁). 本件每格一个 DOM 元素 (160 个 3D 合成层), 旋转只有 yaw / pitch 两轴且俯仰有上限, 没有速度拉伸, 圆角是 border-radius. 补上需要顶点通道: WebGL2 实例化网格 (每实例的球面坐标与图集 uv), 顶点着色器里的速度拉伸, 以及四元数轨迹球; 在 DOM 里拉伸每格需要逐格算切向 matrix3d, 160 格每帧代价过高.
