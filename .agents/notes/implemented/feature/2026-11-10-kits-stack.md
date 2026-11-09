@@ -9,6 +9,7 @@ Decision-ID: kits-stack
 - `src/kits/stack/tokens.ts`, `src/kits/stack/index.ts`
 - `src/kits/stack/PopList.tsx`, `src/kits/stack/parts/list-spec.ts` (react-bits Components/AnimatedList)
 - `src/kits/stack/ScrollPile.tsx`, `src/kits/stack/parts/pile-spec.ts` (react-bits Components/ScrollStack)
+- `src/kits/stack/SwipeStack.tsx`, `src/kits/stack/parts/swipe-spec.ts` (react-bits Components/Stack)
 
 ## Problem
 
@@ -29,3 +30,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## ScrollPile (规格 Components/ScrollStack)
 
 卡片在自己的滚动容器里纵向排开 (间距 itemDistance 100px). 第 i 张在滚动到 布局上沿 - 钉住线 - i × itemStackDistance (24px) 时钉住, 之后补位移停在线上, 直到最后一张钉住再过 holdDistance (200px) 整叠一起离开. 钉住线 stackPosition 收 px 或视口百分比 (默认 15%). 被后面的卡盖上的进度 p 从自己钉住到末张钉住线性走完, 卡缩到 baseScale + i × itemScale (0.8, 0.05), 压暗 dimAmount × p (亮度滤镜), rotationAmount × i × p 转动, tiltAmount × p 后仰, 已被几张盖住就模糊 blurAmount 的几倍. 滚轮在 smoothScroll 时接管, 位置按规格 current += (goal - current)(1 - 0.9^(dt × 60)) 帧率无关地追目标; 拖滚动条, 触摸或键盘带来的外部滚动立即放弃平滑. 末张钉住时 onStackComplete 回调一次. useWindowScroll (跟随页面滚动) 与 snap 未做. 减弱动效时滚轮交给原生滚动, 无模糊, 转动与后仰, 钉住与缩放保留 (随滚动位置, 不是动画).
+
+## SwipeStack (规格 Components/Stack)
+
+一叠卡, 顶牌可拖: 跟手位移, 按横向位移倾斜 (LEAN_REACH 260px 时满幅 12 度, 幅度 HX 自定), 按住放大 1.035 (PRESS_SCALE). 松手时拖过 threshold (90px) 或速度超过 650px/s (FLICK_SPEED) 就顺拖拽方向飞出, 0.35s / speed 后换到底部再以弹簧回槽, 否则带松手速度弹回. 点击 (sendToBackOnClick), 方向右键, Enter, 空格与自动播放 (autoplayDelay 3000ms, pauseOnHover, 页面隐藏时不送) 按布局的 EXITS 方向送牌, 左键把底牌抽回顶. 布局 fan / cascade / deck / pile 的变换原点取规格 ORIGINS, 槽位几何 (每层错开 56px × spread, 缩小 0.16 × depth, fan 末层转 tilt × spread, pile 按序号稳定歪斜) 规格未给数值, HX 自定. 挂载时逐张错峰 60ms 就位. 弹簧劲度与阻尼按 speed 缩放 (基值 260 / 26, HX 自定; 规格用 motion 默认弹簧). 阴影用主题 token --shadow-xl (规格 SHADOW 是硬编的黑色两层影, 色值不进组件). 拖拽起算用族阈值 5px (规格 CLICK_SLOP 6px). 顶牌变化时读屏播报其 label, 回调 onChange(顶牌序号). frameColor 换成语义色 frameTone. 减弱动效时送牌直接换序, 无飞出与错峰 (规格为 0.2s 淡变).
