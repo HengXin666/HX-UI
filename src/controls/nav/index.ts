@@ -5,3 +5,4 @@ export { ProximityRail, type ProximityRailProps } from "./rail/ProximityRail";
 export { GooTabs, type GooTabsProps } from "./bar/GooTabs";
 export { GlassTiles, type GlassTile, type GlassTilesProps } from "./tile/GlassTiles";
 export { PillBurst, type BurstItem, type PillBurstProps } from "./menu/PillBurst";
+export { DeckNav, type DeckCard, type DeckLink, type DeckNavProps } from "./menu/DeckNav";
