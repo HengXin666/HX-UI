@@ -10,6 +10,7 @@ Decision-ID: kits-stack
 - `src/kits/stack/PopList.tsx`, `src/kits/stack/parts/list-spec.ts` (react-bits Components/AnimatedList)
 - `src/kits/stack/ScrollPile.tsx`, `src/kits/stack/parts/pile-spec.ts` (react-bits Components/ScrollStack)
 - `src/kits/stack/SwipeStack.tsx`, `src/kits/stack/parts/swipe-spec.ts` (react-bits Components/Stack)
+- `src/kits/stack/CycleDeck.tsx`, `src/kits/stack/parts/swap-spec.ts` (react-bits Components/CardSwap)
 
 ## Problem
 
@@ -34,3 +35,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## SwipeStack (规格 Components/Stack)
 
 一叠卡, 顶牌可拖: 跟手位移, 按横向位移倾斜 (LEAN_REACH 260px 时满幅 12 度, 幅度 HX 自定), 按住放大 1.035 (PRESS_SCALE). 松手时拖过 threshold (90px) 或速度超过 650px/s (FLICK_SPEED) 就顺拖拽方向飞出, 0.35s / speed 后换到底部再以弹簧回槽, 否则带松手速度弹回. 点击 (sendToBackOnClick), 方向右键, Enter, 空格与自动播放 (autoplayDelay 3000ms, pauseOnHover, 页面隐藏时不送) 按布局的 EXITS 方向送牌, 左键把底牌抽回顶. 布局 fan / cascade / deck / pile 的变换原点取规格 ORIGINS, 槽位几何 (每层错开 56px × spread, 缩小 0.16 × depth, fan 末层转 tilt × spread, pile 按序号稳定歪斜) 规格未给数值, HX 自定. 挂载时逐张错峰 60ms 就位. 弹簧劲度与阻尼按 speed 缩放 (基值 260 / 26, HX 自定; 规格用 motion 默认弹簧). 阴影用主题 token --shadow-xl (规格 SHADOW 是硬编的黑色两层影, 色值不进组件). 拖拽起算用族阈值 5px (规格 CLICK_SLOP 6px). 顶牌变化时读屏播报其 label, 回调 onChange(顶牌序号). frameColor 换成语义色 frameTone. 减弱动效时送牌直接换序, 无飞出与错峰 (规格为 0.2s 淡变).
+
+## CycleDeck (规格 Components/CardSwap)
+
+卡片在透视 900px 的台面上沿右上斜向纵深排开 (每层 cardDistance 60px, verticalDistance 70px, 纵深 1.5 倍横距), 统一 skewY. 每隔 delay (默认 4000ms, 下限 400ms) 最前一张按离场弹簧落出台面下沿 (卡高 + PAD 32px), 450ms / speed 后排到最后; 其余同时按 0.05s / speed 错峰前移 (规格 card.hold). 最前一张可拖, 松手时拖过卡片短边的 0.3 或速度超过 700px/s 即换牌, 否则弹回. 指针在台面上带动整台视差 (满幅 8 度, HX 自定), 弹簧 omega 2pi × 1.1, zeta 1; 悬停张开到 1.15 倍, 弹簧 omega 2pi × 1.4, zeta 0.9 (规格同). 离场弹簧临界阻尼 omega 2pi × 1.6, 归位 omega 2pi × 1.2 zeta 0.72, 规格只给了名字, 数值 HX 自定, 都乘 speed. 悬停 (pauseOnHover), 聚焦, 拖拽, 离屏 (IntersectionObserver) 与页面隐藏时暂停. 挂载时整台淡入 420ms ease-out. Enter 与右键手动换牌, 点击回调 onCardClick, 换牌回调 onChange 并播报前牌 label. 规格的 THEMES 与 DEFAULT_ITEMS 视觉主题不取. 减弱动效时不自动轮换, 无视差与张开, 换牌直接到位.
