@@ -1,6 +1,9 @@
 "use client";
 // 行为规格参照 docs/research/catalog/backgrounds-2.md 的 PlasmaWave 条目, 实现为 HX 自有.
-// ENGINE-GAP: 规格是粗 / 细两级追踪加 4 级泛光金字塔 (COARSE_RATIO, BLOOM_LEVELS, MAX_LIGHT_PIXELS), 内核没有降采样链与逐级上屏, 这里单通道按距离解析出光晕, quality 只作像素比倍率.
+// 已补 (2026-11-09): 规格的 4 级泛光金字塔 (BLOOM_LEVELS) 改走 ../bloom.ts: 光带在离屏场景通道里追踪 (按 MAX_LIGHT_PIXELS 封顶),
+// 软膝亮部提取, 四级 13 点降采样, 上屏帐篷核上采样合成后再做渐隐 / 颗粒 / 亮底收尾; 泛光强度随 glow.
+// 已补 (2026-11-09): 规格的粗 / 细两级追踪 (COARSE_RATIO 3): 粗通道以场景比例的 1/3 先追踪光带, 写出场强上界提示 / 最近距离 / 光带号;
+// 场景通道按名读同帧粗结果, 只在命中附近细追踪, 其余像素 (全追踪本就透明) 直接跳过; quality 仍作像素比倍率.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../../backdrop/kernel/BackdropShell";
@@ -8,11 +11,15 @@ import { splitCommon, type BackdropCommonProps } from "../../backdrop/kernel/com
 import { glowFallback } from "../../backdrop/kernel/fallback";
 import type { UniformMap } from "../../backdrop/kernel/gl";
 import { approach, clamp } from "../../backdrop/kernel/math";
+import type { PassSpec } from "../../backdrop/kernel/shader";
 import type { BackdropFrame } from "../../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../../backdrop/kernel/use-surfaces";
-import { colorCount, colorList, DEG, finishUniforms, introProgress, tauOf } from "./glow-kit";
+import { bloomLevelScale, bloomPyramid } from "../bloom";
+import { canvasPixels, capPassScale, colorCount, colorList, DEG, finishUniforms, introProgress, tauOf } from "./glow-kit";
 import {
-  PLASMA_WAVE_FRAGMENT, PLASMA_WAVE_HEAT_FOLLOW_RATE, PLASMA_WAVE_HEAT_SPRING, PLASMA_WAVE_INTRO_SECONDS, PLASMA_WAVE_LENS_RATE, PLASMA_WAVE_MAX_COLORS,
+  PLASMA_WAVE_BLOOM, PLASMA_WAVE_BLOOM_LEVELS, PLASMA_WAVE_COARSE, PLASMA_WAVE_COARSE_RATIO, PLASMA_WAVE_COARSE_SCENE, PLASMA_WAVE_HEAT_FOLLOW_RATE,
+  PLASMA_WAVE_HEAT_SPRING, PLASMA_WAVE_INTRO_SECONDS, PLASMA_WAVE_LENS_RATE,
+  PLASMA_WAVE_MAX_COLORS, PLASMA_WAVE_MAX_LIGHT_PIXELS, PLASMA_WAVE_SCENE, plasmaWaveComposite,
 } from "./plasma-wave-shader";
 
 /** 默认色标: 语义 token 名. */
@@ -43,7 +50,7 @@ export interface PlasmaWaveProps extends BackdropCommonProps {
   readonly xOffset?: number;
   readonly yOffset?: number;
   readonly brightness?: number;
-  /** 外圈光晕, 默认 1. */
+  /** 外圈光晕, 同时是泛光强度的倍率, 默认 1. */
   readonly glow?: number;
   /** 峰值泛白, 默认 0.6. */
   readonly core?: number;
@@ -126,7 +133,34 @@ export function plasmaWaveUniforms(frame: Pick<BackdropFrame, "colors" | "elapse
 }
 
 /**
- * 等离子波: 两条带透视的正弦光带交错流动, 近芯处泛白, 外圈按距离解析出柔光.
+ * 光照通道按光照像素上限封顶: 场景通道取 capPassScale(1, 画布, MAX_LIGHT_PIXELS), 粗通道为其 1 / COARSE_RATIO 并排在场景之前,
+ * 各级泛光不超过场景比例. 返回新的通道表 (scale 为 getter): [粗, 场景, 各级].
+ *
+ * @param coarse 粗追踪通道.
+ * @param passes bloomPyramid 的 passes (场景在前).
+ * @param canvas 读当前画布像素的函数.
+ */
+export function capLightPasses(coarse: PassSpec, passes: readonly PassSpec[], canvas: () => readonly [number, number]): PassSpec[] {
+  const light = () => capPassScale(1, ...canvas(), PLASMA_WAVE_MAX_LIGHT_PIXELS);
+  const coarsePass: PassSpec = {
+    ...coarse,
+    get scale() {
+      return light() / PLASMA_WAVE_COARSE_RATIO;
+    },
+  };
+  return [
+    coarsePass,
+    ...passes.map((p, i) => ({
+      ...p,
+      get scale() {
+        return i === 0 ? light() : bloomLevelScale(i - 1, light());
+      },
+    })),
+  ];
+}
+
+/**
+ * 等离子波: 两条带透视的正弦光带交错流动, 近芯处泛白, 外圈按距离解析出柔光, 再叠四级降采样泛光.
  * 指针所在处用弹簧把光带顶起并加一枚放大透镜; 入场 1.8 秒亮起. 减弱动效时内核只画一帧.
  *
  * .agents/notes/implemented/feature/2026-11-09-surface-backgrounds-glow.md
@@ -142,13 +176,26 @@ export function PlasmaWave(props: PlasmaWaveProps): JSX.Element {
   const settings: PlasmaWaveSettings = {
     speed1, speed2, dir2, bend1, bend2, thickness, focalLength, rotationDeg, xOffset, yOffset, brightness, glow, core, intro,
   };
+  const latest = useRef<UniformMap>({});
+  const coarse: PassSpec = {
+    name: PLASMA_WAVE_COARSE,
+    fragment: PLASMA_WAVE_COARSE_SCENE,
+    uniforms: (frame) => {
+      stepWaveHeat(heat.current, frame, options.pointer !== false);
+      latest.current = plasmaWaveUniforms(frame, heat.current, settings);
+      return latest.current;
+    },
+  };
+  const pyramid = bloomPyramid({
+    scene: PLASMA_WAVE_SCENE, levels: PLASMA_WAVE_BLOOM_LEVELS, threshold: PLASMA_WAVE_BLOOM.threshold, knee: PLASMA_WAVE_BLOOM.knee,
+    strength: Math.max(glow, 0) * PLASMA_WAVE_BLOOM.gain,
+    sceneUniforms: () => latest.current,
+  });
   const handle = useShaderBackdrop(
     {
-      fragment: PLASMA_WAVE_FRAGMENT,
-      uniforms: (frame) => {
-        stepWaveHeat(heat.current, frame, options.pointer !== false);
-        return { ...plasmaWaveUniforms(frame, heat.current, settings), ...finishUniforms(lightMode, fade, grain) };
-      },
+      fragment: plasmaWaveComposite(pyramid.compositeGlsl),
+      passes: capLightPasses(coarse, pyramid.passes, () => canvasPixels(handle.canvasRef.current)),
+      uniforms: () => ({ ...finishUniforms(lightMode, fade, grain), ...pyramid.uniforms }),
     },
     { ...options, colors: stops },
   );
