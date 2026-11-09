@@ -12,6 +12,7 @@ Decision-ID: kits-gallery
 - `src/kits/gallery/RingCarousel.tsx`, `src/kits/gallery/parts/ring-spec.ts` (react-bits Components/CircularCarousel)
 - `src/kits/gallery/BendGallery.tsx`, `src/kits/gallery/parts/bend-spec.ts` (react-bits Components/CircularGallery)
 - `src/kits/gallery/DepthDeck.tsx`, `src/kits/gallery/parts/depth-spec.ts` (react-bits Components/DepthCarousel)
+- `src/kits/gallery/SphereWall.tsx`, `src/kits/gallery/parts/dome-spec.ts` (react-bits Components/DomeGallery)
 
 ## Problem
 
@@ -46,3 +47,7 @@ kits 的总出口 src/kits/index.ts 与 ./kits 子路径在收口一步统一接
 ## DepthDeck (规格 Components/DepthCarousel)
 
 当前牌在最前; 往后第 k 张 (k < visibleCards) 右移 k × spread, 后退 k × depth, 转 tilt (方向随 tiltDirection), 透明度 1 - k × falloff, 模糊按 k 线性到 blur; 更后面的叠在最后一张的位置并隐去; 翻过的牌左移 2 × spread 淡出. 默认值取规格 (300 × 380, depth 220, spread 90, tilt 22, perspective 1400, visibleCards 4, falloff 0.2, blur 6). 位置, 透明度, 模糊用 CSS 过渡 700ms outQuart (规格 power3.out), 打断时从当前值续走, 规格的 GSAP 时间轴不需要. 按钮, 指示点, 方向键, 滚轮 (按半个过渡时长节流), 横向拖拽翻页; 自动播放 3.2s, 悬停与聚焦时暂停. 规格的 tint 与 radius 交给内容自理. 减弱动效时直接换位.
+
+## SphereWall (规格 Components/DomeGallery)
+
+图片铺在球内壁 (CSS 3D, 观者在球心): segments 列 × 5 带, 带距取列距与 30 度的较小者, 相邻带错开半格, 图片按序循环. 半径取容器短边 × fit (0.5), 夹在 [minRadius 600, maxRadius], 随 ResizeObserver 更新. 拖拽转动球面, 竖向限幅 maxVerticalRotationDeg; 松手速度夹到规格 MAX_V 1.4px/ms, 按 exp(-dragDampening × dt) 衰减 (dragDampening 默认 2). 方向键每次转 10 度. 点图放大成中央对话框 (opacity 与 scale 过渡 enlargeTransitionMs), Escape 或点遮罩关闭并还焦点到原图. 规格 DEFAULTS 里 dragSensitivity, maxVerticalRotationDeg, segments, enlargeTransitionMs 的值未进目录, 这里自定 0.2 deg/px, 8 deg, 20, 300ms. 规格的 @use-gesture 换成族内 use-drag, 放大时从原格飞到中央的动画不做. 减弱动效时无惯性, 放大无过渡.
