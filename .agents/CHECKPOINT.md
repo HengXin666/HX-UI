@@ -103,7 +103,7 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 ## 正在做
 
-无. 收口 8048ab1 已由用户推送 (2026-11-10 01:31 CST). surface 30 件用户已下令开工, 但尚未写任何代码.
+无. 收口 8048ab1 已由用户推送 (2026-11-10 01:31 CST). surface 30 件用户已下令开工; 下一件 DepthText, 尚未写任何代码 (2026-11-10 01:33).
 
 ## 下一步: surface 余量 30 件 (用户 2026-11-10 裁定)
 
@@ -111,7 +111,10 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 - 顺序: 先 TextAnimations 4 件, 再 Animations (沿用本文件既有顺序; 如无则按 catalog 顺序).
 - 规矩: 只借规格的常数与 props 自写, 不移植代码; 内核公共头 (src/index.ts 等公共导出头) 不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么. 每件单独提交 (pre-commit 13/13 + 本件 vitest), 不 push; 每段 (Text 4 件一段, Animations 分段) 完成后报告用户一次, 用户推.
 - 颜色/焦点环/曲线规则同 kits (见已知坑).
-- 收口遗留待核 (已随 8048ab1 推出): api 快照根段是否误含 ArcField/ArcFieldProps (根段应为 1608); CHANGELOG 0.10.0 的 controls 件名清单; 单跑 npx vitest run tests/kits tests/motion tests/controls. 开 surface 前先查, 有误单独 fix 提交. 下面 "后续收尾" 里的项 (族 tokens 并入 src/motion 等) 另排.
+- 用户 2026-11-10 01:33 确认已落定: 焦点环 (outline 1px + offset 2px, 色走 FOCUS_RING), CURVE/cssCurve/CurveName 已从 motion 出口导出, TallyRoll 过冲 ≤0.06.
+- **仍未核 (与上面不是同三项, 用户核的不是这几条)**: api 快照根段是否误含 ArcField/ArcFieldProps (根段应 1608); CHANGELOG 0.10.0 controls 件名清单; 单跑 npx vitest run tests/kits tests/motion tests/controls. 开 DepthText 前先花几分钟查掉, 有误单独 fix 提交.
+- **待办, 别丢**: 已提交老控件的 ring-1 统一换 FOCUS_RING (原定收口做, 未做). 单独一个提交.
+- 分段: 第一段 Text 4 件 DepthText → EchoText → TechText → TextCursor, 全提完报用户一次; 第二段 Animations 26 件单独报.
 
 ## 后续收尾 (本次收口未做)
 
