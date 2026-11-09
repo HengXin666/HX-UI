@@ -16,6 +16,7 @@ Decision-ID: controls-nav
 - `src/controls/nav/menu/PillBurst.tsx`, `src/controls/nav/menu/parts/burst-spec.ts` (react-bits Components/BubbleMenu)
 - `src/controls/nav/menu/DeckNav.tsx`, `src/controls/nav/menu/parts/deck-spec.ts` (react-bits Components/CardNav)
 - `src/controls/nav/menu/LayerDrawer.tsx`, `src/controls/nav/menu/parts/drawer-spec.ts` (react-bits Components/StaggeredMenu)
+- `src/controls/nav/menu/MarqueeRows.tsx`, `src/controls/nav/menu/parts/marquee-spec.ts` (react-bits Components/FlowingMenu)
 
 ## Problem
 
@@ -73,3 +74,7 @@ L2 controls 层缺一组导航件: 胶囊导航条, 放大坞, 黏液导航条, 
 ## LayerDrawer (规格 Components/StaggeredMenu)
 
 侧边抽屉. 打开时按一条时间线走: 色层 (layerTones) 依次滑入, 0.5s outQuint (规格 power4.out) 错峰 70ms; 面板接在层后 80ms 滑入 0.65s; 条目文字在面板起步 150ms 后从下沉 140% 并转 10 度处升起, 1s outQuint 错峰 100ms; 序号 0.6s outCubic (power2.out) 错峰 80ms 淡入; 社交区排在条目后, 链接 0.55s outQuart (power3.out) 从下沉 25px 处升起. 收起时所有层一起 0.32s inQuart (power3.in) 滑出, 不错峰. 开关的加号打开转到 225 度 (0.8s outQuint), 收起回 0 度 (0.35s inOutQuart). 规格用 GSAP 时间轴, 这里全换成带延迟的 CSS 过渡, 打断时从当前值续走. 规格源码没有减弱动效处理, 本件减弱时无位移与延迟.
+
+## MarqueeRows (规格 Components/FlowingMenu)
+
+指针从一行的上半或下半进入, 跑马带就从那条边 (±101%) 按弹簧滑入盖住这行, 离开时从离开处最近的边滑出; 弹簧 omega = 2pi / duration (规格写法, duration 下限 0.1s), 阻尼比取 0.9 不过冲. 带里文字与图片重复四段, 按 speed px/s 横向滚动, 位移对段宽取模, 只在有行激活时跑帧. 键盘聚焦按从上边进入. 入场按规格: 行 0.9s outCubic 错峰 70ms, 文字透明度 0.7s 起步 200ms 错峰 40ms; dimInactive 时未激活行 0.45s 淡到 0.5. 规格的 followCursor / stretch / magnet / carryContent (带随指针变形与吸附) 不做, 带只做整体滑入. 减弱动效时带直接落定, 不滚动, 不入场.

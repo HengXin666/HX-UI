@@ -7,3 +7,4 @@ export { GlassTiles, type GlassTile, type GlassTilesProps } from "./tile/GlassTi
 export { PillBurst, type BurstItem, type PillBurstProps } from "./menu/PillBurst";
 export { DeckNav, type DeckCard, type DeckLink, type DeckNavProps } from "./menu/DeckNav";
 export { LayerDrawer, type DrawerItem, type DrawerSocial, type LayerDrawerProps } from "./menu/LayerDrawer";
+export { MarqueeRows, type MarqueeItem, type MarqueeRowsProps } from "./menu/MarqueeRows";
