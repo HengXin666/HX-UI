@@ -10,6 +10,7 @@ Decision-ID: controls-choice
 - `src/controls/choice/toggle/PlushSwitch.tsx`
 - `src/controls/choice/pick/GelRadio.tsx`
 - `src/controls/choice/rate/LiftRating.tsx`
+- `src/controls/choice/pick/ReelPicker.tsx`, `src/controls/choice/pick/parts/reel-spec.ts`, `src/controls/choice/pick/parts/use-reel-drag.ts` (react-bits Components/OptionWheel)
 
 ## Problem
 
@@ -39,3 +40,7 @@ Decision-ID: controls-choice
 ## Consequences
 
 `src/controls/choice` 对外导出七件和换算函数, 但还没有入口, 文档站暂不展示. `physics.ts` 的 `springFromDuration`, `stepExact` 与 `SpringDriver` 等 L1 并入后应删掉本地实现改为引用. 规格里只给名字未给数值的项 (GlideSelect 与 RubberSegment 的尺寸档, JellyRadio 的默认 bounce 与压扁目标, PlushSwitch 的拇指留白) 用具名常量补了自定值, 文件注释写明出处为自定. 动效只在 happy-dom 里测到状态与关键帧, 真实帧率下的观感需要浏览器录屏核对.
+
+## ReelPicker (规格 Components/OptionWheel)
+
+竖向滚轮选择: 每行按到中心的距离取位移, 倾斜, 透明度与模糊, 环绕取整. 规格用 tau = smoothing 的指数趋近, 换成可中断的临界阻尼弹簧, 固有频率 2 / tau; 帧长上限 0.05s. 拖动, 滚轮, 方向键三路共用同一个目标值. 声音 (soundVolume) 不落地. 焦点环用 FOCUS_RING.
