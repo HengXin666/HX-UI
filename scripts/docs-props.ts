@@ -1,7 +1,7 @@
 /**
  * 文档页 Props 表的数据源: 从 src/index.ts 的公开组件读出参数类型, 抽成 JSON.
  * 根入口只抽文档页用到的组件: docs/face/docs/specs (递归) 里各页的 importName 与 parts, 其余导出与它们解耦.
- * 子路径入口 SUBPATH_FULL 里的层 (./surface 含 ./backgrounds) 只从子路径发布, 没有别的契约保护, 所以全量抽:
+ * 子路径入口 SUBPATH_FULL 里的层 (./surface 含 ./backgrounds, ./controls, ./kits) 只从子路径发布, 没有别的契约保护, 所以全量抽:
  * 每个首字母大写, 第一个参数有自有属性的导出都进 JSON. 名字与根入口重名时以根入口为准.
  * 只收组件自己声明的属性与它包装的无头库 (Radix 等) 的属性; @types/react 里的 DOM 属性不收, 那些是原生语义.
  * 默认值读参数解构的初始值, 说明读属性上的 JSDoc.
@@ -55,8 +55,8 @@ function targets(): Set<string> {
 
 const config = ts.getParsedCommandLineOfConfigFile(path.join(ROOT, "tsconfig.json"), {}, { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => undefined });
 if (!config) throw new Error("docs-props: 读不到 tsconfig.json");
-/** 全量抽 props 的子路径入口 (相对 package.json exports 的键). ./surface 已经 re-export ./backgrounds, 两个都列上, 以后拆开也不漏. */
-const SUBPATH_FULL = ["./backgrounds", "./surface"];
+/** 全量抽 props 的子路径入口 (相对 package.json exports 的键). ./surface 已经 re-export ./backgrounds, 两个都列上, 以后拆开也不漏. ./controls 与 ./kits 同样只从子路径发布. */
+const SUBPATH_FULL = ["./backgrounds", "./controls", "./kits", "./surface"];
 const COMPONENT_NAME = /^[A-Z]/;
 const pkg = JSON.parse(readFileSync(path.join(ROOT, "package.json"), "utf8")) as { exports?: Record<string, { types?: string } | string> };
 const subEntries = SUBPATH_FULL.map((key) => {

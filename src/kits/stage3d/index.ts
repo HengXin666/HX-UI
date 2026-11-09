@@ -1,5 +1,5 @@
 /**
- * 立体族出口. kits 总出口与 ./kits 子路径在收口时接.
+ * 立体族出口. 由 src/kits/index.ts 汇入 @hx/ui/kits 子路径.
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-stage3d.md
  */

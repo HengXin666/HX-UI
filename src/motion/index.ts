@@ -11,6 +11,7 @@ export {
   type MotionTokens,
   type SpringName,
 } from "./presets";
+export { CURVE, cssCurve, type CurveName } from "./curves";
 export { Reveal, MOTION_ELEMENTS, type MotionTag, type RevealProps } from "./Reveal";
 export { Stagger, StaggerItem, type StaggerItemProps, type StaggerProps } from "./Stagger";
 export { AnimatedNumber, type AnimatedNumberProps } from "./AnimatedNumber";

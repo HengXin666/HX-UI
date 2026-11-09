@@ -16,6 +16,18 @@
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
+## [0.10.0] - 2026-11-10
+
+新增两个子路径 `@hx/ui/controls` 与 `@hx/ui/kits`, 收 react-bits Components 余量的 48 件中的 controls 15 件与 kits 33 件. 行为规格取自 `docs/research/catalog/components-1.md` / `-2.md`, 实现为 HX 自有, 组件名换成本库自己的. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
+
+### Added
+
+- `@hx/ui/controls`: press / range / compose / choice / dismiss / nav 六族. 本批新增 `GlintButton`, `TallyRoll`, `StretchSlider`, `ArcField`, `ReelPicker`, `StepTrail`, `PillTabs`, `MagnifyDock`, `ProximityRail`, `GooTabs`, `GlassTiles`, `PillBurst`, `DeckNav`, `LayerDrawer`, `MarqueeRows`, 与先前各族控件一起从该子路径发布.
+- `@hx/ui/kits`: gallery 11 件 (`FoldGallery`, `SpringCarousel`, `RingCarousel`, `BendGallery`, `DepthDeck`, `SphereWall`, `FlexReel`, `BlendSlider`, `HelixScroll`, `PosterFlight`, `DriftColumns`), stack 8 件 (`PopList`, `ScrollPile`, `SwipeStack`, `CycleDeck`, `SpreadCards`, `FlowMasonry`, `TintGrid`, `GlowBento`), glass 2 件 (`LensGlass`, `FrostPanel`), card 9 件 (`LampCard`, `EdgeGlow`, `TiltCard`, `BadgeCard`, `PixelBloom`, `FoilCard`, `MirrorCard`, `FrayCard`, `FileFolder`), stage3d 3 件 (`SwingLanyard`, `OrbitViewer`, `SphereMenu`). 不引 three / WebGL / 动画库; 着色器或 3D 管线才能做到的部分在组件文件头与各族 note 里标 `ENGINE-GAP:`.
+- `@hx/ui/motion`: 公共曲线表 `CURVE`, `cssCurve`, `CurveName` (outQuint, outStrong, inOutQuart, backOutSoft, lift, popOut, outQuart, outCubic, inQuart, flow, outExpo, inOutCubic, settle).
+- 令牌: 光谱阶梯 `--spectrum-1` .. `--spectrum-6` (蓝, 青, 绿, 黄, 红, 紫), 亮暗两套各取色板不同阶, 皮肤可覆盖.
+- 契约: `check-api-snapshot` 新增 `./controls` 与 `./kits` 两段; `docs-props` 对 `./controls` 与 `./kits` 全量抽 props.
+
 ## [0.7.0] - 2026-11-03
 
 V0 十项与 V1 区块层接进公共入口 (集成任务 V0-Z). 公共符号 981 -> 1599, 只增不删, 无迁移.
