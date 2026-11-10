@@ -12,10 +12,12 @@
 - `SpringMesh`: 多点抓取, 每个按下的指针 (多指 / 笔 / 鼠标) 各抓一处, 最多 4 处, 各自拉伸, 压瘪与回弹. 宿主改为 `touch-action: none`, 页面在它上面不再能触摸滚动.
 - `SoftShape`: 失焦改为真高斯模糊 (形状遍加横纵两遍可分离高斯, 走内核离屏通道), 替代原来的距离展宽近似; 尖角模糊更自然, 每帧多三遍离屏.
 - `SparkMark`: 脉冲与支弧改按轮廓弧长参数沿边走 (规格 uMapFrom / uMapTo), 凹形图形上也贴着轮廓, 替代原来的极角近似.
+- `SparkMark`: 补上规格的 PIXEL_BUDGET (像素比按 sqrt(4e6 / 宿主面积) 与 dpr 上限取小, 大宿主自动降分辨率) 与预模糊辉光 (烘在轮廓参数图里, 本体光与轮廓外余晖都取它).
 - `DotReveal`: 补上规格的 `fit` (cover / contain / fill, 默认 cover; contain 的留边是纸色) 与抠底 `keyOut` (规格 uMatte / uKey: 与图片四角底色相近处不出网点, 揭开也露纸色; 读不出像素时自动关闭).
 
 ### Changed
 
+- 更正 0.16.0 的 ENGINE-GAP 复核条: `SparkMark` 的 PIXEL_BUDGET 与预模糊辉光不是有意替代, 是未落项, 本版已补 (见 Added); 二者都不标 ENGINE-GAP.
 - controls 各族老控件的焦点环从 `focus-visible:ring-1 ring-ring` 统一换成 craft 的 `FOCUS_RING` (outline 1px, 偏移 2px, ring 色, 不随 transform 缩放); 原来是 ring-inset 的三处 (DrawerRow, DrawerActions, RipStub) 用 outline 内收 1px. 只改类名, 无 API 变化.
 
 ### Added

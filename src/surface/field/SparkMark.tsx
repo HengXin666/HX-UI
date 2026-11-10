@@ -1,7 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 ElectricLogo 条目, 实现为 HX 自有.
 // 不标 ENGINE-GAP (2026-11-10 复核定): 不涉顶点 / 实例化 / 深度. 脉冲与支弧按轮廓弧长参数图 (规格 uMapFrom / uMapTo) 沿边走.
-// PIXEL_BUDGET 与预模糊辉光 tGlowFrom / tGlowTo 是未落项 (用户 2026-11-10 定, 排在 CHECKPOINT 按序补做第 7 件); 现在由内核 dpr 上限与距离场解析辉光暂代.
+// PIXEL_BUDGET 按规格压像素比 (sqrt(4e6 / CSS 面积), 与 dpr 上限取小); 预模糊辉光 tGlowFrom / tGlowTo 烘在参数图的 B 通道里 (用户 2026-11-10 定为未落项, 已补).
 
 import { useEffect, useRef, useState, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";
@@ -13,7 +13,8 @@ import { useShaderBackdrop } from "../backdrop/kernel/use-surfaces";
 import { rasterImage, rasterPath, type MaskCanvas } from "./parts/mask";
 import { sdfCanvas, type SdfField } from "./parts/sdf";
 import { sparkMapCanvas, type SparkMap } from "./parts/spark-map";
-import { makeSpark, packPulses, startMorph, stepSpark } from "./parts/spark";
+import { makeSpark, packPulses, pixelBudgetDpr, startMorph, stepSpark } from "./parts/spark";
+import { BACKDROP_DPR_CAP } from "../backdrop/kernel/math";
 import { SPARK_FRAGMENT } from "./parts/spark-shader";
 import { SOFT, SPARK_MARK, SPARK_BOLT } from "./tokens";
 
@@ -89,6 +90,8 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
   const state = useRef(makeSpark());
   const [fields, setFields] = useState<Shapes>({ from: null, to: null });
   const latest = useRef(fields);
+  const cap = options.dpr ?? BACKDROP_DPR_CAP;
+  const [budgetDpr, setBudgetDpr] = useState(cap);
 
   useEffect(() => {
     let live = true;
@@ -118,6 +121,8 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
 
   const uniforms = (frame: BackdropFrame) => {
     const { width, height, scale: px } = frame.fit;
+    const want = pixelBudgetDpr(width / px, height / px, cap);
+    if (Math.abs(want - budgetDpr) > 0.01) setBudgetDpr(want);
     const s = state.current;
     stepSpark(s, frame.reduced ? 0 : frame.dt, frame.time, interactive, frame.pointer);
     const half = scale * 0.5 * Math.min(width, height);
@@ -151,7 +156,7 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
 
   const handle = useShaderBackdrop(
     { fragment: SPARK_FRAGMENT, uniforms, textures: () => ({ u_from: fields.from?.field.canvas, u_to: fields.to?.field.canvas, u_map_from: fields.from?.map?.canvas, u_map_to: fields.to?.map?.canvas }) },
-    { ...options, colors: [color, glowColor], pointer: interactive && options.pointer },
+    { ...options, dpr: Math.min(cap, budgetDpr), colors: [color, glowColor], pointer: interactive && options.pointer },
   );
   return (
     <BackdropShell handle={handle} fallback={fallbackGradient([glowColor, color])} opacity={opacity} {...rest}>

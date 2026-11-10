@@ -2,7 +2,8 @@
 /**
  * SparkMark 的轮廓参数图: 把形状的边界像素串成轮廓, 按累计弧长归一到 0..1 (多条轮廓首尾相接),
  * 再在 CELL 见方的格网上给每格记下最近边界点的弧长参数. 脉冲与支弧按这个参数沿边走, 凹形上也贴着轮廓.
- * 编码进 RGBA8 的 R/G 两字节 (16 位), 片元里 texelFetch 读最近格, 不交给硬件插值 (内核上传时翻转 y, 片元 uv 直接对应).
+ * 同一张图的 B 通道是预模糊辉光 (规格 tGlowFrom / tGlowTo): 每格覆盖率经几遍盒式模糊, 归一到峰值 1, 可交给硬件插值.
+ * 参数编码进 RGBA8 的 R/G 两字节 (16 位), 片元里 texelFetch 读最近格, 不交给硬件插值 (内核上传时翻转 y, 片元 uv 直接对应).
  *
  * .agents/notes/implemented/feature/2026-11-10-surface-field.md
  */
@@ -92,6 +93,39 @@ export function contourParams(inside: Uint8Array, w: number, h: number, cell: nu
   return { param, cols, rows, perimeter };
 }
 
+/** 一维盒式模糊 (半径 r 格, 边外按 0), 在 src 上沿 stride 方向做 n 条长 len 的线. */
+function boxLine(src: Float32Array, dst: Float32Array, n: number, len: number, step: number, lineStep: number, r: number): void {
+  for (let l = 0; l < n; l += 1) {
+    const base = l * lineStep;
+    let sum = 0;
+    for (let i = -r; i <= r; i += 1) if (i >= 0 && i < len) sum += src[base + i * step] ?? 0;
+    for (let i = 0; i < len; i += 1) {
+      dst[base + i * step] = sum / (2 * r + 1);
+      const out = i - r;
+      const add = i + r + 1;
+      if (out >= 0) sum -= src[base + out * step] ?? 0;
+      if (add < len) sum += src[base + add * step] ?? 0;
+    }
+  }
+}
+
+/** 预模糊辉光: 每格覆盖率 (cell 见方里内部像素的占比), 横纵各 passes 遍盒式模糊, 归一到峰值 1. */
+export function glowGrid(inside: Uint8Array, w: number, h: number, cell: number = SPARK_MARK.cell, radius: number = SPARK_MARK.glowCells, passes: number = SPARK_MARK.glowPasses): Float32Array {
+  const cols = Math.max(1, Math.ceil(w / cell));
+  const rows = Math.max(1, Math.ceil(h / cell));
+  const a = new Float32Array(cols * rows);
+  for (let y = 0; y < h; y += 1) for (let x = 0; x < w; x += 1) if (inside[y * w + x] === 1) a[Math.floor(y / cell) * cols + Math.floor(x / cell)] += 1 / (cell * cell);
+  const b = new Float32Array(cols * rows);
+  for (let k = 0; k < passes; k += 1) {
+    boxLine(a, b, rows, cols, 1, cols, radius);
+    boxLine(b, a, cols, rows, cols, 1, radius);
+  }
+  let peak = 0;
+  for (const v of a) peak = Math.max(peak, v);
+  if (peak > 0) for (let i = 0; i < a.length; i += 1) a[i] = (a[i] ?? 0) / peak;
+  return a;
+}
+
 export interface SparkMap {
   readonly canvas: HTMLCanvasElement;
   /** 总弧长, 以距离场像素计 (与 sdfCanvas 同一套留白与尺寸). */
@@ -113,6 +147,7 @@ export function sparkMapCanvas(mask: MaskCanvas, size: number = SPARK_MARK.raste
   const inside = new Uint8Array(w * h);
   for (let i = 0; i < w * h; i += 1) inside[i] = (alpha[i * 4 + 3] ?? 0) > 127 ? 1 : 0;
   const map = contourParams(inside, w, h);
+  const glow = glowGrid(inside, w, h);
   const out = document.createElement("canvas");
   out.width = map.cols;
   out.height = map.rows;
@@ -121,13 +156,13 @@ export function sparkMapCanvas(mask: MaskCanvas, size: number = SPARK_MARK.raste
   const img = octx.createImageData(map.cols, map.rows);
   map.param.forEach((v, i) => {
     const q = Math.round(Math.min(1, Math.max(0, v)) * 65535);
-    img.data.set([q >> 8, q & 255, 0, 255], i * 4);
+    img.data.set([q >> 8, q & 255, Math.round(Math.min(1, Math.max(0, glow[i] ?? 0)) * 255), 255], i * 4);
   });
   octx.putImageData(img, 0, 0);
   return { canvas: out, perimeter: map.perimeter };
 }
 
-/** 片元端: 生成 `<name>` 采样器与 `<name>_param(uv)` (最近格, 16 位解码). */
+/** 片元端: 生成 `<name>` 采样器, `<name>_param(uv)` (最近格, 16 位解码) 与 `<name>_glow(uv)` (预模糊辉光, 硬件插值). */
 export function sparkMapGlsl(name: string): string {
   return `
 uniform sampler2D ${name};
@@ -135,6 +170,9 @@ float ${name}_param(vec2 uv) {
   ivec2 sz = textureSize(${name}, 0);
   vec4 t = texelFetch(${name}, clamp(ivec2(floor(uv * vec2(sz))), ivec2(0), sz - 1), 0);
   return (floor(t.r * 255.0 + 0.5) * 256.0 + floor(t.g * 255.0 + 0.5)) / 65535.0;
+}
+float ${name}_glow(vec2 uv) {
+  return texture(${name}, clamp(uv, 0.0, 1.0)).b;
 }
 `;
 }

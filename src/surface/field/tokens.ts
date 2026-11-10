@@ -261,6 +261,10 @@ export const SPARK_MARK = {
   /** 本库定: 脉冲每 1.1s 发一个 (轮流占 3 个槽), 支弧伸出 reach = 14 x glow 个格. */
   pulseEvery: 1.1,
   reach: 14,
+  /** 本库定: 预模糊辉光 (规格 tGlowFrom / tGlowTo) 在 CELL 格网上做, 每格覆盖率经 3 遍半径 4 格的盒式模糊 (近似高斯), 归一到峰值 1; 轮廓外的辉光增益 0.35. */
+  glowCells: 4,
+  glowPasses: 3,
+  glowGain: 0.35,
 } as const;
 
 /** 本库自画的闪电图形 (24 x 24 视框), 没给 src 时用它. */

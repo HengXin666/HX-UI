@@ -92,3 +92,9 @@ export function packPulses(s: SparkState): Float32Array {
   s.pulses.forEach((p, i) => out.set([p.at, p.progress, p.age, p.w], i * 4));
   return out;
 }
+
+/** 规格 PIXEL_BUDGET: 像素比 min(设备上限, sqrt(budget / CSS 面积)), 大宿主时压低分辨率, 画布总像素约不超过 budget. */
+export function pixelBudgetDpr(cssWidth: number, cssHeight: number, cap: number, budget: number = SPARK_MARK.pixelBudget): number {
+  const area = Math.max(1, cssWidth) * Math.max(1, cssHeight);
+  return Math.min(cap, Math.sqrt(budget / area));
+}

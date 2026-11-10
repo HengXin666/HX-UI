@@ -53,8 +53,15 @@ void main() {
   vec2 hd = p - u_hover.xy;
   float heat = u_hover.w * exp(-dot(hd, hd) / max(u_hover.z * u_hover.z, 1.0));
   float breath = 1.0 + u_flicker * ${SPARK_MARK.breath.toFixed(1)} * wobble(vec2(t * 2.1, 7.0), 3.0);
-  float halo = exp(-max(base, 0.0) / max(u_look.y * unit * 6.0, 1e-3));
+  // 辉光: 有参数图时取它 B 通道的预模糊辉光 (两图按形变进度混合, glow 越大铺得越开), 否则按距离场解析衰减.
+  vec2 guvF = p / (2.0 * u_half_from) + 0.5;
+  vec2 guvT = p / (2.0 * u_half_to) + 0.5;
+  float gTo = u_map_to_glow(guvT);
+  float gFrom = u_has_map.x > 0.5 ? u_map_from_glow(guvF) : gTo;
+  float baked = pow(clamp(mix(gFrom, gTo, k) * 2.0, 0.0, 1.0), 1.0 / max(u_look.y, 0.05));
+  float halo = u_has_map.y > 0.5 ? baked : exp(-max(base, 0.0) / max(u_look.y * unit * 6.0, 1e-3));
   float energy = smoothstep(0.75, -0.75, base / unit) * u_look.w * (0.06 + 1.2 * min(halo, 1.0)) * (1.0 + heat * 0.5);
+  energy += u_has_map.y > 0.5 ? baked * step(0.0, base) * u_look.y * ${SPARK_MARK.glowGain.toFixed(2)} : 0.0;
   float hot = 0.0;
   float w = u_look.z * unit * 0.35 * (1.0 + heat);
   for (int i = 0; i < ${SPARK_MARK.arcs}; i++) {

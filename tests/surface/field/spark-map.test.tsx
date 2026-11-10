@@ -3,7 +3,8 @@
  */
 import { describe, expect, it, vi } from "vitest";
 import { SPARK_MARK } from "@src/surface/field";
-import { contourParams, sparkMapCanvas, traceContours } from "@src/surface/field/parts/spark-map";
+import { pixelBudgetDpr } from "@src/surface/field/parts/spark";
+import { contourParams, glowGrid, sparkMapCanvas, traceContours } from "@src/surface/field/parts/spark-map";
 import { SPARK_FRAGMENT } from "@src/surface/field/parts/spark-shader";
 
 /** w x h 的格里按 fill(x, y) 填内部. */
@@ -41,6 +42,24 @@ describe("SparkMark 轮廓参数图", () => {
     const outer = at(30, 51);
     const gap = Math.abs(inner - outer);
     expect(Math.min(gap, 1 - gap)).toBeGreaterThan(0.2);
+  });
+  it("预模糊辉光: 峰值 1 在形状中心, 向外衰减, 轮廓外仍有余晖; 空形状全 0", () => {
+    const inside = grid(80, 80, (x, y) => x >= 28 && x < 52 && y >= 28 && y < 52);
+    const g = glowGrid(inside, 80, 80, 4, 4, 3);
+    const at = (c: number, r: number) => g[r * 20 + c] ?? 0;
+    expect(Math.max(...g)).toBeCloseTo(1, 6);
+    expect(at(9, 9)).toBeGreaterThan(at(7, 9));
+    expect(at(6, 9)).toBeGreaterThan(0.05);
+    expect(at(0, 0)).toBeLessThan(at(6, 9));
+    expect(Math.max(...glowGrid(new Uint8Array(64), 8, 8, 4, 2, 3))).toBe(0);
+    expect(SPARK_FRAGMENT).toContain("u_map_to_glow(guvT)");
+    expect(SPARK_MARK).toMatchObject({ glowCells: 4, glowPasses: 3, glowGain: 0.35 });
+  });
+  it("PIXEL_BUDGET: 小宿主取设备上限, 大宿主按 sqrt(4e6 / 面积) 压低", () => {
+    expect(SPARK_MARK.pixelBudget).toBe(4e6);
+    expect(pixelBudgetDpr(800, 600, 2)).toBe(2);
+    expect(pixelBudgetDpr(2560, 1440, 2)).toBeCloseTo(Math.sqrt(4e6 / (2560 * 1440)), 9);
+    expect(pixelBudgetDpr(0, 0, 1.5)).toBe(1.5);
   });
   it("拿不到 2d 上下文时为 null; 片元按参数图取弧长, 没有图时退回极角", () => {
     const spy = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);

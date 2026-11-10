@@ -167,8 +167,8 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
   4. ~~SpringMesh: 多点抓取~~ 已做 (上限 4 槽, parts/mesh-grabs).
   5. ~~SoftShape: 失焦改真高斯~~ 已做 (形状遍 + 横纵两遍高斯, 上屏按透镜插值).
   6. ~~SparkMark: 脉冲沿轮廓改弧长参数~~ 已做 (parts/spark-map 轮廓参数图, CELL 4).
-  7. SparkMark: PIXEL_BUDGET (按宿主面积压分辨率) 与预模糊辉光 (用户 2026-11-10 23:37 定: 算未落项, 要补, 不再算有意替代; 组件文件头 / field note / CHANGELOG 一致).
-- ENGINE-GAP 复核 (2026-11-10 定, 组件文件头 / note / CHANGELOG 0.16.0 一致): SoftShape 失焦近似不标 (不涉顶点 / 实例化 / 深度, 真高斯排在上面第 5 件); SparkMark 的 PIXEL_BUDGET 与预模糊辉光 / 2d 画布逐帧层不标, 是有意替代不再补, 脉冲极角是未落项 (第 6 件); PrismOrb 的 PIXEL_BUDGET 同样不算 ENGINE-GAP, 文件头措辞已改.
+  7. ~~SparkMark: PIXEL_BUDGET 与预模糊辉光~~ 已做 (pixelBudgetDpr; 辉光烘在参数图 B 通道). 用户 2026-11-10 23:37 定为未落项, 组件文件头 / field note / CHANGELOG 已一致.
+- ENGINE-GAP 复核 (2026-11-10 定, 组件文件头 / note / CHANGELOG 0.16.0 一致): SoftShape 失焦近似不标 (不涉顶点 / 实例化 / 深度, 真高斯排在上面第 5 件); SparkMark 的 PIXEL_BUDGET 与预模糊辉光不标 ENGINE-GAP, 用户定为未落项已补 (第 7 件), 脉冲极角是未落项已补 (第 6 件); PrismOrb 的 PIXEL_BUDGET 同样不算 ENGINE-GAP, 文件头措辞已改.
 - 内核若加浮点数据纹理上传, CubeField 的 gridSize 上限 13 可放开.
 
 - `tallyOvershoot` 缓存 Map 无上限, 考虑量化键或 LRU.
