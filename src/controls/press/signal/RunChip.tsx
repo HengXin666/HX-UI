@@ -3,7 +3,7 @@
 
 import { FileIcon, PencilIcon, SearchIcon, TerminalIcon, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties, type JSX, type RefObject } from "react";
-import { PRESS_SCALE } from "../../../craft/tokens";
+import { PRESS_SCALE, FOCUS_RING } from "../../../craft/tokens";
 import { createFrameLoop } from "../../../motion/frame/loop";
 import { prefersReducedMotion } from "../../../primitives/motion";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
@@ -130,7 +130,8 @@ export function RunChip({
   );
   const shell = cn(
     "relative inline-flex max-w-full select-none items-center gap-2 overflow-hidden border border-border bg-muted px-2.5 text-xs text-foreground outline-none",
-    retry && "cursor-pointer focus-visible:ring-1 focus-visible:ring-ring",
+    retry && "cursor-pointer",
+    retry && FOCUS_RING,
     className,
   );
   const shellStyle: CSSProperties = {

@@ -10,6 +10,7 @@ import { RipPerforation } from "./parts/rip/RipPerforation";
 import { jagged } from "./parts/rip/rip-shape";
 import { freshRipSim, releaseStub, stepRipSim, type RipSim } from "./parts/rip/rip-sim";
 import { useRipDrag } from "./parts/rip/use-rip-drag";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /** 本文件内重复出现的字面量, 只写一次. */
 const TWO = 2;
@@ -222,7 +223,7 @@ export function RipStub({
 								tear();
 								frame.wake();
 							}}
-							className="size-full p-3 text-left outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset"
+							className={cn("size-full p-3 text-left", FOCUS_RING, "focus-visible:-outline-offset-1")}
 						>
 							{stub}
 						</button>

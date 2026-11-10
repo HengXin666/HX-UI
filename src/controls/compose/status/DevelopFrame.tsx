@@ -25,6 +25,7 @@ import {
   type HxColor,
 } from "../tokens";
 import { blurFor, developApproach, drawVeil } from "./develop-veil";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 export interface DevelopFrameProps {
   readonly status?: DevelopStatus;
@@ -185,7 +186,7 @@ export function DevelopFrame({
           <button
             type={BUTTON_TYPE}
             onClick={onRetry}
-            className="rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground outline-none hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring motion-safe:active:scale-[0.96]"
+            className={cn("rounded-full border border-border bg-background px-3 py-1 text-sm text-foreground hover:bg-accent", FOCUS_RING, "motion-safe:active:scale-[0.96]")}
             style={{
               transition: transitionOf([
                 [CSS_PROP.opacity, DEVELOP.fadeMs],

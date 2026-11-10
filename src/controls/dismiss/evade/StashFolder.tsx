@@ -12,6 +12,7 @@ import { closeDelays, driftForce, layoutChips, liveDelay, openCurve } from "./ev
 import { FolderFace } from "./parts/FolderFace";
 import { STASH_CLOSE_MS, STASH_OPEN_MS, chipTransform, chipTransition } from "./parts/stash-motion";
 import { useStashDrag, type StashChip } from "./parts/use-stash-drag";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /** 本文件内重复出现的字面量, 只写一次. */
 const STR_ONE = "1";
@@ -209,7 +210,7 @@ export function StashFolder({
 									select(item, i);
 								}
 							}}
-							className="absolute left-0 top-0 flex touch-none items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-card-foreground shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring motion-reduce:transition-none"
+							className={cn("absolute left-0 top-0 flex touch-none items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-card-foreground shadow-sm", FOCUS_RING, "motion-reduce:transition-none")}
 							style={{
 								width: slot.width,
 								transform: chipTransform(slot, isOpen),

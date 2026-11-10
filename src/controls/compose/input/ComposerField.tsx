@@ -10,6 +10,7 @@ import { useFrameLoop } from "../../../motion/frame/use-frame-loop";
 import { BUTTON_TYPE, COMPOSE_EASE_OUT, COMPOSE_FRAME, COMPOSER, CSS_PROP, HALF, MS_PER_S, transitionOf } from "../tokens";
 import { ListeningBars, SendGlyph, SourcePicker, popIn, type ComposerSource } from "./composer-parts";
 import { FLOW_REST, composerHeight, drawFlow, stepFlow, type Flow } from "./parts/composer-flow";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 export interface ComposerFieldProps {
   readonly value?: string;
@@ -211,7 +212,7 @@ export function ComposerField({
           aria-label={busy ? stopLabel : sendLabel}
           disabled={disabled || !canSend}
           onClick={submit}
-          className="inline-flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:bg-muted disabled:text-muted-foreground motion-safe:active:scale-[0.94]"
+          className={cn("inline-flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground", FOCUS_RING, "disabled:bg-muted disabled:text-muted-foreground motion-safe:active:scale-[0.94]")}
           style={{
             transition: transitionOf([
               [CSS_PROP.background, COMPOSER.sendColorMs],

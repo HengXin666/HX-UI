@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### Changed
+
+- controls 各族老控件的焦点环从 `focus-visible:ring-1 ring-ring` 统一换成 craft 的 `FOCUS_RING` (outline 1px, 偏移 2px, ring 色, 不随 transform 缩放); 原来是 ring-inset 的三处 (DrawerRow, DrawerActions, RipStub) 用 outline 内收 1px. 只改类名, 无 API 变化.
+
 ### Added
 
 - `@hx/ui/backgrounds`: surface 层 Backgrounds 全族 64 件, 按 glow / rays / lines / grid / glyph / fluid / particles 七路组织, 全部接在 `src/surface/backgrounds` 渲染内核上 (WebGL2, 不引 three / ogl / gsap). 行为规格取自 `docs/research/catalog/backgrounds-1.md` / `-2.md`, 实现为 HX 自有. 3D 件做简化版并在文件头标 `ENGINE-GAP:`. 根入口 `src/index.ts` 不新增符号.

@@ -2,6 +2,7 @@
 import type { JSX, ReactNode, RefObject } from "react";
 import { cn } from "../../../../primitives/utils";
 import { DISMISS_EASE_OUT, ROW } from "../../tokens";
+import { FOCUS_RING } from "../../../../craft/tokens";
 
 export type DismissTone = "destructive" | "primary" | "neutral";
 
@@ -47,7 +48,7 @@ export function DrawerActions({ drawerRef, actions, actionTone, actionWidth, fro
 					disabled={disabled}
 					onClick={() => onRun(action)}
 					className={cn(
-						"flex h-full min-w-0 items-center justify-center gap-1.5 text-sm font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset active:scale-[0.96] motion-reduce:transition-none",
+						"flex h-full min-w-0 items-center justify-center gap-1.5 text-sm font-medium", FOCUS_RING, "focus-visible:-outline-offset-1", "active:scale-[0.96] motion-reduce:transition-none",
 						TONE_CLASS[action.tone ?? actionTone],
 						index === actions.length - 1 ? "flex-1" : "shrink-0",
 					)}

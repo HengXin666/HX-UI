@@ -8,6 +8,7 @@ import { cn } from "../../../primitives/utils";
 import { springFromDuration } from "../../../motion/spring/fit";
 import { DOUBLE, FADE_MS, HALF, MS_PER_SECOND, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, PRESS_FIT, clamp, transitionOf } from "../tokens";
 import { useDrivenValue } from "../../../motion/drive/use-driven-value";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /** 本文件内重复出现的字面量, 只写一次. */
 const NEG_ONE = -1;
@@ -174,7 +175,7 @@ export function PullSend({
         aria-label={ariaLabel}
         disabled={disabled}
         data-armed={armed || undefined}
-        className="absolute flex touch-none select-none items-center justify-center rounded-full bg-foreground text-background outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+        className={cn("absolute flex touch-none select-none items-center justify-center rounded-full bg-foreground text-background", FOCUS_RING, "disabled:cursor-not-allowed disabled:opacity-50")}
         style={{ left: PULL_GAP, top: PULL_GAP, width: pad, height: pad, transform: `translate(${px.value}px, ${py.value}px)` }}
         onClick={(event) => {
           if (event.detail === 0) send(0, NEG_ONE, 1);

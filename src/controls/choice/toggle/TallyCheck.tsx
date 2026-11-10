@@ -2,7 +2,7 @@
 
 /** 行为规格参照 catalog/micro.md 的 SpringCheck 条目 (仅作出处说明, 实现为 HX 自写). */
 import { useEffect, useId, useState, type JSX } from "react";
-import { PRESS_SCALE } from "../../../craft/tokens";
+import { PRESS_SCALE, FOCUS_RING } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import type { SpringSpec } from "../../../craft/spring";
@@ -131,7 +131,7 @@ export function TallyCheck({
 			disabled={disabled}
 			data-slot="tally-check"
 			data-state={on ? "checked" : "unchecked"}
-			className={cn("group inline-flex items-center gap-3 rounded-md text-left outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50", className)}
+			className={cn("group inline-flex items-center gap-3 rounded-md text-left", FOCUS_RING, "disabled:cursor-not-allowed disabled:opacity-50", className)}
 			onClick={toggle}
 			onPointerDown={() => setPressed(true)}
 			onPointerUp={() => setPressed(false)}

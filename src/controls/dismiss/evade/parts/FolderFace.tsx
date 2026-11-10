@@ -1,6 +1,8 @@
 // StashFolder 的文件夹本体: 底板, 露出的纸, 按开合角翻转的前盖与标题; 整块是打开菜单的按钮.
 import type { JSX } from "react";
 import { DISMISS_EASE_OUT, STASH } from "../../tokens";
+import { FOCUS_RING } from "../../../../craft/tokens";
+import { cn } from "../../../../primitives/utils";
 
 const TWO = 2;
 const ARIA_TRUE = "true";
@@ -36,7 +38,7 @@ export function FolderFace({ menuId, open, setOpen, label, sublabel, radius, lif
 					setOpen(true);
 				}
 			}}
-			className="absolute inset-0 outline-none focus-visible:ring-1 focus-visible:ring-ring"
+			className={cn("absolute inset-0", FOCUS_RING)}
 			style={{ borderRadius: radius }}
 		>
 			<span aria-hidden={ARIA_TRUE} className="absolute inset-0 border border-border bg-muted" style={{ borderRadius: radius }} />

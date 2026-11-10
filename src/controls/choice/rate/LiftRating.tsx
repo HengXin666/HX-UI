@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type JSX, type KeyboardEvent, type ReactNo
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { PROP_COLOR, PROP_OPACITY, PROP_TRANSFORM, PX, SPEC_EASE_OUT, toneVar, transition, type ChoiceTone } from "../tone";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /** 选中时的弹跳: 300ms 内 1 到 popScale (35% 处) 再回 1, 两段都用规格 ease-out. */
 export const LIFT_POP_MS = 300;
@@ -207,7 +208,7 @@ export function LiftRating({
 						onPointerEnter={() => !inert && preview(star)}
 						onFocus={() => !inert && preview(star)}
 						onBlur={() => preview(null)}
-						className={cn("relative rounded-sm outline-none focus-visible:ring-1 focus-visible:ring-ring", inert ? "cursor-default" : "cursor-pointer")}
+						className={cn("relative rounded-sm", FOCUS_RING, inert ? "cursor-default" : "cursor-pointer")}
 						style={{
 							width: size + PX,
 							height: size + PX,

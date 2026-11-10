@@ -9,6 +9,7 @@ import { cn } from "../../../primitives/utils";
 import { useSpringChannels } from "../../../motion/drive/use-spring-channels";
 import { HALF, PX, TURN, colorVar, type HxColor } from "../tokens";
 import { TURN_AXIS, nearestFace, settleTurn, showsBack, spinOf, velocityOf, type TurnAxis, type TurnSample } from "./parts/turn-math";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 export { TURN_AXIS, nearestFace, settleTurn, showsBack, spinOf, velocityOf, type TurnAxis } from "./parts/turn-math";
 
@@ -200,7 +201,7 @@ export function TurnCard({
       aria-label={label}
       data-slot="turn-card"
       data-face={face ? "back" : "front"}
-      className={cn("relative touch-none select-none outline-none focus-visible:ring-1 focus-visible:ring-ring", className)}
+      className={cn("relative touch-none select-none", FOCUS_RING, className)}
       style={{ width, height, perspective: `${perspective}${PX}`, borderRadius: radius }}
       onPointerEnter={() => {
         if (reduced) return;

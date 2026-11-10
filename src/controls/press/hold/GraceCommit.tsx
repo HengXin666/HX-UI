@@ -2,7 +2,7 @@
 // 行为规格参照 docs/research/catalog/micro.md 的 FuseButton 条目, 实现为 HX 自有.
 
 import { useEffect, useRef, useState, type CSSProperties, type JSX, type ReactNode } from "react";
-import { PRESS_SCALE } from "../../../craft/tokens";
+import { PRESS_SCALE, FOCUS_RING } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, transitionOf } from "../tokens";
@@ -163,7 +163,7 @@ export function GraceCommit({
         syncPause();
       }}
       className={cn(
-        "relative inline-grid select-none place-items-center border border-border bg-muted font-medium text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[phase=armed]:bg-accent",
+        "relative inline-grid select-none place-items-center border border-border bg-muted font-medium text-foreground", FOCUS_RING, "disabled:cursor-not-allowed disabled:opacity-50 data-[phase=armed]:bg-accent",
         SIZE_CLASS[size],
         className,
       )}

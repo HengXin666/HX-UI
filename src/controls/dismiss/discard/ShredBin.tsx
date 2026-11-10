@@ -13,6 +13,7 @@ import { paintCard, paintFeed } from "./parts/shred/shred-paint";
 import { feedThrough, newFeed, stepCard, stepFeed, type Feed } from "./parts/shred/shred-sim";
 import { useShredDrag } from "./parts/shred/use-shred-drag";
 import { useShredStack } from "./parts/shred/use-shred-stack";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /** 本文件内重复出现的字面量, 只写一次. */
 const TWO = 2;
@@ -213,7 +214,7 @@ export function ShredBin<T extends ShredItem>({
 							onPointerUp={(event) => onPointerUp(event, item)}
 							onPointerCancel={(event) => onPointerUp(event, item)}
 							onKeyDown={(event) => onKeyDown(event, item, index)}
-							className="absolute top-0 touch-none outline-none focus-visible:ring-1 focus-visible:ring-ring"
+							className={cn("absolute top-0 touch-none", FOCUS_RING)}
 							style={{ left: inset, right: inset }}
 						>
 							{renderItem(item)}

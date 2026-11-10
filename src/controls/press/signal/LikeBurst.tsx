@@ -4,7 +4,7 @@
 import { HeartIcon, StarIcon, ThumbsUpIcon, type LucideIcon } from "lucide-react";
 import { useRef, useState, type JSX } from "react";
 import { ease } from "../../../craft/ease";
-import { PRESS_SCALE } from "../../../craft/tokens";
+import { PRESS_SCALE, FOCUS_RING } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { DOUBLE, FADE_MS, HALF, PERCENT, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, transitionOf } from "../tokens";
@@ -125,7 +125,7 @@ export function LikeBurst({
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
       className={cn(
-        "relative inline-flex select-none items-center gap-1.5 border border-border bg-muted pr-3 text-sm font-medium text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "relative inline-flex select-none items-center gap-1.5 border border-border bg-muted pr-3 text-sm font-medium text-foreground", FOCUS_RING, "disabled:cursor-not-allowed disabled:opacity-50",
         !showCount && "pr-0",
         className,
       )}

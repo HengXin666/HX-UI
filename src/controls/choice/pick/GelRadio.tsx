@@ -2,7 +2,7 @@
 
 /** 行为规格参照 catalog/micro.md 的 JellyRadio 条目 (仅作出处说明, 实现为 HX 自写). */
 import { useEffect, useLayoutEffect, useReducer, useRef, useState, type JSX, type KeyboardEvent } from "react";
-import { PRESS_SCALE } from "../../../craft/tokens";
+import { PRESS_SCALE, FOCUS_RING } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import type { SpringSpec } from "../../../craft/spring";
@@ -219,7 +219,7 @@ export function GelRadio({
 						aria-checked={active}
 						tabIndex={active && !disabled ? 0 : BACK}
 						disabled={disabled || item.disabled}
-						className="relative z-[1] whitespace-nowrap rounded-full font-medium outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40"
+						className={cn("relative z-[1] whitespace-nowrap rounded-full font-medium", FOCUS_RING, "disabled:cursor-not-allowed disabled:opacity-40")}
 						style={{
 							height: height + PX,
 							paddingInline: padX + PX,

@@ -11,6 +11,7 @@ import { DrawerActions, type DismissTone, type DrawerRowAction } from "./parts/D
 import { DRAWER_IDLE, drawerSpring, stepDrawerMotion, type DrawerMotion } from "./parts/drawer-motion";
 import { useDrawerDrag } from "./parts/use-drawer-drag";
 import { rowSign, type RowDirection } from "./swipe-math";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 export { TONE_CLASS, type DismissTone, type DrawerRowAction } from "./parts/DrawerActions";
 
@@ -206,7 +207,7 @@ export function DrawerRow({
 				onPointerUp={onPointerEnd}
 				onPointerCancel={onPointerEnd}
 				onKeyDown={onKeyDown}
-				className="relative flex h-full touch-pan-y select-none items-center bg-card px-4 text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset"
+				className={cn("relative flex h-full touch-pan-y select-none items-center bg-card px-4 text-foreground", FOCUS_RING, "focus-visible:-outline-offset-1")}
 				style={{ borderRadius: radius }}
 			>
 				{children}

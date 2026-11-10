@@ -10,6 +10,7 @@ import { BUTTON_TYPE, CURRENT_COLOR, COMPOSE_EASE_IN_OUT, COMPOSE_EASE_OUT, EASE
 import { TRACE_GLYPH, TraceGlyphMark, type TraceGlyph } from "./parts/TraceGlyphMark";
 import { TraceStepRow, type TraceStep } from "./parts/TraceStepRow";
 import { breathTrough, fadeTo, glyphSwapAt } from "./parts/trace-motion";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 export { TRACE_GLYPH, type TraceGlyph } from "./parts/TraceGlyphMark";
 export { type TraceStep } from "./parts/TraceStepRow";
@@ -206,7 +207,7 @@ export function ReasoningTrace({
           aria-expanded={open}
           aria-controls={listId}
           onClick={() => setOpen((was) => !was)}
-          className="inline-flex items-center gap-2 self-start rounded-md text-left outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className={cn("inline-flex items-center gap-2 self-start rounded-md text-left", FOCUS_RING)}
         >
           {headInner}
         </button>

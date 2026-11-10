@@ -6,6 +6,7 @@ import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion"
 import { cn } from "../../../primitives/utils";
 import { DOUBLE, FADE_MS, LINEAR_EASE, PERCENT, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FEEDBACK_MS, transitionOf } from "../tokens";
 import { useDrivenValue } from "../../../motion/drive/use-driven-value";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /** 按下到松开短于它算轻点, 走 onTap 而不是回退. */
 export const HOLD_TAP_MS = 250;
@@ -206,7 +207,7 @@ export function HoldConfirm({
       onKeyUp={(event) => keyHold(event, false)}
       onClick={(event) => event.preventDefault()}
       className={cn(
-        "relative inline-flex touch-none select-none items-center justify-center overflow-hidden border border-border bg-muted font-medium text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "relative inline-flex touch-none select-none items-center justify-center overflow-hidden border border-border bg-muted font-medium text-foreground", FOCUS_RING, "disabled:cursor-not-allowed disabled:opacity-50",
         SIZE_CLASS[size],
         className,
       )}

@@ -6,6 +6,7 @@ import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion"
 import { cn } from "../../../primitives/utils";
 import { DOUBLE, MS_PER_SECOND, PERCENT, PRESS_EASE_OUT, clamp } from "../tokens";
 import { useDrivenValue } from "../../../motion/drive/use-driven-value";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /** 升降与倾斜共用的弹簧: 刚度 380, 阻尼 10, 质量 1 (规格原值, 已是引擎参数). */
 export const LIFT_SPRING = { stiffness: 380, damping: 10, mass: 1 } as const;
@@ -123,7 +124,7 @@ export function Liftoff({
             ref={body}
             type="button"
             data-airborne={airborne || undefined}
-            className={cn("relative inline-flex select-none items-center justify-center rounded-lg border border-border bg-primary font-medium text-primary-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring", SIZE_CLASS[size])}
+            className={cn("relative inline-flex select-none items-center justify-center rounded-lg border border-border bg-primary font-medium text-primary-foreground", FOCUS_RING, SIZE_CLASS[size])}
             style={{ borderRadius: radius }}
             onPointerEnter={trigger === HOVER ? rise : undefined}
             onPointerLeave={trigger === HOVER ? land : undefined}

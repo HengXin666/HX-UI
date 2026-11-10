@@ -9,6 +9,7 @@ import { toneVar, type RangeTone } from "../tokens";
 import { keyStep } from "./keys";
 import { arcPath, polar, pointerToFraction } from "./parts/arc-geometry";
 import { KNOB_DEAD_PX, KNOB_DRAG_PX, KNOB_STALE_MS, KNOB_V_FLICK, KNOB_V_FULL, stepKnob, type KnobState } from "./parts/knob-physics";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 export { angleToFraction } from "./parts/arc-geometry";
 export { KNOB_DEAD_PX, KNOB_DECEL, KNOB_DRAG_PX, KNOB_STALE_MS, KNOB_TAU_FOLLOW, KNOB_TAU_V, KNOB_V_FLICK, KNOB_V_FULL, coastStep, knobSpring } from "./parts/knob-physics";
@@ -233,7 +234,7 @@ export function ArcKnob({
 			onPointerUp={onPointerEnd}
 			onPointerCancel={onPointerEnd}
 			onKeyDown={onKeyDown}
-			className={cn("touch-none select-none rounded-full outline-none focus-visible:ring-1 focus-visible:ring-ring aria-disabled:opacity-50", className)}
+			className={cn("touch-none select-none rounded-full", FOCUS_RING, "aria-disabled:opacity-50", className)}
 		>
 			<path d={arcPath(c, c, radius, start, start + sweep)} fill={NONE} stroke={toneVar("input")} strokeWidth={trackWidth} strokeLinecap={ROUND} />
 			<path ref={tailRef} fill={NONE} stroke={toneVar(accentTone)} strokeOpacity={TAIL_OPACITY} strokeWidth={cometWidth} strokeLinecap={ROUND} />

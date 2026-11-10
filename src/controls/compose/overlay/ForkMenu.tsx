@@ -7,6 +7,7 @@ import { useState, type JSX, type ReactNode } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { BUTTON_TYPE, COMPOSE_EASE_OUT, CSS_PROP, CURRENT_COLOR, FORK, NONE, colorVar, transitionOf, type HxColor } from "../tokens";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 export interface ForkLeaf {
   readonly id: string;
@@ -148,7 +149,7 @@ export function ForkMenu({
                 aria-expanded={leafy ? undefined : expanded}
                 aria-current={on || undefined}
                 onClick={() => (leafy ? pick(branch.id) : toggle(index))}
-                className="relative flex w-full items-center gap-2 bg-transparent text-left outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className={cn("relative flex w-full items-center gap-2 bg-transparent text-left", FOCUS_RING)}
                 style={{ ...rowStyle, paddingLeft: FORK.pad, paddingRight: FORK.pad, color: inkOf(on), transition: inkTransition }}
               >
                 <span aria-hidden className="flex shrink-0 items-center justify-center" style={{ width: FORK.mark, height: FORK.mark }}>
@@ -195,7 +196,7 @@ export function ForkMenu({
                             tabIndex={expanded ? 0 : -1}
                             aria-current={leafOn || undefined}
                             onClick={() => pick(leaf.id)}
-                            className="relative flex w-full items-center bg-transparent text-left outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            className={cn("relative flex w-full items-center bg-transparent text-left", FOCUS_RING)}
                             style={{
                               ...rowStyle,
                               paddingLeft: indent,

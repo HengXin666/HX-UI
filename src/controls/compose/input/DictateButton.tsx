@@ -12,6 +12,7 @@ import { closeMic, freshLive, openMic, type Live } from "./parts/dictate-mic";
 import { WAVE_BARS, WAVE_PITCH, drawWave } from "./parts/dictate-wave";
 import { useDictateGesture } from "./parts/use-dictate-gesture";
 import { barLevel, followEnvelope, formatClock, micLevel, pushWave, simulatedLevel } from "./voice-signal";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 export const DICTATE_MODE = { auto: "auto", toggle: "toggle", hold: "hold" } as const;
 export type DictateMode = (typeof DICTATE_MODE)[keyof typeof DICTATE_MODE];
@@ -183,7 +184,7 @@ export function DictateButton({
       onPointerCancel={onPointerUp}
       onKeyDown={onKeyDown}
       className={cn(
-        "relative inline-flex touch-none select-none items-center overflow-hidden outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "relative inline-flex touch-none select-none items-center overflow-hidden", FOCUS_RING, "disabled:cursor-not-allowed disabled:opacity-50",
         shape === DICTATE_SHAPE.pill ? "rounded-full" : "rounded-lg",
         className,
       )}

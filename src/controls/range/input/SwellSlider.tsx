@@ -10,6 +10,7 @@ import { stepSpringExact } from "../../../motion/spring/step";
 import { clamp, smoothstep, snap } from "../math";
 import { CRITICAL_SETTLE, DURATION_VAR, MS_PER_S, RANGE_DT_CAP_MS, toneVar, type RangeTone } from "../tokens";
 import { keyStep, PERCENT } from "./keys";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /*
  * 行为规格参照 catalog/micro.md 的 WakeSlider 条目. 一排竖条组成的滑杆, 值头移动时竖条按速度隆起成尾迹.
@@ -213,7 +214,7 @@ export function SwellSlider({
 					dragging.current = false;
 					setActive(false);
 				}}
-				className="flex w-full cursor-pointer touch-none select-none items-center rounded-sm outline-none focus-visible:ring-1 focus-visible:ring-ring aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+				className={cn("flex w-full cursor-pointer touch-none select-none items-center rounded-sm", FOCUS_RING, "aria-disabled:cursor-not-allowed aria-disabled:opacity-50")}
 				style={rowStyle}
 			>
 				{Array.from({ length: bars }, (_, i) => (

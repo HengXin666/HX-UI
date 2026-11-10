@@ -1,7 +1,7 @@
 "use client";
-
 // 行为规格参照 docs/research/catalog/micro.md 的 PaperCrumple 条目, 仅作出处说明; 实现与命名为 HX 自有.
 import { useEffect, useId, useRef, useState, type CSSProperties, type JSX, type KeyboardEvent, type PointerEvent } from "react";
+import { FOCUS_RING } from "../../../craft/tokens";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { makeAxis, snapAxis, stepAxis, type Axis } from "../../../motion/drive/axis";
@@ -229,7 +229,7 @@ export function CrushSheet({
 				onKeyDown={onKeyDown}
 				onKeyUp={onKeyUp}
 				onBlur={() => held.current && setHeld(false, true)}
-				className="relative touch-none rounded-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+				className={cn("relative touch-none rounded-sm", FOCUS_RING)}
 			>
 				<div ref={sheetRef} className="relative overflow-hidden rounded-sm bg-card" style={{ width, height, filter: `url(#${filterId})` }}>
 					<img src={src} alt="" draggable={false} className="size-full" style={{ objectFit: imageFit }} />

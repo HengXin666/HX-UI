@@ -9,6 +9,7 @@ import { cn } from "../../../primitives/utils";
 import { springFromDuration, springFromStiffness } from "../../../motion/spring/fit";
 import { FADE_MS, MS_PER_SECOND, PERCENT, PLAIN_EASE, PRESS_EASE_OUT, PRESS_FIT, clamp, shakeFrames, transitionOf } from "../tokens";
 import { useDrivenValue } from "../../../motion/drive/use-driven-value";
+import { FOCUS_RING } from "../../../craft/tokens";
 
 /** 拇指与轨道内壁的间距. */
 export const SWIPE_PAD = 4;
@@ -183,7 +184,7 @@ export function SwipeConfirm({
         aria-labelledby={labelId}
         disabled={disabled || busy}
         data-slot="swipe-confirm-thumb"
-        className="absolute flex touch-none items-center justify-center bg-foreground text-background outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed"
+        className={cn("absolute flex touch-none items-center justify-center bg-foreground text-background", FOCUS_RING, "disabled:cursor-not-allowed")}
         style={{
           left: SWIPE_PAD,
           top: SWIPE_PAD,
