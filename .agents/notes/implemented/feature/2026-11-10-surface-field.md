@@ -15,7 +15,7 @@ Decision-ID: surface-field
 - `src/surface/field/parts/lens.ts`, `src/surface/field/parts/lens-shader.ts`, `src/surface/field/RippleLens.tsx`
 - `src/surface/field/parts/sdf.ts` (遮罩到有符号距离场 + 16 位编码与 GLSL 解码, SoftShape 与 SparkMark 共用)
 - `src/surface/field/parts/soft.ts`, `src/surface/field/parts/soft-shader.ts`, `src/surface/field/SoftShape.tsx`
-- `src/surface/field/parts/spark.ts`, `src/surface/field/parts/spark-shader.ts`, `src/surface/field/SparkMark.tsx`
+- `src/surface/field/parts/spark.ts`, `src/surface/field/parts/spark-map.ts`, `src/surface/field/parts/spark-shader.ts`, `src/surface/field/SparkMark.tsx`
 - `src/surface/field/index.ts`
 - `tests/surface/field/{ink,merge,chrome,beam,lens,soft,spark}.test.tsx`
 
@@ -55,5 +55,5 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 - BeamFlow 没有落的: surfaceRef (跟随页面上另一个元素的顶边当地面; 内核只量自己的宿主, 这里改成 surfaceLevel 比例), 规格的固定 TINTS 色板 (颜色只走 token), MAX_RENDER_DIM 与 BASE_SATURATION, 揭图按宿主拉伸而不是 cover 裁切.
 - RippleLens 没有落的: 规格的 uTexel / uTextureSize 细节按本库自己的 cover 映射重写. 图片跨域失败时画布透明 (不退兜底).
 - SoftShape 没有落的: 无 (真高斯已补). 色散是最大失焦时的三通道错开, 局部失焦按插值同比缩小. 图片距离场在主线程算 (512 x 512 约几十毫秒), 换图时一次.
-- SparkMark 没有落的: PIXEL_BUDGET (按 4e6 像素压低像素比; 内核只有统一的 dpr 上限), 规格里 tGlowFrom / tGlowTo 两张预模糊辉光纹理 (这里辉光由距离场 exp(-d / (6 glow unit)) 直接算, 不要离屏), 2d 画布逐帧层. 脉冲沿轮廓的位置用极角近似, 凹形图形上不严格沿边走.
+- SparkMark 没有落的: PIXEL_BUDGET (按 4e6 像素压低像素比; 内核只有统一的 dpr 上限), 规格里 tGlowFrom / tGlowTo 两张预模糊辉光纹理 (这里辉光由距离场 exp(-d / (6 glow unit)) 直接算, 不要离屏), 2d 画布逐帧层. 脉冲沿轮廓已补 (按序补做第 6 件): parts/spark-map.ts 把边界像素贪心串成轮廓 (多条首尾相接), 按累计弧长归一到 0..1, 在 CELL 4 的格网上每格取最近边界点的参数, 16 位编进 RGBA8, 片元 texelFetch 最近格; 脉冲与支弧按它沿边走 (支弧的边向距离 = 参数差 x 设备像素周长), 形变过半换到新图形的参数图, 没有参数图时退回极角.
 - ENGINE-GAP 复核 (2026-11-10 定, 组件文件头, 本 note, CHANGELOG 0.16.0 三处一致): SoftShape 失焦不标 ENGINE-GAP, 理由是不涉顶点 / 实例化 / 深度; 真高斯卷积已走内核 passes 补上. SparkMark 的 PIXEL_BUDGET (内核 dpr 上限与 maxEdge 代替) 与预模糊辉光 / 2d 画布逐帧层 (距离场解析辉光代替) 不标, 是有意替代不再补; 脉冲极角近似是未落项, 排进待办 (改为轮廓弧长参数).

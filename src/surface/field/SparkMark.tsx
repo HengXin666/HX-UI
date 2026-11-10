@@ -1,7 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 ElectricLogo 条目, 实现为 HX 自有.
-// 不标 ENGINE-GAP (2026-11-10 复核定): PIXEL_BUDGET 由内核 dpr 上限与 maxEdge 代替 (分辨率预算); 预模糊辉光 tGlowFrom / tGlowTo 与 2d 画布逐帧层由距离场解析辉光代替 (同一观感, 少离屏),
-// 两者都不涉顶点 / 实例化 / 深度, 是有意替代不再补. 脉冲沿轮廓用极角近似, 凹形上不严格沿边, 片元能做 (轮廓弧长参数), 属未落项, 已排进 CHECKPOINT 待办.
+// 不标 ENGINE-GAP (2026-11-10 复核定): 不涉顶点 / 实例化 / 深度. 脉冲与支弧按轮廓弧长参数图 (规格 uMapFrom / uMapTo) 沿边走.
+// PIXEL_BUDGET 与预模糊辉光 tGlowFrom / tGlowTo 是未落项 (用户 2026-11-10 定, 排在 CHECKPOINT 按序补做第 7 件); 现在由内核 dpr 上限与距离场解析辉光暂代.
 
 import { useEffect, useRef, useState, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";
@@ -10,8 +10,9 @@ import { splitCommon, type BackdropCommonProps } from "../backdrop/kernel/common
 import { fallbackGradient } from "../backdrop/kernel/fallback";
 import type { BackdropFrame } from "../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../backdrop/kernel/use-surfaces";
-import { rasterImage, rasterPath } from "./parts/mask";
+import { rasterImage, rasterPath, type MaskCanvas } from "./parts/mask";
 import { sdfCanvas, type SdfField } from "./parts/sdf";
+import { sparkMapCanvas, type SparkMap } from "./parts/spark-map";
 import { makeSpark, packPulses, startMorph, stepSpark } from "./parts/spark";
 import { SPARK_FRAGMENT } from "./parts/spark-shader";
 import { SOFT, SPARK_MARK, SPARK_BOLT } from "./tokens";
@@ -52,6 +53,20 @@ export interface SparkMarkProps extends BackdropCommonProps {
 
 const GREY: Rgb = [0.5, 0.5, 0.5];
 
+interface Shape {
+  readonly field: SdfField;
+  readonly map: SparkMap | null;
+}
+interface Shapes {
+  readonly from: Shape | null;
+  readonly to: Shape | null;
+}
+
+function shapeOf(mask: MaskCanvas | null): Shape | null {
+  const field = mask ? sdfCanvas(mask, SPARK_MARK.raster) : null;
+  return mask && field ? { field, map: sparkMapCanvas(mask) } : null;
+}
+
 /** 距离场画布 (含留白) 在屏幕上的半宽高: 形状框的半宽高乘 (1 + 2 PAD). */
 function boxHalf(field: SdfField, half: number): readonly [number, number] {
   const grow = 1 + 2 * SOFT.pad;
@@ -72,12 +87,12 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
   } = props;
   const { options, rest, opacity, children } = splitCommon(common);
   const state = useRef(makeSpark());
-  const [fields, setFields] = useState<{ from: SdfField | null; to: SdfField | null }>({ from: null, to: null });
+  const [fields, setFields] = useState<Shapes>({ from: null, to: null });
   const latest = useRef(fields);
 
   useEffect(() => {
     let live = true;
-    const land = (field: SdfField | null): void => {
+    const land = (field: Shape | null): void => {
       if (!live || !field) return;
       const prev = latest.current;
       if (prev.to) startMorph(state.current, state.current.morph < 1);
@@ -85,8 +100,7 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
       setFields(latest.current);
     };
     if (!src) {
-      const mask = rasterPath(SPARK_BOLT.d, SPARK_BOLT.viewBox, SPARK_MARK.raster);
-      land(mask ? sdfCanvas(mask, SPARK_MARK.raster) : null);
+      land(shapeOf(rasterPath(SPARK_BOLT.d, SPARK_BOLT.viewBox, SPARK_MARK.raster)));
       return () => {
         live = false;
       };
@@ -94,8 +108,7 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const mask = rasterImage(img, SPARK_MARK.raster);
-      land(mask ? sdfCanvas(mask, SPARK_MARK.raster) : null);
+      land(shapeOf(rasterImage(img, SPARK_MARK.raster)));
     };
     img.src = src;
     return () => {
@@ -108,7 +121,10 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
     const s = state.current;
     stepSpark(s, frame.reduced ? 0 : frame.dt, frame.time, interactive, frame.pointer);
     const half = scale * 0.5 * Math.min(width, height);
-    const { from, to } = fields;
+    const from = fields.from?.field ?? null;
+    const to = fields.to?.field ?? null;
+    const mFrom = fields.from?.map ?? null;
+    const mTo = fields.to?.map ?? null;
     const hFrom = from ? boxHalf(from, half) : ([1, 1] as const);
     const hTo = to ? boxHalf(to, half) : ([1, 1] as const);
     return {
@@ -128,11 +144,13 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
       u_core: frame.colors[0] ?? GREY,
       u_glow: frame.colors[1] ?? GREY,
       u_light: lightMode,
+      u_has_map: [mFrom ? 1 : 0, mTo ? 1 : 0] as const,
+      u_perim: [from && mFrom ? mFrom.perimeter * ((2 * hFrom[0]) / from.width) : 1, to && mTo ? mTo.perimeter * ((2 * hTo[0]) / to.width) : 1] as const,
     };
   };
 
   const handle = useShaderBackdrop(
-    { fragment: SPARK_FRAGMENT, uniforms, textures: () => ({ u_from: fields.from?.canvas, u_to: fields.to?.canvas }) },
+    { fragment: SPARK_FRAGMENT, uniforms, textures: () => ({ u_from: fields.from?.field.canvas, u_to: fields.to?.field.canvas, u_map_from: fields.from?.map?.canvas, u_map_to: fields.to?.map?.canvas }) },
     { ...options, colors: [color, glowColor], pointer: interactive && options.pointer },
   );
   return (

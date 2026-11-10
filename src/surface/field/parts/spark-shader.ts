@@ -1,7 +1,7 @@
 // 行为规格参照 docs/research/catalog/animations.md 的 ElectricLogo 条目, 实现为 HX 自有.
 /**
  * SparkMark 的上屏片元: 形状的有符号距离 (两张距离场按逐像素进度形变), 沿轮廓有几股抖动的电弧 (第一股是主弧),
- * 轮廓外偶尔伸出的支弧, 沿轮廓向两侧跑的脉冲, 形状内一层淡淡的本体光; 光标附近升温 (更亮, 更抖).
+ * 轮廓外偶尔伸出的支弧, 沿轮廓 (按弧长参数图, 见 spark-map) 向两侧跑的脉冲, 形状内一层淡淡的本体光; 光标附近升温 (更亮, 更抖).
  * 能量按 1 - exp(-energy x gain) 合成不透明度. 坐标是设备像素, 原点居中, y 朝上.
  *
  * .agents/notes/implemented/feature/2026-11-10-surface-field.md
@@ -9,6 +9,7 @@
 import { fragmentSource, GLSL_HASH, GLSL_NOISE, GLSL_UTIL } from "../../backdrop/kernel/glsl";
 import { SPARK_MARK } from "../tokens";
 import { sdfGlsl } from "./sdf";
+import { sparkMapGlsl } from "./spark-map";
 
 export const SPARK_FRAGMENT = fragmentSource(`
 uniform vec2 u_half_from;
@@ -25,8 +26,12 @@ uniform vec4 u_pulses[${SPARK_MARK.pulses}];
 uniform vec3 u_core;
 uniform vec3 u_glow;
 uniform float u_light;
+uniform vec2 u_has_map;
+uniform vec2 u_perim;
 ${sdfGlsl("u_from")}
 ${sdfGlsl("u_to")}
+${sparkMapGlsl("u_map_from")}
+${sparkMapGlsl("u_map_to")}
 float wobble(vec2 p, float s) { return hx_vnoise(p + s * 13.17) * 2.0 - 1.0; }
 float wrap(float x) { return x - floor(x + 0.5); }
 float glowLine(float d, float w) { return w * w / (d * d + w * w); }
@@ -39,7 +44,12 @@ void main() {
   float k = u_morph >= 1.0 ? 1.0 : smoothstep(0.0, 1.0, clamp(u_morph * 1.7 - 0.35 + 0.35 * wobble(p / unit * 0.018, 41.0), 0.0, 1.0));
   float base = mix(from, to, k);
   vec2 q = p / unit;
-  float ang = atan(p.y, p.x) / HX_TAU + 0.5;
+  // 沿轮廓的参数: 有轮廓参数图时取弧长 (形变过半换到新图形), 否则退回极角; perim 为该参数下一整圈的设备像素长.
+  bool late = k >= 0.5;
+  vec2 muv = late ? p / (2.0 * u_half_to) + 0.5 : p / (2.0 * u_half_from) + 0.5;
+  bool mapped = late ? u_has_map.y > 0.5 : u_has_map.x > 0.5;
+  float ang = mapped ? (late ? u_map_to_param(muv) : u_map_from_param(muv)) : atan(p.y, p.x) / HX_TAU + 0.5;
+  float perim = mapped ? (late ? u_perim.y : u_perim.x) : length(p) * HX_TAU;
   vec2 hd = p - u_hover.xy;
   float heat = u_hover.w * exp(-dot(hd, hd) / max(u_hover.z * u_hover.z, 1.0));
   float breath = 1.0 + u_flicker * ${SPARK_MARK.breath.toFixed(1)} * wobble(vec2(t * 2.1, 7.0), 3.0);
@@ -68,7 +78,7 @@ void main() {
     float beat = t * 1.5 + fa * 0.37;
     float ca = hx_hash1(floor(beat) * 7.0 + fa * 3.0);
     float flash = smoothstep(0.55, 0.75, fract(beat)) * (1.0 - smoothstep(0.85, 1.0, fract(beat)));
-    float s = wrap(ang - ca) * length(p) * HX_TAU + wobble(vec2(edge / unit * 0.4, beat), fa + 21.0) * unit * 1.5 * u_arc.z;
+    float s = wrap(ang - ca) * perim + wobble(vec2(edge / unit * 0.4, beat), fa + 21.0) * unit * 1.5 * u_arc.z;
     energy += glowLine(s, w * 0.8) * fade * flash * 0.9;
   }
   for (int i = 0; i < ${SPARK_MARK.pulses}; i++) {
