@@ -10,3 +10,5 @@ export { haloFollowTau, haloLayers, makeHalo, stepHalo, type HaloPoint, type Hal
 export { HaloCursor, type HaloCursorProps } from "./HaloCursor";
 export { hazeDecay, hazeSpring, makeHaze, puffHaze, puffRadius, stepHaze, type HazeState, type HazeTuning, type Puff } from "./parts/haze";
 export { HazeCursor, type HazeCursorProps } from "./HazeCursor";
+export { FLOCK_STRIDE, burstFlock, flockEase, flockGrab, makeFlock, stepFlock, type FlockState, type FlockTuning } from "./parts/flock";
+export { FlockCursor, type FlockCursorProps, type FlockShape } from "./FlockCursor";
