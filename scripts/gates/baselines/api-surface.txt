@@ -2625,6 +2625,8 @@ Balatro
 BalatroProps
 Ballpit
 BallpitProps
+BayerVeil
+BayerVeilProps
 BeamFlow
 BeamFlowProps
 BeamState
@@ -2636,6 +2638,7 @@ CHROME
 COMET
 CRTWarp
 CRTWarpProps
+CUBE
 CellDecay
 CellShape
 CellTrail
@@ -2648,6 +2651,14 @@ ColorBendsProps
 CometBorder
 CometBorderProps
 CometHover
+CubeEdgeStyle
+CubeField
+CubeFieldProps
+CubeInput
+CubeRipple
+CubeState
+CubeTuning
+DOT
 DRAFT_BOUNCE_SHARE
 DRAFT_CLICK_SLOP_PX
 DRAFT_DEFAULTS
@@ -2667,10 +2678,18 @@ DarkVeil
 DarkVeilProps
 Dither
 DitherProps
+DotBurst
 DotField
 DotFieldProps
 DotGrid
 DotGridProps
+DotInput
+DotMode
+DotReveal
+DotRevealProps
+DotShape
+DotState
+DotTuning
 DraftText
 DraftTextProps
 Drop
@@ -2720,6 +2739,8 @@ FaultyTerminal
 FaultyTerminalProps
 Ferrofluid
 FerrofluidProps
+FiberStrands
+FiberStrandsProps
 FlapText
 FlapTextProps
 FloatingLines
@@ -2829,6 +2850,7 @@ MELD
 MERGE
 MERGE_MAX_RINGS
 MERGE_VARIANTS
+MESH
 MOSAIC
 MagicRings
 MagicRingsProps
@@ -2850,6 +2872,9 @@ MergeMotion
 MergeState
 MergeTuning
 MergeVariant
+MeshMaterial
+MeshState
+MeshTuning
 MicroSlats
 MicroSlatsProps
 MoltenMetal
@@ -2888,6 +2913,8 @@ OrbitText
 OrbitTextProps
 PEEL
 POINTER_VELOCITY_TAU_S
+PRISM
+PRISM_PRESETS
 Particles
 ParticlesProps
 PatternWaves
@@ -2907,7 +2934,14 @@ PlasmaWaveProps
 PointerHandlers
 PointerState
 Prism
+PrismLook
+PrismMotion
+PrismOrb
+PrismOrbProps
+PrismPreset
 PrismProps
+PrismShape
+PrismState
 PrismaticBurst
 PrismaticBurstProps
 Pt
@@ -2957,6 +2991,7 @@ STAMP_MAX_DT_S
 STAMP_MIN_REMOVAL_S
 STAMP_POP_S
 STAMP_SMOOTH_TAU_S
+STRAND
 STREAMER
 SUBSTEP_S
 Scanner
@@ -3005,11 +3040,14 @@ SparkMarkProps
 SparkPulse
 SparkShape
 SparkState
+SpringMesh
+SpringMeshProps
 StaggerText
 StaggerTextProps
 StaggerVariant
 StampTrail
 StampTrailProps
+StrandState
 StreamerCursor
 StreamerCursorProps
 StreamerShape
@@ -3048,7 +3086,14 @@ TypePhase
 TypeText
 TypeTextProps
 TypeTiming
+VEIL
 Vec
+VeilBuild
+VeilFit
+VeilKernel
+VeilOrdered
+VeilPalette
+VeilPattern
 WAKE
 WAKE_BURST_GAP_MS
 WAKE_BURST_LIFE_MS
@@ -3085,7 +3130,12 @@ clipHalfPlane
 copiesNeeded
 cosineEase
 createInkDrive
+cubeCenter
+cubeGrid
+cubeIntro
 ditherThreshold
+dotFade
+dotWanderPath
 draftDamping
 drawBurst
 driftLead
@@ -3132,17 +3182,22 @@ locate
 lockBox
 makeBeam
 makeChrome
+makeCubes
+makeDot
 makeFlock
 makeHalo
 makeHaze
 makeLens
 makeMeld
 makeMerge
+makeMesh
 makeNudge
 makePointer
+makePrism
 makeReticle
 makeSoft
 makeSpark
+makeStrands
 makeStreamers
 marqueePath
 maskSize
@@ -3151,6 +3206,7 @@ meldSpring
 mergeEase
 mergeHome
 mergeLook
+meshSpring
 mirrorMatrix
 mix
 mosaicAmount
@@ -3165,9 +3221,12 @@ orbitLook
 orbitTilt
 outlineAmount
 outsideDistance
+packBursts
+packCubes
 packInk
 packLens
 packMerge
+packPrism
 packPulses
 padBoard
 pairForce
@@ -3178,6 +3237,9 @@ pointerTilt
 pointerVelocityPx
 polygonCss
 powerOut
+prismEnergy
+prismLook
+prismWander
 puffHaze
 puffRadius
 pushBurst
@@ -3223,6 +3285,8 @@ stampLook
 startMorph
 stepBeam
 stepChrome
+stepCubes
+stepDot
 stepFlock
 stepHalo
 stepHaze
@@ -3230,11 +3294,17 @@ stepInk
 stepLens
 stepMeld
 stepMerge
+stepMesh
 stepNudge
+stepPrism
 stepReticle
 stepSoft
 stepSpark
+stepStrands
 stepStreamers
+strandEnergy
+strandIntro
+strandPulse
 streakGradient
 streamerFollow
 streamerProfile
@@ -3280,6 +3350,7 @@ src/surface/index.ts -> ./field
 src/surface/index.ts -> ./loop
 src/surface/index.ts -> ./pointer
 src/surface/index.ts -> ./reveal
+src/surface/index.ts -> ./scene
 src/surface/index.ts -> ./sticker
 src/surface/index.ts -> ./text/glyph
 src/surface/index.ts -> ./text/pointer
@@ -3287,6 +3358,7 @@ src/surface/index.ts -> ./text/scroll
 src/surface/index.ts -> ./text/stagger
 src/surface/index.ts -> ./texture
 src/surface/loop/index.ts -> ./tokens
+src/surface/scene/index.ts -> ./tokens
 src/surface/sticker/index.ts -> ./tokens
 src/surface/text/glyph/index.ts -> ./tokens
 src/surface/text/pointer/index.ts -> ./tokens

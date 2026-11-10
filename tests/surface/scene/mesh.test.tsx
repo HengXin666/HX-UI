@@ -3,7 +3,8 @@
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MESH, SpringMesh, makeMesh, meshSpring, springStep, stepMesh } from "@src/surface/scene";
+import { MESH, SpringMesh, makeMesh, meshSpring, stepMesh } from "@src/surface/scene";
+import { springStep } from "@src/surface/scene/parts/mesh";
 import { MESH_FRAGMENT } from "@src/surface/scene/parts/mesh-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../backdrop/helpers";
 import { recordCanvas2d } from "../helpers";

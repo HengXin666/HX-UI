@@ -13,3 +13,4 @@ export * from "./texture";
 export * from "./sticker";
 export * from "./cursor";
 export * from "./field";
+export * from "./scene";

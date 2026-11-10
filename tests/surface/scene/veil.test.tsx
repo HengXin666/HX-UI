@@ -3,7 +3,8 @@
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BayerVeil, VEIL, diffuse, fitRect, isOrdered, quantize, veilGrid, veilTone } from "@src/surface/scene";
+import { BayerVeil, VEIL } from "@src/surface/scene";
+import { diffuse, fitRect, isOrdered, quantize, veilGrid, veilTone } from "@src/surface/scene/parts/dither";
 import { VEIL_FRAGMENT } from "@src/surface/scene/parts/veil-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../backdrop/helpers";
 import { recordCanvas2d } from "../helpers";

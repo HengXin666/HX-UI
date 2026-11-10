@@ -16,6 +16,16 @@
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
+## [0.15.0] - 2026-11-10
+
+`@hx/ui/surface` 新收 react-bits Animations 的 D 段 6 件, 开 scene 族 (揭示与立体场). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 全部走 backdrop 内核的 WebGL2 着色器通道 (`useShaderBackdrop`, DotReveal 用 `ShaderSpec.passes`), 不引 three / ogl / gsap. 规格里靠实例化或顶点变形的部分做片元近似并标 ENGINE-GAP: PrismOrb (尘埃的 GPGPU 实例化粒子), CubeField (实例化方块网格, gridSize 上限 13), SpringMesh (质点弹簧网格的顶点变形). 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
+
+### Added
+
+- `@hx/ui/surface` scene 族: `DotReveal` (HalftoneReveal, 半调网点揭示, 指针与点击爆开), `BayerVeil` (DitherVeil, 有序 / 误差扩散抖动面纱), `PrismOrb` (CrystalizedBall, 等离子玻璃球, 电弧与尘埃), `CubeField` (Cubes, 倾向指针的方块阵, 点击涟漪), `SpringMesh` (ElasticMesh, 可拉伸按压的充气文字或图片, balloon / chrome / jelly / clay), `FiberStrands` (Strands, 发光丝带与折射玻璃球).
+- 一并导出各件的模拟纯函数与 `DOT` / `VEIL` / `PRISM` / `PRISM_PRESETS` / `CUBE` / `MESH` / `STRAND` 常数. 颜色只收语义 token 名.
+- 契约: api 快照 `./surface` 段 656 到 726, docs-props 随之更新.
+
 ## [0.14.0] - 2026-11-10
 
 `@hx/ui/surface` 新收 react-bits Animations 的 C 段 7 件, 开 field 族 (着色器场). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 全部走 backdrop 内核的 WebGL2 着色器通道 (`useShaderBackdrop`, 需要时用 `ShaderSpec.passes` 乒乓离屏与共用泛光金字塔), 不引 three / ogl / gsap. InkSplash 的半浮点回退精度标 ENGINE-GAP. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
