@@ -1,5 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 ElectricLogo 条目, 实现为 HX 自有.
+// 不标 ENGINE-GAP (2026-11-10 复核定): PIXEL_BUDGET 由内核 dpr 上限与 maxEdge 代替 (分辨率预算); 预模糊辉光 tGlowFrom / tGlowTo 与 2d 画布逐帧层由距离场解析辉光代替 (同一观感, 少离屏),
+// 两者都不涉顶点 / 实例化 / 深度, 是有意替代不再补. 脉冲沿轮廓用极角近似, 凹形上不严格沿边, 片元能做 (轮廓弧长参数), 属未落项, 已排进 CHECKPOINT 待办.
 
 import { useEffect, useRef, useState, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";

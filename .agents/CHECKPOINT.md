@@ -149,19 +149,25 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | D | ElasticMesh | SpringMesh | 0e80222 (scene, ENGINE-GAP 质点弹簧网格顶点变形) |
 | D | Strands | FiberStrands | fdc0122 (scene) |
 
-**A, B, C 段已推 (到 bc53feb, 0.14.0). D 段 6 件与段尾接入 (0.15.0, scene 族进 ./surface) 已提本地, 待用户推. 下一步: HaloCursor / HazeCursor 补做, 然后 ring-1 → FOCUS_RING.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
+**A, B, C, D 段已推 (到 f473510, 0.15.0). HaloCursor / HazeCursor 补做 1530d2d (0.16.0) 与 ENGINE-GAP 复核已提本地, 待用户推. 下一步按 "按序补做" 清单: ring-1 → FOCUS_RING, 然后各未落项.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
 接入时查 export * 撞名 (tsc TS2308): 族内通用小工具 (clamp, mix, seededRandom, wrapOffset 之类) 不进族 index 或改名.
 注意: pointer 族已接在 ./surface 上, 段内往它的 index 加导出会改 api 快照 (门禁 4/13 会拦), 所以段内新件放已接入的族时先不进族 index.
 B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DOM 做近似, 真需要顶点 / 实例化的标 ENGINE-GAP.
 分段按技法粗分 (A DOM/SVG/Canvas2D, B 光标画布, C WebGL 片元, D reveal 与 3D), 读到规格后可微调, 改了就改本表.
 - 规矩: 只借规格的常数与 props 自写; 内核公共头不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么; 颜色只走语义 token; 不引 three.
-- **D 段收口后, 单独一次补做** (用户 2026-11-10 22:48 定, 不是 ENGINE-GAP, 是没做完): HaloCursor 与 HazeCursor 的流体 / 烟雾场目前是 Canvas2D 近似; 改走内核 `useShaderBackdrop` + `ShaderSpec.passes` 乒乓通道 (参照 InkSplash 的速度 / 散度 / 压力 / 染料与 bloomPyramid), 补上规格的 bloom、grain、quality 等未落 props, 改 cursor note 的 "没有落的" 行与 CHANGELOG.
+- **已补做 (1530d2d, 0.16.0)**: HaloCursor 与 HazeCursor 的流体 / 烟雾场目前是 Canvas2D 近似; 改走内核 `useShaderBackdrop` + `ShaderSpec.passes` 乒乓通道 (参照 InkSplash 的速度 / 散度 / 压力 / 染料与 bloomPyramid), 补上规格的 bloom、grain、quality 等未落 props, 改 cursor note 的 "没有落的" 行与 CHANGELOG.
 - **Animations 全部完成后**: 已提交老控件的 ring-1 统一换 FOCUS_RING, 单独一个提交 (用户 02:01 裁定排在这段后面).
 
 ## 后续收尾 (本次收口未做)
 
-- scene 族未落项 (非 ENGINE-GAP): DotReveal 的抠像 (uMatte / uKey) 与 fit; FiberStrands 的 listening (麦克风电平, 现只收外部 level) 与 ROLES 分角色着色; SpringMesh 的多点抓取.
-- 待复核是否标 ENGINE-GAP: C 段 SoftShape 的失焦近似, SparkMark 的 PIXEL_BUDGET 与预模糊辉光替代 / 2d 画布逐帧层 / 脉冲极角近似.
+- **按序补做 (用户 2026-11-10 23:25 定: 未落项不是只记下, 按这个顺序一件件做, 每件单独提交)**:
+  1. 老控件 ring-1 统一换 FOCUS_RING (单独一个提交).
+  2. DotReveal: 抠像 (uMatte / uKey) 与 fit.
+  3. FiberStrands: listening (麦克风电平, getUserMedia + AnalyserNode, 默认关, 拒权时退回 level) 与 ROLES 7 分角色着色.
+  4. SpringMesh: 多点抓取 (多指针各一个抓取点).
+  5. SoftShape: 失焦改真高斯 (内核 passes 两遍可分离模糊, 对应规格 uFieldTexture 两遍).
+  6. SparkMark: 脉冲沿轮廓改弧长参数 (替掉极角近似, 凹形图形上沿边走).
+- ENGINE-GAP 复核 (2026-11-10 定, 组件文件头 / note / CHANGELOG 0.16.0 一致): SoftShape 失焦近似不标 (不涉顶点 / 实例化 / 深度, 真高斯排在上面第 5 件); SparkMark 的 PIXEL_BUDGET 与预模糊辉光 / 2d 画布逐帧层不标, 是有意替代不再补, 脉冲极角是未落项 (第 6 件); PrismOrb 的 PIXEL_BUDGET 同样不算 ENGINE-GAP, 文件头措辞已改.
 - 内核若加浮点数据纹理上传, CubeField 的 gridSize 上限 13 可放开.
 
 - `tallyOvershoot` 缓存 Map 无上限, 考虑量化键或 LRU.

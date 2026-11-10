@@ -1,5 +1,6 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 ShapeBlur 条目, 实现为 HX 自有.
+// 不标 ENGINE-GAP (2026-11-10 复核定): 失焦按距离场展宽近似, 不涉顶点 / 实例化 / 深度; 真高斯卷积可走内核 passes 两遍可分离模糊, 属未落项, 已排进 CHECKPOINT 待办.
 
 import { useEffect, useRef, useState, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";

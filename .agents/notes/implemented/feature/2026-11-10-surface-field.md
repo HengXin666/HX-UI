@@ -56,3 +56,4 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 - RippleLens 没有落的: 规格的 uTexel / uTextureSize 细节按本库自己的 cover 映射重写. 图片跨域失败时画布透明 (不退兜底).
 - SoftShape 没有落的: 失焦是距离展宽的近似, 不是真正的高斯卷积 (细描边模糊后变淡的观感一致, 尖角处略圆). 图片距离场在主线程算 (512 x 512 约几十毫秒), 换图时一次.
 - SparkMark 没有落的: PIXEL_BUDGET (按 4e6 像素压低像素比; 内核只有统一的 dpr 上限), 规格里 tGlowFrom / tGlowTo 两张预模糊辉光纹理 (这里辉光由距离场 exp(-d / (6 glow unit)) 直接算, 不要离屏), 2d 画布逐帧层. 脉冲沿轮廓的位置用极角近似, 凹形图形上不严格沿边走.
+- ENGINE-GAP 复核 (2026-11-10 定, 组件文件头, 本 note, CHANGELOG 0.16.0 三处一致): SoftShape 失焦近似不标, 理由是不涉顶点 / 实例化 / 深度; 真高斯卷积可走内核 passes, 记为未落项排进待办. SparkMark 的 PIXEL_BUDGET (内核 dpr 上限与 maxEdge 代替) 与预模糊辉光 / 2d 画布逐帧层 (距离场解析辉光代替) 不标, 是有意替代不再补; 脉冲极角近似是未落项, 排进待办 (改为轮廓弧长参数).

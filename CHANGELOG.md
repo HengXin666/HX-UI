@@ -27,6 +27,10 @@ cursor 族 `HaloCursor` 与 `HazeCursor` 补做: 原来是 Canvas2D 近似 (描�
 - 一并导出 `haloKeep`, `haloSplats`, `hazeSplats`, `hazeFade`, `packSplats` 与 `CURSOR_FLUID` 常数.
 - 契约: api 快照 `./surface` 段 726 到 737, 根段 1608 不变; docs-props 随之更新.
 
+### Changed
+
+- ENGINE-GAP 复核 (只改文件头注释, 行为不变): `SoftShape` 的失焦近似不标 ENGINE-GAP (不涉顶点 / 实例化 / 深度, 真高斯模糊可走内核 passes, 列为待补). `SparkMark` 的 PIXEL_BUDGET (由内核 dpr 上限与 maxEdge 代替) 与预模糊辉光 (由距离场解析辉光代替) 不标, 是有意替代; 脉冲沿轮廓的极角近似列为待补. `PrismOrb` 的 PIXEL_BUDGET 同理不算 ENGINE-GAP, 0.15.0 所列 ENGINE-GAP 不变.
+
 ## [0.15.0] - 2026-11-10
 
 `@hx/ui/surface` 新收 react-bits Animations 的 D 段 6 件, 开 scene 族 (揭示与立体场). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 全部走 backdrop 内核的 WebGL2 着色器通道 (`useShaderBackdrop`, DotReveal 用 `ShaderSpec.passes`), 不引 three / ogl / gsap. 规格里靠实例化或顶点变形的部分做片元近似并标 ENGINE-GAP: PrismOrb (尘埃的 GPGPU 实例化粒子), CubeField (实例化方块网格, gridSize 上限 13), SpringMesh (质点弹簧网格的顶点变形). 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.

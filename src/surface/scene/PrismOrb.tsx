@@ -1,7 +1,8 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 CrystalizedBall 条目, 实现为 HX 自有.
 // ENGINE-GAP (仍做不了, 需内核实例化 / 顶点取样状态纹理): 规格的尘埃是 STATE_WIDTH 256 的 GPGPU 状态纹理驱动的实例化粒子 (MAX_PARTICLES 40000), 带逐颗物理与深度;
-// 这里在片元里按格画三层程序化光点 (视差近似深度, 无逐颗物理, 指针推不动尘埃). PIXEL_BUDGET 4.5e6 由内核 dpr 上限 2 与 maxEdge 代替.
+// 这里在片元里按格画三层程序化光点 (视差近似深度, 无逐颗物理, 指针推不动尘埃).
+// 不标 ENGINE-GAP 的替代: PIXEL_BUDGET 4.5e6 由内核 dpr 上限 2 与 maxEdge 代替 (分辨率预算, 不涉顶点 / 实例化 / 深度, 2026-11-10 复核定).
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";
