@@ -180,3 +180,27 @@ export const MESH = {
   introStagger: 0.35,
   blur: [0.06, 0, 0.1, 0.3],
 } as const;
+
+/* ── FiberStrands (规格 Strands) ── */
+export const STRAND = {
+  /** MAX_COLORS; erf 近似 (Abramowitz-Stegun 7.1.26) 的系数; 覆盖 1 - exp(-2.6 lum); 白芯 smoothstep(0.05, 2.2, lum) x 0.92; 边光 0.04 x thickness; 线厚 0.051 x thickness. */
+  maxColors: 8,
+  erf: [0.3275911, 1.061405429, -1.453152027, 1.421413741, -0.284496736, 0.254829592],
+  cover: 2.6,
+  coreGain: 0.92,
+  edge: 0.04,
+  body: 0.051,
+  /** 色差 0.02 x dispersion, 边缘菲涅尔 smoothstep(0.8, 1.0, r), 整体增益 2.4. */
+  chroma: 0.02,
+  gain: 2.4,
+  /** props 默认值. */
+  count: 3,
+  energy: 0.65,
+  /** 本库定: 入场时长, 玻璃球半径 (短边单位), 点击脉冲衰减与幅度, 指针偏弯幅度, 每根的竖向间距. */
+  introSeconds: 1.6,
+  glassRadius: 0.26,
+  pulseDecay: 3,
+  pulseGain: 0.8,
+  lean: 0.15,
+  lane: 0.07,
+} as const;

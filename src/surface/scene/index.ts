@@ -10,3 +10,5 @@ export { cubeCenter, cubeGrid, cubeIntro, makeCubes, packCubes, stepCubes, type 
 export { CubeField, type CubeEdgeStyle, type CubeFieldProps } from "./CubeField";
 export { makeMesh, meshSpring, springStep, stepMesh, type MeshState, type MeshTuning } from "./parts/mesh";
 export { SpringMesh, type MeshMaterial, type SpringMeshProps } from "./SpringMesh";
+export { makeStrands, stepStrands, strandEnergy, strandIntro, strandPulse, type StrandState } from "./parts/strand";
+export { FiberStrands, type FiberStrandsProps } from "./FiberStrands";
