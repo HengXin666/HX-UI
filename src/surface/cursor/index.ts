@@ -8,3 +8,5 @@ export { makeMeld, massAfterSplash, meldSpring, regrowMass, splashMeld, stepMeld
 export { MeldCursor, type MeldCursorProps } from "./MeldCursor";
 export { haloFollowTau, haloLayers, makeHalo, stepHalo, type HaloPoint, type HaloState } from "./parts/halo";
 export { HaloCursor, type HaloCursorProps } from "./HaloCursor";
+export { hazeDecay, hazeSpring, makeHaze, puffHaze, puffRadius, stepHaze, type HazeState, type HazeTuning, type Puff } from "./parts/haze";
+export { HazeCursor, type HazeCursorProps } from "./HazeCursor";
