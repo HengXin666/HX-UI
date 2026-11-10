@@ -79,7 +79,28 @@ export const HALO = {
   burstS: 0.7,
   burstReach: 120,
   sampleGap: 3,
+  /** 流体 (2026-11-10 补做): PRESSURE_STEPS 20, FLOW 0.75 (溅点速度并入比例), 边缘淡出 smoothstep(0, 0.02, 边距), 颗粒默认 0;
+   * 密度 1 - exp(-((energy x 1.1 + gas x 0.8) x intensity + halo x 0.25)), 墨色 tint x min(1, 0.5 / tone) x mix(0.95, 0.72, smoothstep(0.5, 3, energy)).
+   * BLOOM_LEVELS 5, 内核泛光金字塔上限 4 级. */
+  pressureSteps: 20,
+  flow: 0.75,
+  edgeFade: 0.02,
+  grain: 0,
+  bloomLevels: 4,
+  /** 本库定: 画质档 (模拟格比例, 染料比例, 压力迭代, 泛光级数), 泛光阈值与软膝, 每帧补色量, 速度上限 (格每秒), 点击光环的推力. */
+  quality: {
+    low: { sim: 0.2, dye: 0.35, steps: 6, bloom: 2 },
+    medium: { sim: 0.3, dye: 0.5, steps: 12, bloom: 3 },
+    high: { sim: 0.4, dye: 0.6, steps: 20, bloom: 4 },
+  },
+  bloomThreshold: 0.35,
+  bloomKnee: 0.4,
+  dye: 0.9,
+  maxSpeed: 900,
+  burstPush: 260,
 } as const;
+
+export type HaloQuality = keyof typeof HALO.quality;
 
 /* ── HazeCursor (规格 GhostCursor) ── */
 export const HAZE = {
@@ -108,6 +129,37 @@ export const HAZE = {
   puffGrow: 2.2,
   turbulencePx: 40,
   clickPuffs: 14,
+  /** 烟雾场 (2026-11-10 补做): wisp = pow(smoothstep(0.18, 0.82, smoke), 2) x 2.8; cloud = body x smoothstep(0, 0.32, body) x 1.15;
+   * 打光 0.7 + 0.5 x max(dot(n, normalize(-0.35, 0.55, 0.75)), 0); 芯 smoothstep(0.7, 2.2, cloud);
+   * 覆盖 1 - exp(-(a + bloom x bloomStrength x 0.6) x 0.95). props 默认 detail 1, grainIntensity 0.05, bloomStrength 0.6, bloomRadius 1, bloomThreshold 0.025, edgeIntensity 0. */
+  wispLo: 0.18,
+  wispHi: 0.82,
+  wispGain: 2.8,
+  cloudKnee: 0.32,
+  cloudGain: 1.15,
+  coverGain: 0.95,
+  detail: 1,
+  grainIntensity: 0.05,
+  bloomStrength: 0.6,
+  bloomRadius: 1,
+  bloomThreshold: 0.025,
+  edgeIntensity: 0,
+  /** 本库定: 模拟格比例与染料比例, 烟团并入的浓度, 拖尾速度换算, 湍流 (格每秒), 渐隐默认 (不给 fadeDelayMs 时不隐). */
+  sim: 0.3,
+  dyeScale: 0.5,
+  puffBody: 0.55,
+  puffSmoke: 0.8,
+  velocityShare: 0.6,
+  turbulenceCells: 22,
+} as const;
+
+/* ── 光标流体共用 (HaloCursor / HazeCursor 的速度, 散度, 压力, 染料通道) ── */
+export const CURSOR_FLUID = {
+  /** 本库定: 每帧溅点上限, 速度与压力编码范围 (RGBA8 回退用), 帧长上限. */
+  maxSplats: 12,
+  velocityRange: 1200,
+  pressureRange: 600,
+  maxDt: 1 / 30,
 } as const;
 
 /* ── FlockCursor (规格 SwarmCursor) ── */

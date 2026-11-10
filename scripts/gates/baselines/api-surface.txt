@@ -2639,6 +2639,7 @@ COMET
 CRTWarp
 CRTWarpProps
 CUBE
+CURSOR_FLUID
 CellDecay
 CellShape
 CellTrail
@@ -2750,6 +2751,7 @@ FlockCursorProps
 FlockShape
 FlockState
 FlockTuning
+FluidSplat
 FluxLines
 FluxLinesProps
 FocusText
@@ -2786,10 +2788,13 @@ HALO
 HAZE
 HaloCursor
 HaloCursorProps
+HaloFluidTuning
 HaloPoint
+HaloQuality
 HaloState
 HazeCursor
 HazeCursorProps
+HazeFluidTuning
 HazeState
 HazeTuning
 Hyperspeed
@@ -2915,6 +2920,7 @@ PEEL
 POINTER_VELOCITY_TAU_S
 PRISM
 PRISM_PRESETS
+PackedSplats
 Particles
 ParticlesProps
 PatternWaves
@@ -3159,8 +3165,12 @@ followChain
 frameDue
 grainValue
 haloFollowTau
+haloKeep
 haloLayers
+haloSplats
 hazeDecay
+hazeFade
+hazeSplats
 hazeSpring
 hueRgb
 inkOf
@@ -3228,6 +3238,7 @@ packLens
 packMerge
 packPrism
 packPulses
+packSplats
 padBoard
 pairForce
 pointerEnergy

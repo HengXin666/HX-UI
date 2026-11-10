@@ -12897,14 +12897,14 @@
    "name": "glow",
    "type": "number",
    "default": "1.2",
-   "desc": "光晕模糊倍数.",
+   "desc": "泛光强度, 0 关闭.",
    "required": false
   },
   {
    "name": "hotspot",
    "type": "number",
    "default": "0.8",
-   "desc": "光头热点强度 0 到 1.",
+   "desc": "热芯强度 0 到 1.",
    "required": false
   },
   {
@@ -12915,10 +12915,38 @@
    "required": false
   },
   {
+   "name": "grain",
+   "type": "number",
+   "default": "0",
+   "desc": "颗粒 0 到 1, 默认 0.",
+   "required": false
+  },
+  {
    "name": "clickBurst",
    "type": "boolean",
    "default": "true",
    "desc": "",
+   "required": false
+  },
+  {
+   "name": "quality",
+   "type": "\"low\" | \"medium\" | \"high\"",
+   "default": "\"high\"",
+   "desc": "画质档: 模拟格精度, 压力迭代, 泛光级数. 默认 high.",
+   "required": false
+  },
+  {
+   "name": "lightMode",
+   "type": "boolean",
+   "default": "false",
+   "desc": "浅色底: 热芯不发白. 规格 theme=\"light\".",
+   "required": false
+  },
+  {
+   "name": "maxDevicePixelRatio",
+   "type": "number",
+   "default": "-",
+   "desc": "设备像素比上限, 默认 2.",
    "required": false
   },
   {
@@ -12994,6 +13022,48 @@
    "required": false
   },
   {
+   "name": "detail",
+   "type": "number",
+   "default": "1",
+   "desc": "烟丝细节倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "grainIntensity",
+   "type": "number",
+   "default": "0.05",
+   "desc": "颗粒, 默认 0.05.",
+   "required": false
+  },
+  {
+   "name": "bloomStrength",
+   "type": "number",
+   "default": "0.6",
+   "desc": "泛光强度 (0 关闭), 半径 (0..1, 远级权重), 阈值.",
+   "required": false
+  },
+  {
+   "name": "bloomRadius",
+   "type": "number",
+   "default": "1",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "bloomThreshold",
+   "type": "number",
+   "default": "0.025",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "edgeIntensity",
+   "type": "number",
+   "default": "0",
+   "desc": "烟团轮廓光, 默认 0.",
+   "required": false
+  },
+  {
    "name": "clickPuff",
    "type": "boolean",
    "default": "true",
@@ -13005,6 +13075,34 @@
    "type": "boolean",
    "default": "true",
    "desc": "",
+   "required": false
+  },
+  {
+   "name": "lightMode",
+   "type": "boolean",
+   "default": "false",
+   "desc": "浅色底: 芯不发白. 规格 theme=\"light\".",
+   "required": false
+  },
+  {
+   "name": "fadeDelayMs",
+   "type": "number",
+   "default": "-",
+   "desc": "指针静止多久 (ms) 后开始隐去, 不给就不隐.",
+   "required": false
+  },
+  {
+   "name": "fadeDurationMs",
+   "type": "number",
+   "default": "-",
+   "desc": "隐去用时 (ms), 默认 600.",
+   "required": false
+  },
+  {
+   "name": "maxDevicePixelRatio",
+   "type": "number",
+   "default": "-",
+   "desc": "设备像素比上限, 默认 2.",
    "required": false
   },
   {

@@ -11,6 +11,8 @@ Decision-ID: surface-cursor
 - `src/surface/cursor/parts/meld.ts`, `src/surface/cursor/MeldCursor.tsx`
 - `src/surface/cursor/parts/halo.ts`, `src/surface/cursor/HaloCursor.tsx`
 - `src/surface/cursor/parts/haze.ts`, `src/surface/cursor/HazeCursor.tsx`
+- `src/surface/cursor/parts/fluid.ts`, `src/surface/cursor/parts/fluid-shader.ts` (Halo / Haze 共用流体通道, 2026-11-10 补做)
+- `src/surface/cursor/parts/halo-fluid.ts`, `src/surface/cursor/parts/halo-shader.ts`, `src/surface/cursor/parts/haze-fluid.ts`, `src/surface/cursor/parts/haze-shader.ts`
 - `src/surface/cursor/parts/flock.ts`, `src/surface/cursor/FlockCursor.tsx`
 - `src/surface/cursor/parts/streamer.ts`, `src/surface/cursor/StreamerCursor.tsx`
 - `src/surface/cursor/parts/nudge.ts`, `src/surface/cursor/NudgeGrid.tsx`
@@ -37,8 +39,8 @@ docs/research/catalog/animations.md 的 BlobCursor, GlowCursor, GhostCursor, Swa
 做法:
 
 - MeldCursor: 头部是沿速度方向拉伸的椭圆, 尾链是逐点一阶跟随的圆, 相邻两点之间画 round cap 的粗线当粘连带 (粗细 x goo). 高光是 background 色调的小圆.
-- HaloCursor: 轨迹点按间距留下, 每段按三层 (外晕 2.6 倍宽, 主体, 热芯 0.4 倍宽) 各自的余辉描线, shadowBlur 做光晕, 叠加混合 lighter; 尾部半段用 secondaryTone.
-- HazeCursor: 烟团是 shadowBlur 等于半径的软圆, 浓度乘 0.28 的透明度叠出烟雾.
+- HaloCursor (2026-11-10 补做, 改走内核 WebGL2 着色器通道): 光头 (stepHalo 跟手) 这一帧走过的线段打成线段溅点, 进一张稳定流体: 速度通道 (自平流, 平静衰减 exp(-dt x 1.2), 溅点按 FLOW 0.75 并入, 压力投影滞后一帧), 散度, Jacobi 压力 (PRESSURE_STEPS 20, 画质档 low 6 / medium 12 / high 20), 染料三通道 energy / gas / halo 按规格三层余辉各自衰减, 单遍 MacCormack 近似 (前向取样加一半往返误差, 夹到邻域内); 场景按规格密度 1 - exp(-((energy x 1.1 + gas x 0.8) x intensity + halo x 0.25)) 与墨色 tint x min(1, 0.5 / tone) x mix(0.95, 0.72, smoothstep(0.5, 3, energy)), 主尾色按 energy 与 halo 的比例混, 热芯趋向 foreground (lightMode 时不趋白); 泛光走 backgrounds/bloom 金字塔 (glow 为强度); 上屏按规格边缘 smoothstep(0, 0.02, 边距) 与颗粒. 点击打径向推开的溅点.
+- HazeCursor (2026-11-10 补做, 改走内核 WebGL2 着色器通道): 烟头弹簧与烟团发射仍由 stepHaze 管, 每帧新放的烟团 (含点击喷的一圈) 打成溅点后从表里取走; 烟雾场两条通道: 速度 (自平流, 拖拽 exp(-dt x 2.4), 上漂 drift x 110 px/s, 旋度值噪声湍流, 不做压力投影, 同规格 SIM 的自写积分) 与染料 body / smoke (按 trailLength 衰减, MacCormack 近似). 场景按规格 wisp = pow(smoothstep(0.18, 0.82, smoke), 2) x 2.8, cloud = body x smoothstep(0, 0.32, body) x 1.15, 法线打光 0.7 + 0.5 x max(dot(n, normalize(-0.35, 0.55, 0.75)), 0), 芯 smoothstep(0.7, 2.2, cloud); 细节噪声 (detail) 调制 smoke; edgeIntensity 为梯度轮廓光. 上屏按规格覆盖 1 - exp(-(a + bloom x bloomStrength x 0.6) x 0.95), grainIntensity 颗粒, fadeDelayMs / fadeDurationMs 静止后线性隐去. bloomRadius 按级数衰减远级权重, bloomThreshold 为金字塔阈值.
 - FlockCursor: 粒子数据放一张 Float32Array (每粒 9 槽), 每种颜色并成一条路径一次 fill 或 stroke; 深度大于 0.8 的近处粒子用 accentTone.
 - StreamerCursor: 轮廓是头加 50 点沿法向左右偏移的多边形, 一条一次 fill; fade 时逐段四边形按 1 - u 透明度填. 规格没有减弱动效分支, 本库照族规矩在减弱动效时不画.
 - NudgeGrid: 画布垫在 children 下方 (SurfaceLayer front=false). 网格线一条路径一次描; 聚光是把网格在指针圆内裁剪后用主色调再描一遍. 减弱动效时内核只画一帧, 网格静态, 不点亮.
@@ -46,8 +48,9 @@ docs/research/catalog/animations.md 的 BlobCursor, GlowCursor, GhostCursor, Swa
 ## Consequences
 
 - MeldCursor 没有落的: 着色器里的等值面融合 (这里用粘连带近似, 观感接近, 不需要顶点, 不标 ENGINE-GAP), material / depth / morph 形状族 / drip 滴落 / shadow / blend, 溅滴落回再被吸收 (这里寿命走完淡出).
-- HaloCursor 没有落的: 规格的流体模拟 (速度场平流, MacCormack, 压力投影 20 步, 5 级 bloom) 换成轨迹描线; 观感是光带而不是流体卷动. 流体本可走内核乒乓离屏通道 (InkSplash 已这样做), 这里没做, 属未落项而不是引擎缺口, 不标 ENGINE-GAP. grain, quality, theme, blendMode 不落地.
-- HazeCursor 没有落的: 规格的烟雾场 (双缓冲平流, 法线光照, bloom 多级降采样, grain) 换成软圆粒子; detail, bloom*, edgeIntensity, grainIntensity, theme, mixBlendMode, fadeDelayMs / fadeDurationMs, targetPixels 不落地.
+- HaloCursor 没有落的 (2026-11-10 补做后): 规格 BLOOM_LEVELS 5, 内核泛光金字塔上限 4 级 (BLOOM_MAX_LEVELS), 取 4; blendMode (画布 CSS 混合, 宿主是 SurfaceLayer, 混合会连带 children, 不落). quality 已落 (画质档), theme 落为 lightMode, maxDevicePixelRatio 落为内核 dpr 上限. 半浮点渲染目标不可用时同 InkSplash 退 RGBA8 范围编码, 精度不足 (InkSplash 已标 ENGINE-GAP, 这里同源).
+- HazeCursor 没有落的 (2026-11-10 补做后): mixBlendMode 与 zIndex (同上, 宿主是 SurfaceLayer, 不落), targetPixels (由内核 maxEdge 代替). detail, bloomStrength / bloomRadius / bloomThreshold, edgeIntensity, grainIntensity, theme (lightMode), fadeDelayMs / fadeDurationMs, maxDevicePixelRatio 已落.
 - FlockCursor 没有落的: 规格的压力网格 (CELL 16, MAX_COLS 72 x MAX_ROWS 48, PRESSURE_STEPS 12, 粒子互斥) 与实例化绘制; targets (吸附到链接), tail / trail 拖影, hideCursor, lightMode. 2000 个实例化粒子在 Canvas2D 上偏重, 默认降到 400; 粒子互斥不做, 群会叠在一起. ENGINE-GAP: 实例化绘制 (内核没有实例化通道), 已在组件文件头标注 (2026-11-10 补).
 - StreamerCursor 没有落的: DETAIL 4 的样条细分 (这里每段 1 个采样, 50 点已经够顺), softness 边缘羽化, backgroundColor, dpr.
 - NudgeGrid 没有落的: 网格线的边缘渐隐 (只对亮格做), lightMode, dpr. 环境闪格的随机源是按 cellSize 播种的可复现随机数.
+- HaloCursor / HazeCursor ENGINE-GAP (2026-11-10 补做时标, 组件文件头 + CHANGELOG 0.16.0 一致): 同 InkSplash, 半浮点渲染目标不可用时退 RGBA8 范围编码, 精度不足.

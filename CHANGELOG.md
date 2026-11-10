@@ -16,6 +16,17 @@
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
+## [0.16.0] - 2026-11-10
+
+cursor 族 `HaloCursor` 与 `HazeCursor` 补做: 原来是 Canvas2D 近似 (描线光带, 软圆烟团), 现在改走 backdrop 内核的 WebGL2 着色器通道 (`useShaderBackdrop` + `ShaderSpec.passes` 乒乓离屏, 共用泛光金字塔), 按规格做流体与烟雾场. 两件同 InkSplash 标 ENGINE-GAP: 半浮点渲染目标不可用时退 RGBA8 范围编码, 精度不足. 根入口 `src/index.ts` 不新增符号. 原有导出与 props 全部保留, 只增不删, 无迁移.
+
+### Added
+
+- `HaloCursor`: 稳定流体 (平流, 散度, Jacobi 压力, 染料三通道 energy / gas / halo 按 linger 各自衰减, MacCormack 近似), 规格的密度与墨色公式, 边缘淡出, 泛光. 新 props `grain`, `quality` (low / medium / high), `lightMode`, `maxDevicePixelRatio`; `glow` 改为泛光强度.
+- `HazeCursor`: 自平流烟雾场 (拖拽, 上漂, 旋度噪声湍流), 规格的 wisp / cloud 着色与法线打光, 覆盖公式, 泛光. 新 props `detail`, `grainIntensity`, `bloomStrength`, `bloomRadius`, `bloomThreshold`, `edgeIntensity`, `lightMode`, `fadeDelayMs`, `fadeDurationMs`, `maxDevicePixelRatio`.
+- 一并导出 `haloKeep`, `haloSplats`, `hazeSplats`, `hazeFade`, `packSplats` 与 `CURSOR_FLUID` 常数.
+- 契约: api 快照 `./surface` 段 726 到 737, 根段 1608 不变; docs-props 随之更新.
+
 ## [0.15.0] - 2026-11-10
 
 `@hx/ui/surface` 新收 react-bits Animations 的 D 段 6 件, 开 scene 族 (揭示与立体场). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 全部走 backdrop 内核的 WebGL2 着色器通道 (`useShaderBackdrop`, DotReveal 用 `ShaderSpec.passes`), 不引 three / ogl / gsap. 规格里靠实例化或顶点变形的部分做片元近似并标 ENGINE-GAP: PrismOrb (尘埃的 GPGPU 实例化粒子), CubeField (实例化方块网格, gridSize 上限 13), SpringMesh (质点弹簧网格的顶点变形). 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.

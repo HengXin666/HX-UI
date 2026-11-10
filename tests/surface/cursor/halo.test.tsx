@@ -3,8 +3,12 @@
  */
 import { act, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { HALO, HaloCursor, haloFollowTau, haloLayers, makeHalo, stepHalo } from "@src/surface/cursor";
-import { recordCanvas2d, useFakeClock } from "../helpers";
+import { CURSOR_FLUID, HALO, HaloCursor, haloFollowTau, haloKeep, haloLayers, haloSplats, makeHalo, packSplats, stepHalo } from "@src/surface/cursor";
+import { FLUID_PRESSURE_PASS, fluidDyePass, fluidVelocityPass } from "@src/surface/cursor/parts/fluid-shader";
+import { HALO_SCENE, haloFragment } from "@src/surface/cursor/parts/halo-shader";
+import { mockIntersection, mockReducedMotion, mockWebgl2 } from "../backdrop/helpers";
+import { useFakeClock } from "../helpers";
+import { fixRect } from "./support";
 
 afterEach(() => {
 	vi.useRealTimers();
@@ -34,33 +38,62 @@ describe("HaloCursor 模拟", () => {
 	});
 });
 
+describe("HaloCursor 流体", () => {
+	it("流体常数; 三通道保留率按 linger 分配 (热芯最快, 外晕最慢)", () => {
+		expect(HALO).toMatchObject({ pressureSteps: 20, flow: 0.75, edgeFade: 0.02, grain: 0 });
+		const [core, hot, wide] = haloKeep(0.1, 1.4);
+		expect(hot).toBeLessThan(core);
+		expect(core).toBeLessThan(wide);
+		expect(core).toBeCloseTo(Math.exp((-0.1 * 4.6) / (1.4 * 0.8)), 6);
+	});
+	it("光头走过的线段打成溅点, 点击打径向溅点; 静止不打; 打包截到上限", () => {
+		const fit = { width: 200, height: 100, scale: 1 };
+		const t = { intensity: 1.3, trailWidth: 3, glow: 1.2, hotspot: 0.8, simScale: 0.4 };
+		const moving = haloSplats({ x: 120, y: 50, energy: 0.8 }, { x: 100, y: 50 }, [], 1 / 60, fit, t);
+		expect(moving).toHaveLength(1);
+		expect(moving[0]?.ax).toBeCloseTo(0.5);
+		expect(moving[0]?.bx).toBeCloseTo(0.6);
+		expect(moving[0]?.vx).toBeGreaterThan(0);
+		expect(Math.hypot(moving[0]?.vx ?? 0, moving[0]?.vy ?? 0)).toBeLessThanOrEqual(HALO.maxSpeed);
+		expect(haloSplats({ x: 100, y: 50, energy: 0 }, { x: 100, y: 50 }, [], 1 / 60, fit, t)).toHaveLength(0);
+		const burst = haloSplats({ x: 100, y: 50, energy: 0 }, { x: 100, y: 50 }, [{ x: 100, y: 50 }], 1 / 60, fit, t);
+		expect(burst[0]?.kind).toBe(1);
+		const many = packSplats(Array.from({ length: 30 }, () => burst[0]!));
+		expect(many.count).toBe(CURSOR_FLUID.maxSplats);
+		expect(many.seg).toHaveLength(CURSOR_FLUID.maxSplats * 4);
+	});
+	it("着色器接线", () => {
+		expect(fluidVelocityPass(true)).toContain("uniform sampler2D u_press;");
+		expect(fluidVelocityPass(false)).not.toContain("u_press");
+		expect(FLUID_PRESSURE_PASS).toContain("u_keep");
+		expect(fluidDyePass(true)).toContain("uniform vec3 u_keep;");
+		expect(HALO_SCENE).toContain("1.0 - exp(-((energy * 1.1 + gas * 0.8) * u_intensity + halo * 0.25))");
+		expect(HALO_SCENE).toContain("mix(0.95, 0.72, smoothstep(0.5, 3.0, energy))");
+		expect(haloFragment("")).toContain("smoothstep(0.0, 0.02,");
+	});
+});
+
 describe("HaloCursor", () => {
-	it("移动后画光带与热点, 点击出光环; enabled=false 不画", () => {
+	it("挂上内核着色器通道, 指针移动后每帧画多遍; enabled=false 仍挂载", () => {
 		useFakeClock();
-		const box = { left: 0, top: 0, width: 200, height: 200, x: 0, y: 0, right: 200, bottom: 200, toJSON: () => ({}) } as DOMRect;
-		vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockReturnValue(box);
+		fixRect();
 		const calls: string[] = [];
-		const restore = recordCanvas2d(calls);
-		const { container } = render(<HaloCursor secondaryTone="link">hi</HaloCursor>);
+		const restore = [mockWebgl2(calls), mockReducedMotion(false)];
+		mockIntersection();
+		const { container, unmount } = render(<HaloCursor secondaryTone="link" quality="low">hi</HaloCursor>);
 		const host = container.querySelector("[data-slot=halo-cursor]") as HTMLElement;
+		expect(host.dataset.backdropStatus).toBe("live");
 		act(() => vi.advanceTimersByTime(32));
 		fireEvent.pointerEnter(host, { clientX: 20, clientY: 20 });
-		for (let i = 1; i < 8; i += 1) {
+		const before = calls.filter((c) => c === "drawArrays").length;
+		for (let i = 1; i < 6; i += 1) {
 			fireEvent.pointerMove(host, { clientX: 20 + i * 15, clientY: 20 + i * 5 });
 			act(() => vi.advanceTimersByTime(16));
 		}
-		expect(calls).toContain("lineTo");
-		expect(calls).toContain("arc");
-		fireEvent.pointerDown(host, { clientX: 120, clientY: 50 });
-		calls.length = 0;
-		act(() => vi.advanceTimersByTime(32));
-		expect(calls.filter((c) => c === "stroke").length).toBeGreaterThan(0);
-		restore();
-		const off: string[] = [];
-		const restore2 = recordCanvas2d(off);
-		render(<HaloCursor enabled={false}>x</HaloCursor>);
-		act(() => vi.advanceTimersByTime(64));
-		expect(off).not.toContain("arc");
-		restore2();
+		expect(calls.filter((c) => c === "drawArrays").length).toBeGreaterThan(before + 10);
+		unmount();
+		const { container: c2 } = render(<HaloCursor enabled={false}>x</HaloCursor>);
+		expect(c2.querySelector("[data-slot=halo-cursor] canvas")).not.toBeNull();
+		restore.forEach((fn) => fn());
 	});
 });
