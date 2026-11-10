@@ -129,12 +129,12 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | A | StickerPeel | PeelSticker | 18f77c1 (src/surface/sticker, ENGINE-GAP 卷曲) |
 | A | ElectricBorder | SparkEdge | c984bc0 (edge) |
 | A | PixelTrail | CellTrail | e59b700 (src/surface/pointer, 未进族 index) |
-| B | BlobCursor | MeldCursor | |
-| B | GlowCursor | HaloCursor | |
-| B | GhostCursor | HazeCursor | |
-| B | SwarmCursor | FlockCursor | |
-| B | Ribbons | StreamerCursor | |
-| B | CursorGrid | NudgeGrid | |
+| B | BlobCursor | MeldCursor | 7b47c90 (src/surface/cursor) |
+| B | GlowCursor | HaloCursor | 6985f92 (src/surface/cursor) |
+| B | GhostCursor | HazeCursor | 569d8f6 (src/surface/cursor) |
+| B | SwarmCursor | FlockCursor | f7a60bd (src/surface/cursor) |
+| B | Ribbons | StreamerCursor | 48c5841 (src/surface/cursor) |
+| B | CursorGrid | NudgeGrid | 3fdf64a (src/surface/cursor) |
 | C | SplashCursor | InkSplash | |
 | C | MetaBalls | MergeBlobs | |
 | C | MetallicPaint | ChromeMark | |
@@ -149,7 +149,8 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | D | ElasticMesh | SpringMesh | |
 | D | Strands | FiberStrands | |
 
-**A 段 7 件已提齐 (2026-11-10 21:5x), 已报用户, 待推.** 段尾接入 (新族 loop / edge / texture / sticker 进 src/surface/index.ts, CellTrail 进 pointer 族 index, api 快照, 0.12.0, CHANGELOG, docs-props) 等用户点头.
+**A 段已推 (到 18f77c1), 段尾接入 6096018 (0.12.0). B 段 6 件已提 (cursor 族, Canvas2D, 无 ENGINE-GAP), 段尾接入 51cf50d (0.13.0), 待用户推.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
+接入时查 export * 撞名 (tsc TS2308): 族内通用小工具 (clamp, mix, seededRandom, wrapOffset 之类) 不进族 index 或改名.
 注意: pointer 族已接在 ./surface 上, 段内往它的 index 加导出会改 api 快照 (门禁 4/13 会拦), 所以段内新件放已接入的族时先不进族 index.
 B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DOM 做近似, 真需要顶点 / 实例化的标 ENGINE-GAP.
 分段按技法粗分 (A DOM/SVG/Canvas2D, B 光标画布, C WebGL 片元, D reveal 与 3D), 读到规格后可微调, 改了就改本表.
