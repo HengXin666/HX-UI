@@ -170,14 +170,15 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
   7. ~~SparkMark: PIXEL_BUDGET 与预模糊辉光~~ 已做 (pixelBudgetDpr; 辉光烘在参数图 B 通道). 用户 2026-11-10 23:37 定为未落项, 组件文件头 / field note / CHANGELOG 已一致.
 - ENGINE-GAP 复核 (2026-11-10 定, 组件文件头 / note / CHANGELOG 0.16.0 一致): SoftShape 失焦近似不标 (不涉顶点 / 实例化 / 深度, 真高斯排在上面第 5 件); SparkMark 的 PIXEL_BUDGET 与预模糊辉光不标 ENGINE-GAP, 用户定为未落项已补 (第 7 件), 脉冲极角是未落项已补 (第 6 件); PrismOrb 的 PIXEL_BUDGET 同样不算 ENGINE-GAP, 文件头措辞已改.
 - 内核若加浮点数据纹理上传, CubeField 的 gridSize 上限 13 可放开.
-- **未落项 (用户 2026-11-11 定排进待办, 要做不是只记)**:
-  - SparkMark: 规格的 2d 画布逐帧层未落.
-  - FiberStrands: 规格 fp 抗锯齿 (dFdx 足迹) 未落, 现用 sg 最小值代替.
-  - DotReveal: 用户 2026-11-11 定 "四角平均底色可以, 写进 props 文档让使用方能覆盖". props 文档已写 (keyOut 注释); 覆盖用的 prop (如 keyColor) 还没加, 加了会改 docs-props, 属 minor.
-- 用户 2026-11-11 已定 (无需再问): SpringMesh 保留 touch-action: none (代价已写 scene note 与 CHANGELOG 0.17.0); FiberStrands 7 角色保留本库定义 (默认外观变化已写 CHANGELOG 0.17.0).
-- 待用户裁定: Halo/Haze 的 RGBA8 精度仍标 ENGINE-GAP, 与 23:25 口径 (只算顶点 / 实例化 / 深度) 冲突; PrismOrb 的 PIXEL_BUDGET 是否同列未落项并补; 烟团 CPU 不老化 (1530d2d); cursor 的 packSplats 等通用名导出是否撤回 (撤回改 api 快照).
-- 未实测: SparkMark PIXEL_BUDGET 经 setState 在帧回调里改 dpr 的路径; SoftShape 每帧多 3 遍离屏的性能.
-
+- **按序待办 (用户 2026-11-11 00:12 定, 每件单独提交, 门禁 13/13, 不 push)**:
+  1. DotReveal: 加底色覆盖 prop (如 `keyColor`, 不给则仍取四角平均色; 不写色值字面量, 走数值或 token), 更新 keyOut 注释, docs-props, CHANGELOG Unreleased Added.
+  2. SparkMark: 规格的 2d 画布逐帧层 (未落项).
+  3. FiberStrands: 规格 fp 抗锯齿 (dFdx 足迹), 替掉 sg 最小值近似.
+  4. PrismOrb: PIXEL_BUDGET 4.5e6 真做 (照 SparkMark `pixelBudgetDpr` 的做法, 经 setState 作内核 dpr), 再把文件头 / scene note / CHANGELOG 改成 "未落项, 已补" 写法 (现文件头第 5 行写的是 "由 dpr 上限与 maxEdge 代替", 未实现前不能写已补).
+  5. HazeCursor 烟团 CPU 不老化: 用户定为真漏做, 补老化 (1530d2d 里的测试锁定了不老化, 要一起改).
+  6. 实测并把数字写进 note: (a) SparkMark PIXEL_BUDGET 经 setState 在帧回调里改 dpr 的路径 (真实浏览器, 记录不同宿主面积下的 dpr 与画布尺寸); (b) SoftShape 每帧多 3 遍离屏的帧耗 (开 / 关 blur 对比). field note 写数字.
+  7. 再往下: 本节后面 "收尾" 六条, 按原顺序.
+- 用户 2026-11-11 已定 (无需再问): SpringMesh 保留 touch-action: none; FiberStrands 7 角色保留本库定义; DotReveal 四角平均底色可以 (但要可覆盖, 见上第 1 条); Halo/Haze 的 RGBA8 ENGINE-GAP 标签三处保留 (算引擎能力限制, 不是漏做); packSplats 等通用名不进族 index, 维持现做法.
 - `tallyOvershoot` 缓存 Map 无上限, 考虑量化键或 LRU.
 - nav / menu 之外各族 tokens 里的 cubic-bezier 副本 (choice/tone, press/tokens, range/tokens, compose/tokens, dismiss/tokens) 改引用 CURVE.
 - 各族帧循环 (use-nav-motion, range motion.ts 等) 并进 src/motion; nav / gallery / stack / glass 的族 tokens 合并.
@@ -186,10 +187,10 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
 
 ## 交接 (2026-11-11)
 
-- 已完成: Animations A/B/C/D 四段 + Halo/Haze 补做 + 按序补做 7 件, 全部已推 (到 18f47bd, 0.17.0). 门禁每件 13/13.
-- 正在做: 无 (本次只改了 DotReveal keyOut 注释与本文件).
-- 下一步 (按序): 1) 上面 "未落项" 三条, 每件单独提交; 2) "待用户裁定" 四条先问用户; 3) 其余 "后续收尾".
-- 接手第一步: 装 hxfs (见已知坑), `git log --oneline -3` 确认 HEAD 与本文件一致, 再读本节与 "后续收尾".
+- 已完成: Animations A/B/C/D 四段 + Halo/Haze 补做 + 按序补做 7 件 + 收口 (0274103), 已推. 1bfd17d (总账计数更正) 与本次 CHECKPOINT 提交在本地, 待推.
+- 正在做: 无. 2026-11-11 00:12 因额度换号, 上面 "按序待办" 一件都没开工.
+- 下一步: "后续收尾" 里 "按序待办" 第 1 条 (DotReveal 底色覆盖 prop) 起, 按序做.
+- 接手第一步: 装 hxfs (见已知坑), `git log --oneline -3` 确认 HEAD 是本 CHECKPOINT 提交, 读本节与 "按序待办", 再开 `src/surface/scene/DotReveal.tsx` (keyOut / dotMatte / u_matte 在 26, 80-88, 139 行附近).
 - 总账 (0.17.0, 读 scripts/gates/baselines/api-surface.txt): 根入口 1608 符号; 子路径 surface 769, kits 290, controls 214, motion 159, backgrounds 136, hxbrowser 85, viz 56, hxbrowser/protocol 37, studio 34, page 23, blocks 1; 合计 3412. ENGINE-GAP: 标签 34 个文件 / 35 处 (`grep -rln 'ENGINE-GAP:' src`; surface 10, kits 13, controls 11); 另 18 个文件以别的写法提到 ENGINE-GAP (含 "不标" 说明).
 
 ## 已知坑
