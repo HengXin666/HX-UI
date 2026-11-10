@@ -12,3 +12,5 @@ export { hazeDecay, hazeSpring, makeHaze, puffHaze, puffRadius, stepHaze, type H
 export { HazeCursor, type HazeCursorProps } from "./HazeCursor";
 export { FLOCK_STRIDE, burstFlock, flockEase, flockGrab, makeFlock, stepFlock, type FlockState, type FlockTuning } from "./parts/flock";
 export { FlockCursor, type FlockCursorProps, type FlockShape } from "./FlockCursor";
+export { makeStreamers, ribbonOutline, stepStreamers, streamerFollow, streamerProfile, streamerSpring, type Ribbon, type StreamerShape, type StreamerState, type StreamerTuning } from "./parts/streamer";
+export { StreamerCursor, type StreamerCursorProps } from "./StreamerCursor";
