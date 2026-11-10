@@ -6,3 +6,5 @@ export * from "./tokens";
 export { clamp, follow, integrate, mix, noise1, pointerPx, pointerVelocityPx, seededRandom, type Body } from "./parts/common";
 export { makeMeld, massAfterSplash, meldSpring, regrowMass, splashMeld, stepMeld, type Drop, type MeldState, type MeldTuning } from "./parts/meld";
 export { MeldCursor, type MeldCursorProps } from "./MeldCursor";
+export { haloFollowTau, haloLayers, makeHalo, stepHalo, type HaloPoint, type HaloState } from "./parts/halo";
+export { HaloCursor, type HaloCursorProps } from "./HaloCursor";
