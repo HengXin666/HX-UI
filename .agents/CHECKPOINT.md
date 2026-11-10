@@ -122,13 +122,13 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 
 | 段 | 规格 | HX 名 | 状态 |
 |---|---|---|---|
-| A | LogoLoop | MarkRail | |
-| A | OrbitImages | OrbitRing | |
-| A | StarBorder | CometBorder | |
-| A | Noise | GrainLayer | |
-| A | StickerPeel | PeelSticker | |
-| A | ElectricBorder | SparkEdge | |
-| A | PixelTrail | CellTrail | |
+| A | LogoLoop | MarkRail | c6424d0 (src/surface/loop) |
+| A | OrbitImages | OrbitRing | 4d86a91 (loop) |
+| A | StarBorder | CometBorder | 734515a (src/surface/edge) |
+| A | Noise | GrainLayer | 444cd32 (src/surface/texture) |
+| A | StickerPeel | PeelSticker | 18f77c1 (src/surface/sticker, ENGINE-GAP 卷曲) |
+| A | ElectricBorder | SparkEdge | c984bc0 (edge) |
+| A | PixelTrail | CellTrail | e59b700 (src/surface/pointer, 未进族 index) |
 | B | BlobCursor | MeldCursor | |
 | B | GlowCursor | HaloCursor | |
 | B | GhostCursor | HazeCursor | |
@@ -149,6 +149,9 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | D | ElasticMesh | SpringMesh | |
 | D | Strands | FiberStrands | |
 
+**A 段 7 件已提齐 (2026-11-10 21:5x), 已报用户, 待推.** 段尾接入 (新族 loop / edge / texture / sticker 进 src/surface/index.ts, CellTrail 进 pointer 族 index, api 快照, 0.12.0, CHANGELOG, docs-props) 等用户点头.
+注意: pointer 族已接在 ./surface 上, 段内往它的 index 加导出会改 api 快照 (门禁 4/13 会拦), 所以段内新件放已接入的族时先不进族 index.
+B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DOM 做近似, 真需要顶点 / 实例化的标 ENGINE-GAP.
 分段按技法粗分 (A DOM/SVG/Canvas2D, B 光标画布, C WebGL 片元, D reveal 与 3D), 读到规格后可微调, 改了就改本表.
 - 规矩: 只借规格的常数与 props 自写; 内核公共头不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么; 颜色只走语义 token; 不引 three.
 - **Animations 全部完成后**: 已提交老控件的 ring-1 统一换 FOCUS_RING, 单独一个提交 (用户 02:01 裁定排在这段后面).
