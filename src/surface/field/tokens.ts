@@ -191,3 +191,30 @@ export const LENS = {
 } as const;
 
 export type LensQuality = keyof typeof LENS.quality;
+
+/* ── SoftShape (规格 ShapeBlur) ── */
+export const SOFT = {
+  /** FIELD, PAD, FAR: 图片形状的距离场边长, 四周留白比例, 距离变换的无穷大. */
+  field: 512,
+  pad: 0.35,
+  far: 1e20,
+  /** 透镜跟手 1 - exp(-dt x (在场 10 / 闲置 3)), 力度 1 - exp(-dt x 4). */
+  followActive: 10,
+  followIdle: 3,
+  powerRate: 4,
+  /** props 默认值. */
+  sides: 6,
+  size: 0.8,
+  roundness: 0.2,
+  thickness: 2,
+  echoes: 1,
+  spacing: 12,
+  blur: 16,
+  lensSize: 0.3,
+  lensSoftness: 0.7,
+  chroma: 0.3,
+  /** 本库定: 闲置时透镜沿 9s / 7s 的利萨如漂 (幅度 0.3 短边), 回声上限 8, 色散错开 chroma x 0.35 x 当前模糊. */
+  idleAmp: 0.3,
+  maxEchoes: 8,
+  chromaRatio: 0.35,
+} as const;

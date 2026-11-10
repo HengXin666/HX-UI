@@ -13,8 +13,10 @@ Decision-ID: surface-field
 - `src/surface/field/parts/chrome.ts`, `src/surface/field/parts/chrome-shader.ts`, `src/surface/field/ChromeMark.tsx`
 - `src/surface/field/parts/beam.ts`, `src/surface/field/parts/beam-shader.ts`, `src/surface/field/BeamFlow.tsx`
 - `src/surface/field/parts/lens.ts`, `src/surface/field/parts/lens-shader.ts`, `src/surface/field/RippleLens.tsx`
+- `src/surface/field/parts/sdf.ts` (遮罩到有符号距离场 + 16 位编码与 GLSL 解码, SoftShape 与 SparkMark 共用)
+- `src/surface/field/parts/soft.ts`, `src/surface/field/parts/soft-shader.ts`, `src/surface/field/SoftShape.tsx`
 - `src/surface/field/index.ts`
-- `tests/surface/field/{ink,merge,chrome,beam,lens}.test.tsx`
+- `tests/surface/field/{ink,merge,chrome,beam,lens,soft}.test.tsx`
 
 ## Problem
 
@@ -31,6 +33,7 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 | MetallicPaint | `ChromeMark` | WORKING_SIZE 512 (遮罩长边), 时钟 0.3 x (time + 2.8), 细条 0.12 / cycleWidth x (1 - 0.4 bump) 与 0.07 / cycleWidth x (1 + 0.4 bump), 条纹 mix 链 smoothstep(0, 2 blur) / smoothstep(border, border + 2 blur) / 末段 0.5 blur, 边缘弯折 direction -= 2 x noise x diag x s(edge)(1 - s(edge)), direction *= mix(1, 1 - edge, smoothstep(0.5, 1, contour)), direction -= 1.7 x edge x smoothstep(0.5, 1, contour); props `imageSrc`, `text`, `fontFamily` system-ui, `fontWeight` 800, `color` foreground, `backgroundColor` transparent, `density` 2, `softness` 0.1, `dispersion` 0.3, `distortion` 0.07, `edgeBend` 0.6 (规格 contour 对应), `angle` 70, `scale` 0.6, `rotation` 0, `mouseTilt` 0.5, `lightMode`, `intro`; 本库定: 隆起场在遮罩内解泊松 (源项 4 / r^2, r = 通道短边 x scale / 2), 通道比例 0.15, 每帧 24 次 Jacobi 静态帧 240 次, 倾斜弹簧 tau 0.25s 最大 0.6 rad, 入场 1.2s 由下往上扫亮, 色散错开 dispersion x 0.08 x (0.3 + edge), 亮色 mix(tint, 白, 0.7) 暗色 tint x 0.12 (浅色 0.45) |
 | LaserFlow | `BeamFlow` | 起亮 smoothstep(-6, 12, f), 纹 0.88 + 0.24 noise(u x 6, f / 22 - 1.7t), 色带 smoothstep(50, 75, f) / smoothstep(100, 125, f), 侧光 smoothstep(-24, 24, dx), 铺展 250 x spread, runMask 1 - smoothstep(run - 34, run + 6, adx), flowMask (1 - smoothstep(0.75 spread, 1.1 spread, adx)) x runMask, 贴地光 exp(-(below / 14)^2) 与 exp(-(below / 40)^2), 呼吸 1 + pulse (0.12 sin(1.5708 t) + 0.08 (noise - 0.5)), 揭幕前沿 1 - smoothstep(front - 70, front + 8, f); props `beamPosition` 0.6, `surfaceLevel`, `colors` (规格单色 color, 着色器里的 TINTS 色板换成三个 token 色), `intensity` 1.8, `beamWidth` 1.5, `flare` 1.5, `spread` 1.5, `spill` 1, `fog` 0.2, `dust` 1.6, `streaks` 1.5, `dots` 1, `pulse` 1.5, `speed` 1.5 (即公共时钟倍率), `seed` 3, `mouseInteraction`, `revealImage`, `revealRadius` 220, `revealOpacity` 0.6, `intro`, `lightMode` (规格 theme), `paused`, `dpr`; 本库定: surfaceLevel 是落点高度占宿主高的比例 默认 0.78, 色带的 f 按落点归一到 130, 落下 0.9s 再铺展 1.2s (缓出立方), 光柱随指针横移最多 12% 宿主宽 tau 0.3s, 尘点 9px 格子 上浮 22px/s, 光点间距 46px |
 | RippleDistortion | `RippleLens` | MAX_WAVES 100, QUALITY_SCALE low 0.4 / medium 0.7 / high 1 (乘像素比上限), START_SCALE 1.5 (出生半径 brushSize / 2 / 1.5), EDGE exp(-5) (振幅 exp(-age x fade) 低于它出队, 寿命 5 / fade); props `src` (必填), `brushSize` 150, `strength` 0.2, `swirl` 1, `rings` 4, `spread` 5, `fade` 3, `spacing` 15, `dispersion` 0, `glint` 0, `tint` primary, `tintAmount` 0.1, `grayscale` true, `highlightColor` foreground, `trigger` hover / click / both, `clickStrength` 2, `quality` low, `enabled`, `alt` (本库加, 给了宿主就是 role=img); 本库定: 波半径每秒长 spread x brushSize x 0.1, 波带宽 brushSize x 0.25 (高斯 exp(-2x^2)), 位移 brushSize x 0.25 x strength, 带内 rings 道起伏 cos(x x rings x pi), 漩涡 0.5 x swirl x sin 相位, 色散错开 dispersion x 0.3 |
+| ShapeBlur | `SoftShape` | FIELD 512, PAD 0.35, FAR 1e20 (图片形状的距离变换), 自转 (angle + spin x dt) % 360, 透镜跟手 1 - exp(-dt x (在场 10 / 闲置 3)), 力度 1 - exp(-dt x 4), 透镜遮罩 power x (1 - smoothstep(r (1 - soft), r, dist)); props `shape` rect / circle / polygon, `src`, `sides` 6, `size` 0.8, `roundness` 0.2, `thickness` 2, `fill`, `echoes` 1, `spacing` 12, `color` foreground, `blur` 16, `lensSize` 0.3, `lensSoftness` 0.7, `focus`, `chroma` 0.3, `rotation`, `spin`, `idle`, `children`; 本库定: 失焦是按距离场把边缘展宽 blur 像素 (smoothstep, 峰值按 (hw + aa) / (hw + aa + blur) 压低), 回声向外每条 spacing 像素 渐弱到 0.4 上限 8 条, 色散按 chroma x 0.35 x 当前模糊错开距离, 闲置利萨如 9s / 7s 幅度 0.3 短边 |
 
 做法:
 
@@ -39,6 +42,7 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 - ChromeMark: 遮罩是 Canvas2D 画的白字 / 原图 (512 长边), 交给 ShaderSpec.textures 上传 (内核按对象身份缓存). 规格在 CPU 上解 512 的泊松方程; 这里换成一个低分辨率离屏通道每帧迭代 24 次, 首几帧里隆起从边缘往里长满, 观感像入场. 遮罩异步就绪 (图片加载) 时组件重渲染, 静态帧随之重画.
 - BeamFlow: 单遍上屏片元, 坐标换成 CSS 像素 (gl_FragCoord / u_dpr, y 从顶部量), 光叠加后取峰值当不透明度并做色调压缩. 揭图用 ShaderSpec.textures 上传 revealImage, 在场程度跟 u_pointer.z.
 - RippleLens: 波队列在 JS 里 (CSS 像素), 每帧打包成 u_waves vec4[100] (设备像素的位置, 半径, 当前振幅), 片元里逐波累加位移再按 cover 取图. 图片异步加载, 未就绪时画布透明.
+- SoftShape: 规格用两遍离屏模糊 (uFieldTexture); 这里形状本身就是有符号距离, 失焦直接在距离上展宽, 一遍上屏, 不要离屏. 图片形状在 JS 里做 512 的两遍一维距离变换 (Felzenszwalb 下包络), 编码进 RGBA8 的 R/G 两字节, 片元里 texelFetch 手动双线性解码.
 
 ## Consequences
 
@@ -47,3 +51,4 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 - ChromeMark 没有落的: 规格的 u_imageAspect / u_scale 等映射细节按本库自己的 maskUv 重写; 图片跨域加载失败时没有形状 (画布透明, 不退兜底). 遮罩文字对读屏不可见, 使用方要给可读文本.
 - BeamFlow 没有落的: surfaceRef (跟随页面上另一个元素的顶边当地面; 内核只量自己的宿主, 这里改成 surfaceLevel 比例), 规格的固定 TINTS 色板 (颜色只走 token), MAX_RENDER_DIM 与 BASE_SATURATION, 揭图按宿主拉伸而不是 cover 裁切.
 - RippleLens 没有落的: 规格的 uTexel / uTextureSize 细节按本库自己的 cover 映射重写. 图片跨域失败时画布透明 (不退兜底).
+- SoftShape 没有落的: 失焦是距离展宽的近似, 不是真正的高斯卷积 (细描边模糊后变淡的观感一致, 尖角处略圆). 图片距离场在主线程算 (512 x 512 约几十毫秒), 换图时一次.

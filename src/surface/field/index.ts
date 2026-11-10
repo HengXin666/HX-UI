@@ -12,3 +12,7 @@ export { beamIntro, makeBeam, stepBeam, type BeamState } from "./parts/beam";
 export { BeamFlow, type BeamFlowProps } from "./BeamFlow";
 export { lensLife, lensRadius, makeLens, packLens, stepLens, type LensState, type LensTrigger, type LensTuning, type LensWave } from "./parts/lens";
 export { RippleLens, type RippleLensProps } from "./RippleLens";
+export { SDF_GLSL, edt1d, encodeDistance, sdfCanvas, signedDistance, type SdfField } from "./parts/sdf";
+export { makeSoft, softIdlePath, stepSoft, type SoftState } from "./parts/soft";
+export { SOFT_SHAPES, type SoftShapeKind } from "./parts/soft-shader";
+export { SoftShape, type SoftShapeProps } from "./SoftShape";
