@@ -4,3 +4,5 @@ export { dotFade, dotWanderPath, makeDot, packBursts, stepDot, type DotBurst, ty
 export { DotReveal, type DotMode, type DotRevealProps, type DotShape } from "./DotReveal";
 export { buildDither, diffuse, fitRect, isOrdered, quantize, veilGrid, veilTone, type VeilBuild, type VeilFit, type VeilKernel, type VeilOrdered, type VeilPalette, type VeilPattern } from "./parts/dither";
 export { BayerVeil, type BayerVeilProps } from "./BayerVeil";
+export { makePrism, packPrism, prismEnergy, prismLook, prismWander, stepPrism, type PrismLook, type PrismMotion, type PrismPreset, type PrismShape, type PrismState } from "./parts/prism";
+export { PrismOrb, type PrismOrbProps } from "./PrismOrb";

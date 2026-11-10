@@ -80,3 +80,36 @@ export const VEIL = {
   maxCells: 480_000,
   rimBand: 0.18,
 } as const;
+
+/* ── PrismOrb (规格 CrystalizedBall) ── */
+export const PRISM = {
+  /** MOTIONS, SHAPES 的取值顺序. */
+  motions: { rise: 0, fall: 1, drift: 2, orbit: 3 },
+  shapes: { square: 0, round: 1 },
+  /** MAX_STRANDS, MAX_ARCS, MAX_PARTICLES, INTRO_SECONDS, SETTLE_SECONDS. */
+  maxStrands: 8,
+  maxArcs: 4,
+  maxParticles: 40000,
+  introSeconds: 2.2,
+  settleSeconds: 7,
+  /** 片元里的规格公式: 玻璃内沿 smoothstep(0.955, 0.985, r), 边光 smoothstep(0.8, 0.97, r), 外晕 R x 0.05..0.105 偏 0.0213 R, 闪烁 smoothstep(-0.9, -0.6, blink). */
+  innerEdge: [0.955, 0.985],
+  rimLit: [0.8, 0.97],
+  halo: [0.05, 0.105, 0.0213],
+  twinkleEdge: [-0.9, -0.6],
+  /** props 默认值. */
+  size: 0.7,
+  hoverStrength: 0.7,
+  /** 本库定: 悬停在场 tau, 刚挂载时的额外能量 (按 SETTLE_SECONDS 回落), 尘埃分三层. */
+  hoverTau: 0.12,
+  settleBoost: 1.5,
+  dustLayers: 3,
+} as const;
+
+/** 本库定: BALL_PRESETS 的取值 (规格条目只给了名字 plasma). */
+export const PRISM_PRESETS = {
+  plasma: { strands: 6, crackle: 0.6, flares: 0.8, glow: 0.8, sparks: 0.5, particleCount: 12000, fill: 0.3, motion: "rise", particleShape: "round", depth: 0.6, sway: 0.3, twinkle: 0.5, haze: 0.4, dustSpeed: 1 },
+  storm: { strands: 8, crackle: 1, flares: 1, glow: 1, sparks: 0.9, particleCount: 8000, fill: 0.2, motion: "drift", particleShape: "round", depth: 0.4, sway: 0.6, twinkle: 0.8, haze: 0.3, dustSpeed: 1.6 },
+  calm: { strands: 3, crackle: 0.25, flares: 0.4, glow: 0.6, sparks: 0.15, particleCount: 20000, fill: 0.45, motion: "orbit", particleShape: "round", depth: 0.8, sway: 0.15, twinkle: 0.3, haze: 0.6, dustSpeed: 0.5 },
+  frost: { strands: 4, crackle: 0.45, flares: 0.5, glow: 0.5, sparks: 0.3, particleCount: 30000, fill: 0.25, motion: "fall", particleShape: "square", depth: 0.7, sway: 0.4, twinkle: 0.9, haze: 0.5, dustSpeed: 0.7 },
+} as const;
