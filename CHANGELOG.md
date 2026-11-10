@@ -18,7 +18,7 @@
 
 ## [0.13.0] - 2026-11-10
 
-`@hx/ui/surface` 新收 react-bits Animations 的 B 段 6 件, 开 cursor 族 (跟手画布). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 规格是 WebGL 着色器场, 这里全部接在 backdrop 内核的 Canvas2D 渲染器上近似, 无 ENGINE-GAP. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
+`@hx/ui/surface` 新收 react-bits Animations 的 B 段 6 件, 开 cursor 族 (跟手画布). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 规格是 WebGL 着色器场, 这里全部接在 backdrop 内核的 Canvas2D 渲染器上近似; FlockCursor 的实例化绘制标 ENGINE-GAP (2026-11-10 补). 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
 
 ### Added
 

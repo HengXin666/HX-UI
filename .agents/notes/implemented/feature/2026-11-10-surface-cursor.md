@@ -46,8 +46,8 @@ docs/research/catalog/animations.md 的 BlobCursor, GlowCursor, GhostCursor, Swa
 ## Consequences
 
 - MeldCursor 没有落的: 着色器里的等值面融合 (这里用粘连带近似, 观感接近, 不需要顶点, 不标 ENGINE-GAP), material / depth / morph 形状族 / drip 滴落 / shadow / blend, 溅滴落回再被吸收 (这里寿命走完淡出).
-- HaloCursor 没有落的: 规格的流体模拟 (速度场平流, MacCormack, 压力投影 20 步, 5 级 bloom) 换成轨迹描线; 观感是光带而不是流体卷动. 真要流体需要多张浮点纹理与多遍片元, 内核单 pass 片元管线做不到, 不过这条走的是 Canvas2D 近似, 不标 ENGINE-GAP. grain, quality, theme, blendMode 不落地.
+- HaloCursor 没有落的: 规格的流体模拟 (速度场平流, MacCormack, 压力投影 20 步, 5 级 bloom) 换成轨迹描线; 观感是光带而不是流体卷动. 流体本可走内核乒乓离屏通道 (InkSplash 已这样做), 这里没做, 属未落项而不是引擎缺口, 不标 ENGINE-GAP. grain, quality, theme, blendMode 不落地.
 - HazeCursor 没有落的: 规格的烟雾场 (双缓冲平流, 法线光照, bloom 多级降采样, grain) 换成软圆粒子; detail, bloom*, edgeIntensity, grainIntensity, theme, mixBlendMode, fadeDelayMs / fadeDurationMs, targetPixels 不落地.
-- FlockCursor 没有落的: 规格的压力网格 (CELL 16, MAX_COLS 72 x MAX_ROWS 48, PRESSURE_STEPS 12, 粒子互斥) 与实例化绘制; targets (吸附到链接), tail / trail 拖影, hideCursor, lightMode. 2000 个实例化粒子在 Canvas2D 上偏重, 默认降到 400; 粒子互斥不做, 群会叠在一起, 不标 ENGINE-GAP (观感可接受).
+- FlockCursor 没有落的: 规格的压力网格 (CELL 16, MAX_COLS 72 x MAX_ROWS 48, PRESSURE_STEPS 12, 粒子互斥) 与实例化绘制; targets (吸附到链接), tail / trail 拖影, hideCursor, lightMode. 2000 个实例化粒子在 Canvas2D 上偏重, 默认降到 400; 粒子互斥不做, 群会叠在一起. ENGINE-GAP: 实例化绘制 (内核没有实例化通道), 已在组件文件头标注 (2026-11-10 补).
 - StreamerCursor 没有落的: DETAIL 4 的样条细分 (这里每段 1 个采样, 50 点已经够顺), softness 边缘羽化, backgroundColor, dpr.
 - NudgeGrid 没有落的: 网格线的边缘渐隐 (只对亮格做), lightMode, dpr. 环境闪格的随机源是按 cellSize 播种的可复现随机数.

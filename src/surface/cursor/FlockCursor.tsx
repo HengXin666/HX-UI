@@ -1,5 +1,6 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 SwarmCursor 条目, 实现为 HX 自有.
+// ENGINE-GAP: 规格是 2000 个实例化粒子加压力网格互斥; 内核没有实例化通道, 本件用 Canvas2D 逐个画, 默认降到 400 个, 不做粒子互斥.
 
 import { useEffect, useRef, type JSX, type ReactNode } from "react";
 import type { BackdropFrame } from "../backdrop/kernel/use-backdrop";
