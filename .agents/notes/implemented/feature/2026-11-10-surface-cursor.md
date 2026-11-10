@@ -13,8 +13,9 @@ Decision-ID: surface-cursor
 - `src/surface/cursor/parts/haze.ts`, `src/surface/cursor/HazeCursor.tsx`
 - `src/surface/cursor/parts/flock.ts`, `src/surface/cursor/FlockCursor.tsx`
 - `src/surface/cursor/parts/streamer.ts`, `src/surface/cursor/StreamerCursor.tsx`
+- `src/surface/cursor/parts/nudge.ts`, `src/surface/cursor/NudgeGrid.tsx`
 - `src/surface/cursor/index.ts`
-- `tests/surface/cursor/{meld,halo,haze,flock,streamer}.test.tsx`, `tests/surface/cursor/support.ts` (挂载前钉住宿主矩形)
+- `tests/surface/cursor/{meld,halo,haze,flock,streamer,nudge}.test.tsx`, `tests/surface/cursor/support.ts` (挂载前钉住宿主矩形)
 
 ## Problem
 
@@ -31,6 +32,7 @@ docs/research/catalog/animations.md 的 BlobCursor, GlowCursor, GhostCursor, Swa
 | GhostCursor | `HazeCursor` | 出现 1.9s, 在场 0.12 进 / 0.08 出, 浓度保留 exp(-dt / (0.12 + trailLength x 0.022)), 弹簧 520 x (1 - inertia)^2 + 26 阻尼 2 sqrt(k) x 0.92, 拖拽 exp(-dt x 2.4), 漂移 drift x 110 px/s, 子步 1/240; props `size` 80, `trailLength` 50, `inertia` 0.5, `turbulence` 0.5, `drift` 0.3, `brightness` 1, `clickPuff`, `intro`, `tone` (默认 foreground); 本库定: 烟团上限 140, 每 6px 一团, 胀大到 2.2 倍, 湍流 40px, 点击 14 团 260px/s |
 | SwarmCursor | `FlockCursor` | MAX_PARTICLES 2000, 入场 1.4s (smoothstep), 抓取 (1 - exp(-dt x 20)) x clamp(moving / 240, 0, 1) x presence, 旋涡衰减 exp(-dt / (0.35 + 1.5 x swirl)), 聚拢 12 / 拉回 30 乘 (0.2 + 0.8 x ease), 指针速度钳 4000 平滑 exp(-dt x 30), 在场 0.25, 每帧两个半步; props `count` (规格 800, 本库默认 400), `size` 2.6, `shape` dot / square / streak, `spread` 90, `speed` 1, `swirl` 0.6, `wander` 0.5, `depth` 0.7, `idle` roam / still, `clickEffect` burst / none, `intro`, `enabled`, `tone`, `accentTone`; 本库定: 漫游利萨如 9s / 7s, 炸开冲量 900px/s, 游走力 60, 聚拢项再乘 0.1 |
 | Ribbons | `StreamerCursor` | POINTS 50, 定步 1/120, 弹簧量 0.03 x 4^(2 x stiffness - 1), omega 60 sqrt(spring x pull), 阻尼 2 zeta 60 sqrt(spring) x drag, 身体跟随 1 - 0.183^((1 / length) x dt x 60), 半宽 thickness x 0.5 x width x smoothstep(0, 1.5 thickness, 总长), comet (1 - u)^1.2 sqrt(smoothstep(0, 0.1, u)), even sqrt(smoothstep(0, 0.06, u) smoothstep(0, 0.06, 1 - u)); props `thickness` 30, `length` 1.4, `spread` 18, `stiffness` 0.5, `bounce` 0.5, `shape` lens / comet / even, `wave` 0, `fade`, `opacity` 1, `tones` (规格 colors); 本库定: lens 曲线 sqrt(4u(1 - u)), zeta 1 - 0.8 x bounce, 各条拉力 / 拖拽 / 宽度在 0.85..1.15 错开, 偏移角均分一圈, 波浪 3 周 4 rad/s |
+| CursorGrid | `NudgeGrid` | 入场 1.4s 从中心展开, 跟手 0.07, 在场 0.25, 起亮 0.045, 熄灭步长 dt / (fadeDuration / 1000), 环境闪格概率 ambient x dt x 格数 x 0.04; props `cellSize` 60, `radius` 140, `falloff` smooth / linear / sharp, `highlight` area / cell, `holdTime` 400, `fadeDuration` 800, `lineWidth` 1, `maxOpacity` 1, `fillOpacity` 0.06, `gridOpacity` 0.08, `gridStyle` lines / dashed / dots / crosses, `cellRadius` 0, `cellGap` 0, `spotlight` 0.6, `clickPulse`, `pulseSpeed` 600, `ambient` 0, `edgeFade` 0.2, `intro`, `tone`, `gridTone` (规格 color / gridColor); 本库定: 波环宽 1 格, 最远 1200px, 虚线 6 / 6, 亮格填充透明度 fillOpacity x 4 x 亮度, 聚光 spotlight x 0.4 |
 
 做法:
 
@@ -39,6 +41,7 @@ docs/research/catalog/animations.md 的 BlobCursor, GlowCursor, GhostCursor, Swa
 - HazeCursor: 烟团是 shadowBlur 等于半径的软圆, 浓度乘 0.28 的透明度叠出烟雾.
 - FlockCursor: 粒子数据放一张 Float32Array (每粒 9 槽), 每种颜色并成一条路径一次 fill 或 stroke; 深度大于 0.8 的近处粒子用 accentTone.
 - StreamerCursor: 轮廓是头加 50 点沿法向左右偏移的多边形, 一条一次 fill; fade 时逐段四边形按 1 - u 透明度填. 规格没有减弱动效分支, 本库照族规矩在减弱动效时不画.
+- NudgeGrid: 画布垫在 children 下方 (SurfaceLayer front=false). 网格线一条路径一次描; 聚光是把网格在指针圆内裁剪后用主色调再描一遍. 减弱动效时内核只画一帧, 网格静态, 不点亮.
 
 ## Consequences
 
@@ -47,3 +50,4 @@ docs/research/catalog/animations.md 的 BlobCursor, GlowCursor, GhostCursor, Swa
 - HazeCursor 没有落的: 规格的烟雾场 (双缓冲平流, 法线光照, bloom 多级降采样, grain) 换成软圆粒子; detail, bloom*, edgeIntensity, grainIntensity, theme, mixBlendMode, fadeDelayMs / fadeDurationMs, targetPixels 不落地.
 - FlockCursor 没有落的: 规格的压力网格 (CELL 16, MAX_COLS 72 x MAX_ROWS 48, PRESSURE_STEPS 12, 粒子互斥) 与实例化绘制; targets (吸附到链接), tail / trail 拖影, hideCursor, lightMode. 2000 个实例化粒子在 Canvas2D 上偏重, 默认降到 400; 粒子互斥不做, 群会叠在一起, 不标 ENGINE-GAP (观感可接受).
 - StreamerCursor 没有落的: DETAIL 4 的样条细分 (这里每段 1 个采样, 50 点已经够顺), softness 边缘羽化, backgroundColor, dpr.
+- NudgeGrid 没有落的: 网格线的边缘渐隐 (只对亮格做), lightMode, dpr. 环境闪格的随机源是按 cellSize 播种的可复现随机数.

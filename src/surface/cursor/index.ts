@@ -14,3 +14,5 @@ export { FLOCK_STRIDE, burstFlock, flockEase, flockGrab, makeFlock, stepFlock, t
 export { FlockCursor, type FlockCursorProps, type FlockShape } from "./FlockCursor";
 export { makeStreamers, ribbonOutline, stepStreamers, streamerFollow, streamerProfile, streamerSpring, type Ribbon, type StreamerShape, type StreamerState, type StreamerTuning } from "./parts/streamer";
 export { StreamerCursor, type StreamerCursorProps } from "./StreamerCursor";
+export { edgeAlpha, fitNudge, makeNudge, nudgeEase, stepNudge, type NudgeFalloff, type NudgeHighlight, type NudgeState, type NudgeTuning } from "./parts/nudge";
+export { NudgeGrid, type NudgeGridProps, type NudgeGridStyle } from "./NudgeGrid";
