@@ -181,6 +181,8 @@ export const MESH = {
   pad: 0.2,
   fill: 0.82,
   maxStretch: 0.35,
+  /** 本库定: 同时抓取的指针上限 (每个一份拉伸 / 凹陷弹簧). */
+  maxGrabs: 4,
   dampHi: 0.7,
   dampSpan: 0.55,
   introStagger: 0.35,

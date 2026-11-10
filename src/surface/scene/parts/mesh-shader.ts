@@ -8,6 +8,7 @@
  */
 import { fragmentSource, GLSL_HASH, GLSL_UTIL } from "../../backdrop/kernel/glsl";
 import { sdfGlsl } from "../../field/parts/sdf";
+import { MESH } from "../tokens";
 
 export const MESH_FRAGMENT = fragmentSource(`
 ${sdfGlsl("u_shape")}
@@ -18,9 +19,9 @@ uniform float u_inner;
 uniform float u_px;
 uniform float u_ready;
 uniform float u_fill;
-uniform vec4 u_grab;
+uniform vec4 u_grabs[${MESH.maxGrabs}];
+uniform vec4 u_dents;
 uniform float u_grab_r;
-uniform float u_dent;
 uniform float u_inflate;
 uniform float u_shadow;
 uniform float u_material;
@@ -57,10 +58,14 @@ void main() {
   if (u_ready < 0.5) { o_color = vec4(0.0); return; }
   float short_side = min(u_res.x, u_res.y);
   vec2 p = (gl_FragCoord.xy - 0.5 * u_res) / short_side;
-  vec2 A = u_grab.xy;
-  vec2 D = u_grab.zw;
   float r = max(u_grab_r, 1e-3);
-  vec2 q = p - D * exp(-dot(p - A - D, p - A - D) / (r * r));
+  // 每个抓取点各自一段高斯反向扭曲, 叠加.
+  vec2 q = p;
+  for (int i = 0; i < ${MESH.maxGrabs}; i++) {
+    vec2 A = u_grabs[i].xy;
+    vec2 D = u_grabs[i].zw;
+    q -= D * exp(-dot(p - A - D, p - A - D) / (r * r));
+  }
   float delay = clamp(q.x / u_fill + 0.5, 0.0, 1.0) * u_stagger;
   float pop = springStep(u_clock - delay);
   q.y += (1.0 - min(pop, 1.0)) * 0.12;
@@ -69,8 +74,12 @@ void main() {
   float pxPer = max(u_px, 1e-3);
   float cover = smoothstep(pxPer, -pxPer, d);
   float dn = clamp(-d / range, 0.0, 1.0);
-  float dentFall = exp(-dot(q - A, q - A) / (r * r));
-  float inflate = u_inflate * max(pop, 0.0) * (1.0 - u_dent * dentFall);
+  float dentSum = 0.0;
+  for (int i = 0; i < ${MESH.maxGrabs}; i++) {
+    vec2 A = u_grabs[i].xy;
+    dentSum += u_dents[i] * exp(-dot(q - A, q - A) / (r * r));
+  }
+  float inflate = u_inflate * max(pop, 0.0) * (1.0 - clamp(dentSum, ${MESH.dentMin}, ${MESH.dentMax}));
   float e = 1.5 / short_side;
   float hx1 = clamp(depthAt(q + vec2(e, 0.0)) / range, 0.0, 1.0);
   float hx0 = clamp(depthAt(q - vec2(e, 0.0)) / range, 0.0, 1.0);

@@ -1,7 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 ElasticMesh 条目, 实现为 HX 自有.
 // ENGINE-GAP (仍做不了, 需内核顶点着色 / 网格): 规格是 MAX_NODES 5200 节点的质点弹簧网格 (STEP 1/480) 走顶点着色器变形, 另有阴影遍 (SHADOW) 与逐字零件 (uParts);
-// 这里片元里用距离场当充气高度, 拉伸是单个抓取点的高斯反向扭曲加一根阻尼弹簧, 没有逐节点的布料式传播, 也没有自遮挡; 阴影是距离场偏移软化, 逐字入场按 x 近似.
+// 这里片元里用距离场当充气高度, 拉伸是每个抓取点 (多点, 上限 4) 各一段高斯反向扭曲加阻尼弹簧, 没有逐节点的布料式传播, 也没有自遮挡; 阴影是距离场偏移软化, 逐字入场按 x 近似.
 
 import { useEffect, useRef, useState, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";
@@ -12,7 +12,7 @@ import type { BackdropFrame } from "../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../backdrop/kernel/use-surfaces";
 import { rasterImage, rasterText, type MaskCanvas } from "../field/parts/mask";
 import { sdfCanvas, type SdfField } from "../field/parts/sdf";
-import { makeMesh, stepMesh } from "./parts/mesh";
+import { makeMeshSlots, packMeshSlots, stepMeshSlots, useMeshContacts } from "./parts/mesh-grabs";
 import { MESH_FRAGMENT } from "./parts/mesh-shader";
 import { MESH } from "./tokens";
 
@@ -47,7 +47,7 @@ export interface SpringMeshProps extends BackdropCommonProps {
 const GREY: Rgb = [0.5, 0.5, 0.5];
 
 /**
- * 充气形状: 文字或图片鼓成气球 / 镀铬 / 果冻 / 黏土, 按住可以拉长和压瘪, 松手弹回并晃几下; 挂载时逐字弹起.
+ * 充气形状: 文字或图片鼓成气球 / 镀铬 / 果冻 / 黏土, 按住可以拉长和压瘪 (多指各抓一处, 最多 4 处), 松手弹回并晃几下; 挂载时逐字弹起.
  * 宿主撑满父元素, 画布垫在 children 下面. 减弱动效时只画一帧静止的形状.
  *
  * .agents/notes/implemented/feature/2026-11-10-surface-scene.md
@@ -56,10 +56,13 @@ export function SpringMesh(props: SpringMeshProps): JSX.Element {
   const {
     text = "Squish", src, fontFamily = "system-ui, sans-serif", fontWeight = MESH.fontWeight, color = "primary", imageColors = true, material = "balloon",
     inflate = MESH.inflate, stiffness = MESH.stiffness, wobble = MESH.wobble, grabRadius = MESH.grabRadius, stretch = MESH.stretch, press = MESH.press,
-    shadow = MESH.shadow, intro = true, lightMode = false, ...common
+    shadow = MESH.shadow, intro = true, lightMode = false, onPointerDown, onPointerMove, onPointerUp, onPointerCancel, ...common
   } = props;
   const { options, rest, opacity, children } = splitCommon(common);
-  const sim = useRef(makeMesh());
+  const slots = useRef(makeMeshSlots()).current;
+  const box = useRef<[number, number]>([1, 1]);
+  const hit = (x: number, y: number) => Math.abs(x) <= box.current[0] * MESH.fill * 0.5 && Math.abs(y) <= box.current[1] * MESH.fill * 0.5;
+  const { contacts, handlers } = useMeshContacts(slots, hit, { onPointerDown, onPointerMove, onPointerUp, onPointerCancel }, options.pointer === false);
   const [shape, setShape] = useState<{ mask: MaskCanvas; field: SdfField; image: boolean } | null>(null);
 
   useEffect(() => {
@@ -86,14 +89,10 @@ export function SpringMesh(props: SpringMeshProps): JSX.Element {
   const uniforms = (frame: BackdropFrame) => {
     const { width, height, scale } = frame.fit;
     const short = Math.max(1, Math.min(width, height));
-    const p = frame.pointer;
     const aspect = shape?.mask.aspect ?? 1;
-    const box = aspect >= 1 ? [1, 1 / aspect] : [aspect, 1];
-    const px = ((p.x - 0.5) * width) / short;
-    const py = ((p.y - 0.5) * height) / short;
-    const within = Math.abs(px) <= (box[0] ?? 1) * MESH.fill * 0.5 && Math.abs(py) <= (box[1] ?? 1) * MESH.fill * 0.5;
-    const s = sim.current;
-    if (!frame.reduced) stepMesh(s, frame.dt, { x: px, y: py, down: p.down && p.inside, within }, { stiffness, wobble, stretch, press });
+    box.current = aspect >= 1 ? [1, 1 / aspect] : [aspect, 1];
+    if (!frame.reduced) stepMeshSlots(slots, frame.dt, contacts, { stiffness, wobble, stretch, press });
+    const packed = packMeshSlots(slots);
     const inner = 1 / (1 + 2 * MESH.pad);
     const fieldLong = shape ? (shape.field.aspect >= 1 ? shape.field.width : shape.field.width / shape.field.aspect) : 1;
     const [hi, lo] = lightMode ? [frame.colors[2], frame.colors[1]] : [frame.colors[1], frame.colors[2]];
@@ -105,9 +104,9 @@ export function SpringMesh(props: SpringMeshProps): JSX.Element {
       u_inner: inner,
       u_px: (fieldLong * inner) / (MESH.fill * short),
       u_fill: MESH.fill,
-      u_grab: [s.ax, s.ay, s.dx, s.dy] as const,
+      u_grabs: { list: packed.grabs, size: 4 as const },
+      u_dents: packed.dents,
       u_grab_r: (grabRadius * scale) / short,
-      u_dent: s.dent,
       u_inflate: shape ? inflate : 0,
       u_shadow: shadow,
       u_material: MESH.materials[material] ?? 0,
@@ -126,7 +125,7 @@ export function SpringMesh(props: SpringMeshProps): JSX.Element {
     { ...options, colors: [color, "foreground", "background"] },
   );
   return (
-    <BackdropShell handle={handle} fallback={glowFallback("background", color)} opacity={opacity} {...rest}>
+    <BackdropShell handle={handle} fallback={glowFallback("background", color)} opacity={opacity} {...rest} style={{ touchAction: "none", ...rest.style }} {...handlers}>
       {children}
     </BackdropShell>
   );

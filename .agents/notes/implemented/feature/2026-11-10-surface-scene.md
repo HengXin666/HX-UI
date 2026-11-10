@@ -11,10 +11,10 @@ Decision-ID: surface-scene
 - `src/surface/scene/parts/dither.ts` (误差扩散与格网, 主线程), `src/surface/scene/parts/veil-shader.ts`, `src/surface/scene/BayerVeil.tsx` (遮罩通道与 DotReveal 共用 DOT_MASK_PASS 与 parts/dot 的跟手状态)
 - `src/surface/scene/parts/prism.ts`, `src/surface/scene/parts/prism-shader.ts`, `src/surface/scene/PrismOrb.tsx`
 - `src/surface/scene/parts/cube.ts`, `src/surface/scene/parts/cube-shader.ts`, `src/surface/scene/CubeField.tsx`
-- `src/surface/scene/parts/mesh.ts`, `src/surface/scene/parts/mesh-shader.ts`, `src/surface/scene/SpringMesh.tsx`
+- `src/surface/scene/parts/mesh.ts`, `src/surface/scene/parts/mesh-grabs.ts`, `src/surface/scene/parts/mesh-shader.ts`, `src/surface/scene/SpringMesh.tsx`
 - `src/surface/scene/parts/strand.ts`, `src/surface/scene/parts/strand-shader.ts`, `src/surface/scene/parts/strand-mic.ts`, `src/surface/scene/FiberStrands.tsx`
 - `src/surface/scene/index.ts`
-- `tests/surface/scene/{dot,veil,prism,cube,mesh,strand}.test.tsx`
+- `tests/surface/scene/{dot,veil,prism,cube,mesh,mesh-grabs,strand,strand-mic}.test.tsx`
 
 ## Problem
 
@@ -39,6 +39,6 @@ docs/research/catalog/animations.md 的 HalftoneReveal, DitherVeil, CrystalizedB
 - BayerVeil 没有落的: 规格常数 HOLD 1.6 (条目只给了常数, 没写用在哪, 不落), 抠像 (uMatte / uKey, 没有对应 props); 误差扩散的格网纹理在宿主尺寸变化时于主线程重算 (大宿主加 pixelSize 1 时约数十毫秒一次), 不需要顶点或实例化, 不标 ENGINE-GAP.
 - PrismOrb ENGINE-GAP (已在组件文件头与片元头标): 规格的尘埃是 STATE_WIDTH 256 的 GPGPU 状态纹理驱动的实例化粒子 (MAX_PARTICLES 40000), 带逐颗物理与深度; 内核没有实例化 / 顶点取样通道, 这里是片元里按格的三层程序化光点, 视差近似深度, 无逐颗物理, 指针推不动尘埃. PIXEL_BUDGET 4.5e6 由内核 dpr 上限 2 与 maxEdge 代替 (同 MicroSlats), 这一项不算 ENGINE-GAP: 分辨率预算不涉顶点 / 实例化 / 深度 (2026-11-10 复核定). 其余没有落的: dustTime 之外的规格 uniform (uTurn, uLine) 的具体用法条目未写, 按上面的近似实现.
 - CubeField ENGINE-GAP (已在组件文件头标): 规格是实例化方块网格走顶点投影 (uProjection); 内核只有全屏片元, 这里片元里对邻近 9 块求交. 每块状态走 vec4 uniform 数组, 片元 uniform 向量保底只有 224 个, 所以 gridSize 上限 13 (规格无上限), 要内核能上传浮点数据纹理才能放开. 倾斜大于约 45 度且间隙很小时, 方块可能伸出邻格范围被裁一角. 其余没有落的: dpr (由内核统一管).
-- SpringMesh ENGINE-GAP (已在组件文件头标): 规格是 MAX_NODES 5200 节点的质点弹簧网格 (STEP 1/480, MAX_FIELD 720) 走顶点着色器变形, 另有阴影遍与逐字零件 uParts; 内核没有顶点 / 网格通道, 这里是距离场充气 + 单抓取点高斯扭曲 + 一根阻尼弹簧, 没有逐节点传播与自遮挡, 逐字入场按 x 近似. 其余没有落的: dpr (由内核统一管), 多点同时抓取.
+- SpringMesh ENGINE-GAP (已在组件文件头标): 规格是 MAX_NODES 5200 节点的质点弹簧网格 (STEP 1/480, MAX_FIELD 720) 走顶点着色器变形, 另有阴影遍与逐字零件 uParts; 内核没有顶点 / 网格通道, 这里是距离场充气 + 每个抓取点各一段高斯扭曲与阻尼弹簧, 没有逐节点传播与自遮挡, 逐字入场按 x 近似. 多点抓取已补 (按序补做第 4 件): 宿主自己跟踪每个按下的指针 (pointerId, 落下时在形状框内才占槽, setPointerCapture), 槽数上限 4 (本库定, MESH.maxGrabs), 每槽一份拉伸 / 凹陷弹簧, 抬起后回弹中仍参与变形, 静下来优先复用; 片元按槽循环叠加扭曲, 凹陷求和后钳在 [dentMin, dentMax]. 宿主 touch-action: none (多指拖拽要求, 页面在它上面不能触摸滚动). 其余没有落的: dpr (由内核统一管).
 - FiberStrands 无 ENGINE-GAP (全是片元). 已补 (按序补做第 3 件): listening 默认 false 不申请麦克风; 打开时 getUserMedia + AnalyserNode 取时域均方根 (x 4 钳 0..1, 起 0.06 秒落 0.3 秒平滑, 本库定), 取代 level; 被拒或不支持 (denied / unavailable) 退回 level, 宿主 data-listening 标状态, 卸载时停轨道关 AudioContext. ROLES 7 分角色: 规格只看得到白芯取 uColors[3], 其余角色本库定为 填充 / 边光 / 外晕 (按根错位取调色板) / 白芯 / 玻璃边 / 玻璃高光 / 浅色底投影, 调色板不足 7 色时循环. 仍没有落的: 规格的 fp 抗锯齿 (dFdx 足迹) 由 sg 的最小值代替.
 - 未落项排进 CHECKPOINT 待办按序补 (用户 2026-11-10 23:25 定, 不是只记下): DotReveal 抠像 (uMatte / uKey) 与 fit; FiberStrands listening (麦克风电平) 与 ROLES 分角色着色; SpringMesh 多点抓取.
