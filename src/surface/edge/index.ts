@@ -2,3 +2,5 @@
 export * from "./tokens";
 export { emitCount, lapEase, roundRectLength, roundRectPoint, wrapPhase } from "./parts/comet";
 export { CometBorder, type CometBorderProps } from "./CometBorder";
+export { budgetRatio, jag, pointerEnergy, revealShown, surgeEnergy, valueNoise } from "./parts/spark";
+export { SparkEdge, type SparkEdgeProps } from "./SparkEdge";
