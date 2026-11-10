@@ -16,6 +16,20 @@
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
+## [0.14.0] - 2026-11-10
+
+`@hx/ui/surface` 新收 react-bits Animations 的 C 段 7 件, 开 field 族 (着色器场). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 全部走 backdrop 内核的 WebGL2 着色器通道 (`useShaderBackdrop`, 需要时用 `ShaderSpec.passes` 乒乓离屏与共用泛光金字塔), 不引 three / ogl / gsap. InkSplash 的半浮点回退精度标 ENGINE-GAP. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
+
+### Added
+
+- `@hx/ui/surface` field 族: `InkSplash` (SplashCursor, 指针搅动的流体染料, 涡度约束与泛光), `MergeBlobs` (MetaBalls, 轨道漂移的融合球, solid / outline / contour), `ChromeMark` (MetallicPaint, 文字或图片的流动金属条纹), `BeamFlow` (LaserFlow, 落地铺开的光柱), `RippleLens` (RippleDistortion, 图片上的扩散涟漪折射), `SoftShape` (ShapeBlur, 失焦形状与对焦透镜), `SparkMark` (ElectricLogo, 沿图形轮廓的电弧与形变).
+- 一并导出各件的模拟纯函数与 `INK` / `MERGE` / `CHROME` / `BEAM` / `LENS` / `SOFT` / `SPARK_MARK` 常数, 以及形状件共用的遮罩栅格化 (`rasterText`, `rasterImage`, `rasterPath`) 与距离场 (`signedDistance`, `sdfCanvas`, `sdfGlsl`). 颜色只收语义 token 名.
+- 契约: api 快照 `./surface` 段 566 到 656, docs-props 随之更新.
+
+### Fixed
+
+- cursor 族 `FlockCursor` 补标 ENGINE-GAP (实例化绘制), 0.13.0 段同步改正.
+
 ## [0.13.0] - 2026-11-10
 
 `@hx/ui/surface` 新收 react-bits Animations 的 B 段 6 件, 开 cursor 族 (跟手画布). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 规格是 WebGL 着色器场, 这里全部接在 backdrop 内核的 Canvas2D 渲染器上近似; FlockCursor 的实例化绘制标 ENGINE-GAP (2026-11-10 补). 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.

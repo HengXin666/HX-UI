@@ -1,5 +1,6 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 SplashCursor 条目, 实现为 HX 自有.
+// ENGINE-GAP (同 LiquidEther): 内核在不支持半浮点渲染目标时退到 RGBA8, 速度与压力按范围编码后精度不足, 流体会发涩, 染料在 1 处截断; 要内核加高精度打包才能补.
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";

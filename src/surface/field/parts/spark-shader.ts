@@ -7,7 +7,7 @@
  * .agents/notes/implemented/feature/2026-11-10-surface-field.md
  */
 import { fragmentSource, GLSL_HASH, GLSL_NOISE, GLSL_UTIL } from "../../backdrop/kernel/glsl";
-import { SPARK } from "../tokens";
+import { SPARK_MARK } from "../tokens";
 import { sdfGlsl } from "./sdf";
 
 export const SPARK_FRAGMENT = fragmentSource(`
@@ -21,7 +21,7 @@ uniform vec4 u_look;
 uniform vec4 u_arc;
 uniform float u_flicker;
 uniform vec4 u_hover;
-uniform vec4 u_pulses[${SPARK.pulses}];
+uniform vec4 u_pulses[${SPARK_MARK.pulses}];
 uniform vec3 u_core;
 uniform vec3 u_glow;
 uniform float u_light;
@@ -42,12 +42,12 @@ void main() {
   float ang = atan(p.y, p.x) / HX_TAU + 0.5;
   vec2 hd = p - u_hover.xy;
   float heat = u_hover.w * exp(-dot(hd, hd) / max(u_hover.z * u_hover.z, 1.0));
-  float breath = 1.0 + u_flicker * ${SPARK.breath.toFixed(1)} * wobble(vec2(t * 2.1, 7.0), 3.0);
+  float breath = 1.0 + u_flicker * ${SPARK_MARK.breath.toFixed(1)} * wobble(vec2(t * 2.1, 7.0), 3.0);
   float halo = exp(-max(base, 0.0) / max(u_look.y * unit * 6.0, 1e-3));
   float energy = smoothstep(0.75, -0.75, base / unit) * u_look.w * (0.06 + 1.2 * min(halo, 1.0)) * (1.0 + heat * 0.5);
   float hot = 0.0;
   float w = u_look.z * unit * 0.35 * (1.0 + heat);
-  for (int i = 0; i < ${SPARK.arcs}; i++) {
+  for (int i = 0; i < ${SPARK_MARK.arcs}; i++) {
     float fi = float(i);
     if (fi >= u_arc.x) break;
     float lead = i == 0 ? 1.0 : 0.0;
@@ -55,14 +55,14 @@ void main() {
     float d = abs(base - jag * u_arc.z * (1.0 + heat) * unit * (lead > 0.5 ? 1.2 : 2.5));
     float swell = 0.5 + 0.5 * wobble(q * 0.06 + vec2(t * 0.9, fi * 5.1 - t * 0.6), fi + 8.0);
     float vis = mix(0.3 + 0.45 * smoothstep(-0.25, 0.2, wobble(q * 0.035 + vec2(t * 0.21, fi * 3.7), fi + 5.0)), 1.0, lead);
-    float spark = 1.0 - u_flicker * ${SPARK.sparkDip.toFixed(1)} * (0.5 + 0.5 * wobble(vec2(t * 6.0, fi * 2.3), fi + 6.0));
+    float spark = 1.0 - u_flicker * ${SPARK_MARK.sparkDip.toFixed(1)} * (0.5 + 0.5 * wobble(vec2(t * 6.0, fi * 2.3), fi + 6.0));
     energy += glowLine(d, w) * swell * vis * spark * (lead > 0.5 ? 1.4 : 0.7);
     hot += exp(-d * d / max(w * w, 1e-4)) * vis;
   }
-  float reach = ${SPARK.reach.toFixed(1)} * u_look.y * unit;
+  float reach = ${SPARK_MARK.reach.toFixed(1)} * u_look.y * unit;
   float edge = max(base, 0.0);
   float fade = smoothstep(reach, reach * 0.55, edge) * step(0.0, base);
-  for (int a = 0; a < ${SPARK.arcs}; a++) {
+  for (int a = 0; a < ${SPARK_MARK.arcs}; a++) {
     float fa = float(a);
     if (fa >= u_arc.w) break;
     float beat = t * 1.5 + fa * 0.37;
@@ -71,11 +71,11 @@ void main() {
     float s = wrap(ang - ca) * length(p) * HX_TAU + wobble(vec2(edge / unit * 0.4, beat), fa + 21.0) * unit * 1.5 * u_arc.z;
     energy += glowLine(s, w * 0.8) * fade * flash * 0.9;
   }
-  for (int i = 0; i < ${SPARK.pulses}; i++) {
+  for (int i = 0; i < ${SPARK_MARK.pulses}; i++) {
     vec4 pulse = u_pulses[i];
     float pos = pulse.y * 0.5;
     float front = min(abs(wrap(ang - pulse.x - pos)), abs(wrap(ang - pulse.x + pos))) * 20.0;
-    float env = exp(-front * front) * pulse.w * exp(-pulse.z * ${SPARK.pulseDecay.toFixed(1)});
+    float env = exp(-front * front) * pulse.w * exp(-pulse.z * ${SPARK_MARK.pulseDecay.toFixed(1)});
     float near = exp(-abs(base) / (unit * 2.5));
     energy += env * near * 2.0;
     hot += env * near;

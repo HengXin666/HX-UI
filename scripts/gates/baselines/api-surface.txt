@@ -2619,15 +2619,20 @@ AttractProps
 Aurora
 AuroraProps
 BAYER
+BEAM
 BLUR_MID_OVERSHOOT
 Balatro
 BalatroProps
 Ballpit
 BallpitProps
+BeamFlow
+BeamFlowProps
+BeamState
 Beams
 BeamsProps
 Body
 CELL
+CHROME
 COMET
 CRTWarp
 CRTWarpProps
@@ -2635,6 +2640,9 @@ CellDecay
 CellShape
 CellTrail
 CellTrailProps
+ChromeMark
+ChromeMarkProps
+ChromeState
 ColorBends
 ColorBendsProps
 CometBorder
@@ -2765,10 +2773,23 @@ HazeState
 HazeTuning
 Hyperspeed
 HyperspeedProps
+INK
+InkDrive
+InkQuality
+InkSettings
+InkSplash
+InkSplashProps
+InkSplat
 Iridescence
 IridescenceProps
+LENS
 LOCK
 LOOP_DELAY_S
+LensQuality
+LensState
+LensTrigger
+LensTuning
+LensWave
 LetterGlitch
 LetterGlitchProps
 LightPillar
@@ -2803,7 +2824,11 @@ MARQUEE_VIEW
 MARQUEE_WAVE_LENGTH
 MASK_FROM_PERCENT
 MASK_LETTER_SHARE
+MASK_UV_GLSL
 MELD
+MERGE
+MERGE_MAX_RINGS
+MERGE_VARIANTS
 MOSAIC
 MagicRings
 MagicRingsProps
@@ -2813,10 +2838,18 @@ MarkRail
 MarkRailItem
 MarkRailProps
 MarqueeShape
+MaskCanvas
 MeldCursor
 MeldCursorProps
 MeldState
 MeldTuning
+MergeBall
+MergeBlobs
+MergeBlobsProps
+MergeMotion
+MergeState
+MergeTuning
+MergeVariant
 MicroSlats
 MicroSlatsProps
 MoltenMetal
@@ -2893,10 +2926,13 @@ ReticleTargetEffect
 Ribbon
 RippleGrid
 RippleGridProps
+RippleLens
+RippleLensProps
 SCRAMBLE_DEFAULTS
 SCRAMBLE_POINTER
 SCROLL_RANGE
 SCRUB_SPAN
+SDF_GLSL
 SHEEN
 SHIFT_DEFAULTS
 SHIFT_RATE_HZ
@@ -2905,9 +2941,13 @@ SHINE_DEFAULTS
 SHINE_FOLLOW_STIFFNESS
 SHINE_MIN_SPAN
 SHUFFLE_DEFAULTS
+SOFT
+SOFT_SHAPES
 SPARK
+SPARK_BOLT
 SPARK_EASINGS
 SPARK_EDGE
+SPARK_MARK
 STAGGER_PRESETS
 STAMP_DEFAULTS
 STAMP_FLOAT_PX
@@ -2929,6 +2969,7 @@ ScrollTextEffect
 ScrollTextProps
 ScrollWiden
 ScrollWidenProps
+SdfField
 ShapeGrid
 ShapeGridProps
 ShapeWaves
@@ -2951,11 +2992,19 @@ SlicedWaves
 SlicedWavesProps
 SoftAurora
 SoftAuroraProps
+SoftShape
+SoftShapeKind
+SoftShapeProps
+SoftState
 SparkBurst
 SparkEasing
 SparkEdge
 SparkEdgeProps
+SparkMark
+SparkMarkProps
+SparkPulse
 SparkShape
+SparkState
 StaggerText
 StaggerTextProps
 StaggerVariant
@@ -3022,6 +3071,7 @@ WebThreadsProps
 attractPull
 attractSpring
 bandCenter
+beamIntro
 budgetRatio
 buildOrbit
 burstAt
@@ -3029,10 +3079,12 @@ burstFlock
 burstLongest
 cellGrid
 cellNoise
+chromeSource
 clamp
 clipHalfPlane
 copiesNeeded
 cosineEase
+createInkDrive
 ditherThreshold
 draftDamping
 drawBurst
@@ -3040,7 +3092,9 @@ driftLead
 dropPose
 echoLook
 edgeAlpha
+edt1d
 emitCount
+encodeDistance
 extrudeIntro
 extrudeLayers
 fillCount
@@ -3058,7 +3112,10 @@ haloFollowTau
 haloLayers
 hazeDecay
 hazeSpring
+hueRgb
 inkOf
+inkPetals
+inkSpread
 introOpacity
 introTotal
 jag
@@ -3068,20 +3125,32 @@ lapPhase
 layerBlur
 layerMask
 layerOpacity
+lensLife
+lensRadius
 lifeEnvelope
 locate
 lockBox
+makeBeam
+makeChrome
 makeFlock
 makeHalo
 makeHaze
+makeLens
 makeMeld
+makeMerge
 makeNudge
 makePointer
 makeReticle
+makeSoft
+makeSpark
 makeStreamers
 marqueePath
+maskSize
 massAfterSplash
 meldSpring
+mergeEase
+mergeHome
+mergeLook
 mirrorMatrix
 mix
 mosaicAmount
@@ -3096,7 +3165,12 @@ orbitLook
 orbitTilt
 outlineAmount
 outsideDistance
+packInk
+packLens
+packMerge
+packPulses
 padBoard
+pairForce
 pointerEnergy
 pointerLead
 pointerPx
@@ -3110,6 +3184,9 @@ pushBurst
 pushTarget
 quantize
 railOffset
+rasterImage
+rasterPath
+rasterText
 regrowMass
 removalTick
 reticleTau
@@ -3120,14 +3197,19 @@ roundRectPoint
 scrambleLocks
 scrambleUntil
 scrubUnit
+sdfCanvas
+sdfGlsl
 seeded
 seededRandom
+settleMerge
 shapePoint
 sheenPhase
 shiftSlice
 shinePhase
+signedDistance
 smoothingStep
 smoothstep
+softIdlePath
 sparkLife
 sparkReach
 splashMeld
@@ -3138,12 +3220,20 @@ stampCells
 stampContent
 stampFloat
 stampLook
+startMorph
+stepBeam
+stepChrome
 stepFlock
 stepHalo
 stepHaze
+stepInk
+stepLens
 stepMeld
+stepMerge
 stepNudge
 stepReticle
+stepSoft
+stepSpark
 stepStreamers
 streakGradient
 streamerFollow
@@ -3182,9 +3272,11 @@ src/surface/backgrounds/index.ts -> ./particles
 src/surface/backgrounds/index.ts -> ./rays
 src/surface/cursor/index.ts -> ./tokens
 src/surface/edge/index.ts -> ./tokens
+src/surface/field/index.ts -> ./tokens
 src/surface/index.ts -> ./backgrounds
 src/surface/index.ts -> ./cursor
 src/surface/index.ts -> ./edge
+src/surface/index.ts -> ./field
 src/surface/index.ts -> ./loop
 src/surface/index.ts -> ./pointer
 src/surface/index.ts -> ./reveal

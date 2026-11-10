@@ -132,16 +132,16 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | B | BlobCursor | MeldCursor | 7b47c90 (src/surface/cursor) |
 | B | GlowCursor | HaloCursor | 6985f92 (src/surface/cursor) |
 | B | GhostCursor | HazeCursor | 569d8f6 (src/surface/cursor) |
-| B | SwarmCursor | FlockCursor | f7a60bd (src/surface/cursor) |
+| B | SwarmCursor | FlockCursor | f7a60bd (src/surface/cursor, ENGINE-GAP 实例化, 761acdb 补标) |
 | B | Ribbons | StreamerCursor | 48c5841 (src/surface/cursor) |
 | B | CursorGrid | NudgeGrid | 3fdf64a (src/surface/cursor) |
-| C | SplashCursor | InkSplash | |
-| C | MetaBalls | MergeBlobs | |
-| C | MetallicPaint | ChromeMark | |
-| C | LaserFlow | BeamFlow | |
-| C | RippleDistortion | RippleLens | |
-| C | ShapeBlur | SoftShape | |
-| C | ElectricLogo | SparkMark | |
+| C | SplashCursor | InkSplash | b0de291 (src/surface/field, ENGINE-GAP 半浮点回退) |
+| C | MetaBalls | MergeBlobs | 57427bd (src/surface/field) |
+| C | MetallicPaint | ChromeMark | 4c046af (src/surface/field) |
+| C | LaserFlow | BeamFlow | d27351b (src/surface/field) |
+| C | RippleDistortion | RippleLens | 3fc0913 (src/surface/field) |
+| C | ShapeBlur | SoftShape | cc96229 (src/surface/field) |
+| C | ElectricLogo | SparkMark | 36ca12f (src/surface/field) |
 | D | HalftoneReveal | DotReveal | |
 | D | DitherVeil | BayerVeil | |
 | D | CrystalizedBall | PrismOrb | |
@@ -149,7 +149,7 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | D | ElasticMesh | SpringMesh | |
 | D | Strands | FiberStrands | |
 
-**A 段已推 (到 18f77c1), 段尾接入 6096018 (0.12.0). B 段 6 件已提 (cursor 族, Canvas2D, 无 ENGINE-GAP), 段尾接入 51cf50d (0.13.0), 待用户推.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
+**A 段, B 段已推 (到 12b70f2). C 段 7 件已提 (field 族, 全走 WebGL2 着色器通道), FlockCursor 补标 761acdb, 段尾接入 (0.14.0) 待用户推. 下一段 D.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
 接入时查 export * 撞名 (tsc TS2308): 族内通用小工具 (clamp, mix, seededRandom, wrapOffset 之类) 不进族 index 或改名.
 注意: pointer 族已接在 ./surface 上, 段内往它的 index 加导出会改 api 快照 (门禁 4/13 会拦), 所以段内新件放已接入的族时先不进族 index.
 B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DOM 做近似, 真需要顶点 / 实例化的标 ENGINE-GAP.

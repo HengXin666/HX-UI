@@ -1894,6 +1894,190 @@
    "required": false
   }
  ],
+ "BeamFlow": [
+  {
+   "name": "beamPosition",
+   "type": "number",
+   "default": "-",
+   "desc": "光柱横向位置 (宿主宽的比例), 默认 0.6.",
+   "required": false
+  },
+  {
+   "name": "surfaceLevel",
+   "type": "number",
+   "default": "-",
+   "desc": "落点高度 (宿主高的比例, 从顶部量), 默认 0.78.",
+   "required": false
+  },
+  {
+   "name": "colors",
+   "type": "readonly string[]",
+   "default": "-",
+   "desc": "三色调色板 (token 名): 光柱上段, 中段与落点, 下段与地面. 默认 primary, accent, accent-2.",
+   "required": false
+  },
+  {
+   "name": "intensity",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "beamWidth",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "flare",
+   "type": "number",
+   "default": "-",
+   "desc": "落点光晕大小.",
+   "required": false
+  },
+  {
+   "name": "spread",
+   "type": "number",
+   "default": "-",
+   "desc": "地面铺展宽度.",
+   "required": false
+  },
+  {
+   "name": "spill",
+   "type": "number",
+   "default": "-",
+   "desc": "地面下方溢光.",
+   "required": false
+  },
+  {
+   "name": "fog",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "dust",
+   "type": "number",
+   "default": "-",
+   "desc": "上浮尘点密度.",
+   "required": false
+  },
+  {
+   "name": "streaks",
+   "type": "number",
+   "default": "-",
+   "desc": "光柱纹路强度.",
+   "required": false
+  },
+  {
+   "name": "dots",
+   "type": "number",
+   "default": "-",
+   "desc": "地面上向外跑的光点.",
+   "required": false
+  },
+  {
+   "name": "pulse",
+   "type": "number",
+   "default": "-",
+   "desc": "呼吸强度.",
+   "required": false
+  },
+  {
+   "name": "seed",
+   "type": "number",
+   "default": "-",
+   "desc": "噪声种子.",
+   "required": false
+  },
+  {
+   "name": "revealImage",
+   "type": "string",
+   "default": "-",
+   "desc": "指针处揭开的图片地址.",
+   "required": false
+  },
+  {
+   "name": "revealRadius",
+   "type": "number",
+   "default": "-",
+   "desc": "揭图半径 (CSS 像素), 默认 220.",
+   "required": false
+  },
+  {
+   "name": "revealOpacity",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "-",
+   "desc": "光柱先落下再铺开.",
+   "required": false
+  },
+  {
+   "name": "lightMode",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "叠在背景上的内容.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "-",
+   "desc": "时钟倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "paused",
+   "type": "boolean",
+   "default": "-",
+   "desc": "停在当前画面.",
+   "required": false
+  },
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "-",
+   "desc": "画布不透明度 0..1.",
+   "required": false
+  },
+  {
+   "name": "dpr",
+   "type": "number",
+   "default": "-",
+   "desc": "像素比上限, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "mouseInteraction",
+   "type": "boolean",
+   "default": "-",
+   "desc": "是否响应指针, 默认 true.",
+   "required": false
+  },
+  {
+   "name": "reducedMotion",
+   "type": "boolean",
+   "default": "-",
+   "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
  "Beams": [
   {
    "name": "color",
@@ -2845,6 +3029,176 @@
    "type": "string",
    "default": "-",
    "desc": "",
+   "required": false
+  }
+ ],
+ "ChromeMark": [
+  {
+   "name": "imageSrc",
+   "type": "string",
+   "default": "-",
+   "desc": "形状来源之一: 图片地址 (用它的透明度当形状). 与 text 同给时取图片.",
+   "required": false
+  },
+  {
+   "name": "text",
+   "type": "string",
+   "default": "-",
+   "desc": "形状来源之一: 文字.",
+   "required": false
+  },
+  {
+   "name": "fontFamily",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "fontWeight",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "default": "-",
+   "desc": "金属的底色 (token 名), 默认 foreground.",
+   "required": false
+  },
+  {
+   "name": "backgroundColor",
+   "type": "string",
+   "default": "-",
+   "desc": "底色 (token 名), 默认 transparent.",
+   "required": false
+  },
+  {
+   "name": "density",
+   "type": "number",
+   "default": "-",
+   "desc": "条纹密度, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "softness",
+   "type": "number",
+   "default": "-",
+   "desc": "条纹边缘柔和度, 默认 0.1.",
+   "required": false
+  },
+  {
+   "name": "dispersion",
+   "type": "number",
+   "default": "-",
+   "desc": "色散, 默认 0.3.",
+   "required": false
+  },
+  {
+   "name": "distortion",
+   "type": "number",
+   "default": "-",
+   "desc": "噪声扭曲, 默认 0.07.",
+   "required": false
+  },
+  {
+   "name": "edgeBend",
+   "type": "number",
+   "default": "-",
+   "desc": "条纹在边缘的弯折, 默认 0.6.",
+   "required": false
+  },
+  {
+   "name": "angle",
+   "type": "number",
+   "default": "-",
+   "desc": "条纹方向 (度), 默认 70.",
+   "required": false
+  },
+  {
+   "name": "scale",
+   "type": "number",
+   "default": "-",
+   "desc": "形状占短边的比例, 默认 0.6.",
+   "required": false
+  },
+  {
+   "name": "rotation",
+   "type": "number",
+   "default": "-",
+   "desc": "形状旋转 (度).",
+   "required": false
+  },
+  {
+   "name": "mouseTilt",
+   "type": "number",
+   "default": "-",
+   "desc": "指针左右带动条纹倾斜 0..1, 默认 0.5.",
+   "required": false
+  },
+  {
+   "name": "lightMode",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "-",
+   "desc": "出现时由下往上扫亮.",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "叠在背景上的内容.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "-",
+   "desc": "时钟倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "paused",
+   "type": "boolean",
+   "default": "-",
+   "desc": "停在当前画面.",
+   "required": false
+  },
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "-",
+   "desc": "画布不透明度 0..1.",
+   "required": false
+  },
+  {
+   "name": "dpr",
+   "type": "number",
+   "default": "-",
+   "desc": "像素比上限, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "mouseInteraction",
+   "type": "boolean",
+   "default": "-",
+   "desc": "是否响应指针, 默认 true.",
+   "required": false
+  },
+  {
+   "name": "reducedMotion",
+   "type": "boolean",
+   "default": "-",
+   "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
    "required": false
   }
  ],
@@ -12626,6 +12980,162 @@
    "required": false
   }
  ],
+ "InkSplash": [
+  {
+   "name": "colors",
+   "type": "readonly string[]",
+   "default": "-",
+   "desc": "调色板 (token 名), rainbow 关时按时间轮换. 默认 primary, accent, accent-2.",
+   "required": false
+  },
+  {
+   "name": "rainbow",
+   "type": "boolean",
+   "default": "-",
+   "desc": "彩虹模式: 色相随时间转, 忽略 colors.",
+   "required": false
+  },
+  {
+   "name": "colorSpeed",
+   "type": "number",
+   "default": "-",
+   "desc": "换色速度, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "intensity",
+   "type": "number",
+   "default": "-",
+   "desc": "补色量, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "-",
+   "desc": "溅点大小, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "force",
+   "type": "number",
+   "default": "-",
+   "desc": "推力, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "swirl",
+   "type": "number",
+   "default": "-",
+   "desc": "涡度 (打旋), 默认 3.",
+   "required": false
+  },
+  {
+   "name": "trail",
+   "type": "number",
+   "default": "-",
+   "desc": "染料存留, 越大拖尾越久, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "momentum",
+   "type": "number",
+   "default": "-",
+   "desc": "速度存留, 越大流得越远, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "shading",
+   "type": "number",
+   "default": "-",
+   "desc": "按浓度梯度打光 0..1, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "glow",
+   "type": "number",
+   "default": "-",
+   "desc": "泛光强度, 0 关闭, 默认 0.",
+   "required": false
+  },
+  {
+   "name": "quality",
+   "type": "\"low\" | \"medium\" | \"high\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "clickSplash",
+   "type": "boolean",
+   "default": "-",
+   "desc": "点击溅一朵花瓣形的墨.",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "-",
+   "desc": "出现时画一道.",
+   "required": false
+  },
+  {
+   "name": "lightMode",
+   "type": "boolean",
+   "default": "-",
+   "desc": "浅色底: 颜色压暗一点.",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "叠在背景上的内容.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "-",
+   "desc": "时钟倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "paused",
+   "type": "boolean",
+   "default": "-",
+   "desc": "停在当前画面.",
+   "required": false
+  },
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "-",
+   "desc": "画布不透明度 0..1.",
+   "required": false
+  },
+  {
+   "name": "dpr",
+   "type": "number",
+   "default": "-",
+   "desc": "像素比上限, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "mouseInteraction",
+   "type": "boolean",
+   "default": "-",
+   "desc": "是否响应指针, 默认 true.",
+   "required": false
+  },
+  {
+   "name": "reducedMotion",
+   "type": "boolean",
+   "default": "-",
+   "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
  "Iridescence": [
   {
    "name": "color",
@@ -16341,6 +16851,190 @@
    "type": "string",
    "default": "-",
    "desc": "",
+   "required": false
+  }
+ ],
+ "MergeBlobs": [
+  {
+   "name": "color",
+   "type": "string",
+   "default": "-",
+   "desc": "球色 (token 名), 默认 foreground.",
+   "required": false
+  },
+  {
+   "name": "cursorBallColor",
+   "type": "string",
+   "default": "-",
+   "desc": "光标球色 (token 名), 默认 primary.",
+   "required": false
+  },
+  {
+   "name": "ballSpeed",
+   "type": "number",
+   "default": "-",
+   "desc": "轨道速度, 默认 0.3.",
+   "required": false
+  },
+  {
+   "name": "enableMouseInteraction",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "hoverSmoothness",
+   "type": "number",
+   "default": "-",
+   "desc": "光标球跟手 0..1, 越大越紧, 默认 0.1.",
+   "required": false
+  },
+  {
+   "name": "animationSize",
+   "type": "number",
+   "default": "-",
+   "desc": "画布短边等于多少世界单位, 越大球越小, 默认 30.",
+   "required": false
+  },
+  {
+   "name": "ballCount",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "clumpFactor",
+   "type": "number",
+   "default": "-",
+   "desc": "轨道幅度倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "cursorBallSize",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "variant",
+   "type": "\"outline\" | \"solid\" | \"contour\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "motion",
+   "type": "\"orbit\" | \"still\" | \"drift\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "gooeyness",
+   "type": "number",
+   "default": "-",
+   "desc": "0..1, 越大越黏糊 (等值面越软).",
+   "required": false
+  },
+  {
+   "name": "stickiness",
+   "type": "number",
+   "default": "-",
+   "desc": "0..1, 球之间的吸力.",
+   "required": false
+  },
+  {
+   "name": "stretch",
+   "type": "number",
+   "default": "-",
+   "desc": "沿速度方向拉长.",
+   "required": false
+  },
+  {
+   "name": "wobble",
+   "type": "number",
+   "default": "-",
+   "desc": "半径起伏.",
+   "required": false
+  },
+  {
+   "name": "lineWidth",
+   "type": "number",
+   "default": "-",
+   "desc": "outline / contour 的线宽 (CSS 像素).",
+   "required": false
+  },
+  {
+   "name": "rings",
+   "type": "number",
+   "default": "-",
+   "desc": "contour 的环数, 上限 12.",
+   "required": false
+  },
+  {
+   "name": "clickBurst",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "-",
+   "desc": "球逐个错开放出 (约 1.8 秒).",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "叠在背景上的内容.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "-",
+   "desc": "时钟倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "paused",
+   "type": "boolean",
+   "default": "-",
+   "desc": "停在当前画面.",
+   "required": false
+  },
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "-",
+   "desc": "画布不透明度 0..1.",
+   "required": false
+  },
+  {
+   "name": "dpr",
+   "type": "number",
+   "default": "-",
+   "desc": "像素比上限, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "mouseInteraction",
+   "type": "boolean",
+   "default": "-",
+   "desc": "是否响应指针, 默认 true.",
+   "required": false
+  },
+  {
+   "name": "reducedMotion",
+   "type": "boolean",
+   "default": "-",
+   "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
    "required": false
   }
  ],
@@ -22118,6 +22812,190 @@
    "required": false
   }
  ],
+ "RippleLens": [
+  {
+   "name": "src",
+   "type": "string",
+   "default": "-",
+   "desc": "被扭曲的图片地址 (必填, 规格默认是一张外链图, 本库不带).",
+   "required": true
+  },
+  {
+   "name": "alt",
+   "type": "string",
+   "default": "-",
+   "desc": "图片的替代文字; 给了就作为宿主的 aria-label 并加 role=\"img\".",
+   "required": false
+  },
+  {
+   "name": "brushSize",
+   "type": "number",
+   "default": "-",
+   "desc": "笔刷大小 (CSS 像素), 默认 150.",
+   "required": false
+  },
+  {
+   "name": "strength",
+   "type": "number",
+   "default": "-",
+   "desc": "位移强度, 默认 0.2.",
+   "required": false
+  },
+  {
+   "name": "swirl",
+   "type": "number",
+   "default": "-",
+   "desc": "切向漩涡, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "rings",
+   "type": "number",
+   "default": "-",
+   "desc": "波带里的起伏道数, 默认 4.",
+   "required": false
+  },
+  {
+   "name": "spread",
+   "type": "number",
+   "default": "-",
+   "desc": "波扩散速度, 默认 5.",
+   "required": false
+  },
+  {
+   "name": "fade",
+   "type": "number",
+   "default": "-",
+   "desc": "衰减速度, 默认 3 (寿命 5 / fade 秒).",
+   "required": false
+  },
+  {
+   "name": "spacing",
+   "type": "number",
+   "default": "-",
+   "desc": "指针每走多少像素放一个波, 默认 15.",
+   "required": false
+  },
+  {
+   "name": "dispersion",
+   "type": "number",
+   "default": "-",
+   "desc": "色散, 默认 0.",
+   "required": false
+  },
+  {
+   "name": "glint",
+   "type": "number",
+   "default": "-",
+   "desc": "波峰高光, 默认 0.",
+   "required": false
+  },
+  {
+   "name": "tint",
+   "type": "string",
+   "default": "-",
+   "desc": "染色 (token 名), 默认 primary.",
+   "required": false
+  },
+  {
+   "name": "tintAmount",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "grayscale",
+   "type": "boolean",
+   "default": "-",
+   "desc": "去色, 默认 true.",
+   "required": false
+  },
+  {
+   "name": "highlightColor",
+   "type": "string",
+   "default": "-",
+   "desc": "高光色 (token 名), 默认 foreground.",
+   "required": false
+  },
+  {
+   "name": "trigger",
+   "type": "\"hover\" | \"both\" | \"click\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "clickStrength",
+   "type": "number",
+   "default": "-",
+   "desc": "点击波的强度倍数, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "quality",
+   "type": "\"low\" | \"medium\" | \"high\"",
+   "default": "-",
+   "desc": "画质档: 像素比上限乘 0.4 / 0.7 / 1, 默认 low.",
+   "required": false
+  },
+  {
+   "name": "enabled",
+   "type": "boolean",
+   "default": "-",
+   "desc": "关掉后不再放新波.",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "叠在背景上的内容.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "-",
+   "desc": "时钟倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "paused",
+   "type": "boolean",
+   "default": "-",
+   "desc": "停在当前画面.",
+   "required": false
+  },
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "-",
+   "desc": "画布不透明度 0..1.",
+   "required": false
+  },
+  {
+   "name": "dpr",
+   "type": "number",
+   "default": "-",
+   "desc": "像素比上限, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "mouseInteraction",
+   "type": "boolean",
+   "default": "-",
+   "desc": "是否响应指针, 默认 true.",
+   "required": false
+  },
+  {
+   "name": "reducedMotion",
+   "type": "boolean",
+   "default": "-",
+   "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
  "RotatingText": [
   {
    "name": "words",
@@ -24718,6 +25596,183 @@
    "required": false
   }
  ],
+ "SoftShape": [
+  {
+   "name": "shape",
+   "type": "\"circle\" | \"polygon\" | \"rect\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "src",
+   "type": "string",
+   "default": "-",
+   "desc": "图片地址: 给了就用图片的透明度当形状 (算距离场), 忽略 shape.",
+   "required": false
+  },
+  {
+   "name": "sides",
+   "type": "number",
+   "default": "-",
+   "desc": "polygon 的边数, 默认 6.",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "-",
+   "desc": "形状占短边的比例, 默认 0.8.",
+   "required": false
+  },
+  {
+   "name": "roundness",
+   "type": "number",
+   "default": "-",
+   "desc": "圆角 0..1 (相对半边长), 默认 0.2.",
+   "required": false
+  },
+  {
+   "name": "thickness",
+   "type": "number",
+   "default": "-",
+   "desc": "描边粗细 (CSS 像素), 默认 2.",
+   "required": false
+  },
+  {
+   "name": "fill",
+   "type": "boolean",
+   "default": "-",
+   "desc": "填充而不只描边.",
+   "required": false
+  },
+  {
+   "name": "echoes",
+   "type": "number",
+   "default": "-",
+   "desc": "向外的回声描边条数 (含本体), 默认 1, 上限 8.",
+   "required": false
+  },
+  {
+   "name": "spacing",
+   "type": "number",
+   "default": "-",
+   "desc": "回声间距 (CSS 像素), 默认 12.",
+   "required": false
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "default": "-",
+   "desc": "颜色 (token 名), 默认 foreground.",
+   "required": false
+  },
+  {
+   "name": "blur",
+   "type": "number",
+   "default": "-",
+   "desc": "失焦模糊 (CSS 像素), 默认 16.",
+   "required": false
+  },
+  {
+   "name": "lensSize",
+   "type": "number",
+   "default": "-",
+   "desc": "透镜半径占短边的比例, 默认 0.3.",
+   "required": false
+  },
+  {
+   "name": "lensSoftness",
+   "type": "number",
+   "default": "-",
+   "desc": "透镜边缘柔和 0..1, 默认 0.7.",
+   "required": false
+  },
+  {
+   "name": "focus",
+   "type": "boolean",
+   "default": "-",
+   "desc": "true: 整体清晰, 透镜处失焦; 默认 false: 整体失焦, 透镜处对焦.",
+   "required": false
+  },
+  {
+   "name": "chroma",
+   "type": "number",
+   "default": "-",
+   "desc": "色散, 默认 0.3.",
+   "required": false
+  },
+  {
+   "name": "rotation",
+   "type": "number",
+   "default": "-",
+   "desc": "形状旋转 (度).",
+   "required": false
+  },
+  {
+   "name": "spin",
+   "type": "number",
+   "default": "-",
+   "desc": "自转 (度每秒).",
+   "required": false
+  },
+  {
+   "name": "idle",
+   "type": "boolean",
+   "default": "-",
+   "desc": "指针不在时透镜自己漂.",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "叠在背景上的内容.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "-",
+   "desc": "时钟倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "paused",
+   "type": "boolean",
+   "default": "-",
+   "desc": "停在当前画面.",
+   "required": false
+  },
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "-",
+   "desc": "画布不透明度 0..1.",
+   "required": false
+  },
+  {
+   "name": "dpr",
+   "type": "number",
+   "default": "-",
+   "desc": "像素比上限, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "mouseInteraction",
+   "type": "boolean",
+   "default": "-",
+   "desc": "是否响应指针, 默认 true.",
+   "required": false
+  },
+  {
+   "name": "reducedMotion",
+   "type": "boolean",
+   "default": "-",
+   "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
  "SparkEdge": [
   {
    "name": "children",
@@ -24843,6 +25898,176 @@
    "type": "string",
    "default": "-",
    "desc": "",
+   "required": false
+  }
+ ],
+ "SparkMark": [
+  {
+   "name": "src",
+   "type": "string",
+   "default": "-",
+   "desc": "图形的图片地址 (用透明度当形状); 不给时是自带的闪电. 换 src 时从旧图形形变过去.",
+   "required": false
+  },
+  {
+   "name": "color",
+   "type": "string",
+   "default": "-",
+   "desc": "电弧芯色 (token 名), 默认 accent.",
+   "required": false
+  },
+  {
+   "name": "glowColor",
+   "type": "string",
+   "default": "-",
+   "desc": "辉光色 (token 名), 默认 primary.",
+   "required": false
+  },
+  {
+   "name": "scale",
+   "type": "number",
+   "default": "-",
+   "desc": "图形占短边的比例, 默认 0.7.",
+   "required": false
+  },
+  {
+   "name": "intensity",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "glow",
+   "type": "number",
+   "default": "-",
+   "desc": "辉光与支弧的伸展.",
+   "required": false
+  },
+  {
+   "name": "thickness",
+   "type": "number",
+   "default": "-",
+   "desc": "电弧粗细.",
+   "required": false
+  },
+  {
+   "name": "strands",
+   "type": "number",
+   "default": "-",
+   "desc": "沿轮廓的电弧股数, 上限 5.",
+   "required": false
+  },
+  {
+   "name": "bend",
+   "type": "number",
+   "default": "-",
+   "desc": "抖动的空间频率.",
+   "required": false
+  },
+  {
+   "name": "crackle",
+   "type": "number",
+   "default": "-",
+   "desc": "抖动幅度.",
+   "required": false
+  },
+  {
+   "name": "arcs",
+   "type": "number",
+   "default": "-",
+   "desc": "轮廓外支弧数, 上限 5.",
+   "required": false
+  },
+  {
+   "name": "flicker",
+   "type": "number",
+   "default": "-",
+   "desc": "闪烁.",
+   "required": false
+  },
+  {
+   "name": "fill",
+   "type": "number",
+   "default": "-",
+   "desc": "形状内本体光.",
+   "required": false
+  },
+  {
+   "name": "interactive",
+   "type": "boolean",
+   "default": "-",
+   "desc": "光标附近升温.",
+   "required": false
+  },
+  {
+   "name": "cursorIntensity",
+   "type": "number",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "cursorRadius",
+   "type": "number",
+   "default": "-",
+   "desc": "升温半径 (CSS 像素), 默认 140.",
+   "required": false
+  },
+  {
+   "name": "lightMode",
+   "type": "boolean",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "叠在背景上的内容.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "-",
+   "desc": "时钟倍率, 默认 1.",
+   "required": false
+  },
+  {
+   "name": "paused",
+   "type": "boolean",
+   "default": "-",
+   "desc": "停在当前画面.",
+   "required": false
+  },
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "-",
+   "desc": "画布不透明度 0..1.",
+   "required": false
+  },
+  {
+   "name": "dpr",
+   "type": "number",
+   "default": "-",
+   "desc": "像素比上限, 默认 2.",
+   "required": false
+  },
+  {
+   "name": "mouseInteraction",
+   "type": "boolean",
+   "default": "-",
+   "desc": "是否响应指针, 默认 true.",
+   "required": false
+  },
+  {
+   "name": "reducedMotion",
+   "type": "boolean",
+   "default": "-",
+   "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
    "required": false
   }
  ],

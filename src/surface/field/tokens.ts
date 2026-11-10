@@ -220,7 +220,7 @@ export const SOFT = {
 } as const;
 
 /* ── SparkMark (规格 ElectricLogo) ── */
-export const SPARK = {
+export const SPARK_MARK = {
   /** RASTER, CELL, FAR, ARCS, PULSES, PIXEL_BUDGET. */
   raster: 560,
   cell: 4,

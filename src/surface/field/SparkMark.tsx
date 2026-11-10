@@ -12,7 +12,7 @@ import { rasterImage, rasterPath } from "./parts/mask";
 import { sdfCanvas, type SdfField } from "./parts/sdf";
 import { makeSpark, packPulses, startMorph, stepSpark } from "./parts/spark";
 import { SPARK_FRAGMENT } from "./parts/spark-shader";
-import { SOFT, SPARK, SPARK_BOLT } from "./tokens";
+import { SOFT, SPARK_MARK, SPARK_BOLT } from "./tokens";
 
 export interface SparkMarkProps extends BackdropCommonProps {
   /** 图形的图片地址 (用透明度当形状); 不给时是自带的闪电. 换 src 时从旧图形形变过去. */
@@ -64,9 +64,9 @@ function boxHalf(field: SdfField, half: number): readonly [number, number] {
  */
 export function SparkMark(props: SparkMarkProps): JSX.Element {
   const {
-    src, color = "accent", glowColor = "primary", scale = SPARK.scale, intensity = SPARK.intensity, glow = SPARK.glow, thickness = SPARK.thickness,
-    strands = SPARK.strands, bend = SPARK.bend, crackle = SPARK.crackle, arcs = SPARK.arcs, flicker = SPARK.flicker, fill = SPARK.fill, interactive = true,
-    cursorIntensity = SPARK.cursorIntensity, cursorRadius = SPARK.cursorRadius, lightMode = false, ...common
+    src, color = "accent", glowColor = "primary", scale = SPARK_MARK.scale, intensity = SPARK_MARK.intensity, glow = SPARK_MARK.glow, thickness = SPARK_MARK.thickness,
+    strands = SPARK_MARK.strands, bend = SPARK_MARK.bend, crackle = SPARK_MARK.crackle, arcs = SPARK_MARK.arcs, flicker = SPARK_MARK.flicker, fill = SPARK_MARK.fill, interactive = true,
+    cursorIntensity = SPARK_MARK.cursorIntensity, cursorRadius = SPARK_MARK.cursorRadius, lightMode = false, ...common
   } = props;
   const { options, rest, opacity, children } = splitCommon(common);
   const state = useRef(makeSpark());
@@ -83,8 +83,8 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
       setFields(latest.current);
     };
     if (!src) {
-      const mask = rasterPath(SPARK_BOLT.d, SPARK_BOLT.viewBox, SPARK.raster);
-      land(mask ? sdfCanvas(mask, SPARK.raster) : null);
+      const mask = rasterPath(SPARK_BOLT.d, SPARK_BOLT.viewBox, SPARK_MARK.raster);
+      land(mask ? sdfCanvas(mask, SPARK_MARK.raster) : null);
       return () => {
         live = false;
       };
@@ -92,8 +92,8 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      const mask = rasterImage(img, SPARK.raster);
-      land(mask ? sdfCanvas(mask, SPARK.raster) : null);
+      const mask = rasterImage(img, SPARK_MARK.raster);
+      land(mask ? sdfCanvas(mask, SPARK_MARK.raster) : null);
     };
     img.src = src;
     return () => {
@@ -117,9 +117,9 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
       u_from_range: from?.range ?? 1,
       u_to_range: to?.range ?? 1,
       u_morph: frame.reduced ? 1 : s.morph,
-      u_unit: to ? ((2 * hTo[0]) / to.width) * SPARK.cell : px,
+      u_unit: to ? ((2 * hTo[0]) / to.width) * SPARK_MARK.cell : px,
       u_look: [intensity, glow, thickness, fill] as const,
-      u_arc: [Math.min(SPARK.arcs, Math.max(1, Math.round(strands))), bend, crackle, Math.min(SPARK.arcs, Math.max(0, Math.round(arcs)))] as const,
+      u_arc: [Math.min(SPARK_MARK.arcs, Math.max(1, Math.round(strands))), bend, crackle, Math.min(SPARK_MARK.arcs, Math.max(0, Math.round(arcs)))] as const,
       u_flicker: flicker,
       u_hover: [(s.hover.x - 0.5) * width, (s.hover.y - 0.5) * height, cursorRadius * px, interactive ? s.hover.power * cursorIntensity : 0] as const,
       u_pulses: { list: packPulses(s), size: 4 as const },

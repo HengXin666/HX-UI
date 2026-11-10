@@ -3,7 +3,7 @@
  */
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SPARK, SPARK_BOLT, SparkMark, makeSpark, packPulses, startMorph, stepSpark } from "@src/surface/field";
+import { SPARK_MARK, SPARK_BOLT, SparkMark, makeSpark, packPulses, startMorph, stepSpark } from "@src/surface/field";
 import { SPARK_FRAGMENT } from "@src/surface/field/parts/spark-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../backdrop/helpers";
 import { recordCanvas2d } from "../helpers";
@@ -22,7 +22,7 @@ const away = { x: 0.5, y: 0.5, inside: false };
 
 describe("SparkMark 状态", () => {
   it("规格常数", () => {
-    expect(SPARK).toMatchObject({ raster: 560, cell: 4, far: 1e20, arcs: 5, pulses: 3, pixelBudget: 4e6, morphS: 1.6, morphPendingS: 0.3, pulseS: 1.4, pulseDecay: 1.7, hoverK: 120, hoverC: 19, powerIn: 0.3, powerOut: 0.55, maxDt: 0.05, breath: 0.6, sparkDip: 0.3 });
+    expect(SPARK_MARK).toMatchObject({ raster: 560, cell: 4, far: 1e20, arcs: 5, pulses: 3, pixelBudget: 4e6, morphS: 1.6, morphPendingS: 0.3, pulseS: 1.4, pulseDecay: 1.7, hoverK: 120, hoverC: 19, powerIn: 0.3, powerOut: 0.55, maxDt: 0.05, breath: 0.6, sparkDip: 0.3 });
     expect(SPARK_BOLT.viewBox).toEqual([24, 24]);
   });
   it("形变 1.6s 走满, 排队中 0.3s; 帧长夹到 0.05", () => {
