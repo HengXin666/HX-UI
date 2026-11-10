@@ -6081,6 +6081,13 @@
    "required": false
   },
   {
+   "name": "keyColor",
+   "type": "readonly [number, number, number]",
+   "default": "-",
+   "desc": "抠底用的底色, 0..1 的 RGB 三元组 (图片像素色, 不是界面配色, 所以不走语义 token). 给了就用它, 不再取四角平均; 只在 keyOut 打开时生效.",
+   "required": false
+  },
+  {
    "name": "mode",
    "type": "\"color\" | \"mono\" | \"duotone\"",
    "default": "-",

@@ -4,7 +4,7 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DOT, DotReveal, dotFade, dotWanderPath, makeDot, packBursts, stepDot } from "@src/surface/scene";
-import { dotMatte } from "@src/surface/scene/parts/dot";
+import { dotKey, dotMatte } from "@src/surface/scene/parts/dot";
 import { DOT_FRAGMENT, DOT_MASK_PASS } from "@src/surface/scene/parts/dot-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../backdrop/helpers";
 import { recordCanvas2d } from "../helpers";
@@ -94,6 +94,14 @@ describe("DotReveal 抠底", () => {
     });
     expect(dotMatte(new Image())).toBeNull();
     spy.mockRestore();
+  });
+
+  it("keyColor 覆盖四角平均; keyOut 关或没有底色时不抠", () => {
+    const g = [0.5, 0.5, 0.5] as const;
+    expect(dotKey(true, [0, 1, 0], [1, 0, 0], g)).toEqual({ u_matte: [0, 1, 0], u_key: 1 });
+    expect(dotKey(true, undefined, [1, 0, 0], g)).toEqual({ u_matte: [1, 0, 0], u_key: 1 });
+    expect(dotKey(true, undefined, null, g)).toEqual({ u_matte: g, u_key: 0 });
+    expect(dotKey(false, [0, 1, 0], [1, 0, 0], g)).toEqual({ u_matte: [0, 1, 0], u_key: 0 });
   });
 });
 

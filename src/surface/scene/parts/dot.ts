@@ -118,3 +118,14 @@ export function dotMatte(img: CanvasImageSource): [number, number, number] | nul
     return null;
   }
 }
+
+/** 抠像接线: keyColor 优先, 否则用四角平均底色; 两者都没有或 keyOut 关时 u_key 为 0, u_matte 取 fallback. */
+export function dotKey(
+  keyOut: boolean,
+  keyColor: readonly [number, number, number] | undefined,
+  matte: readonly [number, number, number] | null,
+  fallback: readonly [number, number, number],
+): { u_matte: readonly [number, number, number]; u_key: 0 | 1 } {
+  const base = keyColor ?? matte;
+  return { u_matte: base ?? fallback, u_key: keyOut && base !== null && base !== undefined ? 1 : 0 };
+}

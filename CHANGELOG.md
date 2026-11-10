@@ -8,6 +8,7 @@
 
 ### Added
 
+- `DotReveal`: 新 prop `keyColor` (0..1 的 RGB 三元组), 覆盖抠底底色; 不给时仍取图片四角平均色. 只在 `keyOut` 打开时生效.
 - `@hx/ui/backgrounds`: surface 层 Backgrounds 全族 64 件, 按 glow / rays / lines / grid / glyph / fluid / particles 七路组织, 全部接在 `src/surface/backgrounds` 渲染内核上 (WebGL2, 不引 three / ogl / gsap). 行为规格取自 `docs/research/catalog/backgrounds-1.md` / `-2.md`, 实现为 HX 自有. 3D 件做简化版并在文件头标 `ENGINE-GAP:`. 根入口 `src/index.ts` 不新增符号.
 - `@hx/ui/surface`: surface 层子路径入口, 收 backgrounds, pointer, reveal 与 text (glyph / stagger / scroll) 各族. 根入口不收.
 - 契约: `check-api-snapshot` 按 package.json 的每个子路径入口分段展开 (原先只展开根入口); `docs-props` 对 `./backgrounds` 与 `./surface` 全量抽 props.

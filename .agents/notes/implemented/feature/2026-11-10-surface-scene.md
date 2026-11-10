@@ -35,7 +35,7 @@ docs/research/catalog/animations.md 的 HalftoneReveal, DitherVeil, CrystalizedB
 
 ## Consequences
 
-- DotReveal 已补 (按序补做第 2 件): fit 走 cover / contain / fill (片元 fitUv, contain 的留边按图外处理); 抠像按规格 keep *= mix(1, smoothstep(0.05, 0.2, |c - matte|), key), 规格没给 uMatte 的来源与 props, 本库用 keyOut 开关, 底色取图片缩到 16 x 16 后四角平均 (dotMatte; 跨域读不出时关闭). 被抠掉与图外的点不出网点, 揭开处露纸色. 没有落的只剩 DEFAULT_SRC 不带, src 必填.
+- DotReveal 已补 (按序补做第 2 件): fit 走 cover / contain / fill (片元 fitUv, contain 的留边按图外处理); 抠像按规格 keep *= mix(1, smoothstep(0.05, 0.2, |c - matte|), key), 规格没给 uMatte 的来源与 props, 本库用 keyOut 开关, 底色取图片缩到 16 x 16 后四角平均 (dotMatte; 跨域读不出时关闭); keyColor (0..1 RGB, 图片像素色而非界面配色, 故不走语义 token) 可覆盖, 接线在 parts/dot 的 dotKey (用户 2026-11-11 定). 被抠掉与图外的点不出网点, 揭开处露纸色. 没有落的只剩 DEFAULT_SRC 不带, src 必填.
 - BayerVeil 没有落的: 规格常数 HOLD 1.6 (条目只给了常数, 没写用在哪, 不落), 抠像 (uMatte / uKey, 没有对应 props); 误差扩散的格网纹理在宿主尺寸变化时于主线程重算 (大宿主加 pixelSize 1 时约数十毫秒一次), 不需要顶点或实例化, 不标 ENGINE-GAP.
 - PrismOrb ENGINE-GAP (已在组件文件头与片元头标): 规格的尘埃是 STATE_WIDTH 256 的 GPGPU 状态纹理驱动的实例化粒子 (MAX_PARTICLES 40000), 带逐颗物理与深度; 内核没有实例化 / 顶点取样通道, 这里是片元里按格的三层程序化光点, 视差近似深度, 无逐颗物理, 指针推不动尘埃. PIXEL_BUDGET 4.5e6 由内核 dpr 上限 2 与 maxEdge 代替 (同 MicroSlats), 这一项不算 ENGINE-GAP: 分辨率预算不涉顶点 / 实例化 / 深度 (2026-11-10 复核定). 其余没有落的: dustTime 之外的规格 uniform (uTurn, uLine) 的具体用法条目未写, 按上面的近似实现.
 - CubeField ENGINE-GAP (已在组件文件头标): 规格是实例化方块网格走顶点投影 (uProjection); 内核只有全屏片元, 这里片元里对邻近 9 块求交. 每块状态走 vec4 uniform 数组, 片元 uniform 向量保底只有 224 个, 所以 gridSize 上限 13 (规格无上限), 要内核能上传浮点数据纹理才能放开. 倾斜大于约 45 度且间隙很小时, 方块可能伸出邻格范围被裁一角. 其余没有落的: dpr (由内核统一管).

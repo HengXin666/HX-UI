@@ -171,7 +171,7 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
 - ENGINE-GAP 复核 (2026-11-10 定, 组件文件头 / note / CHANGELOG 0.16.0 一致): SoftShape 失焦近似不标 (不涉顶点 / 实例化 / 深度, 真高斯排在上面第 5 件); SparkMark 的 PIXEL_BUDGET 与预模糊辉光不标 ENGINE-GAP, 用户定为未落项已补 (第 7 件), 脉冲极角是未落项已补 (第 6 件); PrismOrb 的 PIXEL_BUDGET 同样不算 ENGINE-GAP, 文件头措辞已改.
 - 内核若加浮点数据纹理上传, CubeField 的 gridSize 上限 13 可放开.
 - **按序待办 (用户 2026-11-11 00:12 定, 每件单独提交, 门禁 13/13, 不 push)**:
-  1. DotReveal: 加底色覆盖 prop (如 `keyColor`, 不给则仍取四角平均色; 不写色值字面量, 走数值或 token), 更新 keyOut 注释, docs-props, CHANGELOG Unreleased Added.
+  1. ~~DotReveal: 底色覆盖 prop~~ 已做 (`keyColor` 0..1 RGB 三元组, 接线 parts/dot `dotKey`, 单测在 dot.test.tsx).
   2. SparkMark: 规格的 2d 画布逐帧层 (未落项).
   3. FiberStrands: 规格 fp 抗锯齿 (dFdx 足迹), 替掉 sg 最小值近似.
   4. PrismOrb: PIXEL_BUDGET 4.5e6 真做 (照 SparkMark `pixelBudgetDpr` 的做法, 经 setState 作内核 dpr), 再把文件头 / scene note / CHANGELOG 改成 "未落项, 已补" 写法 (现文件头第 5 行写的是 "由 dpr 上限与 maxEdge 代替", 未实现前不能写已补).
@@ -188,9 +188,9 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
 ## 交接 (2026-11-11)
 
 - 已完成: Animations A/B/C/D 四段 + Halo/Haze 补做 + 按序补做 7 件 + 收口 (0274103), 已推. 1bfd17d (总账计数更正) 与本次 CHECKPOINT 提交在本地, 待推.
-- 正在做: 无. 2026-11-11 00:12 因额度换号, 上面 "按序待办" 一件都没开工.
-- 下一步: "后续收尾" 里 "按序待办" 第 1 条 (DotReveal 底色覆盖 prop) 起, 按序做.
-- 接手第一步: 装 hxfs (见已知坑), `git log --oneline -3` 确认 HEAD 是本 CHECKPOINT 提交, 读本节与 "按序待办", 再开 `src/surface/scene/DotReveal.tsx` (keyOut / dotMatte / u_matte 在 26, 80-88, 139 行附近).
+- 正在做: 无. 按序待办第 1 条已提交 (见 git log), 用户要求每条做完报一次再推.
+- 下一步: "按序待办" 第 2 条 SparkMark 的 2d 画布逐帧层 (先重读 docs/research/catalog/animations.md 的 SparkMark 对应条目, 看 2d 层画什么), 之后按序. 第 4 条 PrismOrb 要先真做 PIXEL_BUDGET 再改文件头.
+- 接手第一步: 装 hxfs (见已知坑), `git log --oneline -3` 确认 HEAD 是 DotReveal keyColor 提交 (feat(surface/scene): DotReveal 补 keyColor), 读本节与 "按序待办", 从第 2 条做起: 看 `src/surface/field/SparkMark.tsx` 与 `parts/spark-map.ts`, 2d 层用内核 `useCanvasBackdrop` 或宿主内一张 Canvas2D, 注意 SparkMark.tsx 166 行, 超 250 就拆 parts.
 - 总账 (0.17.0, 读 scripts/gates/baselines/api-surface.txt): 根入口 1608 符号; 子路径 surface 769, kits 290, controls 214, motion 159, backgrounds 136, hxbrowser 85, viz 56, hxbrowser/protocol 37, studio 34, page 23, blocks 1; 合计 3412. ENGINE-GAP: 标签 34 个文件 / 35 处 (`grep -rln 'ENGINE-GAP:' src`; surface 10, kits 13, controls 11); 另 18 个文件以别的写法提到 ENGINE-GAP (含 "不标" 说明).
 
 ## 已知坑
