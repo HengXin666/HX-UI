@@ -1,4 +1,4 @@
-// 行为规格参照 docs/research/catalog/animations.md 的 ClickSpark, Crosshair, GlareHover, ImageTrail, Magnet, TargetCursor 条目, 实现为 HX 自有.
+// 行为规格参照 docs/research/catalog/animations.md 的 ClickSpark, Crosshair, GlareHover, ImageTrail, Magnet, TargetCursor, PixelTrail 条目, 实现为 HX 自有.
 export { ATTRACT, LOCK, RETICLE, SHEEN, SPARK, SPARK_EASINGS, WAKE, clamp, cosineEase, mix, powerOut, seeded, smoothstep, type SparkEasing } from "./tokens";
 export { TONE_CLASS, TONE_TOKEN, type SurfaceTone } from "./tone";
 export { POINTER_VELOCITY_TAU_S, locate, makePointer, usePointerTrack, type PointerHandlers, type PointerState } from "./track";
@@ -10,3 +10,5 @@ export { SurfaceLayer, type SurfaceLayerProps } from "./SurfaceLayer";
 export { inkOf, toPixels } from "./ink";
 export { TapSparks, burstLongest, drawBurst, pushBurst, sparkLife, sparkReach, type SparkBurst, type SparkShape, type TapSparksProps } from "./TapSparks";
 export { ReticleLines, makeReticle, reticleTau, stepReticle, type ReticleLineStyle, type ReticleLinesProps, type ReticleState, type ReticleTargetEffect } from "./ReticleLines";
+export { CELL, cellGrid, ditherThreshold, fillCount, lifeEnvelope, moveForce, stampCells, type CellDecay, type CellShape, type TrailPoint } from "./cell";
+export { CellTrail, type CellTrailProps } from "./CellTrail";

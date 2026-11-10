@@ -2626,10 +2626,19 @@ Ballpit
 BallpitProps
 Beams
 BeamsProps
+CELL
+COMET
 CRTWarp
 CRTWarpProps
+CellDecay
+CellShape
+CellTrail
+CellTrailProps
 ColorBends
 ColorBendsProps
+CometBorder
+CometBorderProps
+CometHover
 DRAFT_BOUNCE_SHARE
 DRAFT_CLICK_SLOP_PX
 DRAFT_DEFAULTS
@@ -2711,6 +2720,7 @@ GRADIENT_ANGLES
 GRADIENT_DEFAULTS
 GRADIENT_FOLLOW_STIFFNESS
 GRADIENT_PULL_TAU_S
+GRAIN
 Galaxy
 GalaxyProps
 GhostFibers
@@ -2722,6 +2732,10 @@ GradientBlinds
 GradientBlindsProps
 GradientWaves
 GradientWavesProps
+GrainBlend
+GrainFrameOptions
+GrainLayer
+GrainLayerProps
 Grainient
 GrainientProps
 GridDistortion
@@ -2775,6 +2789,9 @@ MagicRings
 MagicRingsProps
 MagnetLines
 MagnetLinesProps
+MarkRail
+MarkRailItem
+MarkRailProps
 MarqueeShape
 MicroSlats
 MicroSlatsProps
@@ -2785,6 +2802,7 @@ MosaicShape
 MosaicSwap
 MosaicSwapProps
 MosaicTrigger
+ORBIT
 ORBIT_BONKERS_SCALE
 ORBIT_DEFAULTS
 ORBIT_FLING_TAU_S
@@ -2795,13 +2813,22 @@ ORBIT_SPEED_SPRING
 Orb
 OrbProps
 OrbitHover
+OrbitImage
+OrbitPathSpec
+OrbitRing
+OrbitRingProps
+OrbitShape
+OrbitTable
 OrbitText
 OrbitTextProps
+PEEL
 POINTER_VELOCITY_TAU_S
 Particles
 ParticlesProps
 PatternWaves
 PatternWavesProps
+PeelSticker
+PeelStickerProps
 PhotoWake
 PhotoWakeProps
 PixelBlast
@@ -2818,6 +2845,8 @@ Prism
 PrismProps
 PrismaticBurst
 PrismaticBurstProps
+Pt
+RAIL
 RETICLE
 REVEAL_DEFAULTS
 REVEAL_ROTATE_MAX_S
@@ -2844,6 +2873,7 @@ SHINE_MIN_SPAN
 SHUFFLE_DEFAULTS
 SPARK
 SPARK_EASINGS
+SPARK_EDGE
 STAGGER_PRESETS
 STAMP_DEFAULTS
 STAMP_FLOAT_PX
@@ -2887,6 +2917,8 @@ SoftAurora
 SoftAuroraProps
 SparkBurst
 SparkEasing
+SparkEdge
+SparkEdgeProps
 SparkShape
 StaggerText
 StaggerTextProps
@@ -2919,6 +2951,7 @@ Topography
 TopographyProps
 TraceText
 TraceTextProps
+TrailPoint
 TunnelFlow
 TypeFrame
 TypePhase
@@ -2948,52 +2981,83 @@ WebThreadsProps
 attractPull
 attractSpring
 bandCenter
+budgetRatio
+buildOrbit
 burstAt
 burstLongest
+cellGrid
 cellNoise
 clamp
+clipHalfPlane
+copiesNeeded
 cosineEase
+ditherThreshold
 draftDamping
 drawBurst
 driftLead
 dropPose
 echoLook
+emitCount
 extrudeIntro
 extrudeLayers
+fillCount
+fillGrain
+flingVelocity
+foldLine
 foldQuarter
 followChain
+frameDue
+grainValue
 inkOf
+introOpacity
+introTotal
+jag
 kickShare
+lapEase
+lapPhase
 layerBlur
 layerMask
 layerOpacity
+lifeEnvelope
 locate
 lockBox
 makePointer
 makeReticle
 marqueePath
+mirrorMatrix
 mix
 mosaicAmount
 mosaicRate
+moveForce
 nearestGlyph
 nextFocus
 orbitAngle
+orbitAt
+orbitLook
 orbitTilt
 outlineAmount
 outsideDistance
 padBoard
+pointerEnergy
 pointerLead
 pointerTilt
+polygonCss
 powerOut
 pushBurst
 pushTarget
 quantize
+railOffset
 removalTick
 reticleTau
+revealShown
+roundRectLength
+roundRectPoint
 scrambleLocks
 scrambleUntil
 scrubUnit
 seeded
+seededRandom
+shapePoint
 sheenPhase
 shiftSlice
 shinePhase
@@ -3002,13 +3066,16 @@ smoothstep
 sparkLife
 sparkReach
 springBack
+springStep
 stampAngle
+stampCells
 stampContent
 stampFloat
 stampLook
 stepReticle
 streakGradient
 strongest
+surgeEnergy
 sweepMs
 tileClip
 tileGrid
@@ -3021,6 +3088,7 @@ typeFrame
 typeShown
 usePointerTrack
 useScramblePointer
+valueNoise
 wakeCount
 wakeEase
 wakePhase
@@ -3028,6 +3096,7 @@ wakeSlots
 widenFrame
 widenProgress
 wrapOffset
+wrapPhase
 # STAR
 src/surface/backgrounds/index.ts -> ./fluid
 src/surface/backgrounds/index.ts -> ./glow
@@ -3036,17 +3105,25 @@ src/surface/backgrounds/index.ts -> ./grid
 src/surface/backgrounds/index.ts -> ./lines
 src/surface/backgrounds/index.ts -> ./particles
 src/surface/backgrounds/index.ts -> ./rays
+src/surface/edge/index.ts -> ./tokens
 src/surface/index.ts -> ./backgrounds
+src/surface/index.ts -> ./edge
+src/surface/index.ts -> ./loop
 src/surface/index.ts -> ./pointer
 src/surface/index.ts -> ./reveal
+src/surface/index.ts -> ./sticker
 src/surface/index.ts -> ./text/glyph
 src/surface/index.ts -> ./text/pointer
 src/surface/index.ts -> ./text/scroll
 src/surface/index.ts -> ./text/stagger
+src/surface/index.ts -> ./texture
+src/surface/loop/index.ts -> ./tokens
+src/surface/sticker/index.ts -> ./tokens
 src/surface/text/glyph/index.ts -> ./tokens
 src/surface/text/pointer/index.ts -> ./tokens
 src/surface/text/scroll/index.ts -> ./tokens
 src/surface/text/stagger/index.ts -> ./tokens
+src/surface/texture/index.ts -> ./tokens
 # ENTRY ./viz (src/viz/index.ts)
 BarChart
 BarChartProps

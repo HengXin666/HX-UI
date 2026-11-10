@@ -3,7 +3,7 @@
  */
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MarkRail, RAIL, copiesNeeded, flingVelocity, introOpacity, wrapOffset } from "@src/surface/loop";
+import { MarkRail, RAIL, copiesNeeded, flingVelocity, introOpacity, railOffset } from "@src/surface/loop";
 import { mockReducedMotion, useFakeClock } from "../text/helpers";
 
 afterEach(() => {
@@ -21,10 +21,10 @@ describe("MarkRail 纯函数", () => {
 		expect(RAIL).toMatchObject({ smoothTauS: 0.25, glideTauS: 0.8, dragThresholdPx: 6, maxFling: 4000, introS: 0.7, introStaggerS: 0.45 });
 	});
 	it("偏移折回与副本数", () => {
-		expect(wrapOffset(-250, 100)).toBe(-50);
-		expect(wrapOffset(30, 100)).toBe(-70);
-		expect(wrapOffset(-100, 100)).toBe(-0);
-		expect(wrapOffset(42, 0)).toBe(42);
+		expect(railOffset(-250, 100)).toBe(-50);
+		expect(railOffset(30, 100)).toBe(-70);
+		expect(railOffset(-100, 100)).toBe(-0);
+		expect(railOffset(42, 0)).toBe(42);
 		expect(copiesNeeded(500, 200)).toBe(4);
 		expect(copiesNeeded(100, 400)).toBe(2);
 		expect(copiesNeeded(100, 0)).toBe(2);

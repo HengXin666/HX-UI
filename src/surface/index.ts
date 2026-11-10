@@ -7,3 +7,7 @@ export * from "./text/glyph";
 export * from "./text/stagger";
 export * from "./text/scroll";
 export * from "./text/pointer";
+export * from "./loop";
+export * from "./edge";
+export * from "./texture";
+export * from "./sticker";

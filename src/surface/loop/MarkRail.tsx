@@ -9,7 +9,7 @@ import { useFrameLoop } from "../../motion/frame/use-frame-loop";
 import { approach, decay } from "../../motion/spring/follow";
 import { prefersReducedMotion } from "../../primitives/motion";
 import { cn } from "../../primitives/utils";
-import { copiesNeeded, flingVelocity, introOpacity, introTotal, wrapOffset } from "./parts/rail";
+import { copiesNeeded, flingVelocity, introOpacity, introTotal, railOffset } from "./parts/rail";
 import { RAIL } from "./tokens";
 
 export interface MarkRailItem {
@@ -105,7 +105,7 @@ export function MarkRail({
       st.glide = decay(st.glide, dt, RAIL.glideTauS);
       st.offset += (st.vel + st.glide) * dt;
     }
-    st.offset = wrapOffset(st.offset, st.period);
+    st.offset = railOffset(st.offset, st.period);
     if (track.current) track.current.style.transform = `translate3d(${st.offset}px, 0, 0)`;
     if (st.t < Infinity) {
       st.t += dt;

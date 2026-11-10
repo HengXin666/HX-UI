@@ -16,6 +16,24 @@
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
+## [0.12.0] - 2026-11-10
+
+`@hx/ui/surface` 新收 react-bits Animations 的 A 段 7 件, 开 loop / edge / texture / sticker 四个族, pointer 族加 1 件. 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
+
+### Added
+
+- `@hx/ui/surface` loop 族: `MarkRail` (LogoLoop, 可拖可甩的标志跑马灯), `OrbitRing` (OrbitImages, 沿椭圆或路径环绕的图片).
+- edge 族: `CometBorder` (StarBorder, 沿圆角边框跑的彗星光), `SparkEdge` (ElectricBorder, 值噪声抖动的电弧边框, 浪涌与指针放电).
+- texture 族: `GrainLayer` (Noise, 按帧重抽的颗粒叠层).
+- sticker 族: `PeelSticker` (StickerPeel, 悬停揭角, 可拖动摆动). 卷曲与表面光照标 ENGINE-GAP, 当前是沿直线对折.
+- pointer 族: `CellTrail` (PixelTrail, 网格像素轨迹, 方 / 圆 / 菱形, fade / shrink / dither 衰减).
+- 一并导出各件的纯函数与 `RAIL` / `ORBIT` / `COMET` / `SPARK_EDGE` / `GRAIN` / `PEEL` / `CELL` 等常数. 画布件全部是 Canvas2D, 颜色经语义 token 读计算色, 不写色值, 不引 three / WebGL / 动画库.
+- 契约: api 快照 `./surface` 段 422 到 491, docs-props 随之更新.
+
+### Changed
+
+- loop 族的 `wrapOffset` 在接入前改名 `railOffset`, 避开 text/scroll 已公开的同名函数 (loop 族此前未公开, 不算破坏).
+
 ## [0.11.0] - 2026-11-10
 
 `@hx/ui/surface` 新收 text/pointer 族 4 件, 是 react-bits TextAnimations 余量中跟随指针的文字效果. 行为规格取自 `docs/research/catalog/textanimations.md`, 实现为 HX 自有, 组件名换成本库自己的. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.

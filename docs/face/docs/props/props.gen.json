@@ -2557,6 +2557,99 @@
    "required": false
   }
  ],
+ "CellTrail": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "gridSize",
+   "type": "number",
+   "default": "40",
+   "desc": "横向格数.",
+   "required": false
+  },
+  {
+   "name": "trailSize",
+   "type": "number",
+   "default": "0.1",
+   "desc": "笔刷半径, 占宽度的比例.",
+   "required": false
+  },
+  {
+   "name": "maxAge",
+   "type": "number",
+   "default": "250",
+   "desc": "每个轨迹点的寿命 ms.",
+   "required": false
+  },
+  {
+   "name": "interpolate",
+   "type": "number",
+   "default": "5",
+   "desc": "快速移动时两点之间最多补几个点.",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"primary\"",
+   "desc": "新鲜处的色调与陈旧处的色调 (语义 token); 不给 trailTone 时一色.",
+   "required": false
+  },
+  {
+   "name": "trailTone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "shape",
+   "type": "\"circle\" | \"square\" | \"diamond\"",
+   "default": "\"square\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "gap",
+   "type": "number",
+   "default": "0.08",
+   "desc": "格间隙, 占格宽的比例.",
+   "required": false
+  },
+  {
+   "name": "decay",
+   "type": "\"fade\" | \"shrink\" | \"dither\"",
+   "default": "\"fade\"",
+   "desc": "衰减方式: 变淡, 缩小, 或有序抖动.",
+   "required": false
+  },
+  {
+   "name": "glow",
+   "type": "number",
+   "default": "0.4",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "clickBurst",
+   "type": "boolean",
+   "default": "false",
+   "desc": "点击时向四周散开一圈.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
  "ChimeToggle": [
   {
    "name": "offLabel",
@@ -2894,6 +2987,99 @@
    "type": "boolean",
    "default": "-",
    "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
+ "CometBorder": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"primary\"",
+   "desc": "彗星与火星的色调 (语义 token).",
+   "required": false
+  },
+  {
+   "name": "duration",
+   "type": "number",
+   "default": "4",
+   "desc": "一圈秒数.",
+   "required": false
+  },
+  {
+   "name": "thickness",
+   "type": "number",
+   "default": "1",
+   "desc": "描边粗细 px 与圆角 px.",
+   "required": false
+  },
+  {
+   "name": "radius",
+   "type": "number",
+   "default": "12",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "trailLength",
+   "type": "number",
+   "default": "0.3",
+   "desc": "尾巴占周长的比例.",
+   "required": false
+  },
+  {
+   "name": "stars",
+   "type": "number",
+   "default": "1",
+   "desc": "同时在跑的彗星数, 沿周长均分.",
+   "required": false
+  },
+  {
+   "name": "glow",
+   "type": "number",
+   "default": "0.6",
+   "desc": "光晕强度 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "sparkle",
+   "type": "boolean",
+   "default": "false",
+   "desc": "沿途洒火星.",
+   "required": false
+  },
+  {
+   "name": "direction",
+   "type": "\"clockwise\" | \"counterclockwise\"",
+   "default": "\"clockwise\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "hover",
+   "type": "\"none\" | \"lap\" | \"boost\"",
+   "default": "\"lap\"",
+   "desc": "悬停或聚焦时: lap 加跑一圈, boost 加亮, none 不变.",
+   "required": false
+  },
+  {
+   "name": "clickPulse",
+   "type": "boolean",
+   "default": "true",
+   "desc": "点击闪一下.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
    "required": false
   }
  ],
@@ -10459,6 +10645,99 @@
    "required": false
   }
  ],
+ "GrainLayer": [
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "0.2",
+   "desc": "整层不透明度.",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "1",
+   "desc": "颗粒倍数, 1 为一像素一粒.",
+   "required": false
+  },
+  {
+   "name": "fps",
+   "type": "number",
+   "default": "24",
+   "desc": "换帧频率; 0 为静止.",
+   "required": false
+  },
+  {
+   "name": "blendMode",
+   "type": "\"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\"",
+   "default": "\"overlay\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "contrast",
+   "type": "number",
+   "default": "0.6",
+   "desc": "颗粒对比度 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "colored",
+   "type": "boolean",
+   "default": "false",
+   "desc": "彩色颗粒 (三通道各自随机).",
+   "required": false
+  },
+  {
+   "name": "dust",
+   "type": "number",
+   "default": "0",
+   "desc": "尘点, 划痕, 扫描线, 闪烁的强度, 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "scratches",
+   "type": "number",
+   "default": "0",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "scanlines",
+   "type": "number",
+   "default": "0",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "flicker",
+   "type": "number",
+   "default": "0",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "fixed",
+   "type": "boolean",
+   "default": "false",
+   "desc": "铺满视口 (position fixed), 否则铺满最近的定位祖先.",
+   "required": false
+  },
+  {
+   "name": "seed",
+   "type": "number",
+   "default": "1",
+   "desc": "随机种子, 同一种子同一序列.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
  "Grainient": [
   {
    "name": "colors",
@@ -15414,6 +15693,92 @@
    "required": false
   }
  ],
+ "MarkRail": [
+  {
+   "name": "items",
+   "type": "readonly MarkRailItem[]",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "default": "-",
+   "desc": "整条带的读屏名.",
+   "required": true
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "80",
+   "desc": "速度 px/s.",
+   "required": false
+  },
+  {
+   "name": "direction",
+   "type": "\"left\" | \"right\"",
+   "default": "\"left\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "gap",
+   "type": "number",
+   "default": "40",
+   "desc": "件与件的间距 px.",
+   "required": false
+  },
+  {
+   "name": "pauseOnHover",
+   "type": "boolean",
+   "default": "true",
+   "desc": "悬停或键盘聚焦时降到 hoverSpeed.",
+   "required": false
+  },
+  {
+   "name": "hoverSpeed",
+   "type": "number",
+   "default": "0",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "draggable",
+   "type": "boolean",
+   "default": "true",
+   "desc": "可拖动, 松手后按甩出速度滑行.",
+   "required": false
+  },
+  {
+   "name": "fadeEdges",
+   "type": "boolean",
+   "default": "true",
+   "desc": "两侧渐隐.",
+   "required": false
+  },
+  {
+   "name": "scaleOnHover",
+   "type": "boolean",
+   "default": "false",
+   "desc": "悬停件放大.",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "true",
+   "desc": "挂载后各件错峰淡入.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
  "Marquee": [
   {
    "name": "pauseOnHover",
@@ -16883,6 +17248,162 @@
    "required": false
   }
  ],
+ "OrbitRing": [
+  {
+   "name": "images",
+   "type": "readonly OrbitImage[]",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "label",
+   "type": "string",
+   "default": "-",
+   "desc": "整组的读屏名.",
+   "required": true
+  },
+  {
+   "name": "altPrefix",
+   "type": "string",
+   "default": "\"Orbiting image\"",
+   "desc": "没给 alt 的图读作 \"altPrefix 序号\".",
+   "required": false
+  },
+  {
+   "name": "shape",
+   "type": "\"circle\" | \"ellipse\" | \"square\" | \"star\"",
+   "default": "\"ellipse\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "baseWidth",
+   "type": "number",
+   "default": "1400",
+   "desc": "轨道的设计宽度, 半径都以它为基准随容器缩放.",
+   "required": false
+  },
+  {
+   "name": "radiusX",
+   "type": "number",
+   "default": "700",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "radiusY",
+   "type": "number",
+   "default": "170",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "radius",
+   "type": "number",
+   "default": "300",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "starPoints",
+   "type": "number",
+   "default": "5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "starInnerRatio",
+   "type": "number",
+   "default": "0.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "rotation",
+   "type": "number",
+   "default": "-8",
+   "desc": "轨道旋转 (度).",
+   "required": false
+  },
+  {
+   "name": "duration",
+   "type": "number",
+   "default": "40",
+   "desc": "一圈的秒数.",
+   "required": false
+  },
+  {
+   "name": "itemSize",
+   "type": "number",
+   "default": "64",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "direction",
+   "type": "\"reverse\" | \"normal\"",
+   "default": "\"normal\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "fill",
+   "type": "boolean",
+   "default": "true",
+   "desc": "均分整条轨道; false 时按件宽首尾相接.",
+   "required": false
+  },
+  {
+   "name": "easing",
+   "type": "\"linear\" | \"ease\"",
+   "default": "\"linear\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "paused",
+   "type": "boolean",
+   "default": "false",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pauseOnHover",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "showPath",
+   "type": "boolean",
+   "default": "false",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pathWidth",
+   "type": "number",
+   "default": "2",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pathDash",
+   "type": "number",
+   "default": "0",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
  "OrbitText": [
   {
    "name": "text",
@@ -17483,6 +18004,134 @@
    "type": "boolean",
    "default": "-",
    "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
+ "PeelSticker": [
+  {
+   "name": "imageSrc",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": true
+  },
+  {
+   "name": "alt",
+   "type": "string",
+   "default": "-",
+   "desc": "贴纸图的读屏文字.",
+   "required": true
+  },
+  {
+   "name": "width",
+   "type": "number",
+   "default": "200",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "rotate",
+   "type": "number",
+   "default": "0",
+   "desc": "贴纸整体旋转 (度).",
+   "required": false
+  },
+  {
+   "name": "peelDirection",
+   "type": "number",
+   "default": "0",
+   "desc": "揭起方向 (度), 0 从右边, 90 从下边; followPointer 时悬停中改由指针方向决定.",
+   "required": false
+  },
+  {
+   "name": "peelBackHoverPct",
+   "type": "number",
+   "default": "25",
+   "desc": "悬停与按下时揭起的百分比.",
+   "required": false
+  },
+  {
+   "name": "peelBackActivePct",
+   "type": "number",
+   "default": "40",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "curlRadius",
+   "type": "number",
+   "default": "12",
+   "desc": "折痕高光带宽 px.",
+   "required": false
+  },
+  {
+   "name": "lightingIntensity",
+   "type": "number",
+   "default": "0.5",
+   "desc": "背面高光与投影的强度 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "shadowIntensity",
+   "type": "number",
+   "default": "0.6",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "followPointer",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "draggable",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "swing",
+   "type": "number",
+   "default": "1",
+   "desc": "拖动时的摆动幅度倍数, 松手后的滑行摩擦 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "friction",
+   "type": "number",
+   "default": "0.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "onDragStart",
+   "type": "() => void",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "onDragEnd",
+   "type": "() => void",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
    "required": false
   }
  ],
@@ -23496,6 +24145,134 @@
    "type": "boolean",
    "default": "-",
    "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
+ "SparkEdge": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"primary\"",
+   "desc": "电弧色调 (语义 token).",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "1",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "chaos",
+   "type": "number",
+   "default": "0.5",
+   "desc": "抖动的杂乱度 0 到 1 (高频层占比).",
+   "required": false
+  },
+  {
+   "name": "spread",
+   "type": "number",
+   "default": "0.6",
+   "desc": "偏离边框的幅度倍数.",
+   "required": false
+  },
+  {
+   "name": "thickness",
+   "type": "number",
+   "default": "1.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "strands",
+   "type": "number",
+   "default": "3",
+   "desc": "并行的电弧股数.",
+   "required": false
+  },
+  {
+   "name": "glow",
+   "type": "number",
+   "default": "0.6",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "intensity",
+   "type": "number",
+   "default": "0.8",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "arcs",
+   "type": "number",
+   "default": "1",
+   "desc": "从浪涌处向外跳的支弧数, 上限 4.",
+   "required": false
+  },
+  {
+   "name": "flicker",
+   "type": "number",
+   "default": "0.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "borderRadius",
+   "type": "number",
+   "default": "24",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "offset",
+   "type": "number",
+   "default": "0",
+   "desc": "电弧离开边框的外移 px.",
+   "required": false
+  },
+  {
+   "name": "active",
+   "type": "boolean",
+   "default": "true",
+   "desc": "通电; false 时渐熄.",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "true",
+   "desc": "通电时沿周长扫开.",
+   "required": false
+  },
+  {
+   "name": "interactive",
+   "type": "boolean",
+   "default": "true",
+   "desc": "指针靠近时局部放电.",
+   "required": false
+  },
+  {
+   "name": "cursorRadius",
+   "type": "number",
+   "default": "90",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
    "required": false
   }
  ],

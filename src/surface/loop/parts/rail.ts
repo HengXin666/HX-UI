@@ -7,7 +7,7 @@
  */
 
 /** 把偏移折回 (-period, 0]; period <= 0 时原样返回. */
-export function wrapOffset(offset: number, period: number): number {
+export function railOffset(offset: number, period: number): number {
   if (!(period > 0)) return offset;
   const r = offset % period;
   return r > 0 ? r - period : r;
