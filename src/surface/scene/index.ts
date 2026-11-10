@@ -2,3 +2,5 @@
 export * from "./tokens";
 export { dotFade, dotWanderPath, makeDot, packBursts, stepDot, type DotBurst, type DotInput, type DotState, type DotTuning } from "./parts/dot";
 export { DotReveal, type DotMode, type DotRevealProps, type DotShape } from "./DotReveal";
+export { buildDither, diffuse, fitRect, isOrdered, quantize, veilGrid, veilTone, type VeilBuild, type VeilFit, type VeilKernel, type VeilOrdered, type VeilPalette, type VeilPattern } from "./parts/dither";
+export { BayerVeil, type BayerVeilProps } from "./BayerVeil";

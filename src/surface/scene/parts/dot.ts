@@ -39,6 +39,8 @@ export interface DotInput {
 export interface DotTuning {
   readonly wander: boolean;
   readonly clickBurst: boolean;
+  /** 爆开一次多少秒, 默认 DOT.burstSeconds (BayerVeil 传自己的 1.2). */
+  readonly burstSeconds?: number;
 }
 
 export function makeDot(): DotState {
@@ -77,15 +79,16 @@ export function stepDot(s: DotState, dt: number, now: number, input: DotInput, t
       s.bursts.push(tap);
     }
   }
-  s.bursts = s.bursts.filter((b) => now - b.at < DOT.burstSeconds).slice(-DOT.maxBursts);
-  for (const at of s.seen) if (now - at > DOT.burstSeconds * 2) s.seen.delete(at);
+  const life = tuning.burstSeconds ?? DOT.burstSeconds;
+  s.bursts = s.bursts.filter((b) => now - b.at < life).slice(-DOT.maxBursts);
+  for (const at of s.seen) if (now - at > life * 2) s.seen.delete(at);
   return s;
 }
 
 /** 爆开队列打包成 vec4[MAX_BURSTS]: xy 中心, z 进度 0..1, w 有效. */
-export function packBursts(s: DotState, now: number): Float32Array {
+export function packBursts(s: DotState, now: number, life: number = DOT.burstSeconds): Float32Array {
   const out = new Float32Array(DOT.maxBursts * 4);
-  s.bursts.forEach((b, i) => out.set([b.x, b.y, Math.min(1, Math.max(0, (now - b.at) / DOT.burstSeconds)), 1], i * 4));
+  s.bursts.forEach((b, i) => out.set([b.x, b.y, Math.min(1, Math.max(0, (now - b.at) / life)), 1], i * 4));
   return out;
 }
 

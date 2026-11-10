@@ -45,3 +45,38 @@ export const DOT = {
   accentTurn: 30,
   accentWeight: 0.6,
 } as const;
+
+/* ── BayerVeil (规格 DitherVeil) ── */
+export const VEIL = {
+  /** ORDERED: 片元里按格算阈值的三种; 其余是误差扩散, 在主线程按格算一次 (KERNELS). */
+  ordered: { bayer: 0, noise: 1, lines: 2 },
+  /** 误差扩散核: [dx, dy, 权重], 权重已除过分母. floyd / atkinson (只推 6/8, 故意丢掉 1/4 误差, 高光更干净) / jarvis / sierra (sierra lite). */
+  kernels: {
+    floyd: [[1, 0, 7 / 16], [-1, 1, 3 / 16], [0, 1, 5 / 16], [1, 1, 1 / 16]],
+    atkinson: [[1, 0, 1 / 8], [2, 0, 1 / 8], [-1, 1, 1 / 8], [0, 1, 1 / 8], [1, 1, 1 / 8], [0, 2, 1 / 8]],
+    jarvis: [
+      [1, 0, 7 / 48], [2, 0, 5 / 48], [-2, 1, 3 / 48], [-1, 1, 5 / 48], [0, 1, 7 / 48], [1, 1, 5 / 48], [2, 1, 3 / 48],
+      [-2, 2, 1 / 48], [-1, 2, 3 / 48], [0, 2, 5 / 48], [1, 2, 3 / 48], [2, 2, 1 / 48],
+    ],
+    sierra: [[1, 0, 2 / 4], [-1, 1, 1 / 4], [0, 1, 1 / 4]],
+  },
+  /** MASK_SCALE, MAX_BURSTS, BURST_SECONDS, INTRO_MS. */
+  maskScale: 0.5,
+  maxBursts: 4,
+  burstSeconds: 1.2,
+  introSeconds: 1.1,
+  /** lines 图样的周期 (格). */
+  linePeriod: 6,
+  /** props 默认值. */
+  pixelSize: 2,
+  levels: 2,
+  contrast: 1.15,
+  brightness: 0,
+  revealRadius: 200,
+  softness: 0.6,
+  linger: 1,
+  rim: 0,
+  /** 本库定: 主线程误差扩散的格数上限 (超了就按比例放大格子), 揭开边缘描边的带宽. */
+  maxCells: 480_000,
+  rimBand: 0.18,
+} as const;
