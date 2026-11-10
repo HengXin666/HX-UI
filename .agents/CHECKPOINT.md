@@ -190,7 +190,7 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
 - 正在做: 无 (本次只改了 DotReveal keyOut 注释与本文件).
 - 下一步 (按序): 1) 上面 "未落项" 三条, 每件单独提交; 2) "待用户裁定" 四条先问用户; 3) 其余 "后续收尾".
 - 接手第一步: 装 hxfs (见已知坑), `git log --oneline -3` 确认 HEAD 与本文件一致, 再读本节与 "后续收尾".
-- 总账 (0.17.0, 读 scripts/gates/baselines/api-surface.txt): 根入口 1608 符号; 子路径 surface 769, kits 290, controls 214, motion 159, backgrounds 136, hxbrowser 85, viz 56, hxbrowser/protocol 37, studio 34, page 23, blocks 1; 合计 3412. ENGINE-GAP: 标签 35 个文件 (`grep -rln 'ENGINE-GAP:' src`); 另 17 个文件以别的写法提到 ENGINE-GAP (含 "不标" 说明).
+- 总账 (0.17.0, 读 scripts/gates/baselines/api-surface.txt): 根入口 1608 符号; 子路径 surface 769, kits 290, controls 214, motion 159, backgrounds 136, hxbrowser 85, viz 56, hxbrowser/protocol 37, studio 34, page 23, blocks 1; 合计 3412. ENGINE-GAP: 标签 34 个文件 / 35 处 (`grep -rln 'ENGINE-GAP:' src`; surface 10, kits 13, controls 11); 另 18 个文件以别的写法提到 ENGINE-GAP (含 "不标" 说明).
 
 ## 已知坑
 
