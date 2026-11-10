@@ -92,3 +92,36 @@ export const MERGE = {
   burstReach: 8,
   ringStep: 0.7,
 } as const;
+
+/* ── ChromeMark (规格 MetallicPaint) ── */
+export const CHROME = {
+  /** WORKING_SIZE: 形状遮罩栅格化的长边像素. */
+  workingSize: 512,
+  /** 时钟 0.3 x (time + 2.8). */
+  timeRate: 0.3,
+  timeOffset: 2.8,
+  /** 条纹: 细条 0.12 / cycleWidth x (1 - 0.4 bump), 0.07 / cycleWidth x (1 + 0.4 bump); 边缘弯折 2 x noise x diag x s(1 - s), 1.7 x edge x smoothstep(0.5, 1, edgeBend). */
+  thin1: 0.12,
+  thin2: 0.07,
+  bumpSkew: 0.4,
+  bendNoise: 2,
+  bendEdge: 1.7,
+  /** props 默认值. */
+  fontWeight: 800,
+  density: 2,
+  softness: 0.1,
+  dispersion: 0.3,
+  distortion: 0.07,
+  edgeBend: 0.6,
+  angle: 70,
+  scale: 0.6,
+  mouseTilt: 0.5,
+  /** 本库定: 隆起场是在形状内解泊松方程 (Jacobi), 通道比例 0.15, 每帧 24 次, 静态帧一次 240 次;
+   * 倾斜弹簧 tau 0.25 秒, 最大 0.6 弧度; 入场 1.2 秒由下往上扫亮. */
+  bumpScale: 0.15,
+  bumpSteps: 24,
+  bumpStillSteps: 240,
+  tiltTau: 0.25,
+  tiltMax: 0.6,
+  introS: 1.2,
+} as const;

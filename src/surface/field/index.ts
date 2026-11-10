@@ -5,3 +5,6 @@ export { InkSplash, type InkSplashProps } from "./InkSplash";
 export { mergeEase, makeMerge, mergeHome, mergeLook, packMerge, pairForce, settleMerge, stepMerge, type MergeBall, type MergeMotion, type MergeState, type MergeTuning } from "./parts/merge";
 export { MERGE_MAX_RINGS, MERGE_VARIANTS, type MergeVariant } from "./parts/merge-shader";
 export { MergeBlobs, type MergeBlobsProps } from "./MergeBlobs";
+export { MASK_UV_GLSL, maskSize, rasterImage, rasterPath, rasterText, type MaskCanvas } from "./parts/mask";
+export { chromeSource, makeChrome, stepChrome, type ChromeState } from "./parts/chrome";
+export { ChromeMark, type ChromeMarkProps } from "./ChromeMark";
