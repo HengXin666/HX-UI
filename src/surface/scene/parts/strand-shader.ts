@@ -3,6 +3,7 @@
  * FiberStrands 的上屏片元 (一遍): count 根横向发光丝带, 每根是 erf 求的带状填充 (高 H, 软边 sg) 加两侧边光, 中段粗两端收细 (taper),
  * 正弦摆动 (amplitude, waviness), 随时间与能量起伏; 亮度叠加后按规格 1 - exp(-2.6 lum) 求覆盖, 高亮处趋向白芯.
  * glass 时中央一颗玻璃球: 球内按球面高度反向放大取样 (refraction), 三通道各偏一点 (dispersion), 边缘菲涅尔 (rim) 与两处高光.
+ * 颜色按 ROLES 分 7 个角色 (见 tokens STRAND.roles): 填充, 边光, 外晕按根错位取调色板, 白芯, 玻璃边, 玻璃高光, 投影各取一色.
  * 坐标: 以短边为单位, 原点在中心, y 朝上.
  *
  * .agents/notes/implemented/feature/2026-11-10-surface-scene.md
@@ -15,6 +16,10 @@ const E = STRAND.erf;
 export const STRAND_FRAGMENT = fragmentSource(`
 uniform vec3 u_colors[${STRAND.maxColors}];
 uniform float u_color_count;
+uniform vec3 u_role_core;
+uniform vec3 u_role_rim;
+uniform vec3 u_role_key;
+uniform vec3 u_role_shadow;
 uniform float u_count;
 uniform float u_amplitude;
 uniform float u_waviness;
@@ -49,6 +54,14 @@ vec3 hueRotate(vec3 c, float a) {
   float ca = cos(a);
   return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
 }
+vec3 tint(vec3 c) {
+  c = hueRotate(c, u_hue);
+  return mix(vec3(hx_luma(c)), c, u_saturation);
+}
+// 第 i 根的第 r 个角色色: 调色板按根错位取.
+vec3 roleColor(float fi, float r) {
+  return tint(u_colors[int(mod(fi + r, max(u_color_count, 1.0)))]);
+}
 vec3 strands(vec2 p, out float total) {
   vec3 acc = vec3(0.0);
   total = 0.0;
@@ -74,12 +87,10 @@ vec3 strands(vec2 p, out float total) {
     float e2 = (p.y - (yc - th)) / ew;
     float eg = exp(-e1 * e1) + exp(-e2 * e2);
     float halo = exp(-pow((p.y - yc) / (th * 5.0 * max(u_glow, 0.05)), 2.0)) * 0.25 * u_glow;
-    float v = 0.6 * fill * (1.0 - 0.55 * u_light) + (1.6 * ew * 0.886 * eg / max(th, 1e-3)) * 0.3 * (1.0 + 1.3 * u_light) + halo;
-    int ci = int(mod(fi, max(u_color_count, 1.0)));
-    vec3 c = hueRotate(u_colors[ci], u_hue);
-    c = mix(vec3(hx_luma(c)), c, u_saturation);
-    acc += c * v;
-    total += v;
+    float vf = 0.6 * fill * (1.0 - 0.55 * u_light);
+    float ve = (1.6 * ew * 0.886 * eg / max(th, 1e-3)) * 0.3 * (1.0 + 1.3 * u_light);
+    acc += roleColor(fi, 0.0) * vf + roleColor(fi, 1.0) * ve + roleColor(fi, 2.0) * halo;
+    total += vf + ve + halo;
   }
   float reveal = smoothstep(0.0, 0.3, u_intro) * smoothstep(u_intro * 1.6, u_intro * 1.6 - 0.5, abs(p.x));
   total *= ${STRAND.gain} * u_intensity * reveal;
@@ -89,7 +100,7 @@ vec3 shade(vec3 acc, float lum) {
   vec3 base = lum > 1e-4 ? acc / lum : vec3(0.0);
   float white = 1.0 - u_light;
   float coreAmt = white * smoothstep(0.05, 2.2, lum) * ${STRAND.coreGain};
-  vec3 cream = mix(mix(base, u_core, 0.3), u_core, smoothstep(1.2, 3.5, lum));
+  vec3 cream = mix(mix(tint(u_role_core), u_core, 0.3), u_core, smoothstep(1.2, 3.5, lum));
   return mix(base, cream, coreAmt);
 }
 void main() {
@@ -119,14 +130,16 @@ void main() {
       float key = 0.4 * pow(max(0.0, d.x * 0.94 - d.y * 0.34), 6.0) + 0.2 * pow(max(0.0, -d.x * 0.5 + d.y * 0.87), 6.0);
       float px = 1.0 / (min(res.x, res.y) * R);
       float edgeA = smoothstep(1.0, 1.0 - 1.5 * px / max(u_scale, 1e-3), rho);
-      vec3 glassC = inner * icov + u_core * (fres * 0.45 + key) * appear;
+      vec3 rimC = mix(tint(u_role_rim), u_core, 0.5);
+      vec3 keyC = mix(tint(u_role_key), u_core, 0.7);
+      vec3 glassC = inner * icov + (rimC * fres * 0.45 + keyC * key) * appear;
       float glassA = max(icov, (fres * 0.45 + key + 0.04) * appear);
       col = mix(col * cov, glassC, edgeA);
       cov = mix(cov, clamp(glassA, 0.0, 1.0), edgeA);
       col = cov > 1e-4 ? col / max(cov, 1e-4) : col;
     } else {
       float sh = u_light * 0.07 * exp(-pow((rho - 0.985) / 0.07, 2.0)) * smoothstep(-0.6, 0.4, -d.y) * appear * u_opacity;
-      col = mix(col, vec3(0.0), sh / max(cov + sh, 1e-4));
+      col = mix(col, tint(u_role_shadow) * 0.25, sh / max(cov + sh, 1e-4));
       cov = cov + sh * (1.0 - cov);
     }
   }

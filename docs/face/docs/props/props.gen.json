@@ -8184,7 +8184,14 @@
    "name": "level",
    "type": "number",
    "default": "-",
-   "desc": "外部电平 0..1 (如音量), 叠加到能量上.",
+   "desc": "外部电平 0..1 (如音量), 叠加到能量上. listening 拿到麦克风时被麦克风电平取代.",
+   "required": false
+  },
+  {
+   "name": "listening",
+   "type": "boolean",
+   "default": "-",
+   "desc": "听麦克风: 申请麦克风权限, 以实时音量作电平. 默认 false (不申请); 被拒或不支持时退回 level. 宿主 data-listening 标出状态.",
    "required": false
   },
   {

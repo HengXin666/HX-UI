@@ -8,6 +8,7 @@
 
 ### Added
 
+- `FiberStrands`: 新 prop `listening` (默认 false, 不申请麦克风; 打开后以麦克风实时音量作电平, 被拒或不支持时退回 `level`, 宿主 `data-listening` 标出 pending / live / denied / unavailable); 颜色按规格 ROLES 分 7 个角色 (填充, 边光, 外晕按根错位取色, 白芯, 玻璃边, 玻璃高光, 投影), 默认外观随之变化.
 - `DotReveal`: 补上规格的 `fit` (cover / contain / fill, 默认 cover; contain 的留边是纸色) 与抠底 `keyOut` (规格 uMatte / uKey: 与图片四角底色相近处不出网点, 揭开也露纸色; 读不出像素时自动关闭).
 
 ### Changed

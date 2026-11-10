@@ -44,6 +44,8 @@ describe("FiberStrands 模拟", () => {
     expect(STRAND_FRAGMENT).toContain("1.0 - exp(-lum * 2.6)");
     expect(STRAND_FRAGMENT).toContain("smoothstep(0.05, 2.2, lum) * 0.92");
     expect(STRAND_FRAGMENT).toContain("smoothstep(0.8, 1.0, rho)");
+    for (const role of ["u_role_core", "u_role_rim", "u_role_key", "u_role_shadow"]) expect(STRAND_FRAGMENT).toContain(`uniform vec3 ${role};`);
+    expect(STRAND_FRAGMENT).toContain("roleColor(fi, 0.0) * vf + roleColor(fi, 1.0) * ve + roleColor(fi, 2.0) * halo");
   });
 });
 

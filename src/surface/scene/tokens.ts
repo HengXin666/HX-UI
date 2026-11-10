@@ -209,4 +209,8 @@ export const STRAND = {
   pulseGain: 0.8,
   lean: 0.15,
   lane: 0.07,
+  /** ROLES: 规格把 colors 分到 7 个角色. 本库的角色: 0 填充, 1 边光, 2 外晕 (这三项按根错位取色), 3 白芯 (规格 uColors[3]), 4 玻璃边, 5 玻璃高光, 6 浅色底的投影. */
+  roles: 7,
+  /** 本库定: 麦克风电平 = 均方根 x 4 钳 0..1, 起 0.06 秒落 0.3 秒平滑; AnalyserNode 的 fftSize. */
+  mic: { gain: 4, attack: 0.06, release: 0.3, fftSize: 1024 },
 } as const;
