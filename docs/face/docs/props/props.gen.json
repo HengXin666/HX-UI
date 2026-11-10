@@ -6067,6 +6067,20 @@
    "required": false
   },
   {
+   "name": "fit",
+   "type": "\"fill\" | \"contain\" | \"cover\"",
+   "default": "-",
+   "desc": "铺法: cover 裁边铺满, contain 留边全见 (留边是纸色), fill 拉伸. 默认 cover.",
+   "required": false
+  },
+  {
+   "name": "keyOut",
+   "type": "boolean",
+   "default": "-",
+   "desc": "抠底: 与图片四角底色相近处不出网点, 揭开时也露纸色. 适合纯色底的产品图, 默认 false.",
+   "required": false
+  },
+  {
    "name": "mode",
    "type": "\"color\" | \"mono\" | \"duotone\"",
    "default": "-",

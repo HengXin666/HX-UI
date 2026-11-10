@@ -67,15 +67,26 @@ uniform float u_roughness;
 uniform float u_misreg;
 uniform float u_reverse;
 uniform float u_intro;
-vec2 coverUv(vec2 uv) {
+uniform float u_fit;
+uniform vec3 u_matte;
+uniform float u_key;
+// fit: cover 裁边铺满, contain 留边全见, fill 拉伸.
+vec2 fitUv(vec2 uv) {
   float sa = u_res.x / max(u_res.y, 1.0);
   float ta = u_tex_size.x / max(u_tex_size.y, 1.0);
-  vec2 k = sa > ta ? vec2(1.0, ta / sa) : vec2(sa / ta, 1.0);
+  vec2 k = vec2(1.0);
+  if (u_fit < 0.5) k = sa > ta ? vec2(1.0, ta / sa) : vec2(sa / ta, 1.0);
+  else if (u_fit < 1.5) k = sa > ta ? vec2(sa / ta, 1.0) : vec2(1.0, ta / sa);
   return (uv - 0.5) * k + 0.5;
 }
-vec3 photo(vec2 p, vec2 css) {
-  vec2 uv = clamp(vec2(p.x / css.x, 1.0 - p.y / css.y), 0.0, 1.0);
-  return texture(u_image, coverUv(uv)).rgb;
+// 取样, 并带回这一点留不留: 图外 (contain 的留边) 为 0, 与图片底色相近的按 key 抠掉.
+vec3 photoKeep(vec2 p, vec2 css, out float keep) {
+  vec2 uv = fitUv(clamp(vec2(p.x / css.x, 1.0 - p.y / css.y), 0.0, 1.0));
+  vec2 inside = step(vec2(0.0), uv) * step(uv, vec2(1.0));
+  vec3 c = texture(u_image, clamp(uv, 0.0, 1.0)).rgb;
+  keep = inside.x * inside.y;
+  keep *= mix(1.0, smoothstep(${DOT.keyLo}, ${DOT.keyHi}, distance(c, u_matte)), u_key);
+  return c;
 }
 float tone(vec3 c) {
   float t = (hx_luma(c) - 0.5) * u_contrast + 0.5 + u_brightness;
@@ -104,8 +115,9 @@ float screen(vec2 p, vec2 css, float turn, vec2 shift, float weight, out vec3 in
     for (int i = -1; i <= 1; i++) {
       vec2 cell = base + vec2(float(i), float(j));
       vec2 mid = (cell + 0.5) * u_cell;
-      vec3 c = photo(back * mid + center + shift, css);
-      float dark = (1.0 - tone(c)) * weight;
+      float keep;
+      vec3 c = photoKeep(back * mid + center + shift, css, keep);
+      float dark = (1.0 - tone(c)) * weight * keep;
       float r = sqrt(dark) * u_cell * 0.72 * u_dot_scale;
       r *= 1.0 + (hx_hash1(dot(cell, vec2(12.9898, 78.233))) - 0.5) * u_roughness;
       vec2 field = (back * mid) / max(min(css.x, css.y), 1.0);
@@ -140,6 +152,8 @@ void main() {
   }
   float m = texture(u_mask, vec2(gl_FragCoord.x, gl_FragCoord.y) / u_res).r;
   m = mix(m, 1.0 - m, u_reverse);
-  o_color = vec4(mix(col, photo(p, css), clamp(m, 0.0, 1.0)), 1.0);
+  float keep;
+  vec3 shown = photoKeep(p, css, keep);
+  o_color = vec4(mix(col, mix(u_paper, shown, keep), clamp(m, 0.0, 1.0)), 1.0);
 }
 `, GLSL_HASH, GLSL_UTIL);

@@ -162,7 +162,7 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
 
 - **按序补做 (用户 2026-11-10 23:25 定: 未落项不是只记下, 按这个顺序一件件做, 每件单独提交)**:
   1. ~~老控件 ring-1 统一换 FOCUS_RING~~ 已做 (src/controls 26 个文件, 27 处; ring-inset 的 3 处用 FOCUS_RING 加 focus-visible:-outline-offset-1 内收; primitives 的 shadcn 对齐件不在范围, 仍是 ring-1).
-  2. DotReveal: 抠像 (uMatte / uKey) 与 fit.
+  2. ~~DotReveal: 抠像 (uMatte / uKey) 与 fit~~ 已做 (fit + keyOut, 底色取四角).
   3. FiberStrands: listening (麦克风电平, getUserMedia + AnalyserNode, 默认关, 拒权时退回 level) 与 ROLES 7 分角色着色.
   4. SpringMesh: 多点抓取 (多指针各一个抓取点).
   5. SoftShape: 失焦改真高斯 (内核 passes 两遍可分离模糊, 对应规格 uFieldTexture 两遍).

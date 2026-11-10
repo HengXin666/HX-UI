@@ -44,6 +44,12 @@ export const DOT = {
   /** 本库定: duotone 的强调色网相对主网转 30°, 吃 0.6 倍暗度. */
   accentTurn: 30,
   accentWeight: 0.6,
+  /** FITS 的取值顺序 (规格 fit 默认 cover). 抠像 keep *= mix(1, smoothstep(0.05, 0.2, |c - matte|), key) 的两个阈值. */
+  fits: { cover: 0, contain: 1, fill: 2 },
+  keyLo: 0.05,
+  keyHi: 0.2,
+  /** 本库定: 底色取自图片四角, 先缩到 16 x 16 再取四角像素的平均. */
+  matteGrid: 16,
 } as const;
 
 /* ── BayerVeil (规格 DitherVeil) ── */

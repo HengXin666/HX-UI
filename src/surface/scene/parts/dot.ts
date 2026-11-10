@@ -96,3 +96,25 @@ export function packBursts(s: DotState, now: number, life: number = DOT.burstSec
 export function dotFade(dt: number, linger: number): number {
   return Math.max(linger > 0 ? dt / linger : 1, DOT.minFade);
 }
+
+/** 图片底色 (0..1 的 RGB): 缩到 matteGrid 见方后取四角像素平均. 画布不可用或跨域读不出时返回 null, 抠像随之关闭. */
+export function dotMatte(img: CanvasImageSource): [number, number, number] | null {
+  const n = DOT.matteGrid;
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = n;
+    canvas.height = n;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    if (!ctx) return null;
+    ctx.drawImage(img, 0, 0, n, n);
+    const px = ctx.getImageData(0, 0, n, n).data;
+    const sum = [0, 0, 0];
+    for (const [x, y] of [[0, 0], [n - 1, 0], [0, n - 1], [n - 1, n - 1]] as const) {
+      const i = (y * n + x) * 4;
+      for (let c = 0; c < 3; c += 1) sum[c] = (sum[c] ?? 0) + (px[i + c] ?? 0);
+    }
+    return [(sum[0] ?? 0) / 1020, (sum[1] ?? 0) / 1020, (sum[2] ?? 0) / 1020];
+  } catch {
+    return null;
+  }
+}

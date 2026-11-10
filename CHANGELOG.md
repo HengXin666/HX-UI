@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### Added
+
+- `DotReveal`: 补上规格的 `fit` (cover / contain / fill, 默认 cover; contain 的留边是纸色) 与抠底 `keyOut` (规格 uMatte / uKey: 与图片四角底色相近处不出网点, 揭开也露纸色; 读不出像素时自动关闭).
+
 ### Changed
 
 - controls 各族老控件的焦点环从 `focus-visible:ring-1 ring-ring` 统一换成 craft 的 `FOCUS_RING` (outline 1px, 偏移 2px, ring 色, 不随 transform 缩放); 原来是 ring-inset 的三处 (DrawerRow, DrawerActions, RipStub) 用 outline 内收 1px. 只改类名, 无 API 变化.

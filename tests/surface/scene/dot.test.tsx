@@ -4,6 +4,7 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DOT, DotReveal, dotFade, dotWanderPath, makeDot, packBursts, stepDot } from "@src/surface/scene";
+import { dotMatte } from "@src/surface/scene/parts/dot";
 import { DOT_FRAGMENT, DOT_MASK_PASS } from "@src/surface/scene/parts/dot-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../backdrop/helpers";
 import { recordCanvas2d } from "../helpers";
@@ -67,8 +68,32 @@ describe("DotReveal 状态", () => {
   it("着色器接线", () => {
     expect(DOT_MASK_PASS).toContain("uniform vec4 u_bursts[4];");
     expect(DOT_MASK_PASS).toContain("uniform sampler2D u_mask;");
-    expect(DOT_FRAGMENT).toContain("coverUv");
+    expect(DOT_FRAGMENT).toContain("fitUv");
+    expect(DOT_FRAGMENT).toContain("keep *= mix(1.0, smoothstep(0.05, 0.2, distance(c, u_matte)), u_key);");
+    expect(DOT_FRAGMENT).toContain("mix(u_paper, shown, keep)");
+    expect(DOT.fits).toEqual({ cover: 0, contain: 1, fill: 2 });
     expect(DOT_FRAGMENT).toContain("uniform sampler2D u_mask;");
+  });
+});
+
+describe("DotReveal 抠底", () => {
+  it("底色取四角平均; 画布不可用或读不出时为 null", () => {
+    const n = DOT.matteGrid;
+    const data = new Uint8ClampedArray(n * n * 4);
+    for (const i of [0, n - 1, n * (n - 1), n * n - 1]) data.set([255, 51, 0, 255], i * 4);
+    const ctx = { drawImage: vi.fn(), getImageData: () => ({ data }) };
+    const spy = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(ctx as unknown as CanvasRenderingContext2D);
+    const m = dotMatte(new Image());
+    expect(m?.[0]).toBeCloseTo(1, 6);
+    expect(m?.[1]).toBeCloseTo(0.2, 6);
+    expect(m?.[2]).toBe(0);
+    spy.mockReturnValue(null);
+    expect(dotMatte(new Image())).toBeNull();
+    spy.mockImplementation(() => {
+      throw new Error("tainted");
+    });
+    expect(dotMatte(new Image())).toBeNull();
+    spy.mockRestore();
   });
 });
 
@@ -95,5 +120,7 @@ describe("DotReveal 渲染", () => {
     const h3 = c3.firstElementChild as HTMLElement;
     expect(h3.dataset.backdropStatus).toBe("fallback");
     expect(h3.querySelector<HTMLElement>("[data-backdrop-fallback]")?.style.background).toContain("a.jpg");
+    const { container: c4 } = render(<DotReveal src="/b.jpg" fit="contain" keyOut />);
+    expect((c4.firstElementChild as HTMLElement).querySelector<HTMLElement>("[data-backdrop-fallback]")?.style.background).toContain("contain");
   });
 });
