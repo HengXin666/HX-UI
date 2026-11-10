@@ -8,3 +8,5 @@ export { makePrism, packPrism, prismEnergy, prismLook, prismWander, stepPrism, t
 export { PrismOrb, type PrismOrbProps } from "./PrismOrb";
 export { cubeCenter, cubeGrid, cubeIntro, makeCubes, packCubes, stepCubes, type CubeInput, type CubeRipple, type CubeState, type CubeTuning } from "./parts/cube";
 export { CubeField, type CubeEdgeStyle, type CubeFieldProps } from "./CubeField";
+export { makeMesh, meshSpring, springStep, stepMesh, type MeshState, type MeshTuning } from "./parts/mesh";
+export { SpringMesh, type MeshMaterial, type SpringMeshProps } from "./SpringMesh";

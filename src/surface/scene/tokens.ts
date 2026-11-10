@@ -149,3 +149,34 @@ export const CUBE = {
   /** 本库定: 自动漫游的李萨如频率, 漫游时的在场权重. */
   wander: { fx: 0.13, fy: 0.19, weight: 0.6 },
 } as const;
+
+/* ── SpringMesh (规格 ElasticMesh) ── */
+export const MESH = {
+  /** MATERIALS. */
+  materials: { balloon: 0, chrome: 1, jelly: 2, clay: 3 },
+  /** 入场弹簧 omega 15, zeta 0.38; 硬度 firm = 0.4 + stiffness x 1.2; 凹陷钳 [-0.6, 0.85]; 不透明 smoothstep(0, 0.18, presence). */
+  omega: 15,
+  zeta: 0.38,
+  firmBase: 0.4,
+  firmGain: 1.2,
+  dentMin: -0.6,
+  dentMax: 0.85,
+  /** props 默认值. */
+  fontWeight: 900,
+  inflate: 1,
+  stiffness: 0.5,
+  wobble: 0.6,
+  grabRadius: 70,
+  stretch: 0.5,
+  press: 0.5,
+  shadow: 0.5,
+  /** 本库定: 距离场分辨率与留白, 形状占短边比例, 拉伸上限 (短边单位), 回弹阻尼随 wobble (0.7 - 0.55 wobble, wobble 0.6 时约 0.38), 入场按 x 的逐字延迟, 各材质的环境模糊. */
+  field: 256,
+  pad: 0.2,
+  fill: 0.82,
+  maxStretch: 0.35,
+  dampHi: 0.7,
+  dampSpan: 0.55,
+  introStagger: 0.35,
+  blur: [0.06, 0, 0.1, 0.3],
+} as const;
