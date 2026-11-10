@@ -2,3 +2,6 @@
 export * from "./tokens";
 export { createInkDrive, hueRgb, inkPetals, inkSpread, packInk, stepInk, type InkDrive, type InkSettings, type InkSplat } from "./parts/ink";
 export { InkSplash, type InkSplashProps } from "./InkSplash";
+export { mergeEase, makeMerge, mergeHome, mergeLook, packMerge, pairForce, settleMerge, stepMerge, type MergeBall, type MergeMotion, type MergeState, type MergeTuning } from "./parts/merge";
+export { MERGE_MAX_RINGS, MERGE_VARIANTS, type MergeVariant } from "./parts/merge-shader";
+export { MergeBlobs, type MergeBlobsProps } from "./MergeBlobs";

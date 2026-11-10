@@ -8,8 +8,9 @@ Decision-ID: surface-field
 
 - `src/surface/field/tokens.ts`
 - `src/surface/field/parts/ink.ts`, `src/surface/field/parts/ink-shader.ts`, `src/surface/field/InkSplash.tsx`
+- `src/surface/field/parts/merge.ts`, `src/surface/field/parts/merge-shader.ts`, `src/surface/field/MergeBlobs.tsx`
 - `src/surface/field/index.ts`
-- `tests/surface/field/ink.test.tsx`
+- `tests/surface/field/{ink,merge}.test.tsx`
 
 ## Problem
 
@@ -22,11 +23,14 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 | 条目 | 落点 | 参数 |
 | --- | --- | --- |
 | SplashCursor | `InkSplash` | BLOOM_THRESHOLD 0.3, BLOOM_KNEE 0.7, BLOOM_ITERATIONS 4 (金字塔 4 级), 推力 6000 x force / sqrt(spread), 补色 0.15 x intensity x min(dt x 60, 1) / sqrt(spread), 点击 1100 x force, 帧长上限 1/60, 花瓣 0.78 + 0.22 sin(5a + seed) sin(3a - 1.7 seed), 平流 uv - dt x v x texel 再除 (1 + dissipation x dt), 涡度力 0.5 (abs(T) - abs(B), abs(R) - abs(L)) 归一乘 curl x C 且 y 取反, 抖动 (hash - 0.5) / 255 x smoothstep(0, 0.03, peak); props `colors` (token 名), `rainbow` true, `colorSpeed` 1, `intensity` 1, `size` 1, `force` 1, `swirl` 3, `trail` 1, `momentum` 1, `shading` 1, `glow` 0, `quality` low / medium / high, `clickSplash`, `intro`, `lightMode` (规格 theme); 本库定: spread = size, 溅点半径 0.0025 x size (以画面高为 1 的平方), 涡度 swirl x 10, 染料耗散 1 / trail, 速度耗散 0.2 / momentum, 压力热启动 0.8, 画质档 sim 0.12 / 0.18 / 0.25 dye 0.3 / 0.45 / 0.6 压力 8 / 14 / 20 次, 入场 1.2s 画一道 S 形, 彩虹色相 0.25 x colorSpeed 圈每秒 |
+| MetaBalls | `MergeBlobs` | MAX_BALLS 50, VISIBLE 0.877 (= 1 / sqrt(1.3)), 阈值 1.3^gamma, 影响范围 2^(0.5 / gamma), 球间贴近 -60 x (core - d) 之外 pull x min(rp, rq) x smoothstep(0, 0.6, t) x (1 - smoothstep(0.82, 1, t)) 除以质量, 光标球 -140 x (core - d) 之外 pull x 0.6 x rp 同窗 除以 rp^2 + 0.05, 入场延迟 0.1 + 0..0.55 再 1.15s 缓入缓出, 光标速度平滑 1 - exp(-dt / 0.05), 跟手 1 - (1 - hoverSmoothness)^(dt x 60), 过密等值环淡出 smoothstep(6 line, 12 line, spacing / rate); props `color` foreground, `cursorBallColor` primary, `ballSpeed` 0.3 (规格 speed, 与公共时钟倍率重名), `enableMouseInteraction`, `hoverSmoothness` 0.1, `animationSize` 30, `ballCount` 15, `clumpFactor` 1, `cursorBallSize` 3, `variant` solid / outline / contour, `motion` orbit / drift / still, `gooeyness` 0.5, `stickiness` 0.5, `stretch` 0.5, `wobble` 0.5, `lineWidth` 1.5, `rings` 4, `clickBurst`, `intro`; 本库定: 世界单位为画布短边 / animationSize, 球半径 1..2.2, gamma = mix(3, 0.6, gooeyness), pull = 30 x stickiness, core 0.6 (rp + rq), 作用范围 2.2 (rp + rq), 回轨弹簧 6 阻尼 3, 轨道幅度 0.3 x animationSize x clumpFactor, 点击冲量 40 单位每秒 8 单位内线性衰减, 拉伸 |v| / 12 x stretch 上限 1.5, 晃动 1 + 0.1 x wobble x sin(3t + 相位), 等值环逐级乘 0.7 |
 
 做法:
 
 - InkSplash: 通道顺序 速度 (用上一帧压力投影, 自平流, 涡度约束, 溅点) -> 散度 -> 压力 Jacobi -> 染料 (用投影后的速度平流, 溅点补色) -> 泛光场景 (按浓度梯度打光) -> 金字塔各级 -> 上屏. 投影滞后一帧, 与 LiquidEther 相同. 速度与压力按范围编码 (1024 / 512), 8 位缓冲也存得下负值. glow 为 0 时金字塔 0 级, 只多一遍场景通道. 减弱动效时内核只画一帧, 场景改画静态墨迹 (第一色).
+- MergeBlobs: 模拟在 JS 里 (球数上限 49 加 1 个光标球, O(n^2) 两两力), 每帧把球打包成 u_balls / u_shapes 两个 vec4[50] 数组, 片元里逐像素求和. 拉伸是把偏移投影到速度方向上再缩短. 描边与等值环用 fwidth(field) 把场值差换成像素距离.
 
 ## Consequences
 
 - InkSplash 没有落的: contained (本库永远在宿主内, 不铺满视口), zIndex (宿主是普通块, 由使用方定层级), 闲置停帧 (内核按可见性停帧, 不按指针闲置). ENGINE-GAP (同 LiquidEther): 内核在不支持半浮点渲染目标时退到 RGBA8, 速度与压力按范围编码后精度不足, 流体会发涩, 染料也会在 1 处截断; 要内核加高精度打包才能补.
+- MergeBlobs 没有落的: enableTransparency (本库永远透明叠在宿主上), dpr (走内核公共 dpr). motion 规格只给了默认 orbit, drift / still 是本库补的两档.
