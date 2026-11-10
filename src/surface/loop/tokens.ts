@@ -33,3 +33,37 @@ export const RAIL = {
   /** 两侧渐隐占宽度的比例 (本库定). */
   fadeShare: 0.08,
 } as const;
+
+/* ── OrbitRing (规格 OrbitImages) ── */
+export const ORBIT = {
+  /** 路径采样点数, 按弧长取位 (SAMPLES). */
+  samples: 720,
+  /** 前排放大, 后排缩小, 后排压暗的比例 (FRONT_GROW, BACK_SHRINK, BACK_DIM). */
+  frontGrow: 0.3,
+  backShrink: 0.45,
+  backDim: 0.55,
+  /** 入场: 从同一点散开到各自位置的时长, 淡入时长 (INTRO_SPREAD, INTRO_FADE). */
+  introSpreadS: 1.3,
+  introFadeS: 0.45,
+  /** 拖动阈值 px (DRAG_THRESHOLD). */
+  dragThresholdPx: 5,
+  /** 速度跟随与甩出滑行的时间常数 (秒). */
+  speedTauS: 0.35,
+  glideTauS: 0.7,
+  /** 帧长上限 (秒), 进视口判定. */
+  maxDtS: 0.1,
+  viewThreshold: 0.05,
+  /** 键盘换位时长 (transform 0.45s). */
+  seekS: 0.45,
+  /** props 默认值. */
+  baseWidth: 1400,
+  radiusX: 700,
+  radiusY: 170,
+  radius: 300,
+  starPoints: 5,
+  starInnerRatio: 0.5,
+  rotation: -8,
+  duration: 40,
+  itemSize: 64,
+  pathWidth: 2,
+} as const;
