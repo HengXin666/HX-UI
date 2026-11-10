@@ -149,12 +149,13 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | D | ElasticMesh | SpringMesh | |
 | D | Strands | FiberStrands | |
 
-**A 段, B 段已推 (到 12b70f2). C 段 7 件已提 (field 族, 全走 WebGL2 着色器通道), FlockCursor 补标 761acdb, 段尾接入 (0.14.0) 待用户推. 下一段 D.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
+**A, B, C 段已推 (到 bc53feb, 0.14.0). 进行中: D 段 6 件, 段尾接入 0.15.0.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
 接入时查 export * 撞名 (tsc TS2308): 族内通用小工具 (clamp, mix, seededRandom, wrapOffset 之类) 不进族 index 或改名.
 注意: pointer 族已接在 ./surface 上, 段内往它的 index 加导出会改 api 快照 (门禁 4/13 会拦), 所以段内新件放已接入的族时先不进族 index.
 B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DOM 做近似, 真需要顶点 / 实例化的标 ENGINE-GAP.
 分段按技法粗分 (A DOM/SVG/Canvas2D, B 光标画布, C WebGL 片元, D reveal 与 3D), 读到规格后可微调, 改了就改本表.
 - 规矩: 只借规格的常数与 props 自写; 内核公共头不改; 需要顶点着色或实例化渲染的标 ENGINE-GAP 并写清缺什么; 颜色只走语义 token; 不引 three.
+- **D 段收口后, 单独一次补做** (用户 2026-11-10 22:48 定, 不是 ENGINE-GAP, 是没做完): HaloCursor 与 HazeCursor 的流体 / 烟雾场目前是 Canvas2D 近似; 改走内核 `useShaderBackdrop` + `ShaderSpec.passes` 乒乓通道 (参照 InkSplash 的速度 / 散度 / 压力 / 染料与 bloomPyramid), 补上规格的 bloom、grain、quality 等未落 props, 改 cursor note 的 "没有落的" 行与 CHANGELOG.
 - **Animations 全部完成后**: 已提交老控件的 ring-1 统一换 FOCUS_RING, 单独一个提交 (用户 02:01 裁定排在这段后面).
 
 ## 后续收尾 (本次收口未做)
