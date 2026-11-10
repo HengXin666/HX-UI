@@ -4,7 +4,7 @@
 import { act, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SOFT, SoftShape, edt1d, encodeDistance, makeSoft, signedDistance, softIdlePath, stepSoft } from "@src/surface/field";
-import { SOFT_FRAGMENT } from "@src/surface/field/parts/soft-shader";
+import { SOFT_BLUR_H, SOFT_BLUR_V, SOFT_FRAGMENT, SOFT_SHAPE_PASS } from "@src/surface/field/parts/soft-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2, useFakeClock } from "../backdrop/helpers";
 import { recordCanvas2d } from "../helpers";
 
@@ -52,10 +52,18 @@ describe("SoftShape 距离场", () => {
     expect(SOFT_FRAGMENT).toContain("sdPolygon");
     expect(SOFT_FRAGMENT).toContain("texelFetch(u_field");
   });
+  it("真高斯失焦: 形状遍 -> 横向 -> 纵向, 上屏按透镜插值", () => {
+    expect(SOFT_SHAPE_PASS).toContain("coverage(d - shift, 0.0), coverage(d, 0.0), coverage(d + shift, 0.0)");
+    expect(SOFT_BLUR_H).toContain("uniform sampler2D u_soft_shape;");
+    expect(SOFT_BLUR_V).toContain("uniform sampler2D u_soft_h;");
+    expect(SOFT_BLUR_H).toContain("exp(-0.5 * x * x / (sigma * sigma))");
+    expect(SOFT_FRAGMENT).toContain("texture(u_soft_v, v_uv)");
+    expect(SOFT_FRAGMENT).toContain("mix(vec3(coverage(d, 0.0)), blurred, t)");
+  });
 });
 
 describe("SoftShape 渲染", () => {
-  it("每帧一遍上屏; 减弱动效只画一帧; 没有 WebGL2 时兜底", () => {
+  it("每帧三遍离屏 (形状, 横向, 纵向) 加一遍上屏; 减弱动效只画一帧; 没有 WebGL2 时兜底", () => {
     const calls: string[] = [];
     restore.push(mockWebgl2(calls), mockReducedMotion(false));
     mockIntersection();
@@ -63,7 +71,7 @@ describe("SoftShape 渲染", () => {
     expect((container.firstElementChild as HTMLElement).dataset.backdropStatus).toBe("live");
     const before = calls.filter((c) => c === "drawArrays").length;
     act(() => vi.advanceTimersByTime(160));
-    expect(calls.filter((c) => c === "drawArrays").length).toBeGreaterThan(before + 3);
+    expect(calls.filter((c) => c === "drawArrays").length).toBeGreaterThan(before + 12);
     unmount();
     const still: string[] = [];
     restore.push(mockWebgl2(still));

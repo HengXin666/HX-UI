@@ -1,6 +1,6 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 ShapeBlur 条目, 实现为 HX 自有.
-// 不标 ENGINE-GAP (2026-11-10 复核定): 失焦按距离场展宽近似, 不涉顶点 / 实例化 / 深度; 真高斯卷积可走内核 passes 两遍可分离模糊, 属未落项, 已排进 CHECKPOINT 待办.
+// 不标 ENGINE-GAP (2026-11-10 复核定): 不涉顶点 / 实例化 / 深度. 失焦按规格走真高斯: 形状遍 + 两遍可分离模糊 (内核 passes), 上屏按透镜在清晰层与失焦层间插值.
 
 import { useEffect, useRef, useState, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";
@@ -12,7 +12,7 @@ import { useShaderBackdrop } from "../backdrop/kernel/use-surfaces";
 import { rasterImage } from "./parts/mask";
 import { sdfCanvas, type SdfField } from "./parts/sdf";
 import { makeSoft, stepSoft } from "./parts/soft";
-import { SOFT_FRAGMENT, SOFT_SHAPES, type SoftShapeKind } from "./parts/soft-shader";
+import { SOFT_BLUR_H, SOFT_BLUR_V, SOFT_FRAGMENT, SOFT_SHAPE_PASS, SOFT_SHAPES, type SoftShapeKind } from "./parts/soft-shader";
 import { SOFT } from "./tokens";
 
 export interface SoftShapeProps extends BackdropCommonProps {
@@ -90,10 +90,14 @@ export function SoftShape(props: SoftShapeProps): JSX.Element {
     };
   }, [src]);
 
+  const stepped = useRef(-1);
   const uniforms = (frame: BackdropFrame) => {
     const { width, height, scale } = frame.fit;
     const s = state.current;
-    stepSoft(s, frame.reduced ? 0 : frame.dt, spin, idle, width / Math.max(1, height), frame.pointer);
+    if (stepped.current !== frame.elapsed) {
+      stepped.current = frame.elapsed;
+      stepSoft(s, frame.reduced ? 0 : frame.dt, spin, idle, width / Math.max(1, height), frame.pointer);
+    }
     const short = Math.min(width, height);
     const half = size * 0.5 * short;
     const boxHalf = field ? (field.aspect >= 1 ? [half, half / field.aspect] : [half * field.aspect, half]) : [half, half];
@@ -109,10 +113,17 @@ export function SoftShape(props: SoftShapeProps): JSX.Element {
       u_lens_soft: Math.min(1, Math.max(0, lensSoftness)),
       u_angle: rotation + s.angle,
       u_color: frame.colors[0] ?? GREY,
+      u_full: [width, height] as const,
     };
   };
+  const sigma = (frame: BackdropFrame) => blur * SOFT.sigmaRatio * frame.fit.scale * SOFT.blurScale;
+  const passes = [
+    { name: "u_soft_shape", fragment: SOFT_SHAPE_PASS, scale: 1, uniforms },
+    { name: "u_soft_h", fragment: SOFT_BLUR_H, scale: SOFT.blurScale, uniforms: (frame: BackdropFrame) => ({ u_dir: [1, 0] as const, u_sigma: sigma(frame) }) },
+    { name: "u_soft_v", fragment: SOFT_BLUR_V, scale: SOFT.blurScale, uniforms: (frame: BackdropFrame) => ({ u_dir: [0, 1] as const, u_sigma: sigma(frame) }) },
+  ];
 
-  const handle = useShaderBackdrop({ fragment: SOFT_FRAGMENT, uniforms, textures: () => ({ u_field: field?.canvas }) }, { ...options, colors: [color] });
+  const handle = useShaderBackdrop({ fragment: SOFT_FRAGMENT, uniforms, textures: () => ({ u_field: field?.canvas }), passes }, { ...options, colors: [color] });
   return (
     <BackdropShell handle={handle} fallback={fallbackGradient([color])} opacity={opacity} {...rest}>
       {children}

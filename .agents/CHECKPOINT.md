@@ -165,8 +165,9 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
   2. ~~DotReveal: 抠像 (uMatte / uKey) 与 fit~~ 已做 (fit + keyOut, 底色取四角).
   3. ~~FiberStrands: listening 与 ROLES 7 分角色着色~~ 已做 (默认关, 拒权 / 不支持退回 level, data-listening 标状态).
   4. ~~SpringMesh: 多点抓取~~ 已做 (上限 4 槽, parts/mesh-grabs).
-  5. SoftShape: 失焦改真高斯 (内核 passes 两遍可分离模糊, 对应规格 uFieldTexture 两遍).
+  5. ~~SoftShape: 失焦改真高斯~~ 已做 (形状遍 + 横纵两遍高斯, 上屏按透镜插值).
   6. SparkMark: 脉冲沿轮廓改弧长参数 (替掉极角近似, 凹形图形上沿边走).
+  7. SparkMark: PIXEL_BUDGET (按宿主面积压分辨率) 与预模糊辉光 (用户 2026-11-10 23:37 定: 算未落项, 要补, 不再算有意替代; 组件文件头 / field note / CHANGELOG 一致).
 - ENGINE-GAP 复核 (2026-11-10 定, 组件文件头 / note / CHANGELOG 0.16.0 一致): SoftShape 失焦近似不标 (不涉顶点 / 实例化 / 深度, 真高斯排在上面第 5 件); SparkMark 的 PIXEL_BUDGET 与预模糊辉光 / 2d 画布逐帧层不标, 是有意替代不再补, 脉冲极角是未落项 (第 6 件); PrismOrb 的 PIXEL_BUDGET 同样不算 ENGINE-GAP, 文件头措辞已改.
 - 内核若加浮点数据纹理上传, CubeField 的 gridSize 上限 13 可放开.
 

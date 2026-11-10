@@ -44,7 +44,7 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 - ChromeMark: 遮罩是 Canvas2D 画的白字 / 原图 (512 长边), 交给 ShaderSpec.textures 上传 (内核按对象身份缓存). 规格在 CPU 上解 512 的泊松方程; 这里换成一个低分辨率离屏通道每帧迭代 24 次, 首几帧里隆起从边缘往里长满, 观感像入场. 遮罩异步就绪 (图片加载) 时组件重渲染, 静态帧随之重画.
 - BeamFlow: 单遍上屏片元, 坐标换成 CSS 像素 (gl_FragCoord / u_dpr, y 从顶部量), 光叠加后取峰值当不透明度并做色调压缩. 揭图用 ShaderSpec.textures 上传 revealImage, 在场程度跟 u_pointer.z.
 - RippleLens: 波队列在 JS 里 (CSS 像素), 每帧打包成 u_waves vec4[100] (设备像素的位置, 半径, 当前振幅), 片元里逐波累加位移再按 cover 取图. 图片异步加载, 未就绪时画布透明.
-- SoftShape: 规格用两遍离屏模糊 (uFieldTexture); 这里形状本身就是有符号距离, 失焦直接在距离上展宽, 一遍上屏, 不要离屏. 图片形状在 JS 里做 512 的两遍一维距离变换 (Felzenszwalb 下包络), 编码进 RGBA8 的 R/G 两字节, 片元里 texelFetch 手动双线性解码.
+- SoftShape: 失焦按规格走离屏 (按序补做第 5 件): 形状遍 (满分辨率, 清晰覆盖, 三通道按最大失焦的色散错开) -> 横向高斯 -> 纵向高斯 (各 0.5 倍分辨率, 15 采样覆盖正负 3 西格玛, 西格玛 = blur x 0.5, 本库定); 上屏在解析的清晰层与失焦层之间按透镜插值 (focus 反过来). 图片形状在 JS 里做 512 的两遍一维距离变换 (Felzenszwalb 下包络), 编码进 RGBA8 的 R/G 两字节, 片元里 texelFetch 手动双线性解码.
 - SparkMark: 图形 (自带闪电的 Path2D 或图片) 栅格化成 560 的遮罩, 走 parts/sdf.ts 得到距离场, 两张 (旧 / 新) 同时作为纹理传入, sdfGlsl(name) 生成各自的解码函数; 换 src 时旧的挪到 from, 形变进度从 0 走. 电弧, 支弧, 脉冲全部是距离场上的解析光线 (w^2 / (d^2 + w^2)), 一遍上屏.
 
 ## Consequences
@@ -54,6 +54,6 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 - ChromeMark 没有落的: 规格的 u_imageAspect / u_scale 等映射细节按本库自己的 maskUv 重写; 图片跨域加载失败时没有形状 (画布透明, 不退兜底). 遮罩文字对读屏不可见, 使用方要给可读文本.
 - BeamFlow 没有落的: surfaceRef (跟随页面上另一个元素的顶边当地面; 内核只量自己的宿主, 这里改成 surfaceLevel 比例), 规格的固定 TINTS 色板 (颜色只走 token), MAX_RENDER_DIM 与 BASE_SATURATION, 揭图按宿主拉伸而不是 cover 裁切.
 - RippleLens 没有落的: 规格的 uTexel / uTextureSize 细节按本库自己的 cover 映射重写. 图片跨域失败时画布透明 (不退兜底).
-- SoftShape 没有落的: 失焦是距离展宽的近似, 不是真正的高斯卷积 (细描边模糊后变淡的观感一致, 尖角处略圆). 图片距离场在主线程算 (512 x 512 约几十毫秒), 换图时一次.
+- SoftShape 没有落的: 无 (真高斯已补). 色散是最大失焦时的三通道错开, 局部失焦按插值同比缩小. 图片距离场在主线程算 (512 x 512 约几十毫秒), 换图时一次.
 - SparkMark 没有落的: PIXEL_BUDGET (按 4e6 像素压低像素比; 内核只有统一的 dpr 上限), 规格里 tGlowFrom / tGlowTo 两张预模糊辉光纹理 (这里辉光由距离场 exp(-d / (6 glow unit)) 直接算, 不要离屏), 2d 画布逐帧层. 脉冲沿轮廓的位置用极角近似, 凹形图形上不严格沿边走.
-- ENGINE-GAP 复核 (2026-11-10 定, 组件文件头, 本 note, CHANGELOG 0.16.0 三处一致): SoftShape 失焦近似不标, 理由是不涉顶点 / 实例化 / 深度; 真高斯卷积可走内核 passes, 记为未落项排进待办. SparkMark 的 PIXEL_BUDGET (内核 dpr 上限与 maxEdge 代替) 与预模糊辉光 / 2d 画布逐帧层 (距离场解析辉光代替) 不标, 是有意替代不再补; 脉冲极角近似是未落项, 排进待办 (改为轮廓弧长参数).
+- ENGINE-GAP 复核 (2026-11-10 定, 组件文件头, 本 note, CHANGELOG 0.16.0 三处一致): SoftShape 失焦不标 ENGINE-GAP, 理由是不涉顶点 / 实例化 / 深度; 真高斯卷积已走内核 passes 补上. SparkMark 的 PIXEL_BUDGET (内核 dpr 上限与 maxEdge 代替) 与预模糊辉光 / 2d 画布逐帧层 (距离场解析辉光代替) 不标, 是有意替代不再补; 脉冲极角近似是未落项, 排进待办 (改为轮廓弧长参数).

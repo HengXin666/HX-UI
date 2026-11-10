@@ -2,6 +2,7 @@
 /**
  * SoftShape 的上屏片元: 形状的有符号距离 (矩形, 圆, 正多边形的解析式, 或图片的距离场), 描边或填充, 向外的回声描边;
  * 整体按 blur 失焦, 指针处的透镜把它对焦 (focus 反过来: 整体清晰, 透镜处失焦), 三色按当前模糊错开出色散.
+ * 失焦是真高斯: 形状遍 -> 横向高斯 -> 纵向高斯 (内核 passes), 上屏在解析的清晰层与失焦层之间按透镜插值.
  * 坐标是设备像素.
  *
  * .agents/notes/implemented/feature/2026-11-10-surface-field.md
@@ -13,7 +14,7 @@ import { SDF_GLSL } from "./sdf";
 export const SOFT_SHAPES = { rect: 0, circle: 1, polygon: 2, image: 3 } as const;
 export type SoftShapeKind = Exclude<keyof typeof SOFT_SHAPES, "image">;
 
-export const SOFT_FRAGMENT = fragmentSource(`
+const SOFT_COMMON = `
 uniform vec4 u_shape;
 uniform vec2 u_field_half;
 uniform float u_has_field;
@@ -62,14 +63,58 @@ float coverage(float d, float w) {
   }
   return a;
 }
+`;
+
+/** 第一遍: 清晰形状的覆盖, 三通道按最大失焦的色散错开 (r 内缩, b 外扩), 坐标同上屏. */
+export const SOFT_SHAPE_PASS = fragmentSource(`
+${SOFT_COMMON}
+uniform vec2 u_full;
+void main() {
+  vec2 frag = v_uv * u_full;
+  float d = shapeDistance(hx_rot(radians(u_angle)) * (frag - 0.5 * u_full));
+  float shift = u_blur.x * u_blur.y * ${SOFT.chromaRatio.toFixed(2)};
+  o_color = vec4(coverage(d - shift, 0.0), coverage(d, 0.0), coverage(d + shift, 0.0), 1.0);
+}
+`, GLSL_HASH, GLSL_UTIL);
+
+/** 一维高斯 (方向 dir, 西格玛 sigma 以源纹理的纹素计), SOFT.taps 个采样点覆盖正负 3 西格玛, 权重归一. */
+function blurPass(source: string): string {
+  return fragmentSource(`
+uniform sampler2D ${source};
+uniform vec2 u_dir;
+uniform float u_sigma;
+void main() {
+  vec2 px = u_dir / vec2(textureSize(${source}, 0));
+  float sigma = max(u_sigma, 0.5);
+  float stride = max(1.0, 6.0 * sigma / float(${SOFT.taps - 1}));
+  vec3 acc = vec3(0.0);
+  float wsum = 0.0;
+  for (int i = 0; i < ${SOFT.taps}; i++) {
+    float x = (float(i) - float(${(SOFT.taps - 1) / 2})) * stride;
+    float w = exp(-0.5 * x * x / (sigma * sigma));
+    acc += texture(${source}, v_uv + px * x).rgb * w;
+    wsum += w;
+  }
+  o_color = vec4(acc / wsum, 1.0);
+}
+`);
+}
+
+/** 第二遍横向, 第三遍纵向 (规格 BLUR 的两遍可分离模糊). */
+export const SOFT_BLUR_H = blurPass("u_soft_shape");
+export const SOFT_BLUR_V = blurPass("u_soft_h");
+
+export const SOFT_FRAGMENT = fragmentSource(`
+${SOFT_COMMON}
+uniform sampler2D u_soft_v;
 void main() {
   vec2 frag = gl_FragCoord.xy;
-  vec2 p = hx_rot(radians(u_angle)) * (frag - 0.5 * u_res);
-  float d = shapeDistance(p);
+  float d = shapeDistance(hx_rot(radians(u_angle)) * (frag - 0.5 * u_res));
   float lens = u_lens.w * (1.0 - smoothstep(u_lens.z * (1.0 - u_lens_soft), u_lens.z, length(frag - u_lens.xy)));
-  float blur = u_blur.z > 0.5 ? mix(0.0, u_blur.x, lens) : mix(u_blur.x, 0.0, lens);
-  float shift = blur * u_blur.y * ${SOFT.chromaRatio.toFixed(2)};
-  vec3 a = vec3(coverage(d - shift, blur), coverage(d, blur), coverage(d + shift, blur));
+  float t = u_blur.z > 0.5 ? lens : 1.0 - lens;
+  // 清晰层是解析的 (满分辨率), 失焦层是 u_soft_v (两遍可分离高斯后的最大失焦, 三通道带色散); 按透镜在两者间插值.
+  vec3 blurred = u_blur.x > 0.5 ? texture(u_soft_v, v_uv).rgb : vec3(coverage(d, 0.0));
+  vec3 a = mix(vec3(coverage(d, 0.0)), blurred, t);
   float alpha = max(a.r, max(a.g, a.b));
   o_color = vec4(u_color * a / max(alpha, 1e-4), alpha);
 }

@@ -217,6 +217,10 @@ export const SOFT = {
   idleAmp: 0.3,
   maxEchoes: 8,
   chromaRatio: 0.35,
+  /** 本库定: 真高斯失焦. 西格玛 = blur x 0.5 (blur 约为 2 西格玛的模糊半径), 每遍 15 个采样点, 形状遍满分辨率, 两遍模糊各 0.5 倍. */
+  sigmaRatio: 0.5,
+  taps: 15,
+  blurScale: 0.5,
 } as const;
 
 /* ── SparkMark (规格 ElectricLogo) ── */

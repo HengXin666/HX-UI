@@ -10,6 +10,7 @@
 
 - `FiberStrands`: 新 prop `listening` (默认 false, 不申请麦克风; 打开后以麦克风实时音量作电平, 被拒或不支持时退回 `level`, 宿主 `data-listening` 标出 pending / live / denied / unavailable); 颜色按规格 ROLES 分 7 个角色 (填充, 边光, 外晕按根错位取色, 白芯, 玻璃边, 玻璃高光, 投影), 默认外观随之变化.
 - `SpringMesh`: 多点抓取, 每个按下的指针 (多指 / 笔 / 鼠标) 各抓一处, 最多 4 处, 各自拉伸, 压瘪与回弹. 宿主改为 `touch-action: none`, 页面在它上面不再能触摸滚动.
+- `SoftShape`: 失焦改为真高斯模糊 (形状遍加横纵两遍可分离高斯, 走内核离屏通道), 替代原来的距离展宽近似; 尖角模糊更自然, 每帧多三遍离屏.
 - `DotReveal`: 补上规格的 `fit` (cover / contain / fill, 默认 cover; contain 的留边是纸色) 与抠底 `keyOut` (规格 uMatte / uKey: 与图片四角底色相近处不出网点, 揭开也露纸色; 读不出像素时自动关闭).
 
 ### Changed
