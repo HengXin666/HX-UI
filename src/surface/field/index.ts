@@ -8,3 +8,5 @@ export { MergeBlobs, type MergeBlobsProps } from "./MergeBlobs";
 export { MASK_UV_GLSL, maskSize, rasterImage, rasterPath, rasterText, type MaskCanvas } from "./parts/mask";
 export { chromeSource, makeChrome, stepChrome, type ChromeState } from "./parts/chrome";
 export { ChromeMark, type ChromeMarkProps } from "./ChromeMark";
+export { beamIntro, makeBeam, stepBeam, type BeamState } from "./parts/beam";
+export { BeamFlow, type BeamFlowProps } from "./BeamFlow";

@@ -125,3 +125,39 @@ export const CHROME = {
   tiltMax: 0.6,
   introS: 1.2,
 } as const;
+
+/* ── BeamFlow (规格 LaserFlow) ── */
+export const BEAM = {
+  /** 光柱: 起亮 smoothstep(-6, 12, f), 纹 0.88 + 0.24 noise(u x 6, f / 22 - 1.7t), 色带 smoothstep(50, 75, f) 与 smoothstep(100, 125, f) (f 按落点 130 归一), 侧光 smoothstep(-24, 24, dx), 铺展 250 x spread. */
+  streakBase: 0.88,
+  streakAmp: 0.24,
+  spreadPx: 250,
+  /** 落点贴地光 exp(-(below / 14)^2) 与 exp(-(below / 40)^2); 呼吸 1 + pulse x (0.12 sin(1.5708 t) + 0.08 (noise - 0.5)); 揭幕前沿 1 - smoothstep(front - 70, front + 8, f). */
+  hug: 14,
+  hugWide: 40,
+  frontLead: 70,
+  frontTail: 8,
+  /** props 默认值. */
+  beamPosition: 0.6,
+  intensity: 1.8,
+  beamWidth: 1.5,
+  flare: 1.5,
+  spread: 1.5,
+  spill: 1,
+  fog: 0.2,
+  dust: 1.6,
+  streaks: 1.5,
+  dots: 1,
+  pulse: 1.5,
+  speed: 1.5,
+  seed: 3,
+  revealRadius: 220,
+  revealOpacity: 0.6,
+  /** 本库定: 落点在宿主高度的 0.78 (规格 surfaceLevel 1 对应 surfaceRef 元素的顶边), 光柱落下 0.9s 后铺展 1.2s,
+   * 光柱随指针横移 12% 宿主宽 (tau 0.3s), 揭图圈的在场 tau 0.2s. */
+  surfaceLevel: 0.78,
+  dropS: 0.9,
+  flowS: 1.2,
+  sway: 0.12,
+  swayTau: 0.3,
+} as const;
