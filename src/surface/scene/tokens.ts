@@ -113,3 +113,39 @@ export const PRISM_PRESETS = {
   calm: { strands: 3, crackle: 0.25, flares: 0.4, glow: 0.6, sparks: 0.15, particleCount: 20000, fill: 0.45, motion: "orbit", particleShape: "round", depth: 0.8, sway: 0.15, twinkle: 0.3, haze: 0.6, dustSpeed: 0.5 },
   frost: { strands: 4, crackle: 0.45, flares: 0.5, glow: 0.5, sparks: 0.3, particleCount: 30000, fill: 0.25, motion: "fall", particleShape: "square", depth: 0.7, sway: 0.4, twinkle: 0.9, haze: 0.5, dustSpeed: 0.7 },
 } as const;
+
+/* ── CubeField (规格 Cubes) ── */
+export const CUBE = {
+  /** STYLES, INTRO_SECONDS. */
+  styles: { solid: 0, dashed: 1, dotted: 2, none: 3 },
+  introSeconds: 1.1,
+  /** 跟手 1 - exp(-18 dt), 速度混合 1 - exp(-10 dt), 在场 attack 6 / release 2.5, 弹簧 k = 160 speed^2, c = 2 (1 - 0.82 bounce) sqrt(k), 涟漪亮度 exp(-3.2 dt), 扫动 x 4. */
+  follow: 18,
+  velocityBlend: 10,
+  attack: 6,
+  release: 2.5,
+  stiffness: 160,
+  bounceDamp: 0.82,
+  glowFade: 3.2,
+  sweepGain: 4,
+  maxDt: 0.05,
+  /** props 默认值. */
+  gridSize: 10,
+  gap: 0.18,
+  edgeWidth: 1,
+  faceOpacity: 1,
+  shading: 0.6,
+  maxAngle: 45,
+  radius: 3,
+  bounce: 0.4,
+  brush: 1,
+  perspective: 0,
+  rippleSpeed: 1,
+  /** 本库定: 格数上限 (每块一个 vec4 uniform, 片元 uniform 向量的保底只有 224), 涟漪每秒走的格数, 涟漪踢一下的角速度 (度每秒), 扫动的速度归一. */
+  maxGrid: 13,
+  rippleCells: 8,
+  rippleKick: 420,
+  sweepNorm: 0.002,
+  /** 本库定: 自动漫游的李萨如频率, 漫游时的在场权重. */
+  wander: { fx: 0.13, fy: 0.19, weight: 0.6 },
+} as const;

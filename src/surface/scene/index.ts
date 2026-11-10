@@ -6,3 +6,5 @@ export { buildDither, diffuse, fitRect, isOrdered, quantize, veilGrid, veilTone,
 export { BayerVeil, type BayerVeilProps } from "./BayerVeil";
 export { makePrism, packPrism, prismEnergy, prismLook, prismWander, stepPrism, type PrismLook, type PrismMotion, type PrismPreset, type PrismShape, type PrismState } from "./parts/prism";
 export { PrismOrb, type PrismOrbProps } from "./PrismOrb";
+export { cubeCenter, cubeGrid, cubeIntro, makeCubes, packCubes, stepCubes, type CubeInput, type CubeRipple, type CubeState, type CubeTuning } from "./parts/cube";
+export { CubeField, type CubeEdgeStyle, type CubeFieldProps } from "./CubeField";
