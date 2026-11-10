@@ -8,6 +8,20 @@
 
 ### Added
 
+- `@hx/ui/backgrounds`: surface 层 Backgrounds 全族 64 件, 按 glow / rays / lines / grid / glyph / fluid / particles 七路组织, 全部接在 `src/surface/backgrounds` 渲染内核上 (WebGL2, 不引 three / ogl / gsap). 行为规格取自 `docs/research/catalog/backgrounds-1.md` / `-2.md`, 实现为 HX 自有. 3D 件做简化版并在文件头标 `ENGINE-GAP:`. 根入口 `src/index.ts` 不新增符号.
+- `@hx/ui/surface`: surface 层子路径入口, 收 backgrounds, pointer, reveal 与 text (glyph / stagger / scroll) 各族. 根入口不收.
+- 契约: `check-api-snapshot` 按 package.json 的每个子路径入口分段展开 (原先只展开根入口); `docs-props` 对 `./backgrounds` 与 `./surface` 全量抽 props.
+- `@hx/ui/studio`: 镜头 (`Shot`, `ShotSequence`, `ShotPlate`, `ShotLayer`), 指标与过程 (`Metric`, `Spark`, `Process`, `Compare`), 整页 `FieldPage` (田野) 与 `KilnPage` (窑四号). 根入口 `src/index.ts` 不新增符号. 文档站 `#/gallery` 可切换这两张整页, 镜头, 数据和原来的质感拼贴. 迁移说明见 `docs/reference/migration/studio.md`.
+- `src/primitives/deprecate.ts`: `deprecate()` 工具函数, 开发环境同一条废弃只 `console.warn` 一次, 生产环境静默. 暂不进公共入口, 由 P0-Z 集成时决定是否导出.
+- `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
+- 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
+
+## [0.17.0] - 2026-11-10
+
+按序补做: 老控件焦点环统一, 以及 scene / field 族记下的未落项 (DotReveal, FiberStrands, SpringMesh, SoftShape, SparkMark). 只增不删, 无 API 符号变化 (api 快照不变), 新 props 属 minor. 根入口 `src/index.ts` 不变, 无迁移.
+
+### Added
+
 - `FiberStrands`: 新 prop `listening` (默认 false, 不申请麦克风; 打开后以麦克风实时音量作电平, 被拒或不支持时退回 `level`, 宿主 `data-listening` 标出 pending / live / denied / unavailable); 颜色按规格 ROLES 分 7 个角色 (填充, 边光, 外晕按根错位取色, 白芯, 玻璃边, 玻璃高光, 投影), 默认外观随之变化.
 - `SpringMesh`: 多点抓取, 每个按下的指针 (多指 / 笔 / 鼠标) 各抓一处, 最多 4 处, 各自拉伸, 压瘪与回弹. 宿主改为 `touch-action: none`, 页面在它上面不再能触摸滚动.
 - `SoftShape`: 失焦改为真高斯模糊 (形状遍加横纵两遍可分离高斯, 走内核离屏通道), 替代原来的距离展宽近似; 尖角模糊更自然, 每帧多三遍离屏.
@@ -19,16 +33,6 @@
 
 - 更正 0.16.0 的 ENGINE-GAP 复核条: `SparkMark` 的 PIXEL_BUDGET 与预模糊辉光不是有意替代, 是未落项, 本版已补 (见 Added); 二者都不标 ENGINE-GAP.
 - controls 各族老控件的焦点环从 `focus-visible:ring-1 ring-ring` 统一换成 craft 的 `FOCUS_RING` (outline 1px, 偏移 2px, ring 色, 不随 transform 缩放); 原来是 ring-inset 的三处 (DrawerRow, DrawerActions, RipStub) 用 outline 内收 1px. 只改类名, 无 API 变化.
-
-### Added
-
-- `@hx/ui/backgrounds`: surface 层 Backgrounds 全族 64 件, 按 glow / rays / lines / grid / glyph / fluid / particles 七路组织, 全部接在 `src/surface/backgrounds` 渲染内核上 (WebGL2, 不引 three / ogl / gsap). 行为规格取自 `docs/research/catalog/backgrounds-1.md` / `-2.md`, 实现为 HX 自有. 3D 件做简化版并在文件头标 `ENGINE-GAP:`. 根入口 `src/index.ts` 不新增符号.
-- `@hx/ui/surface`: surface 层子路径入口, 收 backgrounds, pointer, reveal 与 text (glyph / stagger / scroll) 各族. 根入口不收.
-- 契约: `check-api-snapshot` 按 package.json 的每个子路径入口分段展开 (原先只展开根入口); `docs-props` 对 `./backgrounds` 与 `./surface` 全量抽 props.
-- `@hx/ui/studio`: 镜头 (`Shot`, `ShotSequence`, `ShotPlate`, `ShotLayer`), 指标与过程 (`Metric`, `Spark`, `Process`, `Compare`), 整页 `FieldPage` (田野) 与 `KilnPage` (窑四号). 根入口 `src/index.ts` 不新增符号. 文档站 `#/gallery` 可切换这两张整页, 镜头, 数据和原来的质感拼贴. 迁移说明见 `docs/reference/migration/studio.md`.
-- `src/primitives/deprecate.ts`: `deprecate()` 工具函数, 开发环境同一条废弃只 `console.warn` 一次, 生产环境静默. 暂不进公共入口, 由 P0-Z 集成时决定是否导出.
-- `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
-- 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
 ## [0.16.0] - 2026-11-10
 

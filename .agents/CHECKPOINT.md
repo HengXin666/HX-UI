@@ -149,7 +149,7 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | D | ElasticMesh | SpringMesh | 0e80222 (scene, ENGINE-GAP 质点弹簧网格顶点变形) |
 | D | Strands | FiberStrands | fdc0122 (scene) |
 
-**A, B, C, D 段已推 (到 f473510, 0.15.0). HaloCursor / HazeCursor 补做 1530d2d (0.16.0) 与 ENGINE-GAP 复核已提本地, 待用户推. ring-1 → FOCUS_RING 已提本地. 下一步按 "按序补做" 清单第 2 件起.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
+**已推到 1a3b35f (0.16.0: Halo/Haze 补做与 ENGINE-GAP 复核). 按序补做 7 件已提本地 (ring-1 997d4ef, DotReveal 64439ef, FiberStrands 367128c, SpringMesh 6a71678, SoftShape 49430a7, SparkMark 弧长 361d8fa, SparkMark 预算与辉光 396ac76) 并定版 0.17.0, 待用户推. 下一步: "后续收尾" 各项.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
 接入时查 export * 撞名 (tsc TS2308): 族内通用小工具 (clamp, mix, seededRandom, wrapOffset 之类) 不进族 index 或改名.
 注意: pointer 族已接在 ./surface 上, 段内往它的 index 加导出会改 api 快照 (门禁 4/13 会拦), 所以段内新件放已接入的族时先不进族 index.
 B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DOM 做近似, 真需要顶点 / 实例化的标 ENGINE-GAP.
