@@ -7,6 +7,7 @@ Decision-ID: surface-pointer
 ## Code
 
 - `src/surface/pointer/Attract.tsx`
+- `src/surface/pointer/cell.ts`, `src/surface/pointer/CellTrail.tsx`, `tests/surface/pointer/cell.test.tsx`
 
 ## Problem
 
@@ -26,6 +27,7 @@ L3 surface 层要落地 react-bits 的 Animations 全族 (docs/research/catalog/
 | ClickSpark | `TapSparks` | 采用: 三条曲线, 重力 500, 上限 32, 寿命错峰上限 1 + 0.25 * randomness, 距离错峰 1 + 0.35 * randomness, 中心测量环 (2 + radius * 0.6 * 进度, 寿命 0.8 * duration), 线宽 1px. 爆点从内核的点击队列取 (按时间戳去重), 自己留 32 个. 减弱动效时内核只画一帧, 不出火花也不出环 (规格的 320ms 淡出环不落地). |
 | Crosshair | `ReticleLines` | 状态机: 跟手 tau 0.008 + smoothing * 0.16, 出现 0.12 / 0.25, 锁框吸附 0.085, 锁框透明度 0.08 / 0.14, 脉冲寿命 0.55s. 锁定目标每帧用 elementFromPoint 取指针下的元素再 closest(targetSelector). thickness 固定 1px; color 换成 tone; fade, glitch 与 blendMode 不落地. |
 | ImageTrail | `PhotoWake` | 入场 0.4s (power4), 出场 0.4s (漂移时 0.9s), 闪白 0.5s, threshold 80; 未启用槽 visibility hidden 防首帧闪, 进出场是可回放的进度函数 wakePhase. stack prop 不落地 (层级按放下顺序递增). 减弱动效时不放图. |
+| PixelTrail | `CellTrail` | Canvas2D 网格 (不用着色器): 横向 `gridSize` 40 格, 笔刷半径 `trailSize` 0.1 x 宽 (高斯, sigma 为半径一半), 寿命 `maxAge` 250ms (前 0.3 升起再线性落), `interpolate` 5 补点, 力度 = 位移比例平方 x 10000 钳到 0.3..1, `gap` 0.08, `shape` square / circle / diamond, `decay` fade / shrink / dither (4x4 有序抖动), `glow` 0.4, `clickBurst` (一圈 10 点); 点上限 256. color / trailColor 换成 tone / trailTone (陈旧半段用 trailTone). flow / gravity / sparkle / shine / gooeyFilter / imageSrc 与 easingFunction 不落地. 区域组件包 children, 没有活点时停帧; 减弱动效不画轨迹. pointer 族已接在 `@hx/ui/surface` 上, 按 Animations 段的规矩段内不动 api 快照, 所以 CellTrail 先不进族 index.ts, 段尾接入时一并导出. |
 
 窗口级指针跟踪 (track.ts) 留在本族: 磁吸要在宿主外按 padding 算距离, 锁定光标要读事件目标, 而 backdrop 内核的指针只挂在宿主上, 坐标归一化. 色调 (tone.ts) 只映射到 text-* 语义类与 token 名, 不收任意色值. 常数按组件具名放在 tokens.ts, 注释写原规格名; 规格没给的数标 "本库定".
 
