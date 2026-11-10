@@ -46,7 +46,7 @@ float shapeDistance(vec2 p) {
   if (kind < 2.5) return sdPolygon(p, max(3.0, u_shape.y), half_ - round) - round;
   if (u_has_field < 0.5) return 1e4;
   vec2 fuv = p / (2.0 * u_field_half) + 0.5;
-  return fieldDistance(fuv) * (2.0 * u_field_half.x / float(textureSize(u_field, 0).x));
+  return u_field_distance(fuv) * (2.0 * u_field_half.x / float(textureSize(u_field, 0).x));
 }
 float coverage(float d, float w) {
   float hw = u_line.x;

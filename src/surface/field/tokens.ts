@@ -218,3 +218,46 @@ export const SOFT = {
   maxEchoes: 8,
   chromaRatio: 0.35,
 } as const;
+
+/* ── SparkMark (规格 ElectricLogo) ── */
+export const SPARK = {
+  /** RASTER, CELL, FAR, ARCS, PULSES, PIXEL_BUDGET. */
+  raster: 560,
+  cell: 4,
+  far: 1e20,
+  arcs: 5,
+  pulses: 3,
+  pixelBudget: 4e6,
+  /** 形变: morph += dt / (排队中 0.3 : 1.6); 逐像素 k = smoothstep(0, 1, morph x 1.7 - 0.35 + 0.35 wobble). 脉冲进度 dt / 1.4, 包络 exp(-front^2) x w x exp(-age x 1.7). */
+  morphS: 1.6,
+  morphPendingS: 0.3,
+  pulseS: 1.4,
+  pulseDecay: 1.7,
+  /** 光标弹簧: v += ((p - x) x 120 - v x 19) dt; 力度 tau 在场 0.3 离开 0.55. 帧长上限 0.05. */
+  hoverK: 120,
+  hoverC: 19,
+  powerIn: 0.3,
+  powerOut: 0.55,
+  maxDt: 0.05,
+  /** 呼吸 1 + flicker x 0.6 wobble(2.1t), 火花 1 - flicker x 0.3 (0.5 + 0.5 wobble(6t)), 本体 smoothstep(0.75, -0.75, base) x fill x (0.06 + 1.2 min(halo, 1)) x (1 + heat x 0.5), alpha 1 - exp(-energy x gain). */
+  breath: 0.6,
+  sparkDip: 0.3,
+  /** props 默认值 (本库定; 规格只给了两个色值, 换成 token). */
+  scale: 0.7,
+  intensity: 1,
+  glow: 1,
+  thickness: 1,
+  strands: 3,
+  bend: 1,
+  crackle: 1,
+  flicker: 1,
+  fill: 0.35,
+  cursorIntensity: 1,
+  cursorRadius: 140,
+  /** 本库定: 脉冲每 1.1s 发一个 (轮流占 3 个槽), 支弧伸出 reach = 14 x glow 个格. */
+  pulseEvery: 1.1,
+  reach: 14,
+} as const;
+
+/** 本库自画的闪电图形 (24 x 24 视框), 没给 src 时用它. */
+export const SPARK_BOLT = { d: "M13 1.5 L3.5 13.5 H10.5 L9.5 22.5 L20.5 9.5 H13.5 Z", viewBox: [24, 24] as const };

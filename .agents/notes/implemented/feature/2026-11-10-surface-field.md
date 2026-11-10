@@ -15,8 +15,9 @@ Decision-ID: surface-field
 - `src/surface/field/parts/lens.ts`, `src/surface/field/parts/lens-shader.ts`, `src/surface/field/RippleLens.tsx`
 - `src/surface/field/parts/sdf.ts` (遮罩到有符号距离场 + 16 位编码与 GLSL 解码, SoftShape 与 SparkMark 共用)
 - `src/surface/field/parts/soft.ts`, `src/surface/field/parts/soft-shader.ts`, `src/surface/field/SoftShape.tsx`
+- `src/surface/field/parts/spark.ts`, `src/surface/field/parts/spark-shader.ts`, `src/surface/field/SparkMark.tsx`
 - `src/surface/field/index.ts`
-- `tests/surface/field/{ink,merge,chrome,beam,lens,soft}.test.tsx`
+- `tests/surface/field/{ink,merge,chrome,beam,lens,soft,spark}.test.tsx`
 
 ## Problem
 
@@ -34,6 +35,7 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 | LaserFlow | `BeamFlow` | 起亮 smoothstep(-6, 12, f), 纹 0.88 + 0.24 noise(u x 6, f / 22 - 1.7t), 色带 smoothstep(50, 75, f) / smoothstep(100, 125, f), 侧光 smoothstep(-24, 24, dx), 铺展 250 x spread, runMask 1 - smoothstep(run - 34, run + 6, adx), flowMask (1 - smoothstep(0.75 spread, 1.1 spread, adx)) x runMask, 贴地光 exp(-(below / 14)^2) 与 exp(-(below / 40)^2), 呼吸 1 + pulse (0.12 sin(1.5708 t) + 0.08 (noise - 0.5)), 揭幕前沿 1 - smoothstep(front - 70, front + 8, f); props `beamPosition` 0.6, `surfaceLevel`, `colors` (规格单色 color, 着色器里的 TINTS 色板换成三个 token 色), `intensity` 1.8, `beamWidth` 1.5, `flare` 1.5, `spread` 1.5, `spill` 1, `fog` 0.2, `dust` 1.6, `streaks` 1.5, `dots` 1, `pulse` 1.5, `speed` 1.5 (即公共时钟倍率), `seed` 3, `mouseInteraction`, `revealImage`, `revealRadius` 220, `revealOpacity` 0.6, `intro`, `lightMode` (规格 theme), `paused`, `dpr`; 本库定: surfaceLevel 是落点高度占宿主高的比例 默认 0.78, 色带的 f 按落点归一到 130, 落下 0.9s 再铺展 1.2s (缓出立方), 光柱随指针横移最多 12% 宿主宽 tau 0.3s, 尘点 9px 格子 上浮 22px/s, 光点间距 46px |
 | RippleDistortion | `RippleLens` | MAX_WAVES 100, QUALITY_SCALE low 0.4 / medium 0.7 / high 1 (乘像素比上限), START_SCALE 1.5 (出生半径 brushSize / 2 / 1.5), EDGE exp(-5) (振幅 exp(-age x fade) 低于它出队, 寿命 5 / fade); props `src` (必填), `brushSize` 150, `strength` 0.2, `swirl` 1, `rings` 4, `spread` 5, `fade` 3, `spacing` 15, `dispersion` 0, `glint` 0, `tint` primary, `tintAmount` 0.1, `grayscale` true, `highlightColor` foreground, `trigger` hover / click / both, `clickStrength` 2, `quality` low, `enabled`, `alt` (本库加, 给了宿主就是 role=img); 本库定: 波半径每秒长 spread x brushSize x 0.1, 波带宽 brushSize x 0.25 (高斯 exp(-2x^2)), 位移 brushSize x 0.25 x strength, 带内 rings 道起伏 cos(x x rings x pi), 漩涡 0.5 x swirl x sin 相位, 色散错开 dispersion x 0.3 |
 | ShapeBlur | `SoftShape` | FIELD 512, PAD 0.35, FAR 1e20 (图片形状的距离变换), 自转 (angle + spin x dt) % 360, 透镜跟手 1 - exp(-dt x (在场 10 / 闲置 3)), 力度 1 - exp(-dt x 4), 透镜遮罩 power x (1 - smoothstep(r (1 - soft), r, dist)); props `shape` rect / circle / polygon, `src`, `sides` 6, `size` 0.8, `roundness` 0.2, `thickness` 2, `fill`, `echoes` 1, `spacing` 12, `color` foreground, `blur` 16, `lensSize` 0.3, `lensSoftness` 0.7, `focus`, `chroma` 0.3, `rotation`, `spin`, `idle`, `children`; 本库定: 失焦是按距离场把边缘展宽 blur 像素 (smoothstep, 峰值按 (hw + aa) / (hw + aa + blur) 压低), 回声向外每条 spacing 像素 渐弱到 0.4 上限 8 条, 色散按 chroma x 0.35 x 当前模糊错开距离, 闲置利萨如 9s / 7s 幅度 0.3 短边 |
+| ElectricLogo | `SparkMark` | RASTER 560, CELL 4, FAR 1e20, ARCS 5, PULSES 3, 形变 morph += dt / (排队 0.3 : 1.6) 与逐像素 k = smoothstep(0, 1, morph x 1.7 - 0.35 + 0.35 wobble(p / unit x 0.018)), 脉冲进度 dt / 1.4 包络 exp(-front^2) x w x exp(-age x 1.7), 呼吸 1 + flicker x 0.6 wobble(2.1t), swell 0.5 + 0.5 wobble(q x 0.06 + (0.9t, 5.1 fi - 0.6t)), vis mix(0.3 + 0.45 smoothstep(-0.25, 0.2, wobble(q x 0.035 + (0.21t, 3.7 fi))), 1, lead), spark 1 - flicker x 0.3 (0.5 + 0.5 wobble(6t, 2.3 fi)), 本体 smoothstep(0.75, -0.75, base) x fill x (0.06 + 1.2 min(halo, 1)) x (1 + heat x 0.5), 支弧 fade smoothstep(reach, 0.55 reach, edge), alpha 1 - exp(-energy x gain), 光标弹簧 v += ((p - x) 120 - 19 v) dt, 力度 tau 0.3 / 0.55, 帧长上限 0.05; props `src`, `color` accent (规格色值改 token), `glowColor` primary (同), `scale`, `intensity`, `glow`, `thickness`, `strands`, `bend`, `crackle`, `arcs`, `flicker`, `fill`, `speed` (公共), `interactive`, `cursorIntensity`, `cursorRadius`, `lightMode` (规格 theme); 本库定: 各 props 默认值 (规格条目没有记), 自画闪电 SPARK_BOLT 24 视框, 脉冲每 1.1s 发一个, 支弧 reach 14 x glow 格, 电弧宽 thickness x unit x 0.35, 主弧抖动 1.2 格 其余 2.5 格, gain 1.6 |
 
 做法:
 
@@ -43,6 +45,7 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 - BeamFlow: 单遍上屏片元, 坐标换成 CSS 像素 (gl_FragCoord / u_dpr, y 从顶部量), 光叠加后取峰值当不透明度并做色调压缩. 揭图用 ShaderSpec.textures 上传 revealImage, 在场程度跟 u_pointer.z.
 - RippleLens: 波队列在 JS 里 (CSS 像素), 每帧打包成 u_waves vec4[100] (设备像素的位置, 半径, 当前振幅), 片元里逐波累加位移再按 cover 取图. 图片异步加载, 未就绪时画布透明.
 - SoftShape: 规格用两遍离屏模糊 (uFieldTexture); 这里形状本身就是有符号距离, 失焦直接在距离上展宽, 一遍上屏, 不要离屏. 图片形状在 JS 里做 512 的两遍一维距离变换 (Felzenszwalb 下包络), 编码进 RGBA8 的 R/G 两字节, 片元里 texelFetch 手动双线性解码.
+- SparkMark: 图形 (自带闪电的 Path2D 或图片) 栅格化成 560 的遮罩, 走 parts/sdf.ts 得到距离场, 两张 (旧 / 新) 同时作为纹理传入, sdfGlsl(name) 生成各自的解码函数; 换 src 时旧的挪到 from, 形变进度从 0 走. 电弧, 支弧, 脉冲全部是距离场上的解析光线 (w^2 / (d^2 + w^2)), 一遍上屏.
 
 ## Consequences
 
@@ -52,3 +55,4 @@ docs/research/catalog/animations.md 的 SplashCursor, MetaBalls, MetallicPaint, 
 - BeamFlow 没有落的: surfaceRef (跟随页面上另一个元素的顶边当地面; 内核只量自己的宿主, 这里改成 surfaceLevel 比例), 规格的固定 TINTS 色板 (颜色只走 token), MAX_RENDER_DIM 与 BASE_SATURATION, 揭图按宿主拉伸而不是 cover 裁切.
 - RippleLens 没有落的: 规格的 uTexel / uTextureSize 细节按本库自己的 cover 映射重写. 图片跨域失败时画布透明 (不退兜底).
 - SoftShape 没有落的: 失焦是距离展宽的近似, 不是真正的高斯卷积 (细描边模糊后变淡的观感一致, 尖角处略圆). 图片距离场在主线程算 (512 x 512 约几十毫秒), 换图时一次.
+- SparkMark 没有落的: PIXEL_BUDGET (按 4e6 像素压低像素比; 内核只有统一的 dpr 上限), 规格里 tGlowFrom / tGlowTo 两张预模糊辉光纹理 (这里辉光由距离场 exp(-d / (6 glow unit)) 直接算, 不要离屏), 2d 画布逐帧层. 脉冲沿轮廓的位置用极角近似, 凹形图形上不严格沿边走.

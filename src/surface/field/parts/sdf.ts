@@ -106,23 +106,31 @@ export function sdfCanvas(mask: MaskCanvas, size: number = SOFT.field, pad: numb
   return { canvas, aspect: w / h, range, width: w };
 }
 
-/** 着色器端: 手动双线性解码 (字节拆分的值不能交给硬件插值). 需要 u_field, u_field_range. 返回距离场像素. */
-export const SDF_GLSL = `
-uniform sampler2D u_field;
-uniform float u_field_range;
-float fieldTexel(ivec2 c) {
-  ivec2 sz = textureSize(u_field, 0);
-  vec4 t = texelFetch(u_field, clamp(c, ivec2(0), sz - 1), 0);
-  return ((t.r * 255.0 * 256.0 + t.g * 255.0) / 65535.0 - 0.5) * 2.0 * u_field_range;
+/**
+ * 着色器端: 手动双线性解码 (字节拆分的值不能交给硬件插值). 生成 `<name>`, `<name>_range` 两个 uniform 与 `<name>_distance(uv)`,
+ * 返回距离场像素; uv 出界时加上出界的像素距离.
+ */
+export function sdfGlsl(name: string): string {
+  return `
+uniform sampler2D ${name};
+uniform float ${name}_range;
+float ${name}_texel(ivec2 c) {
+  ivec2 sz = textureSize(${name}, 0);
+  vec4 t = texelFetch(${name}, clamp(c, ivec2(0), sz - 1), 0);
+  return ((t.r * 255.0 * 256.0 + t.g * 255.0) / 65535.0 - 0.5) * 2.0 * ${name}_range;
 }
-float fieldDistance(vec2 uv) {
-  vec2 sz = vec2(textureSize(u_field, 0));
+float ${name}_distance(vec2 uv) {
+  vec2 sz = vec2(textureSize(${name}, 0));
   vec2 inside = clamp(uv, 0.0, 1.0);
   vec2 p = inside * sz - 0.5;
   ivec2 i = ivec2(floor(p));
   vec2 f = fract(p);
-  float a = mix(fieldTexel(i), fieldTexel(i + ivec2(1, 0)), f.x);
-  float b = mix(fieldTexel(i + ivec2(0, 1)), fieldTexel(i + ivec2(1, 1)), f.x);
+  float a = mix(${name}_texel(i), ${name}_texel(i + ivec2(1, 0)), f.x);
+  float b = mix(${name}_texel(i + ivec2(0, 1)), ${name}_texel(i + ivec2(1, 1)), f.x);
   return mix(a, b, f.y) + length((uv - inside) * sz);
 }
 `;
+}
+
+/** SoftShape 用的单张距离场: u_field, u_field_range, u_field_distance(uv). */
+export const SDF_GLSL = sdfGlsl("u_field");
