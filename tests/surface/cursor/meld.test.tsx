@@ -3,7 +3,8 @@
  */
 import { act, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MELD, MeldCursor, integrate, makeMeld, massAfterSplash, meldSpring, noise1, regrowMass, seededRandom, splashMeld, stepMeld } from "@src/surface/cursor";
+import { MELD, MeldCursor, makeMeld, massAfterSplash, meldSpring, regrowMass, splashMeld, stepMeld } from "@src/surface/cursor";
+import { integrate, noise1, seededRandom } from "@src/surface/cursor/parts/common";
 import { mockReducedMotion, recordCanvas2d, stubRect, useFakeClock } from "../helpers";
 
 afterEach(() => {

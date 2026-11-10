@@ -11,3 +11,4 @@ export * from "./loop";
 export * from "./edge";
 export * from "./texture";
 export * from "./sticker";
+export * from "./cursor";

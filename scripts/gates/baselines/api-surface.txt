@@ -2626,6 +2626,7 @@ Ballpit
 BallpitProps
 Beams
 BeamsProps
+Body
 CELL
 COMET
 CRTWarp
@@ -2664,6 +2665,7 @@ DotGrid
 DotGridProps
 DraftText
 DraftTextProps
+Drop
 DropText
 DropTextProps
 EDGE_BLUR
@@ -2697,6 +2699,8 @@ FLAP_DEFAULTS
 FLAP_MIN_FLIP_S
 FLOAT_DEFAULTS
 FLOAT_FADE
+FLOCK
+FLOCK_STRIDE
 FOCUS_DEFAULTS
 FOCUS_FILTER_S
 FOCUS_FRAME_GAP_PX
@@ -2712,6 +2716,11 @@ FlapText
 FlapTextProps
 FloatingLines
 FloatingLinesProps
+FlockCursor
+FlockCursorProps
+FlockShape
+FlockState
+FlockTuning
 FluxLines
 FluxLinesProps
 FocusText
@@ -2744,6 +2753,16 @@ GridMotion
 GridMotionProps
 GridScan
 GridScanProps
+HALO
+HAZE
+HaloCursor
+HaloCursorProps
+HaloPoint
+HaloState
+HazeCursor
+HazeCursorProps
+HazeState
+HazeTuning
 Hyperspeed
 HyperspeedProps
 Iridescence
@@ -2784,6 +2803,7 @@ MARQUEE_VIEW
 MARQUEE_WAVE_LENGTH
 MASK_FROM_PERCENT
 MASK_LETTER_SHARE
+MELD
 MOSAIC
 MagicRings
 MagicRingsProps
@@ -2793,6 +2813,10 @@ MarkRail
 MarkRailItem
 MarkRailProps
 MarqueeShape
+MeldCursor
+MeldCursorProps
+MeldState
+MeldTuning
 MicroSlats
 MicroSlatsProps
 MoltenMetal
@@ -2802,6 +2826,14 @@ MosaicShape
 MosaicSwap
 MosaicSwapProps
 MosaicTrigger
+NUDGE
+NudgeFalloff
+NudgeGrid
+NudgeGridProps
+NudgeGridStyle
+NudgeHighlight
+NudgeState
+NudgeTuning
 ORBIT
 ORBIT_BONKERS_SCALE
 ORBIT_DEFAULTS
@@ -2846,6 +2878,7 @@ PrismProps
 PrismaticBurst
 PrismaticBurstProps
 Pt
+Puff
 RAIL
 RETICLE
 REVEAL_DEFAULTS
@@ -2857,6 +2890,7 @@ ReticleLines
 ReticleLinesProps
 ReticleState
 ReticleTargetEffect
+Ribbon
 RippleGrid
 RippleGridProps
 SCRAMBLE_DEFAULTS
@@ -2883,6 +2917,8 @@ STAMP_MAX_DT_S
 STAMP_MIN_REMOVAL_S
 STAMP_POP_S
 STAMP_SMOOTH_TAU_S
+STREAMER
+SUBSTEP_S
 Scanner
 ScannerProps
 ScramblePointer
@@ -2925,6 +2961,11 @@ StaggerTextProps
 StaggerVariant
 StampTrail
 StampTrailProps
+StreamerCursor
+StreamerCursorProps
+StreamerShape
+StreamerState
+StreamerTuning
 SurfaceLayer
 SurfaceLayerProps
 SurfaceTone
@@ -2984,6 +3025,7 @@ bandCenter
 budgetRatio
 buildOrbit
 burstAt
+burstFlock
 burstLongest
 cellGrid
 cellNoise
@@ -2997,17 +3039,25 @@ drawBurst
 driftLead
 dropPose
 echoLook
+edgeAlpha
 emitCount
 extrudeIntro
 extrudeLayers
 fillCount
 fillGrain
+fitNudge
 flingVelocity
+flockEase
+flockGrab
 foldLine
 foldQuarter
 followChain
 frameDue
 grainValue
+haloFollowTau
+haloLayers
+hazeDecay
+hazeSpring
 inkOf
 introOpacity
 introTotal
@@ -3021,9 +3071,17 @@ layerOpacity
 lifeEnvelope
 locate
 lockBox
+makeFlock
+makeHalo
+makeHaze
+makeMeld
+makeNudge
 makePointer
 makeReticle
+makeStreamers
 marqueePath
+massAfterSplash
+meldSpring
 mirrorMatrix
 mix
 mosaicAmount
@@ -3031,6 +3089,7 @@ mosaicRate
 moveForce
 nearestGlyph
 nextFocus
+nudgeEase
 orbitAngle
 orbitAt
 orbitLook
@@ -3040,16 +3099,22 @@ outsideDistance
 padBoard
 pointerEnergy
 pointerLead
+pointerPx
 pointerTilt
+pointerVelocityPx
 polygonCss
 powerOut
+puffHaze
+puffRadius
 pushBurst
 pushTarget
 quantize
 railOffset
+regrowMass
 removalTick
 reticleTau
 revealShown
+ribbonOutline
 roundRectLength
 roundRectPoint
 scrambleLocks
@@ -3065,6 +3130,7 @@ smoothingStep
 smoothstep
 sparkLife
 sparkReach
+splashMeld
 springBack
 springStep
 stampAngle
@@ -3072,8 +3138,17 @@ stampCells
 stampContent
 stampFloat
 stampLook
+stepFlock
+stepHalo
+stepHaze
+stepMeld
+stepNudge
 stepReticle
+stepStreamers
 streakGradient
+streamerFollow
+streamerProfile
+streamerSpring
 strongest
 surgeEnergy
 sweepMs
@@ -3105,8 +3180,10 @@ src/surface/backgrounds/index.ts -> ./grid
 src/surface/backgrounds/index.ts -> ./lines
 src/surface/backgrounds/index.ts -> ./particles
 src/surface/backgrounds/index.ts -> ./rays
+src/surface/cursor/index.ts -> ./tokens
 src/surface/edge/index.ts -> ./tokens
 src/surface/index.ts -> ./backgrounds
+src/surface/index.ts -> ./cursor
 src/surface/index.ts -> ./edge
 src/surface/index.ts -> ./loop
 src/surface/index.ts -> ./pointer

@@ -14,7 +14,7 @@ Decision-ID: surface-cursor
 - `src/surface/cursor/parts/flock.ts`, `src/surface/cursor/FlockCursor.tsx`
 - `src/surface/cursor/parts/streamer.ts`, `src/surface/cursor/StreamerCursor.tsx`
 - `src/surface/cursor/parts/nudge.ts`, `src/surface/cursor/NudgeGrid.tsx`
-- `src/surface/cursor/index.ts`
+- `src/surface/cursor/index.ts` (common.ts 的 clamp / mix / seededRandom 等通用小工具不导出, 只导出 pointerPx / pointerVelocityPx / Body, 避开 pointer 与 texture 族已公开的同名符号)
 - `tests/surface/cursor/{meld,halo,haze,flock,streamer,nudge}.test.tsx`, `tests/surface/cursor/support.ts` (挂载前钉住宿主矩形)
 
 ## Problem

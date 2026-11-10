@@ -16,6 +16,16 @@
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
 
+## [0.13.0] - 2026-11-10
+
+`@hx/ui/surface` 新收 react-bits Animations 的 B 段 6 件, 开 cursor 族 (跟手画布). 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 规格是 WebGL 着色器场, 这里全部接在 backdrop 内核的 Canvas2D 渲染器上近似, 无 ENGINE-GAP. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.
+
+### Added
+
+- `@hx/ui/surface` cursor 族: `MeldCursor` (BlobCursor, 弹簧头加尾链的融滴, 点击溅滴, 质量扣减回长), `HaloCursor` (GlowCursor, 三层余辉光带), `HazeCursor` (GhostCursor, 烟团拖尾, 上漂与湍流), `FlockCursor` (SwarmCursor, 绕指针打转的粒子群, 闲时漫游, 点击炸开), `StreamerCursor` (Ribbons, 弹簧彩带, lens / comet / even 宽度曲线), `NudgeGrid` (CursorGrid, 垫底网格, 指针附近亮格, 点击扩散波).
+- 一并导出各件的模拟纯函数 (`stepMeld`, `stepHalo`, `stepHaze`, `stepFlock`, `stepStreamers`, `stepNudge` 等) 与 `MELD` / `HALO` / `HAZE` / `FLOCK` / `STREAMER` / `NUDGE` 常数, 以及 `pointerPx` / `pointerVelocityPx`. 颜色只收语义 token 名.
+- 契约: api 快照 `./surface` 段 491 到 566, docs-props 随之更新.
+
 ## [0.12.0] - 2026-11-10
 
 `@hx/ui/surface` 新收 react-bits Animations 的 A 段 7 件, 开 loop / edge / texture / sticker 四个族, pointer 族加 1 件. 行为规格取自 `docs/research/catalog/animations.md`, 实现为 HX 自有, 组件名换成本库自己的. 根入口 `src/index.ts` 不新增符号. 只增不删, 无迁移.

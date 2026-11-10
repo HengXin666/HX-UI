@@ -3,7 +3,8 @@
  */
 import { act, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { NUDGE, NudgeGrid, edgeAlpha, fitNudge, makeNudge, nudgeEase, seededRandom, stepNudge } from "@src/surface/cursor";
+import { NUDGE, NudgeGrid, edgeAlpha, fitNudge, makeNudge, nudgeEase, stepNudge } from "@src/surface/cursor";
+import { seededRandom } from "@src/surface/cursor/parts/common";
 import { mockReducedMotion, recordCanvas2d, useFakeClock } from "../helpers";
 import { fixRect } from "./support";
 

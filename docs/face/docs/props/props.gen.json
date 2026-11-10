@@ -7745,6 +7745,120 @@
    "required": false
   }
  ],
+ "FlockCursor": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "count",
+   "type": "number",
+   "default": "400",
+   "desc": "粒子数, 上限 2000.",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "2.6",
+   "desc": "粒子直径 px.",
+   "required": false
+  },
+  {
+   "name": "shape",
+   "type": "\"dot\" | \"square\" | \"streak\"",
+   "default": "\"dot\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"primary\"",
+   "desc": "主色调与近处粒子的强调色调 (语义 token).",
+   "required": false
+  },
+  {
+   "name": "accentTone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "spread",
+   "type": "number",
+   "default": "90",
+   "desc": "群的半径 px.",
+   "required": false
+  },
+  {
+   "name": "speed",
+   "type": "number",
+   "default": "1",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "swirl",
+   "type": "number",
+   "default": "0.6",
+   "desc": "0 到 1, 绕锚点打转的强度.",
+   "required": false
+  },
+  {
+   "name": "wander",
+   "type": "number",
+   "default": "0.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "depth",
+   "type": "number",
+   "default": "0.7",
+   "desc": "0 到 1, 远近层次 (远处粒子更小更淡).",
+   "required": false
+  },
+  {
+   "name": "idle",
+   "type": "\"still\" | \"roam\"",
+   "default": "\"roam\"",
+   "desc": "指针不在时: 漫游或原地.",
+   "required": false
+  },
+  {
+   "name": "clickEffect",
+   "type": "\"none\" | \"burst\"",
+   "default": "\"burst\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "enabled",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
  "FlowMasonry": [
   {
    "name": "items",
@@ -11601,6 +11715,171 @@
    "type": "boolean",
    "default": "-",
    "desc": "覆写系统的减弱动效偏好: true 只画一帧静态画面.",
+   "required": false
+  }
+ ],
+ "HaloCursor": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"primary\"",
+   "desc": "主色调与尾部色调 (语义 token); 不给 secondaryTone 时一色.",
+   "required": false
+  },
+  {
+   "name": "secondaryTone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "intensity",
+   "type": "number",
+   "default": "1.3",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "trailWidth",
+   "type": "number",
+   "default": "3",
+   "desc": "轨迹线宽倍数.",
+   "required": false
+  },
+  {
+   "name": "linger",
+   "type": "number",
+   "default": "1.4",
+   "desc": "余辉停留秒数.",
+   "required": false
+  },
+  {
+   "name": "glow",
+   "type": "number",
+   "default": "1.2",
+   "desc": "光晕模糊倍数.",
+   "required": false
+  },
+  {
+   "name": "hotspot",
+   "type": "number",
+   "default": "0.8",
+   "desc": "光头热点强度 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "followSpeed",
+   "type": "number",
+   "default": "0.6",
+   "desc": "0 到 1, 越大越贴手.",
+   "required": false
+  },
+  {
+   "name": "clickBurst",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "enabled",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "HazeCursor": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"foreground\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "brightness",
+   "type": "number",
+   "default": "1",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "80",
+   "desc": "烟头直径 px.",
+   "required": false
+  },
+  {
+   "name": "trailLength",
+   "type": "number",
+   "default": "50",
+   "desc": "烟尾长短, 越大散得越慢.",
+   "required": false
+  },
+  {
+   "name": "inertia",
+   "type": "number",
+   "default": "0.5",
+   "desc": "0 到 1, 越大越飘.",
+   "required": false
+  },
+  {
+   "name": "turbulence",
+   "type": "number",
+   "default": "0.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "drift",
+   "type": "number",
+   "default": "0.3",
+   "desc": "向上漂移的快慢.",
+   "required": false
+  },
+  {
+   "name": "clickPuff",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
    "required": false
   }
  ],
@@ -15937,6 +16216,134 @@
    "required": false
   }
  ],
+ "MeldCursor": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"primary\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "size",
+   "type": "number",
+   "default": "140",
+   "desc": "头部直径 px.",
+   "required": false
+  },
+  {
+   "name": "morphSpeed",
+   "type": "number",
+   "default": "0.4",
+   "desc": "形变时钟的速度, 0 时不晃.",
+   "required": false
+  },
+  {
+   "name": "trail",
+   "type": "number",
+   "default": "16",
+   "desc": "尾链点数, 上限 16.",
+   "required": false
+  },
+  {
+   "name": "lag",
+   "type": "number",
+   "default": "0.55",
+   "desc": "0 到 1, 越大头部越拖.",
+   "required": false
+  },
+  {
+   "name": "goo",
+   "type": "number",
+   "default": "1",
+   "desc": "0 到 1, 尾链之间的粘连粗细.",
+   "required": false
+  },
+  {
+   "name": "stretch",
+   "type": "number",
+   "default": "0.6",
+   "desc": "沿速度方向的拉伸.",
+   "required": false
+  },
+  {
+   "name": "wobble",
+   "type": "number",
+   "default": "1",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "splash",
+   "type": "boolean",
+   "default": "true",
+   "desc": "点击时溅出.",
+   "required": false
+  },
+  {
+   "name": "splashCount",
+   "type": "number",
+   "default": "6",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "splashSpeed",
+   "type": "number",
+   "default": "0.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "splashSize",
+   "type": "number",
+   "default": "0.5",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "splashGravity",
+   "type": "number",
+   "default": "0",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "regrow",
+   "type": "number",
+   "default": "0.5",
+   "desc": "0 到 1, 溅出后回长的快慢.",
+   "required": false
+  },
+  {
+   "name": "shine",
+   "type": "number",
+   "default": "1",
+   "desc": "头部高光强度, 0 关闭.",
+   "required": false
+  },
+  {
+   "name": "hideCursor",
+   "type": "boolean",
+   "default": "true",
+   "desc": "区域内隐藏系统光标.",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
  "MeshGradient": [
   {
    "name": "colors",
@@ -17067,6 +17474,169 @@
    "name": "onCommit",
    "type": "(value: number) => void",
    "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "NudgeGrid": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "cellSize",
+   "type": "number",
+   "default": "60",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"primary\"",
+   "desc": "点亮的格的色调与网格线色调 (语义 token).",
+   "required": false
+  },
+  {
+   "name": "gridTone",
+   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\"",
+   "default": "\"foreground\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "radius",
+   "type": "number",
+   "default": "140",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "falloff",
+   "type": "\"linear\" | \"smooth\" | \"sharp\"",
+   "default": "\"smooth\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "highlight",
+   "type": "\"area\" | \"cell\"",
+   "default": "\"area\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "holdTime",
+   "type": "number",
+   "default": "400",
+   "desc": "离开后保持 ms, 再按 fadeDuration ms 熄灭.",
+   "required": false
+  },
+  {
+   "name": "fadeDuration",
+   "type": "number",
+   "default": "800",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "lineWidth",
+   "type": "number",
+   "default": "1",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "maxOpacity",
+   "type": "number",
+   "default": "1",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "fillOpacity",
+   "type": "number",
+   "default": "0.06",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "gridOpacity",
+   "type": "number",
+   "default": "0.08",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "gridStyle",
+   "type": "\"dots\" | \"dashed\" | \"lines\" | \"crosses\"",
+   "default": "\"lines\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "cellRadius",
+   "type": "number",
+   "default": "0",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "cellGap",
+   "type": "number",
+   "default": "0",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "spotlight",
+   "type": "number",
+   "default": "0.6",
+   "desc": "指针附近网格线额外的亮度 0 到 1.",
+   "required": false
+  },
+  {
+   "name": "clickPulse",
+   "type": "boolean",
+   "default": "true",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "pulseSpeed",
+   "type": "number",
+   "default": "600",
+   "desc": "波的扩散速度 px/s.",
+   "required": false
+  },
+  {
+   "name": "ambient",
+   "type": "number",
+   "default": "0",
+   "desc": "环境随机闪格的频度, 0 关闭.",
+   "required": false
+  },
+  {
+   "name": "edgeFade",
+   "type": "number",
+   "default": "0.2",
+   "desc": "边缘渐隐占短边一半的比例.",
+   "required": false
+  },
+  {
+   "name": "intro",
+   "type": "boolean",
+   "default": "true",
    "desc": "",
    "required": false
   },
@@ -25363,6 +25933,92 @@
    "name": "ariaLabel",
    "type": "string",
    "default": "\"Progress\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "className",
+   "type": "string",
+   "default": "-",
+   "desc": "",
+   "required": false
+  }
+ ],
+ "StreamerCursor": [
+  {
+   "name": "children",
+   "type": "ReactNode",
+   "default": "-",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "tones",
+   "type": "readonly (\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"background\" | \"success\" | \"muted\" | \"foreground\")[]",
+   "default": "DEFAULT_TONES",
+   "desc": "每条彩带一个色调 (语义 token), 条数等于长度.",
+   "required": false
+  },
+  {
+   "name": "thickness",
+   "type": "number",
+   "default": "30",
+   "desc": "最粗处宽度 px.",
+   "required": false
+  },
+  {
+   "name": "length",
+   "type": "number",
+   "default": "1.4",
+   "desc": "身长倍数, 越大拖得越长.",
+   "required": false
+  },
+  {
+   "name": "spread",
+   "type": "number",
+   "default": "18",
+   "desc": "各条相对指针错开的距离 px.",
+   "required": false
+  },
+  {
+   "name": "stiffness",
+   "type": "number",
+   "default": "0.5",
+   "desc": "0 到 1, 头部弹簧的硬度.",
+   "required": false
+  },
+  {
+   "name": "bounce",
+   "type": "number",
+   "default": "0.5",
+   "desc": "0 到 1, 越大越弹.",
+   "required": false
+  },
+  {
+   "name": "shape",
+   "type": "\"lens\" | \"comet\" | \"even\"",
+   "default": "\"lens\"",
+   "desc": "",
+   "required": false
+  },
+  {
+   "name": "wave",
+   "type": "number",
+   "default": "0",
+   "desc": "沿法向起伏的幅度, 0 为不起伏.",
+   "required": false
+  },
+  {
+   "name": "fade",
+   "type": "boolean",
+   "default": "false",
+   "desc": "打开后尾部渐隐.",
+   "required": false
+  },
+  {
+   "name": "opacity",
+   "type": "number",
+   "default": "1",
    "desc": "",
    "required": false
   },
