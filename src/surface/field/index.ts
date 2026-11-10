@@ -10,3 +10,5 @@ export { chromeSource, makeChrome, stepChrome, type ChromeState } from "./parts/
 export { ChromeMark, type ChromeMarkProps } from "./ChromeMark";
 export { beamIntro, makeBeam, stepBeam, type BeamState } from "./parts/beam";
 export { BeamFlow, type BeamFlowProps } from "./BeamFlow";
+export { lensLife, lensRadius, makeLens, packLens, stepLens, type LensState, type LensTrigger, type LensTuning, type LensWave } from "./parts/lens";
+export { RippleLens, type RippleLensProps } from "./RippleLens";

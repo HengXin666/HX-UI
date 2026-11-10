@@ -161,3 +161,33 @@ export const BEAM = {
   sway: 0.12,
   swayTau: 0.3,
 } as const;
+
+/* ── RippleLens (规格 RippleDistortion) ── */
+export const LENS = {
+  /** MAX_WAVES. */
+  maxWaves: 100,
+  /** QUALITY_SCALE: 像素比上限乘的比例. */
+  quality: { low: 0.4, medium: 0.7, high: 1 },
+  /** START_SCALE: 波一出生的半径是 brushSize / 2 / 1.5. */
+  startScale: 1.5,
+  /** EDGE = exp(-5): 振幅 exp(-age x fade) 低于它就出队, 寿命 5 / fade 秒. */
+  edge: 0.006737947,
+  /** props 默认值. */
+  brushSize: 150,
+  strength: 0.2,
+  swirl: 1,
+  rings: 4,
+  spread: 5,
+  fade: 3,
+  spacing: 15,
+  dispersion: 0,
+  glint: 0,
+  tintAmount: 0.1,
+  clickStrength: 2,
+  /** 本库定: 波半径每秒长 spread x brushSize x 0.1, 波带宽 brushSize x 0.25, 位移满格 brushSize x 0.25 x strength. */
+  growth: 0.1,
+  bandRatio: 0.25,
+  pushRatio: 0.25,
+} as const;
+
+export type LensQuality = keyof typeof LENS.quality;
