@@ -22,7 +22,7 @@ export interface DotRevealProps extends BackdropCommonProps {
   readonly alt?: string;
   /** 铺法: cover 裁边铺满, contain 留边全见 (留边是纸色), fill 拉伸. 默认 cover. */
   readonly fit?: DotFit;
-  /** 抠底: 与图片四角底色相近处不出网点, 揭开时也露纸色. 适合纯色底的产品图, 默认 false. */
+  /** 抠底: 与底色相近处不出网点, 揭开时也露纸色. 底色取图片四角平均色 (本库定, 规格未给来源); 读不出像素时自动关闭. 适合纯色底的产品图, 默认 false. */
   readonly keyOut?: boolean;
   /** 上色方式: mono 单色网, duotone 双色套印, color 原色网点. 默认 mono. */
   readonly mode?: DotMode;

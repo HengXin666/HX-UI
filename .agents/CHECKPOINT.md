@@ -149,7 +149,7 @@ controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2
 | D | ElasticMesh | SpringMesh | 0e80222 (scene, ENGINE-GAP 质点弹簧网格顶点变形) |
 | D | Strands | FiberStrands | fdc0122 (scene) |
 
-**已推到 1a3b35f (0.16.0: Halo/Haze 补做与 ENGINE-GAP 复核). 按序补做 7 件已提本地 (ring-1 997d4ef, DotReveal 64439ef, FiberStrands 367128c, SpringMesh 6a71678, SoftShape 49430a7, SparkMark 弧长 361d8fa, SparkMark 预算与辉光 396ac76) 并定版 0.17.0, 待用户推. 下一步: "后续收尾" 各项.** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
+**已推到 18f47bd (0.17.0, 按序补做 7 件全部完成). Animations 段已收口 (2026-11-11 00:10). 交接见下方 "交接 (2026-11-11)".** 用户 2026-11-10 定: 每段做完立刻单独一个接入提交 (导出, api 快照, minor 版本, CHANGELOG, docs-props), 不攒到最后.
 接入时查 export * 撞名 (tsc TS2308): 族内通用小工具 (clamp, mix, seededRandom, wrapOffset 之类) 不进族 index 或改名.
 注意: pointer 族已接在 ./surface 上, 段内往它的 index 加导出会改 api 快照 (门禁 4/13 会拦), 所以段内新件放已接入的族时先不进族 index.
 B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DOM 做近似, 真需要顶点 / 实例化的标 ENGINE-GAP.
@@ -170,12 +170,27 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
   7. ~~SparkMark: PIXEL_BUDGET 与预模糊辉光~~ 已做 (pixelBudgetDpr; 辉光烘在参数图 B 通道). 用户 2026-11-10 23:37 定为未落项, 组件文件头 / field note / CHANGELOG 已一致.
 - ENGINE-GAP 复核 (2026-11-10 定, 组件文件头 / note / CHANGELOG 0.16.0 一致): SoftShape 失焦近似不标 (不涉顶点 / 实例化 / 深度, 真高斯排在上面第 5 件); SparkMark 的 PIXEL_BUDGET 与预模糊辉光不标 ENGINE-GAP, 用户定为未落项已补 (第 7 件), 脉冲极角是未落项已补 (第 6 件); PrismOrb 的 PIXEL_BUDGET 同样不算 ENGINE-GAP, 文件头措辞已改.
 - 内核若加浮点数据纹理上传, CubeField 的 gridSize 上限 13 可放开.
+- **未落项 (用户 2026-11-11 定排进待办, 要做不是只记)**:
+  - SparkMark: 规格的 2d 画布逐帧层未落.
+  - FiberStrands: 规格 fp 抗锯齿 (dFdx 足迹) 未落, 现用 sg 最小值代替.
+  - DotReveal: 用户 2026-11-11 定 "四角平均底色可以, 写进 props 文档让使用方能覆盖". props 文档已写 (keyOut 注释); 覆盖用的 prop (如 keyColor) 还没加, 加了会改 docs-props, 属 minor.
+- 用户 2026-11-11 已定 (无需再问): SpringMesh 保留 touch-action: none (代价已写 scene note 与 CHANGELOG 0.17.0); FiberStrands 7 角色保留本库定义 (默认外观变化已写 CHANGELOG 0.17.0).
+- 待用户裁定: Halo/Haze 的 RGBA8 精度仍标 ENGINE-GAP, 与 23:25 口径 (只算顶点 / 实例化 / 深度) 冲突; PrismOrb 的 PIXEL_BUDGET 是否同列未落项并补; 烟团 CPU 不老化 (1530d2d); cursor 的 packSplats 等通用名导出是否撤回 (撤回改 api 快照).
+- 未实测: SparkMark PIXEL_BUDGET 经 setState 在帧回调里改 dpr 的路径; SoftShape 每帧多 3 遍离屏的性能.
 
 - `tallyOvershoot` 缓存 Map 无上限, 考虑量化键或 LRU.
 - nav / menu 之外各族 tokens 里的 cubic-bezier 副本 (choice/tone, press/tokens, range/tokens, compose/tokens, dismiss/tokens) 改引用 CURVE.
 - 各族帧循环 (use-nav-motion, range motion.ts 等) 并进 src/motion; nav / gallery / stack / glass 的族 tokens 合并.
 - `tests/kits/support.ts` 与 `tests/kits/stack/support.ts` 合并进公共测试支持.
 - `use-drag.ts` 补单测; BlendSlider 测试的 fake Animation 补 `finish()`.
+
+## 交接 (2026-11-11)
+
+- 已完成: Animations A/B/C/D 四段 + Halo/Haze 补做 + 按序补做 7 件, 全部已推 (到 18f47bd, 0.17.0). 门禁每件 13/13.
+- 正在做: 无 (本次只改了 DotReveal keyOut 注释与本文件).
+- 下一步 (按序): 1) 上面 "未落项" 三条, 每件单独提交; 2) "待用户裁定" 四条先问用户; 3) 其余 "后续收尾".
+- 接手第一步: 装 hxfs (见已知坑), `git log --oneline -3` 确认 HEAD 与本文件一致, 再读本节与 "后续收尾".
+- 总账 (0.17.0, 读 scripts/gates/baselines/api-surface.txt): 根入口 1608 符号; 子路径 surface 769, kits 290, controls 214, motion 159, backgrounds 136, hxbrowser 85, viz 56, hxbrowser/protocol 37, studio 34, page 23, blocks 1; 合计 3412. ENGINE-GAP: 标签 35 个文件 (`grep -rln 'ENGINE-GAP:' src`); 另 17 个文件以别的写法提到 ENGINE-GAP (含 "不标" 说明).
 
 ## 已知坑
 
