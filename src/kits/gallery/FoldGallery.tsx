@@ -4,7 +4,7 @@
 import { useRef, useState, type JSX, type KeyboardEvent, type ReactNode } from "react";
 import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
-import { KIT_FOCUS, KIT_OUT, kitTone, transitionOf, wrapIndex, type KitTone } from "./tokens";
+import { KIT_FOCUS, KIT_OUT, kitTone, transitionOf, wrapIndex, type KitTone } from "../tokens";
 
 export interface FoldItem {
   readonly image: string;

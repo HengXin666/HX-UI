@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type JSX, type ReactNode } from "react";
 import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import * as D from "./parts/drift-spec";
-import { KIT_FOCUS, KIT_OUT_LONG, MS_PER_S, transitionOf, useKitMotion } from "./tokens";
+import { KIT_FOCUS, KIT_OUT_LONG, MS_PER_S, transitionOf, useKitMotion } from "../tokens";
 
 export { DRIFT_DEFAULTS, driftBase, driftSpeedStep, driftWrap } from "./parts/drift-spec";
 

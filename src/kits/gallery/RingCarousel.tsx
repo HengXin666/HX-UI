@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import { useDrag } from "./parts/use-drag";
 import * as R from "./parts/ring-spec";
-import { KIT_FOCUS, MS_PER_S, useKitMotion } from "./tokens";
+import { KIT_FOCUS, MS_PER_S, useKitMotion } from "../tokens";
 
 export { RING_SPRING, cruiseVelocity, ringActive, ringRadius, ringStep, ringTarget } from "./parts/ring-spec";
 

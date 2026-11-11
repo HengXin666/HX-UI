@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import { useDrag } from "./parts/use-drag";
 import * as D from "./parts/dome-spec";
-import { KIT_FOCUS, PLAIN_EASE, transitionOf, useKitMotion } from "./tokens";
+import { KIT_FOCUS, PLAIN_EASE, transitionOf, useKitMotion } from "../tokens";
 
 export { DOME_DEFAULTS, domeCells, domeDecay, domeFling, domeRadius, type DomeCell } from "./parts/dome-spec";
 

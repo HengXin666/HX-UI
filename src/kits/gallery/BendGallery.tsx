@@ -9,7 +9,7 @@ import { cn } from "../../primitives/utils";
 import { slideOffset } from "./parts/carousel-spec";
 import { useDrag } from "./parts/use-drag";
 import * as B from "./parts/bend-spec";
-import { KIT_FOCUS, MS_PER_S, useKitMotion, wrapIndex } from "./tokens";
+import { KIT_FOCUS, MS_PER_S, useKitMotion, wrapIndex } from "../tokens";
 
 export { BEND_DEFAULTS, arcPlace, followFactor } from "./parts/bend-spec";
 

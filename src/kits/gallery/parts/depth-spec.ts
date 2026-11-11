@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-09-kits-gallery.md
  */
-import { wrapIndex } from "../tokens";
+import { wrapIndex } from "../../tokens";
 
 /** 规格默认 (DepthCarousel.jsx:20-41). 长度 px, 角度 deg, 时间 ms. */
 export const DEPTH_DEFAULTS = {

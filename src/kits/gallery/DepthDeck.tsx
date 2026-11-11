@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import { useDrag } from "./parts/use-drag";
 import * as D from "./parts/depth-spec";
-import { KIT_FOCUS, KIT_OUT, kitTone, transitionOf, wrapIndex, type KitTone } from "./tokens";
+import { KIT_FOCUS, KIT_OUT, kitTone, transitionOf, wrapIndex, type KitTone } from "../tokens";
 
 export { DEPTH_DEFAULTS, depthPose, depthRank, type DepthLook, type DepthPose } from "./parts/depth-spec";
 

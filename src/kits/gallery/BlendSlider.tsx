@@ -9,7 +9,7 @@ import { cssCurve } from "../../motion/curves";
 import { prefersReducedMotion } from "../../primitives/motion";
 import { cn } from "../../primitives/utils";
 import * as M from "./parts/blend-spec";
-import { KIT_FOCUS, kitTone, transitionOf, wrapIndex, type KitTone } from "./tokens";
+import { KIT_FOCUS, kitTone, transitionOf, wrapIndex, type KitTone } from "../tokens";
 
 export { BLEND_DEFAULTS, blendFrames, type BlendTransition } from "./parts/blend-spec";
 

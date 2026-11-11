@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, type PointerEvent } from "react";
-import { DRAG_THRESHOLD_PX } from "../tokens";
+import { DRAG_THRESHOLD_PX } from "../../tokens";
 
 /** 拖拽过程回调: 累计位移 px 与平滑速度 px/ms. */
 export interface DragHandlers {

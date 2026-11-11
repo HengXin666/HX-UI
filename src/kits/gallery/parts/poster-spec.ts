@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-09-kits-gallery.md
  */
-import { smoothstep } from "../tokens";
+import { smoothstep } from "../../tokens";
 
 /** 规格默认 (FlyingPosters.jsx:133-156). 长度 px. */
 export const POSTER_DEFAULTS = {

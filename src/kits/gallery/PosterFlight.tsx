@@ -9,7 +9,7 @@ import { cn } from "../../primitives/utils";
 import { followFactor } from "./parts/bend-spec";
 import { useDrag } from "./parts/use-drag";
 import * as P from "./parts/poster-spec";
-import { KIT_FOCUS, MS_PER_S, useKitMotion } from "./tokens";
+import { KIT_FOCUS, MS_PER_S, useKitMotion } from "../tokens";
 
 export { POSTER_DEFAULTS, posterPose, posterSkew, posterY, smoothRate, type PosterAxis } from "./parts/poster-spec";
 

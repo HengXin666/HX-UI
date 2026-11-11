@@ -7,7 +7,7 @@ import { cssCurve } from "../../motion/curves";
 import { cn } from "../../primitives/utils";
 import { useDrag } from "./parts/use-drag";
 import * as C from "./parts/carousel-spec";
-import { KIT_FOCUS, MS_PER_S, kitTone, transitionOf, useKitMotion, wrapIndex, type KitTone } from "./tokens";
+import { KIT_FOCUS, MS_PER_S, kitTone, transitionOf, useKitMotion, wrapIndex, type KitTone } from "../tokens";
 
 export { CAROUSEL_SPRING, releaseTarget, slideOffset } from "./parts/carousel-spec";
 

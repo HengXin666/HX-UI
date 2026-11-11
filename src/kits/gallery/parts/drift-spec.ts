@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-09-kits-gallery.md
  */
-import { approach } from "../tokens";
+import { approach } from "../../tokens";
 
 /** 悬停减速的时间常数 160ms, 离开后回速 280ms (DriftWall.jsx:145). */
 export const DRIFT_STOP_TAU_MS = 160;

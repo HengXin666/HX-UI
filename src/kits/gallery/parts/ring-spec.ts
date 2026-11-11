@@ -4,7 +4,7 @@
  * .agents/notes/implemented/feature/2026-11-09-kits-gallery.md
  */
 import type { SpringSpec } from "../../../craft/spring";
-import { wrapIndex } from "../tokens";
+import { wrapIndex } from "../../tokens";
 
 /** 规格 SPRING = 118, 阻尼 2 sqrt(SPRING) (CircularCarousel.jsx:123, 498), 即临界阻尼. */
 export const RING_STIFFNESS = 118;

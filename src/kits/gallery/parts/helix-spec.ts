@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-09-kits-gallery.md
  */
-import { smoothstep } from "../tokens";
+import { smoothstep } from "../../tokens";
 
 /** 规格默认 (InfiniteSpiral.jsx:14-33). 长度 px. */
 export const HELIX_DEFAULTS = {

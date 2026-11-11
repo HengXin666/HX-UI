@@ -9,7 +9,7 @@ import { cn } from "../../primitives/utils";
 import { slideOffset } from "./parts/carousel-spec";
 import { useDrag } from "./parts/use-drag";
 import * as F from "./parts/flex-spec";
-import { KIT_FOCUS, MS_PER_S, useKitMotion, wrapIndex } from "./tokens";
+import { KIT_FOCUS, MS_PER_S, useKitMotion, wrapIndex } from "../tokens";
 
 export { FLEX_SPRING, flexEnergyStep, flexEnergyTarget, flexPose } from "./parts/flex-spec";
 

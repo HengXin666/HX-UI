@@ -5,7 +5,7 @@ import { useEffect, useRef, type JSX } from "react";
 import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import * as H from "./parts/helix-spec";
-import { useKitMotion } from "./tokens";
+import { useKitMotion } from "../tokens";
 
 export { HELIX_DEFAULTS, helixAdvance, helixPose, type HelixLook, type HelixPose } from "./parts/helix-spec";
 

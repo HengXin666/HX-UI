@@ -4,7 +4,7 @@
  * .agents/notes/implemented/feature/2026-11-09-kits-gallery.md
  */
 import type { SpringSpec } from "../../../craft/spring";
-import { wrapIndex } from "../tokens";
+import { wrapIndex } from "../../tokens";
 
 /** 规格 STIFFNESS / DAMPING (Carousel.jsx:90-91), 质量 1. */
 export const CAROUSEL_SPRING: SpringSpec = { stiffness: 150, damping: 24, mass: 1 };
