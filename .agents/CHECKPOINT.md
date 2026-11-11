@@ -11,7 +11,8 @@
 |---|---|---|
 | 1 | 对表脚本 + 目录源 catalog.src.json (照改版前目录 1:1); 改版前: 有页 197 / 没页 244 / 页指向不存在导出 0 / 一件两处 29 | 37e91bb |
 | 2 | scripts/docs-catalog.ts 生成 catalog.gen.json (--check / --report); 门面左栏, 搜索, 计数, 上下页, 索引只读它, nav.ts 不进门面; 单源化后一件两处 0 | 21cbb77 |
-| 3 | confirm-dialog, drawer, sheet, popover, hover-card | (本提交) |
+| 3 | confirm-dialog, drawer, sheet, popover, hover-card | 6fd1231 |
+| 4 | tooltip, dropdown-menu, context-menu, menubar, command | (本提交) |
 | 3 | docs-coverage 门禁 (docs 组, 第 14 条): 页指向不存在导出 / 一件两处 / gen 不同步即 FAIL; 没页只报数, 组件批次清零后加 --require-pages; 白名单 docs-coverage-allow.json 为空 | 5f9650c |
 | 4 | 展示画廊只留 #/gallery (删去与 #/viz, #/page 重复的两格与无人引用的 home-show.tsx) | 28def82 |
 | 5 | 左栏折叠高度过渡 + 减弱动效直切 + 默认展开当前组; 每组 <= 12 件, 超了在 catalog.src.json 拆 subgroups (浮层与菜单, 页面版式, 模板) | 60cc594 |
