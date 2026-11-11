@@ -11,7 +11,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import {
-  CHECK_FLAG, DOCS_REGISTRY_FILE, EXIT_TOOL, FP_STRICTNESS, FP_WIRING, JSON_INDENT, GATES_CONSTANTS_FILE, HOOKS_DIR, NEWLINE, PRE_COMMIT, REPO_UP_FROM_GATE_SUBDIR, UTF8,
+  CHECK_FLAG, DOCS_COVERAGE_FILE, DOCS_REGISTRY_FILE, EXIT_TOOL, FP_STRICTNESS, FP_WIRING, JSON_INDENT, GATES_CONSTANTS_FILE, HOOKS_DIR, NEWLINE, PRE_COMMIT, REPO_UP_FROM_GATE_SUBDIR, UTF8,
 } from "../../constants/gates.ts";
 import { codeOf, entriesOf, lanesOf, readAt, registryOf, thresholdsOf } from "./fingerprint-sources.ts";
 
@@ -98,6 +98,8 @@ const SOURCES: Array<{ name: string; group: string; extract: () => string | Prom
   { name: "thresholds:check-shell", group: FP_STRICTNESS, extract: () => thresholdsOf(ROOT, "scripts/check-shell.ts") + NEWLINE + codeOf(ROOT, [BROWSER_CONSTANTS]) },
   { name: "thresholds:check-blueprint", group: FP_STRICTNESS, extract: () => thresholdsOf(ROOT, "scripts/check-blueprint.mjs") },
   { name: "thresholds:check-docs-registry", group: FP_STRICTNESS, extract: () => thresholdsOf(ROOT, DOCS_REGISTRY_FILE) + NEWLINE + codeOf(ROOT, [GATES_CONSTANTS_FILE]) },
+  { name: "thresholds:check-docs-coverage", group: FP_STRICTNESS, extract: () => codeOf(ROOT, [DOCS_COVERAGE_FILE, "scripts/docs-catalog/coverage.ts"]) },
+  { name: "whitelists:docs-coverage-allow", group: FP_STRICTNESS, extract: () => entriesOf(ROOT, "scripts/gates/frontend/docs-coverage-allow.json") },
   { name: "whitelists:docs-registry-allow", group: FP_STRICTNESS, extract: () => entriesOf(ROOT, "scripts/gates/frontend/docs-registry-allow.json") },
   { name: "registry:gates", group: FP_STRICTNESS, extract: () => registryOf(ROOT) },
   { name: "registry:lanes", group: FP_STRICTNESS, extract: () => lanesOf(ROOT) },

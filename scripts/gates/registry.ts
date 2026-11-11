@@ -8,7 +8,7 @@
  */
 import path from "node:path";
 import {
-  CHECK_FLAG, CHECK_LANES_FILE, DIST_ARTIFACT, DOCS_CWD, DOCS_REGISTRY_FILE, FINGERPRINT_FILE, GROUP_BROWSER,
+  CHECK_FLAG, CHECK_LANES_FILE, DIST_ARTIFACT, DOCS_COVERAGE_FILE, DOCS_CWD, DOCS_REGISTRY_FILE, FINGERPRINT_FILE, GROUP_BROWSER,
   GROUP_DOCS, GROUP_GUARD, GROUP_LIB, GROUP_PROBE, GROUP_SHAPE, LINE_BUDGET_FILE, NODE_BIN, PROBE_FILE,
   REPO_CWD, REPO_UP_FROM_GATES, STRICT_FLAG,
 } from "../constants/gates.ts";
@@ -115,6 +115,13 @@ export const GATES: Gate[] = [
     label: "文档注册表对账 (nav ↔ App 分支 ↔ 页面文件 ↔ 图标 ↔ 库导出; 幽灵页即 FAIL)",
     cwd: REPO_CWD,
     args: [NODE_BIN, DOCS_REGISTRY_FILE],
+  },
+  {
+    id: "docs-coverage",
+    group: GROUP_DOCS,
+    label: "文档覆盖对账 (页指向不存在导出 / 一件两处 / catalog.gen.json 不同步即 FAIL; 导出没页只报数, 待组件批次加 --require-pages 启用)",
+    cwd: REPO_CWD,
+    args: [NODE_BIN, DOCS_COVERAGE_FILE],
   },
   {
     id: "line-budget",

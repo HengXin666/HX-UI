@@ -70,6 +70,7 @@ export const EMPTY_JSON = "{}\n";
 export const REGISTRY_FILE = "scripts/gates/registry.ts";
 export const LANES_FILE = "scripts/gates/lanes.ts";
 export const DOCS_REGISTRY_FILE = "scripts/gates/frontend/check-docs-registry.ts";
+export const DOCS_COVERAGE_FILE = "scripts/gates/frontend/check-docs-coverage.ts";
 export const LINE_BUDGET_FILE = "scripts/gates/frontend/check-line-budget.ts";
 export const CHECK_LANES_FILE = "scripts/gates/shared/check-lanes.ts";
 export const FINGERPRINT_FILE = "scripts/gates/shared/check-fingerprint.ts";

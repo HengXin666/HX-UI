@@ -1,6 +1,6 @@
 {
   "note": "由 scripts/gates/shared/check-fingerprint.ts --update 生成。改动它 = 显式承认门禁严格度或接线变了。",
-  "hashedAt": "2026-11-08T14:20:09.578Z",
+  "hashedAt": "2026-11-11T15:38:55.064Z",
   "sources": {
     "thresholds:check-ui-rules": {
       "group": "strictness",
@@ -20,7 +20,15 @@
     },
     "thresholds:check-docs-registry": {
       "group": "strictness",
-      "hash": "c8341c42d9aefa00"
+      "hash": "cb3d351ba05f7d8a"
+    },
+    "thresholds:check-docs-coverage": {
+      "group": "strictness",
+      "hash": "aeda55bc5f02d209"
+    },
+    "whitelists:docs-coverage-allow": {
+      "group": "strictness",
+      "hash": "98057319c712ab54"
     },
     "whitelists:docs-registry-allow": {
       "group": "strictness",
@@ -28,7 +36,7 @@
     },
     "registry:gates": {
       "group": "strictness",
-      "hash": "c224e54cece23306"
+      "hash": "689980b52f7d0893"
     },
     "registry:lanes": {
       "group": "strictness",
