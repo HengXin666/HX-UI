@@ -3,6 +3,8 @@
  * 数值是 docs/research/catalog/micro.md 各条目的规格值, 注释里写原规格名便于对照.
  */
 
+import { cssCurve } from "../../motion/curves";
+
 /** 本文件内重复出现的字面量, 只写一次. */
 const N_10 = 10;
 const N_0_3 = 0.3;
@@ -27,7 +29,7 @@ const N_240 = 240;
 const N_4 = 4;
 
 /** 族里五件共用的 CSS 收尾曲线 (各条目的 --*-ease-out). */
-export const DISMISS_EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+export const DISMISS_EASE_OUT = cssCurve("outStrong");
 
 /* ── DrawerRow (规格 SwipeRow) ── */
 export const ROW = {
@@ -204,7 +206,7 @@ export const RIP = {
 	pointerMinDtS: 0.004,
 	/** 倾斜复位 650ms, 滤镜 700ms, 淡出 500ms. */
 	tiltResetMs: 650,
-	tiltResetEase: "cubic-bezier(0.22, 1, 0.36, 1)",
+	tiltResetEase: cssCurve("outQuint"),
 	filterMs: 700,
 	fadeMs: 500,
 	width: 460,

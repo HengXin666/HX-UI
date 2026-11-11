@@ -3,12 +3,14 @@
  * 毫秒写 _MS, 秒写 _S, 像素写 _PX. 组件只引用名字.
  */
 
+import { cssCurve } from "../../motion/curves";
+
 // ---- 共用 ----
 
 /** 本族所有件共用的出场曲线 (catalog 里每件的 --*-ease-out 都是这一条). */
-export const COMPOSE_EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+export const COMPOSE_EASE_OUT = cssCurve("outStrong");
 /** ThoughtLine 与 PromptBar 共用的进出曲线. */
-export const COMPOSE_EASE_IN_OUT = "cubic-bezier(0.77, 0, 0.175, 1)";
+export const COMPOSE_EASE_IN_OUT = cssCurve("inOutQuart");
 export const EASE_PLAIN = "ease";
 export const EASE_LINEAR = "linear";
 export const PX = "px";

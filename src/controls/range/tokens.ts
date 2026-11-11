@@ -3,16 +3,15 @@
  * 时长用 tokens.css 的 --duration-* 令牌, 它们在减弱动效媒体查询里归零.
  */
 
-/*
- * ENGINE-GAP: craft EASE 没有这两条曲线. out 是规格的 ease-out (0.23, 1, 0.32, 1),
- * inOut 是规格的 ease-in-out (0.77, 0, 0.175, 1). 并入 L1 时应加进 src/craft/tokens.ts 的 EASE.
- */
+import { CURVE, cssCurve } from "../../motion/curves";
+
+/** 规格的 ease-out 与 ease-in-out, 取公共曲线表 CURVE (outStrong, inOutQuart). */
 export const RANGE_EASE = {
-	out: "cubic-bezier(0.23, 1, 0.32, 1)",
-	inOut: "cubic-bezier(0.77, 0, 0.175, 1)",
+	out: cssCurve("outStrong"),
+	inOut: cssCurve("inOutQuart"),
 } as const;
 /** 同一条 inOut 的数组形式, 给 JS 侧插值用. */
-export const RANGE_EASE_IN_OUT_POINTS = [0.77, 0, 0.175, 1] as const;
+export const RANGE_EASE_IN_OUT_POINTS = CURVE.inOutQuart;
 
 /** 120ms / 200ms / 300ms 三档直接取库里的时长令牌. */
 export const DURATION_VAR = {

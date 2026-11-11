@@ -3,12 +3,11 @@
  * 每个数字在这里写一次, 组件只引用名字.
  */
 
-/*
- * ENGINE-GAP: src/craft/tokens.ts 的 EASE 没有 (0.23, 1, 0.32, 1) 与 (0.77, 0, 0.175, 1) 两条,
- * craft/ease.ts 也不导出任意控制点的求值. 这里先以 CSS 串局部持有, 并入 L1 后改引用名字.
- */
-export const PRESS_EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
-export const SHAKE_EASE = "cubic-bezier(0.77, 0, 0.175, 1)";
+import { cssCurve } from "../../motion/curves";
+
+/** 按压与抖动曲线取公共曲线表 CURVE (outStrong, inOutQuart), 族内不留副本. */
+export const PRESS_EASE_OUT = cssCurve("outStrong");
+export const SHAKE_EASE = cssCurve("inOutQuart");
 export const PLAIN_EASE = "ease";
 export const LINEAR_EASE = "linear";
 

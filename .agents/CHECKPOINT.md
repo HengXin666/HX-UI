@@ -180,7 +180,7 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
   7. 再往下: 本节后面 "收尾" 六条, 按原顺序.
 - 用户 2026-11-11 已定 (无需再问): SpringMesh 保留 touch-action: none; FiberStrands 7 角色保留本库定义; DotReveal 四角平均底色可以 (但要可覆盖, 见上第 1 条); Halo/Haze 的 RGBA8 ENGINE-GAP 标签三处保留 (算引擎能力限制, 不是漏做); packSplats 等通用名不进族 index, 维持现做法.
 - ~~`tallyOvershoot` 缓存 Map 无上限~~ 已做 (收尾第 2 条): 键量化为目标过冲的 1000 档, 缓存至多 1000 条.
-- nav / menu 之外各族 tokens 里的 cubic-bezier 副本 (choice/tone, press/tokens, range/tokens, compose/tokens, dismiss/tokens) 改引用 CURVE.
+- ~~各族 cubic-bezier 副本改引用 CURVE~~ 已做 (收尾第 3 条): choice/tone, press, range, compose, dismiss 五处; CURVE 加 backOut. 留在范围外的: evade-math 按 bounce 现拼曲线 (参数化, 不算副本), primitives/slider, primitives/motion, layout/CollapsePanel 的老写法.
 - 各族帧循环 (use-nav-motion, range motion.ts 等) 并进 src/motion; nav / gallery / stack / glass 的族 tokens 合并.
 - `tests/kits/support.ts` 与 `tests/kits/stack/support.ts` 合并进公共测试支持.
 - `use-drag.ts` 补单测; BlendSlider 测试的 fake Animation 补 `finish()`.

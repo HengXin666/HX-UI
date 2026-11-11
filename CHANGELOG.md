@@ -20,6 +20,7 @@
 
 ### Changed
 
+- controls 的 choice / press / range / compose / dismiss 五族: 族 tokens 里的 cubic-bezier 副本改引用公共曲线表 `CURVE` (`@hx/ui/motion`), 串值不变; `CURVE` 新增 `backOut` (0.34, 1.56, 0.64, 1). press / range 两处过时的 ENGINE-GAP 注释随之去掉.
 - `TallyRoll`: 过冲反解的缓存按目标过冲量化成 1000 档 (每档约 6e-5 位), 缓存至多 1000 条; 原来以浮点目标为键, 连续变化的 bounce 会让缓存无限增长. 观感不变.
 - `CubeField`: 每块状态改走 RGBA8 数据纹理 (倾角 16 位, 发亮与入场 8 位), 不再受片元 uniform 向量数限制, `gridSize` 上限由 13 放到 64. 实例化网格的 ENGINE-GAP 不变. `packCubes` 改为返回 2n x n 的 RGBA8 字节.
 - `SoftShape`: blur 为 0 时不再跑三遍离屏 (形状, 横向, 纵向高斯), 上屏单遍直出清晰层; 原来 passes 恒在, 白跑两遍全屏模糊. 观感不变.

@@ -1,3 +1,5 @@
+import { cssCurve } from "../../motion/curves";
+
 /**
  * choice 族共用的语义色名与规格曲线. 颜色 props 只收这些 token 名, 不收任意色值.
  */
@@ -26,12 +28,12 @@ export function toneVar(tone: ChoiceTone): string {
 	return "var(--" + tone + ")";
 }
 
-/** catalog 里各件 CSS 共用的 --*-ease-out. 与 craft EASE.out 控制点不同, 按规格单列. */
-export const SPEC_EASE_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+/** catalog 里各件 CSS 共用的 --*-ease-out. 与 craft EASE.out 控制点不同, 取 CURVE.outStrong. */
+export const SPEC_EASE_OUT = cssCurve("outStrong");
 /** 带过冲的弹出曲线 (BellToggle 徽标 280ms). */
-export const SPEC_EASE_POP = "cubic-bezier(0.34, 1.56, 0.64, 1)";
+export const SPEC_EASE_POP = cssCurve("backOut");
 /** 分段摆动曲线 (BellToggle SEG_EASE). */
-export const SPEC_EASE_SEGMENT = "cubic-bezier(0.77, 0, 0.175, 1)";
+export const SPEC_EASE_SEGMENT = cssCurve("inOutQuart");
 export const EASE_PLAIN = "ease";
 /** 秒转毫秒. 规格里的弹簧时长是秒, CSS 与 WAAPI 用毫秒. */
 export const MS_PER_S = 1000;
