@@ -20,6 +20,8 @@ export interface GenEntry {
   readonly sub?: string;
   /** 没有页的件: 声明文件, 总览卡与缩略图用. */
   readonly source?: string;
+  /** 没有页的件: import 的模块名 (@hx/ui 或 @hx/ui/<子路径>), 页型模板的用法代码用. */
+  readonly from?: string;
 }
 
 export interface GenGroup {
@@ -41,6 +43,14 @@ const COMPONENT_LAYERS = new Set(["surface", "kits", "controls"]);
 export const kebab = (name: string): string =>
   name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Z])([A-Z][a-z])/g, "$1-$2").toLowerCase();
 
+const PKG = "@hx/ui";
+
+/** 件从哪个入口 import: 优先子路径 (三层只从子路径发布), 只有根入口时用包名. */
+function importFrom(piece: Piece): string {
+  const sub = piece.entries.find((entry) => entry !== ".") ?? ".";
+  return sub === "." ? PKG : `${PKG}/${sub.replace(/^\.\//, "")}`;
+}
+
 /** 组件层的件归哪一组: 声明文件落在哪个族目录下. 没有组认领时报错, 新件必须先决定放哪. */
 function familyGroup(manifest: Manifest, piece: Piece): string {
   const family = (manifest.families ?? []).filter((item) => piece.file.startsWith(item.dir)).sort((a, b) => b.dir.length - a.dir.length)[0];
@@ -61,7 +71,7 @@ export function buildCatalog(manifest: Manifest, pages: readonly FlatPage[], pie
       const id = kebab(piece.name);
       if (ids.has(id)) throw new Error(`docs-catalog: 件 ${piece.name} 的 id ${id} 与已有页重名`);
       ids.add(id);
-      entries.push({ id, name: piece.name, layer: piece.layer, group: group.id, kind: group.pieceKind ?? "single", role: "component", exports: piece.members, desc: "", page: false, source: piece.file });
+      entries.push({ id, name: piece.name, layer: piece.layer, group: group.id, kind: group.pieceKind ?? "single", role: "component", exports: piece.members, desc: "", page: false, source: piece.file, from: importFrom(piece) });
     }
     const size = entries.filter((entry) => entry.group === group.id).length;
     if (size > GROUP_MAX && !group.subgroups) throw new Error(`docs-catalog: 组 ${group.id} 有 ${size} 件, 超过 ${GROUP_MAX}, 在 catalog.src.json 里给它拆 subgroups`);

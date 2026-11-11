@@ -334,7 +334,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/Aurora.tsx"
+   "source": "src/surface/backgrounds/glow/Aurora.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "color-bends",
@@ -348,7 +349,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/ColorBends.tsx"
+   "source": "src/surface/backgrounds/glow/ColorBends.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "dark-veil",
@@ -362,7 +364,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/DarkVeil.tsx"
+   "source": "src/surface/backgrounds/glow/DarkVeil.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "gradient-waves",
@@ -376,7 +379,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/GradientWaves.tsx"
+   "source": "src/surface/backgrounds/glow/GradientWaves.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "grainient",
@@ -390,7 +394,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/Grainient.tsx"
+   "source": "src/surface/backgrounds/glow/Grainient.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "iridescence",
@@ -404,7 +409,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/Iridescence.tsx"
+   "source": "src/surface/backgrounds/glow/Iridescence.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "plasma",
@@ -419,7 +425,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/Plasma.tsx"
+   "source": "src/surface/backgrounds/glow/Plasma.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "silk",
@@ -433,7 +440,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/Silk.tsx"
+   "source": "src/surface/backgrounds/glow/Silk.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "soft-aurora",
@@ -447,7 +455,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glow/SoftAurora.tsx"
+   "source": "src/surface/backgrounds/glow/SoftAurora.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "beams",
@@ -461,7 +470,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/Beams.tsx"
+   "source": "src/surface/backgrounds/rays/Beams.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "lightfall",
@@ -475,7 +485,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/Lightfall.tsx"
+   "source": "src/surface/backgrounds/rays/Lightfall.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "lightning",
@@ -489,7 +500,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/Lightning.tsx"
+   "source": "src/surface/backgrounds/rays/Lightning.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "light-pillar",
@@ -503,7 +515,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/LightPillar.tsx"
+   "source": "src/surface/backgrounds/rays/LightPillar.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "light-rays",
@@ -517,7 +530,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/LightRays.tsx"
+   "source": "src/surface/backgrounds/rays/LightRays.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "light-tunnel",
@@ -531,7 +545,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/LightTunnel.tsx"
+   "source": "src/surface/backgrounds/rays/LightTunnel.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "prism",
@@ -545,7 +560,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/Prism.tsx"
+   "source": "src/surface/backgrounds/rays/Prism.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "prismatic-burst",
@@ -559,7 +575,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/PrismaticBurst.tsx"
+   "source": "src/surface/backgrounds/rays/PrismaticBurst.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "side-rays",
@@ -573,7 +590,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/rays/SideRays.tsx"
+   "source": "src/surface/backgrounds/rays/SideRays.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "floating-lines",
@@ -587,7 +605,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/FloatingLines.tsx"
+   "source": "src/surface/backgrounds/lines/FloatingLines.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "flux-lines",
@@ -601,7 +620,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/FluxLines.tsx"
+   "source": "src/surface/backgrounds/lines/FluxLines.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "line-waves",
@@ -615,7 +635,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/LineWaves.tsx"
+   "source": "src/surface/backgrounds/lines/LineWaves.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "pattern-waves",
@@ -629,7 +650,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/PatternWaves.tsx"
+   "source": "src/surface/backgrounds/lines/PatternWaves.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "shape-waves",
@@ -643,7 +665,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/ShapeWaves.tsx"
+   "source": "src/surface/backgrounds/lines/ShapeWaves.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "sliced-waves",
@@ -657,7 +680,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/SlicedWaves.tsx"
+   "source": "src/surface/backgrounds/lines/SlicedWaves.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "threads",
@@ -671,7 +695,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/Threads.tsx"
+   "source": "src/surface/backgrounds/lines/Threads.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "waves",
@@ -685,7 +710,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/Waves.tsx"
+   "source": "src/surface/backgrounds/lines/Waves.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "web-threads",
@@ -699,7 +725,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/lines/WebThreads.tsx"
+   "source": "src/surface/backgrounds/lines/WebThreads.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "acid-squares",
@@ -713,7 +740,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/AcidSquares.tsx"
+   "source": "src/surface/backgrounds/grid/AcidSquares.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "dot-field",
@@ -727,7 +755,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/DotField.tsx"
+   "source": "src/surface/backgrounds/grid/DotField.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "dot-grid",
@@ -741,7 +770,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/DotGrid.tsx"
+   "source": "src/surface/backgrounds/grid/DotGrid.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "grid-distortion",
@@ -755,7 +785,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/GridDistortion.tsx"
+   "source": "src/surface/backgrounds/grid/GridDistortion.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "grid-motion",
@@ -769,7 +800,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/GridMotion.tsx"
+   "source": "src/surface/backgrounds/grid/GridMotion.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "grid-scan",
@@ -783,7 +815,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/GridScan.tsx"
+   "source": "src/surface/backgrounds/grid/GridScan.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "micro-slats",
@@ -797,7 +830,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/MicroSlats.tsx"
+   "source": "src/surface/backgrounds/grid/MicroSlats.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "ripple-grid",
@@ -811,7 +845,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/RippleGrid.tsx"
+   "source": "src/surface/backgrounds/grid/RippleGrid.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "shape-grid",
@@ -825,7 +860,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/grid/ShapeGrid.tsx"
+   "source": "src/surface/backgrounds/grid/ShapeGrid.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "aero-shards",
@@ -839,7 +875,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/AeroShards.tsx"
+   "source": "src/surface/backgrounds/particles/AeroShards.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "antigravity",
@@ -853,7 +890,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/Antigravity.tsx"
+   "source": "src/surface/backgrounds/particles/Antigravity.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "ballpit",
@@ -867,7 +905,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/Ballpit.tsx"
+   "source": "src/surface/backgrounds/particles/Ballpit.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "galaxy",
@@ -881,7 +920,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/Galaxy.tsx"
+   "source": "src/surface/backgrounds/particles/Galaxy.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "ghost-fibers",
@@ -895,7 +935,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/GhostFibers.tsx"
+   "source": "src/surface/backgrounds/particles/GhostFibers.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "gradient-blinds",
@@ -909,7 +950,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/GradientBlinds.tsx"
+   "source": "src/surface/backgrounds/particles/GradientBlinds.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "hyperspeed",
@@ -923,7 +965,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/Hyperspeed.tsx"
+   "source": "src/surface/backgrounds/particles/Hyperspeed.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "magnet-lines",
@@ -937,7 +980,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/MagnetLines.tsx"
+   "source": "src/surface/backgrounds/particles/MagnetLines.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "particles",
@@ -951,7 +995,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/particles/Particles.tsx"
+   "source": "src/surface/backgrounds/particles/Particles.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "balatro",
@@ -965,7 +1010,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/Balatro.tsx"
+   "source": "src/surface/backgrounds/fluid/Balatro.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "evil-eye",
@@ -979,7 +1025,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/EvilEye.tsx"
+   "source": "src/surface/backgrounds/fluid/EvilEye.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "ferrofluid",
@@ -993,7 +1040,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/Ferrofluid.tsx"
+   "source": "src/surface/backgrounds/fluid/Ferrofluid.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "liquid-chrome",
@@ -1007,7 +1055,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/LiquidChrome.tsx"
+   "source": "src/surface/backgrounds/fluid/LiquidChrome.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "liquid-ether",
@@ -1021,7 +1070,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/LiquidEther.tsx"
+   "source": "src/surface/backgrounds/fluid/LiquidEther.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "magic-rings",
@@ -1035,7 +1085,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/MagicRings.tsx"
+   "source": "src/surface/backgrounds/fluid/MagicRings.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "molten-metal",
@@ -1049,7 +1100,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/MoltenMetal.tsx"
+   "source": "src/surface/backgrounds/fluid/MoltenMetal.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "orb",
@@ -1063,7 +1115,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/Orb.tsx"
+   "source": "src/surface/backgrounds/fluid/Orb.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "topography",
@@ -1077,7 +1130,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/fluid/Topography.tsx"
+   "source": "src/surface/backgrounds/fluid/Topography.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "crt-warp",
@@ -1091,7 +1145,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/CRTWarp.tsx"
+   "source": "src/surface/backgrounds/glyph/CRTWarp.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "dither",
@@ -1105,7 +1160,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/Dither.tsx"
+   "source": "src/surface/backgrounds/glyph/Dither.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "faulty-terminal",
@@ -1119,7 +1175,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/FaultyTerminal.tsx"
+   "source": "src/surface/backgrounds/glyph/FaultyTerminal.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "gradient-ascii",
@@ -1133,7 +1190,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/GradientASCII.tsx"
+   "source": "src/surface/backgrounds/glyph/GradientASCII.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "letter-glitch",
@@ -1147,7 +1205,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/LetterGlitch.tsx"
+   "source": "src/surface/backgrounds/glyph/LetterGlitch.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "pixel-blast",
@@ -1161,7 +1220,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/PixelBlast.tsx"
+   "source": "src/surface/backgrounds/glyph/PixelBlast.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "pixel-snow",
@@ -1175,7 +1235,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/PixelSnow.tsx"
+   "source": "src/surface/backgrounds/glyph/PixelSnow.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "radar",
@@ -1189,7 +1250,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/Radar.tsx"
+   "source": "src/surface/backgrounds/glyph/Radar.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "scanner",
@@ -1203,7 +1265,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/backgrounds/glyph/Scanner.tsx"
+   "source": "src/surface/backgrounds/glyph/Scanner.tsx",
+   "from": "@hx/ui/backgrounds"
   },
   {
    "id": "drop-text",
@@ -1217,7 +1280,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/stagger/DropText.tsx"
+   "source": "src/surface/text/stagger/DropText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "flap-text",
@@ -1231,7 +1295,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/glyph/FlapText.tsx"
+   "source": "src/surface/text/glyph/FlapText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "focus-text",
@@ -1245,7 +1310,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/stagger/FocusText.tsx"
+   "source": "src/surface/text/stagger/FocusText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "scramble-text",
@@ -1259,7 +1325,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/glyph/ScrambleText.tsx"
+   "source": "src/surface/text/glyph/ScrambleText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "sheen-text",
@@ -1273,7 +1340,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/glyph/SheenText.tsx"
+   "source": "src/surface/text/glyph/SheenText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "shift-text",
@@ -1287,7 +1355,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/glyph/ShiftText.tsx"
+   "source": "src/surface/text/glyph/ShiftText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "stagger-text",
@@ -1301,7 +1370,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/stagger/StaggerText.tsx"
+   "source": "src/surface/text/stagger/StaggerText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "trace-text",
@@ -1315,7 +1385,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/stagger/TraceText.tsx"
+   "source": "src/surface/text/stagger/TraceText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "type-text",
@@ -1329,7 +1400,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/glyph/TypeText.tsx"
+   "source": "src/surface/text/glyph/TypeText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "draft-text",
@@ -1343,7 +1415,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/pointer/DraftText.tsx"
+   "source": "src/surface/text/pointer/DraftText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "extrude-text",
@@ -1357,7 +1430,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/pointer/ExtrudeText.tsx"
+   "source": "src/surface/text/pointer/ExtrudeText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "orbit-text",
@@ -1371,7 +1445,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/scroll/OrbitText.tsx"
+   "source": "src/surface/text/scroll/OrbitText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "scroll-text",
@@ -1385,7 +1460,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/scroll/ScrollText.tsx"
+   "source": "src/surface/text/scroll/ScrollText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "stamp-trail",
@@ -1399,7 +1475,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/pointer/StampTrail.tsx"
+   "source": "src/surface/text/pointer/StampTrail.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "text-marquee",
@@ -1413,7 +1490,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/scroll/TextMarquee.tsx"
+   "source": "src/surface/text/scroll/TextMarquee.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "wake-text",
@@ -1427,7 +1505,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/text/pointer/WakeText.tsx"
+   "source": "src/surface/text/pointer/WakeText.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "attract",
@@ -1441,7 +1520,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/pointer/Attract.tsx"
+   "source": "src/surface/pointer/Attract.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "cell-trail",
@@ -1455,7 +1535,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/pointer/CellTrail.tsx"
+   "source": "src/surface/pointer/CellTrail.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "lock-on-cursor",
@@ -1469,7 +1550,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/pointer/LockOnCursor.tsx"
+   "source": "src/surface/pointer/LockOnCursor.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "photo-wake",
@@ -1483,7 +1565,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/pointer/PhotoWake.tsx"
+   "source": "src/surface/pointer/PhotoWake.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "reticle-lines",
@@ -1497,7 +1580,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/pointer/ReticleLines.tsx"
+   "source": "src/surface/pointer/ReticleLines.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "sheen-card",
@@ -1511,7 +1595,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/pointer/SheenCard.tsx"
+   "source": "src/surface/pointer/SheenCard.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "surface-layer",
@@ -1525,7 +1610,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/pointer/SurfaceLayer.tsx"
+   "source": "src/surface/pointer/SurfaceLayer.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "tap-sparks",
@@ -1539,7 +1625,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/pointer/TapSparks.tsx"
+   "source": "src/surface/pointer/TapSparks.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "flock-cursor",
@@ -1553,7 +1640,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/cursor/FlockCursor.tsx"
+   "source": "src/surface/cursor/FlockCursor.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "halo-cursor",
@@ -1567,7 +1655,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/cursor/HaloCursor.tsx"
+   "source": "src/surface/cursor/HaloCursor.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "haze-cursor",
@@ -1581,7 +1670,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/cursor/HazeCursor.tsx"
+   "source": "src/surface/cursor/HazeCursor.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "meld-cursor",
@@ -1595,7 +1685,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/cursor/MeldCursor.tsx"
+   "source": "src/surface/cursor/MeldCursor.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "nudge-grid",
@@ -1609,7 +1700,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/cursor/NudgeGrid.tsx"
+   "source": "src/surface/cursor/NudgeGrid.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "streamer-cursor",
@@ -1623,7 +1715,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/cursor/StreamerCursor.tsx"
+   "source": "src/surface/cursor/StreamerCursor.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "edge-blur",
@@ -1637,7 +1730,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/reveal/EdgeBlur.tsx"
+   "source": "src/surface/reveal/EdgeBlur.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "mosaic-swap",
@@ -1651,7 +1745,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/reveal/MosaicSwap.tsx"
+   "source": "src/surface/reveal/MosaicSwap.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "scroll-widen",
@@ -1665,7 +1760,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/reveal/ScrollWiden.tsx"
+   "source": "src/surface/reveal/ScrollWiden.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "tile-flip",
@@ -1679,7 +1775,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/reveal/TileFlip.tsx"
+   "source": "src/surface/reveal/TileFlip.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "beam-flow",
@@ -1693,7 +1790,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/field/BeamFlow.tsx"
+   "source": "src/surface/field/BeamFlow.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "chrome-mark",
@@ -1707,7 +1805,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/field/ChromeMark.tsx"
+   "source": "src/surface/field/ChromeMark.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "ink-splash",
@@ -1721,7 +1820,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/field/InkSplash.tsx"
+   "source": "src/surface/field/InkSplash.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "merge-blobs",
@@ -1735,7 +1835,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/field/MergeBlobs.tsx"
+   "source": "src/surface/field/MergeBlobs.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "ripple-lens",
@@ -1749,7 +1850,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/field/RippleLens.tsx"
+   "source": "src/surface/field/RippleLens.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "soft-shape",
@@ -1763,7 +1865,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/field/SoftShape.tsx"
+   "source": "src/surface/field/SoftShape.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "spark-mark",
@@ -1777,7 +1880,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/field/SparkMark.tsx"
+   "source": "src/surface/field/SparkMark.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "bayer-veil",
@@ -1791,7 +1895,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/scene/BayerVeil.tsx"
+   "source": "src/surface/scene/BayerVeil.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "cube-field",
@@ -1805,7 +1910,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/scene/CubeField.tsx"
+   "source": "src/surface/scene/CubeField.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "dot-reveal",
@@ -1819,7 +1925,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/scene/DotReveal.tsx"
+   "source": "src/surface/scene/DotReveal.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "fiber-strands",
@@ -1833,7 +1940,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/scene/FiberStrands.tsx"
+   "source": "src/surface/scene/FiberStrands.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "prism-orb",
@@ -1847,7 +1955,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/scene/PrismOrb.tsx"
+   "source": "src/surface/scene/PrismOrb.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "spring-mesh",
@@ -1861,7 +1970,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/scene/SpringMesh.tsx"
+   "source": "src/surface/scene/SpringMesh.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "comet-border",
@@ -1875,7 +1985,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/edge/CometBorder.tsx"
+   "source": "src/surface/edge/CometBorder.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "grain-layer",
@@ -1889,7 +2000,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/texture/GrainLayer.tsx"
+   "source": "src/surface/texture/GrainLayer.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "mark-rail",
@@ -1903,7 +2015,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/loop/MarkRail.tsx"
+   "source": "src/surface/loop/MarkRail.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "orbit-ring",
@@ -1917,7 +2030,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/loop/OrbitRing.tsx"
+   "source": "src/surface/loop/OrbitRing.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "peel-sticker",
@@ -1931,7 +2045,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/sticker/PeelSticker.tsx"
+   "source": "src/surface/sticker/PeelSticker.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "spark-edge",
@@ -1945,7 +2060,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/surface/edge/SparkEdge.tsx"
+   "source": "src/surface/edge/SparkEdge.tsx",
+   "from": "@hx/ui/surface"
   },
   {
    "id": "bend-gallery",
@@ -1959,7 +2075,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/BendGallery.tsx"
+   "source": "src/kits/gallery/BendGallery.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "blend-slider",
@@ -1973,7 +2090,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/BlendSlider.tsx"
+   "source": "src/kits/gallery/BlendSlider.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "depth-deck",
@@ -1987,7 +2105,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/DepthDeck.tsx"
+   "source": "src/kits/gallery/DepthDeck.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "drift-columns",
@@ -2001,7 +2120,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/DriftColumns.tsx"
+   "source": "src/kits/gallery/DriftColumns.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "flex-reel",
@@ -2015,7 +2135,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/FlexReel.tsx"
+   "source": "src/kits/gallery/FlexReel.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "fold-gallery",
@@ -2029,7 +2150,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/FoldGallery.tsx"
+   "source": "src/kits/gallery/FoldGallery.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "helix-scroll",
@@ -2043,7 +2165,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/HelixScroll.tsx"
+   "source": "src/kits/gallery/HelixScroll.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "poster-flight",
@@ -2057,7 +2180,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/PosterFlight.tsx"
+   "source": "src/kits/gallery/PosterFlight.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "ring-carousel",
@@ -2071,7 +2195,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/RingCarousel.tsx"
+   "source": "src/kits/gallery/RingCarousel.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "sphere-wall",
@@ -2085,7 +2210,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/SphereWall.tsx"
+   "source": "src/kits/gallery/SphereWall.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "spring-carousel",
@@ -2099,7 +2225,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/gallery/SpringCarousel.tsx"
+   "source": "src/kits/gallery/SpringCarousel.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "cycle-deck",
@@ -2113,7 +2240,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stack/CycleDeck.tsx"
+   "source": "src/kits/stack/CycleDeck.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "flow-masonry",
@@ -2127,7 +2255,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stack/FlowMasonry.tsx"
+   "source": "src/kits/stack/FlowMasonry.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "glow-bento",
@@ -2141,7 +2270,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stack/GlowBento.tsx"
+   "source": "src/kits/stack/GlowBento.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "pop-list",
@@ -2155,7 +2285,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stack/PopList.tsx"
+   "source": "src/kits/stack/PopList.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "scroll-pile",
@@ -2169,7 +2300,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stack/ScrollPile.tsx"
+   "source": "src/kits/stack/ScrollPile.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "spread-cards",
@@ -2183,7 +2315,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stack/SpreadCards.tsx"
+   "source": "src/kits/stack/SpreadCards.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "swipe-stack",
@@ -2197,7 +2330,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stack/SwipeStack.tsx"
+   "source": "src/kits/stack/SwipeStack.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "tint-grid",
@@ -2211,7 +2345,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stack/TintGrid.tsx"
+   "source": "src/kits/stack/TintGrid.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "badge-card",
@@ -2225,7 +2360,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/BadgeCard.tsx"
+   "source": "src/kits/card/BadgeCard.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "edge-glow",
@@ -2239,7 +2375,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/EdgeGlow.tsx"
+   "source": "src/kits/card/EdgeGlow.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "file-folder",
@@ -2253,7 +2390,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/FileFolder.tsx"
+   "source": "src/kits/card/FileFolder.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "foil-card",
@@ -2267,7 +2405,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/FoilCard.tsx"
+   "source": "src/kits/card/FoilCard.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "fray-card",
@@ -2281,7 +2420,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/FrayCard.tsx"
+   "source": "src/kits/card/FrayCard.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "lamp-card",
@@ -2295,7 +2435,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/LampCard.tsx"
+   "source": "src/kits/card/LampCard.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "mirror-card",
@@ -2309,7 +2450,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/MirrorCard.tsx"
+   "source": "src/kits/card/MirrorCard.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "pixel-bloom",
@@ -2323,7 +2465,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/PixelBloom.tsx"
+   "source": "src/kits/card/PixelBloom.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "tilt-card",
@@ -2337,7 +2480,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/card/TiltCard.tsx"
+   "source": "src/kits/card/TiltCard.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "frost-panel",
@@ -2351,7 +2495,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/glass/FrostPanel.tsx"
+   "source": "src/kits/glass/FrostPanel.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "lens-glass",
@@ -2365,7 +2510,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/glass/LensGlass.tsx"
+   "source": "src/kits/glass/LensGlass.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "orbit-viewer",
@@ -2379,7 +2525,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stage3d/OrbitViewer.tsx"
+   "source": "src/kits/stage3d/OrbitViewer.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "sphere-menu",
@@ -2393,7 +2540,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stage3d/SphereMenu.tsx"
+   "source": "src/kits/stage3d/SphereMenu.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "swing-lanyard",
@@ -2407,7 +2555,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/kits/stage3d/SwingLanyard.tsx"
+   "source": "src/kits/stage3d/SwingLanyard.tsx",
+   "from": "@hx/ui/kits"
   },
   {
    "id": "glint-button",
@@ -2421,7 +2570,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/press/signal/GlintButton.tsx"
+   "source": "src/controls/press/signal/GlintButton.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "grace-commit",
@@ -2435,7 +2585,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/press/hold/GraceCommit.tsx"
+   "source": "src/controls/press/hold/GraceCommit.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "hold-confirm",
@@ -2449,7 +2600,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/press/hold/HoldConfirm.tsx"
+   "source": "src/controls/press/hold/HoldConfirm.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "liftoff",
@@ -2463,7 +2615,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/press/launch/Liftoff.tsx"
+   "source": "src/controls/press/launch/Liftoff.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "like-burst",
@@ -2477,7 +2630,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/press/signal/LikeBurst.tsx"
+   "source": "src/controls/press/signal/LikeBurst.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "pull-send",
@@ -2491,7 +2645,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/press/launch/PullSend.tsx"
+   "source": "src/controls/press/launch/PullSend.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "run-chip",
@@ -2505,7 +2660,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/press/signal/RunChip.tsx"
+   "source": "src/controls/press/signal/RunChip.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "swipe-confirm",
@@ -2519,7 +2675,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/press/hold/SwipeConfirm.tsx"
+   "source": "src/controls/press/hold/SwipeConfirm.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "arc-knob",
@@ -2533,7 +2690,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/input/ArcKnob.tsx"
+   "source": "src/controls/range/input/ArcKnob.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "grid-pulse",
@@ -2547,7 +2705,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/status/GridPulse.tsx"
+   "source": "src/controls/range/status/GridPulse.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "nudge-field",
@@ -2561,7 +2720,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/input/NudgeField.tsx"
+   "source": "src/controls/range/input/NudgeField.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "pin-cells",
@@ -2575,7 +2735,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/input/PinCells.tsx"
+   "source": "src/controls/range/input/PinCells.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "stretch-slider",
@@ -2589,7 +2750,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/input/StretchSlider.tsx"
+   "source": "src/controls/range/input/StretchSlider.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "swell-slider",
@@ -2603,7 +2765,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/input/SwellSlider.tsx"
+   "source": "src/controls/range/input/SwellSlider.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "tally-roll",
@@ -2617,7 +2780,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/meter/TallyRoll.tsx"
+   "source": "src/controls/range/meter/TallyRoll.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "tank-gauge",
@@ -2631,7 +2795,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/meter/TankGauge.tsx"
+   "source": "src/controls/range/meter/TankGauge.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "task-glyph",
@@ -2645,7 +2810,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/range/status/TaskGlyph.tsx"
+   "source": "src/controls/range/status/TaskGlyph.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "arc-field",
@@ -2659,7 +2825,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/compose/input/ArcField.tsx"
+   "source": "src/controls/compose/input/ArcField.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "composer-field",
@@ -2673,7 +2840,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/compose/input/ComposerField.tsx"
+   "source": "src/controls/compose/input/ComposerField.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "cue-tip",
@@ -2687,7 +2855,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/compose/overlay/CueTip.tsx"
+   "source": "src/controls/compose/overlay/CueTip.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "develop-frame",
@@ -2701,7 +2870,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/compose/status/DevelopFrame.tsx"
+   "source": "src/controls/compose/status/DevelopFrame.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "dictate-button",
@@ -2715,7 +2885,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/compose/input/DictateButton.tsx"
+   "source": "src/controls/compose/input/DictateButton.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "fork-menu",
@@ -2729,7 +2900,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/compose/overlay/ForkMenu.tsx"
+   "source": "src/controls/compose/overlay/ForkMenu.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "reasoning-trace",
@@ -2743,7 +2915,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/compose/status/ReasoningTrace.tsx"
+   "source": "src/controls/compose/status/ReasoningTrace.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "turn-card",
@@ -2757,7 +2930,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/compose/overlay/TurnCard.tsx"
+   "source": "src/controls/compose/overlay/TurnCard.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "chime-toggle",
@@ -2771,7 +2945,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/toggle/ChimeToggle.tsx"
+   "source": "src/controls/choice/toggle/ChimeToggle.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "drift-select",
@@ -2785,7 +2960,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/pick/DriftSelect.tsx"
+   "source": "src/controls/choice/pick/DriftSelect.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "elastic-segment",
@@ -2799,7 +2975,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/pick/ElasticSegment.tsx"
+   "source": "src/controls/choice/pick/ElasticSegment.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "gel-radio",
@@ -2813,7 +2990,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/pick/GelRadio.tsx"
+   "source": "src/controls/choice/pick/GelRadio.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "lift-rating",
@@ -2827,7 +3005,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/rate/LiftRating.tsx"
+   "source": "src/controls/choice/rate/LiftRating.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "plush-switch",
@@ -2841,7 +3020,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/toggle/PlushSwitch.tsx"
+   "source": "src/controls/choice/toggle/PlushSwitch.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "reel-picker",
@@ -2855,7 +3035,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/pick/ReelPicker.tsx"
+   "source": "src/controls/choice/pick/ReelPicker.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "step-trail",
@@ -2869,7 +3050,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/steps/StepTrail.tsx"
+   "source": "src/controls/choice/steps/StepTrail.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "tally-check",
@@ -2883,7 +3065,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/choice/toggle/TallyCheck.tsx"
+   "source": "src/controls/choice/toggle/TallyCheck.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "crush-sheet",
@@ -2897,7 +3080,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/dismiss/discard/CrushSheet.tsx"
+   "source": "src/controls/dismiss/discard/CrushSheet.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "drawer-row",
@@ -2911,7 +3095,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/dismiss/swipe/DrawerRow.tsx"
+   "source": "src/controls/dismiss/swipe/DrawerRow.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "evade-zone",
@@ -2925,7 +3110,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/dismiss/evade/EvadeZone.tsx"
+   "source": "src/controls/dismiss/evade/EvadeZone.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "flick-notice",
@@ -2939,7 +3125,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/dismiss/swipe/FlickNotice.tsx"
+   "source": "src/controls/dismiss/swipe/FlickNotice.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "rip-stub",
@@ -2953,7 +3140,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/dismiss/discard/RipStub.tsx"
+   "source": "src/controls/dismiss/discard/RipStub.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "shred-bin",
@@ -2967,7 +3155,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/dismiss/discard/ShredBin.tsx"
+   "source": "src/controls/dismiss/discard/ShredBin.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "stash-folder",
@@ -2981,7 +3170,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/dismiss/evade/StashFolder.tsx"
+   "source": "src/controls/dismiss/evade/StashFolder.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "deck-nav",
@@ -2995,7 +3185,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/menu/DeckNav.tsx"
+   "source": "src/controls/nav/menu/DeckNav.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "glass-tiles",
@@ -3009,7 +3200,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/tile/GlassTiles.tsx"
+   "source": "src/controls/nav/tile/GlassTiles.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "goo-tabs",
@@ -3023,7 +3215,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/bar/GooTabs.tsx"
+   "source": "src/controls/nav/bar/GooTabs.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "layer-drawer",
@@ -3037,7 +3230,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/menu/LayerDrawer.tsx"
+   "source": "src/controls/nav/menu/LayerDrawer.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "magnify-dock",
@@ -3051,7 +3245,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/dock/MagnifyDock.tsx"
+   "source": "src/controls/nav/dock/MagnifyDock.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "marquee-rows",
@@ -3065,7 +3260,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/menu/MarqueeRows.tsx"
+   "source": "src/controls/nav/menu/MarqueeRows.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "pill-burst",
@@ -3079,7 +3275,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/menu/PillBurst.tsx"
+   "source": "src/controls/nav/menu/PillBurst.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "pill-tabs",
@@ -3093,7 +3290,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/bar/PillTabs.tsx"
+   "source": "src/controls/nav/bar/PillTabs.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "proximity-rail",
@@ -3107,7 +3305,8 @@
    ],
    "desc": "",
    "page": false,
-   "source": "src/controls/nav/rail/ProximityRail.tsx"
+   "source": "src/controls/nav/rail/ProximityRail.tsx",
+   "from": "@hx/ui/controls"
   },
   {
    "id": "split-text",

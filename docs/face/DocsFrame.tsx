@@ -3,9 +3,9 @@ import { Sheet, SheetContent, SheetTitle } from "@hx/ui";
 import { HEADER_PX } from "./home/shots/stage";
 import { CATALOG, findEntry } from "./docs/catalog";
 import { INDEX_ID, INSTALL_ID, SHELL } from "./docs/constants";
-import { GenericPage } from "./docs/fallback/GenericPage";
 import { IndexPage } from "./docs/index/IndexPage";
 import { InstallGuide } from "./docs/install/InstallGuide";
+import { KindPage } from "./docs/kinds/KindPage";
 import { SpecPage } from "./docs/page/SpecPage";
 import { Rail } from "./docs/rail/Rail";
 import { RightRail } from "./docs/rail/RightRail";
@@ -44,7 +44,7 @@ export function DocsFrame({
   if (!entry) body = <IndexPage onGo={onGo} />;
   else if (entry.id === INSTALL_ID) body = <InstallGuide />;
   else if (entry.spec) body = <SpecPage key={entry.id} entry={entry} spec={entry.spec} onGo={onGo} />;
-  else body = <GenericPage key={entry.id} entry={entry} onGo={onGo} />;
+  else body = <KindPage key={entry.id} entry={entry} onGo={onGo} />;
 
   return (
     <div className="flex w-full flex-1 items-start">

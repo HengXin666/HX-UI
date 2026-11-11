@@ -16,6 +16,7 @@ interface GenEntry {
   readonly page: boolean;
   readonly sub?: string;
   readonly source?: string;
+  readonly from?: string;
 }
 
 /** 目录的组; 超过 12 件的组带子组, 左栏在组内按子组分段. */
@@ -49,6 +50,8 @@ export interface CatalogEntry {
   readonly page: boolean;
   readonly sub?: string;
   readonly source?: string;
+  /** 还没有页的件: import 的模块名. */
+  readonly from?: string;
   readonly spec?: ComponentSpec;
 }
 
@@ -67,10 +70,11 @@ function toEntry(item: GenEntry): CatalogEntry {
   return page ? { ...base, spec: { ...page, label: item.name, desc: item.desc, group } } : base;
 }
 
-/** 目录全部条目, 含组件层里还没有页的件 (page: false). */
-export const ENTRIES: readonly CatalogEntry[] = GEN.entries.map(toEntry);
-/** 有页的条目: 路由, 上下页与左栏列表用. */
-export const CATALOG: readonly CatalogEntry[] = ENTRIES.filter((entry) => entry.page);
+/**
+ * 目录全部条目: 路由, 左栏, 搜索, 上下页与计数都读它. 组件层里还没写页的件 (page: false) 也在,
+ * 它们走页型模板 (kinds/KindPage), 只摆目录数据能给出的段落.
+ */
+export const CATALOG: readonly CatalogEntry[] = GEN.entries.map(toEntry);
 /** 组件页 (不含上手的说明页), 索引页, 计数与上下页用. */
 export const COMPONENTS: readonly CatalogEntry[] = CATALOG.filter((entry) => entry.layer !== START_LAYER);
 
@@ -97,7 +101,7 @@ export function findEntry(id: string): CatalogEntry | undefined {
   return CATALOG.find((entry) => entry.id === id);
 }
 
-/** 外壳认得的路由 id: 有页的条目与组件索引页. */
+/** 外壳认得的路由 id: 目录条目与组件索引页. */
 export function isShellRoute(id: string): boolean {
   return id === INDEX_ID || CATALOG.some((entry) => entry.id === id);
 }
