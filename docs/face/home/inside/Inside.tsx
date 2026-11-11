@@ -13,7 +13,7 @@ export function Inside({ onGo }: { readonly onGo: (id: string) => void }): JSX.E
     <section aria-labelledby="inside-title" className={`${WRAP} pt-[148px] pb-[84px]`}>
       <h2 id="inside-title" className={TYPE.h2}>里面有什么</h2>
       <div className="mt-[37px] grid gap-4 md:grid-cols-[522fr_307fr_415fr]">
-        <Tile art={<ChipsArt />} artHeight={ART_H} title={`${FACTS.pages} 页文档`} desc="按钮, 表单, 浮层, 图表, AI 交互到整页模板. 自己从头写的那些, 这里已经做好并测过." onOpen={() => onGo("install")} />
+        <Tile art={<ChipsArt />} artHeight={ART_H} title={`${FACTS.docs} 篇组件文档 · ${FACTS.components} 个组件`} desc="按钮, 表单, 浮层, 图表, AI 交互到整页模板. 自己从头写的那些, 这里已经做好并测过." onOpen={() => onGo("install")} />
         <Tile art={<SkinsArt />} artHeight={ART_H} title={`${FACTS.skins} 套皮肤`} desc="只换令牌不换组件, 一个属性切一整套气质." onOpen={() => onGo("skins")} />
         <Tile art={<OrbitArt />} artHeight={ART_H} title={`${FACTS.groups} 个分组`} desc="按找东西的方式分组, 不用在一整面墙里翻." onOpen={() => onGo(INDEX_ID)} />
       </div>

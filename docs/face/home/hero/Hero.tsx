@@ -76,7 +76,7 @@ export function Hero({ onGo }: { readonly onGo: (id: string) => void }): JSX.Ele
             </Button>
           </div>
           <p className="max-w-[24rem] pb-0.5 text-[16px] leading-[25px] text-muted-foreground">
-            {FACTS.pages} 页文档, {FACTS.skins} 套皮肤, 一份语义令牌.
+            {FACTS.docs} 篇组件文档 · {FACTS.components} 个组件, {FACTS.skins} 套皮肤, 一份语义令牌.
             <br />
             自己调参数, 或者交给你的 Agent.
           </p>

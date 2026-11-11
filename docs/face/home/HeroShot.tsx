@@ -97,7 +97,7 @@ export function HeroShot({ onGo }: { readonly onGo: (id: string) => void }): JSX
           </h1>
           <div style={group}>
             <p className="mt-7 max-w-[35rem] text-base leading-[1.85] text-muted-foreground">
-              React 19 与 Tailwind 4 的组件库. {FACTS.pages} 页文档, 从按钮到整页模板, 每个控件的按下, 松开, 聚焦都按同一份分态合同打磨.
+              React 19 与 Tailwind 4 的组件库. {FACTS.docs} 篇组件文档 · {FACTS.components} 个组件, 从按钮到整页模板, 每个控件的按下, 松开, 聚焦都按同一份分态合同打磨.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Button type={BUTTON_TYPE} variant={VARIANT.primary} onClick={() => onGo("install")}>开始使用 →</Button>

@@ -13,7 +13,7 @@ function Chip({ label }: { readonly label: string }): JSX.Element {
   return <span className="inline-flex h-7 items-center whitespace-nowrap rounded-md border border-border-muted bg-card px-3 text-[12px] text-muted-foreground">{label}</span>;
 }
 
-/** {FACTS.pages} 页文档: 两行真实页名跑马灯. */
+/** 组件文档: 两行真实页名跑马灯. */
 export function ChipsArt(): JSX.Element {
   const rows = Array.from({ length: CHIP_ROWS }, (_, row) => DOCS.slice(CHIP_OFFSET + row * CHIPS_PER_ROW, CHIP_OFFSET + (row + 1) * CHIPS_PER_ROW));
   return (

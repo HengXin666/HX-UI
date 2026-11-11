@@ -7,7 +7,8 @@ import { FACTS } from "../site-facts";
 const HOLD_MS = 2400;
 
 const FIGURES = [
-  { value: FACTS.pages, label: "页文档" },
+  { value: FACTS.docs, label: "篇组件文档" },
+  { value: FACTS.components, label: "个组件" },
   { value: FACTS.groups, label: "个分组" },
   { value: FACTS.blocks, label: "组区块" },
   { value: FACTS.templates, label: "套模板" },

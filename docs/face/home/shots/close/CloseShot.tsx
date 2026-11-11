@@ -53,8 +53,8 @@ export function CloseShot({ onGo }: { readonly onGo: (id: string) => void }): JS
             </h2>
             <span aria-hidden data-shot-part="rule" className="mt-6 block h-px w-full max-w-[44rem] origin-left bg-current opacity-40" style={{ transform: `scaleX(${pose.rule})` }} />
             <p data-shot-part="sub" className="mt-6 font-mono text-sm leading-[1.8]" style={{ opacity: SUB_ALPHA * pose.sub }}>
-              <NumberRoll value={FACTS.pages} progress={pose.sub} />
-              <span> 页文档 · {FACTS.groups} 个分组 · {FACTS.templates} 套模板 · {LICENSE} · v{VERSION}</span>
+              <NumberRoll value={FACTS.docs} progress={pose.sub} />
+              <span> 篇组件文档 · {FACTS.components} 个组件 · {FACTS.groups} 个分组 · {FACTS.templates} 套模板 · {LICENSE} · v{VERSION}</span>
             </p>
             <nav aria-label="站点出口" className="mt-12 flex flex-wrap gap-x-8 gap-y-3 border-t border-current/20 pt-6">
               <a className={LINK} href={REPO_URL} {...EXTERNAL}>GitHub</a>

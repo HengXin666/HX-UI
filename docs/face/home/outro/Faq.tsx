@@ -4,7 +4,7 @@ import { TYPE, WRAP } from "../kit/layout";
 import { FACTS, VERSION } from "../site-facts";
 
 const QA: ReadonlyArray<{ readonly q: string; readonly a: string }> = [
-  { q: "HX UI 里有什么?", a: `${FACTS.pages} 页文档, 分 ${FACTS.groups} 组: 基础控件, 浮层, 数据展示, 图表, AI 交互, ${FACTS.blocks} 组区块与 ${FACTS.templates} 套整页模板. 当前版本 v${VERSION}.` },
+  { q: "HX UI 里有什么?", a: `${FACTS.docs} 篇组件文档 · ${FACTS.components} 个组件, 分 ${FACTS.groups} 组: 基础控件, 浮层, 数据展示, 图表, AI 交互, ${FACTS.blocks} 组区块与 ${FACTS.templates} 套整页模板. 当前版本 v${VERSION}.` },
   { q: "怎么装?", a: "npm i @hx/ui, 再在项目的样式入口 @import \"@hx/ui/styles.css\". 完整入口已含令牌, 主题映射与组件样式." },
   { q: "依赖哪些版本?", a: "React 19 与 react-dom 19. Tailwind 4 可选; 代码编辑器, 流程图, 高亮与流式 Markdown 是可选的 peer 依赖, 用到才装." },
   { q: "怎么换肤?", a: `一共 ${FACTS.skins} 套皮肤, 在根元素写 data-skin (或调 applySkin). 皮肤只覆盖语义令牌, 组件一行不动.` },
