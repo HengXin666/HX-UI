@@ -5,6 +5,7 @@ import { useShellLayout } from "../src/useShellLayout";
 import { TopBar } from "./chrome/TopBar";
 import { DocsFrame } from "./DocsFrame";
 import { CATALOG, GROUPS } from "./docs/catalog";
+import { ThumbStage } from "./docs/kinds/ThumbStage";
 import { Home } from "./Home";
 import { Playground } from "./Playground";
 import { FACE_HOME, PREVIEW_KILN, useFaceRoute } from "./router";
@@ -19,6 +20,8 @@ export function FaceApp(): JSX.Element {
   const search = useSearchHotkey();
   const { wide: shellWide, mobileNavOpen, setMobileNavOpen } = useShellLayout();
   const docId = route.kind === "doc" ? route.id : "";
+
+  if (route.kind === "thumb") return <ThumbStage id={route.id} />;
 
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground">

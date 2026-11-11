@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "thumbs": "node ../scripts/docs-thumbs.ts",
+    "build:site": "vite build && node ../scripts/docs-thumbs.ts",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "check:icons": "node scripts/check-icons.ts",

@@ -1,11 +1,12 @@
 import { useEffect, useState, type CSSProperties, type JSX } from "react";
 import { Sheet, SheetContent, SheetTitle } from "@hx/ui";
 import { HEADER_PX } from "./home/shots/stage";
-import { CATALOG, findEntry } from "./docs/catalog";
+import { CATALOG, OVERVIEW_ROLE, findEntry } from "./docs/catalog";
 import { INDEX_ID, INSTALL_ID, SHELL } from "./docs/constants";
 import { IndexPage } from "./docs/index/IndexPage";
 import { InstallGuide } from "./docs/install/InstallGuide";
 import { KindPage } from "./docs/kinds/KindPage";
+import { OverviewPage } from "./docs/kinds/OverviewPage";
 import { SpecPage } from "./docs/page/SpecPage";
 import { Rail } from "./docs/rail/Rail";
 import { RightRail } from "./docs/rail/RightRail";
@@ -43,6 +44,7 @@ export function DocsFrame({
   let body: JSX.Element;
   if (!entry) body = <IndexPage onGo={onGo} />;
   else if (entry.id === INSTALL_ID) body = <InstallGuide />;
+  else if (entry.role === OVERVIEW_ROLE) body = <OverviewPage key={entry.id} entry={entry} onGo={onGo} />;
   else if (entry.spec) body = <SpecPage key={entry.id} entry={entry} spec={entry.spec} onGo={onGo} />;
   else body = <KindPage key={entry.id} entry={entry} onGo={onGo} />;
 

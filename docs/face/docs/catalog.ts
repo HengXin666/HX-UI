@@ -56,6 +56,8 @@ export interface CatalogEntry {
 }
 
 export const START_LAYER = "start";
+/** 层总览页 (Surface / Kits / Controls 各一页) 的 role, 不算组件. */
+export const OVERVIEW_ROLE = "overview";
 export const LAYERS = GEN.layers;
 export const GROUPS = GEN.groups;
 
@@ -75,8 +77,8 @@ function toEntry(item: GenEntry): CatalogEntry {
  * 它们走页型模板 (kinds/KindPage), 只摆目录数据能给出的段落.
  */
 export const CATALOG: readonly CatalogEntry[] = GEN.entries.map(toEntry);
-/** 组件页 (不含上手的说明页), 索引页, 计数与上下页用. */
-export const COMPONENTS: readonly CatalogEntry[] = CATALOG.filter((entry) => entry.layer !== START_LAYER);
+/** 组件页 (不含上手的说明页与层总览), 索引页, 计数与上下页用. */
+export const COMPONENTS: readonly CatalogEntry[] = CATALOG.filter((entry) => entry.layer !== START_LAYER && entry.role !== OVERVIEW_ROLE);
 
 /** 左栏与索引页的层页签: 一个图标一层. */
 export const LAYER_TABS = [

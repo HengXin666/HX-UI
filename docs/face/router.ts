@@ -7,11 +7,14 @@ export const PREVIEW_FIELD = "field";
 export const PREVIEW_KILN = "kiln";
 
 export const FACE_BENCH = "bench";
+/** 缩略图拍摄台 #/thumb/<id>: 只给 scripts/docs-thumbs.ts 用, 不进导航. */
+export const FACE_THUMB = "thumb";
 
 export type FaceRoute =
   | { readonly kind: "home" }
   | { readonly kind: "bench" }
   | { readonly kind: "preview"; readonly which: typeof PREVIEW_FIELD | typeof PREVIEW_KILN }
+  | { readonly kind: "thumb"; readonly id: string }
   | { readonly kind: "doc"; readonly id: string };
 
 /** 空地址和 #/home 都是首页. 不把空 hash 改写成某个组件页. 文档外壳认得的 id (目录条目与组件索引) 进文档. */
@@ -23,6 +26,7 @@ export function readFaceRoute(): FaceRoute {
   if (head === FACE_PREVIEW && (rest === PREVIEW_FIELD || rest === PREVIEW_KILN)) {
     return { kind: "preview", which: rest };
   }
+  if (head === FACE_THUMB && rest) return { kind: "thumb", id: rest };
   const id = head ?? "";
   return isShellRoute(id) ? { kind: "doc", id } : { kind: "home" };
 }

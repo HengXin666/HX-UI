@@ -28,6 +28,11 @@
    "label": "上手"
   },
   {
+   "id": "surface-overview",
+   "layer": "surface",
+   "label": "总览"
+  },
+  {
    "id": "surface-glow",
    "layer": "surface",
    "label": "背景 · 光晕"
@@ -103,6 +108,11 @@
    "label": "边框, 循环与质感"
   },
   {
+   "id": "kits-overview",
+   "layer": "kits",
+   "label": "总览"
+  },
+  {
    "id": "kits-gallery",
    "layer": "kits",
    "label": "画廊与轮播"
@@ -121,6 +131,11 @@
    "id": "kits-glass",
    "layer": "kits",
    "label": "玻璃与立体"
+  },
+  {
+   "id": "controls-overview",
+   "layer": "controls",
+   "label": "总览"
   },
   {
    "id": "controls-press",
@@ -320,6 +335,17 @@
    "role": "guide",
    "exports": [],
    "desc": "七套皮肤一键换气质, 紧凑 / 舒适 / 宽松三档密度",
+   "page": true
+  },
+  {
+   "id": "surface",
+   "name": "Surface 总览",
+   "layer": "surface",
+   "group": "surface-overview",
+   "kind": "single",
+   "role": "overview",
+   "exports": [],
+   "desc": "背景, 文字, 指针, 光标, 揭示, 场与形状等表层效果, 按功能分组一页看全, 缩略图是真跑组件的截图.",
    "page": true
   },
   {
@@ -2064,6 +2090,17 @@
    "from": "@hx/ui/surface"
   },
   {
+   "id": "kits",
+   "name": "Kits 总览",
+   "layer": "kits",
+   "group": "kits-overview",
+   "kind": "single",
+   "role": "overview",
+   "exports": [],
+   "desc": "画廊与轮播, 叠放, 卡片, 玻璃与立体几组拼装件, 一页看全, 缩略图是真跑组件的截图.",
+   "page": true
+  },
+  {
    "id": "bend-gallery",
    "name": "BendGallery",
    "layer": "kits",
@@ -2557,6 +2594,17 @@
    "page": false,
    "source": "src/kits/stage3d/SwingLanyard.tsx",
    "from": "@hx/ui/kits"
+  },
+  {
+   "id": "controls",
+   "name": "Controls 总览",
+   "layer": "controls",
+   "group": "controls-overview",
+   "kind": "single",
+   "role": "overview",
+   "exports": [],
+   "desc": "按压, 取值, 输入, 选择, 撤销与导航六类交互控件, 一页看全, 缩略图是真跑组件的截图.",
+   "page": true
   },
   {
    "id": "glint-button",
