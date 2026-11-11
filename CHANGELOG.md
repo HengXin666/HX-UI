@@ -20,6 +20,7 @@
 
 ### Changed
 
+- 内部: nav 族与 kits 各族 (gallery / stack / glass / card / stage3d) 层层转出的帧驱动工具 (过渡串, 钳位, 趋近, 缓出, 细分弹簧步, 动值表) 收进 `src/motion/drive` (glide, use-motion-table), kits 公共常数收在 `src/kits/tokens.ts`; 删去 nav/parts/use-nav-motion 与 gallery / stack / glass 的族 tokens. 无导出变化, 行为不变.
 - controls 的 choice / press / range / compose / dismiss 五族: 族 tokens 里的 cubic-bezier 副本改引用公共曲线表 `CURVE` (`@hx/ui/motion`), 串值不变; `CURVE` 新增 `backOut` (0.34, 1.56, 0.64, 1). press / range 两处过时的 ENGINE-GAP 注释随之去掉.
 - `TallyRoll`: 过冲反解的缓存按目标过冲量化成 1000 档 (每档约 6e-5 位), 缓存至多 1000 条; 原来以浮点目标为键, 连续变化的 bounce 会让缓存无限增长. 观感不变.
 - `CubeField`: 每块状态改走 RGBA8 数据纹理 (倾角 16 位, 发亮与入场 8 位), 不再受片元 uniform 向量数限制, `gridSize` 上限由 13 放到 64. 实例化网格的 ENGINE-GAP 不变. `packCubes` 改为返回 2n x n 的 RGBA8 字节.
