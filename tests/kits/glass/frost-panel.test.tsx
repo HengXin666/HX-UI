@@ -4,7 +4,7 @@
 import { render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FrostPanel, frostFallbackFilter, frostMap, frostScales, svgBackdropSupported } from "@src/kits/glass/FrostPanel";
-import { mockReducedMotion } from "../stack/support";
+import { mockReducedMotion } from "../support";
 
 const panel = (): HTMLElement => document.querySelector<HTMLElement>("[data-slot='frost-panel']") as HTMLElement;
 

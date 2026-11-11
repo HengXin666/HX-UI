@@ -4,7 +4,7 @@
 import { act, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LensGlass, lensBox, lensFilter, lensFollow, lensIdle, lensStretch, lensTilt } from "@src/kits/glass/LensGlass";
-import { manualFrames, mockReducedMotion } from "../stack/support";
+import { manualFrames, mockReducedMotion } from "../support";
 
 const lens = (): HTMLElement => document.querySelector<HTMLElement>("[data-slot='lens-glass-lens']") as HTMLElement;
 const stage = (): HTMLElement => document.querySelector<HTMLElement>("[data-slot='lens-glass']") as HTMLElement;
