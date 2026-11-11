@@ -4,7 +4,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TintGrid, chromaFollow, chromaMask, chromaPower } from "@src/kits/stack/TintGrid";
-import { manualFrames, mockReducedMotion } from "./support";
+import { manualFrames, mockReducedMotion } from "../support";
 
 const items = ["A", "B", "C"].map((title) => ({ image: `/${title}.jpg`, title }));
 const shade = (): HTMLElement => document.querySelector<HTMLElement>("[data-slot='tint-grid-shade']") as HTMLElement;

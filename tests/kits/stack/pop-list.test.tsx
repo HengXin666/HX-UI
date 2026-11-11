@@ -4,7 +4,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PopList, edgeFades, listPose, listStep, revealDelay } from "@src/kits/stack/PopList";
-import { fakeIntersection, manualFrames, mockReducedMotion } from "./support";
+import { fakeIntersection, manualFrames, mockReducedMotion } from "../support";
 
 const items = ["One", "Two", "Three", "Four"];
 afterEach(() => {

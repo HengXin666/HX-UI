@@ -4,7 +4,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PILE_DEFAULTS, ScrollPile, pileComplete, pilePose, pileSmooth, stackOffset } from "@src/kits/stack/ScrollPile";
-import { manualFrames, mockReducedMotion } from "./support";
+import { manualFrames, mockReducedMotion } from "../support";
 
 const o = { ...PILE_DEFAULTS, stack: 100 };
 const tops = [0, 500, 1000];

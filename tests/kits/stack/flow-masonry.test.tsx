@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { FlowMasonry, autoColumns, fromOffset, masonryLayout, revealEase } from "@src/kits/stack/FlowMasonry";
 import { omegaSpring } from "@src/kits/tokens";
 import { masonrySpring } from "@src/kits/stack/parts/masonry-spec";
-import { fakeIntersection, manualFrames, mockReducedMotion } from "./support";
+import { fakeIntersection, manualFrames, mockReducedMotion } from "../support";
 
 const items = [1, 0.5, 1.5, 1].map((ratio, i) => ({ id: `p${i}`, image: `/${i}.jpg`, alt: `P${i}`, ratio }));
 const cell = (i: number): HTMLElement => document.querySelectorAll<HTMLElement>("[data-slot='flow-masonry-item']")[i] as HTMLElement;

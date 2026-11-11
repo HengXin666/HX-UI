@@ -4,7 +4,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { GlowBento, bentoColumns, bentoEase, bentoPose, bentoProximity, bentoSpan } from "@src/kits/stack/GlowBento";
-import { fakeIntersection, manualFrames, mockReducedMotion } from "./support";
+import { fakeIntersection, manualFrames, mockReducedMotion } from "../support";
 
 const items = [{ title: "A", span: { col: 2 } }, { title: "B" }, { title: "C", description: "long text" }];
 const item = (i: number): HTMLElement => document.querySelectorAll<HTMLElement>("[data-slot='glow-bento-item']")[i] as HTMLElement;

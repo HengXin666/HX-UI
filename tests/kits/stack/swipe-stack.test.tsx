@@ -4,7 +4,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SwipeStack, exitVector, leanDeg, rotateOrder, shouldSend, slotPose } from "@src/kits/stack/SwipeStack";
-import { manualFrames, mockReducedMotion } from "./support";
+import { manualFrames, mockReducedMotion } from "../support";
 
 const cards = ["A", "B", "C"].map((label) => ({ label, content: <span>{label}</span> }));
 const card = (i: number): HTMLElement => document.querySelectorAll<HTMLElement>("[data-slot='swipe-stack-card']")[i] as HTMLElement;
