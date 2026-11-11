@@ -4,8 +4,7 @@
 import { useLayoutEffect, useRef, useState, type JSX, type PointerEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { useNavMotion, type NavMotion } from "../parts/use-nav-motion";
-import { DOUBLE, NAV_DISABLED, NAV_FOCUS, PLAIN_EASE, PX, navTone, transitionOf, type NavTone } from "../tokens";
+import { DOUBLE, NAV_DISABLED, NAV_FOCUS, PLAIN_EASE, PX, navTone, transitionOf, type NavTone, useNavMotion, type NavMotion } from "../tokens";
 import { BarEntry, moveBarFocus, type BarItem } from "./parts/bar-entry";
 import { PILL_COLOR_MS, PILL_DEFAULTS, PILL_POP_FROM, PILL_PRESS_SCALE, PILL_PRESS_SPRING, PILL_SIZES, PILL_SURFACE_MS, PILL_TAU, pillBox, pillSpring, type PillSize } from "./parts/pill-spec";
 

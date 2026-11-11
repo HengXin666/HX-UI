@@ -6,8 +6,7 @@ import { useEffect, useRef, useState, type JSX, type KeyboardEvent, type ReactNo
 import type { SpringSpec } from "../../../craft/spring";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { useNavMotion } from "../parts/use-nav-motion";
-import { BACK, DOUBLE, MS_PER_SECOND, NAV_DISABLED, NAV_FOCUS, PLAIN_EASE, PX, transitionOf } from "../tokens";
+import { BACK, DOUBLE, MS_PER_SECOND, NAV_DISABLED, NAV_FOCUS, PLAIN_EASE, PX, transitionOf, useNavMotion } from "../tokens";
 import { DOCK_DEFAULTS, DOCK_DOT_MS, DOCK_EDGE, DOCK_HOLD_MS, DOCK_HOP_S, DOCK_LABEL_GAP, DOCK_LABEL_MS, dockSpring, hopFrames, magnifySize } from "./parts/dock-math";
 
 export { DOCK_DEFAULTS, DOCK_EDGE, DOCK_HOLD_MS, DOCK_HOP, DOCK_HOP_S, DOCK_SPRING, dockSpring, hopFrames, magnifySize } from "./parts/dock-math";

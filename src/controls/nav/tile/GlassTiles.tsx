@@ -7,8 +7,7 @@ import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion"
 import { cssCurve } from "../../../motion/curves";
 import { prefersReducedMotion } from "../../../primitives/motion";
 import { cn } from "../../../primitives/utils";
-import { useNavMotion } from "../parts/use-nav-motion";
-import { MS_PER_SECOND, NAV_FOCUS, navTone, transitionOf, type NavTone } from "../tokens";
+import { MS_PER_SECOND, NAV_FOCUS, navTone, transitionOf, type NavTone, useNavMotion } from "../tokens";
 import { GLASS_CIRCLE, GLASS_DEFAULTS, GLASS_ENTER_SPRING, GLASS_FROST_PX, GLASS_HOVER_SPRING, GLASS_LABEL_DROP, GLASS_LABEL_MS, GLASS_STAGGER_S, glassTransform, gridMove, plateTransform, type GlassHover, type GlassPlate } from "./parts/glass-spec";
 
 export { GLASS_DEFAULTS, GLASS_STAGGER_S, glassTransform, gridMove, plateTransform, type GlassHover, type GlassPlate } from "./parts/glass-spec";

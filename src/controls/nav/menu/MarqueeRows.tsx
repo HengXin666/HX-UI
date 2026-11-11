@@ -8,8 +8,7 @@ import { cssCurve } from "../../../motion/curves";
 import { prefersReducedMotion } from "../../../primitives/motion";
 import { cn } from "../../../primitives/utils";
 import { LinkOrButton } from "../parts/link-or-button";
-import { useNavMotion } from "../parts/use-nav-motion";
-import { PLAIN_EASE, navTone, transitionOf, type NavTone } from "../tokens";
+import { PLAIN_EASE, navTone, transitionOf, type NavTone, useNavMotion } from "../tokens";
 import * as M from "./parts/marquee-spec";
 
 export { MARQUEE_DEFAULTS, marqueeAdvance, marqueeEdge, marqueeHidden, marqueeSpring, type MarqueeEdge } from "./parts/marquee-spec";

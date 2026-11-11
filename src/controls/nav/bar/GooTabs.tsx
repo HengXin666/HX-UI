@@ -5,8 +5,7 @@
 import { useId, useLayoutEffect, useRef, useState, type JSX } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
-import { useNavMotion, type NavMotion } from "../parts/use-nav-motion";
-import { DOUBLE, MS_PER_SECOND, NAV_DISABLED, NAV_FOCUS, PLAIN_EASE, PX, easeOutCubic, navTone, transitionOf, type NavTone } from "../tokens";
+import { DOUBLE, MS_PER_SECOND, NAV_DISABLED, NAV_FOCUS, PLAIN_EASE, PX, easeOutCubic, navTone, transitionOf, type NavTone, useNavMotion, type NavMotion } from "../tokens";
 import { BarEntry, moveBarFocus, type BarItem } from "./parts/bar-entry";
 import { GOO_CARRY_DIV, GOO_CARRY_MAX_S, GOO_COLOR_MS, GOO_DEFAULTS, GOO_DROP_RATIO, GOO_HOVER_TAU, GOO_MAX_DROPS, dropPoint, dropSize, gooFilter, gooRandom, planDrops } from "./parts/goo-spec";
 import { PILL_SIZES, pillSpring, type PillSize } from "./parts/pill-spec";

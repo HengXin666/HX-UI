@@ -5,8 +5,7 @@ import { useRef, useState, type JSX, type KeyboardEvent } from "react";
 import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../../primitives/utils";
 import { BarEntry, type BarItem } from "../bar/parts/bar-entry";
-import { useNavMotion } from "../parts/use-nav-motion";
-import { DOUBLE, NAV_DISABLED, NAV_FOCUS, PLAIN_EASE, PX, navTone, transitionOf, type NavTone } from "../tokens";
+import { DOUBLE, NAV_DISABLED, NAV_FOCUS, PLAIN_EASE, PX, navTone, transitionOf, type NavTone, useNavMotion } from "../tokens";
 import { RAIL_COLOR_MS, RAIL_DEFAULTS, RAIL_INDEX_PAD, railMarker, railTarget, type RailFalloff } from "./parts/rail-spec";
 
 export { RAIL_DEFAULTS, RAIL_FALLOFF, railMarker, railTarget, type RailFalloff } from "./parts/rail-spec";

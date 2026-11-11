@@ -7,8 +7,7 @@ import { useReducedMotion } from "../../../hooks/browser/media/useReducedMotion"
 import { cssCurve } from "../../../motion/curves";
 import { cn } from "../../../primitives/utils";
 import { LinkOrButton } from "../parts/link-or-button";
-import { useNavMotion } from "../parts/use-nav-motion";
-import { MS_PER_SECOND, PLAIN_EASE, PX, navTone, transitionOf, type NavTone } from "../tokens";
+import { MS_PER_SECOND, PLAIN_EASE, PX, navTone, transitionOf, type NavTone, useNavMotion } from "../tokens";
 import { DECK_BAR, DECK_BAR_GAP, DECK_CARD_MS, DECK_CARD_OUT_MS, DECK_COLOR_MS, DECK_CROSS_DEG, DECK_DEFAULTS, deckCard, deckLag, deckSpring } from "./parts/deck-spec";
 import { useMenuOpen } from "./parts/use-menu-open";
 
