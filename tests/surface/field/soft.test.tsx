@@ -82,4 +82,21 @@ describe("SoftShape 渲染", () => {
     const { container: c3 } = render(<SoftShape />);
     expect((c3.firstElementChild as HTMLElement).dataset.backdropStatus).toBe("fallback");
   });
+  it("blur 为 0 时不挂离屏, 每帧只画上屏一遍", () => {
+    const draws = (blur: number): number => {
+      const calls: string[] = [];
+      restore.push(mockWebgl2(calls), mockReducedMotion(false));
+      mockIntersection();
+      const { unmount } = render(<SoftShape blur={blur} />);
+      const before = calls.filter((c) => c === "drawArrays").length;
+      act(() => vi.advanceTimersByTime(160));
+      const n = calls.filter((c) => c === "drawArrays").length - before;
+      unmount();
+      return n;
+    };
+    const off = draws(0);
+    const on = draws(8);
+    expect(off).toBeGreaterThan(0);
+    expect(on).toBe(off * 4);
+  });
 });

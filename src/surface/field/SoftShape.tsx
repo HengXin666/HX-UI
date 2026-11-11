@@ -117,11 +117,12 @@ export function SoftShape(props: SoftShapeProps): JSX.Element {
     };
   };
   const sigma = (frame: BackdropFrame) => blur * SOFT.sigmaRatio * frame.fit.scale * SOFT.blurScale;
-  const passes = [
+  // blur 为 0 时上屏不取 u_soft_v (走解析清晰层单遍直出), 三遍离屏整组不挂, 免得白跑两遍全屏模糊与一遍形状.
+  const passes = blur > 0 ? [
     { name: "u_soft_shape", fragment: SOFT_SHAPE_PASS, scale: 1, uniforms },
     { name: "u_soft_h", fragment: SOFT_BLUR_H, scale: SOFT.blurScale, uniforms: (frame: BackdropFrame) => ({ u_dir: [1, 0] as const, u_sigma: sigma(frame) }) },
     { name: "u_soft_v", fragment: SOFT_BLUR_V, scale: SOFT.blurScale, uniforms: (frame: BackdropFrame) => ({ u_dir: [0, 1] as const, u_sigma: sigma(frame) }) },
-  ];
+  ] : [];
 
   const handle = useShaderBackdrop({ fragment: SOFT_FRAGMENT, uniforms, textures: () => ({ u_field: field?.canvas }), passes }, { ...options, colors: [color] });
   return (
