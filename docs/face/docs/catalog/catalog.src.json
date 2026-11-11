@@ -1,0 +1,195 @@
+{
+ "_why": "文档站目录的唯一来源: 层, 组, 页, 页型与每页认领的导出. scripts/docs-catalog.ts 读它生成 catalog.gen.json 并对表; 改目录只改这里.",
+ "_keys": {"role": "省略为 component (组件页, 必须认领至少一个导出); guide 上手说明, template 整页模板, showcase 拼装演示, 这三种可以不认领导出.", "kind": "页型: single / composite / block / control.", "exports": "本页认领的导出名; 重名导出写 名字@入口 (Timeline@./viz)."},
+ "layers": [
+  {"id": "start", "label": "上手"},
+  {"id": "base", "label": "基础组件"}
+ ],
+ "groups": [
+  {"id": "start", "layer": "start", "label": "上手", "pages": [
+   {"id": "install", "name": "安装与使用", "desc": "引入组件, 接入样式, 切换主题, 部署文档站", "role": "guide", "kind": "single"},
+   {"id": "tokens", "name": "设计令牌", "desc": "颜色, 圆角, 阴影, 字号, 间距与动效", "role": "guide", "kind": "single"},
+   {"id": "skins", "name": "皮肤与密度", "desc": "七套皮肤一键换气质, 紧凑 / 舒适 / 宽松三档密度", "role": "guide", "kind": "single"}
+  ]},
+  {"id": "text-motion", "layer": "base", "label": "文字动效", "pages": [
+   {"id": "split-text", "name": "SplitText 逐字入场", "desc": "把一句话拆成字或词, 依次从一个方向浮入. 读屏器只读原文, 减弱动效时直接显示静态文字.", "kind": "single", "exports": ["SplitText"]},
+   {"id": "rotating-text", "name": "RotatingText 轮换词", "desc": "首屏 \"为 ___ 而生\" 那一格: 定时或按滚动进度换词, 旧词离场新词就位, 读屏器只读一份完整列表.", "kind": "single", "exports": ["RotatingText"]},
+   {"id": "animated-number", "name": "AnimatedNumber 弹簧数字", "desc": "数值由弹簧驱动, 每帧直接写文字不走 React 渲染; 等宽数字滚动时不左右抖, 减弱动效时直接跳到终值.", "kind": "single", "exports": ["AnimatedNumber"]},
+   {"id": "gradient-text", "name": "GradientText 渐变字", "desc": "文字渐变, 色标只接受语义令牌名; 高对比模式下退回系统文字色. 嵌在 Display 或正文里使用.", "kind": "single", "exports": ["GradientText"]}
+  ]},
+  {"id": "background", "layer": "base", "label": "背景", "pages": [
+   {"id": "mesh-gradient", "name": "MeshGradient 网格渐变", "desc": "多团径向光叠成的 mesh 背景, 缓慢漂移; 只产出 var(--令牌) 与 color-mix, 换肤自动跟随.", "kind": "single", "exports": ["MeshGradient"]},
+   {"id": "backdrop", "name": "Backdrop 背景底纹", "desc": "网格, 点阵与极光三种底纹, 垫在子内容下面不影响布局与点击; 极光漂移只动 transform.", "kind": "single", "exports": ["Backdrop"]},
+   {"id": "beam", "name": "Beam 光束", "desc": "从光源投下一道模糊的锥形光, 光源处带一团光晕; 放进任意 isolate 宿主里使用.", "kind": "single", "exports": ["Beam"]},
+   {"id": "grid-lines", "name": "GridLines 网格准星", "desc": "1px 网格线加交点十字准星 (vercel 式), 一张内联 SVG 的两个 pattern 画成, 线色从令牌混出.", "kind": "single", "exports": ["GridLines"]},
+   {"id": "grain", "name": "Grain 噪点颗粒", "desc": "盖在内容上方的灰阶噪点层, 不接收指针; 噪声是内联 SVG feTurbulence, 不引图片不含色值.", "kind": "single", "exports": ["Grain"]}
+  ]},
+  {"id": "effect", "layer": "base", "label": "效果", "pages": [
+   {"id": "border-beam", "name": "BorderBeam 流光边框", "desc": "沿宿主 1px 边框流动的光, 永远不比边框粗; 放进任意 relative 且带圆角的容器里即可, 减弱动效时停转.", "kind": "single", "exports": ["BorderBeam"]},
+   {"id": "spotlight-card", "name": "SpotlightCard 光斑卡", "desc": "指针跟随的径向光斑, 坐标直接写 CSS 变量不触发重渲染; 触屏与减弱动效时不跟随, 键盘聚焦时中心亮起.", "kind": "single", "exports": ["SpotlightCard"]},
+   {"id": "gradient-border", "name": "GradientBorder 渐变描边", "desc": "叠在宿主 1px 边框上的静态渐变描边, 与流光边框同一手法, 只剩 1px 环; 静态无动效.", "kind": "single", "exports": ["GradientBorder"]},
+   {"id": "marquee", "name": "Marquee 跑马灯", "desc": "内容渲染多份同步平移, 视觉无缝; 复制件不进可访问性树, 减弱动效时停下改为可手动横滚.", "kind": "single", "exports": ["Marquee"]}
+  ]},
+  {"id": "actions", "layer": "base", "label": "按钮与操作", "pages": [
+   {"id": "button", "name": "按钮", "desc": "七种语义样式与八档尺寸, 自带点按波纹", "kind": "single", "exports": ["Button"]},
+   {"id": "button-group", "name": "按钮组", "desc": "相邻边框合并成一条", "kind": "single", "exports": ["ButtonGroup", "ButtonGroupSeparator", "ButtonGroupText"]},
+   {"id": "toggle-group", "name": "两态按钮", "desc": "单个与成组, 单选或多选", "kind": "composite", "exports": ["Toggle", "ToggleGroup", "ToggleGroupItem"]},
+   {"id": "segmented-control", "name": "分段控件", "desc": "指示器滑动, 单选分段", "kind": "single", "exports": ["SegmentedControl"]}
+  ]},
+  {"id": "form", "layer": "base", "label": "表单输入", "pages": [
+   {"id": "input", "name": "输入框", "desc": "反馈全部落在边框颜色上", "kind": "single", "exports": ["Input"]},
+   {"id": "textarea", "name": "多行输入", "desc": "随内容长高", "kind": "single", "exports": ["Textarea"]},
+   {"id": "input-group", "name": "输入组", "desc": "输入框加前后缀图标, 文字与按钮", "kind": "composite", "exports": ["InputGroup", "InputGroupAddon", "InputGroupButton", "InputGroupInput", "InputGroupText", "InputGroupTextarea"]},
+   {"id": "input-otp", "name": "验证码输入", "desc": "一次性验证码, 支持粘贴与短信自动填充", "kind": "composite", "exports": ["InputOTP", "InputOTPGroup", "InputOTPSeparator", "InputOTPSlot"]},
+   {"id": "field", "name": "表单字段", "desc": "标签, 控件, 说明与错误的组合", "kind": "composite", "exports": ["Field", "FieldDescription", "FieldError", "FieldGroup", "FieldLabel", "FieldLegend", "FieldSeparator", "FieldSet"]},
+   {"id": "form", "name": "表单", "desc": "表单校验与错误关联", "kind": "composite", "exports": ["Form", "FormControl", "FormDescription", "FormField", "FormItem", "FormLabel", "FormMessage"]},
+   {"id": "label", "name": "表单标签", "desc": "关联控件与说明", "kind": "single", "exports": ["Label"]},
+   {"id": "checkbox", "name": "复选框", "desc": "支持半选", "kind": "single", "exports": ["Checkbox"]},
+   {"id": "radio-group", "name": "单选组", "desc": "一组互斥选项", "kind": "composite", "exports": ["RadioGroup", "RadioGroupItem"]},
+   {"id": "switch", "name": "开关", "desc": "两档尺寸", "kind": "single", "exports": ["Switch"]},
+   {"id": "slider", "name": "滑块", "desc": "单值与区间", "kind": "single", "exports": ["Slider"]},
+   {"id": "widgets", "name": "富交互件", "desc": "时间线, 评分, 拖放上传, 标签输入与色块选择", "kind": "single", "exports": ["ColorSwatch", "FileDropzone", "Rating", "TagInput", "Timeline@.", "TimelineItem"]}
+  ]},
+  {"id": "picker", "layer": "base", "label": "选择器", "pages": [
+   {"id": "select", "name": "下拉选择", "desc": "单选与分组", "kind": "composite", "exports": ["Select", "SelectContent", "SelectGroup", "SelectItem", "SelectLabel", "SelectSeparator", "SelectTrigger", "SelectValue"]},
+   {"id": "native-select", "name": "原生下拉", "desc": "菜单跟随主题", "kind": "single", "exports": ["NativeSelect", "NativeSelectOptGroup", "NativeSelectOption"]},
+   {"id": "combobox", "name": "组合框", "desc": "可搜索下拉, 单选与多选", "kind": "composite", "exports": ["Combobox"]},
+   {"id": "calendar", "name": "日历与日期选择", "desc": "单日, 区间与弹出式日期选择", "kind": "composite", "exports": ["Calendar", "DatePicker"]},
+   {"id": "time-picker", "name": "时间选择", "desc": "时与分输入, 受控但中间态不卡手", "kind": "single", "exports": ["TimePicker"]}
+  ]},
+  {"id": "overlay", "layer": "base", "label": "浮层与菜单", "pages": [
+   {"id": "dialog", "name": "对话框", "desc": "模态对话框, 缩放淡入", "kind": "composite", "exports": ["Dialog", "DialogClose", "DialogContent", "DialogDescription", "DialogFooter", "DialogHeader", "DialogTitle", "DialogTrigger"]},
+   {"id": "alert-dialog", "name": "警示对话框", "desc": "必须二选一, 用于不可撤销的操作", "kind": "composite", "exports": ["AlertDialog", "AlertDialogAction", "AlertDialogCancel", "AlertDialogContent", "AlertDialogDescription", "AlertDialogFooter", "AlertDialogHeader", "AlertDialogMedia", "AlertDialogTitle", "AlertDialogTrigger"]},
+   {"id": "confirm-dialog", "name": "确认框", "desc": "命令式等待与声明式两用", "kind": "single", "exports": ["ConfirmDialog", "ConfirmDialogHost"]},
+   {"id": "drawer", "name": "抽屉", "desc": "可拖拽的底部抽屉", "kind": "composite", "exports": ["Drawer", "DrawerClose", "DrawerContent", "DrawerDescription", "DrawerFooter", "DrawerHeader", "DrawerTitle", "DrawerTrigger"]},
+   {"id": "sheet", "name": "侧滑面板", "desc": "从四边滑入的面板", "kind": "composite", "exports": ["Sheet", "SheetClose", "SheetContent", "SheetDescription", "SheetFooter", "SheetHeader", "SheetTitle", "SheetTrigger"]},
+   {"id": "popover", "name": "浮层", "desc": "锚定元素的浮层", "kind": "composite", "exports": ["Popover", "PopoverArrow", "PopoverContent", "PopoverDescription", "PopoverHeader", "PopoverTitle", "PopoverTrigger"]},
+   {"id": "hover-card", "name": "悬停卡片", "desc": "延迟弹出不误触", "kind": "composite", "exports": ["HoverCard", "HoverCardContent", "HoverCardTrigger"]},
+   {"id": "tooltip", "name": "悬浮提示", "desc": "含一行式提示", "kind": "composite", "exports": ["Tooltip", "TooltipContent", "TooltipHint", "TooltipProvider", "TooltipTrigger"]},
+   {"id": "dropdown-menu", "name": "下拉菜单", "desc": "菜单与分组", "kind": "composite", "exports": ["DropdownMenu", "DropdownMenuContent", "DropdownMenuItem", "DropdownMenuLabel", "DropdownMenuRadioGroup", "DropdownMenuRadioItem", "DropdownMenuSeparator", "DropdownMenuSub", "DropdownMenuSubContent", "DropdownMenuSubTrigger", "DropdownMenuTrigger"]},
+   {"id": "context-menu", "name": "右键菜单", "desc": "组合式与声明式并存", "kind": "composite", "exports": ["ContextMenu", "ContextMenuCheckboxItem", "ContextMenuContent", "ContextMenuItem", "ContextMenuLabel", "ContextMenuRadioGroup", "ContextMenuRadioItem", "ContextMenuRoot", "ContextMenuSeparator", "ContextMenuShortcut", "ContextMenuSub", "ContextMenuSubContent", "ContextMenuSubTrigger", "ContextMenuTrigger"]},
+   {"id": "menubar", "name": "菜单栏", "desc": "桌面应用式菜单栏", "kind": "composite", "exports": ["Menubar", "MenubarCheckboxItem", "MenubarContent", "MenubarItem", "MenubarMenu", "MenubarRadioGroup", "MenubarRadioItem", "MenubarSeparator", "MenubarShortcut", "MenubarSub", "MenubarSubContent", "MenubarSubTrigger", "MenubarTrigger"]},
+   {"id": "navigation-menu", "name": "导航菜单", "desc": "站点导航, 视口平滑插值", "kind": "composite", "exports": ["NavigationMenu", "NavigationMenuContent", "NavigationMenuItem", "NavigationMenuLink", "NavigationMenuList", "NavigationMenuTrigger"]},
+   {"id": "command", "name": "命令面板", "desc": "内嵌与对话框两种", "kind": "composite", "exports": ["Command", "CommandDialog", "CommandEmpty", "CommandGroup", "CommandInput", "CommandItem", "CommandList", "CommandSeparator", "CommandShortcut"]}
+  ]},
+  {"id": "feedback", "layer": "base", "label": "反馈与状态", "pages": [
+   {"id": "alert", "name": "提示条", "desc": "五种语义色, 危险与警告会被读屏播报", "kind": "single", "exports": ["Alert", "AlertDescription", "AlertTitle"]},
+   {"id": "toast", "name": "消息提醒", "desc": "右下角堆叠与顶部居中", "kind": "single", "exports": ["Toaster"]},
+   {"id": "badge", "name": "徽标", "desc": "三种语义色", "kind": "single", "exports": ["Badge"]},
+   {"id": "skeleton", "name": "骨架屏", "desc": "方块占位与多行", "kind": "single", "exports": ["Skeleton", "SkeletonText"]},
+   {"id": "spinner", "name": "旋转指示", "desc": "行内加载", "kind": "single", "exports": ["Spinner"]},
+   {"id": "spin", "name": "多形态加载", "desc": "多种加载指示", "kind": "single", "exports": ["Spin"]},
+   {"id": "progress", "name": "进度条", "desc": "含不定长, 带标题与数值", "kind": "single", "exports": ["Progress", "ProgressMeter"]},
+   {"id": "empty", "name": "空状态", "desc": "组合式空状态", "kind": "single", "exports": ["Empty", "EmptyContent", "EmptyDescription", "EmptyHeader", "EmptyMedia", "EmptyTitle"]}
+  ]},
+  {"id": "data", "layer": "base", "label": "数据展示", "pages": [
+   {"id": "table", "name": "表格", "desc": "表格原语", "kind": "composite", "exports": ["Table", "TableBody", "TableCaption", "TableCell", "TableFooter", "TableHead", "TableHeader", "TableRow"]},
+   {"id": "avatar", "name": "头像", "desc": "图片淡入, 叠放与状态点", "kind": "single", "exports": ["Avatar", "AvatarBadge", "AvatarFallback", "AvatarGroup", "AvatarGroupCount", "AvatarImage"]},
+   {"id": "item", "name": "列表条目", "desc": "媒体, 标题, 说明与操作", "kind": "composite", "exports": ["Item", "ItemActions", "ItemContent", "ItemDescription", "ItemGroup", "ItemMedia", "ItemSeparator", "ItemTitle"]},
+   {"id": "pagination", "name": "分页器", "desc": "翻页时整排不跳", "kind": "single", "exports": ["Pagination"]}
+  ]},
+  {"id": "navigation", "layer": "base", "label": "导航", "pages": [
+   {"id": "breadcrumb", "name": "面包屑", "desc": "可折叠中间层级", "kind": "composite", "exports": ["Breadcrumb", "BreadcrumbEllipsis", "BreadcrumbItem", "BreadcrumbLink", "BreadcrumbList", "BreadcrumbPage", "BreadcrumbSeparator"]},
+   {"id": "tabs", "name": "标签页", "desc": "下划线或药丸两种形态", "kind": "composite", "exports": ["Tabs", "TabsContent", "TabsList", "TabsTrigger"]},
+   {"id": "accordion", "name": "折叠面板", "desc": "折叠组与单块折叠, 双向都有高度动画", "kind": "composite", "exports": ["Accordion", "AccordionContent", "AccordionItem", "AccordionTrigger", "Collapsible", "CollapsibleContent", "CollapsibleTrigger"]},
+   {"id": "collapse-panel", "name": "可折叠面板", "desc": "面板折叠", "kind": "single", "exports": ["CollapsePanel"]}
+  ]},
+  {"id": "box", "layer": "base", "label": "布局容器", "pages": [
+   {"id": "box", "name": "布局原语", "desc": "Stack, Grid, Container 与可拖拽分栏, 统一间距与宽度档", "kind": "single", "exports": ["AutoGrid", "Grid", "Center", "Container", "Section", "HStack", "Spacer", "Stack", "VStack", "SplitView"]},
+   {"id": "bento", "name": "便当格", "desc": "不等大磁贴拼出的看板与落地页版块", "kind": "single", "exports": ["Bento", "BentoItem"]},
+   {"id": "separator", "name": "分隔线", "desc": "全局 1px", "kind": "single", "exports": ["Separator"]},
+   {"id": "carousel", "name": "轮播", "desc": "惯性拖拽与方向键切换", "kind": "composite", "exports": ["Carousel", "CarouselContent", "CarouselDots", "CarouselItem", "CarouselNext", "CarouselPrevious"]},
+   {"id": "resizable", "name": "可调整分栏", "desc": "拖拽调整大小", "kind": "composite", "exports": ["ResizableHandle", "ResizablePanel", "ResizablePanelGroup"]},
+   {"id": "scroll-area", "name": "滚动区域", "desc": "细滚动条容器", "kind": "single", "exports": ["ScrollArea", "ScrollBar"]},
+   {"id": "aspect-ratio", "name": "宽高比", "desc": "固定宽高比容器", "kind": "single", "exports": ["AspectRatio"]},
+   {"id": "direction", "name": "文字方向", "desc": "支持从右到左", "kind": "single", "exports": ["DirectionProvider"]}
+  ]},
+  {"id": "motion", "layer": "base", "label": "动效与质感", "pages": [
+   {"id": "motion", "name": "动效", "desc": "视口入场, 交错, 数字滚动与页面转场, 尊重减弱动效", "kind": "single", "exports": ["AnimatedNumber", "FadeSwap", "PageTransition", "Parallax", "Reveal", "RotatingText", "ScrollProgress", "SplitText", "Stagger", "StaggerItem", "StickyScroll"]},
+   {"id": "effects", "name": "视觉效果", "desc": "光斑卡, 流光边框, 跑马灯, 背景底纹与毛玻璃", "kind": "single", "exports": ["Backdrop", "Beam", "BorderBeam", "GlassPanel", "GradientBorder", "Grain", "GridLines", "Marquee", "MaskFade", "MeshGradient", "SpotlightCard"]}
+  ]},
+  {"id": "typography", "layer": "base", "label": "排版", "pages": [
+   {"id": "typography", "name": "排版", "desc": "标题, 正文, 引用与列表", "kind": "single", "exports": ["TypographyBlockquote", "TypographyH1", "TypographyH2", "TypographyH3", "TypographyInlineCode", "TypographyLead", "TypographyList", "TypographyMuted", "TypographyP"]},
+   {"id": "display-type", "name": "营销排版", "desc": "Display, Eyebrow, Kicker, Lead, 渐变字与 Prose 正文容器, 中日韩自动收紧", "kind": "single", "exports": ["Display", "Eyebrow", "GradientText", "Kicker", "Lead", "Prose"]},
+   {"id": "kbd", "name": "按键", "desc": "键盘按键标记", "kind": "single", "exports": ["Kbd", "KbdGroup"]}
+  ]},
+  {"id": "media", "layer": "base", "label": "媒体", "pages": [
+   {"id": "media-image", "name": "图片", "desc": "响应式图片, 占位与加载失败兜底", "kind": "single", "exports": ["Image"]},
+   {"id": "media-themed-image", "name": "亮暗双图", "desc": "跟随主题切换的两张图", "kind": "single", "exports": ["ThemedImage"]},
+   {"id": "media-video", "name": "视频", "desc": "封面, 静音自动播与减弱动效", "kind": "single", "exports": ["Video"]},
+   {"id": "media-gallery", "name": "画廊", "desc": "网格与瀑布排布, 点开进灯箱", "kind": "single", "exports": ["Gallery"]},
+   {"id": "media-lightbox", "name": "灯箱", "desc": "全屏查看, 方向键与滑动切换", "kind": "single", "exports": ["Lightbox"]},
+   {"id": "media-frames", "name": "设备与浏览器外框", "desc": "手机, 平板, 笔记本与浏览器窗口外框", "kind": "single", "exports": ["BrowserFrame", "DeviceFrame", "ProductMockFrame"]}
+  ]},
+  {"id": "blocks", "layer": "base", "label": "区块", "pages": [
+   {"id": "blocks-site", "name": "站点区块", "desc": "顶栏, 大菜单面板, 移动导航, 公告条与页脚", "kind": "block", "exports": ["MegaMenuPanel", "BlocksSiteHeader", "BlocksSiteFooter", "BlocksMobileNav", "BlocksAnnouncementBar"]},
+   {"id": "blocks-hero", "name": "首屏与转化条", "desc": "Hero, 标志墙, 行动条与邮件订阅", "kind": "block", "exports": ["CtaBanner", "Hero", "LogoWall", "Newsletter"]},
+   {"id": "blocks-features", "name": "特性区块", "desc": "特性栅格, 左右交替, 便当格, 指标带, 展示与图表栅格", "kind": "block", "exports": ["BentoFeatures", "FeatureAlternating", "FeatureGrid", "FigureGrid", "Showcase", "StatBand"]},
+   {"id": "blocks-social-proof", "name": "社会证明", "desc": "用户评价, 案例, 更新日志与推文墙", "kind": "block", "exports": ["CaseStudies", "ChangelogList", "Testimonials", "TweetWall"]},
+   {"id": "blocks-pricing", "name": "定价与对比", "desc": "定价卡, 对比矩阵与常见问题", "kind": "block", "exports": ["ComparisonMatrix", "Faq", "Pricing"]},
+   {"id": "blocks-developer", "name": "开发者区块", "desc": "代码展示与安装命令", "kind": "block", "exports": ["CodeShowcase", "InstallBlock"]},
+   {"id": "blocks-commerce-browse", "name": "电商浏览", "desc": "商品卡, 栅格, 横滑轨道, 类目, 活动首屏与促销条", "kind": "block", "exports": ["CampaignHero", "CategoryTiles", "ProductCard", "ProductGrid", "ProductRail", "PromoStrip"]},
+   {"id": "blocks-commerce-trade", "name": "电商交易", "desc": "商品详情, 购物车, 结账步骤与搜索结果", "kind": "block", "exports": ["CartSummary", "CheckoutSteps", "ProductDetail", "ProductGrid", "SearchResults"]},
+   {"id": "blocks-docs", "name": "文档站区块", "desc": "文档外壳, 目录, 上下页, API 表与提示框", "kind": "block", "exports": ["ApiTable", "Callout", "DocsHome", "DocsPager", "DocsShell", "DocsToc"]},
+   {"id": "blocks-portfolio", "name": "作品集区块", "desc": "个人首屏, 粘性侧栏, 经历时间线, 项目栅格与文章列表", "kind": "block", "exports": ["ExperienceTimeline", "HoverPreviewLink", "PostList", "ProfileHero", "ProjectGrid", "StickyProfileLayout"]},
+   {"id": "page", "name": "整页描述", "desc": "用 definePage 描述一整页: 调区块顺序, 开关区块, 改标题, 源码即描述对象", "kind": "block", "exports": ["Page", "PageComposer", "MetricRow", "RingRow"]},
+   {"id": "gallery", "name": "展示画廊", "desc": "用动效, 便当格, 光斑与指标卡拼成的落地页与仪表盘, 亮暗两套主题", "kind": "block", "exports": ["FieldPage", "KilnPage", "Shot", "ShotSequence", "ShotLayer", "ShotPlate", "BarChart", "Trend", "Ring", "FlowGraph", "Funnel", "Timeline@./viz", "Metric", "Process", "Compare", "Page"]}
+  ]},
+  {"id": "conversation", "layer": "base", "label": "会话", "pages": [
+   {"id": "attachment", "name": "附件", "desc": "文件与图片附件, 带上传进度与错误态", "kind": "single", "exports": ["Attachment", "AttachmentAction", "AttachmentActions", "AttachmentContent", "AttachmentDescription", "AttachmentGroup", "AttachmentMedia", "AttachmentTitle"]},
+   {"id": "bubble", "name": "气泡", "desc": "消息气泡, 四种底色, 可折叠长内容", "kind": "single", "exports": ["Bubble", "BubbleCollapsible", "BubbleContent", "BubbleGroup", "BubbleReactions"]},
+   {"id": "message", "name": "消息", "desc": "头像, 头部, 正文与底部", "kind": "single", "exports": ["Message", "MessageAvatar", "MessageContent", "MessageFooter", "MessageHeader"]},
+   {"id": "message-scroller", "name": "消息滚动", "desc": "贴底跟随与回到最新", "kind": "composite", "exports": ["MessageScroller", "MessageScrollerButton", "MessageScrollerContent", "MessageScrollerItem"]},
+   {"id": "marker", "name": "标记行", "desc": "系统提示, 状态行与分隔线", "kind": "single", "exports": ["Marker", "MarkerContent", "MarkerIcon"]},
+   {"id": "questionnaire", "name": "问卷", "desc": "多步问卷, 切题滑动", "kind": "single", "exports": ["Questionnaire"]}
+  ]},
+  {"id": "layout", "layer": "base", "label": "页面版式", "pages": [
+   {"id": "card", "name": "卡片", "desc": "内容容器", "kind": "single", "exports": ["Card", "CardContent", "CardDescription", "CardFooter", "CardHeader", "CardTitle", "StatCard", "StatGrid"]},
+   {"id": "code-block", "name": "代码块", "desc": "语法高亮与复制", "kind": "single", "exports": ["CodeBlock"]},
+   {"id": "code-editor", "name": "代码编辑器", "desc": "Monaco 单文件与 diff, One Dark Pro Darker, 本地 worker 无 CDN", "kind": "single", "exports": ["CodeEditor", "DiffEditor"]},
+   {"id": "stat-card", "name": "指标卡", "desc": "指标卡与栅格, 数字等宽不抖", "kind": "single", "exports": ["StatCard", "StatGrid", "DataTable"]},
+   {"id": "data-table", "name": "数据表", "desc": "粘性表头, 空态, 加载态与行点击", "kind": "composite", "exports": ["DataTable", "EmptyState", "StatCard", "StatGrid"]},
+   {"id": "empty-state", "name": "空态页", "desc": "空, 错误与加载三态", "kind": "single", "exports": ["DataBoundary", "EmptyState", "PageHeader"]},
+   {"id": "page-header", "name": "页头", "desc": "标题, 说明与右侧操作位", "kind": "single", "exports": ["PageHeader"]},
+   {"id": "setting-chrome", "name": "设置页版式", "desc": "一张卡里一行一个设置项", "kind": "block", "exports": ["SettingHeading", "SettingRow", "SettingSection"]},
+   {"id": "app-frame", "name": "应用外壳", "desc": "外留白与两块圆角面板", "kind": "block", "exports": ["AppFrame"]},
+   {"id": "sidebar-nav", "name": "侧栏导航", "desc": "带数字与文本角标", "kind": "composite", "exports": ["SidebarNavItemButton"]},
+   {"id": "sidebar", "name": "侧栏", "desc": "组合式应用侧栏, 可收成图标条", "kind": "composite", "exports": ["Sidebar", "SidebarContent", "SidebarFooter", "SidebarGroup", "SidebarGroupContent", "SidebarGroupLabel", "SidebarHeader", "SidebarInset", "SidebarMenu", "SidebarMenuBadge", "SidebarMenuButton", "SidebarMenuItem", "SidebarMenuSub", "SidebarMenuSubButton", "SidebarMenuSubItem", "SidebarProvider", "SidebarRail", "SidebarTrigger"]},
+   {"id": "stepper", "name": "步骤条", "desc": "步骤条与日志框, 含联动示例", "kind": "single", "exports": ["Stepper", "StepDots", "LogViewer"]},
+   {"id": "proxy-chain", "name": "代理链路", "desc": "入口, 策略与实体", "kind": "single", "exports": ["ProxyChain", "ProxyLayerLegend"]},
+   {"id": "browser-live", "name": "浏览器预览", "desc": "多副本实时预览与远程操作", "kind": "block", "exports": ["BrowserLiveStatus", "BrowserLiveTile", "BrowserLiveWall"]}
+  ]},
+  {"id": "charts", "layer": "base", "label": "图表", "pages": [
+   {"id": "charts", "name": "图表", "desc": "折线, 面积, 柱状, 饼与雷达图", "kind": "single", "exports": ["ChartChrome", "ChartFrame", "HxAreaChart", "HxBarChart", "HxLineChart", "HxPieChart", "HxRadarChart", "HxRadialChart"]},
+   {"id": "viz", "name": "数据可视化", "desc": "趋势线, 柱状, 环形, 流程图, 漏斗与时间线的舞台: 拖道具看中断与回程, 源码一键复制", "kind": "single", "exports": ["BarChart", "Trend", "Ring", "FlowGraph", "Funnel", "Timeline@./viz", "Metric", "Spark", "Process", "Compare", "NumberRoll"]}
+  ]},
+  {"id": "agent", "layer": "base", "label": "AI 交互", "pages": [
+   {"id": "agent-overview", "name": "交互总览", "desc": "发消息, 工具调用, 流式回复与变更预览串成一个完整示例", "role": "showcase", "kind": "block", "exports": ["InlineApproval"]},
+   {"id": "agent-toolcall", "name": "工具调用卡", "desc": "调用状态, 入参与结果可折叠", "kind": "single", "exports": ["ToolCallCard"]},
+   {"id": "agent-stream", "name": "流式回复", "desc": "先思考再回复, 逐字 Markdown 与中断", "kind": "single", "exports": ["StreamingMarkdown", "StreamingText", "Thinking"]},
+   {"id": "agent-usage", "name": "用量计量", "desc": "已用 / 上限 / 速率", "kind": "single", "exports": ["UsageMeter"]},
+   {"id": "agent-diff", "name": "变更对比", "desc": "逐行增删, 行首带符号", "kind": "single", "exports": ["DiffView"]},
+   {"id": "agent-process", "name": "思考与过程", "desc": "思考计时, 发散思考, 子代理与分层待办的实时展示", "kind": "single", "exports": ["SubagentCard", "SubagentGroup", "ThinkingBranches", "TodoTree", "StatusGlyph"]},
+   {"id": "trace", "name": "轨迹", "desc": "推理与工具调用轨迹", "kind": "composite", "exports": ["Trace", "TraceLive", "TraceSources", "TraceStep"]}
+  ]},
+  {"id": "templates", "layer": "base", "label": "模板", "pages": [
+   {"id": "templates-chat", "name": "AI 对话工作台", "desc": "会话列表 + 流式回复 + 轨迹 + 输入框, 整页可复制", "role": "template", "kind": "block"},
+   {"id": "templates-settings", "name": "设置页", "desc": "二级设置栏 + 一行一个设置项, 整页可复制", "kind": "block", "exports": ["SettingSection", "SettingRow"]},
+   {"id": "templates-dashboard", "name": "数据看板", "desc": "指标卡 + 面积图 + 数据表, 整页可复制", "role": "template", "kind": "block"},
+   {"id": "templates-console", "name": "链路控制台", "desc": "代理链路 + 步骤条 + 日志框, 整页可复制", "role": "template", "kind": "block"},
+   {"id": "page-saas", "name": "SaaS 落地页", "desc": "复刻 vercel / linear / stripe 型 SaaS 落地页: 主视觉 + 客户墙 + 便当格 + 定价 + 问答, 三套皮肤", "role": "template", "kind": "block"},
+   {"id": "page-opensource", "name": "开源项目站", "desc": "复刻 tailwindcss / astro / bun 型开源项目主页: 安装命令 + 代码展示 + 案例 + 更新日志, 三套皮肤", "role": "template", "kind": "block"},
+   {"id": "page-pricing", "name": "定价页", "desc": "复刻 linear / vercel 型定价页: 月年切换套餐 + 功能对比表 + 分组问答, 三套皮肤", "role": "template", "kind": "block"},
+   {"id": "page-commerce-home", "name": "电商首页", "desc": "复刻 nike / apple / shopify 型电商首页: 大菜单 + 轮播 + 分类 + 商品网格. 演示里顶栏未吸顶, 真实项目里传 sticky: true", "role": "template", "kind": "block"},
+   {"id": "page-product", "name": "商品详情", "desc": "复刻 apple / nike 型商品详情页: 画廊 + 购买面板 + 规格对比 + 评价. 演示里顶栏未吸顶, 真实项目里传 sticky: true", "role": "template", "kind": "block"},
+   {"id": "page-portfolio", "name": "个人主页", "desc": "复刻 brittanychiang.com 型个人主页: 粘性双栏, 经历 + 项目 + 文章", "role": "template", "kind": "block"},
+   {"id": "page-docsite", "name": "文档站", "desc": "复刻 mantine / shadcn / ant.design 型组件文档站: 首页 + 侧栏目录 + 正文 + 属性表", "role": "template", "kind": "block"},
+   {"id": "page-dashboard", "name": "仪表盘", "desc": "复刻 SaaS 后台型仪表盘: 侧栏 + 指标行 + 双图表 + 动态流 + 上手清单", "role": "template", "kind": "block"},
+   {"id": "page-clone-linear", "name": "linear 复刻", "desc": "逐块对拽 linear.app 深色首屏: 零自定义 class, 缺口如实留在画面上", "role": "template", "kind": "block"}
+  ]},
+  {"id": "blueprint", "layer": "base", "label": "蓝图", "pages": [
+   {"id": "blueprint", "name": "蓝图编辑器", "desc": "节点图编辑器: 自定义节点, 连接判定与执行流", "kind": "block", "exports": ["BlueprintCanvas", "BlueprintEditor"]},
+   {"id": "blueprint-dsh", "name": "智能体循环蓝图", "desc": "把智能体循环画成一张蓝图", "role": "showcase", "kind": "block"}
+  ]}
+ ]
+}

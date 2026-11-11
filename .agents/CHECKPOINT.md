@@ -2,6 +2,15 @@
 
 接手先读这份, 再读 `.hark/plan.md` (git 忽略, 用 `hxfs plan` 提交). 本文件随每段落定更新.
 
+## 文档站批 0 (基础设施八项, 2026-11-11 起, 不做任何组件页)
+
+对表口径 (scripts/docs-catalog/coverage.ts): 件 = 一个源文件里的全部组件导出 (含拆分文件, 见 exports.ts); 页认领 = catalog.src.json 的 exports + 同 id 组件页定义的 importName/parts.
+四个数用 `env TMPDIR=/tmp npx tsx scripts/docs-catalog.ts --report` 重算.
+
+| 项 | 内容 | 提交 |
+|---|---|---|
+| 1 | 对表脚本 + 目录源 catalog.src.json (照改版前目录 1:1); 改版前: 有页 197 / 没页 244 / 页指向不存在导出 0 / 一件两处 29 | (本提交) |
+
 ## 顺序
 
 controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 (已齐) → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push; 已完成 2026-11-10) → surface 余量 30 件.
