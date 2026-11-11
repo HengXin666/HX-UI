@@ -13,6 +13,7 @@ import { useShaderBackdrop } from "../backdrop/kernel/use-surfaces";
 import { rasterImage, rasterPath, type MaskCanvas } from "./parts/mask";
 import { sdfCanvas, type SdfField } from "./parts/sdf";
 import { sparkMapCanvas, type SparkMap } from "./parts/spark-map";
+import { drawSparkLayer, type SparkRender } from "./parts/spark-layer";
 import { makeSpark, packPulses, pixelBudgetDpr, startMorph, stepSpark } from "./parts/spark";
 import { BACKDROP_DPR_CAP } from "../backdrop/kernel/math";
 import { SPARK_FRAGMENT } from "./parts/spark-shader";
@@ -50,6 +51,8 @@ export interface SparkMarkProps extends BackdropCommonProps {
   /** 升温半径 (CSS 像素), 默认 140. */
   readonly cursorRadius?: number;
   readonly lightMode?: boolean;
+  /** 2d 逐帧层 (规格 onRender): 给了就在电光上叠一张 2d 画布, 每帧清空并按 dpr 缩放后交给它画; 默认不给, 不建画布. */
+  readonly onRender?: SparkRender;
 }
 
 const GREY: Rgb = [0.5, 0.5, 0.5];
@@ -84,7 +87,7 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
   const {
     src, color = "accent", glowColor = "primary", scale = SPARK_MARK.scale, intensity = SPARK_MARK.intensity, glow = SPARK_MARK.glow, thickness = SPARK_MARK.thickness,
     strands = SPARK_MARK.strands, bend = SPARK_MARK.bend, crackle = SPARK_MARK.crackle, arcs = SPARK_MARK.arcs, flicker = SPARK_MARK.flicker, fill = SPARK_MARK.fill, interactive = true,
-    cursorIntensity = SPARK_MARK.cursorIntensity, cursorRadius = SPARK_MARK.cursorRadius, lightMode = false, ...common
+    cursorIntensity = SPARK_MARK.cursorIntensity, cursorRadius = SPARK_MARK.cursorRadius, lightMode = false, onRender, ...common
   } = props;
   const { options, rest, opacity, children } = splitCommon(common);
   const state = useRef(makeSpark());
@@ -92,6 +95,7 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
   const latest = useRef(fields);
   const cap = options.dpr ?? BACKDROP_DPR_CAP;
   const [budgetDpr, setBudgetDpr] = useState(cap);
+  const layer = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -125,6 +129,10 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
     if (Math.abs(want - budgetDpr) > 0.01) setBudgetDpr(want);
     const s = state.current;
     stepSpark(s, frame.reduced ? 0 : frame.dt, frame.time, interactive, frame.pointer);
+    drawSparkLayer(layer.current, onRender, {
+      time: frame.time, dt: frame.reduced ? 0 : frame.dt, width: width / px, height: height / px, dpr: px, morph: frame.reduced ? 1 : s.morph,
+      hover: { x: s.hover.x, y: 1 - s.hover.y, power: interactive ? s.hover.power : 0 }, colors: [frame.colors[0] ?? GREY, frame.colors[1] ?? GREY], reduced: frame.reduced,
+    });
     const half = scale * 0.5 * Math.min(width, height);
     const from = fields.from?.field ?? null;
     const to = fields.to?.field ?? null;
@@ -160,6 +168,7 @@ export function SparkMark(props: SparkMarkProps): JSX.Element {
   );
   return (
     <BackdropShell handle={handle} fallback={fallbackGradient([glowColor, color])} opacity={opacity} {...rest}>
+      {onRender ? <canvas ref={layer} aria-hidden="true" data-spark-layer="" className="pointer-events-none absolute inset-0 size-full" /> : null}
       {children}
     </BackdropShell>
   );

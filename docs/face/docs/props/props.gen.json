@@ -27131,6 +27131,13 @@
    "required": false
   },
   {
+   "name": "onRender",
+   "type": "SparkRender",
+   "default": "-",
+   "desc": "2d 逐帧层 (规格 onRender): 给了就在电光上叠一张 2d 画布, 每帧清空并按 dpr 缩放后交给它画; 默认不给, 不建画布.",
+   "required": false
+  },
+  {
    "name": "children",
    "type": "ReactNode",
    "default": "-",
