@@ -1,6 +1,7 @@
 /**
  * 文档页 Props 表的数据源: 从 src/index.ts 的公开组件读出参数类型, 抽成 JSON.
- * 根入口只抽文档页用到的组件: docs/face/docs/specs (递归) 里各页的 importName 与 parts, 其余导出与它们解耦.
+ * 根入口只抽文档页用到的组件: docs/face/docs/specs (递归) 里各页的 importName 与 parts, 其余导出与它们解耦;
+ * 这些名字必须全部读到属性, 缺一个即失败; 总数少于 MIN_TOTAL (子路径少于 MIN_SUBPATH) 也失败.
  * 子路径入口 SUBPATH_FULL 里的层 (./surface 含 ./backgrounds, ./controls, ./kits) 只从子路径发布, 没有别的契约保护, 所以全量抽:
  * 每个首字母大写, 第一个参数有自有属性的导出都进 JSON. 名字与根入口重名时以根入口为准.
  * 只收组件自己声明的属性与它包装的无头库 (Radix 等) 的属性; @types/react 里的 DOM 属性不收, 那些是原生语义.
@@ -8,10 +9,11 @@
  * 用法: node scripts/docs-props.ts 写 docs/face/docs/props/props.gen.json;
  * 加 --check 时与已入库的 JSON 比对, 不一致即失败.
  */
-import { readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import ts from "typescript";
 import { DOCS_DIR } from "./constants/quality.ts";
+import { readSpecs } from "./docs-catalog/specs.ts";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const ENTRY = path.join(ROOT, "src", "index.ts");
@@ -22,34 +24,18 @@ const CHECK = process.argv.includes("--check");
 const DOM_TYPES = `${path.sep}@types${path.sep}react${path.sep}`;
 const FLAGS = ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseSingleQuotesForStringLiteralType;
 const NO_DEFAULT = "-";
-const SPECS_DIR = path.join(FACE_DOCS, "specs");
-const IMPORT_NAME = /importName: "(\w+)"/g;
-const PARTS = /parts: \[([^\]]*)\]/g;
-const QUOTED = /"(\w+)"/g;
-const SPEC_FILE = /\.tsx?$/;
-
-/** specs 目录下所有 .ts / .tsx, 递归进子目录 (按页拆分的 core-*.tsx, block-*.tsx 等, 以后再分子目录也不漏). */
-function specFiles(dir: string): string[] {
-  const out: string[] = [];
-  for (const item of readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-    const full = path.join(dir, item.name);
-    if (item.isDirectory()) out.push(...specFiles(full));
-    else if (SPEC_FILE.test(item.name)) out.push(full);
-  }
-  return out;
-}
+/** 跑完至少要有这么多组件 (2026-11-11 批 0 时 225 个, 其中子路径 200 个); 少了说明扫描漏了入口或组件页. */
+const MIN_TOTAL = 225;
+const MIN_SUBPATH = 200;
 
 /**
- * 各组件页声明的导出名: importName 与 parts 里的每一项.
+ * 各组件页声明的导出名: specs 目录递归 (specs/<层>/<组>/<id>.tsx) 里每页的 importName 与 parts,
+ * 扫描与 docs-catalog 共用 scripts/docs-catalog/specs.ts (importName 找不到同层 id 时直接报错).
  * .agents/notes/implemented/feature/2026-11-08-docs-component-pages.md
  */
 function targets(): Set<string> {
   const names = new Set<string>();
-  for (const file of specFiles(SPECS_DIR)) {
-    const text = readFileSync(file, "utf8");
-    for (const m of text.matchAll(IMPORT_NAME)) names.add(m[1]);
-    for (const m of text.matchAll(PARTS)) for (const q of m[1].matchAll(QUOTED)) names.add(q[1]);
-  }
+  for (const spec of readSpecs(ROOT)) for (const name of [spec.importName, ...spec.parts]) names.add(name);
   return names;
 }
 
@@ -179,6 +165,11 @@ for (const file of subEntries) {
 const missing = [...wanted].filter((name) => !(name in result));
 if (missing.length > 0) {
   console.error(`docs-props: 组件页引用的导出读不到属性: ${missing.join(", ")}`);
+  process.exit(1);
+}
+const total = Object.keys(result).length;
+if (total < MIN_TOTAL || subCount < MIN_SUBPATH) {
+  console.error(`docs-props: 只读到 ${total} 个组件 (子路径 ${subCount} 个), 应不少于 ${MIN_TOTAL} (子路径 ${MIN_SUBPATH}); 检查入口与 specs 扫描`);
   process.exit(1);
 }
 const sorted = Object.fromEntries(Object.keys(result).sort().map((key) => [key, result[key]]));
