@@ -23,6 +23,14 @@
 改版后四个数: 有页 197 / 没页 244 / 页指向不存在导出 0 / 一件两处 0. 没页 244 = surface 116 + kits 33 + controls 50 + base 45, 批 0 不做组件页, 由组件批次清零 (清零后 docs-coverage 加 --require-pages).
 缩略图本地实跑 199 件拍成 126 / 拍不了 73 (默认参数抛错或空画面); pages.yml 仍是 npm run build, 要上线缩略图得改 CI (装 playwright chromium + build:site), 待用户定.
 
+## 文档站批 1 (base 层 按钮 / 表单 / 浮层 20 件, 2026-11-12 起)
+
+20 篇组件页定义 (specs/base/<组>/<id>.tsx) 常驻工作区, 每满 5 篇一个提交; 每个提交的 index.ts 只含已提交件 + 本批件, props.gen.json 同批重生成. catalog.gen.json 不变 (base 件原本就 page:true).
+
+| 批 | 件 | 提交 |
+|---|---|---|
+| 1 | button-group, toggle-group, segmented-control, input-otp, field | (本提交) |
+
 ## 顺序
 
 controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 (已齐) → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push; 已完成 2026-11-10) → surface 余量 30 件.
