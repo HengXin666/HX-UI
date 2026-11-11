@@ -25,11 +25,13 @@
 
 ## 文档站批 1 (base 层 按钮 / 表单 / 浮层 20 件, 2026-11-12 起)
 
-20 篇组件页定义 (specs/base/<组>/<id>.tsx) 常驻工作区, 每满 5 篇一个提交; 每个提交的 index.ts 只含已提交件 + 本批件, props.gen.json 同批重生成. catalog.gen.json 不变 (base 件原本就 page:true).
+20 篇组件页定义 (specs/base/<组>/<id>.tsx) 常驻工作区, 每满 5 篇一个提交; 每个提交的 index.ts 只含已提交件 + 本批件, props.gen.json 同批重生成.
+注意: docs-props 门禁按工作区扫描 specs 目录, 20 篇草稿都在盘上, 所以 879048f 起 props.gen.json 已含全部 20 篇的属性 (比当批 specs 多); 第 4 批提交后与 specs 完全对上. catalog.gen.json 不变 (base 件原本就 page:true).
 
 | 批 | 件 | 提交 |
 |---|---|---|
-| 1 | button-group, toggle-group, segmented-control, input-otp, field | (本提交) |
+| 1 | button-group, toggle-group, segmented-control, input-otp, field | 879048f |
+| 2 | label, checkbox, radio-group, slider, alert-dialog | (本提交) |
 
 ## 顺序
 
