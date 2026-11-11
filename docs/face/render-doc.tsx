@@ -1,6 +1,5 @@
 import type { JSX } from "react";
 import { DOC_PAGE_ID } from "@hx/ui";
-import type { DocEntry } from "../src/nav";
 import { PlaceholderPage } from "../src/pages/PlaceholderPage";
 import { InstallPage } from "../src/pages/InstallPage";
 import { TokensPage } from "../src/pages/TokensPage";
@@ -58,8 +57,15 @@ import { PARITY_PAGES } from "../src/pages/parity";
 import { TEMPLATE_PAGES } from "../src/pages/templates";
 import * as L from "../src/pages/blocks";
 
+/** 要渲染的目录条目: 只用到 id 与占位页的名称, 说明. */
+interface DocTarget {
+  readonly id: string;
+  readonly label: string;
+  readonly desc: string;
+}
+
 /** 组件文档页. 与 docs/src/App.tsx 的分支保持同一张表, 外壳不再走 AppFrame. */
-export function renderDoc(entry: DocEntry): JSX.Element {
+export function renderDoc(entry: DocTarget): JSX.Element {
   switch (entry.id) {
     case "install": return <InstallPage />;
     case "tokens": return <TokensPage />;

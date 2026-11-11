@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, type JSX } from "react";
 import { InputGroup, InputGroupAddon, InputGroupInput, ToggleGroup, ToggleGroupItem, cn } from "@hx/ui";
-import { CATALOG, CATALOG_GROUPS, CATEGORIES, COMPONENTS, categoryOf, type CategoryId } from "../catalog";
+import { CATALOG, COMPONENTS, GROUPS, LAYER_TABS, inTab, tabOf, type LayerTabId } from "../catalog";
 import { CARD, ICON, ICON_SM, ICON_XS, INDEX_ID } from "../constants";
 
 /** 普通左键单击才走站内路由, 带修饰键时交给浏览器开新标签. */
@@ -14,16 +14,16 @@ const FOLD = "grid transition-[grid-template-rows,opacity] duration-200 ease-out
 const FOLD_MS = 200;
 
 /**
- * 左栏圆角卡: 浏览全部, 分类图标页签, 过滤输入, 按 catalog 分组的可折叠列表. 卡本身吸顶, 只有列表滚动;
+ * 左栏圆角卡: 浏览全部, 层页签, 过滤输入, 按目录 (catalog.gen.json) 分组的可折叠列表. 卡本身吸顶, 只有列表滚动;
  * 默认只展开当前页所在组, 换页时那组自动展开, 当前项进入视口中部. 过滤时命中的组全部展开.
  */
 export function Rail({ active, onGo }: { readonly active: string; readonly onGo: (id: string) => void }): JSX.Element {
   const activeEntry = CATALOG.find((entry) => entry.id === active);
-  const [category, setCategory] = useState<CategoryId>("all");
+  const [tab, setTab] = useState<LayerTabId>("all");
   const [query, setQuery] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
   const foldId = useId();
-  const activeGroup = activeEntry?.group;
+  const activeGroup = activeEntry?.groupId;
   const [open, setOpen] = useState<ReadonlySet<string>>(() => new Set(activeGroup ? [activeGroup] : []));
   const filtering = query.trim() !== "";
   const isOpen = (group: string): boolean => filtering || open.has(group);
@@ -42,17 +42,14 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
 
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const current = CATEGORIES.find((item) => item.id === category) ?? CATEGORIES[0];
-    return CATALOG_GROUPS.map((group) => ({
-      group,
-      items: CATALOG.filter(
-        (entry) =>
-          entry.group === group &&
-          current.match(group) &&
-          (!needle || entry.label.toLowerCase().includes(needle) || entry.id.includes(needle)),
-      ),
-    })).filter((section) => section.items.length > 0);
-  }, [category, query]);
+    return GROUPS.filter((group) => inTab(tab, group))
+      .map((group) => ({
+        group: group.id,
+        label: group.label,
+        items: CATALOG.filter((entry) => entry.groupId === group.id && (!needle || entry.label.toLowerCase().includes(needle) || entry.id.includes(needle))),
+      }))
+      .filter((section) => section.items.length > 0);
+  }, [tab, query]);
 
   /** 当前项滚到列表中部. 所在组刚展开时行高还在过渡, 过渡结束再对一次, 否则可滚高度不够会停在半路. */
   useEffect(() => {
@@ -99,14 +96,14 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
       <ToggleGroup
         type="single"
         spacing={0.5}
-        value={category}
+        value={tab}
         onValueChange={(next) => {
-          if (next) setCategory(next as CategoryId);
+          if (next) setTab(next as LayerTabId);
         }}
-        aria-label="组件分类"
+        aria-label="组件分层"
         className="mt-3 w-full rounded-xl border border-border/60 p-1"
       >
-        {CATEGORIES.map((item) => (
+        {LAYER_TABS.map((item) => (
           <ToggleGroupItem
             key={item.id}
             value={item.id}
@@ -135,7 +132,7 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
 
       <div ref={listRef} className="relative mt-4 min-h-0 flex-1 overflow-y-auto pr-1 [mask-image:linear-gradient(to_bottom,transparent,var(--foreground)_24px,var(--foreground)_calc(100%-32px),transparent)]">
         <nav aria-label="组件目录" className="flex flex-col gap-1 py-3">
-          {groups.map(({ group, items }, index) => {
+          {groups.map(({ group, label, items }, index) => {
             const expanded = isOpen(group);
             const panel = `${foldId}-${index}`;
             return (
@@ -147,7 +144,7 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
                   onClick={() => toggle(group)}
                   className="flex w-full items-center justify-between gap-2 py-1.5 text-left text-[13px] text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <span className="truncate">{group}</span>
+                  <span className="truncate">{label}</span>
                   <span
                     aria-hidden
                     className={cn(ICON.down, ICON_XS, "transition-transform duration-200 ease-out motion-reduce:transition-none", !expanded && "-rotate-90")}
@@ -179,7 +176,7 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
           {groups.length === 0 ? <p className="text-[12px] text-muted-foreground">没有匹配的组件</p> : null}
         </nav>
       </div>
-      {activeEntry ? <span className="sr-only">当前分类 {categoryOf(activeEntry.group).label}</span> : null}
+      {activeEntry ? <span className="sr-only">当前分层 {tabOf(activeEntry.layer).label}</span> : null}
     </div>
   );
 }

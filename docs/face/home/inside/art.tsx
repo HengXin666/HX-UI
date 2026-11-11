@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { Marquee, SKIN_ATTR, SKIN_LIST } from "@hx/ui";
 import { springAt } from "../shots/stage";
 import { SPRING_THUMB } from "../../../../src/craft/tokens";
-import { DOCS } from "../../../src/nav";
+import { CATALOG as DOCS } from "../../docs/catalog";
 
 /** 图区里出现的组件名: 从导航数据里取, 两行交错滚动. */
 const CHIP_ROWS = 2;

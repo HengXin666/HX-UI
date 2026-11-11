@@ -1,0 +1,5189 @@
+{
+ "layers": [
+  {
+   "id": "start",
+   "label": "上手"
+  },
+  {
+   "id": "surface",
+   "label": "Surface"
+  },
+  {
+   "id": "kits",
+   "label": "Kits"
+  },
+  {
+   "id": "controls",
+   "label": "Controls"
+  },
+  {
+   "id": "base",
+   "label": "基础组件"
+  }
+ ],
+ "groups": [
+  {
+   "id": "start",
+   "layer": "start",
+   "label": "上手"
+  },
+  {
+   "id": "surface-glow",
+   "layer": "surface",
+   "label": "背景 · 光晕"
+  },
+  {
+   "id": "surface-rays",
+   "layer": "surface",
+   "label": "背景 · 光束"
+  },
+  {
+   "id": "surface-lines",
+   "layer": "surface",
+   "label": "背景 · 线条"
+  },
+  {
+   "id": "surface-grid",
+   "layer": "surface",
+   "label": "背景 · 网格"
+  },
+  {
+   "id": "surface-particles",
+   "layer": "surface",
+   "label": "背景 · 粒子"
+  },
+  {
+   "id": "surface-fluid",
+   "layer": "surface",
+   "label": "背景 · 流体"
+  },
+  {
+   "id": "surface-glyph",
+   "layer": "surface",
+   "label": "背景 · 字符与像素"
+  },
+  {
+   "id": "surface-text-glyph",
+   "layer": "surface",
+   "label": "文字 · 逐字与变形"
+  },
+  {
+   "id": "surface-text-motion",
+   "layer": "surface",
+   "label": "文字 · 滚动与指针"
+  },
+  {
+   "id": "surface-pointer",
+   "layer": "surface",
+   "label": "指针互动"
+  },
+  {
+   "id": "surface-cursor",
+   "layer": "surface",
+   "label": "光标"
+  },
+  {
+   "id": "surface-reveal",
+   "layer": "surface",
+   "label": "揭示与转场"
+  },
+  {
+   "id": "surface-field",
+   "layer": "surface",
+   "label": "场与形状"
+  },
+  {
+   "id": "surface-scene",
+   "layer": "surface",
+   "label": "立体场景"
+  },
+  {
+   "id": "surface-edge",
+   "layer": "surface",
+   "label": "边框, 循环与质感"
+  },
+  {
+   "id": "kits-gallery",
+   "layer": "kits",
+   "label": "画廊与轮播"
+  },
+  {
+   "id": "kits-stack",
+   "layer": "kits",
+   "label": "叠放与网格"
+  },
+  {
+   "id": "kits-card",
+   "layer": "kits",
+   "label": "卡片"
+  },
+  {
+   "id": "kits-glass",
+   "layer": "kits",
+   "label": "玻璃与立体"
+  },
+  {
+   "id": "controls-press",
+   "layer": "controls",
+   "label": "按压"
+  },
+  {
+   "id": "controls-range",
+   "layer": "controls",
+   "label": "取值"
+  },
+  {
+   "id": "controls-compose",
+   "layer": "controls",
+   "label": "输入"
+  },
+  {
+   "id": "controls-choice",
+   "layer": "controls",
+   "label": "选择"
+  },
+  {
+   "id": "controls-dismiss",
+   "layer": "controls",
+   "label": "撤销"
+  },
+  {
+   "id": "controls-nav",
+   "layer": "controls",
+   "label": "导航"
+  },
+  {
+   "id": "text-motion",
+   "layer": "base",
+   "label": "文字动效"
+  },
+  {
+   "id": "background",
+   "layer": "base",
+   "label": "背景"
+  },
+  {
+   "id": "effect",
+   "layer": "base",
+   "label": "效果"
+  },
+  {
+   "id": "actions",
+   "layer": "base",
+   "label": "按钮与操作"
+  },
+  {
+   "id": "form",
+   "layer": "base",
+   "label": "表单输入"
+  },
+  {
+   "id": "picker",
+   "layer": "base",
+   "label": "选择器"
+  },
+  {
+   "id": "overlay",
+   "layer": "base",
+   "label": "浮层与菜单"
+  },
+  {
+   "id": "feedback",
+   "layer": "base",
+   "label": "反馈与状态"
+  },
+  {
+   "id": "data",
+   "layer": "base",
+   "label": "数据展示"
+  },
+  {
+   "id": "navigation",
+   "layer": "base",
+   "label": "导航"
+  },
+  {
+   "id": "box",
+   "layer": "base",
+   "label": "布局容器"
+  },
+  {
+   "id": "motion",
+   "layer": "base",
+   "label": "动效与质感"
+  },
+  {
+   "id": "typography",
+   "layer": "base",
+   "label": "排版"
+  },
+  {
+   "id": "media",
+   "layer": "base",
+   "label": "媒体"
+  },
+  {
+   "id": "blocks",
+   "layer": "base",
+   "label": "区块"
+  },
+  {
+   "id": "conversation",
+   "layer": "base",
+   "label": "会话"
+  },
+  {
+   "id": "layout",
+   "layer": "base",
+   "label": "页面版式"
+  },
+  {
+   "id": "charts",
+   "layer": "base",
+   "label": "图表"
+  },
+  {
+   "id": "agent",
+   "layer": "base",
+   "label": "AI 交互"
+  },
+  {
+   "id": "templates",
+   "layer": "base",
+   "label": "模板"
+  },
+  {
+   "id": "blueprint",
+   "layer": "base",
+   "label": "蓝图"
+  }
+ ],
+ "entries": [
+  {
+   "id": "install",
+   "name": "安装与使用",
+   "layer": "start",
+   "group": "start",
+   "kind": "single",
+   "role": "guide",
+   "exports": [],
+   "desc": "引入组件, 接入样式, 切换主题, 部署文档站",
+   "page": true
+  },
+  {
+   "id": "tokens",
+   "name": "设计令牌",
+   "layer": "start",
+   "group": "start",
+   "kind": "single",
+   "role": "guide",
+   "exports": [],
+   "desc": "颜色, 圆角, 阴影, 字号, 间距与动效",
+   "page": true
+  },
+  {
+   "id": "skins",
+   "name": "皮肤与密度",
+   "layer": "start",
+   "group": "start",
+   "kind": "single",
+   "role": "guide",
+   "exports": [],
+   "desc": "七套皮肤一键换气质, 紧凑 / 舒适 / 宽松三档密度",
+   "page": true
+  },
+  {
+   "id": "aurora",
+   "name": "Aurora",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Aurora"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/Aurora.tsx"
+  },
+  {
+   "id": "color-bends",
+   "name": "ColorBends",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ColorBends"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/ColorBends.tsx"
+  },
+  {
+   "id": "dark-veil",
+   "name": "DarkVeil",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DarkVeil"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/DarkVeil.tsx"
+  },
+  {
+   "id": "gradient-waves",
+   "name": "GradientWaves",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GradientWaves"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/GradientWaves.tsx"
+  },
+  {
+   "id": "grainient",
+   "name": "Grainient",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Grainient"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/Grainient.tsx"
+  },
+  {
+   "id": "iridescence",
+   "name": "Iridescence",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Iridescence"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/Iridescence.tsx"
+  },
+  {
+   "id": "plasma",
+   "name": "Plasma",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Plasma",
+    "PlasmaWave"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/Plasma.tsx"
+  },
+  {
+   "id": "silk",
+   "name": "Silk",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Silk"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/Silk.tsx"
+  },
+  {
+   "id": "soft-aurora",
+   "name": "SoftAurora",
+   "layer": "surface",
+   "group": "surface-glow",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SoftAurora"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glow/SoftAurora.tsx"
+  },
+  {
+   "id": "beams",
+   "name": "Beams",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Beams"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/Beams.tsx"
+  },
+  {
+   "id": "lightfall",
+   "name": "Lightfall",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Lightfall"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/Lightfall.tsx"
+  },
+  {
+   "id": "lightning",
+   "name": "Lightning",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Lightning"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/Lightning.tsx"
+  },
+  {
+   "id": "light-pillar",
+   "name": "LightPillar",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "LightPillar"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/LightPillar.tsx"
+  },
+  {
+   "id": "light-rays",
+   "name": "LightRays",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "LightRays"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/LightRays.tsx"
+  },
+  {
+   "id": "light-tunnel",
+   "name": "LightTunnel",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "LightTunnel"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/LightTunnel.tsx"
+  },
+  {
+   "id": "prism",
+   "name": "Prism",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Prism"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/Prism.tsx"
+  },
+  {
+   "id": "prismatic-burst",
+   "name": "PrismaticBurst",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "PrismaticBurst"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/PrismaticBurst.tsx"
+  },
+  {
+   "id": "side-rays",
+   "name": "SideRays",
+   "layer": "surface",
+   "group": "surface-rays",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SideRays"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/rays/SideRays.tsx"
+  },
+  {
+   "id": "floating-lines",
+   "name": "FloatingLines",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "FloatingLines"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/FloatingLines.tsx"
+  },
+  {
+   "id": "flux-lines",
+   "name": "FluxLines",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "FluxLines"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/FluxLines.tsx"
+  },
+  {
+   "id": "line-waves",
+   "name": "LineWaves",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "LineWaves"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/LineWaves.tsx"
+  },
+  {
+   "id": "pattern-waves",
+   "name": "PatternWaves",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "PatternWaves"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/PatternWaves.tsx"
+  },
+  {
+   "id": "shape-waves",
+   "name": "ShapeWaves",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ShapeWaves"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/ShapeWaves.tsx"
+  },
+  {
+   "id": "sliced-waves",
+   "name": "SlicedWaves",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SlicedWaves"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/SlicedWaves.tsx"
+  },
+  {
+   "id": "threads",
+   "name": "Threads",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Threads"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/Threads.tsx"
+  },
+  {
+   "id": "waves",
+   "name": "Waves",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Waves"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/Waves.tsx"
+  },
+  {
+   "id": "web-threads",
+   "name": "WebThreads",
+   "layer": "surface",
+   "group": "surface-lines",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "WebThreads"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/lines/WebThreads.tsx"
+  },
+  {
+   "id": "acid-squares",
+   "name": "AcidSquares",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "AcidSquares"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/AcidSquares.tsx"
+  },
+  {
+   "id": "dot-field",
+   "name": "DotField",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DotField"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/DotField.tsx"
+  },
+  {
+   "id": "dot-grid",
+   "name": "DotGrid",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DotGrid"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/DotGrid.tsx"
+  },
+  {
+   "id": "grid-distortion",
+   "name": "GridDistortion",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GridDistortion"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/GridDistortion.tsx"
+  },
+  {
+   "id": "grid-motion",
+   "name": "GridMotion",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GridMotion"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/GridMotion.tsx"
+  },
+  {
+   "id": "grid-scan",
+   "name": "GridScan",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GridScan"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/GridScan.tsx"
+  },
+  {
+   "id": "micro-slats",
+   "name": "MicroSlats",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MicroSlats"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/MicroSlats.tsx"
+  },
+  {
+   "id": "ripple-grid",
+   "name": "RippleGrid",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "RippleGrid"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/RippleGrid.tsx"
+  },
+  {
+   "id": "shape-grid",
+   "name": "ShapeGrid",
+   "layer": "surface",
+   "group": "surface-grid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ShapeGrid"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/grid/ShapeGrid.tsx"
+  },
+  {
+   "id": "aero-shards",
+   "name": "AeroShards",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "AeroShards"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/AeroShards.tsx"
+  },
+  {
+   "id": "antigravity",
+   "name": "Antigravity",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Antigravity"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/Antigravity.tsx"
+  },
+  {
+   "id": "ballpit",
+   "name": "Ballpit",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Ballpit"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/Ballpit.tsx"
+  },
+  {
+   "id": "galaxy",
+   "name": "Galaxy",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Galaxy"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/Galaxy.tsx"
+  },
+  {
+   "id": "ghost-fibers",
+   "name": "GhostFibers",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GhostFibers"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/GhostFibers.tsx"
+  },
+  {
+   "id": "gradient-blinds",
+   "name": "GradientBlinds",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GradientBlinds"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/GradientBlinds.tsx"
+  },
+  {
+   "id": "hyperspeed",
+   "name": "Hyperspeed",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Hyperspeed"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/Hyperspeed.tsx"
+  },
+  {
+   "id": "magnet-lines",
+   "name": "MagnetLines",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MagnetLines"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/MagnetLines.tsx"
+  },
+  {
+   "id": "particles",
+   "name": "Particles",
+   "layer": "surface",
+   "group": "surface-particles",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Particles"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/particles/Particles.tsx"
+  },
+  {
+   "id": "balatro",
+   "name": "Balatro",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Balatro"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/Balatro.tsx"
+  },
+  {
+   "id": "evil-eye",
+   "name": "EvilEye",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "EvilEye"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/EvilEye.tsx"
+  },
+  {
+   "id": "ferrofluid",
+   "name": "Ferrofluid",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Ferrofluid"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/Ferrofluid.tsx"
+  },
+  {
+   "id": "liquid-chrome",
+   "name": "LiquidChrome",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "LiquidChrome"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/LiquidChrome.tsx"
+  },
+  {
+   "id": "liquid-ether",
+   "name": "LiquidEther",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "LiquidEther"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/LiquidEther.tsx"
+  },
+  {
+   "id": "magic-rings",
+   "name": "MagicRings",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MagicRings"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/MagicRings.tsx"
+  },
+  {
+   "id": "molten-metal",
+   "name": "MoltenMetal",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MoltenMetal"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/MoltenMetal.tsx"
+  },
+  {
+   "id": "orb",
+   "name": "Orb",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Orb"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/Orb.tsx"
+  },
+  {
+   "id": "topography",
+   "name": "Topography",
+   "layer": "surface",
+   "group": "surface-fluid",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Topography"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/fluid/Topography.tsx"
+  },
+  {
+   "id": "crt-warp",
+   "name": "CRTWarp",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "CRTWarp"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/CRTWarp.tsx"
+  },
+  {
+   "id": "dither",
+   "name": "Dither",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Dither"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/Dither.tsx"
+  },
+  {
+   "id": "faulty-terminal",
+   "name": "FaultyTerminal",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "FaultyTerminal"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/FaultyTerminal.tsx"
+  },
+  {
+   "id": "gradient-ascii",
+   "name": "GradientASCII",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GradientASCII"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/GradientASCII.tsx"
+  },
+  {
+   "id": "letter-glitch",
+   "name": "LetterGlitch",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "LetterGlitch"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/LetterGlitch.tsx"
+  },
+  {
+   "id": "pixel-blast",
+   "name": "PixelBlast",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "PixelBlast"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/PixelBlast.tsx"
+  },
+  {
+   "id": "pixel-snow",
+   "name": "PixelSnow",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "PixelSnow"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/PixelSnow.tsx"
+  },
+  {
+   "id": "radar",
+   "name": "Radar",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Radar"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/Radar.tsx"
+  },
+  {
+   "id": "scanner",
+   "name": "Scanner",
+   "layer": "surface",
+   "group": "surface-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Scanner"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/backgrounds/glyph/Scanner.tsx"
+  },
+  {
+   "id": "drop-text",
+   "name": "DropText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DropText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/stagger/DropText.tsx"
+  },
+  {
+   "id": "flap-text",
+   "name": "FlapText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "FlapText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/glyph/FlapText.tsx"
+  },
+  {
+   "id": "focus-text",
+   "name": "FocusText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "FocusText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/stagger/FocusText.tsx"
+  },
+  {
+   "id": "scramble-text",
+   "name": "ScrambleText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ScrambleText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/glyph/ScrambleText.tsx"
+  },
+  {
+   "id": "sheen-text",
+   "name": "SheenText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SheenText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/glyph/SheenText.tsx"
+  },
+  {
+   "id": "shift-text",
+   "name": "ShiftText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ShiftText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/glyph/ShiftText.tsx"
+  },
+  {
+   "id": "stagger-text",
+   "name": "StaggerText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "StaggerText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/stagger/StaggerText.tsx"
+  },
+  {
+   "id": "trace-text",
+   "name": "TraceText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "TraceText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/stagger/TraceText.tsx"
+  },
+  {
+   "id": "type-text",
+   "name": "TypeText",
+   "layer": "surface",
+   "group": "surface-text-glyph",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "TypeText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/glyph/TypeText.tsx"
+  },
+  {
+   "id": "draft-text",
+   "name": "DraftText",
+   "layer": "surface",
+   "group": "surface-text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DraftText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/pointer/DraftText.tsx"
+  },
+  {
+   "id": "extrude-text",
+   "name": "ExtrudeText",
+   "layer": "surface",
+   "group": "surface-text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ExtrudeText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/pointer/ExtrudeText.tsx"
+  },
+  {
+   "id": "orbit-text",
+   "name": "OrbitText",
+   "layer": "surface",
+   "group": "surface-text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "OrbitText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/scroll/OrbitText.tsx"
+  },
+  {
+   "id": "scroll-text",
+   "name": "ScrollText",
+   "layer": "surface",
+   "group": "surface-text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ScrollText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/scroll/ScrollText.tsx"
+  },
+  {
+   "id": "stamp-trail",
+   "name": "StampTrail",
+   "layer": "surface",
+   "group": "surface-text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "StampTrail"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/pointer/StampTrail.tsx"
+  },
+  {
+   "id": "text-marquee",
+   "name": "TextMarquee",
+   "layer": "surface",
+   "group": "surface-text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "TextMarquee"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/scroll/TextMarquee.tsx"
+  },
+  {
+   "id": "wake-text",
+   "name": "WakeText",
+   "layer": "surface",
+   "group": "surface-text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "WakeText"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/text/pointer/WakeText.tsx"
+  },
+  {
+   "id": "attract",
+   "name": "Attract",
+   "layer": "surface",
+   "group": "surface-pointer",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Attract"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/pointer/Attract.tsx"
+  },
+  {
+   "id": "cell-trail",
+   "name": "CellTrail",
+   "layer": "surface",
+   "group": "surface-pointer",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "CellTrail"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/pointer/CellTrail.tsx"
+  },
+  {
+   "id": "lock-on-cursor",
+   "name": "LockOnCursor",
+   "layer": "surface",
+   "group": "surface-pointer",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "LockOnCursor"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/pointer/LockOnCursor.tsx"
+  },
+  {
+   "id": "photo-wake",
+   "name": "PhotoWake",
+   "layer": "surface",
+   "group": "surface-pointer",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "PhotoWake"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/pointer/PhotoWake.tsx"
+  },
+  {
+   "id": "reticle-lines",
+   "name": "ReticleLines",
+   "layer": "surface",
+   "group": "surface-pointer",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ReticleLines"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/pointer/ReticleLines.tsx"
+  },
+  {
+   "id": "sheen-card",
+   "name": "SheenCard",
+   "layer": "surface",
+   "group": "surface-pointer",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SheenCard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/pointer/SheenCard.tsx"
+  },
+  {
+   "id": "surface-layer",
+   "name": "SurfaceLayer",
+   "layer": "surface",
+   "group": "surface-pointer",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SurfaceLayer"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/pointer/SurfaceLayer.tsx"
+  },
+  {
+   "id": "tap-sparks",
+   "name": "TapSparks",
+   "layer": "surface",
+   "group": "surface-pointer",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "TapSparks"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/pointer/TapSparks.tsx"
+  },
+  {
+   "id": "flock-cursor",
+   "name": "FlockCursor",
+   "layer": "surface",
+   "group": "surface-cursor",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "FlockCursor"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/cursor/FlockCursor.tsx"
+  },
+  {
+   "id": "halo-cursor",
+   "name": "HaloCursor",
+   "layer": "surface",
+   "group": "surface-cursor",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "HaloCursor"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/cursor/HaloCursor.tsx"
+  },
+  {
+   "id": "haze-cursor",
+   "name": "HazeCursor",
+   "layer": "surface",
+   "group": "surface-cursor",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "HazeCursor"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/cursor/HazeCursor.tsx"
+  },
+  {
+   "id": "meld-cursor",
+   "name": "MeldCursor",
+   "layer": "surface",
+   "group": "surface-cursor",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MeldCursor"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/cursor/MeldCursor.tsx"
+  },
+  {
+   "id": "nudge-grid",
+   "name": "NudgeGrid",
+   "layer": "surface",
+   "group": "surface-cursor",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "NudgeGrid"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/cursor/NudgeGrid.tsx"
+  },
+  {
+   "id": "streamer-cursor",
+   "name": "StreamerCursor",
+   "layer": "surface",
+   "group": "surface-cursor",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "StreamerCursor"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/cursor/StreamerCursor.tsx"
+  },
+  {
+   "id": "edge-blur",
+   "name": "EdgeBlur",
+   "layer": "surface",
+   "group": "surface-reveal",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "EdgeBlur"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/reveal/EdgeBlur.tsx"
+  },
+  {
+   "id": "mosaic-swap",
+   "name": "MosaicSwap",
+   "layer": "surface",
+   "group": "surface-reveal",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MosaicSwap"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/reveal/MosaicSwap.tsx"
+  },
+  {
+   "id": "scroll-widen",
+   "name": "ScrollWiden",
+   "layer": "surface",
+   "group": "surface-reveal",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ScrollWiden"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/reveal/ScrollWiden.tsx"
+  },
+  {
+   "id": "tile-flip",
+   "name": "TileFlip",
+   "layer": "surface",
+   "group": "surface-reveal",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "TileFlip"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/reveal/TileFlip.tsx"
+  },
+  {
+   "id": "beam-flow",
+   "name": "BeamFlow",
+   "layer": "surface",
+   "group": "surface-field",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "BeamFlow"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/field/BeamFlow.tsx"
+  },
+  {
+   "id": "chrome-mark",
+   "name": "ChromeMark",
+   "layer": "surface",
+   "group": "surface-field",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ChromeMark"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/field/ChromeMark.tsx"
+  },
+  {
+   "id": "ink-splash",
+   "name": "InkSplash",
+   "layer": "surface",
+   "group": "surface-field",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "InkSplash"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/field/InkSplash.tsx"
+  },
+  {
+   "id": "merge-blobs",
+   "name": "MergeBlobs",
+   "layer": "surface",
+   "group": "surface-field",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MergeBlobs"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/field/MergeBlobs.tsx"
+  },
+  {
+   "id": "ripple-lens",
+   "name": "RippleLens",
+   "layer": "surface",
+   "group": "surface-field",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "RippleLens"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/field/RippleLens.tsx"
+  },
+  {
+   "id": "soft-shape",
+   "name": "SoftShape",
+   "layer": "surface",
+   "group": "surface-field",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SoftShape"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/field/SoftShape.tsx"
+  },
+  {
+   "id": "spark-mark",
+   "name": "SparkMark",
+   "layer": "surface",
+   "group": "surface-field",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SparkMark"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/field/SparkMark.tsx"
+  },
+  {
+   "id": "bayer-veil",
+   "name": "BayerVeil",
+   "layer": "surface",
+   "group": "surface-scene",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "BayerVeil"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/scene/BayerVeil.tsx"
+  },
+  {
+   "id": "cube-field",
+   "name": "CubeField",
+   "layer": "surface",
+   "group": "surface-scene",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "CubeField"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/scene/CubeField.tsx"
+  },
+  {
+   "id": "dot-reveal",
+   "name": "DotReveal",
+   "layer": "surface",
+   "group": "surface-scene",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DotReveal"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/scene/DotReveal.tsx"
+  },
+  {
+   "id": "fiber-strands",
+   "name": "FiberStrands",
+   "layer": "surface",
+   "group": "surface-scene",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "FiberStrands"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/scene/FiberStrands.tsx"
+  },
+  {
+   "id": "prism-orb",
+   "name": "PrismOrb",
+   "layer": "surface",
+   "group": "surface-scene",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "PrismOrb"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/scene/PrismOrb.tsx"
+  },
+  {
+   "id": "spring-mesh",
+   "name": "SpringMesh",
+   "layer": "surface",
+   "group": "surface-scene",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SpringMesh"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/scene/SpringMesh.tsx"
+  },
+  {
+   "id": "comet-border",
+   "name": "CometBorder",
+   "layer": "surface",
+   "group": "surface-edge",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "CometBorder"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/edge/CometBorder.tsx"
+  },
+  {
+   "id": "grain-layer",
+   "name": "GrainLayer",
+   "layer": "surface",
+   "group": "surface-edge",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GrainLayer"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/texture/GrainLayer.tsx"
+  },
+  {
+   "id": "mark-rail",
+   "name": "MarkRail",
+   "layer": "surface",
+   "group": "surface-edge",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MarkRail"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/loop/MarkRail.tsx"
+  },
+  {
+   "id": "orbit-ring",
+   "name": "OrbitRing",
+   "layer": "surface",
+   "group": "surface-edge",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "OrbitRing"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/loop/OrbitRing.tsx"
+  },
+  {
+   "id": "peel-sticker",
+   "name": "PeelSticker",
+   "layer": "surface",
+   "group": "surface-edge",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "PeelSticker"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/sticker/PeelSticker.tsx"
+  },
+  {
+   "id": "spark-edge",
+   "name": "SparkEdge",
+   "layer": "surface",
+   "group": "surface-edge",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SparkEdge"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/surface/edge/SparkEdge.tsx"
+  },
+  {
+   "id": "bend-gallery",
+   "name": "BendGallery",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "BendGallery"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/BendGallery.tsx"
+  },
+  {
+   "id": "blend-slider",
+   "name": "BlendSlider",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "BlendSlider"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/BlendSlider.tsx"
+  },
+  {
+   "id": "depth-deck",
+   "name": "DepthDeck",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "DepthDeck"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/DepthDeck.tsx"
+  },
+  {
+   "id": "drift-columns",
+   "name": "DriftColumns",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "DriftColumns"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/DriftColumns.tsx"
+  },
+  {
+   "id": "flex-reel",
+   "name": "FlexReel",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "FlexReel"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/FlexReel.tsx"
+  },
+  {
+   "id": "fold-gallery",
+   "name": "FoldGallery",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "FoldGallery"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/FoldGallery.tsx"
+  },
+  {
+   "id": "helix-scroll",
+   "name": "HelixScroll",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "HelixScroll"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/HelixScroll.tsx"
+  },
+  {
+   "id": "poster-flight",
+   "name": "PosterFlight",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "PosterFlight"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/PosterFlight.tsx"
+  },
+  {
+   "id": "ring-carousel",
+   "name": "RingCarousel",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "RingCarousel"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/RingCarousel.tsx"
+  },
+  {
+   "id": "sphere-wall",
+   "name": "SphereWall",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "SphereWall"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/SphereWall.tsx"
+  },
+  {
+   "id": "spring-carousel",
+   "name": "SpringCarousel",
+   "layer": "kits",
+   "group": "kits-gallery",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "SpringCarousel"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/gallery/SpringCarousel.tsx"
+  },
+  {
+   "id": "cycle-deck",
+   "name": "CycleDeck",
+   "layer": "kits",
+   "group": "kits-stack",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "CycleDeck"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stack/CycleDeck.tsx"
+  },
+  {
+   "id": "flow-masonry",
+   "name": "FlowMasonry",
+   "layer": "kits",
+   "group": "kits-stack",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "FlowMasonry"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stack/FlowMasonry.tsx"
+  },
+  {
+   "id": "glow-bento",
+   "name": "GlowBento",
+   "layer": "kits",
+   "group": "kits-stack",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "GlowBento"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stack/GlowBento.tsx"
+  },
+  {
+   "id": "pop-list",
+   "name": "PopList",
+   "layer": "kits",
+   "group": "kits-stack",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "PopList"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stack/PopList.tsx"
+  },
+  {
+   "id": "scroll-pile",
+   "name": "ScrollPile",
+   "layer": "kits",
+   "group": "kits-stack",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "ScrollPile"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stack/ScrollPile.tsx"
+  },
+  {
+   "id": "spread-cards",
+   "name": "SpreadCards",
+   "layer": "kits",
+   "group": "kits-stack",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "SpreadCards"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stack/SpreadCards.tsx"
+  },
+  {
+   "id": "swipe-stack",
+   "name": "SwipeStack",
+   "layer": "kits",
+   "group": "kits-stack",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "SwipeStack"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stack/SwipeStack.tsx"
+  },
+  {
+   "id": "tint-grid",
+   "name": "TintGrid",
+   "layer": "kits",
+   "group": "kits-stack",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "TintGrid"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stack/TintGrid.tsx"
+  },
+  {
+   "id": "badge-card",
+   "name": "BadgeCard",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "BadgeCard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/BadgeCard.tsx"
+  },
+  {
+   "id": "edge-glow",
+   "name": "EdgeGlow",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "EdgeGlow"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/EdgeGlow.tsx"
+  },
+  {
+   "id": "file-folder",
+   "name": "FileFolder",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "FileFolder"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/FileFolder.tsx"
+  },
+  {
+   "id": "foil-card",
+   "name": "FoilCard",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "FoilCard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/FoilCard.tsx"
+  },
+  {
+   "id": "fray-card",
+   "name": "FrayCard",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "FrayCard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/FrayCard.tsx"
+  },
+  {
+   "id": "lamp-card",
+   "name": "LampCard",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "LampCard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/LampCard.tsx"
+  },
+  {
+   "id": "mirror-card",
+   "name": "MirrorCard",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "MirrorCard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/MirrorCard.tsx"
+  },
+  {
+   "id": "pixel-bloom",
+   "name": "PixelBloom",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "PixelBloom"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/PixelBloom.tsx"
+  },
+  {
+   "id": "tilt-card",
+   "name": "TiltCard",
+   "layer": "kits",
+   "group": "kits-card",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "TiltCard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/card/TiltCard.tsx"
+  },
+  {
+   "id": "frost-panel",
+   "name": "FrostPanel",
+   "layer": "kits",
+   "group": "kits-glass",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "FrostPanel"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/glass/FrostPanel.tsx"
+  },
+  {
+   "id": "lens-glass",
+   "name": "LensGlass",
+   "layer": "kits",
+   "group": "kits-glass",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "LensGlass"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/glass/LensGlass.tsx"
+  },
+  {
+   "id": "orbit-viewer",
+   "name": "OrbitViewer",
+   "layer": "kits",
+   "group": "kits-glass",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "OrbitViewer"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stage3d/OrbitViewer.tsx"
+  },
+  {
+   "id": "sphere-menu",
+   "name": "SphereMenu",
+   "layer": "kits",
+   "group": "kits-glass",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "SphereMenu"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stage3d/SphereMenu.tsx"
+  },
+  {
+   "id": "swing-lanyard",
+   "name": "SwingLanyard",
+   "layer": "kits",
+   "group": "kits-glass",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "SwingLanyard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/kits/stage3d/SwingLanyard.tsx"
+  },
+  {
+   "id": "glint-button",
+   "name": "GlintButton",
+   "layer": "controls",
+   "group": "controls-press",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "GlintButton"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/press/signal/GlintButton.tsx"
+  },
+  {
+   "id": "grace-commit",
+   "name": "GraceCommit",
+   "layer": "controls",
+   "group": "controls-press",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "GraceCommit"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/press/hold/GraceCommit.tsx"
+  },
+  {
+   "id": "hold-confirm",
+   "name": "HoldConfirm",
+   "layer": "controls",
+   "group": "controls-press",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "HoldConfirm"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/press/hold/HoldConfirm.tsx"
+  },
+  {
+   "id": "liftoff",
+   "name": "Liftoff",
+   "layer": "controls",
+   "group": "controls-press",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "Liftoff"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/press/launch/Liftoff.tsx"
+  },
+  {
+   "id": "like-burst",
+   "name": "LikeBurst",
+   "layer": "controls",
+   "group": "controls-press",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "LikeBurst"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/press/signal/LikeBurst.tsx"
+  },
+  {
+   "id": "pull-send",
+   "name": "PullSend",
+   "layer": "controls",
+   "group": "controls-press",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "PullSend"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/press/launch/PullSend.tsx"
+  },
+  {
+   "id": "run-chip",
+   "name": "RunChip",
+   "layer": "controls",
+   "group": "controls-press",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "RunChip"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/press/signal/RunChip.tsx"
+  },
+  {
+   "id": "swipe-confirm",
+   "name": "SwipeConfirm",
+   "layer": "controls",
+   "group": "controls-press",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "SwipeConfirm"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/press/hold/SwipeConfirm.tsx"
+  },
+  {
+   "id": "arc-knob",
+   "name": "ArcKnob",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ArcKnob"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/input/ArcKnob.tsx"
+  },
+  {
+   "id": "grid-pulse",
+   "name": "GridPulse",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "GridPulse"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/status/GridPulse.tsx"
+  },
+  {
+   "id": "nudge-field",
+   "name": "NudgeField",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "NudgeField"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/input/NudgeField.tsx"
+  },
+  {
+   "id": "pin-cells",
+   "name": "PinCells",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "PinCells"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/input/PinCells.tsx"
+  },
+  {
+   "id": "stretch-slider",
+   "name": "StretchSlider",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "StretchSlider"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/input/StretchSlider.tsx"
+  },
+  {
+   "id": "swell-slider",
+   "name": "SwellSlider",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "SwellSlider"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/input/SwellSlider.tsx"
+  },
+  {
+   "id": "tally-roll",
+   "name": "TallyRoll",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "TallyRoll"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/meter/TallyRoll.tsx"
+  },
+  {
+   "id": "tank-gauge",
+   "name": "TankGauge",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "TankGauge"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/meter/TankGauge.tsx"
+  },
+  {
+   "id": "task-glyph",
+   "name": "TaskGlyph",
+   "layer": "controls",
+   "group": "controls-range",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "TaskGlyph"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/range/status/TaskGlyph.tsx"
+  },
+  {
+   "id": "arc-field",
+   "name": "ArcField",
+   "layer": "controls",
+   "group": "controls-compose",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ArcField"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/compose/input/ArcField.tsx"
+  },
+  {
+   "id": "composer-field",
+   "name": "ComposerField",
+   "layer": "controls",
+   "group": "controls-compose",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ComposerField"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/compose/input/ComposerField.tsx"
+  },
+  {
+   "id": "cue-tip",
+   "name": "CueTip",
+   "layer": "controls",
+   "group": "controls-compose",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "CueTip"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/compose/overlay/CueTip.tsx"
+  },
+  {
+   "id": "develop-frame",
+   "name": "DevelopFrame",
+   "layer": "controls",
+   "group": "controls-compose",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "DevelopFrame"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/compose/status/DevelopFrame.tsx"
+  },
+  {
+   "id": "dictate-button",
+   "name": "DictateButton",
+   "layer": "controls",
+   "group": "controls-compose",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "DictateButton"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/compose/input/DictateButton.tsx"
+  },
+  {
+   "id": "fork-menu",
+   "name": "ForkMenu",
+   "layer": "controls",
+   "group": "controls-compose",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ForkMenu"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/compose/overlay/ForkMenu.tsx"
+  },
+  {
+   "id": "reasoning-trace",
+   "name": "ReasoningTrace",
+   "layer": "controls",
+   "group": "controls-compose",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ReasoningTrace"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/compose/status/ReasoningTrace.tsx"
+  },
+  {
+   "id": "turn-card",
+   "name": "TurnCard",
+   "layer": "controls",
+   "group": "controls-compose",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "TurnCard"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/compose/overlay/TurnCard.tsx"
+  },
+  {
+   "id": "chime-toggle",
+   "name": "ChimeToggle",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ChimeToggle"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/toggle/ChimeToggle.tsx"
+  },
+  {
+   "id": "drift-select",
+   "name": "DriftSelect",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "DriftSelect"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/pick/DriftSelect.tsx"
+  },
+  {
+   "id": "elastic-segment",
+   "name": "ElasticSegment",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ElasticSegment"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/pick/ElasticSegment.tsx"
+  },
+  {
+   "id": "gel-radio",
+   "name": "GelRadio",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "GelRadio"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/pick/GelRadio.tsx"
+  },
+  {
+   "id": "lift-rating",
+   "name": "LiftRating",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "LiftRating"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/rate/LiftRating.tsx"
+  },
+  {
+   "id": "plush-switch",
+   "name": "PlushSwitch",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "PlushSwitch"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/toggle/PlushSwitch.tsx"
+  },
+  {
+   "id": "reel-picker",
+   "name": "ReelPicker",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ReelPicker"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/pick/ReelPicker.tsx"
+  },
+  {
+   "id": "step-trail",
+   "name": "StepTrail",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "StepTrail"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/steps/StepTrail.tsx"
+  },
+  {
+   "id": "tally-check",
+   "name": "TallyCheck",
+   "layer": "controls",
+   "group": "controls-choice",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "TallyCheck"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/choice/toggle/TallyCheck.tsx"
+  },
+  {
+   "id": "crush-sheet",
+   "name": "CrushSheet",
+   "layer": "controls",
+   "group": "controls-dismiss",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "CrushSheet"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/dismiss/discard/CrushSheet.tsx"
+  },
+  {
+   "id": "drawer-row",
+   "name": "DrawerRow",
+   "layer": "controls",
+   "group": "controls-dismiss",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "DrawerRow"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/dismiss/swipe/DrawerRow.tsx"
+  },
+  {
+   "id": "evade-zone",
+   "name": "EvadeZone",
+   "layer": "controls",
+   "group": "controls-dismiss",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "EvadeZone"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/dismiss/evade/EvadeZone.tsx"
+  },
+  {
+   "id": "flick-notice",
+   "name": "FlickNotice",
+   "layer": "controls",
+   "group": "controls-dismiss",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "FlickNotice"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/dismiss/swipe/FlickNotice.tsx"
+  },
+  {
+   "id": "rip-stub",
+   "name": "RipStub",
+   "layer": "controls",
+   "group": "controls-dismiss",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "RipStub"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/dismiss/discard/RipStub.tsx"
+  },
+  {
+   "id": "shred-bin",
+   "name": "ShredBin",
+   "layer": "controls",
+   "group": "controls-dismiss",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ShredBin"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/dismiss/discard/ShredBin.tsx"
+  },
+  {
+   "id": "stash-folder",
+   "name": "StashFolder",
+   "layer": "controls",
+   "group": "controls-dismiss",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "StashFolder"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/dismiss/evade/StashFolder.tsx"
+  },
+  {
+   "id": "deck-nav",
+   "name": "DeckNav",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "DeckNav"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/menu/DeckNav.tsx"
+  },
+  {
+   "id": "glass-tiles",
+   "name": "GlassTiles",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "GlassTiles"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/tile/GlassTiles.tsx"
+  },
+  {
+   "id": "goo-tabs",
+   "name": "GooTabs",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "GooTabs"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/bar/GooTabs.tsx"
+  },
+  {
+   "id": "layer-drawer",
+   "name": "LayerDrawer",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "LayerDrawer"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/menu/LayerDrawer.tsx"
+  },
+  {
+   "id": "magnify-dock",
+   "name": "MagnifyDock",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "MagnifyDock"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/dock/MagnifyDock.tsx"
+  },
+  {
+   "id": "marquee-rows",
+   "name": "MarqueeRows",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "MarqueeRows"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/menu/MarqueeRows.tsx"
+  },
+  {
+   "id": "pill-burst",
+   "name": "PillBurst",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "PillBurst"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/menu/PillBurst.tsx"
+  },
+  {
+   "id": "pill-tabs",
+   "name": "PillTabs",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "PillTabs"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/bar/PillTabs.tsx"
+  },
+  {
+   "id": "proximity-rail",
+   "name": "ProximityRail",
+   "layer": "controls",
+   "group": "controls-nav",
+   "kind": "control",
+   "role": "component",
+   "exports": [
+    "ProximityRail"
+   ],
+   "desc": "",
+   "page": false,
+   "source": "src/controls/nav/rail/ProximityRail.tsx"
+  },
+  {
+   "id": "split-text",
+   "name": "SplitText 逐字入场",
+   "layer": "base",
+   "group": "text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SplitText"
+   ],
+   "desc": "把一句话拆成字或词, 依次从一个方向浮入. 读屏器只读原文, 减弱动效时直接显示静态文字.",
+   "page": true
+  },
+  {
+   "id": "rotating-text",
+   "name": "RotatingText 轮换词",
+   "layer": "base",
+   "group": "text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "RotatingText"
+   ],
+   "desc": "首屏 \"为 ___ 而生\" 那一格: 定时或按滚动进度换词, 旧词离场新词就位, 读屏器只读一份完整列表.",
+   "page": true
+  },
+  {
+   "id": "animated-number",
+   "name": "AnimatedNumber 弹簧数字",
+   "layer": "base",
+   "group": "text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "AnimatedNumber"
+   ],
+   "desc": "数值由弹簧驱动, 每帧直接写文字不走 React 渲染; 等宽数字滚动时不左右抖, 减弱动效时直接跳到终值.",
+   "page": true
+  },
+  {
+   "id": "gradient-text",
+   "name": "GradientText 渐变字",
+   "layer": "base",
+   "group": "text-motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GradientText"
+   ],
+   "desc": "文字渐变, 色标只接受语义令牌名; 高对比模式下退回系统文字色. 嵌在 Display 或正文里使用.",
+   "page": true
+  },
+  {
+   "id": "mesh-gradient",
+   "name": "MeshGradient 网格渐变",
+   "layer": "base",
+   "group": "background",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "MeshGradient"
+   ],
+   "desc": "多团径向光叠成的 mesh 背景, 缓慢漂移; 只产出 var(--令牌) 与 color-mix, 换肤自动跟随.",
+   "page": true
+  },
+  {
+   "id": "backdrop",
+   "name": "Backdrop 背景底纹",
+   "layer": "base",
+   "group": "background",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Backdrop"
+   ],
+   "desc": "网格, 点阵与极光三种底纹, 垫在子内容下面不影响布局与点击; 极光漂移只动 transform.",
+   "page": true
+  },
+  {
+   "id": "beam",
+   "name": "Beam 光束",
+   "layer": "base",
+   "group": "background",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Beam"
+   ],
+   "desc": "从光源投下一道模糊的锥形光, 光源处带一团光晕; 放进任意 isolate 宿主里使用.",
+   "page": true
+  },
+  {
+   "id": "grid-lines",
+   "name": "GridLines 网格准星",
+   "layer": "base",
+   "group": "background",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GridLines"
+   ],
+   "desc": "1px 网格线加交点十字准星 (vercel 式), 一张内联 SVG 的两个 pattern 画成, 线色从令牌混出.",
+   "page": true
+  },
+  {
+   "id": "grain",
+   "name": "Grain 噪点颗粒",
+   "layer": "base",
+   "group": "background",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Grain"
+   ],
+   "desc": "盖在内容上方的灰阶噪点层, 不接收指针; 噪声是内联 SVG feTurbulence, 不引图片不含色值.",
+   "page": true
+  },
+  {
+   "id": "border-beam",
+   "name": "BorderBeam 流光边框",
+   "layer": "base",
+   "group": "effect",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "BorderBeam"
+   ],
+   "desc": "沿宿主 1px 边框流动的光, 永远不比边框粗; 放进任意 relative 且带圆角的容器里即可, 减弱动效时停转.",
+   "page": true
+  },
+  {
+   "id": "spotlight-card",
+   "name": "SpotlightCard 光斑卡",
+   "layer": "base",
+   "group": "effect",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SpotlightCard"
+   ],
+   "desc": "指针跟随的径向光斑, 坐标直接写 CSS 变量不触发重渲染; 触屏与减弱动效时不跟随, 键盘聚焦时中心亮起.",
+   "page": true
+  },
+  {
+   "id": "gradient-border",
+   "name": "GradientBorder 渐变描边",
+   "layer": "base",
+   "group": "effect",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GradientBorder"
+   ],
+   "desc": "叠在宿主 1px 边框上的静态渐变描边, 与流光边框同一手法, 只剩 1px 环; 静态无动效.",
+   "page": true
+  },
+  {
+   "id": "marquee",
+   "name": "Marquee 跑马灯",
+   "layer": "base",
+   "group": "effect",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Marquee"
+   ],
+   "desc": "内容渲染多份同步平移, 视觉无缝; 复制件不进可访问性树, 减弱动效时停下改为可手动横滚.",
+   "page": true
+  },
+  {
+   "id": "button",
+   "name": "按钮",
+   "layer": "base",
+   "group": "actions",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Button"
+   ],
+   "desc": "七种语义样式与八档尺寸, 自带点按波纹",
+   "page": true
+  },
+  {
+   "id": "button-group",
+   "name": "按钮组",
+   "layer": "base",
+   "group": "actions",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ButtonGroup",
+    "ButtonGroupSeparator",
+    "ButtonGroupText"
+   ],
+   "desc": "相邻边框合并成一条",
+   "page": true
+  },
+  {
+   "id": "toggle-group",
+   "name": "两态按钮",
+   "layer": "base",
+   "group": "actions",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Toggle",
+    "ToggleGroup",
+    "ToggleGroupItem"
+   ],
+   "desc": "单个与成组, 单选或多选",
+   "page": true
+  },
+  {
+   "id": "segmented-control",
+   "name": "分段控件",
+   "layer": "base",
+   "group": "actions",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SegmentedControl"
+   ],
+   "desc": "指示器滑动, 单选分段",
+   "page": true
+  },
+  {
+   "id": "input",
+   "name": "输入框",
+   "layer": "base",
+   "group": "form",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Input"
+   ],
+   "desc": "反馈全部落在边框颜色上",
+   "page": true
+  },
+  {
+   "id": "textarea",
+   "name": "多行输入",
+   "layer": "base",
+   "group": "form",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Textarea"
+   ],
+   "desc": "随内容长高",
+   "page": true
+  },
+  {
+   "id": "input-group",
+   "name": "输入组",
+   "layer": "base",
+   "group": "form",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "InputGroup",
+    "InputGroupAddon",
+    "InputGroupButton",
+    "InputGroupInput",
+    "InputGroupText",
+    "InputGroupTextarea"
+   ],
+   "desc": "输入框加前后缀图标, 文字与按钮",
+   "page": true
+  },
+  {
+   "id": "input-otp",
+   "name": "验证码输入",
+   "layer": "base",
+   "group": "form",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "InputOTP",
+    "InputOTPGroup",
+    "InputOTPSeparator",
+    "InputOTPSlot"
+   ],
+   "desc": "一次性验证码, 支持粘贴与短信自动填充",
+   "page": true
+  },
+  {
+   "id": "field",
+   "name": "表单字段",
+   "layer": "base",
+   "group": "form",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Field",
+    "FieldDescription",
+    "FieldError",
+    "FieldGroup",
+    "FieldLabel",
+    "FieldLegend",
+    "FieldSeparator",
+    "FieldSet"
+   ],
+   "desc": "标签, 控件, 说明与错误的组合",
+   "page": true
+  },
+  {
+   "id": "form",
+   "name": "表单",
+   "layer": "base",
+   "group": "form",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Form",
+    "FormControl",
+    "FormDescription",
+    "FormField",
+    "FormItem",
+    "FormLabel",
+    "FormMessage"
+   ],
+   "desc": "表单校验与错误关联",
+   "page": true
+  },
+  {
+   "id": "label",
+   "name": "表单标签",
+   "layer": "base",
+   "group": "form",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Label"
+   ],
+   "desc": "关联控件与说明",
+   "page": true
+  },
+  {
+   "id": "checkbox",
+   "name": "复选框",
+   "layer": "base",
+   "group": "form",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Checkbox"
+   ],
+   "desc": "支持半选",
+   "page": true
+  },
+  {
+   "id": "radio-group",
+   "name": "单选组",
+   "layer": "base",
+   "group": "form",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "RadioGroup",
+    "RadioGroupItem"
+   ],
+   "desc": "一组互斥选项",
+   "page": true
+  },
+  {
+   "id": "switch",
+   "name": "开关",
+   "layer": "base",
+   "group": "form",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Switch"
+   ],
+   "desc": "两档尺寸",
+   "page": true
+  },
+  {
+   "id": "slider",
+   "name": "滑块",
+   "layer": "base",
+   "group": "form",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Slider"
+   ],
+   "desc": "单值与区间",
+   "page": true
+  },
+  {
+   "id": "widgets",
+   "name": "富交互件",
+   "layer": "base",
+   "group": "form",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ColorSwatch",
+    "FileDropzone",
+    "Rating",
+    "TagInput",
+    "Timeline@.",
+    "TimelineItem"
+   ],
+   "desc": "时间线, 评分, 拖放上传, 标签输入与色块选择",
+   "page": true
+  },
+  {
+   "id": "select",
+   "name": "下拉选择",
+   "layer": "base",
+   "group": "picker",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Select",
+    "SelectContent",
+    "SelectGroup",
+    "SelectItem",
+    "SelectLabel",
+    "SelectSeparator",
+    "SelectTrigger",
+    "SelectValue"
+   ],
+   "desc": "单选与分组",
+   "page": true
+  },
+  {
+   "id": "native-select",
+   "name": "原生下拉",
+   "layer": "base",
+   "group": "picker",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "NativeSelect",
+    "NativeSelectOptGroup",
+    "NativeSelectOption"
+   ],
+   "desc": "菜单跟随主题",
+   "page": true
+  },
+  {
+   "id": "combobox",
+   "name": "组合框",
+   "layer": "base",
+   "group": "picker",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Combobox"
+   ],
+   "desc": "可搜索下拉, 单选与多选",
+   "page": true
+  },
+  {
+   "id": "calendar",
+   "name": "日历与日期选择",
+   "layer": "base",
+   "group": "picker",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Calendar",
+    "DatePicker"
+   ],
+   "desc": "单日, 区间与弹出式日期选择",
+   "page": true
+  },
+  {
+   "id": "time-picker",
+   "name": "时间选择",
+   "layer": "base",
+   "group": "picker",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "TimePicker"
+   ],
+   "desc": "时与分输入, 受控但中间态不卡手",
+   "page": true
+  },
+  {
+   "id": "dialog",
+   "name": "对话框",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Dialog",
+    "DialogClose",
+    "DialogContent",
+    "DialogDescription",
+    "DialogFooter",
+    "DialogHeader",
+    "DialogTitle",
+    "DialogTrigger"
+   ],
+   "desc": "模态对话框, 缩放淡入",
+   "page": true
+  },
+  {
+   "id": "alert-dialog",
+   "name": "警示对话框",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "AlertDialog",
+    "AlertDialogAction",
+    "AlertDialogCancel",
+    "AlertDialogContent",
+    "AlertDialogDescription",
+    "AlertDialogFooter",
+    "AlertDialogHeader",
+    "AlertDialogMedia",
+    "AlertDialogTitle",
+    "AlertDialogTrigger"
+   ],
+   "desc": "必须二选一, 用于不可撤销的操作",
+   "page": true
+  },
+  {
+   "id": "confirm-dialog",
+   "name": "确认框",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ConfirmDialog",
+    "ConfirmDialogHost"
+   ],
+   "desc": "命令式等待与声明式两用",
+   "page": true
+  },
+  {
+   "id": "drawer",
+   "name": "抽屉",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Drawer",
+    "DrawerClose",
+    "DrawerContent",
+    "DrawerDescription",
+    "DrawerFooter",
+    "DrawerHeader",
+    "DrawerTitle",
+    "DrawerTrigger"
+   ],
+   "desc": "可拖拽的底部抽屉",
+   "page": true
+  },
+  {
+   "id": "sheet",
+   "name": "侧滑面板",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Sheet",
+    "SheetClose",
+    "SheetContent",
+    "SheetDescription",
+    "SheetFooter",
+    "SheetHeader",
+    "SheetTitle",
+    "SheetTrigger"
+   ],
+   "desc": "从四边滑入的面板",
+   "page": true
+  },
+  {
+   "id": "popover",
+   "name": "浮层",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Popover",
+    "PopoverArrow",
+    "PopoverContent",
+    "PopoverDescription",
+    "PopoverHeader",
+    "PopoverTitle",
+    "PopoverTrigger"
+   ],
+   "desc": "锚定元素的浮层",
+   "page": true
+  },
+  {
+   "id": "hover-card",
+   "name": "悬停卡片",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "HoverCard",
+    "HoverCardContent",
+    "HoverCardTrigger"
+   ],
+   "desc": "延迟弹出不误触",
+   "page": true
+  },
+  {
+   "id": "tooltip",
+   "name": "悬浮提示",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Tooltip",
+    "TooltipContent",
+    "TooltipHint",
+    "TooltipProvider",
+    "TooltipTrigger"
+   ],
+   "desc": "含一行式提示",
+   "page": true
+  },
+  {
+   "id": "dropdown-menu",
+   "name": "下拉菜单",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "DropdownMenu",
+    "DropdownMenuContent",
+    "DropdownMenuItem",
+    "DropdownMenuLabel",
+    "DropdownMenuRadioGroup",
+    "DropdownMenuRadioItem",
+    "DropdownMenuSeparator",
+    "DropdownMenuSub",
+    "DropdownMenuSubContent",
+    "DropdownMenuSubTrigger",
+    "DropdownMenuTrigger"
+   ],
+   "desc": "菜单与分组",
+   "page": true
+  },
+  {
+   "id": "context-menu",
+   "name": "右键菜单",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "ContextMenu",
+    "ContextMenuCheckboxItem",
+    "ContextMenuContent",
+    "ContextMenuItem",
+    "ContextMenuLabel",
+    "ContextMenuRadioGroup",
+    "ContextMenuRadioItem",
+    "ContextMenuRoot",
+    "ContextMenuSeparator",
+    "ContextMenuShortcut",
+    "ContextMenuSub",
+    "ContextMenuSubContent",
+    "ContextMenuSubTrigger",
+    "ContextMenuTrigger"
+   ],
+   "desc": "组合式与声明式并存",
+   "page": true
+  },
+  {
+   "id": "menubar",
+   "name": "菜单栏",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Menubar",
+    "MenubarCheckboxItem",
+    "MenubarContent",
+    "MenubarItem",
+    "MenubarMenu",
+    "MenubarRadioGroup",
+    "MenubarRadioItem",
+    "MenubarSeparator",
+    "MenubarShortcut",
+    "MenubarSub",
+    "MenubarSubContent",
+    "MenubarSubTrigger",
+    "MenubarTrigger"
+   ],
+   "desc": "桌面应用式菜单栏",
+   "page": true
+  },
+  {
+   "id": "navigation-menu",
+   "name": "导航菜单",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "NavigationMenu",
+    "NavigationMenuContent",
+    "NavigationMenuItem",
+    "NavigationMenuLink",
+    "NavigationMenuList",
+    "NavigationMenuTrigger"
+   ],
+   "desc": "站点导航, 视口平滑插值",
+   "page": true
+  },
+  {
+   "id": "command",
+   "name": "命令面板",
+   "layer": "base",
+   "group": "overlay",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Command",
+    "CommandDialog",
+    "CommandEmpty",
+    "CommandGroup",
+    "CommandInput",
+    "CommandItem",
+    "CommandList",
+    "CommandSeparator",
+    "CommandShortcut"
+   ],
+   "desc": "内嵌与对话框两种",
+   "page": true
+  },
+  {
+   "id": "alert",
+   "name": "提示条",
+   "layer": "base",
+   "group": "feedback",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Alert",
+    "AlertDescription",
+    "AlertTitle"
+   ],
+   "desc": "五种语义色, 危险与警告会被读屏播报",
+   "page": true
+  },
+  {
+   "id": "toast",
+   "name": "消息提醒",
+   "layer": "base",
+   "group": "feedback",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Toaster"
+   ],
+   "desc": "右下角堆叠与顶部居中",
+   "page": true
+  },
+  {
+   "id": "badge",
+   "name": "徽标",
+   "layer": "base",
+   "group": "feedback",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Badge"
+   ],
+   "desc": "三种语义色",
+   "page": true
+  },
+  {
+   "id": "skeleton",
+   "name": "骨架屏",
+   "layer": "base",
+   "group": "feedback",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Skeleton",
+    "SkeletonText"
+   ],
+   "desc": "方块占位与多行",
+   "page": true
+  },
+  {
+   "id": "spinner",
+   "name": "旋转指示",
+   "layer": "base",
+   "group": "feedback",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Spinner"
+   ],
+   "desc": "行内加载",
+   "page": true
+  },
+  {
+   "id": "spin",
+   "name": "多形态加载",
+   "layer": "base",
+   "group": "feedback",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Spin"
+   ],
+   "desc": "多种加载指示",
+   "page": true
+  },
+  {
+   "id": "progress",
+   "name": "进度条",
+   "layer": "base",
+   "group": "feedback",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Progress",
+    "ProgressMeter"
+   ],
+   "desc": "含不定长, 带标题与数值",
+   "page": true
+  },
+  {
+   "id": "empty",
+   "name": "空状态",
+   "layer": "base",
+   "group": "feedback",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Empty",
+    "EmptyContent",
+    "EmptyDescription",
+    "EmptyHeader",
+    "EmptyMedia",
+    "EmptyTitle"
+   ],
+   "desc": "组合式空状态",
+   "page": true
+  },
+  {
+   "id": "table",
+   "name": "表格",
+   "layer": "base",
+   "group": "data",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Table",
+    "TableBody",
+    "TableCaption",
+    "TableCell",
+    "TableFooter",
+    "TableHead",
+    "TableHeader",
+    "TableRow"
+   ],
+   "desc": "表格原语",
+   "page": true
+  },
+  {
+   "id": "avatar",
+   "name": "头像",
+   "layer": "base",
+   "group": "data",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Avatar",
+    "AvatarBadge",
+    "AvatarFallback",
+    "AvatarGroup",
+    "AvatarGroupCount",
+    "AvatarImage"
+   ],
+   "desc": "图片淡入, 叠放与状态点",
+   "page": true
+  },
+  {
+   "id": "item",
+   "name": "列表条目",
+   "layer": "base",
+   "group": "data",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Item",
+    "ItemActions",
+    "ItemContent",
+    "ItemDescription",
+    "ItemGroup",
+    "ItemMedia",
+    "ItemSeparator",
+    "ItemTitle"
+   ],
+   "desc": "媒体, 标题, 说明与操作",
+   "page": true
+  },
+  {
+   "id": "pagination",
+   "name": "分页器",
+   "layer": "base",
+   "group": "data",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Pagination"
+   ],
+   "desc": "翻页时整排不跳",
+   "page": true
+  },
+  {
+   "id": "breadcrumb",
+   "name": "面包屑",
+   "layer": "base",
+   "group": "navigation",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Breadcrumb",
+    "BreadcrumbEllipsis",
+    "BreadcrumbItem",
+    "BreadcrumbLink",
+    "BreadcrumbList",
+    "BreadcrumbPage",
+    "BreadcrumbSeparator"
+   ],
+   "desc": "可折叠中间层级",
+   "page": true
+  },
+  {
+   "id": "tabs",
+   "name": "标签页",
+   "layer": "base",
+   "group": "navigation",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Tabs",
+    "TabsContent",
+    "TabsList",
+    "TabsTrigger"
+   ],
+   "desc": "下划线或药丸两种形态",
+   "page": true
+  },
+  {
+   "id": "accordion",
+   "name": "折叠面板",
+   "layer": "base",
+   "group": "navigation",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Accordion",
+    "AccordionContent",
+    "AccordionItem",
+    "AccordionTrigger",
+    "Collapsible",
+    "CollapsibleContent",
+    "CollapsibleTrigger"
+   ],
+   "desc": "折叠组与单块折叠, 双向都有高度动画",
+   "page": true
+  },
+  {
+   "id": "collapse-panel",
+   "name": "可折叠面板",
+   "layer": "base",
+   "group": "navigation",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "CollapsePanel"
+   ],
+   "desc": "面板折叠",
+   "page": true
+  },
+  {
+   "id": "box",
+   "name": "布局原语",
+   "layer": "base",
+   "group": "box",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "AutoGrid",
+    "Grid",
+    "Center",
+    "Container",
+    "Section",
+    "HStack",
+    "Spacer",
+    "Stack",
+    "VStack",
+    "SplitView"
+   ],
+   "desc": "Stack, Grid, Container 与可拖拽分栏, 统一间距与宽度档",
+   "page": true
+  },
+  {
+   "id": "bento",
+   "name": "便当格",
+   "layer": "base",
+   "group": "box",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Bento",
+    "BentoItem"
+   ],
+   "desc": "不等大磁贴拼出的看板与落地页版块",
+   "page": true
+  },
+  {
+   "id": "separator",
+   "name": "分隔线",
+   "layer": "base",
+   "group": "box",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Separator"
+   ],
+   "desc": "全局 1px",
+   "page": true
+  },
+  {
+   "id": "carousel",
+   "name": "轮播",
+   "layer": "base",
+   "group": "box",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Carousel",
+    "CarouselContent",
+    "CarouselDots",
+    "CarouselItem",
+    "CarouselNext",
+    "CarouselPrevious"
+   ],
+   "desc": "惯性拖拽与方向键切换",
+   "page": true
+  },
+  {
+   "id": "resizable",
+   "name": "可调整分栏",
+   "layer": "base",
+   "group": "box",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "ResizableHandle",
+    "ResizablePanel",
+    "ResizablePanelGroup"
+   ],
+   "desc": "拖拽调整大小",
+   "page": true
+  },
+  {
+   "id": "scroll-area",
+   "name": "滚动区域",
+   "layer": "base",
+   "group": "box",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ScrollArea",
+    "ScrollBar"
+   ],
+   "desc": "细滚动条容器",
+   "page": true
+  },
+  {
+   "id": "aspect-ratio",
+   "name": "宽高比",
+   "layer": "base",
+   "group": "box",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "AspectRatio"
+   ],
+   "desc": "固定宽高比容器",
+   "page": true
+  },
+  {
+   "id": "direction",
+   "name": "文字方向",
+   "layer": "base",
+   "group": "box",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DirectionProvider"
+   ],
+   "desc": "支持从右到左",
+   "page": true
+  },
+  {
+   "id": "motion",
+   "name": "动效",
+   "layer": "base",
+   "group": "motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "FadeSwap",
+    "PageTransition",
+    "Parallax",
+    "Reveal",
+    "ScrollProgress",
+    "Stagger",
+    "StaggerItem",
+    "StickyScroll"
+   ],
+   "desc": "视口入场, 交错, 数字滚动与页面转场, 尊重减弱动效",
+   "page": true
+  },
+  {
+   "id": "effects",
+   "name": "视觉效果",
+   "layer": "base",
+   "group": "motion",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "GlassPanel",
+    "MaskFade"
+   ],
+   "desc": "光斑卡, 流光边框, 跑马灯, 背景底纹与毛玻璃",
+   "page": true
+  },
+  {
+   "id": "typography",
+   "name": "排版",
+   "layer": "base",
+   "group": "typography",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "TypographyBlockquote",
+    "TypographyH1",
+    "TypographyH2",
+    "TypographyH3",
+    "TypographyInlineCode",
+    "TypographyLead",
+    "TypographyList",
+    "TypographyMuted",
+    "TypographyP"
+   ],
+   "desc": "标题, 正文, 引用与列表",
+   "page": true
+  },
+  {
+   "id": "display-type",
+   "name": "营销排版",
+   "layer": "base",
+   "group": "typography",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Display",
+    "Eyebrow",
+    "Kicker",
+    "Lead",
+    "Prose"
+   ],
+   "desc": "Display, Eyebrow, Kicker, Lead, 渐变字与 Prose 正文容器, 中日韩自动收紧",
+   "page": true
+  },
+  {
+   "id": "kbd",
+   "name": "按键",
+   "layer": "base",
+   "group": "typography",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Kbd",
+    "KbdGroup"
+   ],
+   "desc": "键盘按键标记",
+   "page": true
+  },
+  {
+   "id": "media-image",
+   "name": "图片",
+   "layer": "base",
+   "group": "media",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Image"
+   ],
+   "desc": "响应式图片, 占位与加载失败兜底",
+   "page": true
+  },
+  {
+   "id": "media-themed-image",
+   "name": "亮暗双图",
+   "layer": "base",
+   "group": "media",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ThemedImage"
+   ],
+   "desc": "跟随主题切换的两张图",
+   "page": true
+  },
+  {
+   "id": "media-video",
+   "name": "视频",
+   "layer": "base",
+   "group": "media",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Video"
+   ],
+   "desc": "封面, 静音自动播与减弱动效",
+   "page": true
+  },
+  {
+   "id": "media-gallery",
+   "name": "画廊",
+   "layer": "base",
+   "group": "media",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Gallery"
+   ],
+   "desc": "网格与瀑布排布, 点开进灯箱",
+   "page": true
+  },
+  {
+   "id": "media-lightbox",
+   "name": "灯箱",
+   "layer": "base",
+   "group": "media",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Lightbox"
+   ],
+   "desc": "全屏查看, 方向键与滑动切换",
+   "page": true
+  },
+  {
+   "id": "media-frames",
+   "name": "设备与浏览器外框",
+   "layer": "base",
+   "group": "media",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "BrowserFrame",
+    "DeviceFrame",
+    "ProductMockFrame"
+   ],
+   "desc": "手机, 平板, 笔记本与浏览器窗口外框",
+   "page": true
+  },
+  {
+   "id": "blocks-site",
+   "name": "站点区块",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "MegaMenuPanel",
+    "BlocksSiteHeader",
+    "BlocksSiteFooter",
+    "BlocksMobileNav",
+    "BlocksAnnouncementBar"
+   ],
+   "desc": "顶栏, 大菜单面板, 移动导航, 公告条与页脚",
+   "page": true
+  },
+  {
+   "id": "blocks-hero",
+   "name": "首屏与转化条",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "CtaBanner",
+    "Hero",
+    "LogoWall",
+    "Newsletter"
+   ],
+   "desc": "Hero, 标志墙, 行动条与邮件订阅",
+   "page": true
+  },
+  {
+   "id": "blocks-features",
+   "name": "特性区块",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "BentoFeatures",
+    "FeatureAlternating",
+    "FeatureGrid",
+    "FigureGrid",
+    "Showcase",
+    "StatBand"
+   ],
+   "desc": "特性栅格, 左右交替, 便当格, 指标带, 展示与图表栅格",
+   "page": true
+  },
+  {
+   "id": "blocks-social-proof",
+   "name": "社会证明",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "CaseStudies",
+    "ChangelogList",
+    "Testimonials",
+    "TweetWall"
+   ],
+   "desc": "用户评价, 案例, 更新日志与推文墙",
+   "page": true
+  },
+  {
+   "id": "blocks-pricing",
+   "name": "定价与对比",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "ComparisonMatrix",
+    "Faq",
+    "Pricing"
+   ],
+   "desc": "定价卡, 对比矩阵与常见问题",
+   "page": true
+  },
+  {
+   "id": "blocks-developer",
+   "name": "开发者区块",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "CodeShowcase",
+    "InstallBlock"
+   ],
+   "desc": "代码展示与安装命令",
+   "page": true
+  },
+  {
+   "id": "blocks-commerce-browse",
+   "name": "电商浏览",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "CampaignHero",
+    "CategoryTiles",
+    "ProductCard",
+    "ProductGrid",
+    "ProductRail",
+    "PromoStrip"
+   ],
+   "desc": "商品卡, 栅格, 横滑轨道, 类目, 活动首屏与促销条",
+   "page": true
+  },
+  {
+   "id": "blocks-commerce-trade",
+   "name": "电商交易",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "CartSummary",
+    "CheckoutSteps",
+    "ProductDetail",
+    "SearchResults"
+   ],
+   "desc": "商品详情, 购物车, 结账步骤与搜索结果",
+   "page": true
+  },
+  {
+   "id": "blocks-docs",
+   "name": "文档站区块",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "ApiTable",
+    "Callout",
+    "DocsHome",
+    "DocsPager",
+    "DocsShell",
+    "DocsToc"
+   ],
+   "desc": "文档外壳, 目录, 上下页, API 表与提示框",
+   "page": true
+  },
+  {
+   "id": "blocks-portfolio",
+   "name": "作品集区块",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "ExperienceTimeline",
+    "HoverPreviewLink",
+    "PostList",
+    "ProfileHero",
+    "ProjectGrid",
+    "StickyProfileLayout"
+   ],
+   "desc": "个人首屏, 粘性侧栏, 经历时间线, 项目栅格与文章列表",
+   "page": true
+  },
+  {
+   "id": "page",
+   "name": "整页描述",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "Page",
+    "PageComposer",
+    "MetricRow",
+    "RingRow"
+   ],
+   "desc": "用 definePage 描述一整页: 调区块顺序, 开关区块, 改标题, 源码即描述对象",
+   "page": true
+  },
+  {
+   "id": "gallery",
+   "name": "展示画廊",
+   "layer": "base",
+   "group": "blocks",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "FieldPage",
+    "KilnPage",
+    "Shot",
+    "ShotSequence",
+    "ShotLayer",
+    "ShotPlate"
+   ],
+   "desc": "用动效, 便当格, 光斑与指标卡拼成的落地页与仪表盘, 亮暗两套主题",
+   "page": true
+  },
+  {
+   "id": "attachment",
+   "name": "附件",
+   "layer": "base",
+   "group": "conversation",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Attachment",
+    "AttachmentAction",
+    "AttachmentActions",
+    "AttachmentContent",
+    "AttachmentDescription",
+    "AttachmentGroup",
+    "AttachmentMedia",
+    "AttachmentTitle"
+   ],
+   "desc": "文件与图片附件, 带上传进度与错误态",
+   "page": true
+  },
+  {
+   "id": "bubble",
+   "name": "气泡",
+   "layer": "base",
+   "group": "conversation",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Bubble",
+    "BubbleCollapsible",
+    "BubbleContent",
+    "BubbleGroup",
+    "BubbleReactions"
+   ],
+   "desc": "消息气泡, 四种底色, 可折叠长内容",
+   "page": true
+  },
+  {
+   "id": "message",
+   "name": "消息",
+   "layer": "base",
+   "group": "conversation",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Message",
+    "MessageAvatar",
+    "MessageContent",
+    "MessageFooter",
+    "MessageHeader"
+   ],
+   "desc": "头像, 头部, 正文与底部",
+   "page": true
+  },
+  {
+   "id": "message-scroller",
+   "name": "消息滚动",
+   "layer": "base",
+   "group": "conversation",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "MessageScroller",
+    "MessageScrollerButton",
+    "MessageScrollerContent",
+    "MessageScrollerItem"
+   ],
+   "desc": "贴底跟随与回到最新",
+   "page": true
+  },
+  {
+   "id": "marker",
+   "name": "标记行",
+   "layer": "base",
+   "group": "conversation",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Marker",
+    "MarkerContent",
+    "MarkerIcon"
+   ],
+   "desc": "系统提示, 状态行与分隔线",
+   "page": true
+  },
+  {
+   "id": "questionnaire",
+   "name": "问卷",
+   "layer": "base",
+   "group": "conversation",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Questionnaire"
+   ],
+   "desc": "多步问卷, 切题滑动",
+   "page": true
+  },
+  {
+   "id": "card",
+   "name": "卡片",
+   "layer": "base",
+   "group": "layout",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Card",
+    "CardContent",
+    "CardDescription",
+    "CardFooter",
+    "CardHeader",
+    "CardTitle"
+   ],
+   "desc": "内容容器",
+   "page": true
+  },
+  {
+   "id": "code-block",
+   "name": "代码块",
+   "layer": "base",
+   "group": "layout",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "CodeBlock"
+   ],
+   "desc": "语法高亮与复制",
+   "page": true
+  },
+  {
+   "id": "code-editor",
+   "name": "代码编辑器",
+   "layer": "base",
+   "group": "layout",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "CodeEditor",
+    "DiffEditor"
+   ],
+   "desc": "Monaco 单文件与 diff, One Dark Pro Darker, 本地 worker 无 CDN",
+   "page": true
+  },
+  {
+   "id": "stat-card",
+   "name": "指标卡",
+   "layer": "base",
+   "group": "layout",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "StatCard",
+    "StatGrid"
+   ],
+   "desc": "指标卡与栅格, 数字等宽不抖",
+   "page": true
+  },
+  {
+   "id": "data-table",
+   "name": "数据表",
+   "layer": "base",
+   "group": "layout",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "DataTable"
+   ],
+   "desc": "粘性表头, 空态, 加载态与行点击",
+   "page": true
+  },
+  {
+   "id": "empty-state",
+   "name": "空态页",
+   "layer": "base",
+   "group": "layout",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DataBoundary",
+    "EmptyState"
+   ],
+   "desc": "空, 错误与加载三态",
+   "page": true
+  },
+  {
+   "id": "page-header",
+   "name": "页头",
+   "layer": "base",
+   "group": "layout",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "PageHeader"
+   ],
+   "desc": "标题, 说明与右侧操作位",
+   "page": true
+  },
+  {
+   "id": "setting-chrome",
+   "name": "设置页版式",
+   "layer": "base",
+   "group": "layout",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "SettingHeading"
+   ],
+   "desc": "一张卡里一行一个设置项",
+   "page": true
+  },
+  {
+   "id": "app-frame",
+   "name": "应用外壳",
+   "layer": "base",
+   "group": "layout",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "AppFrame"
+   ],
+   "desc": "外留白与两块圆角面板",
+   "page": true
+  },
+  {
+   "id": "sidebar-nav",
+   "name": "侧栏导航",
+   "layer": "base",
+   "group": "layout",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "SidebarNavItemButton"
+   ],
+   "desc": "带数字与文本角标",
+   "page": true
+  },
+  {
+   "id": "sidebar",
+   "name": "侧栏",
+   "layer": "base",
+   "group": "layout",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Sidebar",
+    "SidebarContent",
+    "SidebarFooter",
+    "SidebarGroup",
+    "SidebarGroupContent",
+    "SidebarGroupLabel",
+    "SidebarHeader",
+    "SidebarInset",
+    "SidebarMenu",
+    "SidebarMenuBadge",
+    "SidebarMenuButton",
+    "SidebarMenuItem",
+    "SidebarMenuSub",
+    "SidebarMenuSubButton",
+    "SidebarMenuSubItem",
+    "SidebarProvider",
+    "SidebarRail",
+    "SidebarTrigger"
+   ],
+   "desc": "组合式应用侧栏, 可收成图标条",
+   "page": true
+  },
+  {
+   "id": "stepper",
+   "name": "步骤条",
+   "layer": "base",
+   "group": "layout",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "Stepper",
+    "StepDots",
+    "LogViewer"
+   ],
+   "desc": "步骤条与日志框, 含联动示例",
+   "page": true
+  },
+  {
+   "id": "proxy-chain",
+   "name": "代理链路",
+   "layer": "base",
+   "group": "layout",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ProxyChain",
+    "ProxyLayerLegend"
+   ],
+   "desc": "入口, 策略与实体",
+   "page": true
+  },
+  {
+   "id": "browser-live",
+   "name": "浏览器预览",
+   "layer": "base",
+   "group": "layout",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "BrowserLiveStatus",
+    "BrowserLiveTile",
+    "BrowserLiveWall"
+   ],
+   "desc": "多副本实时预览与远程操作",
+   "page": true
+  },
+  {
+   "id": "charts",
+   "name": "图表",
+   "layer": "base",
+   "group": "charts",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ChartChrome",
+    "ChartFrame",
+    "HxAreaChart",
+    "HxBarChart",
+    "HxLineChart",
+    "HxPieChart",
+    "HxRadarChart",
+    "HxRadialChart"
+   ],
+   "desc": "折线, 面积, 柱状, 饼与雷达图",
+   "page": true
+  },
+  {
+   "id": "viz",
+   "name": "数据可视化",
+   "layer": "base",
+   "group": "charts",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "BarChart",
+    "Trend",
+    "Ring",
+    "FlowGraph",
+    "Funnel",
+    "Timeline@./viz",
+    "Metric",
+    "Spark",
+    "Process",
+    "Compare",
+    "NumberRoll"
+   ],
+   "desc": "趋势线, 柱状, 环形, 流程图, 漏斗与时间线的舞台: 拖道具看中断与回程, 源码一键复制",
+   "page": true
+  },
+  {
+   "id": "agent-overview",
+   "name": "交互总览",
+   "layer": "base",
+   "group": "agent",
+   "kind": "block",
+   "role": "showcase",
+   "exports": [
+    "InlineApproval"
+   ],
+   "desc": "发消息, 工具调用, 流式回复与变更预览串成一个完整示例",
+   "page": true
+  },
+  {
+   "id": "agent-toolcall",
+   "name": "工具调用卡",
+   "layer": "base",
+   "group": "agent",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "ToolCallCard"
+   ],
+   "desc": "调用状态, 入参与结果可折叠",
+   "page": true
+  },
+  {
+   "id": "agent-stream",
+   "name": "流式回复",
+   "layer": "base",
+   "group": "agent",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "StreamingMarkdown",
+    "StreamingText",
+    "Thinking"
+   ],
+   "desc": "先思考再回复, 逐字 Markdown 与中断",
+   "page": true
+  },
+  {
+   "id": "agent-usage",
+   "name": "用量计量",
+   "layer": "base",
+   "group": "agent",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "UsageMeter"
+   ],
+   "desc": "已用 / 上限 / 速率",
+   "page": true
+  },
+  {
+   "id": "agent-diff",
+   "name": "变更对比",
+   "layer": "base",
+   "group": "agent",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "DiffView"
+   ],
+   "desc": "逐行增删, 行首带符号",
+   "page": true
+  },
+  {
+   "id": "agent-process",
+   "name": "思考与过程",
+   "layer": "base",
+   "group": "agent",
+   "kind": "single",
+   "role": "component",
+   "exports": [
+    "SubagentCard",
+    "SubagentGroup",
+    "ThinkingBranches",
+    "TodoTree",
+    "StatusGlyph"
+   ],
+   "desc": "思考计时, 发散思考, 子代理与分层待办的实时展示",
+   "page": true
+  },
+  {
+   "id": "trace",
+   "name": "轨迹",
+   "layer": "base",
+   "group": "agent",
+   "kind": "composite",
+   "role": "component",
+   "exports": [
+    "Trace",
+    "TraceLive",
+    "TraceSources",
+    "TraceStep"
+   ],
+   "desc": "推理与工具调用轨迹",
+   "page": true
+  },
+  {
+   "id": "templates-chat",
+   "name": "AI 对话工作台",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "会话列表 + 流式回复 + 轨迹 + 输入框, 整页可复制",
+   "page": true
+  },
+  {
+   "id": "templates-settings",
+   "name": "设置页",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [
+    "SettingSection",
+    "SettingRow"
+   ],
+   "desc": "二级设置栏 + 一行一个设置项, 整页可复制",
+   "page": true
+  },
+  {
+   "id": "templates-dashboard",
+   "name": "数据看板",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "指标卡 + 面积图 + 数据表, 整页可复制",
+   "page": true
+  },
+  {
+   "id": "templates-console",
+   "name": "链路控制台",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "代理链路 + 步骤条 + 日志框, 整页可复制",
+   "page": true
+  },
+  {
+   "id": "page-saas",
+   "name": "SaaS 落地页",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "复刻 vercel / linear / stripe 型 SaaS 落地页: 主视觉 + 客户墙 + 便当格 + 定价 + 问答, 三套皮肤",
+   "page": true
+  },
+  {
+   "id": "page-opensource",
+   "name": "开源项目站",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "复刻 tailwindcss / astro / bun 型开源项目主页: 安装命令 + 代码展示 + 案例 + 更新日志, 三套皮肤",
+   "page": true
+  },
+  {
+   "id": "page-pricing",
+   "name": "定价页",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "复刻 linear / vercel 型定价页: 月年切换套餐 + 功能对比表 + 分组问答, 三套皮肤",
+   "page": true
+  },
+  {
+   "id": "page-commerce-home",
+   "name": "电商首页",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "复刻 nike / apple / shopify 型电商首页: 大菜单 + 轮播 + 分类 + 商品网格. 演示里顶栏未吸顶, 真实项目里传 sticky: true",
+   "page": true
+  },
+  {
+   "id": "page-product",
+   "name": "商品详情",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "复刻 apple / nike 型商品详情页: 画廊 + 购买面板 + 规格对比 + 评价. 演示里顶栏未吸顶, 真实项目里传 sticky: true",
+   "page": true
+  },
+  {
+   "id": "page-portfolio",
+   "name": "个人主页",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "复刻 brittanychiang.com 型个人主页: 粘性双栏, 经历 + 项目 + 文章",
+   "page": true
+  },
+  {
+   "id": "page-docsite",
+   "name": "文档站",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "复刻 mantine / shadcn / ant.design 型组件文档站: 首页 + 侧栏目录 + 正文 + 属性表",
+   "page": true
+  },
+  {
+   "id": "page-dashboard",
+   "name": "仪表盘",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "复刻 SaaS 后台型仪表盘: 侧栏 + 指标行 + 双图表 + 动态流 + 上手清单",
+   "page": true
+  },
+  {
+   "id": "page-clone-linear",
+   "name": "linear 复刻",
+   "layer": "base",
+   "group": "templates",
+   "kind": "block",
+   "role": "template",
+   "exports": [],
+   "desc": "逐块对拽 linear.app 深色首屏: 零自定义 class, 缺口如实留在画面上",
+   "page": true
+  },
+  {
+   "id": "blueprint",
+   "name": "蓝图编辑器",
+   "layer": "base",
+   "group": "blueprint",
+   "kind": "block",
+   "role": "component",
+   "exports": [
+    "BlueprintCanvas",
+    "BlueprintEditor"
+   ],
+   "desc": "节点图编辑器: 自定义节点, 连接判定与执行流",
+   "page": true
+  },
+  {
+   "id": "blueprint-dsh",
+   "name": "智能体循环蓝图",
+   "layer": "base",
+   "group": "blueprint",
+   "kind": "block",
+   "role": "showcase",
+   "exports": [],
+   "desc": "把智能体循环画成一张蓝图",
+   "page": true
+  }
+ ]
+}

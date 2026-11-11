@@ -1,6 +1,5 @@
 import type { JSX } from "react";
 import { BUTTON_TYPE, DocsPager, cn } from "@hx/ui";
-import type { DocEntry } from "../../../src/nav";
 import { renderDoc } from "../../render-doc";
 import { COMPONENTS, relatedOf, type CatalogEntry } from "../catalog";
 import { ICON, ICON_XS, PAGER_CLASS, PKG, TOOL_GROUP } from "../constants";
@@ -31,7 +30,7 @@ export function GenericPage({ entry, onGo }: { readonly entry: CatalogEntry; rea
           复制给 AI
         </button>
       </PageHead>
-      <div className="min-w-0">{renderDoc(entry as DocEntry)}</div>
+      <div className="min-w-0">{renderDoc(entry)}</div>
       <Related items={relatedOf(entry, RELATED_COUNT)} onGo={onGo} preview={(item) => <Thumb entry={item} />} />
       <DocsPager
         aria-label="页面导航"

@@ -1,14 +1,14 @@
 import type { JSX, ReactNode } from "react";
 import { Badge, cn } from "@hx/ui";
-import { categoryOf, type CatalogEntry } from "../catalog";
+import { tabOf, type CatalogEntry } from "../catalog";
 import { CARD, ICON, ICON_XS, PKG, SECTION_DESC, SECTION_TITLE } from "../constants";
 
 /** 页头分类签: 库 Badge 的 outline 档, 尺寸按页头排版. */
 const PILL = "h-6 border-border px-2.5 py-0 text-[12px] font-normal";
 
-/** 页头: 标题, 描述, 分类标签. 对标 reactbits 组件页 54px 粗标题. */
+/** 页头: 标题, 描述, 层与组标签. 对标 reactbits 组件页 54px 粗标题. */
 export function PageHead({ entry, children }: { readonly entry: CatalogEntry; readonly children?: ReactNode }): JSX.Element {
-  const category = categoryOf(entry.group);
+  const layer = tabOf(entry.layer);
   return (
     <header className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-4">
@@ -18,10 +18,10 @@ export function PageHead({ entry, children }: { readonly entry: CatalogEntry; re
       <p className="max-w-[68ch] text-[14.5px] leading-relaxed text-muted-foreground">{entry.desc}</p>
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="outline" className={cn(PILL, "gap-1.5 bg-muted/40")}>
-          <span aria-hidden className={cn(category.icon, ICON_XS)} />
-          {category.label}
+          <span aria-hidden className={cn(layer.icon, ICON_XS)} />
+          {entry.layerLabel}
         </Badge>
-        {entry.group !== category.label ? (
+        {entry.group !== entry.layerLabel ? (
           <Badge variant="outline" className={PILL}>
             {entry.group}
           </Badge>
@@ -59,7 +59,7 @@ export function Related({ items, onGo, preview }: { items: readonly CatalogEntry
       <h2 id="related" className={SECTION_TITLE}>
         Related components 相关组件
       </h2>
-      <p className={SECTION_DESC}>同一分类里的其他组件.</p>
+      <p className={SECTION_DESC}>同组与同层里的其他组件.</p>
       <ul className="mt-3 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         {items.map((item) => (
           <li key={item.id}>

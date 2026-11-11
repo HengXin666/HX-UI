@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, type JSX } from "react";
 import { InputGroup, InputGroupAddon, InputGroupInput, Kbd, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, cn, useHotkeys } from "@hx/ui";
-import { CATEGORIES, COMPONENTS, categoryOf } from "../catalog";
+import { COMPONENTS, LAYER_TABS, inTab, type LayerTabId } from "../catalog";
 import { CARD, ICON, ICON_XS } from "../constants";
 import { Thumb } from "./Thumb";
 
@@ -10,10 +10,10 @@ const SORT_LABEL: Record<SortId, string> = { catalog: "目录顺序", name: "名
 const FIELD = "h-9 rounded-xl border border-border/60 bg-muted/30 text-[13px]";
 const SLASH = "/";
 
-/** 组件索引, 对标 reactbits /get-started/index: 搜索 (按 / 聚焦), 分类下拉, 排序, 三列缩略卡. */
+/** 组件索引, 对标 reactbits /get-started/index: 搜索 (按 / 聚焦), 分层下拉, 排序, 三列缩略卡. */
 export function IndexPage({ onGo }: { readonly onGo: (id: string) => void }): JSX.Element {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string>(CATEGORIES[0].id);
+  const [tab, setTab] = useState<LayerTabId>(LAYER_TABS[0].id);
   const [sort, setSort] = useState<SortId>(SORT.catalog);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -22,14 +22,13 @@ export function IndexPage({ onGo }: { readonly onGo: (id: string) => void }): JS
 
   const items = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const match = CATEGORIES.find((item) => item.id === category) ?? CATEGORIES[0];
     const list = COMPONENTS.filter(
-      (entry) => match.match(entry.group) && (!needle || [entry.label, entry.id, entry.desc, entry.group].some((field) => field.toLowerCase().includes(needle))),
+      (entry) => inTab(tab, entry) && (!needle || [entry.label, entry.id, entry.desc, entry.group].some((field) => field.toLowerCase().includes(needle))),
     );
     if (sort === SORT.name) return [...list].sort((a, b) => a.label.localeCompare(b.label, "zh-Hans-CN"));
     if (sort === SORT.tunable) return [...list].sort((a, b) => Number(Boolean(b.spec)) - Number(Boolean(a.spec)));
     return list;
-  }, [query, category, sort]);
+  }, [query, tab, sort]);
 
   return (
     <div className="flex flex-col">
@@ -51,14 +50,14 @@ export function IndexPage({ onGo }: { readonly onGo: (id: string) => void }): JS
             <Kbd className="h-5 min-w-0 rounded border-border bg-transparent px-1.5 text-[11px] shadow-none">{SLASH}</Kbd>
           </InputGroupAddon>
         </InputGroup>
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger aria-label="分类" className={cn(FIELD, "h-9 w-[180px] px-3 font-medium")}>
+        <Select value={tab} onValueChange={(next) => setTab(next as LayerTabId)}>
+          <SelectTrigger aria-label="分层" className={cn(FIELD, "h-9 w-[180px] px-3 font-medium")}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {CATEGORIES.map((item) => (
+            {LAYER_TABS.map((item) => (
               <SelectItem key={item.id} value={item.id}>
-                {item.id === CATEGORIES[0].id ? "全部组件" : item.label}
+                {item.id === LAYER_TABS[0].id ? "全部组件" : item.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -99,7 +98,7 @@ export function IndexPage({ onGo }: { readonly onGo: (id: string) => void }): JS
               <div className="px-2.5 pt-3.5 pb-2.5">
                 <p className="truncate text-[14.5px] font-semibold text-foreground">{entry.label}</p>
                 <p className="mt-1 truncate text-[11px] tracking-[0.08em] text-muted-foreground">
-                  {categoryOf(entry.group).label === entry.group ? entry.group : `${categoryOf(entry.group).label} · ${entry.group}`}
+                  {`${entry.layerLabel} · ${entry.group}`}
                 </p>
               </div>
             </a>

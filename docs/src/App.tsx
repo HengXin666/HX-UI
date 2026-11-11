@@ -268,7 +268,7 @@ export function App(): JSX.Element {
           返回的 Promise 永远不会 settle, await 它的代码会静默停住, */}
       <ConfirmDialogHost />
       {/* 搜索面板: 与 Toaster 同理, 整个应用挂一次 */}
-      <SearchDialog open={search.open} onClose={() => search.setOpen(false)} onPick={go} />
+      <SearchDialog open={search.open} onClose={() => search.setOpen(false)} onPick={go} entries={DOCS} groups={GROUPS} />
     </AppFrame>
   );
 }

@@ -20,7 +20,7 @@ import {
 } from "@hx/ui";
 import { TONE_VARIANT } from "../../../../../src/constants/ui";
 import { Button } from "../../../../../src/primitives/button";
-import { DOCS, type DocEntry } from "../../../../src/nav";
+import { CATALOG as DOCS, type CatalogEntry as DocEntry } from "../../../docs/catalog";
 
 const MUTED = "text-xs leading-relaxed text-muted-foreground";
 const ROWS = 4;

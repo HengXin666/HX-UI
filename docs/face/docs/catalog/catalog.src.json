@@ -1,15 +1,126 @@
 {
  "_why": "文档站目录的唯一来源: 层, 组, 页, 页型与每页认领的导出. scripts/docs-catalog.ts 读它生成 catalog.gen.json 并对表; 改目录只改这里.",
- "_keys": {"role": "省略为 component (组件页, 必须认领至少一个导出); guide 上手说明, template 整页模板, showcase 拼装演示, 这三种可以不认领导出.", "kind": "页型: single / composite / block / control.", "exports": "本页认领的导出名; 重名导出写 名字@入口 (Timeline@./viz)."},
+ "_keys": {"role": "省略为 component (组件页, 必须认领至少一个导出); guide 上手说明, template 整页模板, showcase 拼装演示, 这三种可以不认领导出.", "kind": "页型: single / composite / block / control.", "exports": "本页认领的导出名; 重名导出写 名字@入口 (Timeline@./viz).", "families": "组件层 (surface / kits / controls) 的件按声明文件的目录前缀归组; 每件都必须有组认领.", "pieceKind": "组里还没有页的件按这个页型列进目录."},
  "layers": [
   {"id": "start", "label": "上手"},
+  {"id": "surface", "label": "Surface"},
+  {"id": "kits", "label": "Kits"},
+  {"id": "controls", "label": "Controls"},
   {"id": "base", "label": "基础组件"}
+ ],
+ "families": [
+  {"dir": "src/surface/backgrounds/glow/", "group": "surface-glow"},
+  {"dir": "src/surface/backgrounds/rays/", "group": "surface-rays"},
+  {"dir": "src/surface/backgrounds/lines/", "group": "surface-lines"},
+  {"dir": "src/surface/backgrounds/grid/", "group": "surface-grid"},
+  {"dir": "src/surface/backgrounds/particles/", "group": "surface-particles"},
+  {"dir": "src/surface/backgrounds/fluid/", "group": "surface-fluid"},
+  {"dir": "src/surface/backgrounds/glyph/", "group": "surface-glyph"},
+  {"dir": "src/surface/text/glyph/", "group": "surface-text-glyph"},
+  {"dir": "src/surface/text/stagger/", "group": "surface-text-glyph"},
+  {"dir": "src/surface/text/scroll/", "group": "surface-text-motion"},
+  {"dir": "src/surface/text/pointer/", "group": "surface-text-motion"},
+  {"dir": "src/surface/pointer/", "group": "surface-pointer"},
+  {"dir": "src/surface/cursor/", "group": "surface-cursor"},
+  {"dir": "src/surface/reveal/", "group": "surface-reveal"},
+  {"dir": "src/surface/field/", "group": "surface-field"},
+  {"dir": "src/surface/scene/", "group": "surface-scene"},
+  {"dir": "src/surface/edge/", "group": "surface-edge"},
+  {"dir": "src/surface/loop/", "group": "surface-edge"},
+  {"dir": "src/surface/texture/", "group": "surface-edge"},
+  {"dir": "src/surface/sticker/", "group": "surface-edge"},
+  {"dir": "src/kits/gallery/", "group": "kits-gallery"},
+  {"dir": "src/kits/stack/", "group": "kits-stack"},
+  {"dir": "src/kits/card/", "group": "kits-card"},
+  {"dir": "src/kits/glass/", "group": "kits-glass"},
+  {"dir": "src/kits/stage3d/", "group": "kits-glass"},
+  {"dir": "src/controls/press/", "group": "controls-press"},
+  {"dir": "src/controls/range/", "group": "controls-range"},
+  {"dir": "src/controls/compose/", "group": "controls-compose"},
+  {"dir": "src/controls/choice/", "group": "controls-choice"},
+  {"dir": "src/controls/dismiss/", "group": "controls-dismiss"},
+  {"dir": "src/controls/nav/", "group": "controls-nav"}
  ],
  "groups": [
   {"id": "start", "layer": "start", "label": "上手", "pages": [
    {"id": "install", "name": "安装与使用", "desc": "引入组件, 接入样式, 切换主题, 部署文档站", "role": "guide", "kind": "single"},
    {"id": "tokens", "name": "设计令牌", "desc": "颜色, 圆角, 阴影, 字号, 间距与动效", "role": "guide", "kind": "single"},
    {"id": "skins", "name": "皮肤与密度", "desc": "七套皮肤一键换气质, 紧凑 / 舒适 / 宽松三档密度", "role": "guide", "kind": "single"}
+  ]},
+  {"id": "surface-glow", "layer": "surface", "label": "背景 · 光晕", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-rays", "layer": "surface", "label": "背景 · 光束", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-lines", "layer": "surface", "label": "背景 · 线条", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-grid", "layer": "surface", "label": "背景 · 网格", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-particles", "layer": "surface", "label": "背景 · 粒子", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-fluid", "layer": "surface", "label": "背景 · 流体", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-glyph", "layer": "surface", "label": "背景 · 字符与像素", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-text-glyph", "layer": "surface", "label": "文字 · 逐字与变形", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-text-motion", "layer": "surface", "label": "文字 · 滚动与指针", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-pointer", "layer": "surface", "label": "指针互动", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-cursor", "layer": "surface", "label": "光标", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-reveal", "layer": "surface", "label": "揭示与转场", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-field", "layer": "surface", "label": "场与形状", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-scene", "layer": "surface", "label": "立体场景", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "surface-edge", "layer": "surface", "label": "边框, 循环与质感", "pieceKind": "single", "pages": [
+
+  ]},
+  {"id": "kits-gallery", "layer": "kits", "label": "画廊与轮播", "pieceKind": "composite", "pages": [
+
+  ]},
+  {"id": "kits-stack", "layer": "kits", "label": "叠放与网格", "pieceKind": "composite", "pages": [
+
+  ]},
+  {"id": "kits-card", "layer": "kits", "label": "卡片", "pieceKind": "composite", "pages": [
+
+  ]},
+  {"id": "kits-glass", "layer": "kits", "label": "玻璃与立体", "pieceKind": "composite", "pages": [
+
+  ]},
+  {"id": "controls-press", "layer": "controls", "label": "按压", "pieceKind": "control", "pages": [
+
+  ]},
+  {"id": "controls-range", "layer": "controls", "label": "取值", "pieceKind": "control", "pages": [
+
+  ]},
+  {"id": "controls-compose", "layer": "controls", "label": "输入", "pieceKind": "control", "pages": [
+
+  ]},
+  {"id": "controls-choice", "layer": "controls", "label": "选择", "pieceKind": "control", "pages": [
+
+  ]},
+  {"id": "controls-dismiss", "layer": "controls", "label": "撤销", "pieceKind": "control", "pages": [
+
+  ]},
+  {"id": "controls-nav", "layer": "controls", "label": "导航", "pieceKind": "control", "pages": [
+
   ]},
   {"id": "text-motion", "layer": "base", "label": "文字动效", "pages": [
    {"id": "split-text", "name": "SplitText 逐字入场", "desc": "把一句话拆成字或词, 依次从一个方向浮入. 读屏器只读原文, 减弱动效时直接显示静态文字.", "kind": "single", "exports": ["SplitText"]},
@@ -105,12 +216,12 @@
    {"id": "direction", "name": "文字方向", "desc": "支持从右到左", "kind": "single", "exports": ["DirectionProvider"]}
   ]},
   {"id": "motion", "layer": "base", "label": "动效与质感", "pages": [
-   {"id": "motion", "name": "动效", "desc": "视口入场, 交错, 数字滚动与页面转场, 尊重减弱动效", "kind": "single", "exports": ["AnimatedNumber", "FadeSwap", "PageTransition", "Parallax", "Reveal", "RotatingText", "ScrollProgress", "SplitText", "Stagger", "StaggerItem", "StickyScroll"]},
-   {"id": "effects", "name": "视觉效果", "desc": "光斑卡, 流光边框, 跑马灯, 背景底纹与毛玻璃", "kind": "single", "exports": ["Backdrop", "Beam", "BorderBeam", "GlassPanel", "GradientBorder", "Grain", "GridLines", "Marquee", "MaskFade", "MeshGradient", "SpotlightCard"]}
+   {"id": "motion", "name": "动效", "desc": "视口入场, 交错, 数字滚动与页面转场, 尊重减弱动效", "kind": "single", "exports": ["FadeSwap", "PageTransition", "Parallax", "Reveal", "ScrollProgress", "Stagger", "StaggerItem", "StickyScroll"]},
+   {"id": "effects", "name": "视觉效果", "desc": "光斑卡, 流光边框, 跑马灯, 背景底纹与毛玻璃", "kind": "single", "exports": ["GlassPanel", "MaskFade"]}
   ]},
   {"id": "typography", "layer": "base", "label": "排版", "pages": [
    {"id": "typography", "name": "排版", "desc": "标题, 正文, 引用与列表", "kind": "single", "exports": ["TypographyBlockquote", "TypographyH1", "TypographyH2", "TypographyH3", "TypographyInlineCode", "TypographyLead", "TypographyList", "TypographyMuted", "TypographyP"]},
-   {"id": "display-type", "name": "营销排版", "desc": "Display, Eyebrow, Kicker, Lead, 渐变字与 Prose 正文容器, 中日韩自动收紧", "kind": "single", "exports": ["Display", "Eyebrow", "GradientText", "Kicker", "Lead", "Prose"]},
+   {"id": "display-type", "name": "营销排版", "desc": "Display, Eyebrow, Kicker, Lead, 渐变字与 Prose 正文容器, 中日韩自动收紧", "kind": "single", "exports": ["Display", "Eyebrow", "Kicker", "Lead", "Prose"]},
    {"id": "kbd", "name": "按键", "desc": "键盘按键标记", "kind": "single", "exports": ["Kbd", "KbdGroup"]}
   ]},
   {"id": "media", "layer": "base", "label": "媒体", "pages": [
@@ -129,11 +240,11 @@
    {"id": "blocks-pricing", "name": "定价与对比", "desc": "定价卡, 对比矩阵与常见问题", "kind": "block", "exports": ["ComparisonMatrix", "Faq", "Pricing"]},
    {"id": "blocks-developer", "name": "开发者区块", "desc": "代码展示与安装命令", "kind": "block", "exports": ["CodeShowcase", "InstallBlock"]},
    {"id": "blocks-commerce-browse", "name": "电商浏览", "desc": "商品卡, 栅格, 横滑轨道, 类目, 活动首屏与促销条", "kind": "block", "exports": ["CampaignHero", "CategoryTiles", "ProductCard", "ProductGrid", "ProductRail", "PromoStrip"]},
-   {"id": "blocks-commerce-trade", "name": "电商交易", "desc": "商品详情, 购物车, 结账步骤与搜索结果", "kind": "block", "exports": ["CartSummary", "CheckoutSteps", "ProductDetail", "ProductGrid", "SearchResults"]},
+   {"id": "blocks-commerce-trade", "name": "电商交易", "desc": "商品详情, 购物车, 结账步骤与搜索结果", "kind": "block", "exports": ["CartSummary", "CheckoutSteps", "ProductDetail", "SearchResults"]},
    {"id": "blocks-docs", "name": "文档站区块", "desc": "文档外壳, 目录, 上下页, API 表与提示框", "kind": "block", "exports": ["ApiTable", "Callout", "DocsHome", "DocsPager", "DocsShell", "DocsToc"]},
    {"id": "blocks-portfolio", "name": "作品集区块", "desc": "个人首屏, 粘性侧栏, 经历时间线, 项目栅格与文章列表", "kind": "block", "exports": ["ExperienceTimeline", "HoverPreviewLink", "PostList", "ProfileHero", "ProjectGrid", "StickyProfileLayout"]},
    {"id": "page", "name": "整页描述", "desc": "用 definePage 描述一整页: 调区块顺序, 开关区块, 改标题, 源码即描述对象", "kind": "block", "exports": ["Page", "PageComposer", "MetricRow", "RingRow"]},
-   {"id": "gallery", "name": "展示画廊", "desc": "用动效, 便当格, 光斑与指标卡拼成的落地页与仪表盘, 亮暗两套主题", "kind": "block", "exports": ["FieldPage", "KilnPage", "Shot", "ShotSequence", "ShotLayer", "ShotPlate", "BarChart", "Trend", "Ring", "FlowGraph", "Funnel", "Timeline@./viz", "Metric", "Process", "Compare", "Page"]}
+   {"id": "gallery", "name": "展示画廊", "desc": "用动效, 便当格, 光斑与指标卡拼成的落地页与仪表盘, 亮暗两套主题", "kind": "block", "exports": ["FieldPage", "KilnPage", "Shot", "ShotSequence", "ShotLayer", "ShotPlate"]}
   ]},
   {"id": "conversation", "layer": "base", "label": "会话", "pages": [
    {"id": "attachment", "name": "附件", "desc": "文件与图片附件, 带上传进度与错误态", "kind": "single", "exports": ["Attachment", "AttachmentAction", "AttachmentActions", "AttachmentContent", "AttachmentDescription", "AttachmentGroup", "AttachmentMedia", "AttachmentTitle"]},
@@ -144,14 +255,14 @@
    {"id": "questionnaire", "name": "问卷", "desc": "多步问卷, 切题滑动", "kind": "single", "exports": ["Questionnaire"]}
   ]},
   {"id": "layout", "layer": "base", "label": "页面版式", "pages": [
-   {"id": "card", "name": "卡片", "desc": "内容容器", "kind": "single", "exports": ["Card", "CardContent", "CardDescription", "CardFooter", "CardHeader", "CardTitle", "StatCard", "StatGrid"]},
+   {"id": "card", "name": "卡片", "desc": "内容容器", "kind": "single", "exports": ["Card", "CardContent", "CardDescription", "CardFooter", "CardHeader", "CardTitle"]},
    {"id": "code-block", "name": "代码块", "desc": "语法高亮与复制", "kind": "single", "exports": ["CodeBlock"]},
    {"id": "code-editor", "name": "代码编辑器", "desc": "Monaco 单文件与 diff, One Dark Pro Darker, 本地 worker 无 CDN", "kind": "single", "exports": ["CodeEditor", "DiffEditor"]},
-   {"id": "stat-card", "name": "指标卡", "desc": "指标卡与栅格, 数字等宽不抖", "kind": "single", "exports": ["StatCard", "StatGrid", "DataTable"]},
-   {"id": "data-table", "name": "数据表", "desc": "粘性表头, 空态, 加载态与行点击", "kind": "composite", "exports": ["DataTable", "EmptyState", "StatCard", "StatGrid"]},
-   {"id": "empty-state", "name": "空态页", "desc": "空, 错误与加载三态", "kind": "single", "exports": ["DataBoundary", "EmptyState", "PageHeader"]},
+   {"id": "stat-card", "name": "指标卡", "desc": "指标卡与栅格, 数字等宽不抖", "kind": "single", "exports": ["StatCard", "StatGrid"]},
+   {"id": "data-table", "name": "数据表", "desc": "粘性表头, 空态, 加载态与行点击", "kind": "composite", "exports": ["DataTable"]},
+   {"id": "empty-state", "name": "空态页", "desc": "空, 错误与加载三态", "kind": "single", "exports": ["DataBoundary", "EmptyState"]},
    {"id": "page-header", "name": "页头", "desc": "标题, 说明与右侧操作位", "kind": "single", "exports": ["PageHeader"]},
-   {"id": "setting-chrome", "name": "设置页版式", "desc": "一张卡里一行一个设置项", "kind": "block", "exports": ["SettingHeading", "SettingRow", "SettingSection"]},
+   {"id": "setting-chrome", "name": "设置页版式", "desc": "一张卡里一行一个设置项", "kind": "block", "exports": ["SettingHeading"]},
    {"id": "app-frame", "name": "应用外壳", "desc": "外留白与两块圆角面板", "kind": "block", "exports": ["AppFrame"]},
    {"id": "sidebar-nav", "name": "侧栏导航", "desc": "带数字与文本角标", "kind": "composite", "exports": ["SidebarNavItemButton"]},
    {"id": "sidebar", "name": "侧栏", "desc": "组合式应用侧栏, 可收成图标条", "kind": "composite", "exports": ["Sidebar", "SidebarContent", "SidebarFooter", "SidebarGroup", "SidebarGroupContent", "SidebarGroupLabel", "SidebarHeader", "SidebarInset", "SidebarMenu", "SidebarMenuBadge", "SidebarMenuButton", "SidebarMenuItem", "SidebarMenuSub", "SidebarMenuSubButton", "SidebarMenuSubItem", "SidebarProvider", "SidebarRail", "SidebarTrigger"]},
@@ -174,7 +285,7 @@
   ]},
   {"id": "templates", "layer": "base", "label": "模板", "pages": [
    {"id": "templates-chat", "name": "AI 对话工作台", "desc": "会话列表 + 流式回复 + 轨迹 + 输入框, 整页可复制", "role": "template", "kind": "block"},
-   {"id": "templates-settings", "name": "设置页", "desc": "二级设置栏 + 一行一个设置项, 整页可复制", "kind": "block", "exports": ["SettingSection", "SettingRow"]},
+   {"id": "templates-settings", "name": "设置页", "desc": "二级设置栏 + 一行一个设置项, 整页可复制", "role": "template", "kind": "block"},
    {"id": "templates-dashboard", "name": "数据看板", "desc": "指标卡 + 面积图 + 数据表, 整页可复制", "role": "template", "kind": "block"},
    {"id": "templates-console", "name": "链路控制台", "desc": "代理链路 + 步骤条 + 日志框, 整页可复制", "role": "template", "kind": "block"},
    {"id": "page-saas", "name": "SaaS 落地页", "desc": "复刻 vercel / linear / stripe 型 SaaS 落地页: 主视觉 + 客户墙 + 便当格 + 定价 + 问答, 三套皮肤", "role": "template", "kind": "block"},

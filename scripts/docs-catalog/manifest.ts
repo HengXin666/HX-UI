@@ -23,6 +23,8 @@ export interface SrcGroup {
   readonly id: string;
   readonly layer: string;
   readonly label: string;
+  /** 组里还没有页的件按这个页型列进目录 (组件层的组才有). */
+  readonly pieceKind?: PageKind;
   readonly pages: readonly SrcPage[];
 }
 

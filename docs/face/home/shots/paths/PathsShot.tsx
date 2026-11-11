@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { BUTTON_TYPE } from "@hx/ui";
 import { usePress } from "../../../../../src/craft";
-import { DOCS, type DocEntry } from "../../../../src/nav";
+import { CATALOG as DOCS, type CatalogEntry as DocEntry } from "../../../docs/catalog";
 import { STAGE_CLASS, Stage } from "../stage";
 import { PATHS_END_MS, headCue, itemPose, rowCue } from "./shot-paths";
 

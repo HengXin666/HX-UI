@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { cn } from "@hx/ui";
-import { DOCS, GROUPS, type DocEntry } from "../nav";
+/** 可搜的一条: 旧外壳传 nav.ts 的 DOCS, 门面传目录 (catalog.gen.json) 的条目. group 是组的显示名. */
+export interface SearchEntry {
+  readonly id: string;
+  readonly label: string;
+  readonly group: string;
+  readonly desc: string;
+}
 
 /**
  * 组件搜索 (⌘K / Ctrl+K)。
@@ -20,7 +26,7 @@ import { DOCS, GROUPS, type DocEntry } from "../nav";
  * ↑↓ 移动、Enter 打开、Esc 关闭。少了 ↑↓ 就只能用鼠标点, 那这个面板还不如不用。
  */
 interface Hit {
-  readonly entry: DocEntry;
+  readonly entry: SearchEntry;
   readonly score: number;
 }
 
@@ -37,11 +43,11 @@ function subseq(text: string, q: string): number {
   return matched;
 }
 
-export function searchDocs(q: string): Hit[] {
+export function searchDocs(q: string, entries: readonly SearchEntry[]): Hit[] {
   const query = q.trim().toLowerCase();
-  if (!query) return DOCS.map((entry) => ({ entry, score: 0 }));
+  if (!query) return entries.map((entry) => ({ entry, score: 0 }));
   const hits: Hit[] = [];
-  for (const entry of DOCS) {
+  for (const entry of entries) {
     const label = entry.label.toLowerCase();
     const desc = entry.desc.toLowerCase();
     const id = entry.id.toLowerCase();
@@ -58,15 +64,20 @@ export function SearchDialog({
   open,
   onClose,
   onPick,
+  entries,
+  groups,
 }: {
   open: boolean;
   onClose: () => void;
   onPick: (id: string) => void;
+  entries: readonly SearchEntry[];
+  /** 组的显示名, 结果按这个顺序分组. */
+  groups: readonly string[];
 }): JSX.Element | null {
   const [q, setQ] = useState("");
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-  const hits = useMemo(() => searchDocs(q), [q]);
+  const hits = useMemo(() => searchDocs(q, entries), [q, entries]);
 
   useEffect(() => {
     if (open) {
@@ -94,7 +105,7 @@ export function SearchDialog({
 
   if (!open) return null;
 
-  const grouped = GROUPS.map((g) => ({ g, list: hits.filter((h) => h.entry.group === g) })).filter((x) => x.list.length > 0);
+  const grouped = groups.map((g) => ({ g, list: hits.filter((h) => h.entry.group === g) })).filter((x) => x.list.length > 0);
 
   return (
     <div
