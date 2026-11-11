@@ -98,6 +98,8 @@ export const PRISM = {
   maxParticles: 40000,
   introSeconds: 2.2,
   settleSeconds: 7,
+  /** PIXEL_BUDGET (CrystalizedBall.jsx:153): 画布设备像素上限, dpr 取 min(上限, sqrt(预算 / CSS 面积)). */
+  pixelBudget: 4.5e6,
   /** 片元里的规格公式: 玻璃内沿 smoothstep(0.955, 0.985, r), 边光 smoothstep(0.8, 0.97, r), 外晕 R x 0.05..0.105 偏 0.0213 R, 闪烁 smoothstep(-0.9, -0.6, blink). */
   innerEdge: [0.955, 0.985],
   rimLit: [0.8, 0.97],

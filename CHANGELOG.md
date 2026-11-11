@@ -8,6 +8,7 @@
 
 ### Added
 
+- `PrismOrb`: 补上规格的 PIXEL_BUDGET (像素比按 sqrt(4.5e6 / 宿主面积) 与 dpr 上限取小, 大宿主自动降分辨率); 不标 ENGINE-GAP.
 - `DotReveal`: 新 prop `keyColor` (0..1 的 RGB 三元组), 覆盖抠底底色; 不给时仍取图片四角平均色. 只在 `keyOut` 打开时生效.
 - `@hx/ui/backgrounds`: surface 层 Backgrounds 全族 64 件, 按 glow / rays / lines / grid / glyph / fluid / particles 七路组织, 全部接在 `src/surface/backgrounds` 渲染内核上 (WebGL2, 不引 three / ogl / gsap). 行为规格取自 `docs/research/catalog/backgrounds-1.md` / `-2.md`, 实现为 HX 自有. 3D 件做简化版并在文件头标 `ENGINE-GAP:`. 根入口 `src/index.ts` 不新增符号.
 - `@hx/ui/surface`: surface 层子路径入口, 收 backgrounds, pointer, reveal 与 text (glyph / stagger / scroll) 各族. 根入口不收.
@@ -16,6 +17,10 @@
 - `src/primitives/deprecate.ts`: `deprecate()` 工具函数, 开发环境同一条废弃只 `console.warn` 一次, 生产环境静默. 暂不进公共入口, 由 P0-Z 集成时决定是否导出.
 - `docs/reference/versioning.md`: 版本与破坏性变更策略, 含 0.5 到 0.6 迁移模板.
 - 本 CHANGELOG, 回填 0.1.0 到 0.5.0.
+
+### Changed
+
+- 更正 0.16.0 复核条里 `PrismOrb` 的 PIXEL_BUDGET "同理" 的说法: 是未落项, 本次已补 (见 Added).
 
 ## [0.17.0] - 2026-11-10
 
