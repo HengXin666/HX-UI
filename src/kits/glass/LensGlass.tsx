@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type JSX, type PointerEvent, type ReactNod
 import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import * as L from "./parts/lens-spec";
-import { clamp, kitTone, useKitMotion, type KitTone } from "./tokens";
+import { clamp, kitTone, useKitMotion, type KitTone } from "../tokens";
 
 export { LENS_DEFAULTS, LENS_EXTENT, lensBox, lensFilter, lensFollow, lensIdle, lensStretch, lensTilt, type LensInteraction, type LensShape } from "./parts/lens-spec";
 

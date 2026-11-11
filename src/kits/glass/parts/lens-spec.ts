@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-glass.md
  */
-import { TAU, clamp, omegaSpring } from "../tokens";
+import { TAU, clamp, omegaSpring } from "../../tokens";
 
 export type LensShape = "lens" | "blob" | "cube" | "pill" | "torus" | "prism" | "diamond";
 export type LensInteraction = "follow" | "drag" | "static";

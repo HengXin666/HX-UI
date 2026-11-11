@@ -5,7 +5,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties, type JSX, type 
 import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import * as F from "./parts/frost-spec";
-import { transitionOf } from "./tokens";
+import { transitionOf } from "../tokens";
 
 export { FROST_DEFAULTS, frostFallbackFilter, frostMap, frostMapUrl, frostScales, svgBackdropSupported, type FrostBlend, type FrostChannel, type FrostRenderer } from "./parts/frost-spec";
 

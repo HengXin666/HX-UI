@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-glass.md
  */
-import { clamp } from "../tokens";
+import { clamp } from "../../tokens";
 
 export type FrostChannel = "R" | "G" | "B" | "A";
 export type FrostRenderer = "auto" | "svg" | "fallback";
