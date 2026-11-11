@@ -5,6 +5,7 @@ import { useShellLayout } from "../src/useShellLayout";
 import { TopBar } from "./chrome/TopBar";
 import { DocsFrame } from "./DocsFrame";
 import { CATALOG, GROUPS } from "./docs/catalog";
+import { ReducedStage, forceReducedMotion } from "./docs/kinds/ReducedStage";
 import { ThumbStage } from "./docs/kinds/ThumbStage";
 import { Home } from "./Home";
 import { Playground } from "./Playground";
@@ -22,6 +23,10 @@ export function FaceApp(): JSX.Element {
   const docId = route.kind === "doc" ? route.id : "";
 
   if (route.kind === "thumb") return <ThumbStage id={route.id} />;
+  if (route.kind === "reduced") {
+    forceReducedMotion();
+    return <ReducedStage id={route.id} values={route.values} />;
+  }
 
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground">

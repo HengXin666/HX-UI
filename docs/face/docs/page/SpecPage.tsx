@@ -8,6 +8,7 @@ import { copyText } from "./copy";
 import { Customize } from "./Customize";
 import { Dependencies, PageHead, Related } from "./Extras";
 import { PropsCard } from "./PropsCard";
+import { ReducedMotion } from "./Reduced";
 import { Examples, Keyboard } from "./Sections";
 import { CodePane, StageBox, StageToolbar, type Device, type StageTab } from "./Stage";
 
@@ -43,7 +44,7 @@ function aiMarkdown(spec: ComponentSpec, values: Values): string {
 }
 
 /**
- * 组件页的中栏, 所有页型同一顺序: 页头, 预览 | 代码, 调参, 示例, 属性 (主件与各部件), 键盘, 依赖, 相关组件, 上下页.
+ * 组件页的中栏, 所有页型同一顺序: 页头, 预览 | 代码, 调参, 示例, 属性 (主件与各部件), 键盘, 减少动效对照 (control 页型), 依赖, 相关组件, 上下页.
  * 没有内容的段落不出 (没有控件就没有调参, 没有键盘行就没有键盘段).
  */
 export function SpecPage({ entry, spec, onGo }: { readonly entry: CatalogEntry; readonly spec: ComponentSpec; readonly onGo: (id: string) => void }): JSX.Element {
@@ -94,6 +95,7 @@ export function SpecPage({ entry, spec, onGo }: { readonly entry: CatalogEntry; 
         <PropsCard key={item.part} part={item.part} rows={item.rows} />
       ))}
       <Keyboard rows={spec.keyboard ?? []} />
+      {spec.kind === "control" ? <ReducedMotion spec={spec} props={props} values={values} /> : null}
       <Dependencies deps={spec.deps} />
       <Related items={related} onGo={onGo} preview={(item) => <Thumb entry={item} />} />
       <DocsPager

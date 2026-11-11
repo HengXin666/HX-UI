@@ -1,5 +1,5 @@
 import { useState, type JSX, type ReactNode } from "react";
-import { BUTTON_TYPE, CodeBlock, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem, cn } from "@hx/ui";
+import { BUTTON_TYPE, CodeBlock, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem, cn, type CodeBlockProps } from "@hx/ui";
 import { ICON, ICON_SM, ICON_XS, PHONE_PX, TOOL_BTN, TOOL_GROUP } from "../constants";
 
 export type StageTab = "preview" | "code";
@@ -61,15 +61,30 @@ export function StageToolbar({
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
-        <button
-          type={BUTTON_TYPE}
-          onClick={onCopyAi}
-          className={cn(TOOL_GROUP, "gap-2 px-3 text-[13.5px] text-muted-foreground transition-colors hover:text-foreground")}
-        >
-          <span aria-hidden className={cn(ICON.copy, ICON_XS)} />
-          复制给 AI
-        </button>
+        <CopyAiButton onClick={onCopyAi} />
       </div>
+    </div>
+  );
+}
+
+/** "复制给 AI": 预览工具栏最右一格; 没有预览的页型 (KindPage) 也放在同一位置. */
+export function CopyAiButton({ onClick }: { readonly onClick: () => void }): JSX.Element {
+  return (
+    <button type={BUTTON_TYPE} onClick={onClick} className={cn(TOOL_GROUP, "gap-2 px-3 text-[13.5px] text-muted-foreground transition-colors hover:text-foreground")}>
+      <span aria-hidden className={cn(ICON.copy, ICON_XS)} />
+      复制给 AI
+    </button>
+  );
+}
+
+/**
+ * 文档页里的代码块: 库 CodeBlock 外包一层 data-doc-code, 门面暗色皮肤 (skin/face.css) 据此把 One Dark 底换成卡面令牌,
+ * 与周围的暗色卡同一档; inset 用在卡内 (示例卡展开的代码), 落在卡内嵌板那一档.
+ */
+export function DocCode({ inset = false, ...props }: CodeBlockProps & { readonly inset?: boolean }): JSX.Element {
+  return (
+    <div data-doc-code={inset ? "inset" : "card"} className="min-w-0">
+      <CodeBlock {...props} />
     </div>
   );
 }
@@ -112,12 +127,12 @@ export function CodePane({ install, usage, source, raw }: { install: string; usa
   const [full, setFull] = useState(false);
   return (
     <div className="flex flex-col gap-4">
-      <CodeBlock code={install} lang="bash" title="安装" />
-      <CodeBlock code={usage} lang="tsx" title="用法" />
+      <DocCode code={install} lang="bash" title="安装" />
+      <DocCode code={usage} lang="tsx" title="用法" />
       {raw ? (
         <div className="relative">
           <div className={cn("overflow-hidden rounded-xl", !full && "max-h-[420px]")}>
-            <CodeBlock code={raw} lang="tsx" title={source} showLineNumbers />
+            <DocCode code={raw} lang="tsx" title={source} showLineNumbers />
           </div>
           <button
             type={BUTTON_TYPE}

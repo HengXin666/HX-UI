@@ -1,7 +1,7 @@
 import type { JSX } from "react";
-import { CodeBlock } from "@hx/ui";
 import type { CatalogEntry } from "../catalog";
 import { CARD, PKG, SECTION_DESC, SECTION_TITLE } from "../constants";
+import { DocCode } from "../page/Stage";
 import { PropsCard } from "../page/PropsCard";
 import { generatedRows } from "../props";
 
@@ -11,11 +11,8 @@ export function ImportCode({ entry }: { readonly entry: CatalogEntry }): JSX.Ele
   const code = `import { ${entry.exports.join(", ")} } from "${entry.from ?? PKG}";\n\n<${head} />`;
   return (
     <div className="flex flex-col gap-2">
-      <h2 id="usage" className={SECTION_TITLE}>
-        Usage 用法
-      </h2>
-      <p className={SECTION_DESC}>这件组件的演示与调参随组件批次补齐; 下面是能直接用的 import.</p>
-      <CodeBlock code={code} lang="tsx" />
+      <p className={SECTION_DESC}>能直接用的 import 与最小用法.</p>
+      <DocCode code={code} lang="tsx" />
     </div>
   );
 }

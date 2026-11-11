@@ -1,7 +1,8 @@
 import { useState, type JSX } from "react";
-import { BUTTON_TYPE, CodeBlock, Kbd, KbdGroup, cn } from "@hx/ui";
+import { BUTTON_TYPE, Kbd, KbdGroup, cn } from "@hx/ui";
 import { CARD, ICON, ICON_XS, INSET, SECTION_DESC, SECTION_TITLE, TOOL_GROUP } from "../constants";
 import type { Example, KeyRow } from "../specs/types";
+import { DocCode } from "./Stage";
 
 /** 示例卡: 上面预览, 下面一条工具栏, 点 "代码" 展开这段示例的源码. */
 function ExampleCard({ example }: { readonly example: Example }): JSX.Element {
@@ -30,7 +31,7 @@ function ExampleCard({ example }: { readonly example: Example }): JSX.Element {
         </div>
         {open ? (
           <div id={codeId} className="px-1.5 pb-1.5">
-            <CodeBlock code={example.code} lang="tsx" />
+            <DocCode inset code={example.code} lang="tsx" />
           </div>
         ) : null}
       </div>

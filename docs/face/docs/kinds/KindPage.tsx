@@ -1,11 +1,12 @@
 import type { JSX } from "react";
-import { BUTTON_TYPE, DocsPager, cn } from "@hx/ui";
+import { DocsPager } from "@hx/ui";
 import { renderDoc } from "../../render-doc";
 import { COMPONENTS, relatedOf, type CatalogEntry } from "../catalog";
-import { ICON, ICON_XS, PAGER_CLASS, PKG, TOOL_GROUP } from "../constants";
+import { PAGER_CLASS, PKG, SECTION_TITLE } from "../constants";
 import { Thumb } from "../index/Thumb";
 import { copyText } from "../page/copy";
 import { PageHead, Related } from "../page/Extras";
+import { CopyAiButton } from "../page/Stage";
 import { BlockStage } from "./BlockStage";
 import { ExportProps, ImportCode, PendingSection } from "./KindSections";
 
@@ -28,17 +29,17 @@ export function KindPage({ entry, onGo }: { readonly entry: CatalogEntry; readon
   const body = entry.page ? renderDoc(entry) : <ImportCode entry={entry} />;
   return (
     <div className="flex flex-col gap-8">
-      <PageHead entry={entry}>
-        <button
-          type={BUTTON_TYPE}
-          onClick={() => copyText(markdown, "页面说明 Markdown")}
-          className={cn(TOOL_GROUP, "mt-3 shrink-0 gap-2 px-3 text-[13px] text-muted-foreground transition-colors hover:text-foreground")}
-        >
-          <span aria-hidden className={cn(ICON.copy, ICON_XS)} />
-          复制给 AI
-        </button>
-      </PageHead>
-      <section aria-label="预览与代码" className="min-w-0">
+      <PageHead entry={entry} />
+      <section aria-label="预览与代码" className="flex min-w-0 flex-col gap-4">
+        {/* 与有预览的组件页同一条工具栏: 左边是本段标题, "复制给 AI" 在最右. */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {entry.page ? <span /> : (
+            <h2 id="usage" className={SECTION_TITLE}>
+              Usage 用法
+            </h2>
+          )}
+          <CopyAiButton onClick={() => copyText(markdown, "页面说明 Markdown")} />
+        </div>
         {entry.kind === KIND.block ? <BlockStage>{body}</BlockStage> : body}
       </section>
       {entry.page ? null : <ExportProps names={entry.exports} />}

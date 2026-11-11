@@ -39,9 +39,17 @@ export interface PropRow {
 
 /**
  * 页型. single: 可调单件, 全部段落; composite: 复合组件, 主演示只调常用属性, Props 按部件分表, 必有键盘段;
- * block: 区块与模板, 宽舞台, 默认手机/桌面可切.
+ * block: 区块与模板, 宽舞台, 默认手机/桌面可切; control: 交互控件, 段落同 single, 另有减少动效对照段 (reduced).
  */
-export type PageKind = "single" | "composite" | "block";
+export type PageKind = "single" | "composite" | "block" | "control";
+
+/** control 页型的减少动效对照: 一句总述, 再逐条写 prefers-reduced-motion 下哪些动效去掉, 哪些照常 (以组件源码为准). */
+export interface ReducedNote {
+  readonly desc: string;
+  readonly notes: readonly string[];
+  /** 对照格高度 (px), 省略时 220. */
+  readonly height?: number;
+}
 
 /** 示例段的一张卡: 标题, 一句说明, 预览与它对应的代码. */
 export interface Example {
@@ -107,6 +115,8 @@ export interface ComponentSpec {
   readonly propsNote?: string;
   readonly examples?: readonly Example[];
   readonly keyboard?: readonly KeyRow[];
+  /** control 页型必填: 减少动效对照段的说明. */
+  readonly reduced?: ReducedNote;
   /** 自定义用法代码 (多部件组合, 整页模板), 省略时按控件值生成单个标签. */
   readonly usage?: (values: Values) => string;
 }

@@ -40,3 +40,13 @@
   --accent-2-subtle: rgb(94 234 212 / 0.14);
   --font-display: var(--font-sans);
 }
+
+/* 文档页的代码块 (docs/page/Stage.tsx 的 DocCode): 库 CodeBlock 自带 One Dark 底, 在这套暗色里偏蓝灰,
+ * 改落在卡面令牌上与周围的暗色卡同一档; 卡内的 (inset) 落在卡内嵌板那一档. 高亮字色不变, 亮色不覆盖. */
+:root[data-face]:not([data-skin]):not([data-mode="light"]) [data-doc-code] > * {
+  background: var(--card) !important;
+  border-color: var(--border) !important;
+}
+:root[data-face]:not([data-skin]):not([data-mode="light"]) [data-doc-code="inset"] > * {
+  background: var(--background) !important;
+}
