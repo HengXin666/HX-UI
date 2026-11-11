@@ -179,7 +179,7 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
   6. ~~实测~~ 已做 cdf0cbf (SparkMark dpr) 与 81821b4 (SoftShape 帧耗); 由此发现 blur 0 仍跑离屏, 已修 fd8be0d. 原文: (a) SparkMark PIXEL_BUDGET 经 setState 在帧回调里改 dpr 的路径 (真实浏览器, 记录不同宿主面积下的 dpr 与画布尺寸); (b) SoftShape 每帧多 3 遍离屏的帧耗 (开 / 关 blur 对比). field note 写数字.
   7. 再往下: 本节后面 "收尾" 六条, 按原顺序.
 - 用户 2026-11-11 已定 (无需再问): SpringMesh 保留 touch-action: none; FiberStrands 7 角色保留本库定义; DotReveal 四角平均底色可以 (但要可覆盖, 见上第 1 条); Halo/Haze 的 RGBA8 ENGINE-GAP 标签三处保留 (算引擎能力限制, 不是漏做); packSplats 等通用名不进族 index, 维持现做法.
-- `tallyOvershoot` 缓存 Map 无上限, 考虑量化键或 LRU.
+- ~~`tallyOvershoot` 缓存 Map 无上限~~ 已做 (收尾第 2 条): 键量化为目标过冲的 1000 档, 缓存至多 1000 条.
 - nav / menu 之外各族 tokens 里的 cubic-bezier 副本 (choice/tone, press/tokens, range/tokens, compose/tokens, dismiss/tokens) 改引用 CURVE.
 - 各族帧循环 (use-nav-motion, range motion.ts 等) 并进 src/motion; nav / gallery / stack / glass 的族 tokens 合并.
 - `tests/kits/support.ts` 与 `tests/kits/stack/support.ts` 合并进公共测试支持.

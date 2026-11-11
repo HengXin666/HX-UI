@@ -80,6 +80,11 @@ const PEAK_SAMPLES = 400;
 const REFINE_STEPS = 48;
 const SOLVE_STEPS = 32;
 const THIRD = 3;
+/**
+ * 缓存键按目标过冲量化: 0 到 DIGIT_OVERSHOOT 分 1000 档 (每档约 6e-5 位, 远低于一像素),
+ * 缓存最多 1000 条, 连续变化的 bounce 不会让 Map 无限长.
+ */
+const GOAL_STEPS = 1000;
 const solved = new Map<number, number>();
 
 /** digitEase 在 [0, 1] 上越过 1 的最大量 (位). */
@@ -104,9 +109,11 @@ function peakOf(parameter: number): number {
  * 所以这里按实际峰值二分反解参数, 让终点前的最大越界恰为目标, 不超过 0.06 位.
  */
 export function tallyOvershoot(bounce: number): number {
-	const goal = Math.min(DIGIT_OVERSHOOT, (Math.max(0, bounce) / TALLY_BOUNCE_REF) * DIGIT_OVERSHOOT);
-	if (goal <= 0) return 0;
-	const cached = solved.get(goal);
+	const raw = Math.min(DIGIT_OVERSHOOT, (Math.max(0, bounce) / TALLY_BOUNCE_REF) * DIGIT_OVERSHOOT);
+	const step = Math.round((raw / DIGIT_OVERSHOOT) * GOAL_STEPS);
+	if (!(step > 0)) return 0;
+	const goal = (step / GOAL_STEPS) * DIGIT_OVERSHOOT;
+	const cached = solved.get(step);
 	if (cached !== undefined) return cached;
 	let lo = 0;
 	let hi = goal;
@@ -115,7 +122,7 @@ export function tallyOvershoot(bounce: number): number {
 		if (peakOf(mid) > goal) hi = mid;
 		else lo = mid;
 	}
-	solved.set(goal, lo);
+	solved.set(step, lo);
 	return lo;
 }
 

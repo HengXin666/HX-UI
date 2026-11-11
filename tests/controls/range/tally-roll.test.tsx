@@ -65,6 +65,8 @@ describe("TallyRoll 纯逻辑", () => {
 		};
 		expect(tallyOvershoot(0)).toBe(0);
 		expect(tallyOvershoot(1)).toBe(tallyOvershoot(0.2));
+		expect(tallyOvershoot(0.1 + 1e-6)).toBe(tallyOvershoot(0.1));
+		expect(tallyOvershoot(Number.NaN)).toBe(0);
 		expect(peak(0.2)).toBeLessThanOrEqual(DIGIT_OVERSHOOT);
 		expect(peak(0.2)).toBeGreaterThan(DIGIT_OVERSHOOT - 0.002);
 		expect(peak(0.1)).toBeCloseTo(DIGIT_OVERSHOOT / 2, 2);
