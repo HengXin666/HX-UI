@@ -1,7 +1,7 @@
 /**
- * kits/card 测试共用: 沿用叠放族的减弱动效开关, 手动 rAF 队列, animate 探针与假 IntersectionObserver.
+ * kits/card 测试共用: 沿用 kits 公共测试支持的减弱动效开关, 手动 rAF 队列, animate 探针与假 IntersectionObserver.
  */
-export { fakeIntersection, manualFrames, mockReducedMotion, spyAnimate } from "../stack/support";
+export { fakeIntersection, manualFrames, mockReducedMotion, spyAnimate } from "../support";
 
 /** 给元素一个固定的 getBoundingClientRect 与 client 尺寸. */
 export function boxOf(el: Element, left: number, top: number, width: number, height: number): void {
