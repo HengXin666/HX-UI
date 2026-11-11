@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-stack.md
  */
-import { clamp } from "../tokens";
+import { clamp } from "../../tokens";
 
 export const PILE_DEFAULTS = {
   itemDistance: 100,

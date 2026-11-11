@@ -5,7 +5,7 @@ import { Children, useEffect, useRef, type JSX, type ReactNode } from "react";
 import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import * as P from "./parts/pile-spec";
-import { KIT_FOCUS, useKitMotion } from "./tokens";
+import { KIT_FOCUS, useKitMotion } from "../tokens";
 
 export { PILE_DEFAULTS, pileComplete, pilePose, pileSmooth, pinAt, stackOffset, type PilePose } from "./parts/pile-spec";
 

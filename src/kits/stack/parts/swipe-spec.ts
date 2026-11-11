@@ -4,7 +4,7 @@
  * .agents/notes/implemented/feature/2026-11-10-kits-stack.md
  */
 import type { SpringSpec } from "../../../craft/spring";
-import { clamp } from "../tokens";
+import { clamp } from "../../tokens";
 
 export type SwipeLayout = "fan" | "cascade" | "deck" | "pile";
 

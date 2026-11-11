@@ -8,7 +8,7 @@ import { cssCurve } from "../../motion/curves";
 import { prefersReducedMotion } from "../../primitives/motion";
 import { cn } from "../../primitives/utils";
 import * as B from "./parts/bento-spec";
-import { KIT_FOCUS, kitTone, transitionOf, useKitMotion, type KitTone } from "./tokens";
+import { KIT_FOCUS, kitTone, transitionOf, useKitMotion, type KitTone } from "../tokens";
 
 export { BENTO_DEFAULTS, bentoColumns, bentoEase, bentoPose, bentoProximity, bentoSpan, type BentoSpan } from "./parts/bento-spec";
 

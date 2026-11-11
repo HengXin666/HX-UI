@@ -7,7 +7,7 @@ import { cssCurve } from "../../motion/curves";
 import { LinkOrButton } from "../../controls/nav/parts/link-or-button";
 import { cn } from "../../primitives/utils";
 import * as M from "./parts/masonry-spec";
-import { KIT_FOCUS, MS_PER_S, transitionOf, useKitMotion } from "./tokens";
+import { KIT_FOCUS, MS_PER_S, transitionOf, useKitMotion } from "../tokens";
 
 export { MASONRY_DEFAULTS, autoColumns, fromOffset, masonryLayout, revealEase, type MasonryCell, type MasonryFrom } from "./parts/masonry-spec";
 

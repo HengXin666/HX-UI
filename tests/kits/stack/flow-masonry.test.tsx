@@ -4,7 +4,7 @@
 import { act, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FlowMasonry, autoColumns, fromOffset, masonryLayout, revealEase } from "@src/kits/stack/FlowMasonry";
-import { omegaSpring } from "@src/kits/stack/tokens";
+import { omegaSpring } from "@src/kits/tokens";
 import { masonrySpring } from "@src/kits/stack/parts/masonry-spec";
 import { fakeIntersection, manualFrames, mockReducedMotion } from "./support";
 

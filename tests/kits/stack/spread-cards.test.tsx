@@ -4,7 +4,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SpreadCards, hoverPose, popDelay, restPose } from "@src/kits/stack/SpreadCards";
-import { bounceSpring } from "@src/kits/stack/tokens";
+import { bounceSpring } from "@src/kits/tokens";
 import { manualFrames, mockReducedMotion } from "./support";
 
 const images = ["a", "b", "c", "d", "e"].map((k) => ({ src: `/${k}.jpg`, alt: k.toUpperCase() }));

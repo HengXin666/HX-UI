@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-stack.md
  */
-import { TAU, clamp, omegaSpring } from "../tokens";
+import { TAU, clamp, omegaSpring } from "../../tokens";
 
 /** 透视距 px, 离场时越出卡片下沿的余量 px (CardSwap.jsx:65-68). */
 export const SWAP_PERSPECTIVE = 900;

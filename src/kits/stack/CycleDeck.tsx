@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, type JSX, type KeyboardEvent, type Pointer
 import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import * as S from "./parts/swap-spec";
-import { KIT_FOCUS, MS_PER_S, useDrag, useKitMotion } from "./tokens";
+import { KIT_FOCUS, MS_PER_S, useKitMotion } from "../tokens";
+import { useDrag } from "../gallery/parts/use-drag";
 
 export { SWAP_DEFAULTS, swapPointer, swapShouldCycle, swapSlot, swapStagger } from "./parts/swap-spec";
 

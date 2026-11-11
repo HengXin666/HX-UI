@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-stack.md
  */
-import { TAU, clamp, omegaSpring } from "../tokens";
+import { TAU, clamp, omegaSpring } from "../../tokens";
 
 export const MASONRY_DEFAULTS = { stagger: 0.05, duration: 0.6, gap: 16, hoverScale: 0.95 } as const;
 /** 卡片位移与阴影 0.5s, 悬停缩放 0.25s, 透明度 0.35s (Masonry.css:40-60). */

@@ -4,7 +4,7 @@
  * .agents/notes/implemented/feature/2026-11-10-kits-stack.md
  */
 import type { SpringSpec } from "../../../craft/spring";
-import { clamp } from "../tokens";
+import { clamp } from "../../tokens";
 
 /** 位移 620ms (回弹缓出), 透明度 300ms outQuint, 模糊 200ms ease (AnimatedList.jsx:171). */
 export const LIST_MOVE_MS = 620;

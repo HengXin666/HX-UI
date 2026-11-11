@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-stack.md
  */
-import { bounceSpring } from "../tokens";
+import { bounceSpring } from "../../tokens";
 
 export const BOUNCE_DEFAULTS = {
   containerWidth: 400,

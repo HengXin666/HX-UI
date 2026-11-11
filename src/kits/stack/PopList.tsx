@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cssCurve } from "../../motion/curves";
 import { cn } from "../../primitives/utils";
 import * as L from "./parts/list-spec";
-import { KIT_FOCUS, KIT_OUT_LONG, kitTone, transitionOf, useKitMotion, type KitTone } from "./tokens";
+import { KIT_FOCUS, KIT_OUT_LONG, kitTone, transitionOf, useKitMotion, type KitTone } from "../tokens";
 
 export { LIST_DEFAULTS, edgeFades, listPose, listStep, revealDelay, type ListAnimation } from "./parts/list-spec";
 

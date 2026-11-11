@@ -3,7 +3,7 @@
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-stack.md
  */
-import { clamp } from "../tokens";
+import { clamp } from "../../tokens";
 
 export const BENTO_DEFAULTS = { columns: 4, rowHeight: 200, gap: 12, radius: 20, spotlightRadius: 300 } as const;
 /** 单格最窄 150px, 跨两列的格最窄 200px, 入场每格错峰 80ms, 倾斜 6 度, 吸附 6px (MagicBento.jsx:71-75). */

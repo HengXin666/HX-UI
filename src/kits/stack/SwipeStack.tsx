@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, type JSX, type KeyboardEvent, type ReactNo
 import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { cn } from "../../primitives/utils";
 import * as W from "./parts/swipe-spec";
-import { KIT_FOCUS, MS_PER_S, kitTone, useDrag, useKitMotion, type KitTone } from "./tokens";
+import { KIT_FOCUS, MS_PER_S, kitTone, useKitMotion, type KitTone } from "../tokens";
+import { useDrag } from "../gallery/parts/use-drag";
 
 export { SWIPE_DEFAULTS, exitVector, leanDeg, rotateOrder, shouldSend, slotPose, type SwipeLayout } from "./parts/swipe-spec";
 

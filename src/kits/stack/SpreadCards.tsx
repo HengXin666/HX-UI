@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { prefersReducedMotion } from "../../primitives/motion";
 import { cn } from "../../primitives/utils";
 import * as B from "./parts/bounce-spec";
-import { KIT_FOCUS, kitTone, transitionOf, useKitMotion, type KitTone } from "./tokens";
+import { KIT_FOCUS, kitTone, transitionOf, useKitMotion, type KitTone } from "../tokens";
 
 export { BOUNCE_DEFAULTS, hoverPose, popDelay, restPose, type BouncePose } from "./parts/bounce-spec";
 

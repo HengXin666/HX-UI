@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../hooks/browser/media/useReducedMotion";
 import { LinkOrButton } from "../../controls/nav/parts/link-or-button";
 import { cn } from "../../primitives/utils";
 import * as C from "./parts/chroma-spec";
-import { KIT_FOCUS, kitTone, transitionOf, useKitMotion, type KitTone } from "./tokens";
+import { KIT_FOCUS, kitTone, transitionOf, useKitMotion, type KitTone } from "../tokens";
 
 export { CHROMA_DEFAULTS, chromaFollow, chromaMask, chromaPower, type ChromaReveal } from "./parts/chroma-spec";
 
