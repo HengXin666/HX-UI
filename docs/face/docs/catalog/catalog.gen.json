@@ -30,7 +30,7 @@
   {
    "id": "surface-overview",
    "layer": "surface",
-   "label": "总览"
+   "label": "Surface 总览"
   },
   {
    "id": "surface-glow",
@@ -110,7 +110,7 @@
   {
    "id": "kits-overview",
    "layer": "kits",
-   "label": "总览"
+   "label": "Kits 总览"
   },
   {
    "id": "kits-gallery",
@@ -135,7 +135,7 @@
   {
    "id": "controls-overview",
    "layer": "controls",
-   "label": "总览"
+   "label": "Controls 总览"
   },
   {
    "id": "controls-press",

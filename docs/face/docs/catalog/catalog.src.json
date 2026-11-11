@@ -47,7 +47,7 @@
    {"id": "tokens", "name": "设计令牌", "desc": "颜色, 圆角, 阴影, 字号, 间距与动效", "role": "guide", "kind": "single"},
    {"id": "skins", "name": "皮肤与密度", "desc": "七套皮肤一键换气质, 紧凑 / 舒适 / 宽松三档密度", "role": "guide", "kind": "single"}
   ]},
-  {"id": "surface-overview", "layer": "surface", "label": "总览", "pages": [
+  {"id": "surface-overview", "layer": "surface", "label": "Surface 总览", "pages": [
    {"id": "surface", "name": "Surface 总览", "desc": "背景, 文字, 指针, 光标, 揭示, 场与形状等表层效果, 按功能分组一页看全, 缩略图是真跑组件的截图.", "role": "overview", "kind": "single"}
   ]},
   {"id": "surface-glow", "layer": "surface", "label": "背景 · 光晕", "pieceKind": "single", "pages": [
@@ -95,7 +95,7 @@
   {"id": "surface-edge", "layer": "surface", "label": "边框, 循环与质感", "pieceKind": "single", "pages": [
 
   ]},
-  {"id": "kits-overview", "layer": "kits", "label": "总览", "pages": [
+  {"id": "kits-overview", "layer": "kits", "label": "Kits 总览", "pages": [
    {"id": "kits", "name": "Kits 总览", "desc": "画廊与轮播, 叠放, 卡片, 玻璃与立体几组拼装件, 一页看全, 缩略图是真跑组件的截图.", "role": "overview", "kind": "single"}
   ]},
   {"id": "kits-gallery", "layer": "kits", "label": "画廊与轮播", "pieceKind": "composite", "pages": [
@@ -110,7 +110,7 @@
   {"id": "kits-glass", "layer": "kits", "label": "玻璃与立体", "pieceKind": "composite", "pages": [
 
   ]},
-  {"id": "controls-overview", "layer": "controls", "label": "总览", "pages": [
+  {"id": "controls-overview", "layer": "controls", "label": "Controls 总览", "pages": [
    {"id": "controls", "name": "Controls 总览", "desc": "按压, 取值, 输入, 选择, 撤销与导航六类交互控件, 一页看全, 缩略图是真跑组件的截图.", "role": "overview", "kind": "single"}
   ]},
   {"id": "controls-press", "layer": "controls", "label": "按压", "pieceKind": "control", "pages": [

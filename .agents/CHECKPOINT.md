@@ -9,7 +9,19 @@
 
 | 项 | 内容 | 提交 |
 |---|---|---|
-| 1 | 对表脚本 + 目录源 catalog.src.json (照改版前目录 1:1); 改版前: 有页 197 / 没页 244 / 页指向不存在导出 0 / 一件两处 29 | (本提交) |
+| 1 | 对表脚本 + 目录源 catalog.src.json (照改版前目录 1:1); 改版前: 有页 197 / 没页 244 / 页指向不存在导出 0 / 一件两处 29 | 37e91bb |
+| 2 | scripts/docs-catalog.ts 生成 catalog.gen.json (--check / --report); 门面左栏, 搜索, 计数, 上下页, 索引只读它, nav.ts 不进门面; 单源化后一件两处 0 | 21cbb77 |
+| 3 | docs-coverage 门禁 (docs 组, 第 14 条): 页指向不存在导出 / 一件两处 / gen 不同步即 FAIL; 没页只报数, 组件批次清零后加 --require-pages; 白名单 docs-coverage-allow.json 为空 | 5f9650c |
+| 4 | 展示画廊只留 #/gallery (删去与 #/viz, #/page 重复的两格与无人引用的 home-show.tsx) | 28def82 |
+| 5 | 左栏折叠高度过渡 + 减弱动效直切 + 默认展开当前组; 每组 <= 12 件, 超了在 catalog.src.json 拆 subgroups (浮层与菜单, 页面版式, 模板) | 60cc594 |
+| 6 | specs 拆成 specs/<层>/<组>/<id>.tsx + 每组 index.ts; 旧文件在收尾提交删除 | 5c510ed |
+| 7 | docs-props 改用共用递归扫描 (scripts/docs-catalog/specs.ts), 缺属性即失败, 下限 225 / 子路径 200 | 8ec280e |
+| 页型 | kinds/KindPage 四种页型模板替换 GenericPage; 三层 199 件全进左栏 / 搜索 / 上下页 (没写页的件只给 import 与 Props) | 202d21b |
+| 8 | 三层各一总览页; scripts/docs-thumbs.ts 在 docs/dist 上 playwright 真跑拍图 (docs: npm run build:site), 拍不了的不出图 | d5b2c90 |
+| 收尾 | 删旧 specs 文件与 GenericPage; 三个总览组改名 "<层> 总览" | (本提交) |
+
+改版后四个数: 有页 197 / 没页 244 / 页指向不存在导出 0 / 一件两处 0. 没页 244 = surface 116 + kits 33 + controls 50 + base 45, 批 0 不做组件页, 由组件批次清零 (清零后 docs-coverage 加 --require-pages).
+缩略图本地实跑 199 件拍成 126 / 拍不了 73 (默认参数抛错或空画面); pages.yml 仍是 npm run build, 要上线缩略图得改 CI (装 playwright chromium + build:site), 待用户定.
 
 ## 顺序
 
