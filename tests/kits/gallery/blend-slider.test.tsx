@@ -35,6 +35,20 @@ describe("BlendSlider", () => {
     expect(screen.getByRole("group", { name: "B" })).toBeTruthy();
   });
 
+  it("转场中再翻页: 上一组动画 finish() 落定, 再从新位置进场", () => {
+    const animate = spyAnimate();
+    const onChange = vi.fn();
+    render(<BlendSlider items={items} transition="melt" onChange={onChange} />);
+    const next = screen.getByRole("button", { name: "Next slide" });
+    fireEvent.click(next);
+    const first = animate.mock.results.map((r) => r.value as Animation & { finish: ReturnType<typeof vi.fn> });
+    fireEvent.click(next);
+    expect(first.length).toBeGreaterThan(0);
+    for (const a of first) expect(a.finish).toHaveBeenCalledTimes(1);
+    expect(onChange.mock.calls).toEqual([[1], [2]]);
+    expect(screen.getByRole("group", { name: "C" })).toBeTruthy();
+  });
+
   it("没有 Element.animate 时直接落定, 不留下层", () => {
     Object.defineProperty(Element.prototype, "animate", { configurable: true, writable: true, value: undefined });
     render(<BlendSlider items={items} />);

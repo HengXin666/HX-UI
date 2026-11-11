@@ -44,8 +44,27 @@ export function manualFrames(): { flush: (frames: number, frameMs?: number) => v
 
 /** 给 Element.prototype 装一个 animate 探针并返回它. */
 export function spyAnimate(): ReturnType<typeof vi.fn> {
-	const fake = (): Animation =>
-		({ cancel: () => {}, reverse: () => {}, playState: "finished", addEventListener: () => {}, removeEventListener: () => {} }) as unknown as Animation;
+	const fake = (): Animation => {
+		const listeners = new Map<string, Set<EventListener>>();
+		const animation = {
+			cancel: () => {},
+			reverse: () => {},
+			/** 打断时组件会 finish(): 立即落到终点并派发 finish 事件. */
+			finish: vi.fn(() => {
+				for (const cb of listeners.get("finish") ?? []) cb(new Event("finish"));
+			}),
+			playState: "finished",
+			addEventListener: (type: string, cb: EventListener) => {
+				const set = listeners.get(type) ?? new Set<EventListener>();
+				set.add(cb);
+				listeners.set(type, set);
+			},
+			removeEventListener: (type: string, cb: EventListener) => {
+				listeners.get(type)?.delete(cb);
+			},
+		};
+		return animation as unknown as Animation;
+	};
 	const fn = vi.fn(fake);
 	Object.defineProperty(Element.prototype, "animate", { configurable: true, writable: true, value: fn });
 	return fn;
