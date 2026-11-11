@@ -1,7 +1,7 @@
 // 行为规格参照 docs/research/catalog/animations.md 的 GhostCursor 条目, 实现为 HX 自有.
 /**
  * HazeCursor 的模拟: 头部弹簧跟手 (inertia 越大越飘), 沿路径按间距放烟团, 烟团受拖拽减速, 向上漂移, 被噪声扰动,
- * 浓度按 trailLength 指数衰减并随之胀大. 坐标与长度都是设备像素; 不碰画布.
+ * 每团带 age 与寿命 (hazeLife, 按 trailLength 与 size 派生), 浓度按各自的 age 在寿命末段线性淡出并随之胀大, 过寿命出表. 坐标与长度都是设备像素; 不碰画布.
  *
  * .agents/notes/implemented/feature/2026-11-10-surface-cursor.md
  */
@@ -17,6 +17,11 @@ export interface Puff {
   amount: number;
   r: number;
   seed: number;
+  /** 出生后的秒数与寿命 (秒). */
+  age: number;
+  life: number;
+  /** 已打成溅点. */
+  sent: boolean;
 }
 
 export interface HazeState {
@@ -41,6 +46,19 @@ export function hazeSpring(inertia: number): { readonly stiffness: number; reado
   return { stiffness, damping: 2 * Math.sqrt(stiffness) * HAZE.dampingRatio };
 }
 
+/**
+ * 烟团寿命 (本库定): 染料场浓度降到 2% 的时长 (0.12 + trailLength x 0.022) x ln 50, 乘 sqrt(size / 80) (烟头越大散得越久), 夹在 0.4 到 12 秒.
+ */
+export function hazeLife(trailLength: number, size: number): number {
+  const tau = HAZE.decayBase + Math.max(0, trailLength) * HAZE.decayPerTrail;
+  return clamp(tau * Math.log(1 / HAZE.lifeFloor) * Math.sqrt(Math.max(1, size) / HAZE.size), HAZE.lifeMin, HAZE.lifeMax);
+}
+
+/** 烟团浓度: 寿命前 70% 为 1, 末 30% 线性降到 0 (本库定). */
+export function puffAmount(age: number, life: number): number {
+  return clamp((life - age) / Math.max(1e-6, life * HAZE.fadeShare), 0, 1);
+}
+
 /** 每帧浓度保留率 exp(-dt / (0.12 + trailLength x 0.022)). */
 export function hazeDecay(dt: number, trailLength: number): number {
   return Math.exp(-dt / (HAZE.decayBase + Math.max(0, trailLength) * HAZE.decayPerTrail));
@@ -52,11 +70,13 @@ export interface HazeTuning {
   readonly turbulence: number;
   readonly drift: number;
   readonly radius: number;
+  /** 新烟团的寿命 (秒), 见 hazeLife. */
+  readonly life: number;
 }
 
-function emit(s: HazeState, x: number, y: number, vx: number, vy: number, r: number): void {
+function emit(s: HazeState, x: number, y: number, vx: number, vy: number, r: number, life: number): void {
   s.seq += 1;
-  s.puffs.push({ x, y, vx, vy, amount: 1, r, seed: s.seq * 7.31 });
+  s.puffs.push({ x, y, vx, vy, amount: 1, r, seed: s.seq * 7.31, age: 0, life, sent: false });
   if (s.puffs.length > HAZE.maxPuffs) s.puffs.splice(0, s.puffs.length - HAZE.maxPuffs);
 }
 
@@ -79,28 +99,28 @@ export function stepHaze(s: HazeState, tx: number, ty: number, inside: boolean, 
     const k = gap / dist;
     s.lastX += (s.head.x - s.lastX) * k;
     s.lastY += (s.head.y - s.lastY) * k;
-    emit(s, s.lastX, s.lastY, s.head.vx * 0.15, s.head.vy * 0.15, o.radius);
+    emit(s, s.lastX, s.lastY, s.head.vx * 0.15, s.head.vy * 0.15, o.radius, o.life);
     dist -= gap;
   }
-  const keep = hazeDecay(dt, o.trailLength);
   const drag = Math.exp(-dt * HAZE.dragRate);
   const lift = o.drift * HAZE.driftPx * scale * dt;
   const swirl = o.turbulence * HAZE.turbulencePx * scale;
   for (const p of s.puffs) {
-    p.amount *= keep;
+    p.age += dt;
+    p.amount = puffAmount(p.age, p.life);
     p.vx *= drag;
     p.vy *= drag;
     p.x += p.vx * dt + noise1(p.seed + s.clock * 1.3) * swirl * dt;
     p.y += p.vy * dt - lift + noise1(p.seed + 50 + s.clock * 1.1) * swirl * dt;
   }
-  s.puffs = s.puffs.filter((p) => p.amount > 0.02);
+  s.puffs = s.puffs.filter((p) => p.age < p.life);
 }
 
 /** 点击喷一圈烟团. */
-export function puffHaze(s: HazeState, count: number, radius: number, scale: number): void {
+export function puffHaze(s: HazeState, count: number, radius: number, scale: number, life: number): void {
   for (let i = 0; i < count; i += 1) {
     const a = (i / count) * Math.PI * 2;
-    emit(s, s.head.x, s.head.y, Math.cos(a) * 260 * scale, Math.sin(a) * 260 * scale, radius * 0.7);
+    emit(s, s.head.x, s.head.y, Math.cos(a) * 260 * scale, Math.sin(a) * 260 * scale, radius * 0.7, life);
   }
 }
 

@@ -12,7 +12,7 @@ import { TONE_TOKEN, type SurfaceTone } from "../pointer/tone";
 import { clamp, pointerPx } from "./parts/common";
 import { fluidDyePass, fluidVelocityPass } from "./parts/fluid-shader";
 import { packSplats, splatUniforms, type PackedSplats } from "./parts/fluid";
-import { hazeDecay, makeHaze, puffHaze, stepHaze } from "./parts/haze";
+import { hazeDecay, hazeLife, makeHaze, puffHaze, stepHaze } from "./parts/haze";
 import { hazeFade, hazeSplats } from "./parts/haze-fluid";
 import { HAZE_SCENE, hazeFragment } from "./parts/haze-shader";
 import { CURSOR_FLUID, HAZE } from "./tokens";
@@ -70,7 +70,6 @@ export function HazeCursor({
 }: HazeCursorProps): JSX.Element {
   const sim = useRef(makeHaze(intro));
   const seen = useRef(-1);
-  const seq = useRef(0);
   const packed = useRef<PackedSplats>(packSplats([]));
   const dt = (frame: BackdropFrame): number => (frame.reduced ? 0 : Math.min(frame.dt, CURSOR_FLUID.maxDt));
   const aspect = (frame: BackdropFrame): number => frame.fit.width / Math.max(1, frame.fit.height);
@@ -86,15 +85,14 @@ export function HazeCursor({
     const [tx, ty] = pointerPx(frame);
     const grow = s.intro * s.intro * (3 - 2 * s.intro);
     const radius = (size / 2) * scale * (0.3 + 0.7 * grow);
-    stepHaze(s, tx, ty, frame.pointer.inside, step, { inertia, trailLength, turbulence, drift, radius: radius * 0.6 }, scale);
+    const life = hazeLife(trailLength, size);
+    stepHaze(s, tx, ty, frame.pointer.inside, step, { inertia, trailLength, turbulence, drift, radius: radius * 0.6, life }, scale);
     for (const tap of frame.pointer.taps) {
       if (tap.at <= seen.current) continue;
       seen.current = tap.at;
-      if (clickPuff) puffHaze(s, HAZE.clickPuffs, radius, scale);
+      if (clickPuff) puffHaze(s, HAZE.clickPuffs, radius, scale, life);
     }
-    const out = hazeSplats(s, seq.current, frame.fit, { brightness, simScale: HAZE.sim });
-    seq.current = out.seq;
-    packed.current = packSplats(out.splats);
+    packed.current = packSplats(hazeSplats(s, frame.fit, { brightness, simScale: HAZE.sim }));
   };
 
   const r = clamp(bloomRadius, 0, 1);

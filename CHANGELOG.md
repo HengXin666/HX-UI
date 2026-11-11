@@ -20,6 +20,7 @@
 
 ### Changed
 
+- `HazeCursor`: 烟团补老化 (本库定). 每团带 age 与寿命 (由 trailLength 与 size 派生, 0.4..12 秒), 末 30% 淡出, 过寿命出表; 每帧至多 12 团溅点, 排队中过寿命的不发射, 不再丢弃超出的烟团. 减弱动效不老化, 静止渐隐不变. `hazeSplats` 签名改为 (state, fit, tuning) 并直接返回溅点; `puffHaze` 多一个寿命参数, `HazeTuning` 多 `life`.
 - 更正 0.16.0 复核条里 `PrismOrb` 的 PIXEL_BUDGET "同理" 的说法: 是未落项, 本次已补 (见 Added).
 
 ## [0.17.0] - 2026-11-10

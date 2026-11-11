@@ -3,7 +3,8 @@
  */
 import { act, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { HAZE, HazeCursor, hazeDecay, hazeFade, hazeSplats, hazeSpring, makeHaze, puffHaze, puffRadius, stepHaze } from "@src/surface/cursor";
+import { CURSOR_FLUID, HAZE, HazeCursor, hazeDecay, hazeFade, hazeSplats, hazeSpring, makeHaze, puffHaze, puffRadius, stepHaze } from "@src/surface/cursor";
+import { hazeLife, puffAmount } from "@src/surface/cursor/parts/haze";
 import { HAZE_SCENE, hazeFragment } from "@src/surface/cursor/parts/haze-shader";
 import { mockIntersection, mockReducedMotion, mockWebgl2 } from "../backdrop/helpers";
 import { useFakeClock } from "../helpers";
@@ -14,7 +15,7 @@ afterEach(() => {
 	vi.restoreAllMocks();
 });
 
-const tune = { inertia: 0.5, trailLength: 50, turbulence: 0.5, drift: 0.3, radius: 20 };
+const tune = { inertia: 0.5, trailLength: 50, turbulence: 0.5, drift: 0.3, radius: 20, life: hazeLife(50, 80) };
 
 describe("HazeCursor 模拟", () => {
 	it("规格常数与公式", () => {
@@ -23,6 +24,27 @@ describe("HazeCursor 模拟", () => {
 		expect(hazeSpring(1).stiffness).toBe(26);
 		expect(hazeDecay(0.1, 50)).toBeCloseTo(Math.exp(-0.1 / 1.22), 6);
 		expect(puffRadius({ r: 10, amount: 0 })).toBeCloseTo(22, 6);
+		expect(hazeLife(50, 80)).toBeCloseTo(1.22 * Math.log(50), 6);
+		expect(hazeLife(50, 320)).toBeCloseTo(2 * 1.22 * Math.log(50), 6);
+		expect(hazeLife(0, 1)).toBe(0.4);
+		expect(puffAmount(0, 2)).toBe(1);
+		expect(puffAmount(1.4, 2)).toBeCloseTo(1, 6);
+		expect(puffAmount(1.7, 2)).toBeCloseTo(0.5, 6);
+		expect(puffAmount(2, 2)).toBe(0);
+	});
+	it("烟团各自老化: 过寿命的老团出表, 同一时刻的新团浓度不受影响", () => {
+		const s = makeHaze(false);
+		stepHaze(s, 0, 100, true, 1 / 60, tune, 1);
+		for (let i = 1; i <= 20; i += 1) stepHaze(s, i * 3, 100, true, 1 / 60, tune, 1);
+		const old = s.puffs.map((p) => p.seed);
+		expect(old.length).toBeGreaterThan(2);
+		for (let i = 0; i < Math.ceil((tune.life - 0.2) * 60); i += 1) stepHaze(s, 60, 100, true, 1 / 60, tune, 1);
+		for (let i = 1; i <= 20; i += 1) stepHaze(s, 60 + i * 3, 100, true, 1 / 60, tune, 1);
+		const fresh = s.puffs.filter((p) => !old.includes(p.seed));
+		expect(fresh.length).toBeGreaterThan(2);
+		for (let i = 0; i < 30; i += 1) stepHaze(s, 120, 100, true, 1 / 60, tune, 1);
+		expect(s.puffs.some((p) => old.includes(p.seed))).toBe(false);
+		for (const p of s.puffs.filter((q) => !old.includes(q.seed))) expect(p.amount).toBe(1);
 	});
 	it("移动放烟, 烟团上漂, 停手后散尽", () => {
 		const s = makeHaze(false);
@@ -34,24 +56,29 @@ describe("HazeCursor 模拟", () => {
 		expect(s.puffs[0].y).toBeLessThan(y0);
 		for (let i = 0; i < 600; i += 1) stepHaze(s, 180, 100, false, 1 / 60, tune, 1);
 		expect(s.puffs).toHaveLength(0);
-		puffHaze(s, 14, 20, 1);
+		puffHaze(s, 14, 20, 1, tune.life);
 		expect(s.puffs).toHaveLength(14);
 	});
 });
 
 describe("HazeCursor 烟雾场", () => {
-	it("新烟团打成溅点并从表里取走; 已取过的不再打", () => {
+	it("没打过的烟团从老到新打成溅点, 留表继续老化; 每帧至多 maxSplats 团, 排队过寿命的不发射", () => {
 		const s = makeHaze(false);
 		stepHaze(s, 0, 100, true, 1 / 60, tune, 1);
 		for (let i = 1; i <= 30; i += 1) stepHaze(s, i * 6, 100, true, 1 / 60, tune, 1);
 		const fit = { width: 200, height: 200, scale: 1 };
-		const first = hazeSplats(s, 0, fit, { brightness: 1, simScale: HAZE.sim });
-		expect(first.splats.length).toBeGreaterThan(3);
-		expect(s.puffs).toHaveLength(0);
-		expect(first.splats[0]?.dye[0]).toBeCloseTo(HAZE.puffBody);
-		expect(hazeSplats(s, first.seq, fit, { brightness: 1, simScale: HAZE.sim }).splats).toHaveLength(0);
-		puffHaze(s, 14, 20, 1);
-		expect(hazeSplats(s, first.seq, fit, { brightness: 1, simScale: HAZE.sim }).splats).toHaveLength(14);
+		const tuning = { brightness: 1, simScale: HAZE.sim };
+		const total = s.puffs.length;
+		const first = hazeSplats(s, fit, tuning);
+		expect(first).toHaveLength(Math.min(total, CURSOR_FLUID.maxSplats));
+		expect(s.puffs).toHaveLength(total);
+		expect(first[0]?.dye[0]).toBeCloseTo(HAZE.puffBody);
+		while (hazeSplats(s, fit, tuning).length > 0);
+		expect(s.puffs.every((p) => p.sent)).toBe(true);
+		puffHaze(s, 14, 20, 1, tune.life);
+		expect(hazeSplats(s, fit, tuning)).toHaveLength(CURSOR_FLUID.maxSplats);
+		for (const p of s.puffs.filter((q) => !q.sent)) p.age = p.life;
+		expect(hazeSplats(s, fit, tuning)).toHaveLength(0);
 	});
 	it("渐隐: 不给 delay 恒 1; 超过 delay 后按时长线性隐去", () => {
 		expect(hazeFade(10, undefined, undefined)).toBe(1);

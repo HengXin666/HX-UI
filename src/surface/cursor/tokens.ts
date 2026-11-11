@@ -129,6 +129,11 @@ export const HAZE = {
   puffGrow: 2.2,
   turbulencePx: 40,
   clickPuffs: 14,
+  /** 本库定: 烟团寿命 = (0.12 + trailLength x 0.022) x ln(1 / 0.02) x sqrt(size / 80), 夹 0.4..12 秒; 末 30% 线性淡出. */
+  lifeFloor: 0.02,
+  lifeMin: 0.4,
+  lifeMax: 12,
+  fadeShare: 0.3,
   /** 烟雾场 (2026-11-10 补做): wisp = pow(smoothstep(0.18, 0.82, smoke), 2) x 2.8; cloud = body x smoothstep(0, 0.32, body) x 1.15;
    * 打光 0.7 + 0.5 x max(dot(n, normalize(-0.35, 0.55, 0.75)), 0); 芯 smoothstep(0.7, 2.2, cloud);
    * 覆盖 1 - exp(-(a + bloom x bloomStrength x 0.6) x 0.95). props 默认 detail 1, grainIntensity 0.05, bloomStrength 0.6, bloomRadius 1, bloomThreshold 0.025, edgeIntensity 0. */
