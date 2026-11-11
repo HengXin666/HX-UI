@@ -62,7 +62,8 @@ vec3 tint(vec3 c) {
 vec3 roleColor(float fi, float r) {
   return tint(u_colors[int(mod(fi + r, max(u_color_count, 1.0)))]);
 }
-vec3 strands(vec2 p, out float total) {
+// fp: 像素足迹 (规格 fp = 0.5 max(|dFdx|, |dFdy|)), 与带边的高斯软边按方差相加, 细带不锯齿也不因 +常数 发虚.
+vec3 strands(vec2 p, float fp, out float total) {
   vec3 acc = vec3(0.0);
   total = 0.0;
   float t = u_time;
@@ -79,7 +80,7 @@ vec3 strands(vec2 p, out float total) {
     float yc = lane * env + amp * 0.16 * wave * env + bend;
     float th = ${STRAND.body} * u_thickness * exp(-pow(p.x / 0.5, 2.0) * 0.5 * u_taper) * (0.7 + 0.3 * env);
     float H = 2.0 * th;
-    float sg = 0.25 * th + 0.002;
+    float sg = sqrt(0.0625 * th * th + fp * fp);
     float tt = p.y - yc + th;
     float fill = 0.5 * (erfa(tt / sg) - erfa((tt - H) / sg)) / H * th;
     float ew = ${STRAND.edge} * u_thickness * 0.25;
@@ -107,7 +108,8 @@ void main() {
   vec2 res = u_res;
   vec2 p = (gl_FragCoord.xy - 0.5 * res) / min(res.x, res.y) / max(u_scale, 1e-3);
   float lum;
-  vec3 acc = strands(p, lum);
+  float fp = 0.5 * max(length(dFdx(p)), length(dFdy(p)));
+  vec3 acc = strands(p, fp, lum);
   vec3 col = shade(acc, lum);
   float cov = 1.0 - exp(-lum * ${STRAND.cover});
   if (u_glass > 0.5) {
@@ -121,9 +123,9 @@ void main() {
       vec2 q = p * (1.0 - u_refraction * 0.45 * (1.0 - bend * 0.5));
       float ca = ${STRAND.chroma} * u_dispersion * bend;
       float lr; float lg; float lb;
-      vec3 ar = strands(q * (1.0 + ca), lr);
-      vec3 ag = strands(q, lg);
-      vec3 ab = strands(q * (1.0 - ca), lb);
+      vec3 ar = strands(q * (1.0 + ca), fp, lr);
+      vec3 ag = strands(q, fp, lg);
+      vec3 ab = strands(q * (1.0 - ca), fp, lb);
       vec3 inner = vec3(shade(ar, lr).r, shade(ag, lg).g, shade(ab, lb).b);
       float icov = 1.0 - exp(-max(max(lr, lg), lb) * ${STRAND.cover});
       float fres = smoothstep(0.8, 1.0, rho) * u_rim;
