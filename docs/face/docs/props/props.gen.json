@@ -4122,7 +4122,7 @@
    "name": "gridSize",
    "type": "number",
    "default": "-",
-   "desc": "每边方块数, 默认 10, 上限 13 (见文件头 ENGINE-GAP).",
+   "desc": "每边方块数, 默认 10, 上限 64 (本库定).",
    "required": false
   },
   {

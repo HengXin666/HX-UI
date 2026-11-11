@@ -150,13 +150,35 @@ export function cubeIntro(clock: number, x: number, y: number, n: number): numbe
   return t * t * (3 - 2 * t);
 }
 
-/** 打包成 vec4[n x n]: 倾角 x / y (弧度), 发亮, 入场缩放. */
-export function packCubes(s: CubeState, intro: boolean): Float32Array {
-  const out = new Float32Array(CUBE.maxGrid * CUBE.maxGrid * 4);
+/** 每块的数据纹理占 2 格 (只用 RGB, A 恒 255): 格 0 = 倾角 x 高 / 低字节, 倾角 y 高字节; 格 1 = 倾角 y 低字节, 发亮, 入场缩放. 倾角为弧度映到 -PI..PI 的 16 位. */
+export const CUBE_TEXELS = 2;
+
+function put16(out: Uint8ClampedArray, at: number, v: number): void {
+  const q = Math.round(Math.min(1, Math.max(0, v)) * 65535);
+  out[at] = q >> 8;
+  out[at + 1] = q & 255;
+}
+
+/**
+ * 打包成 RGBA8 数据纹理 (宽 2n, 高 n). 第 i 块写在第 floor(i / n) 行, 第 2 (i % n) 与其后一格; 上传时内核翻转 y,
+ * 所以纹理里第 gy 行正是网格 y 朝上的第 gy 行 (着色器 texelFetch(ivec2(2 gx, gy))).
+ */
+export function packCubes(s: CubeState, intro: boolean): Uint8ClampedArray<ArrayBuffer> {
+  const n = s.n;
+  const out = new Uint8ClampedArray(n * CUBE_TEXELS * n * 4);
   const rad = Math.PI / 180;
-  for (let i = 0; i < s.n * s.n; i += 1) {
-    const { x, y } = cubeCenter(s.n, i);
-    out.set([(s.ax[i] ?? 0) * rad, (s.ay[i] ?? 0) * rad, s.glow[i] ?? 0, intro ? cubeIntro(s.intro, x, y, s.n) : 1], i * 4);
+  const angle = (deg: number) => (deg * rad) / (2 * Math.PI) + 0.5;
+  for (let i = 0; i < n * n; i += 1) {
+    const { x, y } = cubeCenter(n, i);
+    const at = (Math.floor(i / n) * n * CUBE_TEXELS + (i % n) * CUBE_TEXELS) * 4;
+    put16(out, at, angle(s.ax[i] ?? 0));
+    const ay = Math.round(Math.min(1, Math.max(0, angle(s.ay[i] ?? 0))) * 65535);
+    out[at + 2] = ay >> 8;
+    out[at + 3] = 255;
+    out[at + 4] = ay & 255;
+    out[at + 5] = Math.round(Math.min(1, Math.max(0, s.glow[i] ?? 0)) * 255);
+    out[at + 6] = Math.round((intro ? cubeIntro(s.intro, x, y, n) : 1) * 255);
+    out[at + 7] = 255;
   }
   return out;
 }

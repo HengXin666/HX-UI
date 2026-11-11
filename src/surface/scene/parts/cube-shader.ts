@@ -3,17 +3,20 @@
  * CubeField 的上屏片元 (一遍): 方阵 n x n 块方块, 每像素对所在格与 8 个邻格的方块做射线与旋转盒求交 (方块绕 x / y 倾斜,
  * 可能伸进邻格), 取最近的命中; 面按兰伯特打光 (shading), 边线按 solid / dashed / dotted / none 画在命中面上,
  * 掠射面上的边线按规格 smoothstep(0.06, 0.28, |n.z|) 收掉; 涟漪发亮混入 rippleColor. perspective 为 0 时正交俯视.
- * 坐标: 以格为单位, 原点在网格中心, y 朝上.
+ * 坐标: 以格为单位, 原点在网格中心, y 朝上. 每块状态从 RGBA8 数据纹理 u_cube_tex 取 (packCubes 的 16 位编码).
  *
  * .agents/notes/implemented/feature/2026-11-10-surface-scene.md
  */
 import { fragmentSource, GLSL_HASH, GLSL_UTIL } from "../../backdrop/kernel/glsl";
-import { CUBE } from "../tokens";
-
-const COUNT = CUBE.maxGrid * CUBE.maxGrid;
 
 export const CUBE_FRAGMENT = fragmentSource(`
-uniform vec4 u_cubes[${COUNT}];
+uniform sampler2D u_cube_tex;
+float hi16(vec2 b) { return (floor(b.x * 255.0 + 0.5) * 256.0 + floor(b.y * 255.0 + 0.5)) / 65535.0; }
+vec4 cubeAt(vec2 g) {
+  vec4 a = texelFetch(u_cube_tex, ivec2(int(g.x) * 2, int(g.y)), 0);
+  vec4 b = texelFetch(u_cube_tex, ivec2(int(g.x) * 2 + 1, int(g.y)), 0);
+  return vec4((hi16(a.rg) * 2.0 - 1.0) * 3.14159265, (hi16(vec2(a.b, b.r)) * 2.0 - 1.0) * 3.14159265, b.g, b.b);
+}
 uniform float u_n;
 uniform float u_gap;
 uniform float u_persp;
@@ -48,8 +51,7 @@ void main() {
     for (int i = -1; i <= 1; i++) {
       vec2 g = base + vec2(float(i), float(j));
       if (g.x < 0.0 || g.y < 0.0 || g.x >= u_n || g.y >= u_n) continue;
-      int idx = int((u_n - 1.0 - g.y) * u_n + g.x);
-      vec4 c = u_cubes[idx];
+      vec4 c = cubeAt(g);
       float h = top * c.w;
       if (h <= 0.001) continue;
       vec3 center = vec3(g.x - half_n, g.y - half_n, 0.0);

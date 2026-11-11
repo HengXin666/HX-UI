@@ -20,6 +20,7 @@
 
 ### Changed
 
+- `CubeField`: 每块状态改走 RGBA8 数据纹理 (倾角 16 位, 发亮与入场 8 位), 不再受片元 uniform 向量数限制, `gridSize` 上限由 13 放到 64. 实例化网格的 ENGINE-GAP 不变. `packCubes` 改为返回 2n x n 的 RGBA8 字节.
 - `SoftShape`: blur 为 0 时不再跑三遍离屏 (形状, 横向, 纵向高斯), 上屏单遍直出清晰层; 原来 passes 恒在, 白跑两遍全屏模糊. 观感不变.
 - `HazeCursor`: 烟团补老化 (本库定). 每团带 age 与寿命 (由 trailLength 与 size 派生, 0.4..12 秒), 末 30% 淡出, 过寿命出表; 每帧至多 12 团溅点, 排队中过寿命的不发射, 不再丢弃超出的烟团. 减弱动效不老化, 静止渐隐不变. `hazeSplats` 签名改为 (state, fit, tuning) 并直接返回溅点; `puffHaze` 多一个寿命参数, `HazeTuning` 多 `life`.
 - 更正 0.16.0 复核条里 `PrismOrb` 的 PIXEL_BUDGET "同理" 的说法: 是未落项, 本次已补 (见 Added).

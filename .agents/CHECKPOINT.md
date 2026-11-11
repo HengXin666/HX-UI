@@ -169,14 +169,14 @@ B 段读规格时先看技法: 这几件大多是 WebGL 场, 用 Canvas2D 或 DO
   6. ~~SparkMark: 脉冲沿轮廓改弧长参数~~ 已做 (parts/spark-map 轮廓参数图, CELL 4).
   7. ~~SparkMark: PIXEL_BUDGET 与预模糊辉光~~ 已做 (pixelBudgetDpr; 辉光烘在参数图 B 通道). 用户 2026-11-10 23:37 定为未落项, 组件文件头 / field note / CHANGELOG 已一致.
 - ENGINE-GAP 复核 (2026-11-10 定, 组件文件头 / note / CHANGELOG 0.16.0 一致): SoftShape 失焦近似不标 (不涉顶点 / 实例化 / 深度, 真高斯排在上面第 5 件); SparkMark 的 PIXEL_BUDGET 与预模糊辉光不标 ENGINE-GAP, 用户定为未落项已补 (第 7 件), 脉冲极角是未落项已补 (第 6 件); PrismOrb 的 PIXEL_BUDGET 同样不算 ENGINE-GAP, 文件头措辞已改.
-- 内核若加浮点数据纹理上传, CubeField 的 gridSize 上限 13 可放开.
+- ~~CubeField gridSize 上限~~ 已做 (按序待办第 7 条之一): 状态改走 RGBA8 数据纹理 (16 位倾角), 不需要内核浮点纹理, 上限 13 放到 64.
 - **按序待办 (用户 2026-11-11 00:12 定, 每件单独提交, 门禁 13/13, 不 push)**:
   1. ~~DotReveal: 底色覆盖 prop~~ 已做 (`keyColor` 0..1 RGB 三元组, 接线 parts/dot `dotKey`, 单测在 dot.test.tsx).
-  2. SparkMark: 规格的 2d 画布逐帧层 (未落项).
-  3. FiberStrands: 规格 fp 抗锯齿 (dFdx 足迹), 替掉 sg 最小值近似.
-  4. PrismOrb: PIXEL_BUDGET 4.5e6 真做 (照 SparkMark `pixelBudgetDpr` 的做法, 经 setState 作内核 dpr), 再把文件头 / scene note / CHANGELOG 改成 "未落项, 已补" 写法 (现文件头第 5 行写的是 "由 dpr 上限与 maxEdge 代替", 未实现前不能写已补).
-  5. HazeCursor 烟团 CPU 不老化: 用户定为真漏做, 补老化 (1530d2d 里的测试锁定了不老化, 要一起改).
-  6. 实测并把数字写进 note: (a) SparkMark PIXEL_BUDGET 经 setState 在帧回调里改 dpr 的路径 (真实浏览器, 记录不同宿主面积下的 dpr 与画布尺寸); (b) SoftShape 每帧多 3 遍离屏的帧耗 (开 / 关 blur 对比). field note 写数字.
+  2. ~~SparkMark: 规格的 2d 画布逐帧层~~ 代码已做 921c069 (onRender). 欠: tests/surface/field/spark-layer.test.tsx, CHANGELOG onRender 条, field note "仍没有落的: 2d 画布逐帧层" 改写; hover.y 翻转未实测.
+  3. ~~FiberStrands: fp 抗锯齿~~ 已做 144541a (sg = sqrt((0.25 th)^2 + fp^2), 本库定, scene note 已写). 欠: 锁 fp 接线的测试, CHANGELOG 条.
+  4. ~~PrismOrb: PIXEL_BUDGET~~ 已做 bc98e63. 原文: PIXEL_BUDGET 4.5e6 真做 (照 SparkMark `pixelBudgetDpr` 的做法, 经 setState 作内核 dpr), 再把文件头 / scene note / CHANGELOG 改成 "未落项, 已补" 写法 (现文件头第 5 行写的是 "由 dpr 上限与 maxEdge 代替", 未实现前不能写已补).
+  5. ~~HazeCursor 烟团老化~~ 已做 95664e3 (寿命 (0.12 + trailLength x 0.022) x ln50 x sqrt(size / 80), 夹 0.4..12 秒, 末 30% 淡出). 原文: 用户定为真漏做, 补老化 (1530d2d 里的测试锁定了不老化, 要一起改).
+  6. ~~实测~~ 已做 cdf0cbf (SparkMark dpr) 与 81821b4 (SoftShape 帧耗); 由此发现 blur 0 仍跑离屏, 已修 fd8be0d. 原文: (a) SparkMark PIXEL_BUDGET 经 setState 在帧回调里改 dpr 的路径 (真实浏览器, 记录不同宿主面积下的 dpr 与画布尺寸); (b) SoftShape 每帧多 3 遍离屏的帧耗 (开 / 关 blur 对比). field note 写数字.
   7. 再往下: 本节后面 "收尾" 六条, 按原顺序.
 - 用户 2026-11-11 已定 (无需再问): SpringMesh 保留 touch-action: none; FiberStrands 7 角色保留本库定义; DotReveal 四角平均底色可以 (但要可覆盖, 见上第 1 条); Halo/Haze 的 RGBA8 ENGINE-GAP 标签三处保留 (算引擎能力限制, 不是漏做); packSplats 等通用名不进族 index, 维持现做法.
 - `tallyOvershoot` 缓存 Map 无上限, 考虑量化键或 LRU.

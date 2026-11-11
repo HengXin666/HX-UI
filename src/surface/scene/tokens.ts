@@ -149,8 +149,8 @@ export const CUBE = {
   brush: 1,
   perspective: 0,
   rippleSpeed: 1,
-  /** 本库定: 格数上限 (每块一个 vec4 uniform, 片元 uniform 向量的保底只有 224), 涟漪每秒走的格数, 涟漪踢一下的角速度 (度每秒), 扫动的速度归一. */
-  maxGrid: 13,
+  /** 本库定: 格数上限 64 (状态走数据纹理后不受 uniform 数限制; 取 64 是 CPU 模拟 4096 块与格子不小于十几像素的折中), 涟漪每秒走的格数, 涟漪踢一下的角速度 (度每秒), 扫动的速度归一. */
+  maxGrid: 64,
   rippleCells: 8,
   rippleKick: 420,
   sweepNorm: 0.002,

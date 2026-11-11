@@ -22,9 +22,10 @@ afterEach(() => {
 const tuning = { maxAngle: 45, radius: 3, speed: 1, bounce: 0.4, brush: 1, autoAnimate: false, rippleOnClick: true, rippleSpeed: 1 };
 
 describe("CubeField 模拟", () => {
-  it("规格常数; 格数钳到 13; 中心坐标", () => {
+  it("规格常数; 格数钳到 64; 中心坐标", () => {
     expect(CUBE).toMatchObject({ styles: { solid: 0, dashed: 1, dotted: 2, none: 3 }, introSeconds: 1.1, follow: 18, velocityBlend: 10, attack: 6, release: 2.5, stiffness: 160, bounceDamp: 0.82, glowFade: 3.2, sweepGain: 4, gridSize: 10, gap: 0.18, maxAngle: 45, radius: 3, bounce: 0.4 });
-    expect(cubeGrid(40)).toBe(13);
+    expect(cubeGrid(40)).toBe(40);
+    expect(cubeGrid(200)).toBe(64);
     expect(cubeCenter(3, 0)).toEqual({ x: -1, y: 1 });
     expect(cubeCenter(3, 8)).toEqual({ x: 1, y: -1 });
   });
@@ -47,16 +48,28 @@ describe("CubeField 模拟", () => {
     for (let i = 0; i < 40; i += 1) stepCubes(off, 1 / 60, i / 60, { pointer: null, taps: [{ x: 0, y: 0, at: 0 }] }, { ...tuning, rippleOnClick: false });
     expect(Math.max(...Array.from(off.glow))).toBe(0);
   });
-  it("入场由中心向外; 打包长度固定为 13 x 13", () => {
+  it("入场由中心向外; 打包成 2n x n 的 RGBA8, 倾角 16 位往返", () => {
     expect(cubeIntro(0, 0, 0, 10)).toBe(0);
     expect(cubeIntro(0.5, 0, 0, 10)).toBeGreaterThan(cubeIntro(0.5, 4, 4, 10));
     expect(cubeIntro(5, 4, 4, 10)).toBe(1);
-    const p = packCubes(makeCubes(4), false);
-    expect(p).toHaveLength(13 * 13 * 4);
-    expect(p[3]).toBe(1);
+    const s = makeCubes(4);
+    s.ax[5] = 30;
+    s.ay[5] = -12.5;
+    s.glow[5] = 0.5;
+    const p = packCubes(s, false);
+    expect(p).toHaveLength(4 * 2 * 4 * 4);
+    const at = (1 * 4 * 2 + 1 * 2) * 4;
+    const dec = (h: number, l: number) => ((h * 256 + l) / 65535 * 2 - 1) * 180;
+    expect(dec(p[at] ?? 0, p[at + 1] ?? 0)).toBeCloseTo(30, 2);
+    expect(dec(p[at + 2] ?? 0, p[at + 4] ?? 0)).toBeCloseTo(-12.5, 2);
+    expect(p[at + 5]).toBe(128);
+    expect(p[at + 6]).toBe(255);
+    expect(p[at + 3]).toBe(255);
+    expect(p[at + 7]).toBe(255);
   });
   it("着色器接线", () => {
-    expect(CUBE_FRAGMENT).toContain("uniform vec4 u_cubes[169];");
+    expect(CUBE_FRAGMENT).toContain("uniform sampler2D u_cube_tex;");
+    expect(CUBE_FRAGMENT).toContain("ivec2(int(g.x) * 2, int(g.y))");
     expect(CUBE_FRAGMENT).toContain("smoothstep(0.06, 0.28, abs(nw.z))");
   });
 });

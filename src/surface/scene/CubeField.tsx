@@ -1,7 +1,7 @@
 "use client";
 // 行为规格参照 docs/research/catalog/animations.md 的 Cubes 条目, 实现为 HX 自有.
-// ENGINE-GAP (仍做不了, 需内核实例化 / 数据纹理): 规格是实例化方块网格走顶点投影 (uProjection); 这里片元里对邻近 9 块做射线与旋转盒求交,
-// 每块状态走 vec4 uniform 数组, 片元 uniform 向量保底只有 224 个, 所以 gridSize 上限 13 (规格无上限); 要内核能上传浮点数据纹理才能放开.
+// ENGINE-GAP (仍做不了, 需内核实例化): 规格是实例化方块网格走顶点投影 (uProjection); 这里片元里对邻近 9 块做射线与旋转盒求交.
+// 每块状态走 RGBA8 数据纹理 (倾角 16 位, 发亮与入场 8 位), 不再受 uniform 向量数限制; gridSize 上限 64 为本库定 (规格无上限, 2026-11-11 放开).
 
 import { useRef, type JSX } from "react";
 import { BackdropShell } from "../backdrop/kernel/BackdropShell";
@@ -10,14 +10,14 @@ import { splitCommon, type BackdropCommonProps } from "../backdrop/kernel/common
 import { glowFallback } from "../backdrop/kernel/fallback";
 import type { BackdropFrame } from "../backdrop/kernel/use-backdrop";
 import { useShaderBackdrop } from "../backdrop/kernel/use-surfaces";
-import { cubeGrid, makeCubes, packCubes, stepCubes } from "./parts/cube";
+import { CUBE_TEXELS, cubeGrid, makeCubes, packCubes, stepCubes } from "./parts/cube";
 import { CUBE_FRAGMENT } from "./parts/cube-shader";
 import { CUBE } from "./tokens";
 
 export type CubeEdgeStyle = keyof typeof CUBE.styles;
 
 export interface CubeFieldProps extends BackdropCommonProps {
-  /** 每边方块数, 默认 10, 上限 13 (见文件头 ENGINE-GAP). */
+  /** 每边方块数, 默认 10, 上限 64 (本库定). */
   readonly gridSize?: number;
   /** 方块间隙占格宽的比例, 默认 0.18. */
   readonly gap?: number;
@@ -69,6 +69,7 @@ export function CubeField(props: CubeFieldProps): JSX.Element {
   const n = cubeGrid(gridSize);
   const sim = useRef(makeCubes(n));
   if (sim.current.n !== n) sim.current = makeCubes(n);
+  const data = useRef<ImageData | null>(null);
 
   const uniforms = (frame: BackdropFrame) => {
     const { width, height } = frame.fit;
@@ -80,8 +81,9 @@ export function CubeField(props: CubeFieldProps): JSX.Element {
         maxAngle, radius, speed: tiltSpeed, bounce, brush, autoAnimate, rippleOnClick, rippleSpeed,
       });
     }
+    const bytes = packCubes(sim.current, intro && !frame.reduced);
+    data.current = typeof ImageData === "undefined" ? null : new ImageData(bytes, n * CUBE_TEXELS, n);
     return {
-      u_cubes: { list: packCubes(sim.current, intro && !frame.reduced), size: 4 as const },
       u_n: n,
       u_gap: Math.min(0.9, Math.max(0, gap)),
       u_persp: Math.min(1, Math.max(0, perspective)),
@@ -95,7 +97,7 @@ export function CubeField(props: CubeFieldProps): JSX.Element {
     };
   };
 
-  const handle = useShaderBackdrop({ fragment: CUBE_FRAGMENT, uniforms }, { ...options, colors: [faceColor, edgeColor, rippleColor] });
+  const handle = useShaderBackdrop({ fragment: CUBE_FRAGMENT, uniforms, textures: () => ({ u_cube_tex: data.current }) }, { ...options, colors: [faceColor, edgeColor, rippleColor] });
   return (
     <BackdropShell handle={handle} fallback={glowFallback(faceColor, rippleColor)} opacity={opacity} {...rest}>
       {children}
