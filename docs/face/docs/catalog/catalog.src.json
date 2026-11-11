@@ -1,6 +1,6 @@
 {
  "_why": "文档站目录的唯一来源: 层, 组, 页, 页型与每页认领的导出. scripts/docs-catalog.ts 读它生成 catalog.gen.json 并对表; 改目录只改这里.",
- "_keys": {"role": "省略为 component (组件页, 必须认领至少一个导出); guide 上手说明, template 整页模板, showcase 拼装演示, 这三种可以不认领导出.", "kind": "页型: single / composite / block / control.", "exports": "本页认领的导出名; 重名导出写 名字@入口 (Timeline@./viz).", "families": "组件层 (surface / kits / controls) 的件按声明文件的目录前缀归组; 每件都必须有组认领.", "pieceKind": "组里还没有页的件按这个页型列进目录."},
+ "_keys": {"role": "省略为 component (组件页, 必须认领至少一个导出); guide 上手说明, template 整页模板, showcase 拼装演示, 这三种可以不认领导出.", "kind": "页型: single / composite / block / control.", "exports": "本页认领的导出名; 重名导出写 名字@入口 (Timeline@./viz).", "families": "组件层 (surface / kits / controls) 的件按声明文件的目录前缀归组; 每件都必须有组认领.", "pieceKind": "组里还没有页的件按这个页型列进目录.", "subgroups": "组超过 12 件时拆子组 (左栏组内分段), 每页恰好落在一个子组里; 生成时超限即报错."},
  "layers": [
   {"id": "start", "label": "上手"},
   {"id": "surface", "label": "Surface"},
@@ -168,7 +168,7 @@
    {"id": "calendar", "name": "日历与日期选择", "desc": "单日, 区间与弹出式日期选择", "kind": "composite", "exports": ["Calendar", "DatePicker"]},
    {"id": "time-picker", "name": "时间选择", "desc": "时与分输入, 受控但中间态不卡手", "kind": "single", "exports": ["TimePicker"]}
   ]},
-  {"id": "overlay", "layer": "base", "label": "浮层与菜单", "pages": [
+  {"id": "overlay", "layer": "base", "label": "浮层与菜单", "subgroups": [{"id": "overlay-dialog", "label": "对话框与面板", "pages": ["dialog", "alert-dialog", "confirm-dialog", "drawer", "sheet", "popover", "hover-card", "tooltip"]}, {"id": "overlay-menu", "label": "菜单", "pages": ["dropdown-menu", "context-menu", "menubar", "navigation-menu", "command"]}], "pages": [
    {"id": "dialog", "name": "对话框", "desc": "模态对话框, 缩放淡入", "kind": "composite", "exports": ["Dialog", "DialogClose", "DialogContent", "DialogDescription", "DialogFooter", "DialogHeader", "DialogTitle", "DialogTrigger"]},
    {"id": "alert-dialog", "name": "警示对话框", "desc": "必须二选一, 用于不可撤销的操作", "kind": "composite", "exports": ["AlertDialog", "AlertDialogAction", "AlertDialogCancel", "AlertDialogContent", "AlertDialogDescription", "AlertDialogFooter", "AlertDialogHeader", "AlertDialogMedia", "AlertDialogTitle", "AlertDialogTrigger"]},
    {"id": "confirm-dialog", "name": "确认框", "desc": "命令式等待与声明式两用", "kind": "single", "exports": ["ConfirmDialog", "ConfirmDialogHost"]},
@@ -254,7 +254,7 @@
    {"id": "marker", "name": "标记行", "desc": "系统提示, 状态行与分隔线", "kind": "single", "exports": ["Marker", "MarkerContent", "MarkerIcon"]},
    {"id": "questionnaire", "name": "问卷", "desc": "多步问卷, 切题滑动", "kind": "single", "exports": ["Questionnaire"]}
   ]},
-  {"id": "layout", "layer": "base", "label": "页面版式", "pages": [
+  {"id": "layout", "layer": "base", "label": "页面版式", "subgroups": [{"id": "layout-content", "label": "卡片与数据", "pages": ["card", "code-block", "code-editor", "stat-card", "data-table", "empty-state", "page-header"]}, {"id": "layout-shell", "label": "应用外壳", "pages": ["setting-chrome", "app-frame", "sidebar-nav", "sidebar", "stepper", "proxy-chain", "browser-live"]}], "pages": [
    {"id": "card", "name": "卡片", "desc": "内容容器", "kind": "single", "exports": ["Card", "CardContent", "CardDescription", "CardFooter", "CardHeader", "CardTitle"]},
    {"id": "code-block", "name": "代码块", "desc": "语法高亮与复制", "kind": "single", "exports": ["CodeBlock"]},
    {"id": "code-editor", "name": "代码编辑器", "desc": "Monaco 单文件与 diff, One Dark Pro Darker, 本地 worker 无 CDN", "kind": "single", "exports": ["CodeEditor", "DiffEditor"]},
@@ -283,7 +283,7 @@
    {"id": "agent-process", "name": "思考与过程", "desc": "思考计时, 发散思考, 子代理与分层待办的实时展示", "kind": "single", "exports": ["SubagentCard", "SubagentGroup", "ThinkingBranches", "TodoTree", "StatusGlyph"]},
    {"id": "trace", "name": "轨迹", "desc": "推理与工具调用轨迹", "kind": "composite", "exports": ["Trace", "TraceLive", "TraceSources", "TraceStep"]}
   ]},
-  {"id": "templates", "layer": "base", "label": "模板", "pages": [
+  {"id": "templates", "layer": "base", "label": "模板", "subgroups": [{"id": "templates-app", "label": "应用模板", "pages": ["templates-chat", "templates-settings", "templates-dashboard", "templates-console"]}, {"id": "templates-clone", "label": "整页复刻", "pages": ["page-saas", "page-opensource", "page-pricing", "page-commerce-home", "page-product", "page-portfolio", "page-docsite", "page-dashboard", "page-clone-linear"]}], "pages": [
    {"id": "templates-chat", "name": "AI 对话工作台", "desc": "会话列表 + 流式回复 + 轨迹 + 输入框, 整页可复制", "role": "template", "kind": "block"},
    {"id": "templates-settings", "name": "设置页", "desc": "二级设置栏 + 一行一个设置项, 整页可复制", "role": "template", "kind": "block"},
    {"id": "templates-dashboard", "name": "数据看板", "desc": "指标卡 + 面积图 + 数据表, 整页可复制", "role": "template", "kind": "block"},

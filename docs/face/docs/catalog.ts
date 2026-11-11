@@ -14,12 +14,21 @@ interface GenEntry {
   readonly exports: readonly string[];
   readonly desc: string;
   readonly page: boolean;
+  readonly sub?: string;
   readonly source?: string;
+}
+
+/** 目录的组; 超过 12 件的组带子组, 左栏在组内按子组分段. */
+export interface CatalogGroup {
+  readonly id: string;
+  readonly layer: string;
+  readonly label: string;
+  readonly subs?: readonly { readonly id: string; readonly label: string }[];
 }
 
 interface GenCatalog {
   readonly layers: readonly { readonly id: string; readonly label: string }[];
-  readonly groups: readonly { readonly id: string; readonly layer: string; readonly label: string }[];
+  readonly groups: readonly CatalogGroup[];
   readonly entries: readonly GenEntry[];
 }
 
@@ -38,6 +47,7 @@ export interface CatalogEntry {
   readonly role: string;
   readonly exports: readonly string[];
   readonly page: boolean;
+  readonly sub?: string;
   readonly source?: string;
   readonly spec?: ComponentSpec;
 }

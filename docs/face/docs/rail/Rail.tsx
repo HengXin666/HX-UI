@@ -1,11 +1,18 @@
 import { useEffect, useId, useMemo, useRef, useState, type JSX } from "react";
 import { InputGroup, InputGroupAddon, InputGroupInput, ToggleGroup, ToggleGroupItem, cn } from "@hx/ui";
-import { CATALOG, COMPONENTS, GROUPS, LAYER_TABS, inTab, tabOf, type LayerTabId } from "../catalog";
+import { CATALOG, COMPONENTS, GROUPS, LAYER_TABS, inTab, tabOf, type CatalogEntry, type LayerTabId } from "../catalog";
 import { CARD, ICON, ICON_SM, ICON_XS, INDEX_ID } from "../constants";
 
 /** 普通左键单击才走站内路由, 带修饰键时交给浏览器开新标签. */
 function plainClick(event: { button: number; metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey: boolean }): boolean {
   return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+}
+
+/** 组内一段: 组没拆子组时只有一段且不带标题. */
+interface Section {
+  readonly key: string;
+  readonly label?: string;
+  readonly items: readonly CatalogEntry[];
 }
 
 /** 分组展开与收起: 行高从 0fr 过渡到 1fr 并淡入, 减弱动效时直接切换. */
@@ -16,6 +23,7 @@ const FOLD_MS = 200;
 /**
  * 左栏圆角卡: 浏览全部, 层页签, 过滤输入, 按目录 (catalog.gen.json) 分组的可折叠列表. 卡本身吸顶, 只有列表滚动;
  * 默认只展开当前页所在组, 换页时那组自动展开, 当前项进入视口中部. 过滤时命中的组全部展开.
+ * 每组 (或子组) 不超过 12 件, 超了在目录源里拆子组 (生成时校验), 子组在展开的组内分段列出.
  */
 export function Rail({ active, onGo }: { readonly active: string; readonly onGo: (id: string) => void }): JSX.Element {
   const activeEntry = CATALOG.find((entry) => entry.id === active);
@@ -43,12 +51,14 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
   const groups = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return GROUPS.filter((group) => inTab(tab, group))
-      .map((group) => ({
-        group: group.id,
-        label: group.label,
-        items: CATALOG.filter((entry) => entry.groupId === group.id && (!needle || entry.label.toLowerCase().includes(needle) || entry.id.includes(needle))),
-      }))
-      .filter((section) => section.items.length > 0);
+      .map((group) => {
+        const items = CATALOG.filter((entry) => entry.groupId === group.id && (!needle || entry.label.toLowerCase().includes(needle) || entry.id.includes(needle)));
+        const sections: Section[] = group.subs
+          ? group.subs.map((sub) => ({ key: sub.id, label: sub.label, items: items.filter((entry) => entry.sub === sub.id) })).filter((section) => section.items.length > 0)
+          : [{ key: group.id, items }];
+        return { group: group.id, label: group.label, count: items.length, sections };
+      })
+      .filter((section) => section.count > 0);
   }, [tab, query]);
 
   /** 当前项滚到列表中部. 所在组刚展开时行高还在过渡, 过渡结束再对一次, 否则可滚高度不够会停在半路. */
@@ -132,7 +142,7 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
 
       <div ref={listRef} className="relative mt-4 min-h-0 flex-1 overflow-y-auto pr-1 [mask-image:linear-gradient(to_bottom,transparent,var(--foreground)_24px,var(--foreground)_calc(100%-32px),transparent)]">
         <nav aria-label="组件目录" className="flex flex-col gap-1 py-3">
-          {groups.map(({ group, label, items }, index) => {
+          {groups.map(({ group, label, sections }, index) => {
             const expanded = isOpen(group);
             const panel = `${foldId}-${index}`;
             return (
@@ -151,24 +161,11 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
                   />
                 </button>
                 <div id={panel} data-fold inert={!expanded} className={cn(FOLD, expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}>
-                  <ul className="flex min-h-0 flex-col overflow-hidden">
-                    {items.map((entry) => (
-                      <li key={entry.id}>
-                        <a
-                          href={`#/${entry.id}`}
-                          aria-current={entry.id === active ? "page" : undefined}
-                          onClick={(event) => {
-                            if (!plainClick(event)) return;
-                            event.preventDefault();
-                            onGo(entry.id);
-                          }}
-                          className="block truncate py-[7px] text-[13.5px] text-foreground/90 transition-colors hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-primary"
-                        >
-                          {entry.label}
-                        </a>
-                      </li>
+                  <div className="min-h-0 overflow-hidden">
+                    {sections.map((section) => (
+                      <EntryList key={section.key} label={section.label} items={section.items} active={active} onGo={onGo} />
                     ))}
-                  </ul>
+                  </div>
                 </div>
               </div>
             );
@@ -178,5 +175,32 @@ export function Rail({ active, onGo }: { readonly active: string; readonly onGo:
       </div>
       {activeEntry ? <span className="sr-only">当前分层 {tabOf(activeEntry.layer).label}</span> : null}
     </div>
+  );
+}
+
+/** 一段条目链接; 带 label 时是子组, 先给一行小标题. */
+function EntryList({ label, items, active, onGo }: { readonly label?: string; readonly items: readonly CatalogEntry[]; readonly active: string; readonly onGo: (id: string) => void }): JSX.Element {
+  return (
+    <>
+      {label ? <p className="pt-2 pb-0.5 pl-2 text-[11.5px] text-muted-foreground/80">{label}</p> : null}
+      <ul className={cn("flex flex-col", label && "border-l border-border/60 pl-2")}>
+        {items.map((entry) => (
+          <li key={entry.id}>
+            <a
+              href={`#/${entry.id}`}
+              aria-current={entry.id === active ? "page" : undefined}
+              onClick={(event) => {
+                if (!plainClick(event)) return;
+                event.preventDefault();
+                onGo(entry.id);
+              }}
+              className="block truncate py-[7px] text-[13.5px] text-foreground/90 transition-colors hover:text-foreground aria-[current=page]:font-medium aria-[current=page]:text-primary"
+            >
+              {entry.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </>
   );
 }

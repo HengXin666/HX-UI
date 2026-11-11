@@ -3,7 +3,7 @@
  * 目录源里的页在前 (page: true), 组件层里还没有页的件随后 (page: false, 按件名排), 后者也进主导航.
  */
 import type { Piece } from "./exports.ts";
-import type { FlatPage, Manifest } from "./manifest.ts";
+import { GROUP_MAX, type FlatPage, type Manifest } from "./manifest.ts";
 import type { Coverage } from "./coverage.ts";
 
 export interface GenEntry {
@@ -16,13 +16,23 @@ export interface GenEntry {
   readonly exports: readonly string[];
   readonly desc: string;
   readonly page: boolean;
+  /** 所在子组 id (组拆了子组时才有). */
+  readonly sub?: string;
   /** 没有页的件: 声明文件, 总览卡与缩略图用. */
   readonly source?: string;
 }
 
+export interface GenGroup {
+  readonly id: string;
+  readonly layer: string;
+  readonly label: string;
+  /** 子组, 左栏在组内按它分段; 组不超过 GROUP_MAX 件时省略. */
+  readonly subs?: readonly { readonly id: string; readonly label: string }[];
+}
+
 export interface GenCatalog {
   readonly layers: readonly { readonly id: string; readonly label: string }[];
-  readonly groups: readonly { readonly id: string; readonly layer: string; readonly label: string }[];
+  readonly groups: readonly GenGroup[];
   readonly entries: readonly GenEntry[];
 }
 
@@ -44,7 +54,7 @@ export function buildCatalog(manifest: Manifest, pages: readonly FlatPage[], pie
   const loose = result.uncovered.filter((piece) => COMPONENT_LAYERS.has(piece.layer));
   for (const group of manifest.groups) {
     for (const page of pages.filter((item) => item.group === group.id)) {
-      entries.push({ id: page.id, name: page.name, layer: page.layer, group: group.id, kind: page.kind, role: page.role, exports: claimed(page), desc: page.desc, page: true });
+      entries.push({ id: page.id, name: page.name, layer: page.layer, group: group.id, kind: page.kind, role: page.role, exports: claimed(page), desc: page.desc, page: true, ...(page.sub ? { sub: page.sub } : {}) });
     }
     const own = loose.filter((piece) => familyGroup(manifest, piece) === group.id).sort((a, b) => a.name.localeCompare(b.name));
     for (const piece of own) {
@@ -53,13 +63,16 @@ export function buildCatalog(manifest: Manifest, pages: readonly FlatPage[], pie
       ids.add(id);
       entries.push({ id, name: piece.name, layer: piece.layer, group: group.id, kind: group.pieceKind ?? "single", role: "component", exports: piece.members, desc: "", page: false, source: piece.file });
     }
+    const size = entries.filter((entry) => entry.group === group.id).length;
+    if (size > GROUP_MAX && !group.subgroups) throw new Error(`docs-catalog: 组 ${group.id} 有 ${size} 件, 超过 ${GROUP_MAX}, 在 catalog.src.json 里给它拆 subgroups`);
+    if (group.subgroups && own.length > 0) throw new Error(`docs-catalog: 组 ${group.id} 拆了子组, 没页的件 (${own.map((piece) => piece.name).join(", ")}) 无处落脚, 先给它们建页或换组`);
   }
   const placed = new Set(entries.flatMap((entry) => (entry.page ? [] : entry.exports)));
   const orphan = loose.find((piece) => !piece.members.some((member) => placed.has(member)));
   if (orphan) throw new Error(`docs-catalog: ${orphan.name} 的族目录指向的组不存在`);
   return {
     layers: manifest.layers.map(({ id, label }) => ({ id, label })),
-    groups: manifest.groups.map(({ id, layer, label }) => ({ id, layer, label })),
+    groups: manifest.groups.map(({ id, layer, label, subgroups }) => ({ id, layer, label, ...(subgroups ? { subs: subgroups.map((sub) => ({ id: sub.id, label: sub.label })) } : {}) })),
     entries,
   };
 }

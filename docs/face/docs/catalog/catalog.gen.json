@@ -185,7 +185,17 @@
   {
    "id": "overlay",
    "layer": "base",
-   "label": "浮层与菜单"
+   "label": "浮层与菜单",
+   "subs": [
+    {
+     "id": "overlay-dialog",
+     "label": "对话框与面板"
+    },
+    {
+     "id": "overlay-menu",
+     "label": "菜单"
+    }
+   ]
   },
   {
    "id": "feedback",
@@ -235,7 +245,17 @@
   {
    "id": "layout",
    "layer": "base",
-   "label": "页面版式"
+   "label": "页面版式",
+   "subs": [
+    {
+     "id": "layout-content",
+     "label": "卡片与数据"
+    },
+    {
+     "id": "layout-shell",
+     "label": "应用外壳"
+    }
+   ]
   },
   {
    "id": "charts",
@@ -250,7 +270,17 @@
   {
    "id": "templates",
    "layer": "base",
-   "label": "模板"
+   "label": "模板",
+   "subs": [
+    {
+     "id": "templates-app",
+     "label": "应用模板"
+    },
+    {
+     "id": "templates-clone",
+     "label": "整页复刻"
+    }
+   ]
   },
   {
    "id": "blueprint",
@@ -3580,7 +3610,8 @@
     "DialogTrigger"
    ],
    "desc": "模态对话框, 缩放淡入",
-   "page": true
+   "page": true,
+   "sub": "overlay-dialog"
   },
   {
    "id": "alert-dialog",
@@ -3602,7 +3633,8 @@
     "AlertDialogTrigger"
    ],
    "desc": "必须二选一, 用于不可撤销的操作",
-   "page": true
+   "page": true,
+   "sub": "overlay-dialog"
   },
   {
    "id": "confirm-dialog",
@@ -3616,7 +3648,8 @@
     "ConfirmDialogHost"
    ],
    "desc": "命令式等待与声明式两用",
-   "page": true
+   "page": true,
+   "sub": "overlay-dialog"
   },
   {
    "id": "drawer",
@@ -3636,7 +3669,8 @@
     "DrawerTrigger"
    ],
    "desc": "可拖拽的底部抽屉",
-   "page": true
+   "page": true,
+   "sub": "overlay-dialog"
   },
   {
    "id": "sheet",
@@ -3656,7 +3690,8 @@
     "SheetTrigger"
    ],
    "desc": "从四边滑入的面板",
-   "page": true
+   "page": true,
+   "sub": "overlay-dialog"
   },
   {
    "id": "popover",
@@ -3675,7 +3710,8 @@
     "PopoverTrigger"
    ],
    "desc": "锚定元素的浮层",
-   "page": true
+   "page": true,
+   "sub": "overlay-dialog"
   },
   {
    "id": "hover-card",
@@ -3690,7 +3726,8 @@
     "HoverCardTrigger"
    ],
    "desc": "延迟弹出不误触",
-   "page": true
+   "page": true,
+   "sub": "overlay-dialog"
   },
   {
    "id": "tooltip",
@@ -3707,7 +3744,8 @@
     "TooltipTrigger"
    ],
    "desc": "含一行式提示",
-   "page": true
+   "page": true,
+   "sub": "overlay-dialog"
   },
   {
    "id": "dropdown-menu",
@@ -3730,7 +3768,8 @@
     "DropdownMenuTrigger"
    ],
    "desc": "菜单与分组",
-   "page": true
+   "page": true,
+   "sub": "overlay-menu"
   },
   {
    "id": "context-menu",
@@ -3756,7 +3795,8 @@
     "ContextMenuTrigger"
    ],
    "desc": "组合式与声明式并存",
-   "page": true
+   "page": true,
+   "sub": "overlay-menu"
   },
   {
    "id": "menubar",
@@ -3781,7 +3821,8 @@
     "MenubarTrigger"
    ],
    "desc": "桌面应用式菜单栏",
-   "page": true
+   "page": true,
+   "sub": "overlay-menu"
   },
   {
    "id": "navigation-menu",
@@ -3799,7 +3840,8 @@
     "NavigationMenuTrigger"
    ],
    "desc": "站点导航, 视口平滑插值",
-   "page": true
+   "page": true,
+   "sub": "overlay-menu"
   },
   {
    "id": "command",
@@ -3820,7 +3862,8 @@
     "CommandShortcut"
    ],
    "desc": "内嵌与对话框两种",
-   "page": true
+   "page": true,
+   "sub": "overlay-menu"
   },
   {
    "id": "alert",
@@ -4675,7 +4718,8 @@
     "CardTitle"
    ],
    "desc": "内容容器",
-   "page": true
+   "page": true,
+   "sub": "layout-content"
   },
   {
    "id": "code-block",
@@ -4688,7 +4732,8 @@
     "CodeBlock"
    ],
    "desc": "语法高亮与复制",
-   "page": true
+   "page": true,
+   "sub": "layout-content"
   },
   {
    "id": "code-editor",
@@ -4702,7 +4747,8 @@
     "DiffEditor"
    ],
    "desc": "Monaco 单文件与 diff, One Dark Pro Darker, 本地 worker 无 CDN",
-   "page": true
+   "page": true,
+   "sub": "layout-content"
   },
   {
    "id": "stat-card",
@@ -4716,7 +4762,8 @@
     "StatGrid"
    ],
    "desc": "指标卡与栅格, 数字等宽不抖",
-   "page": true
+   "page": true,
+   "sub": "layout-content"
   },
   {
    "id": "data-table",
@@ -4729,7 +4776,8 @@
     "DataTable"
    ],
    "desc": "粘性表头, 空态, 加载态与行点击",
-   "page": true
+   "page": true,
+   "sub": "layout-content"
   },
   {
    "id": "empty-state",
@@ -4743,7 +4791,8 @@
     "EmptyState"
    ],
    "desc": "空, 错误与加载三态",
-   "page": true
+   "page": true,
+   "sub": "layout-content"
   },
   {
    "id": "page-header",
@@ -4756,7 +4805,8 @@
     "PageHeader"
    ],
    "desc": "标题, 说明与右侧操作位",
-   "page": true
+   "page": true,
+   "sub": "layout-content"
   },
   {
    "id": "setting-chrome",
@@ -4769,7 +4819,8 @@
     "SettingHeading"
    ],
    "desc": "一张卡里一行一个设置项",
-   "page": true
+   "page": true,
+   "sub": "layout-shell"
   },
   {
    "id": "app-frame",
@@ -4782,7 +4833,8 @@
     "AppFrame"
    ],
    "desc": "外留白与两块圆角面板",
-   "page": true
+   "page": true,
+   "sub": "layout-shell"
   },
   {
    "id": "sidebar-nav",
@@ -4795,7 +4847,8 @@
     "SidebarNavItemButton"
    ],
    "desc": "带数字与文本角标",
-   "page": true
+   "page": true,
+   "sub": "layout-shell"
   },
   {
    "id": "sidebar",
@@ -4825,7 +4878,8 @@
     "SidebarTrigger"
    ],
    "desc": "组合式应用侧栏, 可收成图标条",
-   "page": true
+   "page": true,
+   "sub": "layout-shell"
   },
   {
    "id": "stepper",
@@ -4840,7 +4894,8 @@
     "LogViewer"
    ],
    "desc": "步骤条与日志框, 含联动示例",
-   "page": true
+   "page": true,
+   "sub": "layout-shell"
   },
   {
    "id": "proxy-chain",
@@ -4854,7 +4909,8 @@
     "ProxyLayerLegend"
    ],
    "desc": "入口, 策略与实体",
-   "page": true
+   "page": true,
+   "sub": "layout-shell"
   },
   {
    "id": "browser-live",
@@ -4869,7 +4925,8 @@
     "BrowserLiveWall"
    ],
    "desc": "多副本实时预览与远程操作",
-   "page": true
+   "page": true,
+   "sub": "layout-shell"
   },
   {
    "id": "charts",
@@ -5023,7 +5080,8 @@
    "role": "template",
    "exports": [],
    "desc": "会话列表 + 流式回复 + 轨迹 + 输入框, 整页可复制",
-   "page": true
+   "page": true,
+   "sub": "templates-app"
   },
   {
    "id": "templates-settings",
@@ -5037,7 +5095,8 @@
     "SettingRow"
    ],
    "desc": "二级设置栏 + 一行一个设置项, 整页可复制",
-   "page": true
+   "page": true,
+   "sub": "templates-app"
   },
   {
    "id": "templates-dashboard",
@@ -5048,7 +5107,8 @@
    "role": "template",
    "exports": [],
    "desc": "指标卡 + 面积图 + 数据表, 整页可复制",
-   "page": true
+   "page": true,
+   "sub": "templates-app"
   },
   {
    "id": "templates-console",
@@ -5059,7 +5119,8 @@
    "role": "template",
    "exports": [],
    "desc": "代理链路 + 步骤条 + 日志框, 整页可复制",
-   "page": true
+   "page": true,
+   "sub": "templates-app"
   },
   {
    "id": "page-saas",
@@ -5070,7 +5131,8 @@
    "role": "template",
    "exports": [],
    "desc": "复刻 vercel / linear / stripe 型 SaaS 落地页: 主视觉 + 客户墙 + 便当格 + 定价 + 问答, 三套皮肤",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "page-opensource",
@@ -5081,7 +5143,8 @@
    "role": "template",
    "exports": [],
    "desc": "复刻 tailwindcss / astro / bun 型开源项目主页: 安装命令 + 代码展示 + 案例 + 更新日志, 三套皮肤",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "page-pricing",
@@ -5092,7 +5155,8 @@
    "role": "template",
    "exports": [],
    "desc": "复刻 linear / vercel 型定价页: 月年切换套餐 + 功能对比表 + 分组问答, 三套皮肤",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "page-commerce-home",
@@ -5103,7 +5167,8 @@
    "role": "template",
    "exports": [],
    "desc": "复刻 nike / apple / shopify 型电商首页: 大菜单 + 轮播 + 分类 + 商品网格. 演示里顶栏未吸顶, 真实项目里传 sticky: true",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "page-product",
@@ -5114,7 +5179,8 @@
    "role": "template",
    "exports": [],
    "desc": "复刻 apple / nike 型商品详情页: 画廊 + 购买面板 + 规格对比 + 评价. 演示里顶栏未吸顶, 真实项目里传 sticky: true",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "page-portfolio",
@@ -5125,7 +5191,8 @@
    "role": "template",
    "exports": [],
    "desc": "复刻 brittanychiang.com 型个人主页: 粘性双栏, 经历 + 项目 + 文章",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "page-docsite",
@@ -5136,7 +5203,8 @@
    "role": "template",
    "exports": [],
    "desc": "复刻 mantine / shadcn / ant.design 型组件文档站: 首页 + 侧栏目录 + 正文 + 属性表",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "page-dashboard",
@@ -5147,7 +5215,8 @@
    "role": "template",
    "exports": [],
    "desc": "复刻 SaaS 后台型仪表盘: 侧栏 + 指标行 + 双图表 + 动态流 + 上手清单",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "page-clone-linear",
@@ -5158,7 +5227,8 @@
    "role": "template",
    "exports": [],
    "desc": "逐块对拽 linear.app 深色首屏: 零自定义 class, 缺口如实留在画面上",
-   "page": true
+   "page": true,
+   "sub": "templates-clone"
   },
   {
    "id": "blueprint",

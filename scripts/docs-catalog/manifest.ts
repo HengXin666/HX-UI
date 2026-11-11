@@ -19,12 +19,23 @@ export interface SrcPage {
   readonly exports?: readonly string[];
 }
 
+/** 左栏每组 (或子组) 最多几件, 超了在目录源里拆子组. */
+export const GROUP_MAX = 12;
+
+/** 组里的子组: 组超过 GROUP_MAX 件时按页 id 拆开, 每页恰好落在一个子组里. */
+export interface SrcSubgroup {
+  readonly id: string;
+  readonly label: string;
+  readonly pages: readonly string[];
+}
+
 export interface SrcGroup {
   readonly id: string;
   readonly layer: string;
   readonly label: string;
   /** 组里还没有页的件按这个页型列进目录 (组件层的组才有). */
   readonly pieceKind?: PageKind;
+  readonly subgroups?: readonly SrcSubgroup[];
   readonly pages: readonly SrcPage[];
 }
 
@@ -49,6 +60,8 @@ export interface Manifest {
 export interface FlatPage extends SrcPage {
   readonly role: PageRole;
   readonly group: string;
+  /** 所在子组 id; 组没拆子组时省略. */
+  readonly sub?: string;
   readonly layer: string;
 }
 
@@ -77,6 +90,7 @@ function shapeProblems(manifest: Manifest): string[] {
       if (page.role && !PAGE_ROLES.includes(page.role)) out.push(`页 ${page.id} 的 role ${page.role} 不认识`);
       if (!page.name || !page.desc) out.push(`页 ${page.id} 缺名称或说明`);
     }
+    out.push(...subgroupProblems(group));
   }
   for (const family of manifest.families ?? []) {
     if (!groupIds.has(family.group)) out.push(`族 ${family.dir} 指向不存在的组 ${family.group}`);
@@ -84,6 +98,29 @@ function shapeProblems(manifest: Manifest): string[] {
   return out;
 }
 
+/** 子组: 每页恰好在一个子组里, 每个子组不超过 GROUP_MAX 件. 组本身超限而没拆子组由 build.ts 报 (那时才知道没页的件有几件). */
+function subgroupProblems(group: SrcGroup): string[] {
+  const out: string[] = [];
+  if (!group.subgroups) return out;
+  const own = new Set(group.pages.map((page) => page.id));
+  const seen = new Set<string>();
+  for (const sub of group.subgroups) {
+    if (sub.pages.length > GROUP_MAX) out.push(`子组 ${sub.id} 有 ${sub.pages.length} 件, 超过 ${GROUP_MAX}`);
+    for (const id of sub.pages) {
+      if (!own.has(id)) out.push(`子组 ${sub.id} 列了不在组 ${group.id} 里的页 ${id}`);
+      if (seen.has(id)) out.push(`页 ${id} 落在两个子组里`);
+      seen.add(id);
+    }
+  }
+  for (const id of own) if (!seen.has(id)) out.push(`组 ${group.id} 拆了子组, 但页 ${id} 不在任何子组里`);
+  return out;
+}
+
 export function flatPages(manifest: Manifest): FlatPage[] {
-  return manifest.groups.flatMap((group) => group.pages.map((page) => ({ ...page, role: page.role ?? "component", group: group.id, layer: group.layer })));
+  return manifest.groups.flatMap((group) =>
+    group.pages.map((page) => {
+      const sub = group.subgroups?.find((item) => item.pages.includes(page.id))?.id;
+      return { ...page, role: page.role ?? "component", group: group.id, layer: group.layer, ...(sub ? { sub } : {}) };
+    }),
+  );
 }
