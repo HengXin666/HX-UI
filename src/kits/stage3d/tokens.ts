@@ -1,6 +1,6 @@
 /**
  * 立体族 (src/kits/stage3d) 共用的名字. 卡片族已有的动值循环, 指数跟随, 弹簧换算, 卡面坐标与过渡串在这里转出.
- * 收口时与其他 kits 族一起并进 src/motion.
+ * kits 公共名字取自 src/kits/tokens.ts, 帧驱动工具取自 src/motion.
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-stage3d.md
  */

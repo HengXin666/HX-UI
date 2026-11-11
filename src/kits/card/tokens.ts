@@ -1,11 +1,10 @@
 /**
- * 卡片族 (src/kits/card) 共用的名字. 叠放族已有的动值循环, 弹簧换算, 过渡串与语义色在这里转出,
+ * 卡片族 (src/kits/card) 共用的名字. kits 公共的动值循环, 弹簧换算, 过渡串与语义色在这里转出,
  * 本族补规格反复出现的指数跟随写法 (帧间隔上限 0.05s) 与指针到卡面的归一化坐标.
- * 收口时与导航族, 画廊族, 叠放族, 玻璃族一起并进 src/motion.
  *
  * .agents/notes/implemented/feature/2026-11-10-kits-card.md
  */
-export { KIT_FOCUS, MS_PER_S, TAU, clamp, kitTone, omegaSpring, smoothstep, transitionOf, useKitMotion, type KitMotion, type KitTone } from "../stack/tokens";
+export { KIT_FOCUS, MS_PER_S, TAU, clamp, kitTone, omegaSpring, smoothstep, transitionOf, useKitMotion, type KitMotion, type KitTone } from "../tokens";
 
 /** 规格各件的帧间隔上限 0.05s. */
 export const CARD_MAX_DT_S = 0.05;
