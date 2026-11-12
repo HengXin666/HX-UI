@@ -49,7 +49,7 @@ export const NUDGE_FIELD: PageSpec = {
   raw: nudgeRaw,
   deps: [],
   controls: CONTROLS,
-  height: 260,
+  height: 360,
   render: (props) => <NudgeDemo {...props} />,
   usage: (values: Values) => controlUsage("NudgeField", values, { ...BASE, size: "md", label: "", suffix: "", defaultValue: -1, max: 100, showDirty: false }),
   propDesc: {
