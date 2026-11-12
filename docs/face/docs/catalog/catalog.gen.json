@@ -2738,7 +2738,7 @@
   },
   {
    "id": "nudge-field",
-   "name": "NudgeField",
+   "name": "NudgeField 拨动数值框",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2746,14 +2746,12 @@
    "exports": [
     "NudgeField"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/input/NudgeField.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "带标签的数值框: 按住标签左右拖动改值, 越界时橡皮筋, 松手弹回; 也能直接输入或用方向键.",
+   "page": true
   },
   {
    "id": "pin-cells",
-   "name": "PinCells",
+   "name": "PinCells 验证码格子",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2761,14 +2759,12 @@
    "exports": [
     "PinCells"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/input/PinCells.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "一次性验证码格子: 字符逐格落下, 校验通过时底色漫上来, 字符下沉变淡, 对勾从下方升起.",
+   "page": true
   },
   {
    "id": "stretch-slider",
-   "name": "StretchSlider",
+   "name": "StretchSlider 弹性滑块",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2776,14 +2772,12 @@
    "exports": [
     "StretchSlider"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/input/StretchSlider.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "拖过两端时轨道被橡皮筋式拉长, 松手弹回的滑块; 悬停变粗, 支持吸附步长, 刻度与竖放.",
+   "page": true
   },
   {
    "id": "swell-slider",
-   "name": "SwellSlider",
+   "name": "SwellSlider 竖条滑杆",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2791,14 +2785,12 @@
    "exports": [
     "SwellSlider"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/input/SwellSlider.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "一排竖条组成的滑杆, 值头移动越快, 附近的竖条隆起得越高, 留下一道尾迹.",
+   "page": true
   },
   {
    "id": "tally-roll",
-   "name": "TallyRoll",
+   "name": "TallyRoll 逐位滚动数字",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2806,10 +2798,8 @@
    "exports": [
     "TallyRoll"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/meter/TallyRoll.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "数字逐位从旧值滚到新值, 带轻微过冲与运动模糊; 按 Intl.NumberFormat 格式化, 首次进入视口时从 0 滚起.",
+   "page": true
   },
   {
    "id": "tank-gauge",
