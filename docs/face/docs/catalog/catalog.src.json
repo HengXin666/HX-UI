@@ -146,7 +146,12 @@
   ]},
   {"id": "controls-choice", "layer": "controls", "label": "选择", "pieceKind": "control", "pages": [
    {"id": "chime-toggle", "name": "ChimeToggle 订阅铃", "desc": "打开时铃铛按衰减摆动并放出声波, 文字交叉淡入, 胶囊宽度跟弹簧展开; 关掉时轻晃一下.", "kind": "control", "exports": ["ChimeToggle"]},
-   {"id": "drift-select", "name": "DriftSelect 滑行下拉", "desc": "select-only 下拉: 菜单弹出时高亮块按弹簧在选项间滑行, 选中值换字时轻推一下; 关闭途中再打开, 弹出原地倒放.", "kind": "control", "exports": ["DriftSelect"]}
+   {"id": "drift-select", "name": "DriftSelect 滑行下拉", "desc": "select-only 下拉: 菜单弹出时高亮块按弹簧在选项间滑行, 选中值换字时轻推一下; 关闭途中再打开, 弹出原地倒放.", "kind": "control", "exports": ["DriftSelect"]},
+   {"id": "elastic-segment", "name": "ElasticSegment 橡皮分段", "desc": "分段选择: 拇指头边先走, 尾边晚一拍追上, 落定时压一下再回弹; 可拖动, 越界有阻尼, 甩动按速度跳档.", "kind": "control", "exports": ["ElasticSegment"]},
+   {"id": "gel-radio", "name": "GelRadio 果冻单选", "desc": "选中块由三层叠成, 刚度与回弹各不同, 跨得越远越软, 拖出一条果冻尾巴; 方向键漫游即选中.", "kind": "control", "exports": ["GelRadio"]},
+   {"id": "lift-rating", "name": "LiftRating 探头评分", "desc": "悬停的那颗抬起放大, 上方探出提示, 左侧同时点亮作预览; 选中时弹一下, 方向键移动即选中.", "kind": "control", "exports": ["LiftRating"]},
+   {"id": "plush-switch", "name": "PlushSwitch 软胶开关", "desc": "拇指跟位置弹簧走, 移动越快拉得越长, 按下鼓起; 可拖动也可轻点, 中途反向保留速度.", "kind": "control", "exports": ["PlushSwitch"]},
+   {"id": "reel-picker", "name": "ReelPicker 滚轮选项列", "desc": "当前项停在中线, 上下各行沿弧线退开, 倾斜, 变淡, 变模糊; 滚轮, 拖动, 点击与方向键都会换项.", "kind": "control", "exports": ["ReelPicker"]}
   ]},
   {"id": "controls-dismiss", "layer": "controls", "label": "撤销", "pieceKind": "control", "pages": [
 

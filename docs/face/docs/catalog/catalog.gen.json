@@ -2959,7 +2959,7 @@
   },
   {
    "id": "elastic-segment",
-   "name": "ElasticSegment",
+   "name": "ElasticSegment 橡皮分段",
    "layer": "controls",
    "group": "controls-choice",
    "kind": "control",
@@ -2967,14 +2967,12 @@
    "exports": [
     "ElasticSegment"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/choice/pick/ElasticSegment.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "分段选择: 拇指头边先走, 尾边晚一拍追上, 落定时压一下再回弹; 可拖动, 越界有阻尼, 甩动按速度跳档.",
+   "page": true
   },
   {
    "id": "gel-radio",
-   "name": "GelRadio",
+   "name": "GelRadio 果冻单选",
    "layer": "controls",
    "group": "controls-choice",
    "kind": "control",
@@ -2982,14 +2980,12 @@
    "exports": [
     "GelRadio"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/choice/pick/GelRadio.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "选中块由三层叠成, 刚度与回弹各不同, 跨得越远越软, 拖出一条果冻尾巴; 方向键漫游即选中.",
+   "page": true
   },
   {
    "id": "lift-rating",
-   "name": "LiftRating",
+   "name": "LiftRating 探头评分",
    "layer": "controls",
    "group": "controls-choice",
    "kind": "control",
@@ -2997,14 +2993,12 @@
    "exports": [
     "LiftRating"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/choice/rate/LiftRating.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "悬停的那颗抬起放大, 上方探出提示, 左侧同时点亮作预览; 选中时弹一下, 方向键移动即选中.",
+   "page": true
   },
   {
    "id": "plush-switch",
-   "name": "PlushSwitch",
+   "name": "PlushSwitch 软胶开关",
    "layer": "controls",
    "group": "controls-choice",
    "kind": "control",
@@ -3012,14 +3006,12 @@
    "exports": [
     "PlushSwitch"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/choice/toggle/PlushSwitch.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "拇指跟位置弹簧走, 移动越快拉得越长, 按下鼓起; 可拖动也可轻点, 中途反向保留速度.",
+   "page": true
   },
   {
    "id": "reel-picker",
-   "name": "ReelPicker",
+   "name": "ReelPicker 滚轮选项列",
    "layer": "controls",
    "group": "controls-choice",
    "kind": "control",
@@ -3027,10 +3019,8 @@
    "exports": [
     "ReelPicker"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/choice/pick/ReelPicker.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "当前项停在中线, 上下各行沿弧线退开, 倾斜, 变淡, 变模糊; 滚轮, 拖动, 点击与方向键都会换项.",
+   "page": true
   },
   {
    "id": "step-trail",
