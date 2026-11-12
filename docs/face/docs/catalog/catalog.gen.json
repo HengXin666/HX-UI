@@ -2803,7 +2803,7 @@
   },
   {
    "id": "tank-gauge",
-   "name": "TankGauge",
+   "name": "TankGauge 液位表",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2811,14 +2811,12 @@
    "exports": [
     "TankGauge"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/meter/TankGauge.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "玻璃容器里的液位计: 值变了液位滑过去, 液面随液位速度倾斜晃荡后静止; 可只读也可拖动.",
+   "page": true
   },
   {
    "id": "task-glyph",
-   "name": "TaskGlyph",
+   "name": "TaskGlyph 任务状态图标",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2826,10 +2824,8 @@
    "exports": [
     "TaskGlyph"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/status/TaskGlyph.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "任务行前的状态图标: 待办是呼吸的虚线圈, 进行中是转动的弧, 完成画对勾并给文字划线, 失败画叉.",
+   "page": true
   },
   {
    "id": "arc-field",

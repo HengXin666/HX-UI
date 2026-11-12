@@ -130,7 +130,9 @@
    {"id": "pin-cells", "name": "PinCells 验证码格子", "desc": "一次性验证码格子: 字符逐格落下, 校验通过时底色漫上来, 字符下沉变淡, 对勾从下方升起.", "kind": "control", "exports": ["PinCells"]},
    {"id": "stretch-slider", "name": "StretchSlider 弹性滑块", "desc": "拖过两端时轨道被橡皮筋式拉长, 松手弹回的滑块; 悬停变粗, 支持吸附步长, 刻度与竖放.", "kind": "control", "exports": ["StretchSlider"]},
    {"id": "swell-slider", "name": "SwellSlider 竖条滑杆", "desc": "一排竖条组成的滑杆, 值头移动越快, 附近的竖条隆起得越高, 留下一道尾迹.", "kind": "control", "exports": ["SwellSlider"]},
-   {"id": "tally-roll", "name": "TallyRoll 逐位滚动数字", "desc": "数字逐位从旧值滚到新值, 带轻微过冲与运动模糊; 按 Intl.NumberFormat 格式化, 首次进入视口时从 0 滚起.", "kind": "control", "exports": ["TallyRoll"]}
+   {"id": "tally-roll", "name": "TallyRoll 逐位滚动数字", "desc": "数字逐位从旧值滚到新值, 带轻微过冲与运动模糊; 按 Intl.NumberFormat 格式化, 首次进入视口时从 0 滚起.", "kind": "control", "exports": ["TallyRoll"]},
+   {"id": "tank-gauge", "name": "TankGauge 液位表", "desc": "玻璃容器里的液位计: 值变了液位滑过去, 液面随液位速度倾斜晃荡后静止; 可只读也可拖动.", "kind": "control", "exports": ["TankGauge"]},
+   {"id": "task-glyph", "name": "TaskGlyph 任务状态图标", "desc": "任务行前的状态图标: 待办是呼吸的虚线圈, 进行中是转动的弧, 完成画对勾并给文字划线, 失败画叉.", "kind": "control", "exports": ["TaskGlyph"]}
   ]},
   {"id": "controls-compose", "layer": "controls", "label": "输入", "pieceKind": "control", "pages": [
 

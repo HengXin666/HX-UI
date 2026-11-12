@@ -45,7 +45,8 @@ controls 层 catalog 计 50 件 (加总览共 51 条); 第 1 批取前 17 件 (c
 |---|---|---|
 | 1 | glint-button, grace-commit, hold-confirm, liftoff, like-burst | 9625f72 |
 | 2 | pull-send, run-chip, swipe-confirm, arc-knob, grid-pulse | 12c2ed2 |
-| 3 | nudge-field, pin-cells, stretch-slider, swell-slider, tally-roll | (本提交) |
+| 3 | nudge-field, pin-cells, stretch-slider, swell-slider, tally-roll | 0a55f9d |
+| 4 | tank-gauge, task-glyph | (本提交) |
 ## 顺序
 
 controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 (已齐) → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push; 已完成 2026-11-10) → surface 余量 30 件.
