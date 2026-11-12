@@ -6,13 +6,14 @@ import { RANGE_TONES } from "./tones";
 
 /**
  * controls 批 1: 任务行前的状态图标. 待办是呼吸的虚线圈, 进行中是转动的弧 (给 progress 时是定量弧), 完成画对勾并给文字划线, 失败画叉.
- * 演示是一份发布清单: 第二行跟着调参走, 其余三行固定在各自状态, 方便对照.
+ * 演示是一份发布清单: 第二行的状态, 文字与进度跟着调参走, 其余三行固定在各自状态; 外观类调参 (尺寸, 线宽, 虚线段数, 字号, 划线, 进行色)
+ * 四行一起走, 所以虚线段数看待办行, 完成划线看完成行.
  */
 
 const CONTROLS: readonly ControlDef[] = [
   select("status", "状态", ["pending", "working", "done", "error"], "working", '"pending" | "working" | "done" | "error"', "四种状态; 切换时图标以弹簧缩放进来."),
   text("label", "文字", "构建并上传 dist", "图标右边的任务文字; 完成时被划线."),
-  toggle("quantified", "定量进度", false, "不是属性: 打开时演示传 progress, 进行中改画定量弧, 不转."),
+  toggle("quantified", "定量进度", true, "不是属性: 打开时演示传 progress, 进行中改画定量弧, 不转."),
   range("progress", "进度", [0, 1, 0.05], 0.4, "0 到 1; 只在给了且处于 working 时起作用."),
   range("size", "图标尺寸", [14, 32, 1], 20, "图标边长 px."),
   range("strokeWidth", "线宽", [1, 3, 0.5], 2, "圈, 弧, 对勾与叉的线宽 (24 视口单位)."),
@@ -29,7 +30,14 @@ const ROWS: ReadonlyArray<{ readonly status: TaskStatus; readonly label: string 
   { status: "pending", label: "通知 #release 频道" },
 ];
 
+/** 外观类属性, 固定的三行也跟着走. */
+const LOOK = ["size", "strokeWidth", "dashes", "fontSize", "strike", "tone"];
+
 const toProps = ({ quantified, progress, ...rest }: Values): Record<string, unknown> => (quantified ? { ...rest, progress } : rest);
+
+function pick(props: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(LOOK.map((key) => [key, props[key]]));
+}
 
 export const TASK_GLYPH: PageSpec = {
   id: "task-glyph",
@@ -44,19 +52,19 @@ export const TASK_GLYPH: PageSpec = {
   render: (props) => (
     <ul className="flex flex-col items-start gap-3 text-left">
       <li>
-        <TaskGlyph {...ROWS[0]} />
+        <TaskGlyph {...pick(props)} {...ROWS[0]} />
       </li>
       <li>
         <TaskGlyph {...props} />
       </li>
       {ROWS.slice(1).map((row) => (
         <li key={row.label}>
-          <TaskGlyph {...row} />
+          <TaskGlyph {...pick(props)} {...row} />
         </li>
       ))}
     </ul>
   ),
-  usage: (values: Values) => controlUsage("TaskGlyph", toProps(values) as Values, { ...toProps(BASE), status: "pending", label: "", tone: "" } as Values),
+  usage: (values: Values) => controlUsage("TaskGlyph", toProps(values) as Values, { ...toProps(BASE), status: "pending", label: "", tone: "", progress: -1 } as Values),
   propDesc: {
     doneTone: "对勾的颜色.",
     errorTone: "叉的颜色.",
