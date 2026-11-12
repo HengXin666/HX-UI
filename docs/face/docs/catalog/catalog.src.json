@@ -135,7 +135,11 @@
    {"id": "task-glyph", "name": "TaskGlyph 任务状态图标", "desc": "任务行前的状态图标: 待办是呼吸的虚线圈, 进行中是转动的弧, 完成画对勾并给文字划线, 失败画叉.", "kind": "control", "exports": ["TaskGlyph"]}
   ]},
   {"id": "controls-compose", "layer": "controls", "label": "输入", "pieceKind": "control", "pages": [
-
+   {"id": "arc-field", "name": "ArcField 弧形输入框", "desc": "外框, 文字与按钮沿同一条下垂曲线排布的单行输入框; 光标离开末尾或文字超长时换回直排编辑, 失焦再弯回去.", "kind": "control", "exports": ["ArcField"]},
+   {"id": "composer-field", "name": "ComposerField 对话输入条", "desc": "自动长高的文本域, 来源选择与发送 / 停止键; 底边一道光随打字能量流动, 发送时闪一下.", "kind": "control", "exports": ["ComposerField"]},
+   {"id": "cue-tip", "name": "CueTip 暖提示", "desc": "冷启动悬停一会儿才弹出; 收起后短时间内碰到下一个触发件立即弹出, 并从上一个气泡的位置滑过来.", "kind": "control", "exports": ["CueTip"]},
+   {"id": "develop-frame", "name": "DevelopFrame 显影框", "desc": "生成内容的占位框: 内容从分条遮罩与模糊里逐档清晰, 生成中有一条软边扫光, 失败给重试.", "kind": "control", "exports": ["DevelopFrame"]},
+   {"id": "dictate-button", "name": "DictateButton 听写键", "desc": "按下开始收音, 胶囊展开出波形与计时; 轻点切换, 按住说话, 按住左滑取消.", "kind": "control", "exports": ["DictateButton"]}
   ]},
   {"id": "controls-choice", "layer": "controls", "label": "选择", "pieceKind": "control", "pages": [
 

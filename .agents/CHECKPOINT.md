@@ -47,6 +47,14 @@ controls 层 catalog 计 50 件 (加总览共 51 条); 第 1 批取前 17 件 (c
 | 2 | pull-send, run-chip, swipe-confirm, arc-knob, grid-pulse | 12c2ed2 |
 | 3 | nudge-field, pin-cells, stretch-slider, swell-slider, tally-roll | 0a55f9d |
 | 4 | tank-gauge, task-glyph | 5478a56 |
+## 文档站 controls 第 2 批 (输入 8 + 选择 9 = 17 件, 2026-11-12 起)
+
+controls 层 catalog 第 2 批取输入 (controls-compose) 8 件与选择 (controls-choice) 9 件, 页型与第 1 批相同 (control 页型, 减少动效对照段); 每满 5 篇一提, 5 + 5 + 5 + 2.
+每组提交前: docs tsc, 仓库外构建, sweep 只扫本组 (调参改值前后像素差), 不改预览的控件先修演示再复扫.
+
+| 批 | 件 | 提交 |
+|---|---|---|
+| 1 | arc-field, composer-field, cue-tip, develop-frame, dictate-button | (本提交) |
 ## 顺序
 
 controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 (已齐) → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push; 已完成 2026-11-10) → surface 余量 30 件.

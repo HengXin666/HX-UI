@@ -2829,7 +2829,7 @@
   },
   {
    "id": "arc-field",
-   "name": "ArcField",
+   "name": "ArcField 弧形输入框",
    "layer": "controls",
    "group": "controls-compose",
    "kind": "control",
@@ -2837,14 +2837,12 @@
    "exports": [
     "ArcField"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/compose/input/ArcField.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "外框, 文字与按钮沿同一条下垂曲线排布的单行输入框; 光标离开末尾或文字超长时换回直排编辑, 失焦再弯回去.",
+   "page": true
   },
   {
    "id": "composer-field",
-   "name": "ComposerField",
+   "name": "ComposerField 对话输入条",
    "layer": "controls",
    "group": "controls-compose",
    "kind": "control",
@@ -2852,14 +2850,12 @@
    "exports": [
     "ComposerField"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/compose/input/ComposerField.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "自动长高的文本域, 来源选择与发送 / 停止键; 底边一道光随打字能量流动, 发送时闪一下.",
+   "page": true
   },
   {
    "id": "cue-tip",
-   "name": "CueTip",
+   "name": "CueTip 暖提示",
    "layer": "controls",
    "group": "controls-compose",
    "kind": "control",
@@ -2867,14 +2863,12 @@
    "exports": [
     "CueTip"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/compose/overlay/CueTip.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "冷启动悬停一会儿才弹出; 收起后短时间内碰到下一个触发件立即弹出, 并从上一个气泡的位置滑过来.",
+   "page": true
   },
   {
    "id": "develop-frame",
-   "name": "DevelopFrame",
+   "name": "DevelopFrame 显影框",
    "layer": "controls",
    "group": "controls-compose",
    "kind": "control",
@@ -2882,14 +2876,12 @@
    "exports": [
     "DevelopFrame"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/compose/status/DevelopFrame.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "生成内容的占位框: 内容从分条遮罩与模糊里逐档清晰, 生成中有一条软边扫光, 失败给重试.",
+   "page": true
   },
   {
    "id": "dictate-button",
-   "name": "DictateButton",
+   "name": "DictateButton 听写键",
    "layer": "controls",
    "group": "controls-compose",
    "kind": "control",
@@ -2897,10 +2889,8 @@
    "exports": [
     "DictateButton"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/compose/input/DictateButton.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "按下开始收音, 胶囊展开出波形与计时; 轻点切换, 按住说话, 按住左滑取消.",
+   "page": true
   },
   {
    "id": "fork-menu",
