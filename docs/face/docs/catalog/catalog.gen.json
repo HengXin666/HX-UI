@@ -2673,7 +2673,7 @@
   },
   {
    "id": "pull-send",
-   "name": "PullSend",
+   "name": "PullSend 弹弓发送",
    "layer": "controls",
    "group": "controls-press",
    "kind": "control",
@@ -2681,14 +2681,12 @@
    "exports": [
     "PullSend"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/press/launch/PullSend.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "弹弓发送: 拖动垫子拉开橡皮筋, 超过阈值上膛, 松手向反方向发射并回弹; 轻点与键盘直接发送.",
+   "page": true
   },
   {
    "id": "run-chip",
-   "name": "RunChip",
+   "name": "RunChip 工具调用芯片",
    "layer": "controls",
    "group": "controls-press",
    "kind": "control",
@@ -2696,14 +2694,12 @@
    "exports": [
     "RunChip"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/press/signal/RunChip.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "工具调用芯片: 运行中按预期耗时走进度并计时, 完成或出错时底色从左往右刷开, 出错抖一下并可点重试.",
+   "page": true
   },
   {
    "id": "swipe-confirm",
-   "name": "SwipeConfirm",
+   "name": "SwipeConfirm 滑动确认",
    "layer": "controls",
    "group": "controls-press",
    "kind": "control",
@@ -2711,14 +2707,12 @@
    "exports": [
     "SwipeConfirm"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/press/hold/SwipeConfirm.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "滑动确认: 把拇指拖到端点才提交, 中途松手回弹归位; onConfirm 返回 Promise 时进入等待, 失败走错误态.",
+   "page": true
   },
   {
    "id": "arc-knob",
-   "name": "ArcKnob",
+   "name": "ArcKnob 弧形旋钮",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2726,14 +2720,12 @@
    "exports": [
     "ArcKnob"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/input/ArcKnob.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "圆弧刻度盘: 点按跳到该处, 拖动时读数跟随指针, 甩出后带惯性滑行再吸附, 读数头后拖一条随速度伸缩的彗尾.",
+   "page": true
   },
   {
    "id": "grid-pulse",
-   "name": "GridPulse",
+   "name": "GridPulse 点阵脉冲",
    "layer": "controls",
    "group": "controls-range",
    "kind": "control",
@@ -2741,10 +2733,8 @@
    "exports": [
     "GridPulse"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/range/status/GridPulse.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "小点阵加文字的长任务状态: 进行中点阵按走法逐帧点亮并计时, 完成画对勾, 失败画叉, 文字换成用时文案.",
+   "page": true
   },
   {
    "id": "nudge-field",

@@ -118,10 +118,14 @@
    {"id": "grace-commit", "name": "GraceCommit 撤销窗口提交", "desc": "按下点燃引线, 窗口内再按一次撤销, 悬停时引线暂停; 引线时长是功能信息, 减少动效时照常计时.", "kind": "control", "exports": ["GraceCommit"]},
    {"id": "hold-confirm", "name": "HoldConfirm 按住确认", "desc": "按住期间进度填满才确认, 中途松开按比例回退, 轻点走 onTap; 支持四个填充方向与波浪前沿.", "kind": "control", "exports": ["HoldConfirm"]},
    {"id": "liftoff", "name": "Liftoff 起飞按钮", "desc": "悬停或点击时以弹簧升空, 指针左右决定倾斜, 底下推进器喷火; 减少动效时不升空只保留点击.", "kind": "control", "exports": ["Liftoff"]},
-   {"id": "like-burst", "name": "LikeBurst 点赞迸发", "desc": "点亮时图标弹出并跳几下, 一圈粒子外飞, 计数纵向滚一格; 取消只换色, 减少动效时只换色和数字.", "kind": "control", "exports": ["LikeBurst"]}
+   {"id": "like-burst", "name": "LikeBurst 点赞迸发", "desc": "点亮时图标弹出并跳几下, 一圈粒子外飞, 计数纵向滚一格; 取消只换色, 减少动效时只换色和数字.", "kind": "control", "exports": ["LikeBurst"]},
+   {"id": "pull-send", "name": "PullSend 弹弓发送", "desc": "弹弓发送: 拖动垫子拉开橡皮筋, 超过阈值上膛, 松手向反方向发射并回弹; 轻点与键盘直接发送.", "kind": "control", "exports": ["PullSend"]},
+   {"id": "run-chip", "name": "RunChip 工具调用芯片", "desc": "工具调用芯片: 运行中按预期耗时走进度并计时, 完成或出错时底色从左往右刷开, 出错抖一下并可点重试.", "kind": "control", "exports": ["RunChip"]},
+   {"id": "swipe-confirm", "name": "SwipeConfirm 滑动确认", "desc": "滑动确认: 把拇指拖到端点才提交, 中途松手回弹归位; onConfirm 返回 Promise 时进入等待, 失败走错误态.", "kind": "control", "exports": ["SwipeConfirm"]}
   ]},
   {"id": "controls-range", "layer": "controls", "label": "取值", "pieceKind": "control", "pages": [
-
+   {"id": "arc-knob", "name": "ArcKnob 弧形旋钮", "desc": "圆弧刻度盘: 点按跳到该处, 拖动时读数跟随指针, 甩出后带惯性滑行再吸附, 读数头后拖一条随速度伸缩的彗尾.", "kind": "control", "exports": ["ArcKnob"]},
+   {"id": "grid-pulse", "name": "GridPulse 点阵脉冲", "desc": "小点阵加文字的长任务状态: 进行中点阵按走法逐帧点亮并计时, 完成画对勾, 失败画叉, 文字换成用时文案.", "kind": "control", "exports": ["GridPulse"]}
   ]},
   {"id": "controls-compose", "layer": "controls", "label": "输入", "pieceKind": "control", "pages": [
 
