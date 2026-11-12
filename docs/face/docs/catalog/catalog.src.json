@@ -151,7 +151,9 @@
    {"id": "gel-radio", "name": "GelRadio 果冻单选", "desc": "选中块由三层叠成, 刚度与回弹各不同, 跨得越远越软, 拖出一条果冻尾巴; 方向键漫游即选中.", "kind": "control", "exports": ["GelRadio"]},
    {"id": "lift-rating", "name": "LiftRating 探头评分", "desc": "悬停的那颗抬起放大, 上方探出提示, 左侧同时点亮作预览; 选中时弹一下, 方向键移动即选中.", "kind": "control", "exports": ["LiftRating"]},
    {"id": "plush-switch", "name": "PlushSwitch 软胶开关", "desc": "拇指跟位置弹簧走, 移动越快拉得越长, 按下鼓起; 可拖动也可轻点, 中途反向保留速度.", "kind": "control", "exports": ["PlushSwitch"]},
-   {"id": "reel-picker", "name": "ReelPicker 滚轮选项列", "desc": "当前项停在中线, 上下各行沿弧线退开, 倾斜, 变淡, 变模糊; 滚轮, 拖动, 点击与方向键都会换项.", "kind": "control", "exports": ["ReelPicker"]}
+   {"id": "reel-picker", "name": "ReelPicker 滚轮选项列", "desc": "当前项停在中线, 上下各行沿弧线退开, 倾斜, 变淡, 变模糊; 滚轮, 拖动, 点击与方向键都会换项.", "kind": "control", "exports": ["ReelPicker"]},
+   {"id": "step-trail", "name": "StepTrail 分步流程", "desc": "连线填充, 内容高度与换步滑入都由弹簧驱动, 中途连点从当前位置与速度接着走; 点指示点可直接跳步.", "kind": "control", "exports": ["StepTrail"]},
+   {"id": "tally-check", "name": "TallyCheck 待办勾选", "desc": "方框填充从 35% 鼓满, 勾线描出, 文字变淡并从一侧划线; 中途反选时每根弹簧从当前值回退.", "kind": "control", "exports": ["TallyCheck"]}
   ]},
   {"id": "controls-dismiss", "layer": "controls", "label": "撤销", "pieceKind": "control", "pages": [
 

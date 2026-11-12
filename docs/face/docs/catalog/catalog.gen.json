@@ -3024,7 +3024,7 @@
   },
   {
    "id": "step-trail",
-   "name": "StepTrail",
+   "name": "StepTrail 分步流程",
    "layer": "controls",
    "group": "controls-choice",
    "kind": "control",
@@ -3032,14 +3032,12 @@
    "exports": [
     "StepTrail"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/choice/steps/StepTrail.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "连线填充, 内容高度与换步滑入都由弹簧驱动, 中途连点从当前位置与速度接着走; 点指示点可直接跳步.",
+   "page": true
   },
   {
    "id": "tally-check",
-   "name": "TallyCheck",
+   "name": "TallyCheck 待办勾选",
    "layer": "controls",
    "group": "controls-choice",
    "kind": "control",
@@ -3047,10 +3045,8 @@
    "exports": [
     "TallyCheck"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/choice/toggle/TallyCheck.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "方框填充从 35% 鼓满, 勾线描出, 文字变淡并从一侧划线; 中途反选时每根弹簧从当前值回退.",
+   "page": true
   },
   {
    "id": "crush-sheet",
