@@ -14,7 +14,7 @@ const PHASE_TEXT: Record<GracePhase, string> = { idle: "待操作", armed: "引�
 const CONTROLS: readonly ControlDef[] = [
   text("label", "按钮文字", "归档 12 封邮件", "空闲态的文字 (label)."),
   text("undoLabel", "撤销文字", "撤销", "引线燃烧期间显示的文字 (undoLabel), 读屏器同时播报."),
-  select("size", "尺寸", ["sm", "md", "lg"], "md", '"sm" | "md" | "lg"', "高度 32 / 40 / 48 px."),
+  select("size", "尺寸", ["sm", "md", "lg"], "lg", '"sm" | "md" | "lg"', "高度 32 / 40 / 48 px."),
   range("radius", "圆角", [0, 24, 1], 22, "圆角 px; 描边引线沿同一个圆角走."),
   select("fuse", "引线", ["outline", "bar"], "outline", '"outline" | "bar"', "outline 沿整圈描边烧, bar 是底边一条 1px 进度线."),
   range("undoWindow", "撤销窗口", [1000, 8000, 500], 4000, "撤销窗口 ms, 引线烧完即落定."),
@@ -24,19 +24,33 @@ const CONTROLS: readonly ControlDef[] = [
   toggle("disabled", "禁用", false, "半透明, 不响应."),
 ];
 const BASE = initialValues(CONTROLS);
+/** 演示卡里的三封推广邮件 (只是陪衬, 让按钮落在真实场景里). */
+const MAILS = ["京东 · 双 11 返场, 满 300 减 50", "Figma · Config 2026 全部回放已上线", "12306 · 您的候补订单已兑现"];
 
 function GraceDemo(props: Record<string, unknown>) {
   const [phase, setPhase] = useState<GracePhase>("idle");
   const [log, setLog] = useState("还没有提交");
   return (
     <div className="flex flex-col items-center gap-4">
-      <GraceCommit
-        {...props}
-        doneLabel="已归档"
-        onPhaseChange={setPhase}
-        onCommit={() => setLog("onCommit: 已提交归档")}
-        onUndo={() => setLog("onUndo: 已撤销, 邮件回到收件箱")}
-      />
+      <div className="w-[min(22rem,calc(100vw-6rem))] rounded-2xl border border-border bg-card p-4 text-left">
+        <p className="text-[13px] font-medium text-foreground">收件箱 · 推广 (12)</p>
+        <ul className="mt-2 flex flex-col gap-1.5 text-[12.5px] text-muted-foreground">
+          {MAILS.map((mail) => (
+            <li key={mail} className="truncate">
+              {mail}
+            </li>
+          ))}
+        </ul>
+        <div className="mt-4 flex justify-center">
+          <GraceCommit
+            {...props}
+            doneLabel="已归档"
+            onPhaseChange={setPhase}
+            onCommit={() => setLog("onCommit: 已提交归档")}
+            onUndo={() => setLog("onUndo: 已撤销, 邮件回到收件箱")}
+          />
+        </div>
+      </div>
       <p className="font-mono text-[12px] text-muted-foreground">
         {PHASE_TEXT[phase]} · {log}
       </p>
@@ -54,7 +68,7 @@ export const GRACE_COMMIT: PageSpec = {
   controls: CONTROLS,
   height: 300,
   render: (props) => <GraceDemo {...props} />,
-  usage: (values: Values) => controlUsage("GraceCommit", { ...values, doneLabel: "已归档" }, { ...BASE, label: "", undoLabel: "", doneLabel: "" }),
+  usage: (values: Values) => controlUsage("GraceCommit", { ...values, doneLabel: "已归档" }, { ...BASE, size: "md", label: "", undoLabel: "", doneLabel: "" }),
   propDesc: {
     label: "空闲态文字, 默认 Archive.",
     doneLabel: "落定后的文字 (settle 为 done 时一直显示), 默认 Archived.",

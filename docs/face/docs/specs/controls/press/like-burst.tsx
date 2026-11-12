@@ -13,7 +13,7 @@ const CONTROLS: readonly ControlDef[] = [
   range("count", "基数", [0, 2000, 1], 128, "不含本人这一下的计数."),
   toggle("showCount", "显示计数", true, "关掉后只剩图标, 读屏标签也不再带数字."),
   toggle("idleOutline", "未赞描边", true, "未赞时画描边图标; 关掉画实心灰图标."),
-  range("size", "尺寸", [28, 64, 2], 40, "按钮高度与图标区边长 px, 图标是它的一半."),
+  range("size", "尺寸", [28, 64, 2], 48, "按钮高度与图标区边长 px, 图标是它的一半."),
   range("corner", "圆角", [0, 32, 1], 32, "圆角 px."),
   range("dotSize", "粒子大小", [0.1, 0.6, 0.05], 0.3, "外飞粒子直径相对图标的比例."),
   range("duration", "迸发时长", [200, 1200, 20], 560, "弹出, 心跳与粒子一共多久 ms."),
@@ -30,8 +30,18 @@ export const LIKE_BURST: PageSpec = {
   deps: ["lucide-react"],
   controls: CONTROLS,
   height: 260,
-  render: (props) => <LikeBurst {...props} label="点赞这篇文章" />,
-  usage: (values: Values) => controlUsage("LikeBurst", { ...values, label: "点赞这篇文章" }, { ...BASE, count: -1, label: "" }),
+  render: (props) => (
+    <article className="w-[min(22rem,calc(100vw-6rem))] rounded-2xl border border-border bg-card p-4 text-left">
+      <p className="text-[12px] text-muted-foreground">林知夏 · 3 小时前</p>
+      <p className="mt-1.5 text-[14px] font-medium leading-snug text-foreground">controls 层 50 件, 每件都带减少动效对照</p>
+      <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">把动效当信息还是装饰, 决定了它在 reduce 下该去掉还是保留.</p>
+      <div className="mt-3 flex items-center justify-between">
+        <span className="text-[12px] text-muted-foreground">阅读 2,418</span>
+        <LikeBurst {...props} label="点赞这篇文章" />
+      </div>
+    </article>
+  ),
+  usage: (values: Values) => controlUsage("LikeBurst", { ...values, label: "点赞这篇文章" }, { ...BASE, size: 40, count: -1, label: "" }),
   propDesc: {
     onChange: "切换后调用, 参数是新的点赞状态与新计数.",
     overshoot: "弹出那一下的回弹力度 (back-out 系数).",

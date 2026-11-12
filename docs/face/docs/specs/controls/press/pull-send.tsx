@@ -22,10 +22,15 @@ const BASE = initialValues(CONTROLS);
 function PullDemo(props: Record<string, unknown>) {
   const [log, setLog] = useState("拖住圆键向后拉, 松手发射");
   return (
-    <div className="flex w-[min(24rem,calc(100vw-6rem))] flex-col items-center gap-10">
-      <div className="flex w-full items-center gap-3 rounded-2xl border border-border bg-card py-2 pr-2 pl-4">
+    <div className="flex w-[min(24rem,calc(100vw-6rem))] flex-col items-center gap-4">
+      <div className="flex w-full flex-col gap-3 rounded-2xl border border-border bg-card p-3 text-left">
+        <p className="px-1 text-[12px] text-muted-foreground">设计评审群 · 6 人</p>
+        <p className="max-w-[80%] self-start rounded-xl bg-muted px-3 py-2 text-[12.5px] text-foreground">周四的评审能挪一下吗? 我 9 点还在路上.</p>
+        <p className="max-w-[80%] self-start rounded-xl bg-muted px-3 py-2 text-[12.5px] text-foreground">可以, 改到 10 点, 会议室不变.</p>
+        <div className="mt-14 flex w-full items-center gap-3 rounded-2xl border border-border bg-background py-2 pr-2 pl-4">
         <span className="min-w-0 flex-1 truncate text-left text-[13px] text-muted-foreground">明早 9 点的评审改到 10 点</span>
         <PullSend {...props} ariaLabel="发送消息" onSend={(power) => setLog(`onSend: 力度 ${power.toFixed(2)}, 消息已发出`)} />
+        </div>
       </div>
       <p className="font-mono text-[12px] text-muted-foreground">{log}</p>
     </div>
@@ -40,7 +45,7 @@ export const PULL_SEND: PageSpec = {
   raw: pullRaw,
   deps: ["lucide-react"],
   controls: CONTROLS,
-  height: 380,
+  height: 420,
   render: (props) => <PullDemo {...props} />,
   usage: (values: Values) => controlUsage("PullSend", { ...values, ariaLabel: "发送消息" }, { ...BASE, ariaLabel: "" }),
   propDesc: {

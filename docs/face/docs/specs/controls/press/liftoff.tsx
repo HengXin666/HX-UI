@@ -9,7 +9,7 @@ import { controlUsage, omit } from "../shared";
 
 const CONTROLS: readonly ControlDef[] = [
   text("label", "按钮文字", "发布 v2.4.0", "不是属性: 演示里传给 children 的文字."),
-  select("size", "尺寸", ["small", "medium", "large"], "medium", '"small" | "medium" | "large"', "高度 32 / 40 / 48 px."),
+  select("size", "尺寸", ["small", "medium", "large"], "large", '"small" | "medium" | "large"', "高度 32 / 40 / 48 px."),
   range("radius", "圆角", [0, 24, 1], 8, "圆角 px; 不传时是 rounded-lg."),
   range("altitude", "升空高度", [40, 200, 10], 150, "升空高度 px, 以弹簧升到这里."),
   range("jets", "推进器", [0, 4, 1], 2, "按钮底下均布的推进器个数, 0 到 4."),
@@ -20,8 +20,14 @@ const BASE = initialValues(CONTROLS);
 
 function LiftStage({ label, ...props }: Record<string, unknown>) {
   return (
-    <div className="flex h-[19rem] w-[min(24rem,calc(100vw-6rem))] items-end justify-center pb-12">
-      <Liftoff {...props}>{String(label)}</Liftoff>
+    <div className="flex h-[19rem] w-[min(24rem,calc(100vw-6rem))] flex-col justify-end">
+      <div className="rounded-2xl border border-border bg-card px-4 pt-4 pb-10 text-left">
+        <p className="text-[13px] font-medium text-foreground">发布到正式环境</p>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">v2.4.0 · 37 个提交 · 412 项检查全部通过. 悬停按钮看它升空.</p>
+        <div className="mt-5 flex justify-center">
+          <Liftoff {...props}>{String(label)}</Liftoff>
+        </div>
+      </div>
     </div>
   );
 }
@@ -36,7 +42,7 @@ export const LIFTOFF: PageSpec = {
   controls: CONTROLS,
   height: 360,
   render: (props) => <LiftStage {...props} />,
-  usage: (values: Values) => controlUsage("Liftoff", omit(values, ["label"]), { ...omit(BASE, ["label"]), radius: -1 }, String(values.label)),
+  usage: (values: Values) => controlUsage("Liftoff", omit(values, ["label"]), { ...omit(BASE, ["label"]), size: "medium", radius: -1 }, String(values.label)),
   propDesc: {
     children: "按钮文字, 默认 Take off.",
     onClick: "点击回调; 每次点击按钮绕横轴翻一圈.",

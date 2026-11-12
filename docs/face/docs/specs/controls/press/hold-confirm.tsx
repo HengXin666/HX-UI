@@ -11,7 +11,7 @@ import { controlUsage, omit } from "../shared";
 const CONTROLS: readonly ControlDef[] = [
   text("label", "按钮文字", "按住删除仓库", "不是属性: 演示里传给 children 的文字."),
   select("tone", "填充色调", ["danger", "primary", "success"], "danger", '"primary" | "danger" | "success"', "填充色调, 只取语义 token."),
-  select("size", "尺寸", ["sm", "md", "lg"], "md", '"sm" | "md" | "lg"', "高度与字号三档."),
+  select("size", "尺寸", ["sm", "md", "lg"], "lg", '"sm" | "md" | "lg"', "高度与字号三档."),
   range("radius", "圆角", [0, 24, 1], 14, "圆角 px."),
   select("fillDirection", "填充方向", ["right", "left", "up", "down"], "right", '"right" | "left" | "up" | "down"', "进度从哪一边推过去; 波浪边只在左右方向出现."),
   range("holdTime", "按住时长", [600, 4000, 100], 2000, "从空到满要按住多久 ms; 中途松开按已填比例回退."),
@@ -27,9 +27,15 @@ function HoldDemo({ label, ...props }: Record<string, unknown>) {
   const [log, setLog] = useState("按住不放, 填满才会删除");
   return (
     <div className="flex flex-col items-center gap-4">
-      <HoldConfirm {...props} doneLabel="已删除" onTap={() => setLog("onTap: 轻点不算数, 要按住")} onHold={() => setLog("onHold: hx-ui/legacy-site 已删除")}>
-        {String(label)}
-      </HoldConfirm>
+      <div className="w-[min(22rem,calc(100vw-6rem))] rounded-2xl border border-border bg-card p-4 text-left">
+        <p className="text-[13px] font-medium text-foreground">删除仓库 hx-ui/legacy-site</p>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted-foreground">214 次提交, 3 个分支, 最后推送于 2025-08-19. 删除后 issue 与 wiki 一并清空, 无法恢复.</p>
+        <div className="mt-4 flex justify-center">
+          <HoldConfirm {...props} doneLabel="已删除" onTap={() => setLog("onTap: 轻点不算数, 要按住")} onHold={() => setLog("onHold: hx-ui/legacy-site 已删除")}>
+            {String(label)}
+          </HoldConfirm>
+        </div>
+      </div>
       <p className="font-mono text-[12px] text-muted-foreground">{log}</p>
     </div>
   );
@@ -46,7 +52,7 @@ export const HOLD_CONFIRM: PageSpec = {
   height: 300,
   render: (props) => <HoldDemo {...props} />,
   usage: (values: Values) =>
-    controlUsage("HoldConfirm", { ...omit(values, ["label"]), doneLabel: "已删除" }, { ...omit(BASE, ["label"]), doneLabel: "" }, String(values.label)),
+    controlUsage("HoldConfirm", { ...omit(values, ["label"]), doneLabel: "已删除" }, { ...omit(BASE, ["label"]), size: "md", doneLabel: "" }, String(values.label)),
   propDesc: {
     children: "空闲态文字, 默认 Hold to delete.",
     doneLabel: "填满后的文字, 默认 Deleted.",
