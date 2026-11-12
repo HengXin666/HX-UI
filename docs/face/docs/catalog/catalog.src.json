@@ -139,10 +139,14 @@
    {"id": "composer-field", "name": "ComposerField 对话输入条", "desc": "自动长高的文本域, 来源选择与发送 / 停止键; 底边一道光随打字能量流动, 发送时闪一下.", "kind": "control", "exports": ["ComposerField"]},
    {"id": "cue-tip", "name": "CueTip 暖提示", "desc": "冷启动悬停一会儿才弹出; 收起后短时间内碰到下一个触发件立即弹出, 并从上一个气泡的位置滑过来.", "kind": "control", "exports": ["CueTip"]},
    {"id": "develop-frame", "name": "DevelopFrame 显影框", "desc": "生成内容的占位框: 内容从分条遮罩与模糊里逐档清晰, 生成中有一条软边扫光, 失败给重试.", "kind": "control", "exports": ["DevelopFrame"]},
-   {"id": "dictate-button", "name": "DictateButton 听写键", "desc": "按下开始收音, 胶囊展开出波形与计时; 轻点切换, 按住说话, 按住左滑取消.", "kind": "control", "exports": ["DictateButton"]}
+   {"id": "dictate-button", "name": "DictateButton 听写键", "desc": "按下开始收音, 胶囊展开出波形与计时; 轻点切换, 按住说话, 按住左滑取消.", "kind": "control", "exports": ["DictateButton"]},
+   {"id": "fork-menu", "name": "ForkMenu 分枝菜单", "desc": "组标题点开时子项从主干分出 1px 分支线逐条画出, 文字随后淡入; 选中项下垫一块高亮, 换选时滑过去, 收起时分支线倒退擦掉.", "kind": "control", "exports": ["ForkMenu"]},
+   {"id": "reasoning-trace", "name": "ReasoningTrace 推理过程行", "desc": "推理过程的一行: 进行中图形呼吸, 文字扫光, 秒数走表; 结束时文字从模糊里落定, 图形换成勾, 步骤列表收起.", "kind": "control", "exports": ["ReasoningTrace"]},
+   {"id": "turn-card", "name": "TurnCard 翻转卡", "desc": "点击或回车翻面, 拖动时卡片跟手转, 松手按速度甩到最近一面; 悬停时按指针位置微倾并抬起, 高光跟着指针走.", "kind": "control", "exports": ["TurnCard"]}
   ]},
   {"id": "controls-choice", "layer": "controls", "label": "选择", "pieceKind": "control", "pages": [
-
+   {"id": "chime-toggle", "name": "ChimeToggle 订阅铃", "desc": "打开时铃铛按衰减摆动并放出声波, 文字交叉淡入, 胶囊宽度跟弹簧展开; 关掉时轻晃一下.", "kind": "control", "exports": ["ChimeToggle"]},
+   {"id": "drift-select", "name": "DriftSelect 滑行下拉", "desc": "select-only 下拉: 菜单弹出时高亮块按弹簧在选项间滑行, 选中值换字时轻推一下; 关闭途中再打开, 弹出原地倒放.", "kind": "control", "exports": ["DriftSelect"]}
   ]},
   {"id": "controls-dismiss", "layer": "controls", "label": "撤销", "pieceKind": "control", "pages": [
 

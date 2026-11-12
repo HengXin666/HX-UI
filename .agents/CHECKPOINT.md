@@ -55,7 +55,8 @@ controls 层 catalog 第 2 批取输入 (controls-compose) 8 件与选择 (contr
 | 批 | 件 | 提交 |
 |---|---|---|
 | 1 | arc-field, composer-field, cue-tip, develop-frame, dictate-button | 00d7c99 |
-| 1 修 | cue-tip, dictate-button 放大 (32.4% / 39.3%), composer-field 加宽并补底边流光画布宽度; 调参 9/9, 14/14, 14/14 | (本提交) |
+| 1 修 | cue-tip, dictate-button 放大 (32.4% / 39.3%), composer-field 加宽并补底边流光画布宽度; 调参 9/9, 14/14, 14/14 | 3e02a8c |
+| 2 | fork-menu, reasoning-trace, turn-card, chime-toggle, drift-select (提交时扫描未全 n/n, 见提交信息; 复扫修好另提) | (本提交) |
 不改库就无法正常显示 (演示里补, 不改 src/): composer-field 底边流光画布 (data-slot=composer-glow) 是绝对定位 canvas, 左右定位撑不开宽度只有 2px, 演示用 className 补 w-[calc(100%-2rem)].
 
 ## 顺序
