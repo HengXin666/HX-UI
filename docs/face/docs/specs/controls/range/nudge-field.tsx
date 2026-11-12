@@ -16,7 +16,7 @@ const CONTROLS: readonly ControlDef[] = [
   range("defaultValue", "初始值", [0, 48, 1], 16, "非受控的初始值."),
   range("max", "最大值", [24, 96, 4], 48, "上限; 越界拖动时橡皮筋, 松手弹回."),
   range("step", "步长", [1, 8, 1], 1, "拖动与方向键一步; Shift 乘 coarseMultiplier, Alt 乘 fineMultiplier."),
-  select("size", "尺寸", ["sm", "md", "lg"], "md", '"sm" | "md" | "lg"', "高度与字号三档."),
+  select("size", "尺寸", ["sm", "md", "lg"], "lg", '"sm" | "md" | "lg"', "高度与字号三档."),
   toggle("showFill", "底部填充", true, "按当前值在框底画一条比例填充."),
   toggle("showDelta", "显示增量", true, "拖动时旁边浮出 +3 / -2 这样的增量."),
   toggle("showDirty", "标记已改", true, "值不等于 defaultValue 时在标签旁亮一个点."),
@@ -28,11 +28,14 @@ const BASE = initialValues(CONTROLS);
 function NudgeDemo(props: Record<string, unknown>) {
   const [radius, setRadius] = useState(Number(props.defaultValue));
   return (
-    <div className="flex flex-wrap items-center justify-center gap-6">
-      <NudgeField {...props} onChange={setRadius} />
-      <div aria-hidden className="grid size-24 place-items-center border border-border bg-card text-[12px] text-muted-foreground" style={{ borderRadius: radius }}>
-        {radius}
-        {String(props.suffix ?? "")}
+    <div className="flex w-[min(26rem,calc(100vw-6rem))] flex-col gap-4 rounded-2xl border border-border bg-card p-4 text-left">
+      <p className="text-[13px] font-medium text-foreground">卡片样式 · 检查器</p>
+      <div className="flex flex-wrap items-center justify-center gap-6">
+        <NudgeField {...props} onChange={setRadius} />
+        <div aria-hidden className="grid size-28 place-items-center border border-border bg-background text-[12px] text-muted-foreground" style={{ borderRadius: radius }}>
+          {radius}
+          {String(props.suffix ?? "")}
+        </div>
       </div>
     </div>
   );
@@ -48,7 +51,7 @@ export const NUDGE_FIELD: PageSpec = {
   controls: CONTROLS,
   height: 260,
   render: (props) => <NudgeDemo {...props} />,
-  usage: (values: Values) => controlUsage("NudgeField", values, { ...BASE, label: "", suffix: "", defaultValue: -1, max: 100, showDirty: false }),
+  usage: (values: Values) => controlUsage("NudgeField", values, { ...BASE, size: "md", label: "", suffix: "", defaultValue: -1, max: 100, showDirty: false }),
   propDesc: {
     value: "受控值.",
     min: "下限.",

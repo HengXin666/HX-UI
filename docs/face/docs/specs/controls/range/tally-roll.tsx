@@ -14,7 +14,7 @@ const CONTROLS: readonly ControlDef[] = [
   range("decimals", "小数位", [0, 2, 1], 0, "固定小数位."),
   text("prefix", "前缀", "¥", "数字前的内容, 不参与滚动."),
   select("direction", "滚向", ["auto", "up", "down"], "auto", '"auto" | "up" | "down"', "auto 跟值的增减走; up / down 固定滚向."),
-  range("fontSize", "字号", [16, 64, 2], 44, "字号 px."),
+  range("fontSize", "字号", [16, 72, 2], 56, "字号 px."),
   color("tone", "颜色", RANGE_TONES, "foreground", "RangeTone", "数字颜色; 不给时跟随文字色."),
   toggle("motionBlur", "运动模糊", true, "滚动中按速度加纵向模糊."),
   toggle("tabular", "等宽数字", true, "每位等宽, 滚动时版面不抖."),
@@ -33,9 +33,10 @@ export const TALLY_ROLL: PageSpec = {
   keepMounted: true,
   height: 260,
   render: (props) => (
-    <div className="flex flex-col items-center gap-2">
-      <span className="text-[12px] text-muted-foreground">本月营收</span>
+    <div className="flex w-[min(22rem,calc(100vw-6rem))] flex-col items-start gap-2 rounded-2xl border border-border bg-card p-5 text-left">
+      <span className="text-[12px] text-muted-foreground">本月营收 · 截至 11 月 12 日</span>
       <TallyRoll {...props} fontWeight={600} />
+      <span className="text-[12px] text-muted-foreground">较上月同期 +12.4%, 目标 ¥60,000</span>
     </div>
   ),
   usage: (values: Values) => controlUsage("TallyRoll", values, { ...BASE, value: -1, locale: "en-US", prefix: "", fontSize: -1, tone: "" }),

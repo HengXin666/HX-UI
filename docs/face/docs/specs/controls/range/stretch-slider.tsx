@@ -29,8 +29,12 @@ function StretchDemo(props: Record<string, unknown>) {
   const vertical = props.orientation === "vertical";
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className={vertical ? "flex h-56 justify-center" : "w-[min(22rem,calc(100vw-6rem))]"}>
-        <StretchSlider {...props} ariaLabel="音量" onChangeEnd={(value) => setLog(`onChangeEnd: ${Math.round(value)}`)} />
+      <div className="w-[min(22rem,calc(100vw-6rem))] rounded-2xl border border-border bg-card p-4 text-left">
+        <p className="text-[13px] font-medium text-foreground">雨夜电台 · 第 37 期</p>
+        <p className="mt-1 text-[12px] text-muted-foreground">正在播放 · 23:14 / 58:02 · 音量</p>
+        <div className={vertical ? "mt-4 flex h-56 justify-center" : "mt-5"}>
+          <StretchSlider {...props} ariaLabel="音量" onChangeEnd={(value) => setLog(`onChangeEnd: ${Math.round(value)}`)} />
+        </div>
       </div>
       <p className="font-mono text-[12px] text-muted-foreground">{log}</p>
     </div>
@@ -45,7 +49,7 @@ export const STRETCH_SLIDER: PageSpec = {
   raw: stretchRaw,
   deps: ["lucide-react"],
   controls: CONTROLS,
-  height: 340,
+  height: 420,
   render: (props) => <StretchDemo {...props} />,
   usage: (values: Values) => controlUsage("StretchSlider", { ...values, ariaLabel: "音量" }, { ...BASE, defaultValue: 50, stepped: false, step: 1, ticks: false, ariaLabel: "" }),
   propDesc: {

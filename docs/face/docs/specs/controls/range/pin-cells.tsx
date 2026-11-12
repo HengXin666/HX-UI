@@ -18,7 +18,7 @@ const CONTROLS: readonly ControlDef[] = [
   select("status", "状态", ["idle", "success", "error"], "idle", '"idle" | "success" | "error"', "success: 底色漫上, 字符下沉变淡, 对勾升起; error: 格子描红, aria-invalid."),
   toggle("mask", "遮住字符", false, "字符画成圆点, 用于 PIN."),
   toggle("caret", "光标", true, "聚焦时在下一个空格画闪烁光标."),
-  range("slotSize", "格子大小", [32, 60, 2], 44, "每格边长 px."),
+  range("slotSize", "格子大小", [32, 60, 2], 48, "每格边长 px."),
   range("gap", "格距", [0, 16, 1], 8, "格与格之间 px."),
   range("radius", "圆角", [0, 24, 1], 12, "格子圆角 px."),
   color("accentTone", "通过底色", RANGE_TONES, "foreground", "RangeTone", "通过态漫上来的底色."),
@@ -30,13 +30,19 @@ function PinDemo({ status, ...props }: Record<string, unknown>) {
   const [checked, setChecked] = useState<PinStatus | null>(null);
   return (
     <div className="flex flex-col items-center gap-4">
-      <PinCells
-        {...props}
-        status={checked ?? (status as PinStatus)}
-        ariaLabel="短信验证码"
-        onChange={() => setChecked(null)}
-        onComplete={(code) => setChecked(code === CODE ? "success" : "error")}
-      />
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-border bg-card px-5 py-5">
+        <div className="self-start text-left">
+          <p className="text-[13px] font-medium text-foreground">登录验证</p>
+          <p className="mt-1 text-[12px] text-muted-foreground">验证码已发送到 138****2046, 5 分钟内有效</p>
+        </div>
+        <PinCells
+          {...props}
+          status={checked ?? (status as PinStatus)}
+          ariaLabel="短信验证码"
+          onChange={() => setChecked(null)}
+          onComplete={(code) => setChecked(code === CODE ? "success" : "error")}
+        />
+      </div>
       <p className="font-mono text-[12px] text-muted-foreground">演示验证码 {CODE}: 填对通过, 填错描红</p>
     </div>
   );
@@ -52,7 +58,7 @@ export const PIN_CELLS: PageSpec = {
   controls: CONTROLS,
   height: 260,
   render: (props) => <PinDemo {...props} />,
-  usage: (values: Values) => controlUsage("PinCells", { ...values, ariaLabel: "短信验证码" }, { ...BASE, defaultValue: "", ariaLabel: "" }).replace("<PinCells", "<PinCells onComplete={verify}"),
+  usage: (values: Values) => controlUsage("PinCells", { ...values, ariaLabel: "短信验证码" }, { ...BASE, slotSize: 44, defaultValue: "", ariaLabel: "" }).replace("<PinCells", "<PinCells onComplete={verify}"),
   propDesc: {
     value: "受控内容.",
     onChange: "内容每变一次调用.",

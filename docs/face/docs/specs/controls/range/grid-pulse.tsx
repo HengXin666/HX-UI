@@ -16,7 +16,7 @@ const CONTROLS: readonly ControlDef[] = [
   select("pattern", "走法", ["orbit", "sweep"], "orbit", '"orbit" | "sweep"', "orbit 沿外圈转, sweep 斜向扫; 不给时 3 用 orbit, 4 用 sweep."),
   select("shape", "格子形状", ["round", "square"], "round", '"square" | "round"', "圆点或方格."),
   color("tone", "点阵色", RANGE_TONES, "primary", "RangeTone", "进行中点亮的颜色; 不给时跟随文字色."),
-  range("cellSize", "格子大小", [3, 12, 1], 6, "每格边长 px."),
+  range("cellSize", "格子大小", [3, 12, 1], 8, "每格边长 px."),
   range("gap", "格距", [1, 6, 1], 2, "格与格之间 px."),
   range("idleOpacity", "暗格浓度", [0, 0.5, 0.05], 0.15, "未点亮的格子的不透明度."),
   toggle("glow", "辉光", false, "点阵外加一圈同色 drop-shadow."),
@@ -36,9 +36,17 @@ export const GRID_PULSE: PageSpec = {
   controls: CONTROLS,
   toProps,
   height: 240,
-  render: (props) => <GridPulse {...props} />,
+  render: (props) => (
+    <div className="w-[min(22rem,calc(100vw-6rem))] rounded-2xl border border-border bg-card p-4 text-left">
+      <p className="text-[13px] font-medium text-foreground">文档检索</p>
+      <p className="mt-1 text-[12px] text-muted-foreground">问题: 「ReelPicker 怎么接受控值」 · 范围: 全部组件页</p>
+      <div className="mt-4 rounded-xl border border-border bg-background px-3 py-3">
+        <GridPulse {...props} />
+      </div>
+    </div>
+  ),
   usage: (values: Values) =>
-    controlUsage("GridPulse", toProps(values) as Values, { ...toProps(BASE), label: "", tone: "", doneLabel: "", errorLabel: "" } as Values),
+    controlUsage("GridPulse", toProps(values) as Values, { ...toProps(BASE), cellSize: 6, label: "", tone: "", doneLabel: "", errorLabel: "" } as Values),
   propDesc: {
     doneLabel: "完成后的文字前半句, 后面接用时, 默认 Done in.",
     errorLabel: "失败后的文字前半句, 默认 Failed after.",
