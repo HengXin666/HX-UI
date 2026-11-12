@@ -13,7 +13,7 @@ import { COMPOSE_ACCENTS, COMPOSE_SURFACES } from "./tones";
 const CONTROLS: readonly ControlDef[] = [
   select("mode", "模式", ["auto", "toggle", "hold"], "auto", '"auto" | "toggle" | "hold"', "auto: 轻点切换, 按住超过 holdAfter 松手即停; toggle: 只切换; hold: 按住说话, 松手即停."),
   range("holdAfter", "长按门槛", [100, 1500, 50], 300, "auto 模式下按住多久算 \"按住说话\" ms."),
-  range("size", "尺寸", [24, 48, 2], 32, "收起时的边长 px, 也是胶囊高."),
+  range("size", "尺寸", [24, 48, 2], 40, "收起时的边长 px, 也是胶囊高."),
   select("shape", "形状", ["pill", "circle"], "pill", '"pill" | "circle"', "pill 全圆角; circle 收起是圆, 展开是圆角矩形."),
   color("accent", "收音色", COMPOSE_ACCENTS, "foreground", "HxColor", "收音中图标, 波形与计时的颜色."),
   color("background", "底色", COMPOSE_SURFACES, "secondary", "HxColor", "胶囊底色; 演示取 secondary, 与台面拉开一档好看清形状."),
@@ -37,14 +37,19 @@ function DictateDemo(props: Record<string, unknown>) {
   const [log, setLog] = useState("轻点开始听写, 再点停止; 按住时左滑取消");
   return (
     <div className="flex flex-col items-center gap-4">
-      <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2 text-left">
-        <span className="text-[13px] text-muted-foreground">周三评审会 · 记录</span>
-        <DictateButton
-          {...props}
-          ariaLabel="听写会议记录"
-          onStart={() => setLog("onStart: 收音中")}
-          onStop={({ durationMs, cancelled }) => setLog(cancelled ? `onStop: 已取消 (${seconds(durationMs)} 秒)` : `onStop: 录下 ${seconds(durationMs)} 秒`)}
-        />
+      <div className="flex w-[min(22rem,calc(100vw-6rem))] flex-col gap-2 rounded-2xl border border-border bg-card p-4 text-left">
+        <p className="text-[13px] font-medium text-foreground">周三评审会 · 记录</p>
+        <p className="text-[12.5px] leading-relaxed text-muted-foreground">10:02 林知夏: 弧形输入框的光标先按直排处理, 下周再看曲线上的选区.</p>
+        <p className="text-[12.5px] leading-relaxed text-muted-foreground">10:05 周屿: 同意, 文档页先把减少动效对照补齐.</p>
+        <div className="mt-2 flex items-center gap-3">
+          <span className="text-[12px] text-muted-foreground">接着记:</span>
+          <DictateButton
+            {...props}
+            ariaLabel="听写会议记录"
+            onStart={() => setLog("onStart: 收音中")}
+            onStop={({ durationMs, cancelled }) => setLog(cancelled ? `onStop: 已取消 (${seconds(durationMs)} 秒)` : `onStop: 录下 ${seconds(durationMs)} 秒`)}
+          />
+        </div>
       </div>
       <p className="font-mono text-[12px] text-muted-foreground">{log}</p>
     </div>

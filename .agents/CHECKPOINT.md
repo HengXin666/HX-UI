@@ -54,7 +54,10 @@ controls 层 catalog 第 2 批取输入 (controls-compose) 8 件与选择 (contr
 
 | 批 | 件 | 提交 |
 |---|---|---|
-| 1 | arc-field, composer-field, cue-tip, develop-frame, dictate-button | (本提交) |
+| 1 | arc-field, composer-field, cue-tip, develop-frame, dictate-button | 00d7c99 |
+| 1 修 | cue-tip, dictate-button 放大 (32.4% / 39.3%), composer-field 加宽并补底边流光画布宽度; 调参 9/9, 14/14, 14/14 | (本提交) |
+不改库就无法正常显示 (演示里补, 不改 src/): composer-field 底边流光画布 (data-slot=composer-glow) 是绝对定位 canvas, 左右定位撑不开宽度只有 2px, 演示用 className 补 w-[calc(100%-2rem)].
+
 ## 顺序
 
 controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 (已齐) → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push; 已完成 2026-11-10) → surface 余量 30 件.

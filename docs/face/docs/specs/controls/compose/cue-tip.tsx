@@ -45,14 +45,18 @@ const toProps = (values: Values): Record<string, unknown> => ({ ...values, inkCo
 
 function Toolbar(props: Record<string, unknown>) {
   return (
-    <div role="toolbar" aria-label="正文格式" className="flex items-center gap-2 rounded-xl border border-border bg-card p-1.5">
-      {TOOLS.map((tool) => (
-        <CueTip key={tool.label} {...props} content={tool.tip} shortcut={tool.key}>
-          <button type="button" className="rounded-lg px-3 py-1.5 text-[13px] text-foreground hover:bg-accent">
-            {tool.label}
-          </button>
-        </CueTip>
-      ))}
+    <div className="w-[min(22rem,calc(100vw-6rem))] rounded-2xl border border-border bg-card p-3 text-left">
+      <div role="toolbar" aria-label="正文格式" className="flex items-center gap-2 rounded-xl border border-border bg-background p-1.5">
+        {TOOLS.map((tool) => (
+          <CueTip key={tool.label} {...props} content={tool.tip} shortcut={tool.key}>
+            <button type="button" className="rounded-lg px-3 py-1.5 text-[13px] text-foreground hover:bg-accent">
+              {tool.label}
+            </button>
+          </CueTip>
+        ))}
+      </div>
+      <p className="mt-3 px-1 text-[14px] font-medium text-foreground">发布说明 v0.18</p>
+      <p className="mt-1.5 px-1 text-[12.5px] leading-relaxed text-muted-foreground">controls 层补齐输入与选择两组的文档页; 预览台改为随内容收缩, 演示主体不再缩在一角.</p>
     </div>
   );
 }

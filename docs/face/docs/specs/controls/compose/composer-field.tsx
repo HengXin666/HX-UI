@@ -29,6 +29,8 @@ const CONTROLS: readonly ControlDef[] = [
   toggle("disabled", "禁用", false, "变淡, 不能输入也不能发送."),
 ];
 const BASE = initialValues(CONTROLS);
+/** 底边流光画布是绝对定位的 canvas, 左右定位撑不开替换元素的宽度; 演示从外层给它补上宽度 (容器宽减左右各 16px). */
+const GLOW_WIDTH = "[&_[data-slot=composer-glow]]:w-[calc(100%-2rem)]";
 
 function ComposerDemo({ draft, busy, ...props }: Record<string, unknown>) {
   const [running, setRunning] = useState(false);
@@ -39,9 +41,10 @@ function ComposerDemo({ draft, busy, ...props }: Record<string, unknown>) {
     return () => window.clearTimeout(id);
   }, [running]);
   return (
-    <div className="flex w-full max-w-[520px] flex-col gap-3 text-left">
+    <div className="flex w-[min(32rem,calc(100vw-6rem))] flex-col gap-3 text-left">
       <ComposerField
         {...props}
+        className={GLOW_WIDTH}
         defaultValue={draft ? DRAFT : ""}
         sources={SOURCES}
         busy={Boolean(busy) || running}
