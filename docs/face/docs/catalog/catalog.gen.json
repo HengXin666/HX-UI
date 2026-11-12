@@ -2608,7 +2608,7 @@
   },
   {
    "id": "glint-button",
-   "name": "GlintButton",
+   "name": "GlintButton 边缘高光按钮",
    "layer": "controls",
    "group": "controls-press",
    "kind": "control",
@@ -2616,14 +2616,12 @@
    "exports": [
     "GlintButton"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/press/signal/GlintButton.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "1px 边上一段高光朝向指针方位, 越近越亮, 按下闪一下, 可选自转; 减少动效时高光停在左上.",
+   "page": true
   },
   {
    "id": "grace-commit",
-   "name": "GraceCommit",
+   "name": "GraceCommit 撤销窗口提交",
    "layer": "controls",
    "group": "controls-press",
    "kind": "control",
@@ -2631,14 +2629,12 @@
    "exports": [
     "GraceCommit"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/press/hold/GraceCommit.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "按下点燃引线, 窗口内再按一次撤销, 悬停时引线暂停; 引线时长是功能信息, 减少动效时照常计时.",
+   "page": true
   },
   {
    "id": "hold-confirm",
-   "name": "HoldConfirm",
+   "name": "HoldConfirm 按住确认",
    "layer": "controls",
    "group": "controls-press",
    "kind": "control",
@@ -2646,14 +2642,12 @@
    "exports": [
     "HoldConfirm"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/press/hold/HoldConfirm.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "按住期间进度填满才确认, 中途松开按比例回退, 轻点走 onTap; 支持四个填充方向与波浪前沿.",
+   "page": true
   },
   {
    "id": "liftoff",
-   "name": "Liftoff",
+   "name": "Liftoff 起飞按钮",
    "layer": "controls",
    "group": "controls-press",
    "kind": "control",
@@ -2661,14 +2655,12 @@
    "exports": [
     "Liftoff"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/press/launch/Liftoff.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "悬停或点击时以弹簧升空, 指针左右决定倾斜, 底下推进器喷火; 减少动效时不升空只保留点击.",
+   "page": true
   },
   {
    "id": "like-burst",
-   "name": "LikeBurst",
+   "name": "LikeBurst 点赞迸发",
    "layer": "controls",
    "group": "controls-press",
    "kind": "control",
@@ -2676,10 +2668,8 @@
    "exports": [
     "LikeBurst"
    ],
-   "desc": "",
-   "page": false,
-   "source": "src/controls/press/signal/LikeBurst.tsx",
-   "from": "@hx/ui/controls"
+   "desc": "点亮时图标弹出并跳几下, 一圈粒子外飞, 计数纵向滚一格; 取消只换色, 减少动效时只换色和数字.",
+   "page": true
   },
   {
    "id": "pull-send",

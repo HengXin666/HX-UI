@@ -36,6 +36,14 @@
 | 1 | button-group, toggle-group, segmented-control, input-otp, field | 879048f |
 | 2 | label, checkbox, radio-group, slider, alert-dialog | (本提交) |
 
+## 文档站 controls 第 1 批 (按压 8 + 取值 9 = 17 件, 2026-11-12 起)
+
+controls 层 catalog 计 50 件 (加总览共 51 条); 第 1 批取前 17 件 (catalog 组序: 按压 8, 取值 9). 页型模板修复 (control 页型走 SpecPage, 减少动效对照段, 代码块令牌底, 复制给 AI 位置) 7b9a561.
+组件页定义在 specs/controls/<组>/<id>.tsx, 每满 5 篇一提; index.ts 与 catalog.src.json 每次只含已提交件 + 本批件.
+
+| 批 | 件 | 提交 |
+|---|---|---|
+| 1 | glint-button, grace-commit, hold-confirm, liftoff, like-burst | (本提交) |
 ## 顺序
 
 controls 15 件 (已齐) → kits gallery 11 (已齐) → kits stack 8 + glass 2 (已齐) → kits card 9 (已齐) + stage3d 3 (已齐) → 收口 (./controls ./kits 子路径, api 快照, 0.10.0, docs-props, gates:push; 已完成 2026-11-10) → surface 余量 30 件.

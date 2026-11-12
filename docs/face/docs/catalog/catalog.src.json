@@ -114,7 +114,11 @@
    {"id": "controls", "name": "Controls 总览", "desc": "按压, 取值, 输入, 选择, 撤销与导航六类交互控件, 一页看全, 缩略图是真跑组件的截图.", "role": "overview", "kind": "single"}
   ]},
   {"id": "controls-press", "layer": "controls", "label": "按压", "pieceKind": "control", "pages": [
-
+   {"id": "glint-button", "name": "GlintButton 边缘高光按钮", "desc": "1px 边上一段高光朝向指针方位, 越近越亮, 按下闪一下, 可选自转; 减少动效时高光停在左上.", "kind": "control", "exports": ["GlintButton"]},
+   {"id": "grace-commit", "name": "GraceCommit 撤销窗口提交", "desc": "按下点燃引线, 窗口内再按一次撤销, 悬停时引线暂停; 引线时长是功能信息, 减少动效时照常计时.", "kind": "control", "exports": ["GraceCommit"]},
+   {"id": "hold-confirm", "name": "HoldConfirm 按住确认", "desc": "按住期间进度填满才确认, 中途松开按比例回退, 轻点走 onTap; 支持四个填充方向与波浪前沿.", "kind": "control", "exports": ["HoldConfirm"]},
+   {"id": "liftoff", "name": "Liftoff 起飞按钮", "desc": "悬停或点击时以弹簧升空, 指针左右决定倾斜, 底下推进器喷火; 减少动效时不升空只保留点击.", "kind": "control", "exports": ["Liftoff"]},
+   {"id": "like-burst", "name": "LikeBurst 点赞迸发", "desc": "点亮时图标弹出并跳几下, 一圈粒子外飞, 计数纵向滚一格; 取消只换色, 减少动效时只换色和数字.", "kind": "control", "exports": ["LikeBurst"]}
   ]},
   {"id": "controls-range", "layer": "controls", "label": "取值", "pieceKind": "control", "pages": [
 
