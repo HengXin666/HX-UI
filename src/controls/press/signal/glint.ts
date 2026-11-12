@@ -27,8 +27,8 @@ export const GLINT_DT_CAP = 0.05;
 export const GLINT_REST_DEG = 315;
 /** 按下闪光叠加到亮度上的份额. */
 export const GLINT_PRESS_BOOST = 0.5;
-/** 外晕: 模糊半径 px 与每单位 glow 的不透明度. */
-export const GLINT_GLOW = { blurPx: 6, alpha: 0.6 } as const;
+/** 外晕: 模糊半径 px, 每单位 glow 的不透明度, 光带宽 px (骑在边上, 向外伸 outsetPx); 1px 线糊开后几乎看不见, 所以外晕用一条宽带. */
+export const GLINT_GLOW = { blurPx: 6, alpha: 0.6, bandPx: 4, outsetPx: 2 } as const;
 /** 内侧反光在亮度 1 时的混色百分比. */
 export const GLINT_SHEEN_PERCENT = 8;
 /** 判定落定的角度与亮度阈值. */

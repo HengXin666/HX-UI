@@ -231,7 +231,7 @@ export function GlintButton({
       <span aria-hidden data-slot="glint-ring" className="pointer-events-none absolute inset-0" style={{ transform: press.style.transform }}>
         {glow > 0 ? (
           <span className="absolute inset-0" style={{ filter: `blur(${GLINT_GLOW.blurPx}px)`, opacity: Math.min(1, glow * GLINT_GLOW.alpha) }}>
-            <span className="absolute inset-0" style={ring} />
+            <span className="absolute" style={{ ...ring, inset: -GLINT_GLOW.outsetPx, padding: GLINT_GLOW.bandPx, borderRadius: radius + GLINT_GLOW.outsetPx }} />
           </span>
         ) : null}
         <span className="absolute inset-0" style={ring} />

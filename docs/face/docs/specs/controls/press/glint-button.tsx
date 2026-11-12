@@ -18,7 +18,7 @@ const CONTROLS: readonly ControlDef[] = [
   range("radius", "圆角", [0, 22, 1], 8, "圆角 px, 外壳, 内层与高光环同一个值."),
   color("line", "高光色", LINES, "foreground", "string", "高光与内侧反光的颜色, 只收语义 token 名."),
   range("idleIntensity", "远处亮度", [0, 1, 0.05], 0.35, "指针在 proximity 之外时高光的亮度."),
-  range("intensity", "贴近亮度", [0, 2, 0.05], 1, "指针贴到按钮边上时的亮度; 中间按距离插值."),
+  range("intensity", "贴近亮度", [0, 1, 0.05], 1, "指针贴到按钮边上时的亮度, 0 到 1; 中间按距离插值."),
   range("shineSize", "高光长度", [2, 40, 1], 10, "高光实心段沿边的 px 长."),
   range("glow", "外晕", [0, 2, 0.1], 1, "外晕强度, 0 关闭 (不渲染那一层)."),
   range("blur", "底层模糊", [0, 12, 1], 0, "按钮底下的背景模糊 px; 0 不出模糊层."),

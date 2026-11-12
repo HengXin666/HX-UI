@@ -10,7 +10,7 @@ import { RANGE_TONES } from "./tones";
 
 const CONTROLS: readonly ControlDef[] = [
   range("value", "数值", [0, 99999, 1], 48210, "要显示的数; 变化时每一位从旧数字滚到新数字."),
-  select("locale", "区域格式", ["zh-CN", "en-US", "de-DE"], "zh-CN", "string", "Intl.NumberFormat 的区域, 决定千分位与小数点."),
+  select("locale", "区域格式", ["zh-CN", "de-DE", "fr-FR"], "zh-CN", "string", "Intl.NumberFormat 的区域, 决定千分位与小数点."),
   range("decimals", "小数位", [0, 2, 1], 0, "固定小数位."),
   text("prefix", "前缀", "¥", "数字前的内容, 不参与滚动."),
   select("direction", "滚向", ["auto", "up", "down"], "auto", '"auto" | "up" | "down"', "auto 跟值的增减走; up / down 固定滚向."),

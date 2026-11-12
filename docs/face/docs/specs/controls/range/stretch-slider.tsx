@@ -12,7 +12,7 @@ import { controlUsage } from "../shared";
 const CONTROLS: readonly ControlDef[] = [
   range("defaultValue", "初始值", [0, 100, 1], 64, "非受控的初始值."),
   select("orientation", "方向", ["horizontal", "vertical"], "horizontal", '"horizontal" | "vertical"', "横放或竖放; 竖放时从下往上填."),
-  toggle("stepped", "吸附步长", false, "指针取值吸附到 step; 关掉时连续取值, step 只给键盘与滚轮."),
+  toggle("stepped", "吸附步长", true, "指针取值吸附到 step; 关掉时连续取值, step 只给键盘与滚轮."),
   range("step", "步长", [1, 25, 1], 10, "键盘, 滚轮与吸附的一步."),
   toggle("ticks", "刻度", true, "stepped 时在每一步画一条刻度; 不吸附时不画."),
   select("valuePosition", "读数位置", ["top", "bottom", "none"], "top", '"none" | "top" | "bottom"', "数值显示在轨道上方, 下方或不显示."),
@@ -47,7 +47,7 @@ export const STRETCH_SLIDER: PageSpec = {
   controls: CONTROLS,
   height: 340,
   render: (props) => <StretchDemo {...props} />,
-  usage: (values: Values) => controlUsage("StretchSlider", { ...values, ariaLabel: "音量" }, { ...BASE, defaultValue: 50, step: 1, ticks: false, ariaLabel: "" }),
+  usage: (values: Values) => controlUsage("StretchSlider", { ...values, ariaLabel: "音量" }, { ...BASE, defaultValue: 50, stepped: false, step: 1, ticks: false, ariaLabel: "" }),
   propDesc: {
     value: "受控值.",
     min: "下限.",

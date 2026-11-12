@@ -214,7 +214,7 @@ export function NudgeField({
 				style={{ ...motionStyle("transform, color", DURATION_VAR.fast), transform: `translateX(${dragDir * NUDGE_LEAN_PX}px)`, color: dragDir ? toneVar(accentTone) : undefined }}
 			>
 				{label}
-				{dirty ? <span className="size-1 rounded-full" style={{ backgroundColor: toneVar(accentTone) }} /> : null}
+				{dirty ? <span className="size-1.5 rounded-full" style={{ backgroundColor: toneVar(accentTone) }} /> : null}
 			</div>
 			<input
 				type="text"

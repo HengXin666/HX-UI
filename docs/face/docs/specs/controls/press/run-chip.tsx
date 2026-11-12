@@ -5,8 +5,8 @@ import { initialValues, range, select, text, toggle, type ControlDef, type PageS
 import { controlUsage, omit } from "../shared";
 
 /**
- * controls 批 1: 工具调用芯片. 状态是受控的 (status), 演示里由 "状态" 下拉切; 出错且开了重试时整枚芯片可点,
- * 点了回到运行中, 下面一行写出 onRetry.
+ * controls 批 1: 工具调用芯片. 状态是受控的 (status), 第一枚由 "状态" 下拉切; 下面固定一枚完成, 一枚出错,
+ * 外观类调参 (高度, 圆角, 刷底浓度, 预期耗时, 计时) 三枚一起走. 出错且开了重试时芯片可点, 点了回到运行中, 下面一行写出 onRetry.
  */
 
 const CONTROLS: readonly ControlDef[] = [
@@ -24,22 +24,32 @@ const CONTROLS: readonly ControlDef[] = [
 const BASE = initialValues(CONTROLS);
 /** 演示里重试后多久算跑通. */
 const RERUN_MS = 1800;
+/** 外观类属性也给下面两枚固定芯片, 刷底浓度与重试在完成 / 出错态才看得到. */
+const LOOK = ["size", "radius", "washOpacity", "expectedMs", "showTimer"];
+
+function idleLog(retry: unknown): string {
+  return retry ? "出错的芯片可以点: 点它重试" : "没传 onRetry: 出错的芯片不可点";
+}
 
 function RunDemo({ retry, status, ...props }: Record<string, unknown>) {
-  const [log, setLog] = useState("等待工具返回");
+  const [log, setLog] = useState(idleLog(retry));
   const [override, setOverride] = useState<"running" | "done" | null>(null);
-  const rerun = (): void => {
-    setOverride("running");
+  const [failed, setFailed] = useState<RunStatus>("error");
+  const look = Object.fromEntries(LOOK.map((key) => [key, props[key]]));
+  const rerun = (done: (status: "running" | "done") => void): void => {
+    done("running");
     setLog("onRetry: 已重新运行");
     setTimeout(() => {
-      setOverride("done");
+      done("done");
       setLog("第二次运行通过");
     }, RERUN_MS);
   };
   return (
-    <div className="flex w-[min(26rem,calc(100vw-6rem))] flex-col items-center gap-4">
-      <RunChip {...props} status={(override ?? status) as RunStatus} onRetry={retry ? rerun : undefined} />
-      <p className="font-mono text-[12px] text-muted-foreground">{log}</p>
+    <div className="flex w-[min(26rem,calc(100vw-6rem))] flex-col items-start gap-2">
+      <RunChip {...props} status={(override ?? status) as RunStatus} onRetry={retry ? () => rerun(setOverride) : undefined} />
+      <RunChip {...look} icon="file" name="read" argument="src/controls/index.ts" status="done" />
+      <RunChip {...look} icon="edit" name="write" argument="docs/CHANGELOG.md" status={failed} onRetry={retry ? () => rerun(setFailed) : undefined} />
+      <p className="mt-2 self-center font-mono text-[12px] text-muted-foreground">{log}</p>
     </div>
   );
 }
