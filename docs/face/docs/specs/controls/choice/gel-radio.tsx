@@ -26,7 +26,7 @@ const NOTE: Readonly<Record<string, string>> = {
 
 const CONTROLS: readonly ControlDef[] = [
   select("defaultValue", "初始值", ["standard", "next", "same"], "next", "string", "非受控的初始选中项."),
-  select("size", "尺寸", ["sm", "md", "lg"], "lg", '"sm" | "md" | "lg"', "高度, 字号与内边距三档."),
+  select("size", "尺寸", ["sm", "md", "lg"], "md", '"sm" | "md" | "lg"', "高度, 字号与内边距三档."),
   color("tone", "选中色", CHOICE_ACCENTS, "primary", "ChoiceTone", "选中块颜色; 文字跟着换配套前景色."),
   range("stagger", "层间错峰", [0, 80, 2], 22, "三层起步的错峰 ms."),
   range("stiffness", "刚度", [100, 1200, 20], 580, "最硬那层的刚度, 其余两层按比例变软."),
@@ -46,9 +46,11 @@ const toProps = (values: Values): Record<string, unknown> => ({ ...values, activ
 function GelDemo(props: Record<string, unknown>) {
   const [value, setValue] = useState(String(props.defaultValue));
   return (
-    <div className="flex w-[min(22rem,calc(100vw-6rem))] flex-col gap-3 rounded-2xl border border-border bg-card p-4 text-left">
+    <div className="flex w-[min(22rem,100%)] flex-col gap-3 rounded-2xl border border-border bg-card p-3 text-left sm:p-4">
       <p className="text-[13px] font-medium text-foreground">配送方式 · 订单 #20261112-0418</p>
-      <GelRadio {...props} items={ITEMS} ariaLabel="配送方式" onChange={setValue} />
+      <div className="max-w-full overflow-x-auto">
+        <GelRadio {...props} items={ITEMS} ariaLabel="配送方式" onChange={setValue} />
+      </div>
       <p className="text-[12.5px] text-muted-foreground">{NOTE[value]}</p>
     </div>
   );
