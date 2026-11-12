@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type JSX } from "react";
 import { DocsPager, Tabs, TabsContent } from "@hx/ui";
 import { COMPONENTS, relatedOf, type CatalogEntry } from "../catalog";
-import { PAGER_CLASS, PKG, STAGE_PX } from "../constants";
+import { PAGER_CLASS, PKG, STAGE_FIT, STAGE_PX } from "../constants";
 import { Thumb } from "../index/Thumb";
 import { initialValues, propRows, propsOf, usageCode, type ComponentSpec, type ControlValue, type Values } from "../specs/types";
 import { copyText } from "./copy";
@@ -64,6 +64,7 @@ export function SpecPage({ entry, spec, onGo }: { readonly entry: CatalogEntry; 
   const parts = useMemo(() => (spec.parts ?? []).map((part) => ({ part, rows: propRows(spec, part) })), [spec]);
   const block = spec.kind === "block";
   const height = spec.height ?? (spec.fill ? STAGE_PX.fill : STAGE_PX.text);
+  const fit = spec.kind === "control" ? { min: STAGE_FIT.min, max: Math.max(STAGE_FIT.min, spec.height ?? STAGE_FIT.max) } : undefined;
   const index = COMPONENTS.findIndex((item) => item.id === entry.id);
   const prev = index > 0 ? COMPONENTS[index - 1] : undefined;
   const next = COMPONENTS[index + 1];
@@ -78,8 +79,8 @@ export function SpecPage({ entry, spec, onGo }: { readonly entry: CatalogEntry; 
       <Tabs value={tab} onValueChange={(next) => setTab(next as StageTab)} className="flex flex-col gap-4">
         <StageToolbar device={device} setDevice={setDevice} onCopyAi={() => copyText(aiMarkdown(spec, values), "组件说明 Markdown")} />
         <TabsContent value={PREVIEW} className="mt-0">
-          <StageBox height={height} fill={Boolean(spec.fill) || block} device={device} onReplay={() => setReplay((prev) => prev + 1)}>
-            <div key={stageKey} className={block ? "size-full overflow-y-auto text-left" : spec.fill ? "size-full" : "max-w-full"}>
+          <StageBox height={height} fit={fit} fill={Boolean(spec.fill) || block} device={device} onReplay={() => setReplay((prev) => prev + 1)}>
+            <div key={stageKey} data-stage-content className={block ? "size-full overflow-y-auto text-left" : spec.fill ? "size-full" : "max-w-full"}>
               {spec.render(props)}
             </div>
           </StageBox>

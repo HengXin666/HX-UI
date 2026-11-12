@@ -17,6 +17,11 @@ export const SHELL = {
 
 /** 预览台高度 (px), 对齐 reactbits 实拍: 文字类 356, 背景类 534. */
 export const STAGE_PX = { text: 356, fill: 534 } as const;
+/**
+ * control 页型的预览台按内容收缩: 高度 = 演示内容 + 上下留白, 夹在 min 与 max 之间 (spec.height 给了时作上限).
+ * 演示主体 (预览里可见元素的并包围盒) 面积不低于台面的 15% (1440 宽, 台宽 756), 不够的在 spec 里放大演示.
+ */
+export const STAGE_FIT = { min: 200, max: 440, padY: 32, reducedMin: 180, reducedMax: 360 } as const;
 /** 手机预览的宽度 (px). */
 export const PHONE_PX = 390;
 

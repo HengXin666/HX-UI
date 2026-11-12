@@ -47,7 +47,7 @@ export type PageKind = "single" | "composite" | "block" | "control";
 export interface ReducedNote {
   readonly desc: string;
   readonly notes: readonly string[];
-  /** 对照格高度 (px), 省略时 220. */
+  /** 对照格高度上限 (px), 省略时 360; 对照格随内容收缩, 下限 180. */
   readonly height?: number;
 }
 
@@ -103,7 +103,7 @@ export interface ComponentSpec {
   readonly children?: string;
   /** 页型, 省略为 single. */
   readonly kind?: PageKind;
-  /** 舞台高度 (px), 省略时按 fill 取文字或背景档. */
+  /** 舞台高度 (px), 省略时按 fill 取文字或背景档; control 页型的舞台随内容收缩, 这里是上限 (见 STAGE_FIT). */
   readonly height?: number;
   /** 一起出 Props 表的其他部件 (Dialog 的 DialogContent 等), 按导出名. */
   readonly parts?: readonly string[];

@@ -1,6 +1,6 @@
 import { useState, type JSX, type ReactNode } from "react";
 import { BUTTON_TYPE, CodeBlock, TabsList, TabsTrigger, ToggleGroup, ToggleGroupItem, cn, type CodeBlockProps } from "@hx/ui";
-import { ICON, ICON_SM, ICON_XS, PHONE_PX, TOOL_BTN, TOOL_GROUP } from "../constants";
+import { ICON, ICON_SM, ICON_XS, PHONE_PX, STAGE_FIT, TOOL_BTN, TOOL_GROUP } from "../constants";
 
 export type StageTab = "preview" | "code";
 export type Device = "desktop" | "phone";
@@ -89,25 +89,35 @@ export function DocCode({ inset = false, ...props }: CodeBlockProps & { readonly
   );
 }
 
-/** 预览台: 圆角框, 右上角重播; 手机宽度时内容收进 390px 的框. */
+/** 预览台: 圆角框, 右上角重播; 手机宽度时内容收进 390px 的框. control 页型传 fit, 高度随内容收缩. */
 export function StageBox({
   height,
   fill,
   device,
   onReplay,
   children,
+  fit,
 }: {
   readonly height: number;
   readonly fill: boolean;
   readonly device: Device;
   readonly onReplay: () => void;
   readonly children: ReactNode;
+  /** control 页型: 高度跟内容走, 夹在 min 与 max 之间 (height 不再生效). */
+  readonly fit?: { readonly min: number; readonly max: number };
 }): JSX.Element {
   const inner = fill ? "size-full" : "grid size-full place-items-center overflow-hidden p-6 text-center";
+  const box = fit ? { minHeight: fit.min, maxHeight: fit.max } : { height };
   return (
-    <div data-demo className="relative overflow-hidden rounded-2xl border border-border bg-background" style={{ height }}>
-      <div className={cn("mx-auto h-full", device === PHONE && "border-x border-border")} style={device === PHONE ? { width: PHONE_PX, maxWidth: "100%" } : undefined}>
-        <div className={inner}>{children}</div>
+    <div data-demo className="relative overflow-hidden rounded-2xl border border-border bg-background" style={box}>
+      <div className={cn("mx-auto", !fit && "h-full", device === PHONE && "border-x border-border")} style={device === PHONE ? { width: PHONE_PX, maxWidth: "100%" } : undefined}>
+        {fit ? (
+          <div className="grid place-items-center overflow-hidden px-6 text-center" style={{ minHeight: fit.min, maxHeight: fit.max, paddingBlock: STAGE_FIT.padY }}>
+            {children}
+          </div>
+        ) : (
+          <div className={inner}>{children}</div>
+        )}
       </div>
       <button
         type={BUTTON_TYPE}
