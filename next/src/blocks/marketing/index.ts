@@ -1,0 +1,13 @@
+export { SiteHeader } from "./site-header";
+export { Hero } from "./hero";
+export { Section } from "./section";
+export { FeatureBento } from "./feature-bento";
+export type { BentoFeature } from "./feature-bento";
+export { LogoCloud } from "./logo-cloud";
+export { Pricing } from "./pricing";
+export type { Plan } from "./pricing";
+export { Testimonials } from "./testimonials";
+export type { Testimonial } from "./testimonials";
+export { Faq } from "./faq";
+export { Cta } from "./cta";
+export { SiteFooter } from "./site-footer";
