@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
+import { m, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
 import { cn } from "@/lib/utils";
 import { spring } from "@/motion/presets";
 
@@ -12,7 +12,7 @@ export function TiltCard({ className, children, max = 8 }: { className?: string;
   const ry = useSpring(useTransform(px, [0, 1], [-max, max]), spring.follow);
   return (
     <div className="[perspective:1000px]">
-      <motion.div
+      <m.div
         className={cn("relative [transform-style:preserve-3d]", className)}
         style={reduce ? undefined : { rotateX: rx, rotateY: ry }}
         onPointerMove={(e) => {
@@ -26,7 +26,7 @@ export function TiltCard({ className, children, max = 8 }: { className?: string;
         }}
       >
         {children}
-      </motion.div>
+      </m.div>
     </div>
   );
 }

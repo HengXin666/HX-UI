@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { Check, Minus, Plus, RotateCcw, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -87,9 +87,9 @@ function Pdp() {
           <div className="h-5 text-sm">
             <AnimatePresence mode="wait">
               {left !== undefined && (
-                <motion.span key={`${color}${size}`} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={left <= 3 ? "text-warning" : "text-success"}>
+                <m.span key={`${color}${size}`} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={left <= 3 ? "text-warning" : "text-success"}>
                   {left <= 3 ? `仅剩 ${left} 件` : "有货，今天 18:00 前下单当日发出"}
-                </motion.span>
+                </m.span>
               )}
             </AnimatePresence>
           </div>
@@ -101,9 +101,9 @@ function Pdp() {
             </div>
             <Button className="h-12 flex-1 rounded-xl text-base" onClick={add}>
               <AnimatePresence mode="wait" initial={false}>
-                <motion.span key={added ? "ok" : "add"} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -12, opacity: 0 }} transition={{ duration: 0.18 }} className="inline-flex items-center gap-2">
+                <m.span key={added ? "ok" : "add"} initial={{ y: 12, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: -12, opacity: 0 }} transition={{ duration: 0.18 }} className="inline-flex items-center gap-2">
                   {added ? <><Check className="size-4" />已加入</> : <><ShoppingBag className="size-4" />{size ? "加入购物袋" : "选择尺码"}</>}
-                </motion.span>
+                </m.span>
               </AnimatePresence>
             </Button>
           </div>
@@ -136,15 +136,15 @@ function Plp() {
         <Segmented value={cat} onChange={setCat} options={["全部", "鞋履", "数码", "配件"].map((c) => ({ value: c, label: c }))} />
         <Segmented className="ml-auto" value={sort} onChange={setSort} options={[{ value: "hot", label: "热度" }, { value: "low", label: "价格 ↑" }, { value: "high", label: "价格 ↓" }]} />
       </div>
-      <motion.div layout className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
+      <m.div layout className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
         <AnimatePresence mode="popLayout">
           {list.map((p) => (
-            <motion.div key={p.id} layout initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+            <m.div key={p.id} layout initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
               <ProductCard product={p} onOpen={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
-            </motion.div>
+            </m.div>
           ))}
         </AnimatePresence>
-      </motion.div>
+      </m.div>
     </Section>
   );
 }

@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { cn } from "@/lib/utils";
 
 export interface MediaItem {
@@ -34,7 +34,7 @@ export function ProductGallery({ media, className }: { media: MediaItem[]; class
         aria-roledescription="carousel"
       >
         <AnimatePresence initial={false} custom={dir} mode="popLayout">
-          <motion.img
+          <m.img
             key={i}
             src={media[i].src}
             alt={media[i].alt}

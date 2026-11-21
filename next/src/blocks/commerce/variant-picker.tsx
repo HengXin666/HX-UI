@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { cn } from "@/lib/utils";
 import { spring } from "@/motion/presets";
 
@@ -46,7 +46,7 @@ export function VariantPicker({ name, label, options, value, onChange }: {
                 o.soldOut && "text-muted-foreground/50 line-through",
               )}
             >
-              {on && !swatch && <motion.span layoutId={`vp-${name}`} transition={spring.snappy} className="absolute inset-0 rounded-lg bg-foreground" />}
+              {on && !swatch && <m.span layoutId={`vp-${name}`} transition={spring.snappy} className="absolute inset-0 rounded-lg bg-foreground" />}
               {swatch ? (
                 <span className={cn("size-full rounded-full ring-offset-2 ring-offset-background", on && "ring-2 ring-foreground", o.soldOut && "opacity-30")} style={{ background: o.swatch }} />
               ) : (

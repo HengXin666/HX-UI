@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { cn } from "@/lib/utils";
 import { spring } from "@/motion/presets";
 import { useId } from "react";
@@ -24,7 +24,7 @@ export function Segmented<T extends string>({ options, value, onChange, classNam
             onClick={() => onChange(o.value)}
             className={cn("relative h-7 rounded-md px-3 text-xs font-medium transition-colors", on ? "text-foreground" : "text-muted-foreground hover:text-foreground")}
           >
-            {on && <motion.span layoutId={`seg-${id}`} transition={spring.snappy} className="absolute inset-0 rounded-md bg-background shadow-soft" />}
+            {on && <m.span layoutId={`seg-${id}`} transition={spring.snappy} className="absolute inset-0 rounded-md bg-background shadow-soft" />}
             <span className="relative">{o.label}</span>
           </button>
         );

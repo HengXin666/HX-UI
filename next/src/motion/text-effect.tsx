@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { spring } from "./presets";
 
@@ -17,7 +17,7 @@ const CJK = /[\u3040-\u30ff\u3400-\u9fff\uac00-\ud7af]/;
 export function TextReveal({ text, className, by, delay = 0, as = "span" }: TextRevealProps) {
   const reduce = useReducedMotion();
   const mode = by ?? (CJK.test(text) ? "char" : "word");
-  const Tag = motion[as];
+  const Tag = m[as];
   if (reduce) return <Tag className={className}>{text}</Tag>;
   const parts = mode === "word" ? text.split(/(\s+)/) : Array.from(text);
   return (
@@ -33,7 +33,7 @@ export function TextReveal({ text, className, by, delay = 0, as = "span" }: Text
         /^\s+$/.test(p) ? (
           <span key={i}>{p}</span>
         ) : (
-          <motion.span
+          <m.span
             key={i}
             aria-hidden
             className="inline-block will-change-transform"
@@ -41,7 +41,7 @@ export function TextReveal({ text, className, by, delay = 0, as = "span" }: Text
             transition={spring.smooth}
           >
             {p}
-          </motion.span>
+          </m.span>
         ),
       )}
     </Tag>

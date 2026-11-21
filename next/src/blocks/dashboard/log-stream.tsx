@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { Pause, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -64,12 +64,12 @@ export function LogStream({ lines, max = 300, height = 320, className }: { lines
       >
         <AnimatePresence initial={false}>
           {shown.map((l) => (
-            <motion.div key={l.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }} className="flex gap-3 whitespace-pre-wrap">
+            <m.div key={l.id} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }} className="flex gap-3 whitespace-pre-wrap">
               <span className="shrink-0 text-white/35">{l.time}</span>
               <span className={cn("w-11 shrink-0 uppercase", LEVEL[l.level])}>{l.level}</span>
               {l.source && <span className="shrink-0 text-white/50">[{l.source}]</span>}
               <span className="min-w-0">{l.message}</span>
-            </motion.div>
+            </m.div>
           ))}
         </AnimatePresence>
       </div>

@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { Price } from "./price";
 import { Rating } from "./rating";
 import { cn } from "@/lib/utils";
@@ -18,7 +18,7 @@ export interface ProductSummary {
 /** 商品卡: 悬停换第二张图 + 轻微上浮, 收藏按钮. */
 export function ProductCard({ product, onOpen, className }: { product: ProductSummary; onOpen?: (id: string) => void; className?: string }) {
   return (
-    <motion.article layout whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300, damping: 24 }} className={cn("group", className)}>
+    <m.article layout whileHover={{ y: -4 }} transition={{ type: "spring", stiffness: 300, damping: 24 }} className={cn("group", className)}>
       <button type="button" onClick={() => onOpen?.(product.id)} className="block w-full text-left">
         <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-muted">
           <img src={product.image} alt={product.name} loading="lazy" className="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-[1.03]" />
@@ -31,6 +31,6 @@ export function ProductCard({ product, onOpen, className }: { product: ProductSu
           <Price amount={product.price} compareAt={product.compareAt} size="sm" />
         </div>
       </button>
-    </motion.article>
+    </m.article>
   );
 }

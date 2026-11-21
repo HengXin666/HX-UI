@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion, useMotionValueEvent, useScroll } from "motion/react";
+import { m, useMotionValueEvent, useScroll } from "motion/react";
 import { cn } from "@/lib/utils";
 
 /** 站点顶栏: 滚动后收成悬浮玻璃胶囊. */
@@ -9,7 +9,7 @@ export function SiteHeader({ brand, links, actions }: { brand: React.ReactNode; 
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 24));
   return (
     <div className="sticky top-0 z-40 px-4 pt-3">
-      <motion.header
+      <m.header
         animate={{ maxWidth: scrolled ? 960 : 1200 }}
         transition={{ type: "spring", stiffness: 260, damping: 30 }}
         className={cn(
@@ -24,7 +24,7 @@ export function SiteHeader({ brand, links, actions }: { brand: React.ReactNode; 
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">{actions}</div>
-      </motion.header>
+      </m.header>
     </div>
   );
 }

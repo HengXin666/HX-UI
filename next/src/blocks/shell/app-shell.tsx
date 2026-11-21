@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { Menu, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -49,7 +49,7 @@ function NavList({ nav, active, onNavigate, collapsed }: Pick<AppShellProps, "na
                   collapsed && "justify-center px-0",
                 )}
               >
-                {on && <motion.span layoutId="hx-nav-active" transition={spring.snappy} className="absolute inset-0 rounded-lg bg-accent shadow-soft" />}
+                {on && <m.span layoutId="hx-nav-active" transition={spring.snappy} className="absolute inset-0 rounded-lg bg-accent shadow-soft" />}
                 {it.icon && <it.icon className="relative size-4 shrink-0" />}
                 {!collapsed && <span className="relative flex-1 truncate text-left">{it.label}</span>}
                 {!collapsed && it.badge && <span className="relative">{it.badge}</span>}
@@ -68,7 +68,7 @@ export function AppShell({ brand, nav, active, onNavigate, actions, footer, chil
   const [mobile, setMobile] = React.useState(false);
   return (
     <div className="flex min-h-svh bg-background">
-      <motion.aside
+      <m.aside
         animate={{ width: collapsed ? 68 : 244 }}
         transition={spring.smooth}
         className="sticky top-0 hidden h-svh shrink-0 flex-col border-r bg-sidebar px-3 py-4 md:flex"
@@ -78,7 +78,7 @@ export function AppShell({ brand, nav, active, onNavigate, actions, footer, chil
           <NavList nav={nav} active={active} onNavigate={onNavigate} collapsed={collapsed} />
         </div>
         {footer && !collapsed && <div className="mt-4">{footer}</div>}
-      </motion.aside>
+      </m.aside>
       <Sheet open={mobile} onOpenChange={setMobile}>
         <SheetContent side="left" className="w-72 bg-sidebar p-4">
           <SheetTitle className="mb-6">{brand}</SheetTitle>

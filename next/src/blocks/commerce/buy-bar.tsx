@@ -1,5 +1,5 @@
 import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Price } from "./price";
 
@@ -29,7 +29,7 @@ export function BuyBar({ target, image, title, subtitle, amount, compareAt, ctaL
   return (
     <AnimatePresence>
       {show && (
-        <motion.div
+        <m.div
           initial={{ y: "110%" }}
           animate={{ y: 0 }}
           exit={{ y: "110%" }}
@@ -45,7 +45,7 @@ export function BuyBar({ target, image, title, subtitle, amount, compareAt, ctaL
             <Price amount={amount} compareAt={compareAt} size="sm" className="hidden sm:flex" />
             <Button onClick={onBuy} disabled={disabled} className="rounded-xl">{ctaLabel}</Button>
           </div>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   );

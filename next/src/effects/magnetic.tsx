@@ -1,5 +1,5 @@
 import * as React from "react";
-import { motion, useMotionValue, useReducedMotion, useSpring } from "motion/react";
+import { m, useMotionValue, useReducedMotion, useSpring } from "motion/react";
 import { spring } from "@/motion/presets";
 
 /** 磁吸: 指针靠近时子元素被轻轻吸过去. strength 是最大位移比例. */
@@ -10,7 +10,7 @@ export function Magnetic({ children, strength = 0.25 }: { children: React.ReactN
   const y = useSpring(useMotionValue(0), spring.follow);
   if (reduce) return <>{children}</>;
   return (
-    <motion.div
+    <m.div
       ref={ref}
       style={{ x, y }}
       className="inline-block"
@@ -26,6 +26,6 @@ export function Magnetic({ children, strength = 0.25 }: { children: React.ReactN
       }}
     >
       {children}
-    </motion.div>
+    </m.div>
   );
 }

@@ -1,4 +1,4 @@
-import { motion, useReducedMotion, type HTMLMotionProps } from "motion/react";
+import { m, useReducedMotion, type HTMLMotionProps } from "motion/react";
 import { reveal, spring, type RevealPreset } from "./presets";
 
 interface RevealProps extends Omit<HTMLMotionProps<"div">, "variants" | "initial" | "animate"> {
@@ -13,12 +13,12 @@ interface RevealProps extends Omit<HTMLMotionProps<"div">, "variants" | "initial
 /** 视口内入场. 减弱动效时直接显示终态. */
 export function Reveal({ preset = "up", delay = 0, inView = true, once = true, transition, ...rest }: RevealProps) {
   const reduce = useReducedMotion();
-  if (reduce) return <motion.div {...rest} />;
+  if (reduce) return <m.div {...rest} />;
   const trigger = inView
     ? { whileInView: "show", viewport: { once, margin: "0px 0px -10% 0px" } }
     : { animate: "show" };
   return (
-    <motion.div
+    <m.div
       variants={reveal[preset]}
       initial="hidden"
       {...trigger}
@@ -38,9 +38,9 @@ interface StaggerProps extends Omit<HTMLMotionProps<"div">, "variants" | "initia
 /** 子项交错入场, 配合 <StaggerItem>. */
 export function Stagger({ gap = 0.08, delay = 0, once = true, ...rest }: StaggerProps) {
   const reduce = useReducedMotion();
-  if (reduce) return <motion.div {...rest} />;
+  if (reduce) return <m.div {...rest} />;
   return (
-    <motion.div
+    <m.div
       initial="hidden"
       whileInView="show"
       viewport={{ once, margin: "0px 0px -10% 0px" }}
@@ -51,7 +51,7 @@ export function Stagger({ gap = 0.08, delay = 0, once = true, ...rest }: Stagger
 }
 
 export function StaggerItem({ preset = "up", ...rest }: Omit<HTMLMotionProps<"div">, "variants"> & { preset?: RevealPreset }) {
-  return <motion.div variants={reveal[preset]} transition={spring.smooth} {...rest} />;
+  return <m.div variants={reveal[preset]} transition={spring.smooth} {...rest} />;
 }
 
 export type { RevealProps, StaggerProps };
