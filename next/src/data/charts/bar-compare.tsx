@@ -1,10 +1,8 @@
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
-
-const compact = new Intl.NumberFormat("zh-CN", { notation: "compact", maximumFractionDigits: 1 });
-export const formatCompact = (v: number): string => compact.format(v);
-import { toConfig, type SeriesSpec } from "./area-trend";
+import { formatCompact, toConfig, type SeriesSpec } from "./area-trend";
+import { useChartAnimation, type ChartAnimationOptions } from "./animation";
 
 interface BarCompareProps {
   /** 行数据, 每行一个 x 值 + 各系列数值 */
@@ -17,10 +15,12 @@ interface BarCompareProps {
   height?: number;
   className?: string;
   legend?: boolean;
+  animation?: ChartAnimationOptions;
 }
 
 /** 分组 / 堆叠柱状图, 可横向. */
-export function BarCompare({ data, x, series, stacked, horizontal, height = 260, className, legend = series.length > 1 }: BarCompareProps) {
+export function BarCompare({ data, x, series, stacked, horizontal, height = 260, className, legend = series.length > 1, animation }: BarCompareProps) {
+  const anim = useChartAnimation({ match: "index", ...animation }, data.length);
   return (
     <ChartContainer config={toConfig(series)} className={cn("w-full", className)} style={{ height }}>
       <BarChart data={data} layout={horizontal ? "vertical" : "horizontal"} margin={{ left: 4, right: 8, top: 8 }}>
@@ -46,6 +46,7 @@ export function BarCompare({ data, x, series, stacked, horizontal, height = 260,
             fill={`var(--color-${s.key})`}
             radius={stacked && i < series.length - 1 ? 0 : horizontal ? [0, 6, 6, 0] : [6, 6, 0, 0]}
             maxBarSize={40}
+            {...anim}
           />
         ))}
       </BarChart>

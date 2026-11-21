@@ -112,7 +112,7 @@ export default function Ops() {
         </Stagger>
         <div className="mt-4 grid gap-4 [&>*]:min-w-0 xl:grid-cols-[1.4fr_1fr]">
           <ChartCard title="实时流量" description="最近 80 秒，每 2 秒追加一个点">
-            <AreaTrend data={traffic} x="t" series={[{ key: "请求", label: "请求 / 秒" }]} height={240} showAxis={false} />
+            <AreaTrend data={traffic} x="t" series={[{ key: "请求", label: "请求 / 秒" }]} height={240} showAxis={false} animation={{ match: { dataKey: "t" } }} />
           </ChartCard>
           <ChartCard title="实时日志" description="可暂停，向上翻阅时不会被拉回底部">
             <LogStream lines={logs} height={220} className="-mx-1" />

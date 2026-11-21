@@ -30,6 +30,7 @@ import { LiveDot } from "@/effects/live-dot";
 import { AnimatedNumber } from "@/motion/animated-number";
 import { TextReveal } from "@/motion/text-effect";
 import { Reveal } from "@/motion/reveal";
+import { Spin, SPIN_VARIANTS } from "@/components/ui/spin";
 import { BackLink } from "./back-link";
 import { IMG } from "../assets";
 
@@ -87,6 +88,16 @@ export default function Components() {
             </Sheet>
             <Popover><PopoverTrigger asChild><Button variant="outline">气泡</Button></PopoverTrigger><PopoverContent className="text-sm">轻量浮层，点外部关闭。</PopoverContent></Popover>
             <Tooltip><TooltipTrigger asChild><Button variant="ghost">提示</Button></TooltipTrigger><TooltipContent>悬停 200ms 出现</TooltipContent></Tooltip>
+          </Demo>
+          <Demo title="Spin · 固定 / 轮播 (LDRS 41 形态)" className="flex-col">
+            <div className="flex items-center gap-6 text-brand">
+              <Spin size="lg" label="加载中" />
+              <Spin size="lg" mode="rotate" />
+              <Button type="button" disabled><Spin size="sm" variant="ring2" /> 提交中</Button>
+            </div>
+            <div className="grid grid-cols-8 gap-3 text-muted-foreground">
+              {SPIN_VARIANTS.slice(0, 16).map((v) => <Spin key={v} variant={v} size={20} title={v} />)}
+            </div>
           </Demo>
           <Demo title="Badge · Toggle · Skeleton" className="flex-col">
             <div className="flex gap-2"><Badge>默认</Badge><Badge variant="secondary">次要</Badge><Badge variant="outline">描边</Badge><Badge variant="destructive">告警</Badge></div>
