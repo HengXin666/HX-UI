@@ -34,6 +34,9 @@
       ],
       "react/jsx-runtime": [
         "../node_modules/@types/react/jsx-runtime"
+      ],
+      "react-hook-form": [
+        "../node_modules/react-hook-form"
       ]
     }
   },

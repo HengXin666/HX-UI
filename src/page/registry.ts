@@ -14,6 +14,8 @@ import {
   LogoWall,
   Newsletter,
   Pricing,
+  PricingCalculator,
+  ProductTour,
   Showcase,
   StatBand,
   Testimonials,
@@ -39,6 +41,8 @@ import { Trend } from "../viz/charts/Trend";
 import { FlowGraph } from "../viz/flow/FlowGraph";
 import { Funnel } from "../viz/flow/Funnel";
 import { Timeline } from "../viz/flow/Timeline";
+import { ProductBuy } from "../blocks/commerce/ProductBuy";
+import { ReviewBoard } from "../blocks/commerce/ReviewBoard";
 import { framed, MetricRow, RingRow } from "./frame";
 
 /** 站点外壳: 顶栏, 公告条, 页脚. */
@@ -62,6 +66,8 @@ export const MARKETING_SECTIONS = {
   tweets: TweetWall,
   cases: CaseStudies,
   pricing: Pricing,
+  calculator: PricingCalculator,
+  tour: ProductTour,
   matrix: ComparisonMatrix,
   faq: Faq,
   cta: CtaBanner,
@@ -71,7 +77,10 @@ export const MARKETING_SECTIONS = {
   changelog: ChangelogList,
 } as const;
 
-/** 电商: 活动, 类目, 列表, 详情, 购物车与结账. */
+/**
+ * 电商: 活动, 类目, 列表, 详情, 购物车与结账; buy / reviews 吃 src/commerce/model.ts 的商品模型.
+ * .agents/notes/implemented/architecture/2026-11-20-omni-content-model.md
+ */
 export const COMMERCE_SECTIONS = {
   campaign: CampaignHero,
   promo: PromoStrip,
@@ -82,6 +91,8 @@ export const COMMERCE_SECTIONS = {
   search: SearchResults,
   cart: CartSummary,
   checkout: CheckoutSteps,
+  buy: ProductBuy,
+  reviews: ReviewBoard,
 } as const;
 
 /** 数据, 内容与流程的可视化. 都包了 BlockShell, 可以直接带标题组进页面. */

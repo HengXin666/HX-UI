@@ -9,6 +9,7 @@
 | [component-contract.md](component-contract.md) | 组件契约: 统一 prop 词汇, 受控与非受控, asChild 与 render prop, classNames / styles 插槽与标准 slot 表, data-slot / data-state, ref 归属, 事件命名, 样式硬约束, 无障碍与键盘表, 文件切分与废弃流程, 存量组件待迁移清单 | 所有新组件与迁移中的存量组件 |
 | [studio.md](studio.md) | 工作室层: 令牌到整页的分层, 镜头词汇, 过程可视化, 子路径入口 | 拼营销页, 商品页和数据叙事的新代码 |
 | [layers.md](layers.md) | 分层与入口: L0 令牌到 L5 页面的六层, 每层的子路径入口, 页面描述与默认注册表, 可视化动效合同, 第二阶段迁移 | 新代码放哪一层, 怎么用一份描述拼整页 |
+| [omni-1.0.md](omni-1.0.md) | omni 1.0 重构: 目标分层 L0 到 L6, 统一时钟与镜头配方的运动合同, beat 页面合同, 去 AI 味规则, P0 到 P8 阶段 | 1.0 重构期间写运动, 页面, 数据与区块的新代码 |
 
 ## 与其他文档的关系
 

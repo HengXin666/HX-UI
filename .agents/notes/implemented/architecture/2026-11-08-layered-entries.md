@@ -21,7 +21,7 @@ HX-UI 已经有控件, 区块, 运动和两张样板页, 但对使用方仍是�
 - `@hx/ui/motion` 指向 `src/entry/motion.ts`, 转出 motion, craft 的可中断弹簧与按位数字, studio 的镜头组件, 以及按名字取用的 `MOTION_SPRINGS`. 只转发, 不搬文件.
 - `@hx/ui/viz` 指向 `src/viz` (见 viz-layer 决策).
 - `@hx/ui/blocks` 指向既有的 `Blocks` 命名空间.
-- `@hx/ui/page` 指向 `src/page`: `definePage` 与 `section` 给出按注册表推导的类型化描述, `DEFAULT_SECTIONS` 收齐站点, 营销, 电商与数据四组区块, 可视化组件经 `framed` 包上 `BlockShell` 与标题组, `Page` 底层仍是 `PageComposer`. `createPage` 把自定义区块并进默认注册表并返回绑定好类型的 `define` 与 `Page`.
+- `@hx/ui/page` 指向 `src/page`: `definePage` 与 `section` 给出按注册表推导的类型化描述, `DEFAULT_SECTIONS` 收齐站点, 营销, 电商与数据四组区块, 可视化组件经 `framed` 包上 `BlockShell` 与标题组, `Page` 底层仍是 `PageComposer`; spec 带 story (或 sections 加 direction) 时外面套一层 `BeatPage` 按拍渲染, 见 omni-page-beats 决策. `createPage` 把自定义区块并进默认注册表并返回绑定好类型的 `define` 与 `Page`.
 - `@hx/ui/studio` 保留为兼容入口, 新代码从 motion, viz, page 取.
 - 文档站 `#/gallery` 多一格 "整页描述": 用 `definePage` 把商品页模板的同一份数据与 rings, flow 两个可视化区块拼成一页. "数据" 一格改为展示 `src/viz` 全部组件.
 

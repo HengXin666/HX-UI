@@ -13,7 +13,7 @@ export {
 } from "./presets";
 export { CURVE, cssCurve, type CurveName } from "./curves";
 export { Reveal, MOTION_ELEMENTS, type MotionTag, type RevealProps } from "./Reveal";
-export { Stagger, StaggerItem, type StaggerItemProps, type StaggerProps } from "./Stagger";
+export { Stagger, StaggerItem, staggerTransition, type StaggerItemProps, type StaggerProps, type StaggerRhythm } from "./Stagger";
 export { AnimatedNumber, type AnimatedNumberProps } from "./AnimatedNumber";
 export { FadeSwap, PageTransition, type FadeSwapProps, type PageTransitionProps, type PresenceMode } from "./Transition";
 export {
@@ -65,3 +65,27 @@ export { SpringChannels, type AimOptions } from "./drive/channels";
 export { useSpringChannels, type SpringChannelsHandle } from "./drive/use-spring-channels";
 export { SpringDriver, useSpringValue, type DriveOptions } from "./drive/driver";
 export { useDrivenValue, type DrivenValue } from "./drive/use-driven-value";
+export {
+  RECIPE_LINEAR,
+  RECIPE_PHASE,
+  dealDelayChildren,
+  dealOffset,
+  dealOffsets,
+  phaseAt,
+  phaseSpan,
+  recipeAt,
+  recipeFrames,
+  recipeMs,
+  sampleRecipe,
+  validateRecipe,
+  type RecipeCurve,
+  type RecipePhaseName,
+  type RecipeReading,
+  type ShotAmplitude,
+  type ShotPhase,
+  type ShotRecipe,
+} from "./recipe";
+export { SHOT_RECIPES, type ShotRecipeName } from "./recipe-cards";
+export { CLOCK_DRIVER, clampUnit, elapsedProgress, loopProgress, scrollProgress, type ClockDriver } from "./drive/clock";
+export { useClock, type ClockOptions } from "./drive/use-clock";
+export { usePhase, useRecipe, type RecipeValues } from "./drive/use-recipe";

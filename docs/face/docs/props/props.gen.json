@@ -2843,7 +2843,7 @@
  "ButtonGroup": [
   {
    "name": "orientation",
-   "type": "\"horizontal\" | \"vertical\"",
+   "type": "\"vertical\" | \"horizontal\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -2852,7 +2852,7 @@
  "ButtonGroupSeparator": [
   {
    "name": "orientation",
-   "type": "\"horizontal\" | \"vertical\"",
+   "type": "\"vertical\" | \"horizontal\"",
    "default": "\"vertical\"",
    "desc": "Either `vertical` or `horizontal`. Defaults to `horizontal`.",
    "required": false
@@ -2861,7 +2861,7 @@
    "name": "decorative",
    "type": "boolean",
    "default": "-",
-   "desc": "Whether or not the component is purely decorative. When true, accessibility-related attributes are updated so that that the rendered element is removed from the accessibility tree.",
+   "desc": "Whether or not the component is purely decorative. When true, accessibility-related attributes are updated so that the rendered element is removed from the accessibility tree.",
    "required": false
   },
   {
@@ -9497,7 +9497,7 @@
  "Field": [
   {
    "name": "orientation",
-   "type": "\"horizontal\" | \"vertical\" | \"responsive\"",
+   "type": "\"vertical\" | \"horizontal\" | \"responsive\"",
    "default": "\"vertical\"",
    "desc": "",
    "required": false
@@ -10806,7 +10806,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"horizontal\" | \"vertical\"",
+   "type": "\"vertical\" | \"horizontal\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -23960,7 +23960,7 @@
   },
   {
    "name": "axis",
-   "type": "\"horizontal\" | \"vertical\" | \"diagonal\"",
+   "type": "\"vertical\" | \"horizontal\" | \"diagonal\"",
    "default": "\"vertical\"",
    "desc": "",
    "required": false
@@ -25087,7 +25087,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"horizontal\" | \"vertical\"",
+   "type": "\"vertical\" | \"horizontal\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -25715,7 +25715,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"horizontal\" | \"vertical\"",
+   "type": "\"vertical\" | \"horizontal\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -26467,7 +26467,7 @@
   },
   {
    "name": "scanDirection",
-   "type": "\"horizontal\" | \"vertical\" | \"diagonal\"",
+   "type": "\"vertical\" | \"horizontal\" | \"diagonal\"",
    "default": "-",
    "desc": "扫描方向, 默认 vertical (竖线横扫).",
    "required": false
@@ -27763,7 +27763,7 @@
   },
   {
    "name": "direction",
-   "type": "\"horizontal\" | \"vertical\" | \"diagonal\"",
+   "type": "\"vertical\" | \"horizontal\" | \"diagonal\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -30942,7 +30942,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"horizontal\" | \"vertical\"",
+   "type": "\"vertical\" | \"horizontal\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -33183,7 +33183,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"horizontal\" | \"vertical\"",
+   "type": "\"vertical\" | \"horizontal\"",
    "default": "-",
    "desc": "",
    "required": false

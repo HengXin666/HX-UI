@@ -219,6 +219,8 @@ page-opensource ~ 开源项目站 ~ 复刻 tailwindcss / astro / bun 型开源�
 page-pricing ~ 定价页 ~ 复刻 linear / vercel 型定价页: 月年切换套餐 + 功能对比表 + 分组问答, 三套皮肤
 page-commerce-home ~ 电商首页 ~ 复刻 nike / apple / shopify 型电商首页: 大菜单 + 轮播 + 分类 + 商品网格. 演示里顶栏未吸顶, 真实项目里传 sticky: true
 page-product ~ 商品详情 ~ 复刻 apple / nike 型商品详情页: 画廊 + 购买面板 + 规格对比 + 评价. 演示里顶栏未吸顶, 真实项目里传 sticky: true
+page-pdp ~ 标杆详情页 ~ 一份商品模型出整页: SKU 矩阵联动购买区, 星级即筛选的评价墙, 粘性购买条, 镜头化画廊, 六种美术方向
+page-software ~ 标杆软件产品页 ~ 一份产品数据出整页: 光标飞在活界面上的导览, 人数计算器按位滚价, 档位对比矩阵, 安全合规, 六种美术方向
 page-portfolio ~ 个人主页 ~ 复刻 brittanychiang.com 型个人主页: 粘性双栏, 经历 + 项目 + 文章
 page-docsite ~ 文档站 ~ 复刻 mantine / shadcn / ant.design 型组件文档站: 首页 + 侧栏目录 + 正文 + 属性表
 page-dashboard ~ 仪表盘 ~ 复刻 SaaS 后台型仪表盘: 侧栏 + 指标行 + 双图表 + 动态流 + 上手清单
@@ -278,6 +280,8 @@ export const WIDE_PAGES: ReadonlySet<string> = new Set([
   "page-pricing",
   "page-commerce-home",
   "page-product",
+  "page-pdp",
+  "page-software",
   "page-portfolio",
   "page-docsite",
   "page-dashboard",

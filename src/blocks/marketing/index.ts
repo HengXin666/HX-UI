@@ -17,6 +17,8 @@ export { Hero, type HeroLayout, type HeroPill, type HeroTrust, type HeroProps } 
 export { InstallBlock, type InstallBlockSlot, type InstallCommand, type InstallPlatform, type InstallAlternative, type InstallBlockProps } from "./InstallBlock";
 export { LogoWall, type LogoWallMode, type LogoWallProps } from "./LogoWall";
 export { Newsletter, type NewsletterStatus, type NewsletterVariant, type NewsletterProps } from "./Newsletter";
+export { PricingCalculator, bestPlan, quote, type CalcBilling, type CalcPlan, type CalcQuote, type PricingCalculatorProps } from "./PricingCalculator";
+export { ProductTour, arcMidpoint, type TourStop, type ProductTourProps } from "./ProductTour";
 export { Pricing, type PricingFeature, type PricingPlan, type PricingBilling, type PricingProps } from "./Pricing";
 export { Showcase, type ShowcaseItem, type ShowcaseFeature, type ShowcaseProps } from "./Showcase";
 export { StatBand, type StatBandItem, type StatBandProps } from "./StatBand";

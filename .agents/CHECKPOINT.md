@@ -1,6 +1,29 @@
 # CHECKPOINT: react-bits 余量 (Components 48 件)
 
-接手先读这份, 再读 `.hark/plan.md` (git 忽略, 用 `hxfs plan` 提交). 本文件随每段落定更新.
+接手先读这份, 再读 `.hark/plan.md` (被 git 忽略, 只在本机, 不提交). 本文件随每段落定更新.
+
+## 当前主线: omni 1.0 重构 (2026-11-18 起, 计划见 .hark/plan.md, 规范见 docs/architecture/omni-1.0.md)
+
+分工 (用户 2026-11-18 定): Hark 只写代码进工作区; 构建, 门禁, 提交, 推送都由用户本机跑. 取舍与拆分由 Hark 自定, 每批做完报一次.
+工作区接入走 hxoa (github.com/HengXin666/hxoa): 只能 ls / cat / put / patch, put 不建目录, 新文件只能放进已有目录.
+
+| 批 | 内容 | 状态 |
+|---|---|---|
+| 1 | P0 架构文档 omni-1.0.md + README 索引; P1 镜头配方 (src/motion/recipe.ts, recipe-cards.ts, 11 张) 与统一时钟 (src/motion/drive/clock.ts, use-clock.ts), 常量 src/constants/motion-recipe.ts, 测试 tests/motion/{recipe,clock}.test.ts, note 2026-11-18-omni-motion-recipe-clock, motion/index.ts 转出 | 已写入, 待用户跑门禁提交 |
+| 2 | useRecipe / usePhase (src/motion/drive/use-recipe.ts), phaseAt / dealOffset / dealDelay, Stagger 加 rhythm (even 默认, deal 发牌式), 测试 tests/motion/stagger-rhythm.test.ts, note 补两条 | 已写入, 待用户跑门禁提交 |
+| 3 | P2 前置: src/page/beat.ts (Beat / Direction / DIRECTIONS / defineBeats / validateBeats), 常量 src/constants/page-beat.ts, 测试 tests/page/beat.test.ts, note 2026-11-18-omni-page-beats, page/index.ts 转出, omni-1.0.md 第 4 节改名 validateBeats | 已写入, 待用户跑门禁提交 |
+| 4 | P2 续: src/page/BeatStage.tsx (BeatStage + useBeat, 按配方起时钟), tokens.css 的方向令牌组 (--dir-* 六项, data-direction 切换), 测试 tests/page/beat-stage.test.tsx, note 补两条, page/index.ts 转出 | 已写入, 待用户跑门禁提交 |
+| 5 | P2 续: src/page/beat-layout.ts (beatStyle, 六种版式内联样式, 读 --dir-*), src/page/BeatPage.tsx (按拍渲染, data-beat-issues, onIssues), BeatStage 加 styled / style, 常量补 DIR_VAR / BEAT_PACE_PAD / BEAT_TRACK, 测试 tests/page/beat-page.test.tsx | 已写入, 待用户跑门禁提交 |
+| 6 | PageSpec 增 story / direction, sections 改可选; StoryBeat; src/page/story.ts (sectionsToBeats, storyOf); Page 有 story 走 BeatPage; tests/page/story.test.tsx | 已写入, 待 P0 提交 |
+| 7 | src/page/meta.ts + PageHead.tsx (meta, Open Graph, JSON-LD 四帮手), 常量 page-meta.ts, tests/page/meta.test.tsx, note 2026-11-19-page-meta-jsonld | 已写入, 待 P0 提交 |
+| 8~11 | 数据内核 src/viz/kernel-{scale,axis,format,stage}, DataStage, Line / Bar / Area / Scatter / Heatmap, BarChart / Trend 改用新内核, `@hx/ui/data` 与 `@hx/ui/data/recharts` 入口 (package.json), tests/viz/data-*, note 2026-11-19-omni-data-kernel | 已写入, 待 P0 提交 |
+| P1 | 电商内容模型 src/commerce/*, ProductBuy / ReviewBoard / BuyBar / ShotGallery, src/page/pdp.ts, 文档站 #/page-pdp, note 2026-11-20-omni-content-model | 已写入, 待 P0 提交 |
+| P2 | ProductTour, PricingCalculator, src/page/saas.ts + templates.ts, registry 加 tour / calculator / buy / reviews, 文档站 #/page-software, note 2026-11-20-saas-benchmark | 已写入, 待 P0 提交 |
+| P0 | scripts/p0-land.ts + scripts/constants/p0-land.ts (备份, 重建 lock, 补测试依赖, 按依赖分 7 批提交, 开 refactor/omni-1.0, 建 src/data / model / sections / templates), note 2026-11-20-omni-p0-land. 本机跑 `node scripts/p0-land.ts --dry-run` 再 `node scripts/p0-land.ts` | 已写入, 待用户本机运行 |
+
+取舍: Reveal 与 ScrollProgress 已经建在 motion 的 whileInView / useScroll 上, 行为与减弱动效都对, 不为统一而改写; 新组件一律走 useClock + 配方. beats 暂不进 PageSpec, Page 渲染不动.
+下一批: 用户本机跑完 P0 并贴回输出后, P1 收尾批 1 (数据内核搬到 src/data, 旧路径转发, package.json 的 ./data 改指). 阶段表见 .hark/plan.md.
+旧的 react-bits 余量记录保留在下方, 不再是主线.
 
 ## 文档站批 0 (基础设施八项, 2026-11-11 起, 不做任何组件页)
 

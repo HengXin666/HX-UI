@@ -1,5 +1,7 @@
 import type { ComponentProps, ComponentType } from "react";
 import type { BlockDensity, BlockLabels } from "../blocks/_shared";
+import type { Beat, DirectionName } from "./beat";
+import type { PageMeta } from "./meta";
 import type { DefaultSections } from "./registry";
 
 // 与 BlockRegistry 一样用 any: 注册表只要求值是组件, props 由下面的映射类型逐项推导.
@@ -15,9 +17,24 @@ export type SectionOf<R extends SectionRegistry> = {
   };
 }[keyof R & string];
 
-/** 一整页的描述. 可以手写, 也可以由 CMS 或 Agent 生成后过一遍 definePage 做类型检查. */
+/** 叙事里的一拍: 拍的导演信息 (主角, 镜头, 版式, 节奏) 加这一拍要渲染的区块. */
+export type StoryBeat<R extends SectionRegistry = DefaultSections> = Beat & {
+  readonly sections: ReadonlyArray<SectionOf<R>>;
+};
+
+/**
+ * 一整页的描述. 可以手写, 也可以由 CMS 或 Agent 生成后过一遍 definePage 做类型检查.
+ * 两种写法: 只写 sections 时按旧方式竖排区块, 行为不变; 写 story 时按拍渲染 (BeatPage), sections 被忽略.
+ * 只写 sections 但给了 direction 时, sections 先经 sectionsToBeats 转成一拍一区块再按拍渲染.
+ */
 export interface PageSpec<R extends SectionRegistry = DefaultSections> {
-  sections: ReadonlyArray<SectionOf<R>>;
+  sections?: ReadonlyArray<SectionOf<R>>;
+  /** 按拍组织的页面. 有它时优先. */
+  story?: ReadonlyArray<StoryBeat<R>>;
+  /** 美术方向: 写到根节点 data-direction, 校验时用它的镜头白名单与重效果预算. */
+  direction?: DirectionName;
+  /** head 信息: title, description, Open Graph, canonical, JSON-LD. 不写时不输出任何 head 元素. */
+  meta?: PageMeta;
   /** 皮肤名, 写到根节点 data-skin. */
   skin?: string;
   density?: BlockDensity;

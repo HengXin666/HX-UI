@@ -8,6 +8,7 @@
 
 ### Added
 
+- omni P0 (0.18.0): `@hx/ui/motion` 新增配方与时钟 (`recipe`, `useRecipe`, `useClock`, `Stagger` 节律); `@hx/ui/page` 新增节拍页 (`BeatPage`, `BeatStage`, `PageHead` 与 meta / JSON-LD), PDP 与 SaaS 两套页型模板; `@hx/ui/data` 数据内核 (scale / axis / format / stage, `Line` `Area` `Bar` `Scatter` `Heatmap`), `@hx/ui/data/recharts` 适配入口 (recharts 为可选 peer); commerce 模型 (catalog / variant / review / validate) 与 `BuyBar` `ProductBuy` `ReviewBoard` `ShotGallery`, marketing 新增 `PricingCalculator` `ProductTour`. 设计见 `docs/architecture/omni-1.0.md`. 根入口不新增符号.
 - `PrismOrb`: 补上规格的 PIXEL_BUDGET (像素比按 sqrt(4.5e6 / 宿主面积) 与 dpr 上限取小, 大宿主自动降分辨率); 不标 ENGINE-GAP.
 - `DotReveal`: 新 prop `keyColor` (0..1 的 RGB 三元组), 覆盖抠底底色; 不给时仍取图片四角平均色. 只在 `keyOut` 打开时生效.
 - `@hx/ui/backgrounds`: surface 层 Backgrounds 全族 64 件, 按 glow / rays / lines / grid / glyph / fluid / particles 七路组织, 全部接在 `src/surface/backgrounds` 渲染内核上 (WebGL2, 不引 three / ogl / gsap). 行为规格取自 `docs/research/catalog/backgrounds-1.md` / `-2.md`, 实现为 HX 自有. 3D 件做简化版并在文件头标 `ENGINE-GAP:`. 根入口 `src/index.ts` 不新增符号.

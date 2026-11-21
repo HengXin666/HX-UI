@@ -4,7 +4,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useRef, type JSX } from "react";
 import { useResizeObserver } from "../../hooks/dom/useResizeObserver";
 import { cn } from "../../primitives/utils";
-import { areaPath, extent, linePath, linearScale, niceDomain, niceTicks, project, punchDomain, revealSeries, type Domain } from "../scale";
+import { extent, linearScale, niceDomain, niceTicks, punchDomain, type Domain } from "../scale";
+import { seriesGeometry } from "./Line";
 import { VIZ_BOX, VIZ_CLASS, VIZ_PUNCH, VIZ_TICKS } from "../tokens";
 import { useShockDomain } from "../use-shock";
 import { useVizStage } from "../use-stage";
@@ -40,6 +41,8 @@ const INSTANT = { duration: 0 } as const;
  * 未越界的更新只移动线, 不动网格. 首次进入视口用 pathLength 描线. 读屏只读最新值.
  * 给 progress 时由外部时钟逐帧驱动, 不描线也不走弹簧, 读数不进 aria-live.
  *
+ * 几何由 `@hx/ui/data` 的 Line 计算 (seriesGeometry), 本组件只负责冲击时序与读数.
+ *
  * .agents/notes/implemented/feature/2026-11-08-library-gaps.md
  */
 export function Trend({ values, label, format, area = true, height = DEFAULT_HEIGHT, progress, className, classNames }: TrendProps): JSX.Element {
@@ -53,12 +56,11 @@ export function Trend({ values, label, format, area = true, height = DEFAULT_HEI
   }, [values]);
   const shock = useShockDomain(target, stage.reduced);
   const ticks = useMemo(() => niceTicks(shock.domain, VIZ_TICKS), [shock.domain]);
-  const all = project(values, shock.domain, VIZ_BOX);
   const controlled = progress !== undefined;
-  const reveal = controlled ? revealSeries(all, values, stage.reduced ? 1 : progress) : { points: all, value: values[values.length - 1] };
+  const reveal = seriesGeometry(values, shock.domain, VIZ_BOX, controlled ? (stage.reduced ? 1 : progress) : undefined);
   const points = reveal.points;
-  const line = linePath(points);
-  const fill = area ? areaPath(points, VIZ_BOX.height - VIZ_BOX.pad) : "";
+  const line = reveal.line;
+  const fill = area ? reveal.area : "";
   const range: Domain = [VIZ_BOX.height - VIZ_BOX.pad, VIZ_BOX.pad];
   const yOf = (domain: Domain, tick: number): number => (linearScale(domain, range)(tick) / VIZ_BOX.height) * height;
   const show = format ?? ((input: number) => input.toLocaleString());

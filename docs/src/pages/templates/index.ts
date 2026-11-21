@@ -12,6 +12,8 @@ import { TemplatePortfolioPage } from "./page-portfolio";
 import { TemplateDocsitePage } from "./page-docsite";
 import { TemplateDashboardBlocksPage } from "./page-dashboard";
 import { LinearClonePage } from "./page-clone-linear";
+import { PdpPage } from "./page-pdp";
+import { SoftwarePage } from "./page-software";
 
 /**
  * 现成实例页面模板, 按导航 id 查表.
@@ -35,6 +37,8 @@ export const TEMPLATE_PAGES: Readonly<Record<string, () => JSX.Element>> = {
   "page-pricing": PricingPage,
   "page-commerce-home": CommerceHomePage,
   "page-product": ProductPage,
+  "page-pdp": PdpPage,
+  "page-software": SoftwarePage,
   "page-portfolio": TemplatePortfolioPage,
   "page-docsite": TemplateDocsitePage,
   "page-dashboard": TemplateDashboardBlocksPage,

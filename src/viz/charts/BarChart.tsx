@@ -6,6 +6,7 @@ import { cn } from "../../primitives/utils";
 import { linearScale, niceTicks, punchDomain, zeroDomain, type Domain } from "../scale";
 import { VIZ_CLASS, VIZ_PRESS, VIZ_STATE, VIZ_TICKS } from "../tokens";
 import { useShockDomain } from "../use-shock";
+import { barFill } from "./Bar";
 import { useVizStage } from "../use-stage";
 
 export interface BarDatum {
@@ -38,7 +39,7 @@ const KEY_NEXT = "ArrowRight";
 /**
  * 柱状图, 从 0 起算, 负值按 0 画. 柱子只动 scaleY (原点在底), 首次入场按发牌错峰, 之后的数据更新从当前高度用弹簧继续.
  * 新值越过坐标轴时先按旧比例冲出画框, 停一拍, 再 200ms 重标 (video-shotcraft chart-live-moves), 柱子随之压回, 不从 0 重播.
- * 柱子是一组 roving tabindex 按钮, 左右键切换, 读数在 aria-live.
+ * 柱高由 `@hx/ui/data` 的 Bar 计算 (barFill). 柱子是一组 roving tabindex 按钮, 左右键切换, 读数在 aria-live.
  *
  * .agents/notes/implemented/feature/2026-11-08-viz-layer.md
  */
@@ -64,7 +65,6 @@ export function BarChart({
   const shock = useShockDomain(target, stage.reduced);
   const domain = shock.domain;
   const ticks = useMemo(() => niceTicks(domain, VIZ_TICKS), [domain]);
-  const toPct = linearScale(domain, [0, PERCENT]);
   const yOf = (scale: Domain, tick: number): number => (height * (PERCENT - linearScale(scale, [0, PERCENT])(tick))) / PERCENT;
   const lastPunch = useRef(0);
   const rescaling = shock.punch !== lastPunch.current;
@@ -118,7 +118,7 @@ export function BarChart({
         <div role="group" aria-label={label} className="absolute inset-0 left-10 flex items-end gap-2" onKeyDown={onKeyDown}>
           {data.map((item, index) => {
             const on = item.id === current;
-            const fill = Math.max(0, toPct(item.value)) / PERCENT;
+            const fill = barFill(item.value, domain);
             return (
               <button
                 key={item.id}
