@@ -24,10 +24,10 @@ export interface StatCardProps {
 export function StatCard({ label, value, format, suffix, delta, invert, hint, trend, icon: Icon, className }: StatCardProps) {
   const good = delta === undefined ? undefined : invert ? delta <= 0 : delta >= 0;
   return (
-    <div className={cn("group relative flex flex-col gap-3 overflow-hidden rounded-xl border bg-card p-5 shadow-soft transition-shadow hover:shadow-float", className)}>
-      <div className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-        <span className="inline-flex items-center gap-2">
-          {Icon && <Icon className="size-4" />}
+    <div className={cn("@container group relative flex min-w-0 flex-col gap-2 overflow-hidden rounded-xl border bg-card p-4 shadow-soft sm:gap-3 sm:p-5 transition-shadow hover:shadow-float", className)}>
+      <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground sm:text-sm">
+        <span className="inline-flex min-w-0 items-center gap-1.5 sm:gap-2">
+          {Icon && <Icon className="size-4 shrink-0" />}
           {label}
         </span>
         {delta !== undefined && (
@@ -38,7 +38,7 @@ export function StatCard({ label, value, format, suffix, delta, invert, hint, tr
         )}
       </div>
       <div className="flex min-w-0 items-baseline gap-1">
-        <AnimatedNumber value={value} format={format} className="truncate text-3xl font-semibold tracking-tight" />
+        <AnimatedNumber value={value} format={format} className="truncate text-xl font-semibold tracking-tight @[10.5rem]:text-2xl @[15rem]:text-3xl" />
         {suffix && <span className="text-sm text-muted-foreground">{suffix}</span>}
       </div>
       {trend && <Sparkline values={trend} color={good === false ? "var(--destructive)" : "var(--brand)"} />}

@@ -1,51 +1,42 @@
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
+import { flushSync } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useTheme, type ThemeAccent } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
 import { cn } from "@/lib/utils";
 
-const ACCENTS: { id: ThemeAccent; label: string; swatch: string }[] = [
-  { id: "indigo", label: "靛蓝", swatch: "oklch(0.58 0.2 275)" },
-  { id: "emerald", label: "翠绿", swatch: "oklch(0.62 0.15 160)" },
-  { id: "rose", label: "玫红", swatch: "oklch(0.62 0.21 12)" },
-  { id: "amber", label: "琥珀", swatch: "oklch(0.72 0.16 65)" },
-  { id: "zinc", label: "石墨", swatch: "oklch(0.45 0.01 270)" },
-];
+type ViewTransitionDoc = Document & { startViewTransition?: (cb: () => void) => { ready: Promise<void> } };
 
-/** 亮暗 + 强调色切换. */
+/**
+ * 轻量亮暗切换: 不依赖弹层, 首屏可用.
+ * 支持 View Transitions 的浏览器里, 新主题从点击处圆形展开; 减弱动效时直接切换.
+ * 需要强调色等更多选项时用 ThemeMenu.
+ */
 export function ThemeToggle({ className }: { className?: string }) {
-  const { mode, resolved, accent, setMode, setAccent } = useTheme();
+  const { resolved, setMode } = useTheme();
+  const next = resolved === "dark" ? "light" : "dark";
   const Icon = resolved === "dark" ? Moon : Sun;
+
+  const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const doc = document as ViewTransitionDoc;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!doc.startViewTransition || reduce) {
+      setMode(next);
+      return;
+    }
+    const { clientX: x, clientY: y } = e;
+    const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+    const vt = doc.startViewTransition(() => flushSync(() => setMode(next)));
+    void vt.ready.then(() => {
+      document.documentElement.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] },
+        { duration: 480, easing: "cubic-bezier(0.22, 1, 0.36, 1)", pseudoElement: "::view-transition-new(root)" },
+      );
+    });
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className={cn("size-9", className)} aria-label="切换主题">
-          <Icon className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuLabel className="text-xs text-muted-foreground">外观</DropdownMenuLabel>
-        {([["light", "亮色", Sun], ["dark", "暗色", Moon], ["system", "跟随系统", Monitor]] as const).map(([m, label, I]) => (
-          <DropdownMenuItem key={m} onSelect={() => setMode(m)} className={cn(mode === m && "bg-accent")}>
-            <I className="size-4" /> {label}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuLabel className="text-xs text-muted-foreground">强调色</DropdownMenuLabel>
-        <div className="flex gap-2 px-2 pb-2 pt-1">
-          {ACCENTS.map((a) => (
-            <button
-              key={a.id}
-              type="button"
-              aria-label={a.label}
-              title={a.label}
-              onClick={() => setAccent(a.id)}
-              className={cn("size-6 rounded-full ring-offset-2 ring-offset-popover transition-transform hover:scale-110", accent === a.id && "ring-2 ring-foreground")}
-              style={{ background: a.swatch }}
-            />
-          ))}
-        </div>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <Button type="button" variant="ghost" size="icon" className={cn("size-9", className)} aria-label={next === "dark" ? "切换到暗色" : "切换到亮色"} onClick={onClick}>
+      <Icon className="size-4" />
+    </Button>
   );
 }

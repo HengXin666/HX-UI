@@ -11,7 +11,7 @@ export function ChartCard({ title, description, actions, footer, className, chil
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("flex flex-col rounded-xl border bg-card p-5 shadow-soft", className)}>
+    <section className={cn("flex min-w-0 flex-col rounded-xl border bg-card p-4 shadow-soft sm:p-5", className)}>
       <header className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-0.5">
           <h3 className="text-sm font-medium">{title}</h3>

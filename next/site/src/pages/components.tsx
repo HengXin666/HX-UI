@@ -15,10 +15,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SiteHeader } from "@/blocks/marketing/site-header";
-import { ThemeToggle } from "@/blocks/shell/theme-toggle";
+import { ThemeMenu } from "@/blocks/shell/theme-menu";
 import { SpotlightCard } from "@/effects/spotlight-card";
 import { BorderBeam } from "@/effects/border-beam";
 import { Marquee } from "@/effects/marquee";
@@ -45,9 +45,9 @@ function Demo({ title, children, className }: { title: string; children: React.R
 export default function Components() {
   const [n, setN] = React.useState(12_486);
   return (
-    <div>
+    <TooltipProvider delayDuration={200}>
       <BackLink />
-      <SiteHeader brand={<span className="flex items-center gap-2"><span className="size-5 rounded-md bg-brand" />HX-UI 组件</span>} links={[{ label: "基础", href: "#base" }, { label: "特效", href: "#fx" }]} actions={<ThemeToggle />} />
+      <SiteHeader brand={<span className="flex items-center gap-2"><span className="size-5 rounded-md bg-brand" />HX-UI 组件</span>} links={[{ label: "基础", href: "#base" }, { label: "特效", href: "#fx" }]} actions={<ThemeMenu />} />
       <div className="mx-auto max-w-6xl px-4 py-12">
         <h1 id="base" className="mb-2 text-3xl font-semibold tracking-tight">基础件</h1>
         <p className="mb-8 text-muted-foreground">shadcn/ui 源码，全部跟随主题令牌。右上角切换亮暗与强调色试试。</p>
@@ -112,6 +112,6 @@ export default function Components() {
           <Demo title="Backdrop · grid / dots"><Backdrop variant="dots" /><div className="relative flex items-center gap-2 text-sm"><LiveDot /> 运行中 <LiveDot tone="warning" /> 降级 <LiveDot tone="destructive" /> 故障</div></Demo>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

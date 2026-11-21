@@ -43,7 +43,7 @@ export function Pricing({ plans, yearlyNote = "省 20%" }: { plans: Plan[]; year
               <p className="mt-2 text-sm text-muted-foreground">{p.description}</p>
               <div className="mt-6 flex items-baseline gap-1">
                 <span className="text-sm text-muted-foreground">{p.currency ?? "¥"}</span>
-                <AnimatedNumber value={cycle === "m" ? p.monthly : p.yearly} duration={0.5} className="text-4xl font-semibold tracking-tight" />
+                <AnimatedNumber value={cycle === "m" ? p.monthly : p.yearly} from={cycle === "m" ? p.monthly : p.yearly} duration={0.5} className="text-4xl font-semibold tracking-tight" />
                 <span className="text-sm text-muted-foreground">/ 月</span>
               </div>
               <Button className="mt-6" variant={p.featured ? "default" : "outline"}>{p.cta}</Button>

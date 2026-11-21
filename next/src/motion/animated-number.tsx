@@ -20,7 +20,9 @@ export function AnimatedNumber({ value, format, locale = "zh-CN", from = 0, dura
   const ref = React.useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: "0px 0px -10% 0px" });
   const reduce = useReducedMotion();
-  const mv = useMotionValue(from);
+  // 减弱动效: 直接从终值起步, 不等进入视口
+  const start = reduce ? value : from;
+  const mv = useMotionValue(start);
   const fmt = React.useMemo(() => new Intl.NumberFormat(locale, format), [locale, format]);
 
   React.useEffect(() => {
@@ -39,7 +41,7 @@ export function AnimatedNumber({ value, format, locale = "zh-CN", from = 0, dura
 
   return (
     <span className={cn("tabular", className)} {...rest}>
-      <span ref={ref} aria-hidden>{fmt.format(from)}</span>
+      <span ref={ref} aria-hidden>{fmt.format(start)}</span>
       <span className="sr-only">{fmt.format(value)}</span>
     </span>
   );

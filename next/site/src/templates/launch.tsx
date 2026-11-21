@@ -32,9 +32,9 @@ function HeroMedia() {
           ))}
         </div>
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {[["本月自动核销", 12_486], ["待人工确认", 37], ["差异金额 (¥)", 1_284.6]].map(([l, v]) => (
-              <div key={l as string} className="rounded-lg border p-3">
+              <div key={l as string} className="rounded-lg border p-3 last:hidden sm:last:block">
                 <div className="text-xs text-muted-foreground">{l}</div>
                 <AnimatedNumber value={v as number} format={{ maximumFractionDigits: 1 }} className="mt-1 block text-xl font-semibold" />
               </div>

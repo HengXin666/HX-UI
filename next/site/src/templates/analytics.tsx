@@ -50,13 +50,13 @@ export default function Analytics() {
         actions={<><Segmented value={range} onChange={setRange} options={[{ value: "7", label: "7 天" }, { value: "14", label: "14 天" }, { value: "30", label: "30 天" }]} /><ThemeToggle /></>}
       >
         <PageHeader title="经营看板" description="2026 年 11 月 · 数据截至今日 02:00" actions={<Button variant="outline" size="sm"><Download className="size-4" />导出</Button>} />
-        <Stagger className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Stagger className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 [&>*]:min-w-0">
           <StaggerItem><StatCard label="营收" value={3_128_406.52} format={{ style: "currency", currency: "CNY", maximumFractionDigits: 0 }} delta={0.186} trend={spark(300)} icon={Wallet} /></StaggerItem>
           <StaggerItem><StatCard label="订单" value={18_427} delta={0.092} trend={spark(180)} icon={ShoppingCart} /></StaggerItem>
           <StaggerItem><StatCard label="新增用户" value={6_215} delta={-0.037} trend={spark(60)} icon={UserPlus} /></StaggerItem>
           <StaggerItem><StatCard label="转化率" value={0.0493} format={{ style: "percent", maximumFractionDigits: 2 }} delta={0.051} trend={spark(5)} icon={LineChart} /></StaggerItem>
         </Stagger>
-        <div className="mt-4 grid gap-4 xl:grid-cols-3">
+        <div className="mt-4 grid gap-4 [&>*]:min-w-0 xl:grid-cols-3">
           <ChartCard className="xl:col-span-2" title="访问量与访客" description={`最近 ${range} 天`}>
             <AreaTrend data={series} x="day" series={[{ key: "访问", label: "访问" }, { key: "访客", label: "独立访客", color: "var(--chart-2)" }]} height={280} />
           </ChartCard>

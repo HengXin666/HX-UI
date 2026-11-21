@@ -97,3 +97,10 @@
   mix-blend-mode: overlay;
 }
 }
+
+/* ThemeToggle 圆形展开: 关掉默认交叉淡入, 由脚本驱动 clip-path */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}

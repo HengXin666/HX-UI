@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/blocks/shell/app-shell";
 import { CommandMenu } from "@/blocks/shell/command-menu";
-import { ThemeToggle } from "@/blocks/shell/theme-toggle";
+import { ThemeMenu } from "@/blocks/shell/theme-menu";
 import { PageHeader } from "@/blocks/shell/page-header";
 import { StatCard } from "@/blocks/dashboard/stat-card";
 import { StatusBoard, type ServiceState, type ServiceStatus } from "@/blocks/dashboard/status-board";
@@ -95,7 +95,7 @@ export default function Ops() {
               ]}
             />
             <Button variant="ghost" size="icon" className="size-9" aria-label="通知"><Bell className="size-4" /></Button>
-            <ThemeToggle />
+            <ThemeMenu />
           </>
         }
       >
@@ -104,13 +104,13 @@ export default function Ops() {
           description={<span className="inline-flex items-center gap-2"><LiveDot /> 实时 · 每 2 秒刷新</span>}
           actions={<Button variant="outline" size="sm" onClick={() => toast("已导出最近 1 小时报告")}>导出报告</Button>}
         />
-        <Stagger className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Stagger className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4 [&>*]:min-w-0">
           <StaggerItem><StatCard label="请求量 / 分" value={248_612} delta={0.084} trend={spark(240)} icon={Gauge} /></StaggerItem>
           <StaggerItem><StatCard label="P95 延迟" value={186} suffix="ms" delta={0.123} invert trend={spark(180)} icon={Waypoints} /></StaggerItem>
           <StaggerItem><StatCard label="错误率" value={0.0042} format={{ style: "percent", maximumFractionDigits: 2 }} delta={-0.211} invert trend={spark(4)} icon={ServerCrash} /></StaggerItem>
           <StaggerItem><StatCard label="集群 CPU" value={0.637} format={{ style: "percent", maximumFractionDigits: 1 }} delta={0.032} invert trend={spark(63)} icon={Cpu} /></StaggerItem>
         </Stagger>
-        <div className="mt-4 grid gap-4 xl:grid-cols-[1.4fr_1fr]">
+        <div className="mt-4 grid gap-4 [&>*]:min-w-0 xl:grid-cols-[1.4fr_1fr]">
           <ChartCard title="实时流量" description="最近 80 秒，每 2 秒追加一个点">
             <AreaTrend data={traffic} x="t" series={[{ key: "请求", label: "请求 / 秒" }]} height={240} showAxis={false} />
           </ChartCard>
