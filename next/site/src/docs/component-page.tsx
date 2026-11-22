@@ -15,6 +15,7 @@ function fmt(v: Values[string]) {
 
 /** 用法代码: 只写和组件默认值不同的属性 */
 export function usageOf(e: DocEntry, values: Values) {
+  if (e.usage) return e.usage(values);
   const attrs = Object.entries(values)
     .filter(([k, v]) => !e.demoOnly?.includes(k) && (k === "text" || e.componentDefaults[k] !== v))
     .map(([k, v]) => (v === true ? `  ${k}` : `  ${k}=${fmt(v)}`));

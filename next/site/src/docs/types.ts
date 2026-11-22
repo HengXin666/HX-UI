@@ -48,6 +48,8 @@ export interface DocEntry {
   /** 不进组件 props 的演示开关 (如 "播完提示") */
   demoOnly?: string[];
   props: PropRow[];
+  /** 自定义用法代码; 不给则按 values 与 componentDefaults 的差异生成 */
+  usage?: (values: Values) => string;
   /** 静态缩略: 总览卡片上显示的一句话或小样 */
   thumb?: string;
 }

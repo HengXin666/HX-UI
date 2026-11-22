@@ -35,7 +35,7 @@ export interface StatefulButtonProps extends Omit<React.ComponentProps<typeof Bu
  * 进行中自动禁用, 防重复提交; 状态变化通过 aria-live 播报.
  */
 export function StatefulButton({
-  action, children, pendingLabel = "提交中", successLabel = "已完成", errorLabel = "失败, 重试",
+  action, children, pendingLabel = "提交中", successLabel = "已完成", errorLabel = "失败，重试",
   resetAfter = 1600, guard, className, disabled, ...rest
 }: StatefulButtonProps) {
   const [phase, setPhase] = React.useState<ButtonPhase>("idle");
