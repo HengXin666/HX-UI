@@ -131,8 +131,14 @@
 /* 图表里新出现的圆点/气泡: 从 0 放大到位. 只填 backwards, 结束后不占用 transform, 退场动画照常生效 */
 .hx-pop-in { transform-box: fill-box; transform-origin: center; animation: hx-pop-in 350ms cubic-bezier(0.22, 1, 0.36, 1) backwards; }
 @keyframes hx-pop-in { from { transform: scale(0); } }
+/* 新 K 线从中间竖向长出 */
+.hx-grow-y { transform-box: fill-box; transform-origin: center; animation: hx-grow-y 240ms cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+@keyframes hx-grow-y { from { transform: scaleY(0); opacity: 0; } }
+/* 最新一根跳动: 实体高度和位置过渡 */
+.hx-tick { transition: y 200ms cubic-bezier(0.22, 1, 0.36, 1), height 200ms cubic-bezier(0.22, 1, 0.36, 1); }
 @media (prefers-reduced-motion: reduce) {
-  .hx-pop-in { animation: hx-fade-in 200ms ease backwards !important; }
+  .hx-pop-in, .hx-grow-y { animation: hx-fade-in 200ms ease backwards !important; }
+  .hx-tick { transition: none; }
   @keyframes hx-fade-in { from { opacity: 0; } }
 }
 }

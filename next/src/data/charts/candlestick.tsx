@@ -92,7 +92,27 @@ export function Candlestick({
   // 窄屏自动少显示几根, 每根至少约 6px
   const fit = width ? Math.min(visible, Math.max(24, Math.floor((width - AXIS_W) / 6))) : visible;
   const home = () => ({ end: data.length, count: Math.min(fit, data.length) });
-  useEffect(() => { setView(home()); setCursor(null); }, [data, fit]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 同一序列追加 / 撤回 / 更新最新一根 (首根日期不变) 时: 停在最新的视窗跟着走, 翻看历史的视窗不动;
+  // 换了序列 (切周期) 或宽度变化时回到最新
+  const prevData = useRef({ first: data[0]?.t, len: data.length, fit });
+  const plotG = useRef<SVGGElement>(null);
+  const grownFrom = useRef(Infinity);
+  useEffect(() => {
+    const p = prevData.current;
+    prevData.current = { first: data[0]?.t, len: data.length, fit };
+    if (p.first !== data[0]?.t || p.fit !== fit) { grownFrom.current = Infinity; setView(home()); setCursor(null); return; }
+    const delta = data.length - p.len;
+    if (!delta) return;
+    grownFrom.current = delta > 0 ? p.len : Infinity;
+    if (view.end < p.len) { setView(clampView(view.end, view.count)); return; }
+    // 整段蜡烛平移一格, 而不是瞬间跳过去
+    const g = plotG.current;
+    if (g && !reduced && width) {
+      const step = (width - AXIS_W) / Math.max(1, view.count);
+      g.animate([{ transform: `translateX(${delta * step}px)` }, { transform: "none" }], { duration: 220, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+    }
+    setView(clampView(data.length, view.count));
+  }, [data, fit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 指标在全量数据上算, 视窗只是切片, 平移时数值不跳
   const ind = useMemo(() => {
@@ -131,8 +151,10 @@ export function Candlestick({
     return () => el.removeEventListener("wheel", onWheel);
   });
 
-  const start = view.end - view.count;
-  const rows = data.slice(start, view.end);
+  // 撤回最新一根的那一帧, 视窗还没收回来, 先按数据长度夹住
+  const viewEnd = Math.min(view.end, data.length);
+  const start = Math.max(0, viewEnd - view.count);
+  const rows = data.slice(start, viewEnd);
   const plotW = Math.max(0, width - AXIS_W);
   const step = plotW / Math.max(1, view.count);
   const xOf = (k: number) => k * step + step / 2;
@@ -146,7 +168,7 @@ export function Candlestick({
   const pane = Object.fromEntries(panes.map((p) => { const h = (avail * p.w) / totalW; const top = acc; acc += h + GAP; return [p.id, { top, h }]; })) as Record<string, { top: number; h: number }>;
 
   // 主图值域
-  const sliceN = (arr: (number | null)[]) => arr.slice(start, view.end);
+  const sliceN = (arr: (number | null)[]) => arr.slice(start, viewEnd);
   let lo = Infinity, hi = -Infinity;
   rows.forEach((d) => { lo = Math.min(lo, d.low); hi = Math.max(hi, d.high); });
   const overlays = overlay === "ma" ? ind.ma.map(sliceN) : overlay === "boll" ? [ind.boll.up, ind.boll.mid, ind.boll.low].map(sliceN) : [];
@@ -200,7 +222,7 @@ export function Candlestick({
 
   // 当前读数: 光标所在根, 否则最后一根
   const cIdx = cursor ? Math.min(cursor.i, rows.length - 1) : -1;
-  const ci = cursor ? start + cIdx : view.end - 1;
+  const ci = cursor ? start + cIdx : viewEnd - 1;
   const cur = data[ci];
   const before = data[ci - 1];
   const chg = cur && before ? cur.close - before.close : 0;
@@ -322,7 +344,7 @@ export function Candlestick({
             width={width}
             height={height}
             aria-hidden
-            data-end={view.end}
+            data-end={viewEnd}
             className={cn("block touch-none", dragging ? "cursor-grabbing" : "cursor-crosshair")}
             onPointerMove={pointer}
             onPointerLeave={() => { if (!drag.current) setCursor(null); }}
@@ -342,6 +364,7 @@ export function Candlestick({
             <line x1={0} x2={width} y1={height - AXIS_H + 0.5} y2={height - AXIS_H + 0.5} stroke="var(--border)" />
 
             <g clipPath={`url(#${uid}-plot)`}>
+            <g ref={plotG}>
               {/* 布林带填充 */}
               {overlay === "boll" && (() => {
                 const u = sliceN(ind.boll.up), l = sliceN(ind.boll.low);
@@ -358,14 +381,17 @@ export function Candlestick({
                 const top = yP(Math.max(d.open, d.close)), bot = yP(Math.min(d.open, d.close));
                 const hollowBody = hollow && isUp;
                 return (
-                  <g key={start + k}>
+                  <g key={start + k} className={start + k >= grownFrom.current ? "hx-grow-y" : undefined}>
                     {step < 3 ? (
                       <line x1={x} x2={x} y1={yP(d.high)} y2={yP(d.low)} stroke={c} />
                     ) : (
                       <>
                         <line x1={x} x2={x} y1={yP(d.high)} y2={hollowBody ? top : yP(d.high)} stroke={c} />
                         <line x1={x} x2={x} y1={hollowBody ? bot : yP(d.high)} y2={yP(d.low)} stroke={c} />
-                        <rect x={x - bodyW / 2} y={top} width={bodyW} height={Math.max(1, bot - top)}
+                        {/* 最新一根的实体用 style 写 y / height, 价格跳动时 CSS 过渡 */}
+                        <rect x={x - bodyW / 2} width={bodyW} {...(start + k === data.length - 1
+                          ? { className: "hx-tick", style: { y: top, height: Math.max(1, bot - top) } }
+                          : { y: top, height: Math.max(1, bot - top) })}
                           fill={hollowBody ? "var(--background)" : c} stroke={c} strokeWidth={hollowBody ? 1 : 0} />
                       </>
                     )}
@@ -407,6 +433,7 @@ export function Candlestick({
                   {subSeries.lines.map((l) => <path key={l.label} d={line(l.vals, yS)} fill="none" stroke={l.color} strokeWidth={1.2} />)}
                 </>
               )}
+            </g>
             </g>
 
             {/* 价格轴 */}

@@ -20,15 +20,15 @@ export function seeded(seed: number) {
 }
 
 /** 图表演示统一的数据操作条: 新增 / 删除 / 更新 / 重置, 用来看进场, 移位和退场动画 */
-export function DataOps({ onAdd, onRemove, onUpdate, onReset, addLabel = "新增", removeLabel = "删除一个", canAdd = true, canRemove = true }: {
+export function DataOps({ onAdd, onRemove, onUpdate, onReset, addLabel = "新增", removeLabel = "删除一个", updateLabel = "更新数值", canAdd = true, canRemove = true }: {
   onAdd: () => void; onRemove: () => void; onUpdate: () => void; onReset: () => void;
-  addLabel?: string; removeLabel?: string; canAdd?: boolean; canRemove?: boolean;
+  addLabel?: string; removeLabel?: string; updateLabel?: string; canAdd?: boolean; canRemove?: boolean;
 }) {
   return (
     <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="数据操作">
       <Button size="sm" variant="outline" onClick={onAdd} disabled={!canAdd}><Plus aria-hidden />{addLabel}</Button>
       <Button size="sm" variant="outline" onClick={onRemove} disabled={!canRemove}><Minus aria-hidden />{removeLabel}</Button>
-      <Button size="sm" variant="outline" onClick={onUpdate}><RefreshCw aria-hidden />更新数值</Button>
+      <Button size="sm" variant="outline" onClick={onUpdate}><RefreshCw aria-hidden />{updateLabel}</Button>
       <Button size="sm" variant="ghost" onClick={onReset}><RotateCcw aria-hidden />重置</Button>
     </div>
   );
