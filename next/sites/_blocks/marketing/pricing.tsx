@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Segmented } from "@/blocks/analytics/segmented";
+import { Segmented } from "@sites/_blocks/analytics/segmented";
 import { AnimatedNumber } from "@/motion/animated-number";
 import { Reveal } from "@/motion/reveal";
 import { cn } from "@/lib/utils";

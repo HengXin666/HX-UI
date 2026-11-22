@@ -6,7 +6,7 @@ export function BackLink() {
   return (
     <button
       type="button"
-      onClick={() => go("home")}
+      onClick={() => go("")}
       className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 inline-flex items-center gap-1.5 rounded-full border bg-background/80 px-3 py-1.5 text-xs text-muted-foreground shadow-float backdrop-blur transition-colors hover:text-foreground"
     >
       <ArrowLeft className="size-3.5" /> 返回总览

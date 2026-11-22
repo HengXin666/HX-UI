@@ -70,7 +70,7 @@
 
 ## 里程碑 (替换原 M2–M5)
 
-- **R1** 目录重排 + 入口 + 文档站三栏 (不改视觉).
+- **R1** 目录重排 + 入口 + 文档站三栏 (不改视觉). 已完成: `sites/` 落地, `src/interactions` 骨架 + 调参面板, 首两件 SpeedCounter / StatefulButton.
 - **R2** 首批 8 个交互 + 调参面板.
 - **R3** 四套成品各自美术方向 + prompt.md.
 - **R4** registry + llms.txt, 替换旧入口, 收紧门禁, 处理 `--no-verify` 豁免.

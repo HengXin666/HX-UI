@@ -2,22 +2,20 @@ import * as React from "react";
 import { Bell, Cpu, Gauge, RefreshCw, ServerCrash, Waypoints } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { AppShell } from "@/blocks/shell/app-shell";
-import { CommandMenu } from "@/blocks/shell/command-menu";
-import { ThemeMenu } from "@/blocks/shell/theme-menu";
-import { PageHeader } from "@/blocks/shell/page-header";
-import { StatCard } from "@/blocks/dashboard/stat-card";
-import { StatusBoard, type ServiceState, type ServiceStatus } from "@/blocks/dashboard/status-board";
-import { LogStream, type LogLine } from "@/blocks/dashboard/log-stream";
-import { ChartCard } from "@/blocks/analytics/chart-card";
+import { AppShell } from "@sites/_blocks/shell/app-shell";
+import { CommandMenu } from "@sites/_blocks/shell/command-menu";
+import { ThemeMenu } from "@sites/_blocks/shell/theme-menu";
+import { PageHeader } from "@sites/_blocks/shell/page-header";
+import { StatCard } from "@sites/_blocks/dashboard/stat-card";
+import { StatusBoard, type ServiceState, type ServiceStatus } from "@sites/_blocks/dashboard/status-board";
+import { LogStream, type LogLine } from "@sites/_blocks/dashboard/log-stream";
+import { ChartCard } from "@sites/_blocks/analytics/chart-card";
 import { AreaTrend } from "@/data/charts/area-trend";
 import { LiveDot } from "@/effects/live-dot";
 import { Stagger, StaggerItem } from "@/motion/reveal";
-import { OPS_NAV } from "../demos/nav";
-import { UserChip } from "../demos/user-chip";
-import { spark } from "../demos/data";
-import { BackLink } from "../pages/back-link";
-import { go } from "../router";
+import { OPS_NAV } from "../_shared/nav";
+import { UserChip } from "../_shared/user-chip";
+import { spark } from "../_shared/data";
 
 const hist = (bad: number[]): ServiceState[] => Array.from({ length: 30 }, (_, i) => (bad.includes(i) ? (i % 2 ? "degraded" : "down") : "up"));
 const SERVICES: ServiceStatus[] = [
@@ -77,7 +75,6 @@ export default function Ops() {
   const traffic = useLiveTraffic();
   return (
     <>
-      <BackLink />
       <AppShell
         brand={<span className="flex items-center gap-2 font-semibold"><Waypoints className="size-5 text-brand" />Orbit 运维</span>}
         nav={OPS_NAV}
@@ -91,7 +88,7 @@ export default function Ops() {
               entries={[
                 ...OPS_NAV.flatMap((g) => g.items.map((it) => ({ id: it.id, label: it.label, group: "页面", icon: it.icon, onSelect: () => setActive(it.id) }))),
                 { id: "restart", label: "滚动重启 order-service", group: "操作", icon: RefreshCw, onSelect: () => toast.success("已发起滚动重启", { description: "order-service · 8 实例，预计 4 分钟" }) },
-                { id: "home", label: "返回组件总览", group: "操作", onSelect: () => go("home") },
+                { id: "home", label: "返回组件总览", group: "操作", onSelect: () => { window.location.hash = "/"; } },
               ]}
             />
             <Button variant="ghost" size="icon" className="size-9" aria-label="通知"><Bell className="size-4" /></Button>

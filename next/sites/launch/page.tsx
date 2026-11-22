@@ -1,22 +1,21 @@
 import { ArrowRight, Coins, FileCheck2, KeyRound, Landmark, Split, Stamp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { SiteHeader } from "@/blocks/marketing/site-header";
-import { Hero } from "@/blocks/marketing/hero";
-import { LogoWall } from "@/blocks/marketing/logo-wall";
-import { Section } from "@/blocks/marketing/section";
-import { FeatureTabs } from "@/blocks/marketing/feature-tabs";
-import { FeatureGrid } from "@/blocks/marketing/feature-grid";
-import { Stats } from "@/blocks/marketing/stats";
-import { Quote } from "@/blocks/marketing/quote";
-import { Pricing } from "@/blocks/marketing/pricing";
-import { Faq } from "@/blocks/marketing/faq";
-import { Cta } from "@/blocks/marketing/cta";
-import { SiteFooter } from "@/blocks/marketing/site-footer";
-import { ThemeToggle } from "@/blocks/shell/theme-toggle";
-import { TallyWorkspace } from "../demos/tally/workspace";
-import { CloseResult, ErpVisual, MatchVisual, RulesVisual } from "../demos/tally/vignettes";
-import { TALLY_LOGOS } from "../demos/tally/logos";
-import { BackLink } from "../pages/back-link";
+import { SiteHeader } from "@sites/_blocks/marketing/site-header";
+import { Hero } from "@sites/_blocks/marketing/hero";
+import { LogoWall } from "@sites/_blocks/marketing/logo-wall";
+import { Section } from "@sites/_blocks/marketing/section";
+import { FeatureTabs } from "@sites/_blocks/marketing/feature-tabs";
+import { FeatureGrid } from "@sites/_blocks/marketing/feature-grid";
+import { Stats } from "@sites/_blocks/marketing/stats";
+import { Quote } from "@sites/_blocks/marketing/quote";
+import { Pricing } from "@sites/_blocks/marketing/pricing";
+import { Faq } from "@sites/_blocks/marketing/faq";
+import { Cta } from "@sites/_blocks/marketing/cta";
+import { SiteFooter } from "@sites/_blocks/marketing/site-footer";
+import { ThemeToggle } from "@sites/_blocks/shell/theme-toggle";
+import { TallyWorkspace } from "./tally/workspace";
+import { CloseResult, ErpVisual, MatchVisual, RulesVisual } from "./tally/vignettes";
+import { TALLY_LOGOS } from "./tally/logos";
 
 const brand = (
   <span className="flex items-center gap-2">
@@ -43,7 +42,6 @@ function Actions() {
 export default function Launch() {
   return (
     <div className="pb-4">
-      <BackLink />
       <SiteHeader
         brand={brand}
         links={[{ label: "产品", href: "#product" }, { label: "客户", href: "#customers" }, { label: "定价", href: "#pricing" }, { label: "问答", href: "#faq" }, { label: "更新日志", href: "#" }]}

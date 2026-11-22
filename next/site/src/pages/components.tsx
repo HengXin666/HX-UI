@@ -17,8 +17,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { SiteHeader } from "@/blocks/marketing/site-header";
-import { ThemeMenu } from "@/blocks/shell/theme-menu";
+import { SiteHeader } from "@sites/_blocks/marketing/site-header";
+import { ThemeMenu } from "@sites/_blocks/shell/theme-menu";
 import { SpotlightCard } from "@/effects/spotlight-card";
 import { BorderBeam } from "@/effects/border-beam";
 import { Marquee } from "@/effects/marquee";
@@ -32,7 +32,7 @@ import { TextReveal } from "@/motion/text-effect";
 import { Reveal } from "@/motion/reveal";
 import { Spin, SPIN_VARIANTS } from "@/components/ui/spin";
 import { BackLink } from "./back-link";
-import { IMG } from "../assets";
+import { IMG } from "@sites/_shared/assets";
 
 function Demo({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (

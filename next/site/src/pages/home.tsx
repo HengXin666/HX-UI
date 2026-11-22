@@ -1,78 +1,54 @@
-import { ArrowRight, BarChart3, Boxes, Rocket, ServerCog, ShoppingBag, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Hero } from "@/blocks/marketing/hero";
-import { Section } from "@/blocks/marketing/section";
-import { SiteHeader } from "@/blocks/marketing/site-header";
-import { FeatureBento } from "@/blocks/marketing/feature-bento";
-import { ThemeToggle } from "@/blocks/shell/theme-toggle";
-import { Stagger, StaggerItem } from "@/motion/reveal";
-import { TiltCard } from "@/effects/tilt-card";
-import { go } from "../router";
-import { IMG } from "../assets";
+import { INTERACTIONS } from "@/interactions/registry";
+import { Hero } from "@sites/_blocks/marketing/hero";
+import { Section } from "@sites/_blocks/marketing/section";
+import { DocsHeader } from "./docs-header";
+import { SiteGrid } from "./sites";
+import { Stage } from "./stage";
 
-const TEMPLATES = [
-  { id: "launch", title: "产品发布页", desc: "首屏逐词入场、便当格特性、定价切换、证言跑马灯", icon: Rocket, img: IMG.carry },
-  { id: "shop", title: "电商详情 + 列表", desc: "推镜画廊、变体库存联动、粘性购买条、网格筛选", icon: ShoppingBag, img: IMG.shoeA },
-  { id: "ops", title: "运维控制台", desc: "可折叠侧栏、⌘K、服务状态板、实时日志流", icon: ServerCog, img: IMG.headphones },
-  { id: "analytics", title: "统计分析", desc: "弹簧 KPI、多图联动、时间范围切换、排序搜索大表", icon: BarChart3, img: IMG.watch },
-];
+const L1 = ["按钮", "表单", "弹层", "表格", "图表", "加载", "主题", "数字滚动"];
 
 export function Home() {
   return (
     <div>
-      <SiteHeader
-        brand={<span className="flex items-center gap-2"><span className="size-5 rounded-md bg-brand" />HX-UI</span>}
-        links={[{ label: "模板", href: "#templates" }, { label: "组件", href: "#/components" }, { label: "设计", href: "#stack" }]}
-        actions={<><ThemeToggle /><Button size="sm" variant="outline" asChild><a href="#/components">源码</a></Button></>}
-      />
-      <Hero
-        eyebrow={{ label: "HX-UI 2.0 预览 · 基于 shadcn/ui", href: "#templates" }}
-        title="现代界面，"
-        highlight="拿来就能上线"
-        description="shadcn/ui 的组件底座，Motion 的手感，精选的特效和真实可用的区块。发布页、电商、运维面板、统计大屏，一套搞定。"
-        actions={
-          <>
-            <Button size="lg" className="h-10 rounded-full px-5" onClick={() => go("launch")}>看模板</Button>
-            <button type="button" className="group inline-flex items-center gap-1.5 text-sm font-medium" onClick={() => go("components")}>浏览组件 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" /></button>
-          </>
-        }
-      />
-      <Section id="templates" eyebrow="四张成品页" title="每一张都是真实可用的页面" description="只用库的公开组件拼成，改数据和文案就能变成你的产品。">
-        <Stagger className="grid gap-5 md:grid-cols-2">
-          {TEMPLATES.map((t) => (
-            <StaggerItem key={t.id}>
-              <button type="button" onClick={() => go(t.id)} className="group block w-full text-left">
-                <TiltCard max={5} className="overflow-hidden rounded-2xl border bg-card shadow-soft transition-shadow group-hover:shadow-float">
-                  <div className="relative aspect-[16/9] overflow-hidden bg-muted">
-                    <img src={t.img} alt="" className="size-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                    <t.icon className="absolute bottom-4 left-4 size-6 text-white" />
-                  </div>
-                  <div className="flex items-center justify-between p-5">
-                    <div>
-                      <h3 className="font-medium">{t.title}</h3>
-                      <p className="mt-1 text-sm text-muted-foreground">{t.desc}</p>
-                    </div>
-                    <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
-                  </div>
-                </TiltCard>
-              </button>
-            </StaggerItem>
-          ))}
-        </Stagger>
-      </Section>
-      <Section id="stack" eyebrow="站在巨人的肩上" title="只选成熟的轮子，把手感做到位">
-        <FeatureBento
-          features={[
-            { title: "shadcn/ui 底座", description: "Radix 无障碍原语 + Tailwind v4。主题与 shadcn 格式兼容，市面上的主题直接可用。", icon: Boxes, span: 3 },
-            { title: "Motion 动效", description: "一份弹簧档位与入场预设，全部尊重减弱动效，只动 transform 与 opacity.", icon: Sparkles, span: 3 },
-            { title: "数据可视化", description: "Recharts 图表 + TanStack Table，统一配色令牌，亮暗主题自动跟随。", icon: BarChart3, span: 2 },
-            { title: "精选特效", description: "光斑、流光边框、跑马灯、极光底纹、磁吸、3D 倾斜。少而精，有预算。", icon: Sparkles, span: 2 },
-            { title: "AI 友好", description: "组件即源码，一份 llms.txt 和逐件示例，AI 照着就能拼页面。", icon: Rocket, span: 2 },
-          ]}
+      <DocsHeader />
+      <main className="mx-auto max-w-6xl md:border-x">
+        <Hero
+          align="left"
+          backdrop="none"
+          eyebrow={{ label: "HX-UI 2 预览", href: "#/sites" }}
+          title="界面库，分三层。"
+          highlight="控件够稳，交互出彩，整页拿来就发。"
+          description="三层各管一件事：控件是底座，交互是亮点，成品是能直接上线的整套页面。"
+          actions={
+            <>
+              <Button size="sm" asChild><a href="#/sites">看成品</a></Button>
+              <Button size="sm" variant="ghost" asChild><a href="#/interactions">玩交互 <ArrowRight /></a></Button>
+            </>
+          }
         />
-      </Section>
-      <footer className="border-t px-4 py-10 text-center text-sm text-muted-foreground">HX-UI 2 · Apache-2.0</footer>
+        <Section id="sites" divider eyebrow="L3 成品" title="整套页面，各有美术方向" description="网站和应用两类。每套自带字体、色板和一个招牌视觉。" align="left">
+          <SiteGrid />
+        </Section>
+        <Section divider eyebrow="L2 交互" title="一件交互，一个产品瞬间" description="发送、确认、计数、对比。能直接玩，能调参，能单文件拷走。" align="left">
+          <div className="grid border-t border-l md:grid-cols-2">
+            {INTERACTIONS.map((e) => (
+              <a key={e.meta.id} href={`#/interactions/${e.meta.id}`} className="flex flex-col border-r border-b">
+                <Stage entry={e} className="pointer-events-none grid min-h-56 place-items-center p-8" />
+                <span className="border-t px-4 py-3 text-sm font-medium">{e.meta.title}</span>
+              </a>
+            ))}
+          </div>
+        </Section>
+        <Section divider eyebrow="L1 控件" title="shadcn 底座，统一令牌" description="Radix 无障碍原语 + Tailwind v4，亮暗主题与强调色一套令牌管到底。" align="left">
+          <div className="flex flex-wrap items-center gap-2">
+            {L1.map((x) => <span key={x} className="rounded-md border px-2.5 py-1 text-xs text-muted-foreground">{x}</span>)}
+            <Button size="sm" variant="ghost" asChild><a href="#/components">全部控件 <ArrowRight /></a></Button>
+          </div>
+        </Section>
+      </main>
+      <footer className="mx-auto max-w-6xl border-t px-4 py-8 text-xs text-muted-foreground md:border-x">HX-UI 2 · Apache-2.0</footer>
     </div>
   );
 }

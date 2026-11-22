@@ -5,19 +5,18 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { SiteHeader } from "@/blocks/marketing/site-header";
-import { ThemeToggle } from "@/blocks/shell/theme-toggle";
-import { ProductGallery } from "@/blocks/commerce/product-gallery";
-import { VariantPicker } from "@/blocks/commerce/variant-picker";
-import { Price } from "@/blocks/commerce/price";
-import { Rating } from "@/blocks/commerce/rating";
-import { ProductCard, type ProductSummary } from "@/blocks/commerce/product-card";
-import { BuyBar } from "@/blocks/commerce/buy-bar";
-import { Segmented } from "@/blocks/analytics/segmented";
-import { Section } from "@/blocks/marketing/section";
+import { SiteHeader } from "@sites/_blocks/marketing/site-header";
+import { ThemeToggle } from "@sites/_blocks/shell/theme-toggle";
+import { ProductGallery } from "@sites/_blocks/commerce/product-gallery";
+import { VariantPicker } from "@sites/_blocks/commerce/variant-picker";
+import { Price } from "@sites/_blocks/commerce/price";
+import { Rating } from "@sites/_blocks/commerce/rating";
+import { ProductCard, type ProductSummary } from "@sites/_blocks/commerce/product-card";
+import { BuyBar } from "@sites/_blocks/commerce/buy-bar";
+import { Segmented } from "@sites/_blocks/analytics/segmented";
+import { Section } from "@sites/_blocks/marketing/section";
 import { Reveal } from "@/motion/reveal";
-import { IMG } from "../assets";
-import { BackLink } from "../pages/back-link";
+import { IMG } from "../_shared/assets";
 
 const COLORS = [
   { value: "ink", label: "墨黑", swatch: "oklch(0.25 0.01 270)" },
@@ -152,7 +151,6 @@ function Plp() {
 export default function Shop() {
   return (
     <div>
-      <BackLink />
       <SiteHeader
         brand={<span className="font-semibold tracking-tight">STRIDE</span>}
         links={[{ label: "男士", href: "#" }, { label: "女士", href: "#" }, { label: "跑步", href: "#" }, { label: "数码", href: "#" }]}

@@ -2,22 +2,21 @@ import * as React from "react";
 import { Download, LineChart, ShoppingCart, UserPlus, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AppShell } from "@/blocks/shell/app-shell";
-import { ThemeToggle } from "@/blocks/shell/theme-toggle";
-import { PageHeader } from "@/blocks/shell/page-header";
-import { StatCard } from "@/blocks/dashboard/stat-card";
-import { ChartCard } from "@/blocks/analytics/chart-card";
-import { Segmented } from "@/blocks/analytics/segmented";
+import { AppShell } from "@sites/_blocks/shell/app-shell";
+import { ThemeToggle } from "@sites/_blocks/shell/theme-toggle";
+import { PageHeader } from "@sites/_blocks/shell/page-header";
+import { StatCard } from "@sites/_blocks/dashboard/stat-card";
+import { ChartCard } from "@sites/_blocks/analytics/chart-card";
+import { Segmented } from "@sites/_blocks/analytics/segmented";
 import { AreaTrend } from "@/data/charts/area-trend";
 import { BarCompare } from "@/data/charts/bar-compare";
 import { Donut } from "@/data/charts/donut";
 import { DataTable, type ColumnDef } from "@/data/table/data-table";
 import { Stagger, StaggerItem } from "@/motion/reveal";
 import { cn } from "@/lib/utils";
-import { BI_NAV } from "../demos/nav";
-import { UserChip } from "../demos/user-chip";
-import { channels, daily, orders, regions, revenue, spark, type Order } from "../demos/data";
-import { BackLink } from "../pages/back-link";
+import { BI_NAV } from "../_shared/nav";
+import { UserChip } from "../_shared/user-chip";
+import { channels, daily, orders, regions, revenue, spark, type Order } from "../_shared/data";
 
 const cny = new Intl.NumberFormat("zh-CN", { style: "currency", currency: "CNY" });
 const STATUS_CLS: Record<Order["status"], string> = {
@@ -40,7 +39,6 @@ export default function Analytics() {
   const series = daily.slice(-Number(range));
   return (
     <>
-      <BackLink />
       <AppShell
         brand={<span className="flex items-center gap-2 font-semibold"><LineChart className="size-5 text-brand" />Lumen 分析</span>}
         nav={BI_NAV}

@@ -12,15 +12,19 @@ npm run build      # tsc + vite build
 
 ## 分层
 
+三层定位见 `docs/positioning.md`: L1 控件 (`src/`), L2 交互 (`src/interactions`), L3 成品 (`sites/`).
+
 | 目录 | 内容 | 来源 |
 |---|---|---|
 | `src/styles` | 令牌 (OKLCH, 亮暗, 5 种强调色) + 特效关键帧 | 自写, 变量名与 shadcn 主题格式一致 |
 | `src/components/ui` | 38 个基础件 | shadcn/ui 源码 (`npx shadcn add <name>` 增补) |
 | `src/motion` | 弹簧档位, 入场预设, Reveal / Stagger / AnimatedNumber / TextReveal | Motion |
-| `src/effects` | SpotlightCard, BorderBeam, Marquee, Backdrop, ShimmerButton, Magnetic, TiltCard, LiveDot | 自写, 参考 Magic UI / Aceternity 路数 |
+| `src/effects` | 旧特效, R2 逐个审: 能变成交互的迁入 interactions, 其余删除 | 自写 |
+| `src/interactions` | L2 交互: 一件一个目录 (`index.tsx` 组件, `meta.ts` 调参描述, `demo.tsx` 场景演示), 清单在 `registry.ts` | 自写, 思路参考 Aceternity Interactions |
 | `src/data` | AreaTrend, BarCompare, Donut, Sparkline, DataTable | Recharts + TanStack Table v8 |
-| `src/blocks` | marketing / commerce / dashboard / analytics / shell 整段区块 | 自写 |
-| `site` | 文档站与四张成品页 (launch / shop / ops / analytics) | 只用上面的公开组件 |
+| `sites/_blocks` | L3 的零件: marketing / commerce / dashboard / analytics / shell 整段区块 | 自写 |
+| `sites/<id>` | L3 成品: launch / shop / ops / analytics, 清单在 `sites/registry.ts` | 只用上面的公开组件 |
+| `site` | 文档站: 成品 / 交互 / 控件三栏 | |
 
 ## 规则 (只有这几条)
 

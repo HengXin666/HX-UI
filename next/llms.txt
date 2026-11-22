@@ -1,13 +1,13 @@
 # HX-UI 2
 
-> React 19 + TypeScript 界面库. 基于 shadcn/ui (Radix + Tailwind v4), 动效用 Motion, 图表用 Recharts, 表格用 TanStack Table v8. 路径别名 "@/" 指向 next/src.
+> React 19 + TypeScript 界面库. 基于 shadcn/ui (Radix + Tailwind v4), 动效用 Motion, 图表用 Recharts, 表格用 TanStack Table v8. 路径别名 "@/" 指向 next/src, "@sites/" 指向 next/sites.
 
 ## 写页面的顺序
 1. 外壳: 营销页用 `SiteHeader` + 若干 `Section` + `SiteFooter`; 后台 / 面板用 `AppShell` (侧栏 + 顶栏) + `PageHeader`.
-2. 区块: 从 `@/blocks/*` 挑整段区块, 数据通过 props 传入, 区块不取数.
+2. 区块: 从 `@sites/_blocks/*` 挑整段区块, 数据通过 props 传入, 区块不取数.
 3. 细节: 基础件从 `@/components/ui/<name>` 引 (与 shadcn 文档用法一致).
 4. 动效: 包一层 `Reveal` / `Stagger` + `StaggerItem` 即可; 数字用 `AnimatedNumber`; 标题用 `TextReveal`.
-5. 特效: 每屏最多一个主特效 (Backdrop / BorderBeam / SpotlightCard 选一).
+5. 交互: 需要一个出彩的产品瞬间时, 从 `@/interactions` 挑 (SpeedCounter, StatefulButton ...); 每屏最多一个.
 
 ## 区块
 - marketing: Hero(title, highlight, description, actions, media, backdrop), Section(eyebrow, title, description), FeatureBento(features[{title, description, icon, visual, span:2|3|4|6}]), LogoCloud(logos), Pricing(plans[{name, description, monthly, yearly, features, cta, featured}]), Testimonials(items[{quote, name, role}]), Faq(items[{q, a}]), Cta(title, description, actions), SiteHeader(brand, links, actions), SiteFooter(brand, columns, note)
@@ -23,5 +23,9 @@
 - 包 `ThemeProvider`; `useTheme()` 返回 { mode, resolved, accent, setMode, setAccent }; 强调色 indigo | emerald | rose | amber | zinc.
 - 令牌: background, foreground, card, muted, accent, primary, brand, brand-soft, success, warning, destructive, info, chart-1..5, border, ring.
 
+## 交互
+- SpeedCounter(value, format?, locale?, duration?): 逐位滚动的数字
+- StatefulButton(action: () => Promise, children, pendingLabel?, successLabel?, errorLabel?, resetAfter?): 提交按钮的完整状态流
+
 ## 示例
-完整页面见 site/src/templates/{launch,shop,ops,analytics}.tsx.
+完整页面见 sites/{launch,shop,ops,analytics}/page.tsx.

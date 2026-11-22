@@ -1,5 +1,5 @@
 import { Activity, AlertTriangle, BarChart3, Boxes, Database, Gauge, LayoutDashboard, Network, Settings, Users } from "lucide-react";
-import type { NavGroup } from "@/blocks/shell/app-shell";
+import type { NavGroup } from "@sites/_blocks/shell/app-shell";
 import { Badge } from "@/components/ui/badge";
 
 export const OPS_NAV: NavGroup[] = [
