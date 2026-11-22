@@ -5,13 +5,20 @@ import { badge } from "./entries/badge";
 import { marquee, tiltCard } from "./entries/effects";
 import { splitText } from "./entries/split-text";
 import { numberRoll } from "./entries/number-roll";
+import { input } from "./entries/input";
+import { textarea } from "./entries/textarea";
+import { select } from "./entries/select";
+import { checkbox } from "./entries/checkbox";
+import { switchEntry } from "./entries/switch";
+import { radioGroup } from "./entries/radio-group";
+import { slider } from "./entries/slider";
 import { SECTIONS } from "./sections";
 
 /**
  * 文档站清单. 只收值得单独一页的东西:
  * 一个参数就能表达的效果 (流光, 状态点, 光斑) 做成所属组件的参数, 不单列.
  */
-const ALL: DocEntry[] = [button, card, badge, marquee, splitText, numberRoll, tiltCard];
+const ALL: DocEntry[] = [button, card, badge, marquee, input, textarea, select, checkbox, switchEntry, radioGroup, slider, splitText, numberRoll, tiltCard];
 
 const rank = (e: DocEntry) => {
   const s = SECTIONS.findIndex((x) => x.id === e.section);

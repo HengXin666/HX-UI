@@ -12,6 +12,10 @@
 - StatefulButton(action: () => Promise, children, pendingLabel?, successLabel?, errorLabel?, resetAfter?, guard?, variant?, size?) from "@/interactions/stateful-button": 提交流程, 进行中禁用, 结果由读屏播报; 放进表单时传 type="submit"
 - Card(effect?: "none"|"spotlight"|"beam", effectColor?) + CardHeader/CardTitle/CardDescription/CardContent/CardFooter: spotlight 指针光斑, beam 边框流光 (标出推荐项)
 - Badge(variant?, dot?: "success"|"warning"|"destructive"|"info"|"muted", live?): 状态点 + 文字
+- Field(label?, description?, error?, required?, disabled?, orientation?: "vertical"|"horizontal", aside?, htmlFor?) from "@/components/ui/field": 包住一个控件, 自动连好 id / aria-describedby / aria-invalid
+- Input(size?: "sm"|"default"|"lg", leading?, trailing?): 框内左右放图标, 前缀, 按钮; Textarea 默认随内容长高
+- SelectTrigger(size?: "sm"|"default"|"lg"); Checkbox(checked: boolean|"indeterminate"); Switch(size?); RadioGroup + RadioGroupItem | RadioGroupCard(value, title, description?, aside?)
+- Slider(value: number[], thumbLabels?: string[], formatValue?: (v) => string): 两个值即区间
 - Marquee(duration?, gap?, reverse?, vertical?, pauseOnHover?, fade?) from "@/effects/marquee": 品牌墙 / 评价无缝滚动
 
 ## 视觉组件

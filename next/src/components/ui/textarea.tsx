@@ -1,7 +1,10 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { useFieldControl } from "@/components/ui/field"
 
-function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
+function Textarea({ className, ...rest }: React.ComponentProps<"textarea">) {
+  // field-sizing: content 让高度跟着内容长, 用 min-h / max-h 限定范围
+  const props = useFieldControl(rest)
   return (
     <textarea
       data-slot="textarea"

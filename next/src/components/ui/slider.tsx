@@ -12,8 +12,15 @@ function Slider({
   max = 100,
   "aria-label": ariaLabel,
   "aria-labelledby": ariaLabelledby,
+  thumbLabels,
+  formatValue,
   ...props
-}: React.ComponentProps<typeof SliderPrimitive.Root>) {
+}: React.ComponentProps<typeof SliderPrimitive.Root> & {
+  /** 区间滑块每个滑块的读屏名, 如 ["最低价", "最高价"]; 不给则都用 aria-label */
+  thumbLabels?: string[]
+  /** 读屏念的数值文字, 如 v => `¥${v}` */
+  formatValue?: (v: number) => string
+}) {
   const _values = React.useMemo(
     () =>
       Array.isArray(value)
@@ -55,8 +62,9 @@ function Slider({
           data-slot="slider-thumb"
           key={index}
           // role="slider" 在滑块上, 名字要给到这里读屏才念得出
-          aria-label={ariaLabel}
-          aria-labelledby={ariaLabelledby}
+          aria-label={thumbLabels?.[index] ?? ariaLabel}
+          aria-labelledby={thumbLabels?.[index] ? undefined : ariaLabelledby}
+          aria-valuetext={formatValue && _values[index] != null ? formatValue(_values[index]) : undefined}
           className="block size-4 shrink-0 rounded-full border border-primary bg-white shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
         />
       ))}

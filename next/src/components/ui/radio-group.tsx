@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { useFieldControl } from "@/components/ui/field"
 import { CircleIcon } from "lucide-react"
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui"
 
@@ -18,8 +19,9 @@ function RadioGroup({
 
 function RadioGroupItem({
   className,
-  ...props
+  ...rest
 }: React.ComponentProps<typeof RadioGroupPrimitive.Item>) {
+  const props = useFieldControl(rest)
   return (
     <RadioGroupPrimitive.Item
       data-slot="radio-group-item"
@@ -39,4 +41,43 @@ function RadioGroupItem({
   )
 }
 
-export { RadioGroup, RadioGroupItem }
+/**
+ * 卡片式单选: 整张卡可点, 选中时描边变主色. 适合套餐, 配送方式这类要多写几句的选项.
+ */
+function RadioGroupCard({
+  value,
+  title,
+  description,
+  aside,
+  disabled,
+  className,
+}: {
+  value: string
+  title: React.ReactNode
+  description?: React.ReactNode
+  /** 右侧: 价格, 标签 */
+  aside?: React.ReactNode
+  disabled?: boolean
+  className?: string
+}) {
+  const id = React.useId()
+  return (
+    <label
+      htmlFor={id}
+      data-slot="radio-group-card"
+      className={cn(
+        "flex cursor-pointer items-start gap-3 rounded-lg border p-3.5 transition-colors hover:bg-accent/40 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-50 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50",
+        className
+      )}
+    >
+      <RadioGroupItem id={id} value={value} disabled={disabled} className="mt-0.5 focus-visible:ring-0" aria-describedby={description ? `${id}-d` : undefined} />
+      <span className="grid flex-1 gap-1">
+        <span className="text-sm leading-none font-medium">{title}</span>
+        {description && <span id={`${id}-d`} className="text-[13px] text-muted-foreground">{description}</span>}
+      </span>
+      {aside && <span className="text-sm font-medium tabular-nums">{aside}</span>}
+    </label>
+  )
+}
+
+export { RadioGroup, RadioGroupItem, RadioGroupCard }
