@@ -183,8 +183,9 @@ function surfaceLabels({ values, xRange = [0, 1], yRange = [0, 1], xLabel = "X",
   return [
     { id: "peak", pos: new THREE.Vector3((pc / (cols - 1) - 0.5) * S, (hi === lo ? 0.5 : 1) * H + 0.35, (pr / (rows - 1) - 0.5) * S), text: `峰值 ${format(hi)}`, className: "whitespace-nowrap rounded border bg-background/80 px-1.5 py-0.5 font-mono text-[10px] backdrop-blur" },
     ...ticks.map((t) => ({ id: `x${t}`, pos: new THREE.Vector3((t - 0.5) * S, 0, S / 2 + 0.45), text: formatAxis(xRange[0] + t * (xRange[1] - xRange[0])) })),
-    ...ticks.map((t) => ({ id: `y${t}`, pos: new THREE.Vector3(-S / 2 - 0.55, 0, (t - 0.5) * S), text: formatAxis(yRange[0] + t * (yRange[1] - yRange[0])) })),
+    // y 轴刻度放在右侧边, 默认机位下左侧边被曲面挡住; 近角留给 x 轴, 只标 0 和 0.5
+    ...[0, 0.5].map((t) => ({ id: `y${t}`, pos: new THREE.Vector3(S / 2 + 0.6, 0, (t - 0.5) * S), text: formatAxis(yRange[0] + t * (yRange[1] - yRange[0])) })),
     { id: "xl", pos: new THREE.Vector3(0, 0, S / 2 + 0.95), text: `${xLabel} →`, className: strong },
-    { id: "yl", pos: new THREE.Vector3(-S / 2 - 1.5, 0, S * 0.25), text: `${yLabel} →`, className: strong },
+    { id: "yl", pos: new THREE.Vector3(S / 2 + 1.05, 0, S * 0.22), text: yLabel, className: strong },
   ];
 }

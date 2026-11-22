@@ -22,8 +22,17 @@ export function toVec(lat: number, lng: number, r = 1) {
 export default function GlobeScene(props: Props) {
   const colors = useThemeColors(VARS);
   const resetRef = useRef<(() => void) | null>(null);
-  const focus = props.focus ?? props.arcs[0]?.from ?? [20, 110];
-  const home = toVec(focus[0] - 12, focus[1], 3.1).toArray() as [number, number, number];
+  // 默认看向所有端点的球面中心, 避免只盯第一条弧的起点把远端裁掉
+  const home = useMemo(() => {
+    if (props.focus) return toVec(props.focus[0] - 12, props.focus[1], 3.1).toArray() as [number, number, number];
+    const c = new THREE.Vector3();
+    for (const p of endpoints(props.arcs, props.points)) c.add(toVec(p.at[0], p.at[1], 1));
+    if (c.lengthSq() < 1e-4) return toVec(8, 110, 3.1).toArray() as [number, number, number];
+    c.normalize(); c.y -= 0.2; // 稍微从下往上看, 北半球的弧更立体
+    return c.normalize().multiplyScalar(3.1).toArray() as [number, number, number];
+    // 只在首次挂载时定机位, 数据变化不抢镜头
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const els = useRef<(HTMLElement | null)[]>([]);
   const labels = useMemo<LabelSpec[]>(() => endpoints(props.arcs, props.points).filter((p) => p.name).map((p) => ({
     id: p.at.join(),
@@ -43,7 +52,7 @@ export default function GlobeScene(props: Props) {
     >
       <ambientLight intensity={1} />
       <Globe {...props} colors={colors} />
-      <Controls api={props.api} fit={{ radius: 1.42, dir: home, margin: 1 }} autoRotate={props.autoRotate ?? true} autoRotateSpeed={0.35} minDistance={1.7} maxDistance={6} maxPolar={Math.PI - 0.15} resetRef={resetRef} />
+      <Controls api={props.api} fit={{ radius: 1.8, dir: home, margin: 1 }} autoRotate={props.autoRotate ?? true} autoRotateSpeed={0.35} minDistance={1.7} maxDistance={6} maxPolar={Math.PI - 0.15} resetRef={resetRef} />
       <LabelProjector items={labels} els={els} facing />
     </Canvas>
     <LabelLayer items={labels} els={els} />
