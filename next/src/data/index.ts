@@ -23,6 +23,8 @@ export type { Candle } from "./charts/candlestick";
 export type { CandleOverlay, CandleSub } from "./charts/candlestick";
 export { ForceGraph } from "./charts/force-graph";
 export type { ForceGraphProps, GraphLink, GraphNode } from "./charts/force-graph";
+export { Waterfall } from "./charts/waterfall";
+export type { WaterfallItem, WaterfallProps } from "./charts/waterfall";
 export { sma, ema, macd, boll, kdj, rsi } from "./charts/indicators";
 export { Bar3D } from "./charts3d/bar3d";
 export type { Bar3DProps } from "./charts3d/bar3d";
