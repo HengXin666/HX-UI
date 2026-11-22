@@ -1,5 +1,5 @@
-import { m } from "motion/react";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, m } from "motion/react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
@@ -21,9 +21,12 @@ interface HeatCalendarProps {
 const fmt = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const WEEK = ["一", "", "三", "", "五", "", "日"];
 
-/** 热力日历: 每天一个格子, 颜色深浅 = 数值 (提交, 订单, 活跃). 周一起, 中文月份. 悬停或聚焦格子读数. */
+/** 热力日历: 每天一个格子, 颜色深浅 = 数值 (提交, 订单, 活跃). 周一起, 中文月份. 悬停或聚焦格子读数. 格子按日期做键: 往后推一天时新格子长出来, 跨周时整片左移, 数值变化时颜色过渡. */
 export function HeatCalendar({ values, end = new Date(), weeks = 26, color = "var(--chart-1)", levels = 4, unit = "", label = "每日热力", className }: HeatCalendarProps) {
   const reduced = useReducedMotion();
+  // 首次出现按周从右往左依次铺开; 之后新加的日子不再排队, 立即长出来
+  const mounted = useRef(false);
+  useEffect(() => { const id = setTimeout(() => { mounted.current = true; }, 50); return () => clearTimeout(id); }, []);
   const [hover, setHover] = useState<{ d: string; v: number } | null>(null);
   const scroller = useRef<HTMLDivElement>(null);
   const [fade, setFade] = useState<"none" | "start" | "end" | "both">("none");
@@ -76,14 +79,20 @@ export function HeatCalendar({ values, end = new Date(), weeks = 26, color = "va
               <span className="pr-1.5 text-[10px] leading-3 text-muted-foreground">{wd}</span>
               {cols.map((col, w) => {
                 const c = col[i]; const l = level(c.v);
-                if (c.future) return <span key={w} />;
+                // 按日期做键: 结束日往后推, 整周左移时格子带着颜色滑过去, 而不是原地换色
                 return (
-                  <m.span key={w} title={`${c.d} ${c.v}${unit}`}
-                    initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.2, delay: reduced ? 0 : (weeks - 1 - w) * 0.012 }}
-                    onPointerEnter={() => setHover(c)} onPointerLeave={() => setHover(null)}
-                    className="size-3 rounded-[3px] ring-foreground/40 transition-shadow hover:ring-1"
-                    style={{ background: l ? `color-mix(in oklch, ${color} ${25 + (l / levels) * 75}%, transparent)` : "var(--muted)" }} />
+                  <m.span key={c.d} data-d={c.d} layout={reduced ? false : "position"} transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }} className="relative size-3">
+                    <AnimatePresence>
+                      {!c.future && (
+                        <m.span title={`${c.d} ${c.v}${unit}`}
+                          initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }} exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.4 }}
+                          transition={{ duration: 0.2, delay: reduced || mounted.current ? 0 : (weeks - 1 - w) * 0.012 }}
+                          onPointerEnter={() => setHover(c)} onPointerLeave={() => setHover(null)}
+                          className="absolute inset-0 rounded-[3px] ring-foreground/40 transition-[box-shadow,background-color] duration-200 hover:ring-1"
+                          style={{ background: l ? `color-mix(in oklch, ${color} ${25 + (l / levels) * 75}%, transparent)` : "var(--muted)" }} />
+                      )}
+                    </AnimatePresence>
+                  </m.span>
                 );
               })}
             </div>

@@ -7,7 +7,7 @@ export const heatCalendar: DocEntry = {
   section: "ui",
   group: "图表",
   sub: "2D 图表",
-  description: "每天一个格子，颜色深浅就是当天的量：订单、活跃、提交。周一开头、中文月份，格子依次浮现；悬停任一格在下方读数。",
+  description: "每天一个格子，颜色深浅就是当天的量：订单、活跃、提交。周一开头、中文月份，格子依次浮现；悬停任一格在下方读数。格子按日期做键：推进一天时新格子长出来，跨周时整片左移，数值变化时颜色渐变。",
   file: "src/data/charts/heat-calendar.tsx",
   importFrom: "@/data",
   demo: () => import("./heat-calendar.demo"),

@@ -7,7 +7,7 @@ export const gauge: DocEntry = {
   section: "ui",
   group: "图表",
   sub: "2D 图表",
-  description: "一个指标离目标还有多远：健康分、目标达成率、服务器负载。进度弧或指针两种样式，可按区间变色；数值变化时弧、指针和数字一起弹性过渡，减弱动效时直接到位。读屏按 meter 播报。",
+  description: "一个指标离目标还有多远：健康分、目标达成率、服务器负载。进度弧或指针两种样式，可按区间变色；数值变化时弧、指针和数字一起弹性过渡，减弱动效时直接到位。读屏按 meter 播报。新挂载的表盘从最小值转到当前值，适合一排小表盘增删。",
   file: "src/data/charts/gauge.tsx",
   importFrom: "@/data",
   demo: () => import("./gauge.demo"),

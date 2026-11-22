@@ -80,8 +80,9 @@ export function Gauge({ value, min = 0, max = 100, label, format = (v) => String
         )}
       </svg>
       <div className={cn("pointer-events-none absolute inset-x-0 text-center", variant === "needle" ? "bottom-0" : "top-1/2 -translate-y-1/3")}>
-        <m.p className="text-3xl font-semibold tabular-nums tracking-tight">{text}</m.p>
-        {label && <p className="mt-0.5 text-xs text-muted-foreground">{label}</p>}
+        {/* 小尺寸 (一排小表盘) 时字号跟着缩 */}
+        <m.p className={cn("font-semibold tabular-nums tracking-tight", size < 140 ? "text-base" : "text-3xl")}>{text}</m.p>
+        {label && <p className={cn("text-muted-foreground", size < 140 ? "text-[10px]" : "mt-0.5 text-xs")}>{label}</p>}
       </div>
     </div>
   );

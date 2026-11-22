@@ -16,7 +16,7 @@ export type { ScatterGroup } from "./charts/scatter-bubble";
 export { ConversionFunnel } from "./charts/conversion-funnel";
 export { ShareTreemap } from "./charts/share-treemap";
 export type { TreemapNode, ShareTreemapProps } from "./charts/share-treemap";
-export { SankeyFlow } from "./charts/sankey-flow";
+export { SankeyFlow, type SankeyFlowProps } from "./charts/sankey-flow";
 export { HeatCalendar } from "./charts/heat-calendar";
 export { Candlestick } from "./charts/candlestick";
 export type { Candle } from "./charts/candlestick";
