@@ -3,3 +3,7 @@ dist/
 dist-site/
 *.log
 *.tsbuildinfo
+
+# 成品单独构建
+dist-sites
+sites/_standalone/entry.css

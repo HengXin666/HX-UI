@@ -1,6 +1,7 @@
 import * as React from "react";
 import { ArrowRight } from "lucide-react";
-import { m, useReducedMotion, useScroll, useTransform } from "motion/react";
+import { m, useScroll, useTransform } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { Reveal } from "@/motion/reveal";
 import { Backdrop } from "@/effects/backdrop";
 import { cn } from "@/lib/utils";
@@ -46,28 +47,19 @@ export function Hero({ eyebrow, title, highlight, description, actions, media, a
       {backdrop !== "none" && <Backdrop variant={backdrop} />}
       <div className={cn("relative mx-auto max-w-6xl", center && "text-center")}>
         {eyebrow && (
-          <Reveal preset="fade" inView={false}>
-            <a href={eyebrow.href ?? "#"} className="group mb-8 inline-flex items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground">
-              <span className="rounded-full border px-2 py-px text-[11px] font-medium text-foreground">新</span>
-              {eyebrow.label}
-              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
-            </a>
-          </Reveal>
+          <a href={eyebrow.href ?? "#"} className="group mb-8 inline-flex items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground">
+            <span className="rounded-full border px-2 py-px text-[11px] font-medium text-foreground">新</span>
+            {eyebrow.label}
+            <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+          </a>
         )}
-        <Reveal preset="up" inView={false}>
-          <h1 className={cn("text-balance text-[2.6rem] font-semibold leading-[1.04] tracking-[-0.035em] sm:text-6xl md:text-7xl", center ? "mx-auto max-w-4xl" : "max-w-4xl")}>
-            {title}
-            {highlight && <span className="block text-muted-foreground/70">{highlight}</span>}
-          </h1>
-        </Reveal>
-        <Reveal preset="up" delay={0.08} inView={false}>
-          <p className={cn("mt-6 max-w-xl text-pretty text-[17px] leading-relaxed text-muted-foreground md:text-lg", center && "mx-auto")}>{description}</p>
-        </Reveal>
-        {actions && (
-          <Reveal preset="up" delay={0.14} inView={false}>
-            <div className={cn("mt-9 flex flex-wrap items-center gap-x-5 gap-y-3", center && "justify-center")}>{actions}</div>
-          </Reveal>
-        )}
+        {/* 公告, 标题, 说明, 按钮不做透明度入场: 它们是 LCP, 必须随 HTML 第一帧画出来 */}
+        <h1 className={cn("text-balance text-[2.6rem] font-medium leading-[1.06] tracking-[-0.03em] sm:text-6xl md:text-7xl", center ? "mx-auto max-w-4xl" : "max-w-4xl")}>
+          {title}
+          {highlight && <span className="block text-muted-foreground/70">{highlight}</span>}
+        </h1>
+        <p className={cn("mt-6 max-w-xl text-pretty text-[17px] leading-relaxed text-muted-foreground md:text-lg", center && "mx-auto")}>{description}</p>
+        {actions && <div className={cn("mt-9 flex flex-wrap items-center gap-x-5 gap-y-3", center && "justify-center")}>{actions}</div>}
       </div>
       {media && (
         <Reveal preset="fade" delay={0.2} inView={false} className="relative mx-auto mt-16 max-w-6xl md:mt-20">

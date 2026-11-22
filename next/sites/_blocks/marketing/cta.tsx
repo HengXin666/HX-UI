@@ -17,7 +17,7 @@ export function Cta({ title, description, actions, media, className }: {
     <section className={cn("border-t px-5 py-24 md:px-8 md:py-32", className)}>
       <Reveal className={cn("mx-auto max-w-6xl", media && "grid items-center gap-12 lg:grid-cols-2")}>
         <div>
-          <h2 className="max-w-2xl text-balance text-4xl font-semibold leading-[1.05] tracking-[-0.035em] md:text-6xl">{title}</h2>
+          <h2 className="max-w-2xl text-balance text-4xl font-medium leading-[1.06] tracking-[-0.03em] md:text-6xl">{title}</h2>
           {description && <p className="mt-6 max-w-lg text-pretty text-[17px] leading-relaxed text-muted-foreground">{description}</p>}
           {actions && <div className="mt-9 flex flex-wrap items-center gap-x-5 gap-y-3">{actions}</div>}
         </div>

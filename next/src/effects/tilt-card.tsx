@@ -1,5 +1,6 @@
 import * as React from "react";
-import { m, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react";
+import { m, useMotionValue, useSpring, useTransform } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";
 import { spring } from "@/motion/presets";
 

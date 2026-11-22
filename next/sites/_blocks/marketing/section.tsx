@@ -2,10 +2,10 @@ import type * as React from "react";
 import { Reveal } from "@/motion/reveal";
 import { cn } from "@/lib/utils";
 
-/** 发丝线交点上的十字标记, 用于分区线两端 */
+/** 发丝线交点上的十字标记, 用于分区线两端. 只在 xl 以上显示: 更窄时页面栏线贴边, 十字会撑出横向滚动 */
 function Cross({ className }: { className?: string }) {
   return (
-    <svg aria-hidden viewBox="0 0 11 11" className={cn("absolute hidden size-[11px] text-muted-foreground/60 md:block", className)}>
+    <svg aria-hidden viewBox="0 0 11 11" className={cn("absolute hidden size-[11px] text-muted-foreground/60 xl:block", className)}>
       <path d="M5.5 0v11M0 5.5h11" stroke="currentColor" strokeWidth="1" />
     </svg>
   );
@@ -30,7 +30,7 @@ export function Section({ id, eyebrow, title, description, align = "left", layou
   const head = (title || eyebrow) && (
     <Reveal className={cn(layout === "split" ? "md:sticky md:top-24 md:self-start" : "mb-12 md:mb-16", align === "center" && layout === "stack" ? "mx-auto max-w-2xl text-center" : "max-w-2xl")}>
       {eyebrow && <div className="mb-4 font-mono text-xs text-muted-foreground">{eyebrow}</div>}
-      {title && <h2 className="text-balance text-3xl font-semibold leading-[1.1] tracking-[-0.03em] md:text-[2.75rem]">{title}</h2>}
+      {title && <h2 className="text-balance text-3xl font-medium leading-[1.12] tracking-[-0.03em] md:text-[2.75rem]">{title}</h2>}
       {description && <p className="mt-5 max-w-xl text-pretty leading-relaxed text-muted-foreground md:text-[17px]">{description}</p>}
     </Reveal>
   );

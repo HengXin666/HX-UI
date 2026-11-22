@@ -25,7 +25,11 @@
 
 ## 交互
 - SpeedCounter(value, format?, locale?, duration?): 逐位滚动的数字
-- StatefulButton(action: () => Promise, children, pendingLabel?, successLabel?, errorLabel?, resetAfter?): 提交按钮的完整状态流
+- StatefulButton(action: () => Promise, children, pendingLabel?, successLabel?, errorLabel?, resetAfter?, guard?): 提交按钮的完整状态流; guard 返回 false 时不提交 (例如 form.reportValidity()); 放进表单时传 type="submit" 支持回车
 
 ## 示例
-完整页面见 sites/{launch,shop,ops,analytics}/page.tsx.
+完整页面见 sites/{launch,shop,ops,analytics}/page.tsx. 已完成的成品 (sites/status.json 为 done) 目录里有:
+- prompt.md: 可单独交给 AI 生成同款的完整说明 (美术方向, 结构, 文案, 交互, 质量要求)
+- art.css: 这套页面的令牌, 只在 <html data-site="<id>"> 下生效
+- registry/<id>.json: shadcn 格式的文件与依赖清单
+成品页的页内锚点写普通 href="#id"; 需要 SEO 时导出 meta 并用 npm run build:site <id> 预渲染.

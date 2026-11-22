@@ -1,0 +1,7 @@
+{
+  "$comment": "成品进度. done: 过完 docs/done.md 全部条目, 检查脚本按严格模式卡; wip: 只报告不卡.",
+  "launch": "done",
+  "shop": "wip",
+  "ops": "wip",
+  "analytics": "wip"
+}

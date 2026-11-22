@@ -16,7 +16,7 @@ import { BuyBar } from "@sites/_blocks/commerce/buy-bar";
 import { Segmented } from "@sites/_blocks/analytics/segmented";
 import { Section } from "@sites/_blocks/marketing/section";
 import { Reveal } from "@/motion/reveal";
-import { IMG } from "../_shared/assets";
+import { IMG } from "@sites/_shared/assets";
 
 const COLORS = [
   { value: "ink", label: "墨黑", swatch: "oklch(0.25 0.01 270)" },

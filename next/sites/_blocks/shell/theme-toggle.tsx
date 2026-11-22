@@ -12,11 +12,11 @@ type ViewTransitionDoc = Document & { startViewTransition?: (cb: () => void) => 
  * 需要强调色等更多选项时用 ThemeMenu.
  */
 export function ThemeToggle({ className }: { className?: string }) {
-  const { resolved, setMode } = useTheme();
-  const next = resolved === "dark" ? "light" : "dark";
-  const Icon = resolved === "dark" ? Moon : Sun;
+  const { setMode } = useTheme();
 
+  // 图标和下一档都从 <html class="dark"> 读, 不从 React 状态读: 预渲染的 HTML 与客户端一致, 不会水合不匹配
   const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
     const doc = document as ViewTransitionDoc;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (!doc.startViewTransition || reduce) {
@@ -35,8 +35,9 @@ export function ThemeToggle({ className }: { className?: string }) {
   };
 
   return (
-    <Button type="button" variant="ghost" size="icon" className={cn("size-9", className)} aria-label={next === "dark" ? "切换到暗色" : "切换到亮色"} onClick={onClick}>
-      <Icon className="size-4" />
+    <Button type="button" variant="ghost" size="icon" className={cn("size-9", className)} aria-label="切换亮色 / 暗色" onClick={onClick}>
+      <Sun className="size-4 dark:hidden" />
+      <Moon className="hidden size-4 dark:block" />
     </Button>
   );
 }

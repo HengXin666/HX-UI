@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN" data-site="%SITE%">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>%TITLE%</title>
+    <meta name="description" content="%DESCRIPTION%" />
+    <meta name="theme-color" content="%THEME_COLOR%" />
+    <link rel="icon" href="%ICON%" />
+    <!-- 首屏防闪烁: 与 src/hooks/use-theme.tsx 的 themeScript 一致 -->
+    <script>(()=>{try{var s=JSON.parse(localStorage.getItem("hx-theme")||"{}");var m=s.mode||"system";var d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.classList.toggle("dark",d);e.dataset.theme=s.accent||"indigo";}catch(_){}})()</script>
+  </head>
+  <body>
+    <div id="root"><!--app-html--></div>
+    <script type="module" src="./client.tsx"></script>
+  </body>
+</html>

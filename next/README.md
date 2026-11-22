@@ -33,4 +33,16 @@ npm run build      # tsc + vite build
 3. 组件即源码: 基础件可以直接改, 改完在文件顶部注释写一句为什么.
 4. 每个新区块在 `site` 里有一个真实用例; 没在浏览器里看过不算完成.
 
+## 完成标准与命令
+
+"完成"只有一个意思: 过完 `docs/done.md` 的每一条. 进度在 `sites/status.json` (目前 launch 为 done).
+
+```bash
+npm run check                            # 依赖边界 + 必备文件 + L2 体积预算
+npm run build:site launch                # 单独构建一套成品并预渲染 → dist-sites/launch
+npm run qa:site dist-sites/launch        # axe + 主流程 + 控制台
+npm run qa:lighthouse dist-sites/launch  # Lighthouse 移动端四项 ≥ 90
+npm run registry launch                  # shadcn 格式的 registry/launch.json
+```
+
 AI 使用说明见 `llms.txt`.

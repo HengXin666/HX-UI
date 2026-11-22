@@ -15,6 +15,10 @@ export function SiteGrid() {
               <div className="flex items-center gap-2 text-sm font-medium">
                 {s.title}
                 <span className="rounded-sm border px-1.5 py-px font-mono text-[10px] font-normal text-muted-foreground">{s.kind}</span>
+                <span className="ml-1 inline-flex items-center gap-1.5 text-xs font-normal text-muted-foreground">
+                  <span className={s.done ? "size-1.5 rounded-full bg-success" : "size-1.5 rounded-full bg-warning"} />
+                  {s.done ? "已完成" : "制作中"}
+                </span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{s.direction}</p>
             </div>

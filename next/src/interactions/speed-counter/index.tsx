@@ -1,5 +1,6 @@
 import * as React from "react";
-import { m, useReducedMotion } from "motion/react";
+import { m } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
 const DIGITS = "0123456789";

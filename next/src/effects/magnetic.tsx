@@ -1,5 +1,6 @@
 import * as React from "react";
-import { m, useMotionValue, useReducedMotion, useSpring } from "motion/react";
+import { m, useMotionValue, useSpring } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { spring } from "@/motion/presets";
 
 /** 磁吸: 指针靠近时子元素被轻轻吸过去. strength 是最大位移比例. */

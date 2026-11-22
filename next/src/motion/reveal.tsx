@@ -1,4 +1,5 @@
-import { m, useReducedMotion, type HTMLMotionProps } from "motion/react";
+import { m, type HTMLMotionProps } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { reveal, spring, type RevealPreset } from "./presets";
 
 interface RevealProps extends Omit<HTMLMotionProps<"div">, "variants" | "initial" | "animate"> {
@@ -10,19 +11,24 @@ interface RevealProps extends Omit<HTMLMotionProps<"div">, "variants" | "initial
   once?: boolean;
 }
 
-/** 视口内入场. 减弱动效时直接显示终态. */
+/**
+ * 视口内入场. 减弱动效时直接显示终态.
+ * 结构始终不变 (同一个 m.div, 同一个 initial), 只换触发方式: 预渲染与水合一致,
+ * 水合后得知要减弱动效时, 以 0 时长切到终态.
+ */
 export function Reveal({ preset = "up", delay = 0, inView = true, once = true, transition, ...rest }: RevealProps) {
   const reduce = useReducedMotion();
-  if (reduce) return <m.div {...rest} />;
-  const trigger = inView
-    ? { whileInView: "show", viewport: { once, margin: "0px 0px -10% 0px" } }
-    : { animate: "show" };
+  const trigger = reduce
+    ? { animate: "show" }
+    : inView
+      ? { whileInView: "show", viewport: { once, margin: "0px 0px -10% 0px" } }
+      : { animate: "show" };
   return (
     <m.div
       variants={reveal[preset]}
       initial="hidden"
       {...trigger}
-      transition={{ ...spring.smooth, delay, ...transition }}
+      transition={reduce ? { duration: 0 } : { ...spring.smooth, delay, ...transition }}
       {...rest}
     />
   );
@@ -38,13 +44,11 @@ interface StaggerProps extends Omit<HTMLMotionProps<"div">, "variants" | "initia
 /** 子项交错入场, 配合 <StaggerItem>. */
 export function Stagger({ gap = 0.08, delay = 0, once = true, ...rest }: StaggerProps) {
   const reduce = useReducedMotion();
-  if (reduce) return <m.div {...rest} />;
   return (
     <m.div
       initial="hidden"
-      whileInView="show"
-      viewport={{ once, margin: "0px 0px -10% 0px" }}
-      variants={{ hidden: {}, show: { transition: { staggerChildren: gap, delayChildren: delay } } }}
+      {...(reduce ? { animate: "show" } : { whileInView: "show", viewport: { once, margin: "0px 0px -10% 0px" } })}
+      variants={{ hidden: {}, show: { transition: reduce ? { duration: 0 } : { staggerChildren: gap, delayChildren: delay } } }}
       {...rest}
     />
   );

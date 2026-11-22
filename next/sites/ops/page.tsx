@@ -13,9 +13,9 @@ import { ChartCard } from "@sites/_blocks/analytics/chart-card";
 import { AreaTrend } from "@/data/charts/area-trend";
 import { LiveDot } from "@/effects/live-dot";
 import { Stagger, StaggerItem } from "@/motion/reveal";
-import { OPS_NAV } from "../_shared/nav";
-import { UserChip } from "../_shared/user-chip";
-import { spark } from "../_shared/data";
+import { OPS_NAV } from "@sites/_shared/nav";
+import { UserChip } from "@sites/_shared/user-chip";
+import { spark } from "@sites/_shared/data";
 
 const hist = (bad: number[]): ServiceState[] => Array.from({ length: 30 }, (_, i) => (bad.includes(i) ? (i % 2 ? "degraded" : "down") : "up"));
 const SERVICES: ServiceStatus[] = [

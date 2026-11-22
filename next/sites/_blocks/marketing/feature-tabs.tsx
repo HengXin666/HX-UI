@@ -1,5 +1,6 @@
 import * as React from "react";
-import { AnimatePresence, m, useInView, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useInView } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
 export interface FeatureTab {

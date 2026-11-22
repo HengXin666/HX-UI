@@ -1,5 +1,6 @@
 import * as React from "react";
-import { useInView, useReducedMotion } from "motion/react";
+import { useInView } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { BarChart3, ChevronDown, FileText, Inbox, Landmark, Link2, Search, SlidersHorizontal, Upload, Workflow } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatusTag, yuan, type Status } from "./status";
@@ -42,7 +43,9 @@ function useMatchLoop(ref: React.RefObject<HTMLElement | null>) {
   const autos = React.useMemo(() => ROWS.flatMap((r, i) => (r.auto ? [i] : [])), []);
   const reduce = useReducedMotion();
   const inView = useInView(ref, { margin: "-10% 0px" });
-  const [done, setDone] = React.useState(reduce ? autos.length : 0);
+  const [step, setDone] = React.useState(0);
+  // 减弱动效直接终态; 从渲染值推出来而不是写进初始状态, 水合那一帧 reduce 恒为 false
+  const done = reduce ? autos.length : step;
   React.useEffect(() => {
     if (reduce || !inView) return;
     const wait = done >= autos.length ? 4000 : done === 0 ? 1200 : 900;
@@ -57,7 +60,7 @@ function useMatchLoop(ref: React.RefObject<HTMLElement | null>) {
 
 function Sidebar() {
   return (
-    <aside className="hidden flex-col gap-6 border-r bg-muted/30 p-3 text-[13px] md:flex">
+    <div className="hidden flex-col gap-6 border-r bg-muted/30 p-3 text-[13px] md:flex">
       <div className="flex items-center gap-2 px-1.5 pt-1">
         <span className="grid size-5 place-items-center rounded bg-foreground text-[10px] font-bold text-background">蓝</span>
         <span className="font-medium">蓝鲸物流</span>
@@ -67,14 +70,14 @@ function Sidebar() {
         <Search className="size-3.5" /> 搜索
         <kbd className="ml-auto font-mono text-[10px]">⌘K</kbd>
       </div>
-      <nav className="space-y-0.5">
+      <div className="space-y-0.5">
         {NAV.map((n) => (
           <div key={n.label} className={cn("flex items-center gap-2 rounded-md px-2 py-1.5", n.active ? "bg-accent font-medium text-foreground" : "text-muted-foreground")}>
             <n.icon className="size-3.5" />{n.label}
             {n.count && <span className="ml-auto font-mono text-[11px] tabular">{n.count}</span>}
           </div>
         ))}
-      </nav>
+      </div>
       <div>
         <div className="mb-1.5 px-2 text-[11px] text-muted-foreground">银行账户</div>
         {ACCOUNTS.map(([b, n]) => (
@@ -83,14 +86,14 @@ function Sidebar() {
           </div>
         ))}
       </div>
-    </aside>
+    </div>
   );
 }
 
 function Inspector() {
   const factors: [string, string, number][] = [["金额", "完全一致", 100], ["日期", "相差 1 天", 92], ["户名", "相似度 0.97", 97], ["摘要", "含发票号", 100]];
   return (
-    <aside className="hidden flex-col border-l p-4 text-[13px] xl:flex">
+    <div className="hidden flex-col border-l p-4 text-[13px] xl:flex">
       <div className="flex items-center justify-between">
         <span className="font-medium">匹配详情</span>
         <span className="font-mono text-[11px] text-muted-foreground">#TX-20314-01</span>
@@ -123,7 +126,7 @@ function Inspector() {
         <button type="button" className="h-8 flex-1 rounded-md bg-primary text-[13px] font-medium text-primary-foreground">确认匹配</button>
         <button type="button" className="h-8 rounded-md border px-3 text-[13px]">拆分</button>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -135,10 +138,10 @@ export function TallyWorkspace() {
   const total = 1_241;
   const auto = 1_197 + matched;
   return (
-    <div ref={ref} className="overflow-hidden rounded-xl border bg-card text-left shadow-[0_1px_1px_oklch(0_0_0/0.04),0_8px_24px_-6px_oklch(0_0_0/0.08),0_40px_80px_-20px_oklch(0_0_0/0.14)] dark:shadow-[0_0_0_1px_oklch(1_0_0/0.04),0_40px_80px_-20px_oklch(0_0_0/0.7)]">
+    <div ref={ref} role="region" aria-label="Tally 对账工作台演示" className="overflow-hidden rounded-xl border bg-card text-left shadow-[0_1px_1px_oklch(0_0_0/0.04),0_8px_24px_-6px_oklch(0_0_0/0.08),0_40px_80px_-20px_oklch(0_0_0/0.14)] dark:shadow-[0_0_0_1px_oklch(1_0_0/0.04),0_40px_80px_-20px_oklch(0_0_0/0.7)]">
       <div className="grid min-h-[520px] md:grid-cols-[200px_minmax(0,1fr)] xl:grid-cols-[200px_minmax(0,1fr)_280px]">
         <Sidebar />
-        <main className="min-w-0">
+        <div className="min-w-0">
           <div className="flex items-center gap-3 border-b px-4 py-3 text-[13px]">
             <span className="font-medium">银行流水</span>
             <span className="text-muted-foreground">/ 2026 年 3 月</span>
@@ -183,7 +186,7 @@ export function TallyWorkspace() {
               })}
             </tbody>
           </table>
-        </main>
+        </div>
         <Inspector />
       </div>
     </div>

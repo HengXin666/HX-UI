@@ -14,9 +14,9 @@ import { Donut } from "@/data/charts/donut";
 import { DataTable, type ColumnDef } from "@/data/table/data-table";
 import { Stagger, StaggerItem } from "@/motion/reveal";
 import { cn } from "@/lib/utils";
-import { BI_NAV } from "../_shared/nav";
-import { UserChip } from "../_shared/user-chip";
-import { channels, daily, orders, regions, revenue, spark, type Order } from "../_shared/data";
+import { BI_NAV } from "@sites/_shared/nav";
+import { UserChip } from "@sites/_shared/user-chip";
+import { channels, daily, orders, regions, revenue, spark, type Order } from "@sites/_shared/data";
 
 const cny = new Intl.NumberFormat("zh-CN", { style: "currency", currency: "CNY" });
 const STATUS_CLS: Record<Order["status"], string> = {

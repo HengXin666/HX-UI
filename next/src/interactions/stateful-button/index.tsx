@@ -1,9 +1,19 @@
 import * as React from "react";
-import { AnimatePresence, m, useReducedMotion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Spin } from "@/components/ui/spin";
 import { cn } from "@/lib/utils";
+
+/** 提交中的小圈: 一个 SVG + animate-spin. 不用 Spin (ldrs 全家桶 ~80KB), 守住本组件 4KB 的预算 */
+function Ring() {
+  return (
+    <svg viewBox="0 0 16 16" className="size-3.5 animate-spin motion-reduce:animate-none" aria-hidden>
+      <circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" strokeOpacity="0.25" strokeWidth="1.5" />
+      <path d="M14.25 8A6.25 6.25 0 0 0 8 1.75" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export type ButtonPhase = "idle" | "pending" | "success" | "error";
 
@@ -14,8 +24,10 @@ export interface StatefulButtonProps extends Omit<React.ComponentProps<typeof Bu
   pendingLabel?: React.ReactNode;
   successLabel?: React.ReactNode;
   errorLabel?: React.ReactNode;
-  /** 成功 / 失败停留多久后复原 (毫秒) */
+  /** 成功 / 失败停留多久后复原 (毫秒). 传 0 不复原, 停在结果上 */
   resetAfter?: number;
+  /** 执行前的检查, 返回 false 则什么都不做 (例如表单校验没过) */
+  guard?: () => boolean;
 }
 
 /**
@@ -24,7 +36,7 @@ export interface StatefulButtonProps extends Omit<React.ComponentProps<typeof Bu
  */
 export function StatefulButton({
   action, children, pendingLabel = "提交中", successLabel = "已完成", errorLabel = "失败, 重试",
-  resetAfter = 1600, className, disabled, ...rest
+  resetAfter = 1600, guard, className, disabled, ...rest
 }: StatefulButtonProps) {
   const [phase, setPhase] = React.useState<ButtonPhase>("idle");
   const reduce = useReducedMotion();
@@ -33,6 +45,7 @@ export function StatefulButton({
 
   const run = async () => {
     if (phase === "pending") return;
+    if (guard && !guard()) return;
     window.clearTimeout(timer.current);
     setPhase("pending");
     try {
@@ -41,13 +54,13 @@ export function StatefulButton({
     } catch {
       setPhase("error");
     }
-    timer.current = window.setTimeout(() => setPhase("idle"), resetAfter);
+    if (resetAfter > 0) timer.current = window.setTimeout(() => setPhase("idle"), resetAfter);
   };
 
   const label = { idle: children, pending: pendingLabel, success: successLabel, error: errorLabel }[phase];
   const icon = {
     idle: null,
-    pending: <Spin size={14} variant="ring" />,
+    pending: <Ring />,
     success: <Check className="size-3.5" />,
     error: <X className="size-3.5" />,
   }[phase];
@@ -60,7 +73,7 @@ export function StatefulButton({
       disabled={disabled || phase === "pending"}
       onClick={run}
       data-phase={phase}
-      className={cn("relative overflow-hidden data-[phase=pending]:opacity-100 data-[phase=error]:bg-destructive data-[phase=error]:text-white", className)}
+      className={cn("relative overflow-hidden data-[phase=pending]:opacity-100 data-[phase=error]:bg-background data-[phase=error]:text-destructive data-[phase=error]:ring-1 data-[phase=error]:ring-destructive/60 data-[phase=error]:ring-inset", className)}
     >
       <AnimatePresence mode="popLayout" initial={false}>
         <m.span

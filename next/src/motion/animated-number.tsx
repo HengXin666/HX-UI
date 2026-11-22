@@ -1,5 +1,6 @@
 import * as React from "react";
-import { animate, useInView, useMotionValue, useReducedMotion } from "motion/react";
+import { animate, useInView, useMotionValue } from "motion/react";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
 interface AnimatedNumberProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -26,11 +27,12 @@ export function AnimatedNumber({ value, format, locale = "zh-CN", from = 0, dura
   const fmt = React.useMemo(() => new Intl.NumberFormat(locale, format), [locale, format]);
 
   React.useEffect(() => {
-    if (!inView) return;
+    // 减弱动效: 不等进入视口, 直接终值 (水合后 reduce 才变 true, 所以放在 effect 里)
     if (reduce) {
       mv.set(value);
       return;
     }
+    if (!inView) return;
     const controls = animate(mv, value, { duration, ease: [0.22, 1, 0.36, 1] });
     return () => controls.stop();
   }, [inView, value, reduce, duration, mv]);
