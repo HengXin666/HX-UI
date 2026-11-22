@@ -1,0 +1,41 @@
+import type { DocEntry } from "../types";
+
+export const intraday: DocEntry = {
+  slug: "intraday",
+  name: "Intraday",
+  title: "分时图",
+  section: "ui",
+  group: "图表",
+  sub: "行情图表",
+  description: "当天每分钟的价格线、均价线和成交量。纵轴以昨收为中线上下对称，右边是涨跌幅，最新价带脉冲点。推送新的一分钟时线条往右长一格、新量柱从底部长出；撤回时缩回去；最新价跳动时线尾和均价线平滑移动。十字光标和左右方向键逐分钟查看。",
+  file: "src/data/charts/intraday.tsx",
+  importFrom: "@/data",
+  demo: () => import("./intraday.demo"),
+  source: () => import("@/data/charts/intraday.tsx?raw").then((m) => m.default),
+  stageHeight: 600,
+  defaults: { stage: "noon", scheme: "cn", showAvg: true, showVolume: true },
+  componentDefaults: { scheme: "cn", showAvg: true, showVolume: true },
+  demoOnly: ["stage"],
+  presets: [
+    { label: "盘中", values: { stage: "noon", scheme: "cn", showAvg: true, showVolume: true } },
+    { label: "收盘", values: { stage: "close", scheme: "cn", showAvg: true, showVolume: true } },
+    { label: "只看价格", values: { stage: "noon", showAvg: false, showVolume: false } },
+    { label: "美股配色", values: { scheme: "us" } },
+  ],
+  controls: [
+    { type: "select", key: "stage", label: "时段", options: [{ value: "open", label: "开盘半小时" }, { value: "noon", label: "盘中" }, { value: "close", label: "收盘" }] },
+    { type: "toggle", key: "showAvg", label: "均价线" },
+    { type: "toggle", key: "showVolume", label: "成交量" },
+    { type: "select", key: "scheme", label: "配色", options: [{ value: "cn", label: "红涨绿跌" }, { value: "us", label: "绿涨红跌" }] },
+  ],
+  usage: (v) => `import { Intraday } from "@/data";\n\n<Intraday\n  data={minutes} // { t: "09:31", price, volume? }[]\n  prevClose={36.12}\n  name="HX 科技"${v.showAvg ? "" : "\n  showAvg={false}"}${v.showVolume ? "" : "\n  showVolume={false}"}${v.scheme === "us" ? `\n  scheme="us"` : ""}\n/>\n`,
+  props: [
+    { name: "data", type: "{ t, price, volume? }[]", description: "已经走过的分钟，按时间顺序；盘中只有前一段，后面留空。" },
+    { name: "prevClose", type: "number", description: "昨收；纵轴中线和涨跌幅都以它为准。" },
+    { name: "sessionLength / timeTicks", type: "number / [下标, 文字][]", default: "241 / A 股刻度", description: "一整天的分钟数和横轴刻度，美股或港股换成自己的。" },
+    { name: "showAvg / showVolume", type: "boolean", default: "true / true", description: "均价线（累计成交额 / 累计成交量）和成交量。" },
+    { name: "scheme", type: '"cn" | "us"', default: '"cn"', description: "cn 红涨绿跌，us 绿涨红跌。" },
+    { name: "precision / height / name", type: "number / number / string", default: '2 / 360 / "分时图"', description: "价格小数位、高度、读屏名称。" },
+    { name: "aShareMinutes()", type: "函数", description: "A 股一整天 241 个分钟标签。" },
+  ],
+};

@@ -45,8 +45,9 @@ const SHORT: Record<string, string> = {
 const shortName = (n: string) => SHORT[n] ?? n.replace(/(省|市)$/, "");
 
 // 拓扑数据单独成块, 第一次用到时才加载
+export { shortName as chinaShortName };
 let geoCache: Promise<{ provinces: Prov[]; borders: MultiLineString; nine: Feature<Geometry, Props> | null }> | null = null;
-function loadGeo() {
+export function loadGeo() {
   geoCache ??= Promise.all([import("./geo/china-provinces.json"), import("topojson-client")]).then(([topo, tc]) => {
     const t = (topo.default ?? topo) as unknown as Parameters<typeof tc.feature>[0] & { objects: { provinces: Parameters<typeof tc.feature>[1] } };
     const fc = tc.feature(t, t.objects.provinces) as unknown as FeatureCollection<Geometry, Props>;

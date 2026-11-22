@@ -6,7 +6,7 @@ export const candlestick: DocEntry = {
   title: "K 线图",
   section: "ui",
   group: "图表",
-  sub: "2D 图表",
+  sub: "行情图表",
   description: "按行情软件的标准做的 K 线：主图蜡烛配均线或布林带、最新价线、区间最高最低标注，下面是成交量和 MACD / KDJ / RSI 副图。十字光标带价格和日期标签，顶部读数跟着光标走；滚轮缩放、拖动平移、键盘逐根查看。自绘 SVG，几百根也流畅。实时数据：追加一根时停在最新的视窗整体左移一格、新蜡烛竖向长出；最新一根跳动时实体平滑伸缩；正在翻看历史时视窗不动。",
   file: "src/data/charts/candlestick.tsx",
   importFrom: "@/data",
