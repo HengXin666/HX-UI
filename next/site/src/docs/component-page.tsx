@@ -117,10 +117,10 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
       </div>
 
       <div id="panel-preview" role="tabpanel" aria-labelledby="tab-preview" hidden={tab !== "preview"} className="mt-3 space-y-4 data-[on=true]:animate-[hx-panel-in_0.25s_cubic-bezier(0.22,1,0.36,1)] motion-reduce:animate-none" data-on={tab === "preview"}>
-        <div className="stage relative grid place-items-center overflow-hidden rounded-xl border" style={{ minHeight: e.stageHeight ?? 440 }}>
-          <div className={cn("relative z-10 grid w-full place-items-center px-6 py-16 transition-[max-width] duration-300 ease-out", device === "mobile" ? "max-w-[390px] border-x border-dashed" : "max-w-full")}>
+        <div className="stage relative grid grid-cols-[minmax(0,1fr)] place-items-center overflow-hidden rounded-xl border" style={{ minHeight: e.stageHeight ?? 440 }}>
+          <div className={cn("relative z-10 grid w-full grid-cols-[minmax(0,1fr)] place-items-center px-3 py-12 sm:px-6 sm:py-16 transition-[max-width] duration-300 ease-out", device === "mobile" ? "max-w-[390px] border-x border-dashed" : "max-w-full")}>
             <React.Suspense fallback={<span className="text-sm text-muted-foreground">加载中…</span>}>
-              <m.div key={stageKey} className="grid w-full place-items-center" initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.22, ease: ease.out }}>
+              <m.div key={stageKey} className="grid w-full grid-cols-[minmax(0,1fr)] place-items-center" initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.22, ease: ease.out }}>
                 <Demo values={values} onEvent={(msg) => toast(msg)} />
               </m.div>
             </React.Suspense>

@@ -33,13 +33,22 @@ import { kbd } from "./entries/kbd";
 import { datePicker } from "./entries/date-picker";
 import { dataTable } from "./entries/data-table";
 import { charts } from "./entries/charts";
+import { comboChart } from "./entries/combo-chart";
+import { radarCompare } from "./entries/radar-compare";
+import { gauge } from "./entries/gauge";
+import { scatterBubble } from "./entries/scatter-bubble";
+import { conversionFunnel } from "./entries/conversion-funnel";
+import { shareTreemap } from "./entries/share-treemap";
+import { sankeyFlow } from "./entries/sankey-flow";
+import { heatCalendar } from "./entries/heat-calendar";
+import { candlestick } from "./entries/candlestick";
 import { SECTIONS } from "./sections";
 
 /**
  * 文档站清单. 只收值得单独一页的东西:
  * 一个参数就能表达的效果 (流光, 状态点, 光斑) 做成所属组件的参数, 不单列.
  */
-const ALL: DocEntry[] = [button, dropdownMenu, toggleGroup, command, tabs, breadcrumb, pagination, card, badge, avatar, tooltip, popover, accordion, kbd, marquee, dialog, sheet, toastEntry, alert, progress, skeleton, spin, input, textarea, select, checkbox, switchEntry, radioGroup, slider, datePicker, dataTable, charts, splitText, numberRoll, tiltCard];
+const ALL: DocEntry[] = [button, dropdownMenu, toggleGroup, command, tabs, breadcrumb, pagination, card, badge, avatar, tooltip, popover, accordion, kbd, marquee, dialog, sheet, toastEntry, alert, progress, skeleton, spin, input, textarea, select, checkbox, switchEntry, radioGroup, slider, datePicker, dataTable, charts, comboChart, radarCompare, gauge, scatterBubble, conversionFunnel, shareTreemap, sankeyFlow, heatCalendar, candlestick, splitText, numberRoll, tiltCard];
 
 const rank = (e: DocEntry) => {
   const s = SECTIONS.findIndex((x) => x.id === e.section);

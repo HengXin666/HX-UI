@@ -20,7 +20,7 @@ npm run build      # tsc + vite build
 | `src/motion` | 弹簧档位, 入场预设, Reveal / Stagger / AnimatedNumber / TextReveal | Motion |
 | `src/effects` | 特效件 (Marquee, TiltCard, LiveDot ...); 已并入组件参数的 (spotlight / beam / shimmer) 不单独列在文档里 | 自写 |
 | `src/interactions` | StatefulButton (Button 的提交流程), SpeedCounter (并入 NumberRoll) | 自写 |
-| `src/data` | AreaTrend, BarCompare, Donut, Sparkline, DataTable | Recharts + TanStack Table v8 |
+| `src/data` | AreaTrend, BarCompare, Donut, Sparkline, ComboChart, RadarCompare, Gauge, ScatterBubble, ConversionFunnel, ShareTreemap, SankeyFlow, HeatCalendar, Candlestick, DataTable | Recharts + TanStack Table v8 |
 | `src/text` | 文字组件 (SplitText ...) | 自写, 思路参考 React Bits |
 | `site` | 文档站, 三个分区: UI 组件 (操作 / 导航 / 展示 / 反馈 / 表单 / 数据), 视觉组件, 落地页. 每个组件一页: 预览 / 代码 / 调参 / 属性表 / 复制给 AI. 新组件写 `site/src/docs/entries/<slug>.ts` + `<slug>.demo.tsx`, 在 `registry.ts` 登记 | |
 
