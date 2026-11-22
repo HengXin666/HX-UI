@@ -11,6 +11,7 @@
   --animate-beam: hx-beam var(--beam-duration, 6s) linear infinite;
   --animate-pulse-ring: hx-pulse-ring 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
   --animate-float: hx-float 6s ease-in-out infinite;
+  --animate-indeterminate: hx-indeterminate 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 
   @keyframes hx-marquee { from { transform: translateX(0); } to { transform: translateX(calc(-100% - var(--marquee-gap, 2.5rem))); } }
   @keyframes hx-marquee-y { from { transform: translateY(0); } to { transform: translateY(calc(-100% - var(--marquee-gap, 2.5rem))); } }
@@ -22,6 +23,7 @@
   }
   @keyframes hx-beam { to { --beam-angle: 360deg; } }
   @keyframes hx-pulse-ring { 0% { transform: scale(0.8); opacity: 0.7; } 100% { transform: scale(2.2); opacity: 0; } }
+  @keyframes hx-indeterminate { 0% { transform: translateX(-100%) scaleX(0.4); } 50% { transform: translateX(30%) scaleX(0.6); } 100% { transform: translateX(110%) scaleX(0.4); } }
   @keyframes hx-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 }
 

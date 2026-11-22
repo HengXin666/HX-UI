@@ -8,8 +8,11 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: "bg-card text-card-foreground",
+        info: "border-info/35 bg-info/8 text-card-foreground [&>svg]:text-info",
+        success: "border-success/35 bg-success/8 text-card-foreground [&>svg]:text-success",
+        warning: "border-warning/45 bg-warning/10 text-card-foreground [&>svg]:text-warning",
         destructive:
-          "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 [&>svg]:text-current",
+          "border-destructive/40 bg-destructive/8 text-card-foreground [&>svg]:text-destructive",
       },
     },
     defaultVariants: {
@@ -26,7 +29,7 @@ function Alert({
   return (
     <div
       data-slot="alert"
-      role="alert"
+      role={variant === "destructive" || variant === "warning" ? "alert" : "status"}
       className={cn(alertVariants({ variant }), className)}
       {...props}
     />
@@ -38,7 +41,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="alert-title"
       className={cn(
-        "col-start-2 line-clamp-1 min-h-4 font-medium tracking-tight",
+        "col-start-2 min-h-4 font-medium tracking-tight",
         className
       )}
       {...props}
@@ -62,4 +65,9 @@ function AlertDescription({
   )
 }
 
-export { Alert, AlertTitle, AlertDescription }
+/** 警告条底部的操作区: 按钮或链接 */
+function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
+  return <div data-slot="alert-action" className={cn("col-start-2 mt-2 flex flex-wrap gap-2", className)} {...props} />
+}
+
+export { Alert, AlertTitle, AlertDescription, AlertAction }

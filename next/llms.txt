@@ -16,6 +16,10 @@
 - Input(size?: "sm"|"default"|"lg", leading?, trailing?): 框内左右放图标, 前缀, 按钮; Textarea 默认随内容长高
 - SelectTrigger(size?: "sm"|"default"|"lg"); Checkbox(checked: boolean|"indeterminate"); Switch(size?); RadioGroup + RadioGroupItem | RadioGroupCard(value, title, description?, aside?)
 - Slider(value: number[], thumbLabels?: string[], formatValue?: (v) => string): 两个值即区间
+- ConfirmDialog(trigger?, title, description?, tone?: "default"|"destructive", confirmText?, confirmLabel?, onConfirm: () => void|Promise) from "@/components/ui/confirm-dialog": 异步提交, 失败留在原处, 输入名称确认
+- Sheet + SheetContent(side?: "right"|"left"|"bottom"|"top"); toast.success/error/warning/info/promise from "sonner" (根部放 <Toaster />)
+- Alert(variant?: "default"|"info"|"success"|"warning"|"destructive") + AlertTitle/AlertDescription/AlertAction
+- Progress(value: number|null, size?, tone?): null 为不确定进度; Skeleton (容器加 aria-busy); Spin(variant?, size?, mode?, label?)
 - Marquee(duration?, gap?, reverse?, vertical?, pauseOnHover?, fade?) from "@/effects/marquee": 品牌墙 / 评价无缝滚动
 
 ## 视觉组件
