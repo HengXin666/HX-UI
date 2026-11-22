@@ -16,16 +16,26 @@ function PopoverTrigger({
   return <PopoverPrimitive.Trigger data-slot="popover-trigger" {...props} />
 }
 
+// 浮层是 role="dialog", 读屏需要名字: 有 PopoverTitle 时自动用它, 没有就请传 aria-label
+const TitleCtx = React.createContext<{ id: string; register: () => () => void } | null>(null)
+
 function PopoverContent({
   className,
   align = "center",
   sideOffset = 4,
+  children,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
+  const id = React.useId()
+  const [titled, setTitled] = React.useState(0)
+  const ctx = React.useMemo(() => ({ id: `${id}-title`, register: () => { setTitled((n) => n + 1); return () => setTitled((n) => n - 1) } }), [id])
+  const describedBy = props["aria-describedby"]
   return (
     <PopoverPrimitive.Portal>
       <PopoverPrimitive.Content
         data-slot="popover-content"
+        aria-labelledby={titled > 0 && !props["aria-label"] ? `${id}-title` : undefined}
+        aria-describedby={describedBy}
         align={align}
         sideOffset={sideOffset}
         className={cn(
@@ -33,7 +43,9 @@ function PopoverContent({
           className
         )}
         {...props}
-      />
+      >
+        <TitleCtx.Provider value={ctx}>{children}</TitleCtx.Provider>
+      </PopoverPrimitive.Content>
     </PopoverPrimitive.Portal>
   )
 }
@@ -55,8 +67,11 @@ function PopoverHeader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function PopoverTitle({ className, ...props }: React.ComponentProps<"h2">) {
+  const ctx = React.useContext(TitleCtx)
+  React.useEffect(() => ctx?.register(), [ctx])
   return (
     <div
+      id={ctx?.id}
       data-slot="popover-title"
       className={cn("font-medium", className)}
       {...props}

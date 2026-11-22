@@ -54,9 +54,13 @@ function AvatarFallback({
 }
 
 function AvatarBadge({ className, ...props }: React.ComponentProps<"span">) {
+  // 带 aria-label 时当作图片念出 (如 "在线"); 否则视为装饰
+  const labelled = props["aria-label"] != null
   return (
     <span
       data-slot="avatar-badge"
+      role={labelled ? "img" : undefined}
+      aria-hidden={labelled ? undefined : true}
       className={cn(
         "absolute right-0 bottom-0 z-10 inline-flex items-center justify-center rounded-full bg-primary text-primary-foreground ring-2 ring-background select-none",
         "group-data-[size=sm]/avatar:size-2 group-data-[size=sm]/avatar:[&>svg]:hidden",
