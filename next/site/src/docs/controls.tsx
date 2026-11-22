@@ -1,4 +1,5 @@
-import { ChevronDown, RotateCcw } from "lucide-react";
+import { RotateCcw } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
@@ -17,19 +18,17 @@ function ControlInput({ c, value, set }: { c: Control; value: Values[string]; se
   const id = `ctl-${c.key}`;
   switch (c.type) {
     case "select":
+      // 用库自己的 Select: 浮层有进出动画, 键盘可选, 也顺便给组件做真实使用
       return (
         <Cell label={c.label} htmlFor={id}>
-          <span className="relative">
-            <select
-              id={id}
-              value={String(value)}
-              onChange={(e) => set(e.target.value)}
-              className="h-8 cursor-pointer appearance-none rounded-md bg-transparent pr-6 pl-2 text-right text-[13px] font-medium outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring [&>option]:bg-popover"
-            >
-              {c.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            <ChevronDown aria-hidden className="pointer-events-none absolute top-1/2 right-1 size-3.5 -translate-y-1/2 text-muted-foreground" />
-          </span>
+          <Select value={String(value)} onValueChange={(v) => set(v)}>
+            <SelectTrigger id={id} size="sm" className="h-8 max-w-44 border-0 bg-transparent pr-1.5 text-[13px] font-medium shadow-none hover:bg-accent dark:bg-transparent dark:hover:bg-accent">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent align="end" className="max-h-72">
+              {c.options.map((o) => <SelectItem key={o.value} value={o.value} className="text-[13px]">{o.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
         </Cell>
       );
     case "number":
@@ -87,13 +86,13 @@ export function ControlsPanel({
             type="button"
             aria-pressed={activePreset === i}
             onClick={() => onPreset(p.values)}
-            className="h-7 rounded-full border px-3 text-xs text-muted-foreground transition-colors hover:text-foreground aria-pressed:border-[var(--cat)] aria-pressed:bg-[color-mix(in_oklch,var(--cat)_14%,transparent)] aria-pressed:text-foreground"
+            className="h-7 rounded-full border px-3 text-xs text-muted-foreground transition-[color,background-color,border-color,transform] duration-150 hover:text-foreground active:scale-[0.96] aria-pressed:border-[var(--cat)] aria-pressed:bg-[color-mix(in_oklch,var(--cat)_14%,transparent)] aria-pressed:text-foreground"
           >
             {p.label}
           </button>
         ))}
-        <button type="button" onClick={onReset} className="ml-auto inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground hover:bg-accent hover:text-foreground">
-          <RotateCcw className="size-3.5" />重置
+        <button type="button" onClick={onReset} className="group ml-auto inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground">
+          <RotateCcw className="size-3.5 transition-transform duration-300 ease-out group-hover:-rotate-90" />重置
         </button>
       </div>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">

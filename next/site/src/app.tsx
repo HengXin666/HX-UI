@@ -1,4 +1,6 @@
 import * as React from "react";
+import { m } from "motion/react";
+import { ease } from "@/motion/presets";
 import { Shell } from "./docs/shell";
 import { ComponentPage } from "./docs/component-page";
 import { Home, SectionIndex } from "./docs/overview";
@@ -29,5 +31,13 @@ export function App() {
   } else if (route.name === "foundation") {
     page = <React.Suspense fallback={<p className="p-10 text-sm text-muted-foreground">加载中…</p>}><Foundation /></React.Suspense>;
   }
-  return <Shell route={route}>{page}</Shell>;
+  const pageKey = route.name === "component" ? `c:${route.slug}` : route.name === "section" ? `s:${route.section}` : route.name;
+  return (
+    <Shell route={route}>
+      {/* 换页衔接: 新页从下方 8px 淡入, 不等旧页退场, 不拖慢导航 */}
+      <m.div key={pageKey} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: ease.out }}>
+        {page}
+      </m.div>
+    </Shell>
+  );
 }

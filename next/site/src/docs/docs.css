@@ -45,3 +45,7 @@
 /* 章节色写成文字时用 --cat-ink: 亮色下压暗一档过 AA, 暗色下原色 */
 .docs, .docs * { --cat-ink: color-mix(in oklch, var(--cat, currentColor) 62%, black); }
 .dark .docs, .dark .docs * { --cat-ink: var(--cat, currentColor); }
+
+/* 文档站自己的过渡. 减弱动效时由 globals.css 统一停掉 */
+@keyframes hx-panel-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes hx-spin-once { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

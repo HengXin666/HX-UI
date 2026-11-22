@@ -13,7 +13,7 @@ export default function InputDemo({ values }: DemoProps) {
     <FormCard title="创建账号">
       <div className="grid gap-4">
         <Field label="工作邮箱" required={Boolean(values.required)} disabled={Boolean(values.disabled)} error={values.error ? "这个邮箱已经注册过了。" : undefined}>
-          <Input size={size} type="email" placeholder="you@company.com" defaultValue={values.error ? "lin@tally.so" : undefined} leading={icons ? <Mail /> : undefined} autoComplete="email" />
+          <Input key={String(values.error)} size={size} type="email" placeholder="you@company.com" defaultValue={values.error ? "lin@tally.so" : undefined} leading={icons ? <Mail /> : undefined} autoComplete="email" />
         </Field>
         <Field label="密码" description="至少 8 位，包含数字。" required={Boolean(values.required)} disabled={Boolean(values.disabled)}>
           <Input

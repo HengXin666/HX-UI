@@ -1,6 +1,8 @@
 import * as React from "react";
 import { Check, Copy } from "lucide-react";
+import { AnimatePresence, m } from "motion/react";
 import { cn } from "@/lib/utils";
+import { spring } from "@/motion/presets";
 
 const KW = new Set("import export from default function return const let var if else for while of in new type interface extends as async await typeof keyof null undefined true false void".split(" "));
 
@@ -37,10 +39,16 @@ export function CopyButton({ text, label = "复制", className }: { text: string
           window.setTimeout(() => setOk(false), 1400);
         });
       }}
-      className={cn("inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", className)}
+      className={cn("inline-flex h-7 items-center gap-1.5 rounded-md px-2 text-xs text-muted-foreground transition-[color,background-color,transform] duration-150 hover:bg-accent hover:text-foreground active:scale-[0.97]", className, ok && "text-foreground")}
     >
-      {ok ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
-      {ok ? "已复制" : label}
+      <span className="relative grid size-3.5 place-items-center">
+        <AnimatePresence initial={false} mode="popLayout">
+          <m.span key={ok ? "ok" : "copy"} initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.5 }} transition={spring.snappy} className="grid">
+            {ok ? <Check className="size-3.5 text-success" /> : <Copy className="size-3.5" />}
+          </m.span>
+        </AnimatePresence>
+      </span>
+      <span aria-live="polite">{ok ? "已复制" : label}</span>
     </button>
   );
 }

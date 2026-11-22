@@ -1,6 +1,8 @@
 import * as React from "react";
 import { ChevronRight, Search } from "lucide-react";
+import { m } from "motion/react";
 import { cn } from "@/lib/utils";
+import { spring } from "@/motion/presets";
 import { SECTIONS, sectionOf } from "./sections";
 import { entriesOf } from "./registry";
 import { href, type Route } from "./router";
@@ -37,13 +39,13 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
       {showSections && (
         <div className="grid gap-1 border-b pb-3">
           {SECTIONS.map((x) => (
-            <a key={x.id} href={href.section(x.id)} onClick={onNavigate} aria-current={x.id === section ? "true" : undefined} className="flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground aria-[current]:bg-accent aria-[current]:text-foreground">
+            <a key={x.id} href={href.section(x.id)} onClick={onNavigate} aria-current={x.id === section ? "true" : undefined} className="flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground transition-colors duration-150 aria-[current]:bg-accent aria-[current]:text-foreground">
               <span aria-hidden className="size-1.5 rounded-full" style={{ background: x.color }} />{x.title}
             </a>
           ))}
         </div>
       )}
-      <a href={href.section(section)} onClick={onNavigate} aria-current={route.name === "section" ? "page" : undefined} className="flex h-9 items-center justify-between rounded-lg px-2 text-sm font-medium hover:bg-accent/60 aria-[current=page]:bg-accent">
+      <a href={href.section(section)} onClick={onNavigate} aria-current={route.name === "section" ? "page" : undefined} className="flex h-9 items-center justify-between rounded-lg px-2 text-sm font-medium transition-colors duration-150 hover:bg-accent/60 aria-[current=page]:bg-accent">
         {s.title}总览<span className="font-mono text-xs text-muted-foreground">{entriesOf(section).length}</span>
       </a>
       {items.length > 12 && (
@@ -74,13 +76,22 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
                     onClick={onNavigate}
                     aria-current={i.active ? "page" : undefined}
                     className={cn(
-                      "relative -ml-px flex h-8 items-center gap-2 border-l border-transparent pr-2 pl-3 text-sm text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground",
-                      "aria-[current=page]:border-[var(--cat)] aria-[current=page]:bg-[color-mix(in_oklch,var(--cat)_12%,transparent)] aria-[current=page]:font-medium aria-[current=page]:text-foreground",
+                      "group/item relative -ml-px flex h-8 items-center gap-2 border-l border-transparent pr-2 pl-3 text-sm text-muted-foreground transition-[color,border-color,background-color] duration-150 hover:border-foreground/30 hover:text-foreground",
+                      "aria-[current=page]:font-medium aria-[current=page]:text-foreground",
                     )}
                   >
-                    <span className="flex-1 truncate">{i.label}</span>
-                    {i.en && <span className="font-mono text-[11px] text-muted-foreground">{i.en}</span>}
-                    {i.tag && <span className="rounded border px-1 font-mono text-[10px] text-muted-foreground">{i.tag}</span>}
+                    {/* 选中态是一块会滑动的底: 换页时从上一个位置滑过来 */}
+                    {i.active && (
+                      <m.span
+                        layoutId={`sb-active-${section}`}
+                        transition={spring.snappy}
+                        aria-hidden
+                        className="absolute inset-y-0 -left-px right-0 rounded-r-md border-l-2 border-[var(--cat)] bg-[color-mix(in_oklch,var(--cat)_12%,transparent)]"
+                      />
+                    )}
+                    <span className="relative flex-1 truncate transition-transform duration-150 group-hover/item:translate-x-0.5">{i.label}</span>
+                    {i.en && <span className="relative font-mono text-[11px] text-muted-foreground">{i.en}</span>}
+                    {i.tag && <span className="relative rounded border px-1 font-mono text-[10px] text-muted-foreground">{i.tag}</span>}
                   </a>
                 </li>
               ))}
@@ -103,15 +114,21 @@ function Group({ id, title, count, open, onToggle, children }: { id: string; tit
         onClick={onToggle}
         aria-expanded={open}
         aria-controls={listId}
-        className="group flex h-8 w-full items-center gap-1.5 rounded-md px-1.5 text-[13px] font-semibold text-foreground hover:bg-accent/60"
+        className="group flex h-8 w-full items-center gap-1.5 rounded-md px-1.5 text-[13px] font-semibold text-foreground transition-colors duration-150 hover:bg-accent/60 active:bg-accent"
       >
-        <ChevronRight aria-hidden className={cn("size-3.5 text-muted-foreground transition-transform motion-reduce:transition-none", open && "rotate-90")} />
+        <ChevronRight aria-hidden className={cn("size-3.5 text-muted-foreground transition-transform duration-200 ease-out motion-reduce:transition-none", open && "rotate-90")} />
         <span className="flex-1 text-left">{title}</span>
         <span className="font-mono text-[11px] font-normal text-muted-foreground">{count}</span>
       </button>
-      <ul id={listId} hidden={!open} className="mt-0.5 mb-1 ml-[13px] border-l">
-        {children}
-      </ul>
+      {/* 高度动画: grid-template-rows 0fr ↔ 1fr, 不用测量高度; 收起时 inert, 键盘和读屏都跳过 */}
+      <div
+        className={cn("grid transition-[grid-template-rows,opacity] duration-200 ease-out motion-reduce:transition-none", open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0")}
+        inert={!open || undefined}
+      >
+        <div id={listId} className="min-h-0 overflow-hidden">
+          <ul className="mt-0.5 mb-1 ml-[13px] border-l">{children}</ul>
+        </div>
+      </div>
     </div>
   );
 }

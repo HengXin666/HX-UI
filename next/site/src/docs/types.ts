@@ -54,6 +54,8 @@ export interface DocEntry {
   usage?: (values: Values) => string;
   /** 包裹型组件: 生成用法时放进去的子元素 */
   usageChildren?: string;
+  /** 调参时是否整块重挂演示 (重播入场动画). 默认视觉组件 true, UI 组件 false */
+  remountOnChange?: boolean;
   /** 舞台高度 (默认 440) */
   stageHeight?: number;
   /** 静态缩略: 总览卡片上显示的一句话或小样 */

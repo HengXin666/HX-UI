@@ -1,7 +1,9 @@
 import * as React from "react";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Code2, Eye, Monitor, RotateCw, Smartphone, Sparkles } from "lucide-react";
+import { AnimatePresence, m } from "motion/react";
 import { cn } from "@/lib/utils";
+import { ease, spring } from "@/motion/presets";
 import { sectionOf } from "./sections";
 import { CodeBlock, CopyButton } from "./code";
 import { ControlsPanel } from "./controls";
@@ -60,7 +62,9 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
   const prev = siblings[idx - 1];
   const next = siblings[idx + 1];
   const no = String(idx + 1).padStart(2, "0");
-  const stageKey = `${run}:${JSON.stringify(values)}`;
+  // UI 组件调参时原地更新 (不闪, 不丢演示里的状态); 视觉组件的入场动画需要重播, 才整块重挂
+  const replay = e.remountOnChange ?? e.section === "visual";
+  const stageKey = replay ? `${run}:${JSON.stringify(values)}` : `${run}`;
 
   return (
     <article className="mx-auto w-full max-w-5xl px-5 pt-10 pb-24 md:px-10" style={{ "--cat": cat.color } as React.CSSProperties}>
@@ -83,36 +87,42 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
               aria-controls={`panel-${id}`}
               id={`tab-${id}`}
               onClick={() => setTab(id)}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm text-muted-foreground transition-colors aria-selected:bg-background aria-selected:text-foreground aria-selected:shadow-soft"
+              className="relative inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground aria-selected:text-foreground"
             >
-              <Icon className="size-4" />{label}
+              {tab === id && <m.span layoutId={`view-pill-${e.slug}`} transition={spring.snappy} aria-hidden className="absolute inset-0 rounded-md bg-background shadow-soft" />}
+              <Icon className="relative size-4" /><span className="relative">{label}</span>
             </button>
           ))}
         </div>
         <div className="ml-auto flex items-center gap-1">
+          <AnimatePresence initial={false}>
           {tab === "preview" && (
-            <>
+            <m.div key="tools" className="flex items-center gap-1" initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 6 }} transition={{ duration: 0.15 }}>
               <div className="hidden rounded-lg border p-0.5 sm:inline-flex" role="group" aria-label="预览尺寸">
                 {([["desktop", "桌面", Monitor], ["mobile", "手机", Smartphone]] as const).map(([id, label, Icon]) => (
-                  <button key={id} type="button" aria-pressed={device === id} aria-label={label} title={label} onClick={() => setDevice(id)} className="grid size-7 place-items-center rounded-md text-muted-foreground aria-pressed:bg-accent aria-pressed:text-foreground">
-                    <Icon className="size-4" />
+                  <button key={id} type="button" aria-pressed={device === id} aria-label={label} title={label} onClick={() => setDevice(id)} className="relative grid size-7 place-items-center rounded-md text-muted-foreground transition-colors duration-150 hover:text-foreground aria-pressed:text-foreground">
+                    {device === id && <m.span layoutId={`device-pill-${e.slug}`} transition={spring.snappy} aria-hidden className="absolute inset-0 rounded-md bg-accent" />}
+                    <Icon className="relative size-4" />
                   </button>
                 ))}
               </div>
-              <button type="button" onClick={() => setRun((r) => r + 1)} aria-label="重播" title="重播" className="grid size-8 place-items-center rounded-lg border text-muted-foreground hover:text-foreground">
-                <RotateCw className="size-4" />
+              <button type="button" onClick={() => setRun((r) => r + 1)} aria-label="重播" title="重播" className="group grid size-8 place-items-center rounded-lg border text-muted-foreground transition-[color,transform] duration-150 hover:text-foreground active:scale-95">
+                <RotateCw key={run} className={cn("size-4", run > 0 && "animate-[hx-spin-once_0.5s_cubic-bezier(0.22,1,0.36,1)] motion-reduce:animate-none")} />
               </button>
-            </>
+            </m.div>
           )}
+          </AnimatePresence>
           <CopyButton text={aiPrompt(e, values, source)} label="复制给 AI" className="h-8 border px-3" />
         </div>
       </div>
 
-      <div id="panel-preview" role="tabpanel" aria-labelledby="tab-preview" hidden={tab !== "preview"} className="mt-3 space-y-4">
+      <div id="panel-preview" role="tabpanel" aria-labelledby="tab-preview" hidden={tab !== "preview"} className="mt-3 space-y-4 data-[on=true]:animate-[hx-panel-in_0.25s_cubic-bezier(0.22,1,0.36,1)] motion-reduce:animate-none" data-on={tab === "preview"}>
         <div className="stage relative grid place-items-center overflow-hidden rounded-xl border" style={{ minHeight: e.stageHeight ?? 440 }}>
-          <div className={cn("relative z-10 grid w-full place-items-center px-6 py-16 transition-[max-width] duration-300", device === "mobile" ? "max-w-[390px] border-x border-dashed" : "max-w-full")}>
+          <div className={cn("relative z-10 grid w-full place-items-center px-6 py-16 transition-[max-width] duration-300 ease-out", device === "mobile" ? "max-w-[390px] border-x border-dashed" : "max-w-full")}>
             <React.Suspense fallback={<span className="text-sm text-muted-foreground">加载中…</span>}>
-              <Demo key={stageKey} values={values} onEvent={(m) => toast(m)} />
+              <m.div key={stageKey} className="grid w-full place-items-center" initial={{ opacity: 0, scale: 0.985 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.22, ease: ease.out }}>
+                <Demo values={values} onEvent={(msg) => toast(msg)} />
+              </m.div>
             </React.Suspense>
           </div>
         </div>
@@ -127,7 +137,7 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
         />
       </div>
 
-      <div id="panel-code" role="tabpanel" aria-labelledby="tab-code" hidden={tab !== "code"} className="mt-3 space-y-4">
+      <div id="panel-code" role="tabpanel" aria-labelledby="tab-code" hidden={tab !== "code"} className="mt-3 space-y-4 data-[on=true]:animate-[hx-panel-in_0.25s_cubic-bezier(0.22,1,0.36,1)] motion-reduce:animate-none" data-on={tab === "code"}>
         <CodeBlock title="用法（跟随调参）" code={usageOf(e, values)} />
         {source ? <CodeBlock title={e.file} code={source} maxHeight={560} /> : <p className="text-sm text-muted-foreground">源码加载中…</p>}
       </div>
@@ -157,11 +167,11 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
       </section>
 
       <nav aria-label="上一个 / 下一个" className="mt-14 grid gap-3 sm:grid-cols-2">
-        {prev ? <a href={href.entry(prev)} className="group rounded-xl border p-4 hover:bg-accent/50"><span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" />上一个</span><span className="mt-1 block font-medium">{prev.title}</span></a> : <a href={href.section(cat.id)} className="rounded-xl border p-4 hover:bg-accent/50"><span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" />总览</span><span className="mt-1 block font-medium">{cat.title}</span></a>}
+        {prev ? <a href={href.entry(prev)} className="group rounded-xl border p-4 hover:bg-accent/50 transition-colors duration-150"><span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" />上一个</span><span className="mt-1 block font-medium">{prev.title}</span></a> : <a href={href.section(cat.id)} className="rounded-xl border p-4 hover:bg-accent/50 transition-colors duration-150"><span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" />总览</span><span className="mt-1 block font-medium">{cat.title}</span></a>}
         {next ? (
-          <a href={href.entry(next)} className="rounded-xl border p-4 text-right hover:bg-accent/50"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">下一个<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{next.title}</span></a>
+          <a href={href.entry(next)} className="rounded-xl border p-4 text-right hover:bg-accent/50 transition-colors duration-150"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">下一个<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{next.title}</span></a>
         ) : (
-          <a href={cat.id === "ui" ? href.foundation : href.section(cat.id)} className="rounded-xl border p-4 text-right hover:bg-accent/50"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">{cat.id === "ui" ? "下一个" : "回到"}<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{cat.id === "ui" ? "更多基础件" : `${cat.title}总览`}</span></a>
+          <a href={cat.id === "ui" ? href.foundation : href.section(cat.id)} className="rounded-xl border p-4 text-right hover:bg-accent/50 transition-colors duration-150"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">{cat.id === "ui" ? "下一个" : "回到"}<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{cat.id === "ui" ? "更多基础件" : `${cat.title}总览`}</span></a>
         )}
       </nav>
       <p className="mt-10 flex items-center gap-2 text-xs text-muted-foreground"><Sparkles className="size-3.5" />系统开了「减弱动效」时，组件直接显示最终状态。</p>
