@@ -38,3 +38,6 @@ export { GlobeArcs } from "./charts3d/globe-arcs";
 export type { GlobeArc, GlobeArcsProps } from "./charts3d/globe-arcs";
 export { Sunburst } from "./charts/sunburst";
 export type { SunburstNode, SunburstProps } from "./charts/sunburst";
+export { Rose } from "./charts/rose";
+export type { RoseDatum, RoseProps, RoseSeries } from "./charts/rose";
+export { useArcTween, type Arc } from "./charts/arc-tween";
