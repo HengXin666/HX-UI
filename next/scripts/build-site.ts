@@ -43,7 +43,13 @@ writeFileSync(
 );
 
 if (process.argv.includes("--dev")) {
-  const server = await createServer(config({ server: { port: 5180, strictPort: true, host: true } }));
+  // 开发预览: 头部占位符换成简单值 (正式构建时才从页面的 meta 取)
+  const placeholders = {
+    name: "dev-placeholders",
+    transformIndexHtml: (html: string) =>
+      html.replaceAll("%SITE%", id).replace("%TITLE%", `${id} · 开发预览`).replace("%DESCRIPTION%", "").replace("%THEME_COLOR%", "#ffffff").replace("%ICON%", "data:,"),
+  };
+  const server = await createServer({ ...config({ server: { port: 5180, strictPort: true, host: true } }), plugins: [react(), tailwindcss(), placeholders] });
   await server.listen();
   server.printUrls();
 } else {
