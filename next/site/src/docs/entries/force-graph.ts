@@ -1,0 +1,43 @@
+import type { DocEntry } from "../types";
+
+export const forceGraph: DocEntry = {
+  slug: "force-graph",
+  name: "ForceGraph",
+  title: "力导向图",
+  section: "ui",
+  group: "图表",
+  sub: "2D 图表",
+  description: "服务调用拓扑、用户关系、知识图谱。节点互相排斥、连线互相拉拢，自然聚成团。增删节点时老节点不动，新节点从相邻节点旁长出来，删掉的淡出；拖动节点、滚轮缩放、拖空白处平移，点图例隐藏一个分组，键盘也能逐个节点走。",
+  file: "src/data/charts/force-graph.tsx",
+  importFrom: "@/data",
+  demo: () => import("./force-graph.demo"),
+  source: () => import("@/data/charts/force-graph.tsx?raw").then((m) => m.default),
+  defaults: { dataset: "services", directed: true, labels: "auto", linkDistance: 56, charge: -180 },
+  componentDefaults: { directed: false, labels: "auto", linkDistance: 56, charge: -180 },
+  demoOnly: ["dataset"],
+  presets: [
+    { label: "服务拓扑", values: { dataset: "services", directed: true, labels: "auto", linkDistance: 56, charge: -180 } },
+    { label: "社群关系", values: { dataset: "social", directed: false, labels: "auto", linkDistance: 36, charge: -90 } },
+    { label: "全部标注", values: { dataset: "services", directed: true, labels: "all", linkDistance: 72, charge: -260 } },
+  ],
+  controls: [
+    { type: "select", key: "dataset", label: "数据", options: [{ value: "services", label: "服务调用拓扑" }, { value: "social", label: "社群用户关系" }] },
+    { type: "toggle", key: "directed", label: "有向（箭头）" },
+    { type: "select", key: "labels", label: "标签", options: [{ value: "auto", label: "自动" }, { value: "all", label: "全部" }, { value: "none", label: "不显示" }] },
+    { type: "number", key: "linkDistance", label: "连线长度", min: 20, max: 120, step: 4 },
+    { type: "number", key: "charge", label: "斥力", min: -400, max: -20, step: 10 },
+  ],
+  usage: (v) => `import { ForceGraph } from "@/data";\n\n<ForceGraph\n  nodes={[\n    { id: "gateway", label: "API 网关", group: "接入层", value: 88 },\n    { id: "order", label: "订单", group: "业务服务", value: 30 },\n    { id: "mysql", label: "MySQL", group: "数据存储", value: 40 },\n  ]}\n  links={[\n    { source: "gateway", target: "order", value: 9 },\n    { source: "order", target: "mysql", value: 14 },\n  ]}${v.directed ? "\n  directed" : ""}${v.labels !== "auto" ? `\n  labels="${v.labels}"` : ""}${Number(v.linkDistance) !== 56 ? `\n  linkDistance={${v.linkDistance}}` : ""}${Number(v.charge) !== -180 ? `\n  charge={${v.charge}}` : ""}\n  onSelect={(id) => console.log(id)}\n/>\n`,
+  props: [
+    { name: "nodes", type: "{ id, label?, group?, value? }[]", description: "节点。group 决定颜色和图例，value 决定大小（不给按连线数）。换一份数组即可增删，会自动做进场 / 退场动画。" },
+    { name: "links", type: "{ source, target, value? }[]", description: "连线，source / target 是节点 id；value 决定线宽。" },
+    { name: "directed", type: "boolean", default: "false", description: "画箭头，适合调用链路、资金流向。" },
+    { name: "labels", type: '"auto" | "all" | "none"', default: '"auto"', description: "auto 只标大节点和悬停的那一圈。" },
+    { name: "linkDistance / charge", type: "number", default: "56 / -180", description: "连线长度和节点斥力，改了会平滑重排。" },
+    { name: "groups", type: "string[]", description: "分组顺序，颜色按顺序取 chart-1 到 chart-5。" },
+    { name: "legend", type: "boolean", default: "true", description: "显示图例，点击隐藏 / 显示分组。" },
+    { name: "onSelect", type: "(id | null) => void", description: "点击或 Enter 选中节点时回调。" },
+    { name: "height / format / valueLabel", type: "number / (v) => string / string", default: "420 / 千分位 / 权重", description: "高度、数字格式、提示框里权重的名字。" },
+  ],
+  stageHeight: 720,
+};

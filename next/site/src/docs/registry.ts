@@ -42,6 +42,7 @@ import { shareTreemap } from "./entries/share-treemap";
 import { sankeyFlow } from "./entries/sankey-flow";
 import { heatCalendar } from "./entries/heat-calendar";
 import { candlestick } from "./entries/candlestick";
+import { forceGraph } from "./entries/force-graph";
 import { bar3d } from "./entries/bar-3d";
 import { surface3d } from "./entries/surface-3d";
 import { globeArcs } from "./entries/globe-arcs";
@@ -51,7 +52,7 @@ import { SECTIONS } from "./sections";
  * 文档站清单. 只收值得单独一页的东西:
  * 一个参数就能表达的效果 (流光, 状态点, 光斑) 做成所属组件的参数, 不单列.
  */
-const ALL: DocEntry[] = [button, dropdownMenu, toggleGroup, command, tabs, breadcrumb, pagination, card, badge, avatar, tooltip, popover, accordion, kbd, marquee, dialog, sheet, toastEntry, alert, progress, skeleton, spin, input, textarea, select, checkbox, switchEntry, radioGroup, slider, datePicker, dataTable, charts, comboChart, radarCompare, gauge, scatterBubble, conversionFunnel, shareTreemap, sankeyFlow, heatCalendar, candlestick, bar3d, surface3d, globeArcs, splitText, numberRoll, tiltCard];
+const ALL: DocEntry[] = [button, dropdownMenu, toggleGroup, command, tabs, breadcrumb, pagination, card, badge, avatar, tooltip, popover, accordion, kbd, marquee, dialog, sheet, toastEntry, alert, progress, skeleton, spin, input, textarea, select, checkbox, switchEntry, radioGroup, slider, datePicker, dataTable, charts, comboChart, radarCompare, gauge, scatterBubble, conversionFunnel, shareTreemap, sankeyFlow, heatCalendar, candlestick, forceGraph, bar3d, surface3d, globeArcs, splitText, numberRoll, tiltCard];
 
 const rank = (e: DocEntry) => {
   const s = SECTIONS.findIndex((x) => x.id === e.section);
