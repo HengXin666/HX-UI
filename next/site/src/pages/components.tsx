@@ -17,8 +17,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { SiteHeader } from "@sites/_blocks/marketing/site-header";
-import { ThemeMenu } from "@sites/_blocks/shell/theme-menu";
+import { SiteHeader } from "../shell/site-header";
+import { ThemeMenu } from "../shell/theme-menu";
 import { SpotlightCard } from "@/effects/spotlight-card";
 import { BorderBeam } from "@/effects/border-beam";
 import { Marquee } from "@/effects/marquee";
@@ -31,8 +31,9 @@ import { AnimatedNumber } from "@/motion/animated-number";
 import { TextReveal } from "@/motion/text-effect";
 import { Reveal } from "@/motion/reveal";
 import { Spin, SPIN_VARIANTS } from "@/components/ui/spin";
-import { BackLink } from "./back-link";
-import { IMG } from "@sites/_shared/assets";
+
+// 演示用图片 (Unsplash)
+const WATCH = "https://images.unsplash.com/photo-1541195942158-ccbd892c4673?auto=format&fit=crop&w=800&q=70";
 
 function Demo({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
@@ -47,7 +48,6 @@ export default function Components() {
   const [n, setN] = React.useState(12_486);
   return (
     <TooltipProvider delayDuration={200}>
-      <BackLink />
       <SiteHeader brand={<span className="flex items-center gap-2"><span className="size-5 rounded-md bg-brand" />HX-UI 组件</span>} links={[{ label: "基础", href: "#base" }, { label: "特效", href: "#fx" }]} actions={<ThemeMenu />} />
       <div className="mx-auto max-w-6xl px-4 py-12">
         <h1 id="base" className="mb-2 text-3xl font-semibold tracking-tight">基础件</h1>
@@ -117,7 +117,7 @@ export default function Components() {
             <Button size="sm" variant="outline" onClick={() => setN((v) => v + Math.round(Math.random() * 4000 - 1000))}>随机变化</Button>
           </Demo>
           <Demo title="TextReveal · 标题入场"><TextReveal as="h3" by="char" text="一屏一个主角" className="text-3xl font-semibold" /></Demo>
-          <Demo title="TiltCard · 3D 倾斜"><TiltCard className="w-40 overflow-hidden rounded-xl shadow-float"><img src={IMG.watch} alt="腕表" className="aspect-square object-cover" /></TiltCard></Demo>
+          <Demo title="TiltCard · 3D 倾斜"><TiltCard className="w-40 overflow-hidden rounded-xl shadow-float"><img src={WATCH} alt="腕表" className="aspect-square object-cover" /></TiltCard></Demo>
           <Demo title="Marquee · 跑马灯" className="px-0"><Marquee className="w-full">{["蓝鲸物流", "青禾生鲜", "极光电器", "北辰医疗", "云栖科技"].map((t) => <span key={t} className="text-lg font-semibold text-muted-foreground">{t}</span>)}</Marquee></Demo>
           <Demo title="Backdrop · aurora"><Backdrop variant="aurora" /><span className="relative font-medium">极光底纹</span></Demo>
           <Demo title="Backdrop · grid / dots"><Backdrop variant="dots" /><div className="relative flex items-center gap-2 text-sm"><LiveDot /> 运行中 <LiveDot tone="warning" /> 降级 <LiveDot tone="destructive" /> 故障</div></Demo>

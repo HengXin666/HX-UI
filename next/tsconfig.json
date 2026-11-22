@@ -13,7 +13,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"], "@site/*": ["./site/src/*"], "@sites/*": ["./sites/*"] }
+    "paths": { "@/*": ["./src/*"], "@site/*": ["./site/src/*"] }
   },
-  "include": ["src", "sites", "site/src", "vite.config.ts"]
+  "include": ["src", "site/src", "vite.config.ts"]
 }

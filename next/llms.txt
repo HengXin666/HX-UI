@@ -1,20 +1,11 @@
 # HX-UI 2
 
-> React 19 + TypeScript 界面库. 基于 shadcn/ui (Radix + Tailwind v4), 动效用 Motion, 图表用 Recharts, 表格用 TanStack Table v8. 路径别名 "@/" 指向 next/src, "@sites/" 指向 next/sites.
+> React 19 + TypeScript 界面库. 基于 shadcn/ui (Radix + Tailwind v4), 动效用 Motion, 图表用 Recharts, 表格用 TanStack Table v8. 路径别名 "@/" 指向 next/src.
 
-## 写页面的顺序
-1. 外壳: 营销页用 `SiteHeader` + 若干 `Section` + `SiteFooter`; 后台 / 面板用 `AppShell` (侧栏 + 顶栏) + `PageHeader`.
-2. 区块: 从 `@sites/_blocks/*` 挑整段区块, 数据通过 props 传入, 区块不取数.
-3. 细节: 基础件从 `@/components/ui/<name>` 引 (与 shadcn 文档用法一致).
-4. 动效: 包一层 `Reveal` / `Stagger` + `StaggerItem` 即可; 数字用 `AnimatedNumber`; 标题用 `TextReveal`.
-5. 交互: 需要一个出彩的产品瞬间时, 从 `@/interactions` 挑 (SpeedCounter, StatefulButton ...); 每屏最多一个.
-
-## 区块
-- marketing: Hero(title, highlight, description, actions, media, backdrop), Section(eyebrow, title, description), FeatureBento(features[{title, description, icon, visual, span:2|3|4|6}]), LogoCloud(logos), Pricing(plans[{name, description, monthly, yearly, features, cta, featured}]), Testimonials(items[{quote, name, role}]), Faq(items[{q, a}]), Cta(title, description, actions), SiteHeader(brand, links, actions), SiteFooter(brand, columns, note)
-- commerce: ProductGallery(media[{src, alt}]), VariantPicker(name, label, options[{value, label, swatch?, soldOut?}], value, onChange), Price(amount, compareAt?, currency?), Rating(value, count?), ProductCard(product), BuyBar(target ref, title, amount, ctaLabel, onBuy)
-- dashboard: StatCard(label, value, format?, suffix?, delta?, invert?, trend?, icon?), StatusBoard(services[{name, region, state:"up"|"degraded"|"down"|"maintenance", latencyMs, uptime, history}]), LogStream(lines[{id, time, level, source, message}])
-- analytics: ChartCard(title, description, actions, children), Segmented(options, value, onChange)
-- shell: AppShell(brand, nav[{label?, items[{id, label, icon, badge?}]}], active, onNavigate, actions, footer), CommandMenu(entries[{id, label, group, icon, onSelect}]), ThemeToggle, PageHeader(title, description, actions)
+## 用法
+1. 基础件从 `@/components/ui/<name>` 引 (与 shadcn 文档用法一致).
+2. 动效: 包一层 `Reveal` / `Stagger` + `StaggerItem`; 数字用 `AnimatedNumber`; 标题用 `TextReveal`.
+3. 交互: 从 `@/interactions` 挑 (SpeedCounter, StatefulButton ...).
 
 ## 数据
 - AreaTrend(data, x, series[{key, label, color?}], stacked?, height?), BarCompare(data, x, series, stacked?, horizontal?), Donut(data[{key, label, value}], centerLabel?), Sparkline(values), DataTable(data, columns: ColumnDef<T>[], searchable?, pageSize?, loading?, onRowClick?)
@@ -28,8 +19,4 @@
 - StatefulButton(action: () => Promise, children, pendingLabel?, successLabel?, errorLabel?, resetAfter?, guard?): 提交按钮的完整状态流; guard 返回 false 时不提交 (例如 form.reportValidity()); 放进表单时传 type="submit" 支持回车
 
 ## 示例
-完整页面见 sites/{launch,shop,ops,analytics}/page.tsx. 已完成的成品 (sites/status.json 为 done) 目录里有:
-- prompt.md: 可单独交给 AI 生成同款的完整说明 (美术方向, 结构, 文案, 交互, 质量要求)
-- art.css: 这套页面的令牌, 只在 <html data-site="<id>"> 下生效
-- registry/<id>.json: shadcn 格式的文件与依赖清单
-成品页的页内锚点写普通 href="#id"; 需要 SEO 时导出 meta 并用 npm run build:site <id> 预渲染.
+所有组件的用法见 site/src/pages/components.tsx.

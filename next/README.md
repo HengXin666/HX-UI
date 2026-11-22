@@ -6,13 +6,12 @@ HX-UI 的第二代, 站在成熟生态上重建: **shadcn/ui + Tailwind v4 + Mot
 ```bash
 cd next
 npm ci
-npm run dev        # 文档站 + 四张成品页: http://localhost:5173
+npm run dev        # 组件页: http://localhost:5173
 npm run build      # tsc + vite build
 ```
 
 ## 分层
 
-三层定位见 `docs/positioning.md`: L1 控件 (`src/`), L2 交互 (`src/interactions`), L3 成品 (`sites/`).
 
 | 目录 | 内容 | 来源 |
 |---|---|---|
@@ -20,29 +19,21 @@ npm run build      # tsc + vite build
 | `src/components/ui` | 38 个基础件 | shadcn/ui 源码 (`npx shadcn add <name>` 增补) |
 | `src/motion` | 弹簧档位, 入场预设, Reveal / Stagger / AnimatedNumber / TextReveal | Motion |
 | `src/effects` | 旧特效, R2 逐个审: 能变成交互的迁入 interactions, 其余删除 | 自写 |
-| `src/interactions` | L2 交互: 一件一个目录 (`index.tsx` 组件, `meta.ts` 调参描述, `demo.tsx` 场景演示), 清单在 `registry.ts` | 自写, 思路参考 Aceternity Interactions |
+| `src/interactions` | 交互组件: 一件一个目录 (`index.tsx` 组件, `meta.ts` 调参描述, `demo.tsx` 场景演示), 清单在 `registry.ts` | 自写, 思路参考 Aceternity Interactions |
 | `src/data` | AreaTrend, BarCompare, Donut, Sparkline, DataTable | Recharts + TanStack Table v8 |
-| `sites/_blocks` | L3 的零件: marketing / commerce / dashboard / analytics / shell 整段区块 | 自写 |
-| `sites/<id>` | L3 成品: launch / shop / ops / analytics, 清单在 `sites/registry.ts` | 只用上面的公开组件 |
-| `site` | 文档站: 成品 / 交互 / 控件三栏 | |
+| `site` | 文档站: 只有组件页 | |
 
 ## 规则 (只有这几条)
 
 1. 颜色只用令牌类 (`bg-brand`, `text-muted-foreground` ...), 不写裸色值; 换肤 = 换一份 `:root` / `.dark`.
 2. 动效只动 `transform` / `opacity` / `filter`; 弹簧用 `spring.*` 档位; 必须在 `prefers-reduced-motion` 下给终态.
 3. 组件即源码: 基础件可以直接改, 改完在文件顶部注释写一句为什么.
-4. 每个新区块在 `site` 里有一个真实用例; 没在浏览器里看过不算完成.
+4. 每个新组件在组件页里有一个真实用例; 没在浏览器里看过不算完成.
 
-## 完成标准与命令
-
-"完成"只有一个意思: 过完 `docs/done.md` 的每一条. 进度在 `sites/status.json` (目前 launch 为 done).
+## 命令
 
 ```bash
-npm run check                            # 依赖边界 + 必备文件 + L2 体积预算
-npm run build:site launch                # 单独构建一套成品并预渲染 → dist-sites/launch
-npm run qa:site dist-sites/launch        # axe + 主流程 + 控制台
-npm run qa:lighthouse dist-sites/launch  # Lighthouse 移动端四项 ≥ 90
-npm run registry launch                  # shadcn 格式的 registry/launch.json
+npm run check   # 交互组件体积预算
 ```
 
 AI 使用说明见 `llms.txt`.
