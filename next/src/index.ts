@@ -9,3 +9,5 @@ export * as Motion from "./motion";
 export * as Effects from "./effects";
 export * as Data from "./data";
 export * from "./interactions";
+export { SplitText } from "./text/split-text";
+export type { SplitTextProps, SplitEffect, SplitFrom, SplitEase, SplitHover } from "./text/split-text";

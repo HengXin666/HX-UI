@@ -18,22 +18,32 @@ function systemDark(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
-function read(): { mode: ThemeMode; accent: ThemeAccent } {
+function read(key: string, mode: ThemeMode): { mode: ThemeMode; accent: ThemeAccent } {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { mode: "system", accent: "indigo", ...JSON.parse(raw) };
+    const raw = localStorage.getItem(key);
+    if (raw) return { mode, accent: "indigo", ...JSON.parse(raw) };
   } catch {
     /* 隐私模式下 localStorage 不可用, 用默认值 */
   }
-  return { mode: "system", accent: "indigo" };
+  return { mode, accent: "indigo" };
 }
 
 /**
  * 主题: 亮 / 暗 / 跟随系统 + 强调色. 只在 "跟随系统" 档监听系统变化,
  * 手动选定后不再跟随. 首屏防闪烁用 themeScript 内联到 <head>.
  */
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = React.useState(read);
+export function ThemeProvider({
+  children,
+  defaultMode = "system",
+  storageKey = STORAGE_KEY,
+}: {
+  children: React.ReactNode;
+  /** 用户没选过时的模式 */
+  defaultMode?: ThemeMode;
+  /** localStorage 键, 同域多个应用互不干扰 */
+  storageKey?: string;
+}) {
+  const [state, setState] = React.useState(() => read(storageKey, defaultMode));
   const [sysDark, setSysDark] = React.useState(systemDark);
 
   React.useEffect(() => {
@@ -51,8 +61,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     el.classList.toggle("dark", resolved === "dark");
     el.dataset.theme = state.accent;
     el.style.colorScheme = resolved;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [resolved, state]);
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  }, [resolved, state, storageKey]);
 
   const value = React.useMemo<ThemeState>(
     () => ({

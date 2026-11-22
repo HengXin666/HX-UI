@@ -21,7 +21,8 @@ npm run build      # tsc + vite build
 | `src/effects` | 旧特效, R2 逐个审: 能变成交互的迁入 interactions, 其余删除 | 自写 |
 | `src/interactions` | 交互组件: 一件一个目录 (`index.tsx` 组件, `meta.ts` 调参描述, `demo.tsx` 场景演示), 清单在 `registry.ts` | 自写, 思路参考 Aceternity Interactions |
 | `src/data` | AreaTrend, BarCompare, Donut, Sparkline, DataTable | Recharts + TanStack Table v8 |
-| `site` | 文档站: 只有组件页 | |
+| `src/text` | 文字组件 (SplitText ...) | 自写, 思路参考 React Bits |
+| `site` | 文档站: 总览 + 每个组件一页 (预览 / 代码 / 调参 / 属性表 / 复制给 AI); 新组件在 `site/src/docs/entries` 登记 | |
 
 ## 规则 (只有这几条)
 

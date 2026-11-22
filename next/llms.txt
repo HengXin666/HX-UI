@@ -14,6 +14,9 @@
 - 包 `ThemeProvider`; `useTheme()` 返回 { mode, resolved, accent, setMode, setAccent }; 强调色 indigo | emerald | rose | amber | zinc.
 - 令牌: background, foreground, card, muted, accent, primary, brand, brand-soft, success, warning, destructive, info, chart-1..5, border, ring.
 
+## 文字
+- SplitText(text, as?, split?: "chars"|"words", effect?: "rise"|"fade"|"blur"|"flip"|"pop"|"skew"|"wave", from?: "start"|"center"|"end"|"random", ease?: "out"|"inOut"|"spring", stagger?, duration?, delay?, trigger?: "mount"|"inView", hover?: "none"|"lift"|"brand", loop?, loopDelay?, onComplete?): 文字拆成字或词逐段登场; 中文标点不会落到行首; 读屏读整句
+
 ## 交互
 - SpeedCounter(value, format?, locale?, duration?): 逐位滚动的数字
 - StatefulButton(action: () => Promise, children, pendingLabel?, successLabel?, errorLabel?, resetAfter?, guard?): 提交按钮的完整状态流; guard 返回 false 时不提交 (例如 form.reportValidity()); 放进表单时传 type="submit" 支持回车

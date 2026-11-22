@@ -17,8 +17,6 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { SiteHeader } from "../shell/site-header";
-import { ThemeMenu } from "../shell/theme-menu";
 import { SpotlightCard } from "@/effects/spotlight-card";
 import { BorderBeam } from "@/effects/border-beam";
 import { Marquee } from "@/effects/marquee";
@@ -48,10 +46,10 @@ export default function Components() {
   const [n, setN] = React.useState(12_486);
   return (
     <TooltipProvider delayDuration={200}>
-      <SiteHeader brand={<span className="flex items-center gap-2"><span className="size-5 rounded-md bg-brand" />HX-UI 组件</span>} links={[{ label: "基础", href: "#base" }, { label: "特效", href: "#fx" }]} actions={<ThemeMenu />} />
-      <div className="mx-auto max-w-6xl px-4 py-12">
-        <h1 id="base" className="mb-2 text-3xl font-semibold tracking-tight">基础件</h1>
-        <p className="mb-8 text-muted-foreground">shadcn/ui 源码，全部跟随主题令牌。右上角切换亮暗与强调色试试。</p>
+      <div className="mx-auto max-w-5xl px-5 pt-10 pb-24 md:px-10">
+        <p className="mb-4 flex items-center gap-2 font-mono text-xs text-muted-foreground"><span aria-hidden className="size-2 rounded-full bg-[oklch(0.7_0.15_155)]" /><span className="text-[oklch(0.7_0.15_155)]">05 基础</span><span aria-hidden>/</span><span>合集</span></p>
+        <h1 id="base" className="text-5xl font-medium tracking-[-0.04em] md:text-6xl">基础件合集</h1>
+        <p className="mt-4 mb-10 max-w-2xl text-muted-foreground">shadcn/ui 源码，全部跟随主题令牌。下一步会把它们逐个拆成独立页面，带调参和属性表。</p>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Demo title="Button">
             <Button>主要</Button><Button variant="secondary">次要</Button><Button variant="outline">描边</Button><Button variant="ghost">幽灵</Button><Button variant="destructive">删除</Button>
@@ -106,7 +104,7 @@ export default function Components() {
           </Demo>
         </div>
 
-        <h2 id="fx" className="mb-2 mt-16 text-3xl font-semibold tracking-tight">动效与特效</h2>
+        <h2 id="fx" className="mb-2 mt-16 text-2xl font-medium tracking-tight">动效与特效</h2>
         <p className="mb-8 text-muted-foreground">少而精。全部只动 transform / opacity，系统开启 "减弱动效" 时自动降级。</p>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Demo title="SpotlightCard · 指针光斑"><SpotlightCard className="w-full p-6"><div className="font-medium">把鼠标移进来</div><p className="mt-1 text-sm text-muted-foreground">光斑跟随指针，不触发重渲染。</p></SpotlightCard></Demo>

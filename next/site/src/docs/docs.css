@@ -1,0 +1,47 @@
+/* 文档站自己的样式: 暗色更深一档 (偏紫黑), 代码配色, 舞台底光, 章节色带 */
+.docs {
+  --code-bg: oklch(0.985 0.002 270);
+  --code-kw: oklch(0.5 0.2 300);
+  --code-str: oklch(0.5 0.13 150);
+  --code-num: oklch(0.55 0.15 50);
+  --code-tag: oklch(0.5 0.17 255);
+  --code-attr: oklch(0.52 0.14 30);
+  --code-type: oklch(0.5 0.15 200);
+  --code-com: oklch(0.6 0.01 270);
+  --panel-cell: oklch(0.97 0.002 270);
+}
+.dark .docs, .dark.docs {
+  --code-bg: oklch(0.155 0.008 290);
+  --code-kw: oklch(0.78 0.14 300);
+  --code-str: oklch(0.82 0.12 150);
+  --code-num: oklch(0.82 0.12 60);
+  --code-tag: oklch(0.78 0.13 250);
+  --code-attr: oklch(0.82 0.1 40);
+  --code-type: oklch(0.82 0.1 200);
+  --code-com: oklch(0.55 0.01 270);
+  --panel-cell: oklch(1 0 0 / 0.035);
+}
+.dark {
+  --background: oklch(0.135 0.01 290);
+  --card: oklch(0.165 0.01 290);
+  --popover: oklch(0.18 0.012 290);
+  --muted: oklch(0.2 0.012 290);
+  --accent: oklch(0.23 0.014 290);
+  --secondary: oklch(0.22 0.012 290);
+}
+
+/* 舞台: 细网格 + 章节色底光. 底光只在舞台里, 不进组件本身 */
+.docs .stage {
+  background:
+    radial-gradient(60% 70% at 50% 110%, color-mix(in oklch, var(--cat) 28%, transparent), transparent 70%),
+    linear-gradient(to right, color-mix(in oklch, var(--foreground) 5%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(to bottom, color-mix(in oklch, var(--foreground) 5%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--card);
+}
+
+/* 章节色带: 白字要过 AA, 色带压暗一档 */
+.docs .chapter { background: var(--band); }
+
+/* 章节色写成文字时用 --cat-ink: 亮色下压暗一档过 AA, 暗色下原色 */
+.docs, .docs * { --cat-ink: color-mix(in oklch, var(--cat, currentColor) 62%, black); }
+.dark .docs, .dark .docs * { --cat-ink: var(--cat, currentColor); }
