@@ -9,10 +9,12 @@ interface MarqueeProps extends React.HTMLAttributes<HTMLDivElement> {
   pauseOnHover?: boolean;
   /** 两端淡出 */
   fade?: boolean;
+  /** 两项之间的间距, 像素 */
+  gap?: number;
 }
 
 /** 无限跑马灯: 内容复制两份, 纯 CSS 动画. */
-export function Marquee({ duration = 40, reverse, vertical, pauseOnHover = true, fade = true, className, children, ...rest }: MarqueeProps) {
+export function Marquee({ duration = 40, reverse, vertical, pauseOnHover = true, fade = true, gap = 40, className, children, style, ...rest }: MarqueeProps) {
   const track = cn(
     "flex shrink-0 gap-[var(--marquee-gap)]",
     vertical ? "flex-col animate-marquee-vertical" : "animate-marquee",
@@ -22,14 +24,14 @@ export function Marquee({ duration = 40, reverse, vertical, pauseOnHover = true,
   return (
     <div
       className={cn(
-        "group flex overflow-hidden [--marquee-gap:2.5rem] gap-[var(--marquee-gap)]",
+        "group flex overflow-hidden gap-[var(--marquee-gap)]",
         vertical && "flex-col",
         fade && (vertical
           ? "[mask-image:linear-gradient(to_bottom,transparent,#000_12%,#000_88%,transparent)]"
           : "[mask-image:linear-gradient(to_right,transparent,#000_10%,#000_90%,transparent)]"),
         className,
       )}
-      style={{ "--marquee-duration": `${duration}s` } as React.CSSProperties}
+      style={{ "--marquee-duration": `${duration}s`, "--marquee-gap": `${gap}px`, ...style } as React.CSSProperties}
       {...rest}
     >
       <div className={track}>{children}</div>

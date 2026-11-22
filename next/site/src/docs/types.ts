@@ -50,6 +50,10 @@ export interface DocEntry {
   props: PropRow[];
   /** 自定义用法代码; 不给则按 values 与 componentDefaults 的差异生成 */
   usage?: (values: Values) => string;
+  /** 包裹型组件: 生成用法时放进去的子元素 */
+  usageChildren?: string;
+  /** 舞台高度 (默认 440) */
+  stageHeight?: number;
   /** 静态缩略: 总览卡片上显示的一句话或小样 */
   thumb?: string;
 }

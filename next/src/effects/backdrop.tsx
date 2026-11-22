@@ -1,12 +1,15 @@
+import type * as React from "react";
 import { cn } from "@/lib/utils";
 
 interface BackdropProps {
   variant?: "grid" | "dots" | "aurora" | "glow";
   className?: string;
+  /** 网格 / 点阵的间距, 像素 */
+  size?: number;
 }
 
 /** 区块底纹. 只放在 absolute 层, 不吃交互; aurora 只用两块模糊色斑, 便宜. */
-export function Backdrop({ variant = "grid", className }: BackdropProps) {
+export function Backdrop({ variant = "grid", className, size }: BackdropProps) {
   if (variant === "aurora") {
     return (
       <div aria-hidden className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}>
@@ -22,5 +25,5 @@ export function Backdrop({ variant = "grid", className }: BackdropProps) {
       </div>
     );
   }
-  return <div aria-hidden className={cn("pointer-events-none absolute inset-0 hx-fade-edges", variant === "grid" ? "hx-grid" : "hx-dots", className)} />;
+  return <div aria-hidden className={cn("pointer-events-none absolute inset-0 hx-fade-edges", variant === "grid" ? "hx-grid" : "hx-dots", className)} style={size ? ({ "--grid-size": `${size}px` } as React.CSSProperties) : undefined} />;
 }

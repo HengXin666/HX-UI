@@ -17,9 +17,11 @@ function fmt(v: Values[string]) {
 export function usageOf(e: DocEntry, values: Values) {
   if (e.usage) return e.usage(values);
   const attrs = Object.entries(values)
-    .filter(([k, v]) => !e.demoOnly?.includes(k) && (k === "text" || e.componentDefaults[k] !== v))
+    .filter(([k, v]) => !e.demoOnly?.includes(k) && (!(k in e.componentDefaults) || e.componentDefaults[k] !== v))
     .map(([k, v]) => (v === true ? `  ${k}` : `  ${k}=${fmt(v)}`));
-  return `import { ${e.name} } from "${e.importFrom}";\n\nexport function Example() {\n  return (\n    <${e.name}\n${attrs.map((a) => "  " + a).join("\n")}\n    />\n  );\n}\n`;
+  const open = attrs.length ? `<${e.name}\n${attrs.map((a) => "    " + a).join("\n")}\n    ` : `<${e.name}`;
+  const body = e.usageChildren ? `${open}>\n${e.usageChildren.split("\n").map((l) => "      " + l).join("\n")}\n    </${e.name}>` : `${open}${attrs.length ? "" : " "}/>`;
+  return `import { ${e.name} } from "${e.importFrom}";\n\nexport function Example() {\n  return (\n    ${body}\n  );\n}\n`;
 }
 
 function aiPrompt(e: DocEntry, values: Values, source: string) {
@@ -106,7 +108,7 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
       </div>
 
       <div id="panel-preview" role="tabpanel" aria-labelledby="tab-preview" hidden={tab !== "preview"} className="mt-3 space-y-4">
-        <div className="stage relative grid min-h-[440px] place-items-center overflow-hidden rounded-xl border">
+        <div className="stage relative grid place-items-center overflow-hidden rounded-xl border" style={{ minHeight: e.stageHeight ?? 440 }}>
           <div className={cn("relative z-10 grid w-full place-items-center px-6 py-16 transition-[max-width] duration-300", device === "mobile" ? "max-w-[390px] border-x border-dashed" : "max-w-full")}>
             <React.Suspense fallback={<span className="text-sm text-muted-foreground">加载中…</span>}>
               <Demo key={stageKey} values={values} onEvent={(m) => toast(m)} />
