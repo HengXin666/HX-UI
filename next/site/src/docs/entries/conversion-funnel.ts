@@ -6,6 +6,7 @@ export const conversionFunnel: DocEntry = {
   title: "转化漏斗",
   section: "ui",
   group: "图表",
+  sub: "2D 图表",
   description: "从访问到成交每一步还剩多少人：每步人数、占首步的比例、到下一步的转化和流失。条形或漏斗两种布局，数据变化时宽度弹性过渡。",
   file: "src/data/charts/conversion-funnel.tsx",
   importFrom: "@/data",

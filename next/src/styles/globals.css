@@ -179,3 +179,23 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* 细滚动条: 平时很淡, 悬停容器时加深. 横向表格, 热力日历等可滚区域用 */
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--foreground) 14%, transparent) transparent;
+  transition: scrollbar-color 200ms;
+  &:hover, &:focus-visible { scrollbar-color: color-mix(in oklch, var(--foreground) 32%, transparent) transparent; }
+  &::-webkit-scrollbar { height: 6px; width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { border-radius: 999px; background: color-mix(in oklch, var(--foreground) 14%, transparent); }
+  &:hover::-webkit-scrollbar-thumb { background: color-mix(in oklch, var(--foreground) 32%, transparent); }
+}
+
+/* 可横滚区域两侧的渐隐, 提示还有内容. data-fade 由组件按滚动位置给 start / end / both */
+@utility scroll-fade-x {
+  --fade: 28px;
+  &[data-fade="start"] { mask-image: linear-gradient(to right, transparent, #000 var(--fade)); }
+  &[data-fade="end"] { mask-image: linear-gradient(to left, transparent, #000 var(--fade)); }
+  &[data-fade="both"] { mask-image: linear-gradient(to right, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent); }
+}

@@ -6,6 +6,7 @@ export const sankeyFlow: DocEntry = {
   title: "桑基图",
   section: "ui",
   group: "图表",
+  sub: "2D 图表",
   description: "流量从哪来、到哪去：渠道 → 落地页 → 成交，或者预算一层层怎么分下去。连线粗细就是量，按层上色，悬停读数。",
   file: "src/data/charts/sankey-flow.tsx",
   importFrom: "@/data",

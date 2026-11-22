@@ -6,6 +6,7 @@ export const radarCompare: DocEntry = {
   title: "雷达图",
   section: "ui",
   group: "图表",
+  sub: "2D 图表",
   description: "多维评分放在一张网上比，一眼看出长板短板：竞品对比、门店体检、员工能力模型。网格可选多边形或圆形。",
   file: "src/data/charts/radar-compare.tsx",
   importFrom: "@/data",

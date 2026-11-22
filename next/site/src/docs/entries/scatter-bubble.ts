@@ -6,6 +6,7 @@ export const scatterBubble: DocEntry = {
   title: "散点气泡图",
   section: "ui",
   group: "图表",
+  sub: "2D 图表",
   description: "两个指标的关系，第三个指标用气泡大小：商品价格对销量、气泡是毛利。悬停显示该点的名字和三个读数。",
   file: "src/data/charts/scatter-bubble.tsx",
   importFrom: "@/data",

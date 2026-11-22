@@ -6,6 +6,7 @@ export const heatCalendar: DocEntry = {
   title: "热力日历",
   section: "ui",
   group: "图表",
+  sub: "2D 图表",
   description: "每天一个格子，颜色深浅就是当天的量：订单、活跃、提交。周一开头、中文月份，格子依次浮现；悬停任一格在下方读数。",
   file: "src/data/charts/heat-calendar.tsx",
   importFrom: "@/data",

@@ -20,3 +20,5 @@ export { SankeyFlow } from "./charts/sankey-flow";
 export { HeatCalendar } from "./charts/heat-calendar";
 export { Candlestick } from "./charts/candlestick";
 export type { Candle } from "./charts/candlestick";
+export type { CandleOverlay, CandleSub } from "./charts/candlestick";
+export { sma, ema, macd, boll, kdj, rsi } from "./charts/indicators";

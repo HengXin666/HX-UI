@@ -34,6 +34,8 @@ export interface DocEntry {
   section: SectionId;
   /** 侧栏分组名, 取自 SECTIONS[].groups */
   group: string;
+  /** 组内的二级文件夹, 如 "2D 图表"; 不给就直接挂在组下 */
+  sub?: string;
   description: string;
   /** 组件文件在仓库里的路径 */
   file: string;

@@ -6,6 +6,7 @@ export const comboChart: DocEntry = {
   title: "组合图",
   section: "ui",
   group: "图表",
+  sub: "2D 图表",
   description: "柱和线画在一张图里，量用柱、率用线，左右双轴各管各的刻度。经营看板最常见的一张：订单量配转化率、营收配增长率。",
   file: "src/data/charts/combo-chart.tsx",
   importFrom: "@/data",

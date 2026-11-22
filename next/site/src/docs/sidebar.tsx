@@ -8,7 +8,7 @@ import { entriesOf } from "./registry";
 import { href, type Route } from "./router";
 import type { SectionId } from "./types";
 
-type Item = { key: string; label: string; en?: string; href: string; active: boolean; group: string; tag?: string };
+type Item = { key: string; label: string; en?: string; href: string; active: boolean; group: string; sub?: string; tag?: string };
 
 const STORE = "hx-docs-collapsed";
 function useCollapsed() {
@@ -28,10 +28,38 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
   const [q, setQ] = React.useState("");
   const [collapsed, toggle] = useCollapsed();
   const s = sectionOf(section);
-  const items: Item[] = entriesOf(section).map((e) => ({ key: e.slug, label: e.title, en: e.en ?? e.name, href: href.entry(e), active: route.name === "component" && route.slug === e.slug, group: e.group }));
+  const items: Item[] = entriesOf(section).map((e) => ({ key: e.slug, label: e.title, en: e.en ?? e.name, href: href.entry(e), active: route.name === "component" && route.slug === e.slug, group: e.group, sub: e.sub }));
   const needle = q.trim().toLowerCase();
   const shown = needle ? items.filter((i) => i.label.toLowerCase().includes(needle) || i.key.includes(needle)) : items;
   const groups = s.groups;
+
+  const renderItem = (i: Item) => (
+    <li key={i.key}>
+      <a
+        href={i.href}
+        onClick={onNavigate}
+        aria-current={i.active ? "page" : undefined}
+        className={cn(
+          "group/item relative -ml-px flex h-8 items-center gap-2 border-l border-transparent pr-2 pl-3 text-sm text-muted-foreground transition-[color,border-color,background-color] duration-150 hover:border-foreground/30 hover:text-foreground",
+          "aria-[current=page]:font-medium aria-[current=page]:text-foreground",
+        )}
+      >
+        {/* 选中态是一块会滑动的底: 换页时从上一个位置滑过来 */}
+        {i.active && (
+          <m.span
+            layoutId={`sb-active-${section}`}
+            transition={spring.snappy}
+            aria-hidden
+            className="absolute inset-y-0 -left-px right-0 rounded-r-md border-l-2 border-[var(--cat)] bg-[color-mix(in_oklch,var(--cat)_12%,transparent)]"
+          />
+        )}
+        <span className="relative shrink-0 transition-transform duration-150 group-hover/item:translate-x-0.5">{i.label}</span>
+        {/* 中文名完整显示, 英文名放不下时截断 */}
+        {i.en && <span className="relative min-w-0 flex-1 truncate text-right font-mono text-[11px] text-muted-foreground">{i.en}</span>}
+        {i.tag && <span className="relative rounded border px-1 font-mono text-[10px] text-muted-foreground">{i.tag}</span>}
+      </a>
+    </li>
+  );
 
   return (
     <nav aria-label={s.title} className="flex h-full flex-col gap-3 p-3" style={{ "--cat": s.color } as React.CSSProperties}>
@@ -68,32 +96,24 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
               open={!!needle || list.some((i) => i.active) || !collapsed.has(`${section}:${g}`)}
               onToggle={() => toggle(`${section}:${g}`)}
             >
-              {list.map((i) => (
-                <li key={i.key}>
-                  <a
-                    href={i.href}
-                    onClick={onNavigate}
-                    aria-current={i.active ? "page" : undefined}
-                    className={cn(
-                      "group/item relative -ml-px flex h-8 items-center gap-2 border-l border-transparent pr-2 pl-3 text-sm text-muted-foreground transition-[color,border-color,background-color] duration-150 hover:border-foreground/30 hover:text-foreground",
-                      "aria-[current=page]:font-medium aria-[current=page]:text-foreground",
-                    )}
-                  >
-                    {/* 选中态是一块会滑动的底: 换页时从上一个位置滑过来 */}
-                    {i.active && (
-                      <m.span
-                        layoutId={`sb-active-${section}`}
-                        transition={spring.snappy}
-                        aria-hidden
-                        className="absolute inset-y-0 -left-px right-0 rounded-r-md border-l-2 border-[var(--cat)] bg-[color-mix(in_oklch,var(--cat)_12%,transparent)]"
-                      />
-                    )}
-                    <span className="relative flex-1 truncate transition-transform duration-150 group-hover/item:translate-x-0.5">{i.label}</span>
-                    {i.en && <span className="relative font-mono text-[11px] text-muted-foreground">{i.en}</span>}
-                    {i.tag && <span className="relative rounded border px-1 font-mono text-[10px] text-muted-foreground">{i.tag}</span>}
-                  </a>
-                </li>
-              ))}
+              {list.filter((i) => !i.sub).map(renderItem)}
+              {[...new Set(list.map((i) => i.sub).filter(Boolean) as string[])].map((sub) => {
+                const subList = list.filter((i) => i.sub === sub);
+                return (
+                  <li key={sub}>
+                    <Group
+                      level={2}
+                      id={`${section}-${g}-${sub}`}
+                      title={sub}
+                      count={subList.length}
+                      open={!!needle || subList.some((i) => i.active) || !collapsed.has(`${section}:${g}:${sub}`)}
+                      onToggle={() => toggle(`${section}:${g}:${sub}`)}
+                    >
+                      {subList.map(renderItem)}
+                    </Group>
+                  </li>
+                );
+              })}
             </Group>
           );
         })}
@@ -104,16 +124,16 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
 }
 
 /** 分组标题是按钮 (可折叠), 条目挂在左侧竖线下, 一眼分清 "组" 和 "页" */
-function Group({ id, title, count, open, onToggle, children }: { id: string; title: string; count: number; open: boolean; onToggle: () => void; children: React.ReactNode }) {
-  const listId = `grp-${id}`;
+function Group({ id, title, count, open, onToggle, children, level = 1 }: { id: string; title: string; count: number; open: boolean; onToggle: () => void; children: React.ReactNode; level?: 1 | 2 }) {
+  const listId = `grp-${id.replace(/\s+/g, "-")}`;
   return (
-    <div className="mt-2 first:mt-0">
+    <div className={level === 1 ? "mt-2 first:mt-0" : "mt-0.5"}>
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={open}
         aria-controls={listId}
-        className="group flex h-8 w-full items-center gap-1.5 rounded-md px-1.5 text-[13px] font-semibold text-foreground transition-colors duration-150 hover:bg-accent/60 active:bg-accent"
+        className={cn("group flex h-8 w-full items-center gap-1.5 rounded-md px-1.5 text-[13px] text-foreground transition-colors duration-150 hover:bg-accent/60 active:bg-accent", level === 1 ? "font-semibold" : "pl-2.5 font-medium text-foreground/90")}
       >
         <ChevronRight aria-hidden className={cn("size-3.5 text-muted-foreground transition-transform duration-200 ease-out motion-reduce:transition-none", open && "rotate-90")} />
         <span className="flex-1 text-left">{title}</span>
@@ -125,7 +145,7 @@ function Group({ id, title, count, open, onToggle, children }: { id: string; tit
         inert={!open || undefined}
       >
         <div id={listId} className="min-h-0 overflow-hidden">
-          <ul className="mt-0.5 mb-1 ml-[13px] border-l">{children}</ul>
+          <ul className={cn("mt-0.5 mb-1 border-l", level === 1 ? "ml-[13px]" : "ml-[22px]")}>{children}</ul>
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ export const charts: DocEntry = {
   title: "基础图表",
   section: "ui",
   group: "图表",
+  sub: "2D 图表",
   description: "看板最常用的四种图：趋势（面积）、对比（柱状）、占比（环形）、迷你走势。颜色取主题令牌，亮暗自动适配；数据变化时增量动画，数据点很多时自动关动画；悬停有提示。基于 Recharts。",
   file: "src/data/charts/area-trend.tsx",
   importFrom: "@/data",

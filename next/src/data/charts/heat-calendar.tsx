@@ -1,5 +1,5 @@
 import { m } from "motion/react";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,13 @@ const WEEK = ["一", "", "三", "", "五", "", "日"];
 export function HeatCalendar({ values, end = new Date(), weeks = 26, color = "var(--chart-1)", levels = 4, unit = "", label = "每日热力", className }: HeatCalendarProps) {
   const reduced = useReducedMotion();
   const [hover, setHover] = useState<{ d: string; v: number } | null>(null);
+  const scroller = useRef<HTMLDivElement>(null);
+  const [fade, setFade] = useState<"none" | "start" | "end" | "both">("none");
+  const syncFade = () => {
+    const el = scroller.current; if (!el) return;
+    const s = el.scrollLeft > 2, e = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+    setFade(s && e ? "both" : s ? "start" : e ? "end" : "none");
+  };
   const { cols, max, months } = useMemo(() => {
     const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
     const dow = (last.getDay() + 6) % 7; // 周一 = 0
@@ -48,11 +55,19 @@ export function HeatCalendar({ values, end = new Date(), weeks = 26, color = "va
     }
     return { cols, max: mx, months };
   }, [values, end, weeks]);
+  // 放不下时默认停在最新一周 (最右), 周数或容器宽度变化时重新对齐
+  useLayoutEffect(() => {
+    const el = scroller.current; if (!el) return;
+    const toEnd = () => { el.scrollLeft = el.scrollWidth; syncFade(); };
+    toEnd();
+    const ro = new ResizeObserver(toEnd); ro.observe(el);
+    return () => ro.disconnect();
+  }, [weeks, end]); // eslint-disable-line react-hooks/exhaustive-deps
   const level = (v: number) => (v <= 0 || !max ? 0 : Math.min(levels, Math.ceil((v / max) * levels)));
   const total = Object.values(values).reduce((s, v) => s + v, 0);
   return (
     <figure className={cn("w-full", className)}>
-      <div className="overflow-x-auto rounded-md pb-1 outline-none focus-visible:ring-2 focus-visible:ring-ring" tabIndex={0} role="group" aria-label={`${label}，可左右滚动`}>
+      <div ref={scroller} onScroll={syncFade} data-fade={fade} className="scrollbar-thin scroll-fade-x overflow-x-auto overscroll-x-contain rounded-md pb-2 outline-none focus-visible:ring-2 focus-visible:ring-ring" tabIndex={0} role="group" aria-label={`${label}，可左右滚动，默认显示最近几周`}>
         <div role="img" aria-label={`${label}，近 ${weeks} 周共 ${total.toLocaleString("zh-CN")}${unit}，最高单日 ${max.toLocaleString("zh-CN")}${unit}`} className="inline-grid gap-1" style={{ gridTemplateColumns: `auto repeat(${weeks}, 12px)` }}>
           <span />
           {cols.map((_, w) => <span key={w} className="h-4 text-[10px] whitespace-nowrap text-muted-foreground">{months.find((x) => x.col === w)?.text ?? ""}</span>)}
@@ -65,7 +80,7 @@ export function HeatCalendar({ values, end = new Date(), weeks = 26, color = "va
                 return (
                   <m.span key={w} title={`${c.d} ${c.v}${unit}`}
                     initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.4 }} animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.2, delay: reduced ? 0 : w * 0.012 }}
+                    transition={{ duration: 0.2, delay: reduced ? 0 : (weeks - 1 - w) * 0.012 }}
                     onPointerEnter={() => setHover(c)} onPointerLeave={() => setHover(null)}
                     className="size-3 rounded-[3px] ring-foreground/40 transition-shadow hover:ring-1"
                     style={{ background: l ? `color-mix(in oklch, ${color} ${25 + (l / levels) * 75}%, transparent)` : "var(--muted)" }} />

@@ -6,6 +6,7 @@ export const shareTreemap: DocEntry = {
   title: "矩形树图",
   section: "ui",
   group: "图表",
+  sub: "2D 图表",
   description: "面积就是占比，比环形图装得下多得多的项：类目、品牌、SKU 结构。两层数据时同一组同色，格子太小自动不写字。",
   file: "src/data/charts/share-treemap.tsx",
   importFrom: "@/data",
