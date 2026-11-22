@@ -9,7 +9,6 @@ import type { SectionId } from "./types";
 /** 一条章节色带: 左边大标题, 右边这一块的条目 */
 function Band({ s, heading: H = "h2" }: { s: Section; heading?: "h1" | "h2" }) {
   const list = entriesOf(s.id).map((e) => ({ key: e.slug, title: e.title, sub: e.name, href: href.entry(e) }));
-  if (s.id === "ui") list.push({ key: "foundation", title: "更多基础件", sub: "待拆分", href: href.foundation });
   return (
     <section className="chapter border-b text-white" style={{ "--cat": s.color, "--band": s.band } as React.CSSProperties}>
       <div className="grid gap-8 px-5 py-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] md:px-10 md:py-16">

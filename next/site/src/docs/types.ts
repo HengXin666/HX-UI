@@ -27,6 +27,8 @@ export interface DocEntry {
   slug: string;
   /** 组件导出名, 如 SplitText */
   name: string;
+  /** 侧栏右侧的英文短名, 默认 name */
+  en?: string;
   /** 中文名 */
   title: string;
   section: SectionId;

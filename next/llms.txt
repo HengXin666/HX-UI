@@ -20,6 +20,10 @@
 - Sheet + SheetContent(side?: "right"|"left"|"bottom"|"top"); toast.success/error/warning/info/promise from "sonner" (根部放 <Toaster />)
 - Alert(variant?: "default"|"info"|"success"|"warning"|"destructive") + AlertTitle/AlertDescription/AlertAction
 - Progress(value: number|null, size?, tone?): null 为不确定进度; Skeleton (容器加 aria-busy); Spin(variant?, size?, mode?, label?)
+- DataTable(data, columns, getRowId?, searchable?, pageSize?, selectable?, bulkActions?: (rows, clear) => ReactNode, onRowClick?, density?: "default"|"compact", loading?, empty?) from "@/data"
+- AreaTrend / BarCompare (data, x, series: {key,label}[], stacked?, horizontal?) ; Donut(data, center?, centerLabel?) ; Sparkline(values) from "@/data"
+- DatePicker(value, onChange, disabledDays?) / DateRangePicker(value, onChange, presets?, months?) from "@/components/ui/date-picker"; Calendar 默认中文
+- PaginationBar(page, total, pageSize?, onPageChange) from "@/components/ui/pagination"; AccordionTrigger(level?); Popover 有 PopoverTitle 时自动命名
 - Marquee(duration?, gap?, reverse?, vertical?, pauseOnHover?, fade?) from "@/effects/marquee": 品牌墙 / 评价无缝滚动
 
 ## 视觉组件

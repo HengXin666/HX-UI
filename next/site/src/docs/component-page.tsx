@@ -74,7 +74,7 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
         <span aria-hidden>/</span>
         <span>{no}</span>
       </p>
-      <h1 className="text-5xl font-medium tracking-[-0.04em] md:text-6xl">{e.title}<span className="ml-3 align-middle font-mono text-base font-normal tracking-normal text-muted-foreground">{`<${e.name} />`}</span></h1>
+      <h1 className="text-5xl font-medium tracking-[-0.04em] md:text-6xl">{e.title}<span className="ml-3 align-middle font-mono text-base font-normal tracking-normal text-muted-foreground">{/^[A-Z]\w*$/.test(e.name) ? `<${e.name} />` : e.name}</span></h1>
       <p className="mt-4 max-w-2xl text-pretty text-muted-foreground">{e.description}</p>
 
       <div className="mt-8 flex flex-wrap items-center gap-2">
@@ -171,7 +171,7 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
         {next ? (
           <a href={href.entry(next)} className="rounded-xl border p-4 text-right hover:bg-accent/50 transition-colors duration-150"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">下一个<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{next.title}</span></a>
         ) : (
-          <a href={cat.id === "ui" ? href.foundation : href.section(cat.id)} className="rounded-xl border p-4 text-right hover:bg-accent/50 transition-colors duration-150"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">{cat.id === "ui" ? "下一个" : "回到"}<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{cat.id === "ui" ? "更多基础件" : `${cat.title}总览`}</span></a>
+          <a href={href.section(cat.id)} className="rounded-xl border p-4 text-right hover:bg-accent/50 transition-colors duration-150"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">回到<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{`${cat.title}总览`}</span></a>
         )}
       </nav>
       <p className="mt-10 flex items-center gap-2 text-xs text-muted-foreground"><Sparkles className="size-3.5" />系统开了「减弱动效」时，组件直接显示最终状态。</p>

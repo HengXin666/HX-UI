@@ -8,7 +8,6 @@ import { entryBySlug } from "./docs/registry";
 import { href, parse, useHash, type Route } from "./docs/router";
 import "./docs/docs.css";
 
-const Foundation = React.lazy(() => import("./docs/foundation"));
 
 export function App() {
   const hash = useHash();
@@ -28,8 +27,6 @@ export function App() {
   else if (route.name === "component") {
     const e = entryBySlug(route.slug);
     page = e && e.section === route.section ? <ComponentPage key={e.slug} entry={e} /> : <SectionIndex section={route.section} />;
-  } else if (route.name === "foundation") {
-    page = <React.Suspense fallback={<p className="p-10 text-sm text-muted-foreground">加载中…</p>}><Foundation /></React.Suspense>;
   }
   const pageKey = route.name === "component" ? `c:${route.slug}` : route.name === "section" ? `s:${route.section}` : route.name;
   return (

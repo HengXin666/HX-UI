@@ -28,11 +28,10 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
   const [q, setQ] = React.useState("");
   const [collapsed, toggle] = useCollapsed();
   const s = sectionOf(section);
-  const items: Item[] = entriesOf(section).map((e) => ({ key: e.slug, label: e.title, en: e.name, href: href.entry(e), active: route.name === "component" && route.slug === e.slug, group: e.group }));
-  if (section === "ui") items.push({ key: "foundation", label: "更多基础件", href: href.foundation, active: route.name === "foundation", group: "未整理", tag: "待拆分" });
+  const items: Item[] = entriesOf(section).map((e) => ({ key: e.slug, label: e.title, en: e.en ?? e.name, href: href.entry(e), active: route.name === "component" && route.slug === e.slug, group: e.group }));
   const needle = q.trim().toLowerCase();
   const shown = needle ? items.filter((i) => i.label.toLowerCase().includes(needle) || i.key.includes(needle)) : items;
-  const groups = [...s.groups, "未整理"];
+  const groups = s.groups;
 
   return (
     <nav aria-label={s.title} className="flex h-full flex-col gap-3 p-3" style={{ "--cat": s.color } as React.CSSProperties}>
