@@ -36,3 +36,5 @@ export { Surface3D } from "./charts3d/surface3d";
 export type { Surface3DProps } from "./charts3d/surface3d";
 export { GlobeArcs } from "./charts3d/globe-arcs";
 export type { GlobeArc, GlobeArcsProps } from "./charts3d/globe-arcs";
+export { Sunburst } from "./charts/sunburst";
+export type { SunburstNode, SunburstProps } from "./charts/sunburst";
