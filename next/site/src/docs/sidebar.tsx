@@ -10,28 +10,33 @@ import type { SectionId } from "./types";
 
 type Item = { key: string; label: string; en?: string; href: string; active: boolean; group: string; sub?: string; tag?: string };
 
-const STORE = "hx-docs-collapsed";
-function useCollapsed() {
+// 记住用户展开过的组; 默认全部折叠
+const STORE = "hx-docs-expanded";
+function useExpanded() {
   const [set, setSet] = React.useState<Set<string>>(() => {
     try { return new Set(JSON.parse(localStorage.getItem(STORE) || "[]")); } catch { return new Set(); }
   });
-  const toggle = (k: string) => setSet((old) => {
-    const n = new Set(old); if (n.has(k)) n.delete(k); else n.add(k);
-    try { localStorage.setItem(STORE, JSON.stringify([...n])); } catch { /* 隐私模式 */ }
-    return n;
-  });
-  return [set, toggle] as const;
+  const save = (n: Set<string>) => { try { localStorage.setItem(STORE, JSON.stringify([...n])); } catch { /* 隐私模式 */ } return n; };
+  const toggle = (k: string) => setSet((old) => { const n = new Set(old); if (n.has(k)) n.delete(k); else n.add(k); return save(n); });
+  // 打开某页时自动展开它所在的组, 之后用户仍可手动折叠
+  const reveal = React.useCallback((keys: string[]) => setSet((old) => keys.every((k) => old.has(k)) ? old : save(new Set([...old, ...keys]))), []);
+  return [set, toggle, reveal] as const;
 }
 
 /** 侧栏只列当前分区. 条目超过 12 个才出现筛选框 */
 export function Sidebar({ route, section, onNavigate, showSections }: { route: Route; section: SectionId; onNavigate?: () => void; showSections?: boolean }) {
   const [q, setQ] = React.useState("");
-  const [collapsed, toggle] = useCollapsed();
+  const [expanded, toggle, reveal] = useExpanded();
   const s = sectionOf(section);
   const items: Item[] = entriesOf(section).map((e) => ({ key: e.slug, label: e.title, en: e.en ?? e.name, href: href.entry(e), active: route.name === "component" && route.slug === e.slug, group: e.group, sub: e.sub }));
   const needle = q.trim().toLowerCase();
   const shown = needle ? items.filter((i) => i.label.toLowerCase().includes(needle) || i.key.includes(needle)) : items;
   const groups = s.groups;
+  const active = items.find((i) => i.active);
+  React.useEffect(() => {
+    if (!active) return;
+    reveal(active.sub ? [`${section}:${active.group}`, `${section}:${active.group}:${active.sub}`] : [`${section}:${active.group}`]);
+  }, [active?.key, section, reveal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const renderItem = (i: Item) => (
     <li key={i.key}>
@@ -92,8 +97,8 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
               id={`${section}-${g}`}
               title={g}
               count={list.length}
-              // 筛选时或当前页在组里时强制展开
-              open={!!needle || list.some((i) => i.active) || !collapsed.has(`${section}:${g}`)}
+              // 筛选时强制展开; 其余按用户展开状态, 默认折叠
+              open={!!needle || expanded.has(`${section}:${g}`)}
               onToggle={() => toggle(`${section}:${g}`)}
             >
               {list.filter((i) => !i.sub).map(renderItem)}
@@ -106,7 +111,7 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
                       id={`${section}-${g}-${sub}`}
                       title={sub}
                       count={subList.length}
-                      open={!!needle || subList.some((i) => i.active) || !collapsed.has(`${section}:${g}:${sub}`)}
+                      open={!!needle || expanded.has(`${section}:${g}:${sub}`)}
                       onToggle={() => toggle(`${section}:${g}:${sub}`)}
                     >
                       {subList.map(renderItem)}
