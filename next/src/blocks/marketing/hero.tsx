@@ -1,63 +1,79 @@
-import type * as React from "react";
+import * as React from "react";
 import { ArrowRight } from "lucide-react";
+import { m, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { Reveal } from "@/motion/reveal";
-import { TextReveal } from "@/motion/text-effect";
 import { Backdrop } from "@/effects/backdrop";
 import { cn } from "@/lib/utils";
 
 interface HeroProps {
   eyebrow?: { label: string; href?: string };
   title: string;
-  /** 标题里要加渐变强调的那段 */
+  /** 第二行, 用弱化色; 主次两句话的写法, 不再做渐变字 */
   highlight?: string;
   description: string;
   actions?: React.ReactNode;
-  /** 产品截图 / 活组件 / 视频 */
+  /** 产品界面 / 活组件 / 视频 */
   media?: React.ReactNode;
   align?: "center" | "left";
+  /** 背景: 默认无. 成熟发布页靠排版和产品图撑场面, 不靠光晕 */
   backdrop?: "grid" | "dots" | "aurora" | "glow" | "none";
+  /** 媒体随滚动从倾斜摆正 (仅 transform) */
+  tilt?: boolean;
   className?: string;
 }
 
-/** 首屏: 徽标 → 标题逐词入场 → 说明 → 按钮 → 媒体上浮. */
-export function Hero({ eyebrow, title, highlight, description, actions, media, align = "center", backdrop = "glow", className }: HeroProps) {
+/** 媒体: 进视口前带透视倾斜, 滚动到位后摆正. 减弱动效时始终平放. */
+function TiltMedia({ children, enabled }: { children: React.ReactNode; enabled: boolean }) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "start 0.35"] });
+  const rotateX = useTransform(scrollYProgress, [0, 1], [14, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
+  const y = useTransform(scrollYProgress, [0, 1], [24, 0]);
+  if (!enabled || reduce) return <div ref={ref}>{children}</div>;
+  return (
+    <div ref={ref} style={{ perspective: 1600 }}>
+      <m.div style={{ rotateX, scale, y, transformOrigin: "50% 0%" }}>{children}</m.div>
+    </div>
+  );
+}
+
+/** 首屏: 公告 → 两句标题 (主句 + 弱化句) → 说明 → 按钮 → 产品界面. */
+export function Hero({ eyebrow, title, highlight, description, actions, media, align = "left", backdrop = "none", tilt = true, className }: HeroProps) {
   const center = align === "center";
   return (
-    <section className={cn("relative overflow-hidden px-4 pb-16 pt-20 md:pt-28", className)}>
+    <section className={cn("relative px-5 pt-16 md:px-8 md:pt-24", media ? "pb-0" : "pb-20", className)}>
       {backdrop !== "none" && <Backdrop variant={backdrop} />}
-      {backdrop === "glow" && <Backdrop variant="grid" className="opacity-50 [mask-image:radial-gradient(ellipse_55%_45%_at_50%_0%,#000_10%,transparent_75%)]" />}
-      <div className={cn("relative mx-auto max-w-6xl", center ? "text-center" : "grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]")}>
-        <div className={cn(center && "mx-auto max-w-3xl")}>
-          {eyebrow && (
-            <Reveal preset="blur" inView={false}>
-              <a href={eyebrow.href ?? "#"} className="group mb-6 inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-1 text-xs text-muted-foreground backdrop-blur transition-colors hover:text-foreground">
-                <span className="size-1.5 rounded-full bg-brand" />
-                {eyebrow.label}
-                <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
-              </a>
-            </Reveal>
-          )}
-          <h1 className="text-balance text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl md:text-6xl">
-            <TextReveal text={title} />
-            {highlight && (
-              <span className="hx-text-gradient block"><TextReveal text={highlight} delay={0.25} /></span>
-            )}
-          </h1>
-          <Reveal preset="up" delay={0.35} inView={false}>
-            <p className={cn("mt-6 text-pretty text-lg text-muted-foreground", center && "mx-auto max-w-2xl")}>{description}</p>
+      <div className={cn("relative mx-auto max-w-6xl", center && "text-center")}>
+        {eyebrow && (
+          <Reveal preset="fade" inView={false}>
+            <a href={eyebrow.href ?? "#"} className="group mb-8 inline-flex items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground">
+              <span className="rounded-full border px-2 py-px text-[11px] font-medium text-foreground">新</span>
+              {eyebrow.label}
+              <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
+            </a>
           </Reveal>
-          {actions && (
-            <Reveal preset="up" delay={0.45} inView={false}>
-              <div className={cn("mt-8 flex flex-wrap gap-3", center && "justify-center")}>{actions}</div>
-            </Reveal>
-          )}
-        </div>
-        {media && (
-          <Reveal preset="up" delay={0.55} inView={false} className={cn(center && "mx-auto mt-16 max-w-5xl")}>
-            {media}
+        )}
+        <Reveal preset="up" inView={false}>
+          <h1 className={cn("text-balance text-[2.6rem] font-semibold leading-[1.04] tracking-[-0.035em] sm:text-6xl md:text-7xl", center ? "mx-auto max-w-4xl" : "max-w-4xl")}>
+            {title}
+            {highlight && <span className="block text-muted-foreground/70">{highlight}</span>}
+          </h1>
+        </Reveal>
+        <Reveal preset="up" delay={0.08} inView={false}>
+          <p className={cn("mt-6 max-w-xl text-pretty text-[17px] leading-relaxed text-muted-foreground md:text-lg", center && "mx-auto")}>{description}</p>
+        </Reveal>
+        {actions && (
+          <Reveal preset="up" delay={0.14} inView={false}>
+            <div className={cn("mt-9 flex flex-wrap items-center gap-x-5 gap-y-3", center && "justify-center")}>{actions}</div>
           </Reveal>
         )}
       </div>
+      {media && (
+        <Reveal preset="fade" delay={0.2} inView={false} className="relative mx-auto mt-16 max-w-6xl md:mt-20">
+          <TiltMedia enabled={tilt}>{media}</TiltMedia>
+        </Reveal>
+      )}
     </section>
   );
 }

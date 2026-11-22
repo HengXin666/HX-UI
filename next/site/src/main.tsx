@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import "@fontsource-variable/inter";
 import "@/styles/globals.css";
 import { ThemeProvider, themeScript } from "@/hooks/use-theme";
 import { MotionProvider } from "@/motion/provider";

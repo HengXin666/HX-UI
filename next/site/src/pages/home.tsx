@@ -5,7 +5,6 @@ import { Section } from "@/blocks/marketing/section";
 import { SiteHeader } from "@/blocks/marketing/site-header";
 import { FeatureBento } from "@/blocks/marketing/feature-bento";
 import { ThemeToggle } from "@/blocks/shell/theme-toggle";
-import { ShimmerButton } from "@/effects/shimmer-button";
 import { Stagger, StaggerItem } from "@/motion/reveal";
 import { TiltCard } from "@/effects/tilt-card";
 import { go } from "../router";
@@ -33,8 +32,8 @@ export function Home() {
         description="shadcn/ui 的组件底座，Motion 的手感，精选的特效和真实可用的区块。发布页、电商、运维面板、统计大屏，一套搞定。"
         actions={
           <>
-            <ShimmerButton onClick={() => go("launch")}>看模板 <ArrowRight className="size-4" /></ShimmerButton>
-            <Button size="lg" variant="outline" className="h-11 rounded-full px-6" onClick={() => go("components")}>浏览组件</Button>
+            <Button size="lg" className="h-10 rounded-full px-5" onClick={() => go("launch")}>看模板</Button>
+            <button type="button" className="group inline-flex items-center gap-1.5 text-sm font-medium" onClick={() => go("components")}>浏览组件 <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" /></button>
           </>
         }
       />
