@@ -43,7 +43,7 @@ writeFileSync(
 );
 
 if (process.argv.includes("--dev")) {
-  const server = await createServer(config({ server: { port: 5180 } }));
+  const server = await createServer(config({ server: { port: 5180, strictPort: true, host: true } }));
   await server.listen();
   server.printUrls();
 } else {
