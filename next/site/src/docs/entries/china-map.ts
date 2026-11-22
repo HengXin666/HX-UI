@@ -1,0 +1,42 @@
+import type { DocEntry } from "../types";
+
+export const chinaMap: DocEntry = {
+  slug: "china-map",
+  name: "ChinaMap",
+  title: "分省地图",
+  section: "ui",
+  group: "图表",
+  sub: "2D 图表",
+  description: "各省销售额、用户数、门店数：可以按色阶给省份着色，也可以在省份中心画气泡，旁边附排行，右下角有南海诸岛小图。数据变化时，省份颜色渐变到新档位，气泡从零长出来或缩回去，排行按新名次滑动。悬停图例的某一档，会高亮这一档的省份；方向键按地理方位在省份之间移动。边界数据按需加载，gzip 后约 12 KB，不进首屏。",
+  file: "src/data/charts/china-map.tsx",
+  importFrom: "@/data",
+  demo: () => import("./china-map.demo"),
+  source: () => import("@/data/charts/china-map.tsx?raw").then((m) => m.default),
+  defaults: { dataset: "gmv", mode: "fill", classes: "5", showLabels: true, southSea: true, ranking: true },
+  componentDefaults: { mode: "fill", classes: "5", showLabels: true, southSea: true, ranking: true },
+  demoOnly: ["dataset"],
+  presets: [
+    { label: "GMV 色阶", values: { dataset: "gmv", mode: "fill", classes: "5", showLabels: true, southSea: true, ranking: true } },
+    { label: "新能源 · 气泡", values: { dataset: "ev", mode: "bubble", classes: "5", showLabels: false, southSea: true, ranking: true } },
+    { label: "纯地图", values: { dataset: "gmv", mode: "fill", classes: "7", showLabels: false, southSea: true, ranking: false } },
+  ],
+  controls: [
+    { type: "select", key: "dataset", label: "数据", options: [{ value: "gmv", label: "各省 GMV" }, { value: "ev", label: "新能源上险量" }] },
+    { type: "select", key: "mode", label: "形式", options: [{ value: "fill", label: "色阶" }, { value: "bubble", label: "气泡" }] },
+    { type: "select", key: "classes", label: "分档", options: [{ value: "3", label: "3 档" }, { value: "5", label: "5 档" }, { value: "7", label: "7 档" }] },
+    { type: "toggle", key: "showLabels", label: "省名" },
+    { type: "toggle", key: "southSea", label: "南海诸岛" },
+    { type: "toggle", key: "ranking", label: "排行" },
+  ],
+  usage: (v) => `import { ChinaMap } from "@/data";\n\n<ChinaMap\n  data={[\n    { name: "广东", value: 1380 },\n    { name: "江苏", value: 1210 },\n    { name: "浙江省", value: 1105 },\n  ]}${v.mode !== "fill" ? `\n  mode="${v.mode}"` : ""}${v.classes !== "5" ? `\n  classes={${v.classes}}` : ""}${!v.showLabels ? "\n  showLabels={false}" : ""}${!v.southSea ? "\n  southSea={false}" : ""}${!v.ranking ? "\n  ranking={0}" : ""}\n  metric="GMV"\n  unit=" 亿"\n  onSelect={(name) => console.log(name)}\n/>\n`,
+  props: [
+    { name: "data", type: "{ name, value }[]", description: "name 写全称、简称或 adcode 都行（广东 / 广东省 / 440000）。没给数据的省份显示成灰色。换一份数组即可增删改。" },
+    { name: "mode", type: '"fill" | "bubble"', default: '"fill"', description: "fill 按色阶着色；bubble 在省份中心画圆，面积表示数值，适合看绝对量。" },
+    { name: "classes", type: "number", default: "5", description: "色阶档数（3–7），等距分档，取整到好读的数字。" },
+    { name: "ranking", type: "number", default: "8", description: "显示前 N 名排行，0 不显示。容器宽 640px 以上时放在右侧，否则放在下方。" },
+    { name: "selected / onSelect", type: "string | null / (name) => void", description: "选中省份：点击省份或排行、回车选中，Esc 取消。可以受控使用。" },
+    { name: "showLabels / southSea", type: "boolean", default: "true / true", description: "省份简称（放不下就不写）；南海诸岛小图。公开发布的中国地图必须完整，包含台湾和南海诸岛。" },
+    { name: "metric / unit / format", type: "string / string / (v) => string", description: "指标名、单位、数字格式，用于提示框、排行和读屏文本。" },
+  ],
+  stageHeight: 760,
+};

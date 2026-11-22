@@ -43,3 +43,5 @@ export type { RoseDatum, RoseProps, RoseSeries } from "./charts/rose";
 export { useArcTween, type Arc } from "./charts/arc-tween";
 export { Gantt, ganttDate } from "./charts/gantt";
 export type { GanttProps, GanttTask } from "./charts/gantt";
+export { ChinaMap } from "./charts/china-map";
+export type { ChinaMapDatum, ChinaMapProps } from "./charts/china-map";
