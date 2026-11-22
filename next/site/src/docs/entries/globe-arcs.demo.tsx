@@ -1,6 +1,7 @@
+import * as React from "react";
 import { GlobeArcs, type GlobeArc } from "@/data";
 import type { DemoProps } from "../types";
-import { ChartCard } from "./_chart";
+import { ChartCard, DataOps, seeded } from "./_chart";
 
 const C = {
   上海: [31.23, 121.47], 深圳: [22.54, 114.06], 洛杉矶: [34.05, -118.24], 纽约: [40.71, -74.0], 伦敦: [51.5, -0.12], 法兰克福: [50.11, 8.68],
@@ -20,12 +21,29 @@ const CDN = [
   arc("洛杉矶", "纽约", 810),
 ];
 
+// 可新增的线路
+const MORE_ORDERS = [arc("上海", "首尔", 6800), arc("深圳", "雅加达", 5400), arc("上海", "伦敦", 7600), arc("深圳", "纽约", 6900)];
+const MORE_CDN = [arc("上海", "新加坡", 520), arc("深圳", "新加坡", 460), arc("纽约", "法兰克福", 380)];
+const key = (a: GlobeArc) => `${a.fromName}→${a.toName}`;
+
 export default function GlobeArcsDemo({ values }: DemoProps) {
   const cdn = values.data === "cdn";
-  const arcs = cdn ? CDN : ORDERS;
+  const base = cdn ? CDN : ORDERS;
+  // 演示数据为虚构
+  const [arcs, setArcs] = React.useState(base);
+  React.useEffect(() => setArcs(base), [base]);
+  const rnd = React.useRef(seeded(61));
+  const pool = [...(cdn ? MORE_CDN : MORE_ORDERS), ...base].filter((a) => !arcs.some((x) => key(x) === key(a)));
   const total = arcs.reduce((s, a) => s + (a.value ?? 0), 0);
   return (
-    <ChartCard wide title={cdn ? "CDN 回源流量 · 近 1 小时" : "跨境订单流向 · 本月"} value={cdn ? `${(total / 1000).toFixed(2)} TB` : `${total.toLocaleString("zh-CN")} 单`}>
+    <ChartCard wide title={cdn ? "CDN 回源流量 · 近 1 小时" : "跨境订单流向 · 本月"} value={cdn ? `${(total / 1000).toFixed(2)} TB` : `${total.toLocaleString("zh-CN")} 单`} delta={<span className="text-muted-foreground">{arcs.length} 条线路</span>}>
+      <DataOps
+        addLabel="新增线路" removeLabel="删除一条" canAdd={pool.length > 0} canRemove={arcs.length > 1}
+        onAdd={() => setArcs((d) => (pool[0] ? [...d, pool[0]] : d))}
+        onRemove={() => setArcs((d) => { const gone = Math.floor(rnd.current() * d.length); return d.filter((_, i) => i !== gone); })}
+        onUpdate={() => setArcs((d) => d.map((a) => ({ ...a, value: Math.round((a.value ?? 1) * (0.4 + rnd.current() * 1.2)) })))}
+        onReset={() => setArcs(base)}
+      />
       <GlobeArcs
         arcs={arcs}
         valueLabel={cdn ? "回源" : "订单"}
@@ -35,6 +53,7 @@ export default function GlobeArcsDemo({ values }: DemoProps) {
         focus={cdn ? [20, 60] : [28, 118]}
         label={cdn ? "CDN 回源地球飞线" : "跨境订单地球飞线"}
       />
+      <p className="mt-3 text-[11px] text-muted-foreground">演示数据为虚构。</p>
     </ChartCard>
   );
 }

@@ -4,7 +4,7 @@ import * as THREE from "three";
 import type { Surface3DProps } from "../surface3d";
 import { TipRow, type SceneApi } from "../frame";
 import { useThemeColors } from "../theme";
-import { axisLabelClass, Controls, FloorGrid, LabelLayer, LabelProjector, type LabelSpec } from "./common";
+import { axisLabelClass, Controls, FloorGrid, LabelLayer, LabelMover, LabelProjector, useLabelMotion, type LabelSpec } from "./common";
 
 const VARS = ["--chart-1", "--chart-2", "--chart-3", "--chart-4", "--border", "--foreground"] as const;
 const S = 6;
@@ -16,7 +16,9 @@ export default function Surface3DScene(props: Props) {
   const resetRef = useRef<(() => void) | null>(null);
   const home: [number, number, number] = [6.4, 4.8, 7];
   const els = useRef<(HTMLElement | null)[]>([]);
-  const labels = useMemo(() => surfaceLabels(props), [props.values, props.xRange, props.yRange, props.xLabel, props.yLabel, props.format]); // eslint-disable-line react-hooks/exhaustive-deps
+  const want = useMemo(() => surfaceLabels(props), [props.values, props.xRange, props.yRange, props.xLabel, props.yLabel, props.format]); // eslint-disable-line react-hooks/exhaustive-deps
+  // 峰值标注跟着新峰滑过去
+  const { labels, map } = useLabelMotion(want);
   return (
     <div className="relative h-full w-full">
     <Canvas
@@ -34,6 +36,7 @@ export default function Surface3DScene(props: Props) {
       <Surface {...props} colors={colors} />
       <FloorGrid w={S} d={S} step={S / 6} color={colors["--border"]} opacity={0.9} />
       <Controls api={props.api} fit={{ radius: S * 0.68, dir: [0.9, 0.72, 1], margin: 0.95 }} target={[0, H * 0.3, 0]} autoRotate={props.autoRotate} autoRotateSpeed={0.45} minDistance={5} maxDistance={22} resetRef={resetRef} />
+      <LabelMover map={map} reduced={props.api.reduced} />
       <LabelProjector items={labels} els={els} />
     </Canvas>
     <LabelLayer items={labels} els={els} />
@@ -170,7 +173,7 @@ function formatAxis(v: number) {
   return a >= 1000 ? v.toLocaleString("zh-CN", { maximumFractionDigits: 0 }) : a >= 10 ? v.toFixed(0) : v.toFixed(a >= 1 ? 1 : 2);
 }
 
-function surfaceLabels({ values, xRange = [0, 1], yRange = [0, 1], xLabel = "X", yLabel = "Y", format = (v: number) => v.toFixed(2) }: Surface3DProps): LabelSpec[] {
+function surfaceLabels({ values, xRange = [0, 1], yRange = [0, 1], xLabel = "X", yLabel = "Y", format = (v: number) => v.toFixed(2) }: Surface3DProps): (LabelSpec & { id: string })[] {
   const rows = values.length, cols = values[0]?.length ?? 0;
   const flat = values.flat();
   const hi = Math.max(...flat), lo = Math.min(...flat);
@@ -178,10 +181,10 @@ function surfaceLabels({ values, xRange = [0, 1], yRange = [0, 1], xLabel = "X",
   const ticks = [0, 0.5, 1];
   const strong = axisLabelClass + " text-foreground";
   return [
-    { pos: new THREE.Vector3((pc / (cols - 1) - 0.5) * S, (hi === lo ? 0.5 : 1) * H + 0.35, (pr / (rows - 1) - 0.5) * S), text: `峰值 ${format(hi)}`, className: "whitespace-nowrap rounded border bg-background/80 px-1.5 py-0.5 font-mono text-[10px] backdrop-blur" },
-    ...ticks.map((t) => ({ pos: new THREE.Vector3((t - 0.5) * S, 0, S / 2 + 0.45), text: formatAxis(xRange[0] + t * (xRange[1] - xRange[0])) })),
-    ...ticks.map((t) => ({ pos: new THREE.Vector3(-S / 2 - 0.55, 0, (t - 0.5) * S), text: formatAxis(yRange[0] + t * (yRange[1] - yRange[0])) })),
-    { pos: new THREE.Vector3(0, 0, S / 2 + 0.95), text: `${xLabel} →`, className: strong },
-    { pos: new THREE.Vector3(-S / 2 - 1.5, 0, S * 0.25), text: `${yLabel} →`, className: strong },
+    { id: "peak", pos: new THREE.Vector3((pc / (cols - 1) - 0.5) * S, (hi === lo ? 0.5 : 1) * H + 0.35, (pr / (rows - 1) - 0.5) * S), text: `峰值 ${format(hi)}`, className: "whitespace-nowrap rounded border bg-background/80 px-1.5 py-0.5 font-mono text-[10px] backdrop-blur" },
+    ...ticks.map((t) => ({ id: `x${t}`, pos: new THREE.Vector3((t - 0.5) * S, 0, S / 2 + 0.45), text: formatAxis(xRange[0] + t * (xRange[1] - xRange[0])) })),
+    ...ticks.map((t) => ({ id: `y${t}`, pos: new THREE.Vector3(-S / 2 - 0.55, 0, (t - 0.5) * S), text: formatAxis(yRange[0] + t * (yRange[1] - yRange[0])) })),
+    { id: "xl", pos: new THREE.Vector3(0, 0, S / 2 + 0.95), text: `${xLabel} →`, className: strong },
+    { id: "yl", pos: new THREE.Vector3(-S / 2 - 1.5, 0, S * 0.25), text: `${yLabel} →`, className: strong },
   ];
 }

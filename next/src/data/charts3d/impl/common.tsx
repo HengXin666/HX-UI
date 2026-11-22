@@ -45,10 +45,14 @@ export function Controls({ api, home: fixedHome, fit, target = [0, 0, 0], autoRo
     return v.toArray() as [number, number, number];
   }, [fit?.radius, fit?.dir.join(), fit?.margin, fixedHome?.join(), size.width, size.height, target.join()]); // eslint-disable-line react-hooks/exhaustive-deps
   // 用户还没动过相机时, 画布尺寸变化就重新取景
+  // 之后数据增删让取景变化时飞过去, 不跳
+  const framed = useRef(false);
   useEffect(() => {
     if (touched.current) return;
+    if (framed.current && !api.reduced) { fly.current = { from: camera.position.clone(), to: new THREE.Vector3(...home), t: 0 }; invalidate(); return; }
+    framed.current = true;
     camera.position.set(...home); ref.current?.update(); invalidate();
-  }, [home, camera, invalidate]);
+  }, [home, camera, invalidate]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const move = (fn: (s: THREE.Spherical) => void) => {
     const c = ref.current; if (!c) return;
@@ -133,6 +137,8 @@ export function FloorGrid({ w, d, step = 1, color, opacity = 0.35, y = 0 }: { w:
 export const axisLabelClass = "pointer-events-none select-none whitespace-nowrap font-mono text-[10px] text-muted-foreground";
 
 export interface LabelSpec {
+  /** 稳定键; 数据增删时标签按它配对, 新标签淡入 */
+  id?: string;
   pos: THREE.Vector3;
   text: React.ReactNode;
   className?: string;
@@ -159,12 +165,39 @@ export function LabelProjector({ items, els, facing = false }: { items: LabelSpe
   return null;
 }
 
+type LabelMap = Map<string, { pos: THREE.Vector3; to: THREE.Vector3 }>;
+
+/**
+ * 标签按 id 配对: 同一个标签换位置时不跳, 由 LabelMover 逐帧滑过去; 新标签直接放在目标位置 (LabelLayer 负责淡入).
+ * want 里的 pos 是目标位置.
+ */
+export function useLabelMotion(want: (LabelSpec & { id: string })[]) {
+  const map = useRef<LabelMap>(new Map());
+  const labels = useMemo(() => {
+    const next: LabelMap = new Map();
+    for (const w of want) {
+      const old = map.current.get(w.id);
+      next.set(w.id, old ? { pos: old.pos, to: w.pos } : { pos: w.pos.clone(), to: w.pos });
+    }
+    map.current = next;
+    return want.map((w) => ({ ...w, pos: next.get(w.id)!.pos }));
+  }, [want]);
+  return { labels, map };
+}
+
+export function LabelMover({ map, reduced }: { map: React.MutableRefObject<LabelMap>; reduced: boolean }) {
+  useFrame((_, dt) => {
+    map.current.forEach((l) => { if (reduced) l.pos.copy(l.to); else l.pos.lerp(l.to, Math.min(1, dt * 8)); });
+  });
+  return null;
+}
+
 /** 画布外的标签层, 配合 LabelProjector 使用 */
 export function LabelLayer({ items, els }: { items: LabelSpec[]; els: React.MutableRefObject<(HTMLElement | null)[]> }) {
   return (
     <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
       {items.map((it, i) => (
-        <span key={i} ref={(el) => { els.current[i] = el; }} className={"absolute left-0 top-0 opacity-0 transition-opacity duration-200 " + (it.className ?? axisLabelClass)}>
+        <span key={it.id ?? i} ref={(el) => { els.current[i] = el; }} className={"absolute left-0 top-0 opacity-0 transition-opacity duration-200 " + (it.className ?? axisLabelClass)}>
           {it.text}
         </span>
       ))}

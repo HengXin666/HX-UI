@@ -8,7 +8,7 @@ export const surface3d: DocEntry = {
   section: "ui",
   group: "图表",
   sub: "3D 图表",
-  description: "两个变量一起变时结果怎么走：定价 × 折扣 → 利润，并发 × 命中率 → 延迟。颜色按高度渐变，自动标出峰值；悬停显示三个值并落一条垂线到地面。换数据或分辨率时曲面平滑变形，减弱动效时直接到位。",
+  description: "两个变量一起变时结果怎么走：定价 × 折扣 → 利润，并发 × 命中率 → 延迟。颜色按高度渐变，自动标出峰值；悬停显示三个值并落一条垂线到地面。换数据或分辨率时曲面平滑变形，峰值标注跟着新峰滑过去；演示里可以叠加或移除局部峰。减弱动效时直接到位。",
   file: "src/data/charts3d/surface3d.tsx",
   importFrom: "@/data",
   demo: () => import("./surface-3d.demo"),

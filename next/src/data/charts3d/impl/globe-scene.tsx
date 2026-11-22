@@ -1,7 +1,7 @@
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import type { GlobeArcsProps } from "../globe-arcs";
+import type { GlobeArc, GlobeArcsProps } from "../globe-arcs";
 import { TipRow, type SceneApi } from "../frame";
 import { isLand } from "../land-mask";
 import { useThemeColors } from "../theme";
@@ -26,6 +26,7 @@ export default function GlobeScene(props: Props) {
   const home = toVec(focus[0] - 12, focus[1], 3.1).toArray() as [number, number, number];
   const els = useRef<(HTMLElement | null)[]>([]);
   const labels = useMemo<LabelSpec[]>(() => endpoints(props.arcs, props.points).filter((p) => p.name).map((p) => ({
+    id: p.at.join(),
     pos: toVec(p.at[0], p.at[1], 1.035), text: p.name,
     className: "select-none whitespace-nowrap rounded bg-background/70 px-1 font-mono text-[10px] text-foreground backdrop-blur-sm",
   })), [props.arcs, props.points]);
@@ -77,64 +78,47 @@ function Globe({ arcs, points = [], format = (v) => v.toLocaleString("zh-CN"), v
   useEffect(() => () => { dots.dispose(); disc.dispose(); }, [dots, disc]);
 
   const vmax = Math.max(1e-9, ...arcs.map((a) => a.value ?? 1));
-  const built = useMemo(() => arcs.map((a, i) => {
-    const A = toVec(a.from[0], a.from[1]), B = toVec(a.to[0], a.to[1]);
-    const ang = A.angleTo(B);
-    const alt = 0.06 + ang * 0.2;
-    const pts = Array.from({ length: 48 }, (_, k) => {
-      const t = k / 47;
-      const v = slerp(A, B, t);
-      return v.multiplyScalar(1 + alt * Math.sin(Math.PI * t));
-    });
-    const curve = new THREE.CatmullRomCurve3(pts);
-    const r = 0.0032 + 0.0058 * ((a.value ?? 1) / vmax);
-    const tube = new THREE.TubeGeometry(curve, TUBE, r, RADIAL, false);
-    const hit = new THREE.TubeGeometry(curve, 24, 0.03, 4, false);
-    const flowGeo = tube.clone();
-    return { a, A, B, tube, hit, flowGeo, phase: (i * 0.37) % 1, speed: 0.55 + (i % 3) * 0.12 };
-  }), [arcs, vmax]);
-  useEffect(() => () => built.forEach((b) => { b.tube.dispose(); b.hit.dispose(); b.flowGeo.dispose(); }), [built]);
-
-  // 渐变: 起点 chart-2, 终点 chart-1
+  // 飞线按 "起点→终点" 配对: 新线从起点画到终点, 删掉的线从起点收回到终点后移除, 量变化时粗细过渡
+  const [leaving, setLeaving] = useState<Map<string, GlobeArc>>(new Map());
+  const prevArcs = useRef<GlobeArc[]>(arcs);
+  const live = useMemo(() => new Map(arcs.map((a) => [arcKey(a), a])), [arcs]);
   useEffect(() => {
-    const c0 = new THREE.Color(colors["--chart-2"]), c1 = new THREE.Color(colors["--chart-1"]), tmp = new THREE.Color();
-    for (const b of built) for (const g of [b.tube, b.flowGeo]) {
-      const n = g.getAttribute("position").count;
-      const col = new Float32Array(n * 3);
-      for (let i = 0; i < n; i++) { const u = Math.floor(i / (RADIAL + 1)) / TUBE; tmp.copy(c0).lerp(c1, u); col.set([tmp.r, tmp.g, tmp.b], i * 3); }
-      g.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    }
-  }, [built, colors]);
+    const gone = prevArcs.current.filter((a) => !live.has(arcKey(a)));
+    prevArcs.current = arcs;
+    setLeaving((m) => {
+      const next = new Map([...m].filter(([k]) => !live.has(k)));
+      if (!api.reduced) gone.forEach((a) => next.set(arcKey(a), a));
+      return next;
+    });
+  }, [arcs]); // eslint-disable-line react-hooks/exhaustive-deps
+  const shown = useMemo(() => [...arcs.map((a) => ({ a, out: false })), ...[...leaving.values()].map((a) => ({ a, out: true }))], [arcs, leaving]);
 
-  const [hover, setHover] = useState<number | null>(null);
+  // 首屏按顺序依次画出, 之后新加的线立即开始画
+  const firstPaint = useRef(true);
+  useEffect(() => { firstPaint.current = false; }, []);
+  const [hover, setHover] = useState<string | null>(null);
   const rings = useRef<THREE.Group>(null);
   const clock = useRef(0);
   useFrame((_, dt) => {
     clock.current += dt;
-    if (animate) {
-      const seg = 18;
-      for (const b of built) {
-        const pos = ((clock.current * b.speed + b.phase) % 1) * (TUBE + seg) - seg;
-        const s = Math.max(0, Math.floor(pos)), e = Math.min(TUBE, Math.floor(pos + seg));
-        b.flowGeo.setDrawRange(s * RADIAL * 6, Math.max(0, e - s) * RADIAL * 6);
-      }
-      rings.current?.children.forEach((g, i) => {
-        const t = (clock.current * 0.6 + i * 0.27) % 1;
-        g.scale.setScalar(1 + t * 2.4);
-        ((g as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = 0.7 * (1 - t);
-      });
-    } else {
-      for (const b of built) b.flowGeo.setDrawRange(0, Infinity);
-    }
+    if (!animate) return;
+    rings.current?.children.forEach((g, i) => {
+      const t = (clock.current * 0.6 + i * 0.27) % 1;
+      g.scale.setScalar(1 + t * 2.4);
+      ((g as THREE.Mesh).material as THREE.MeshBasicMaterial).opacity = 0.7 * (1 - t);
+    });
   });
 
-  // 端点 (去重)
-  const ends = useMemo(() => endpoints(arcs, points), [arcs, points]);
+  // 端点 (去重), 只属于正在离开的线的端点跟着缩掉
+  const ends = useMemo(() => {
+    const keep = new Set(endpoints(arcs, points).map((p) => p.at.join()));
+    return endpoints(shown.map((x) => x.a), points).map((p) => ({ ...p, out: !keep.has(p.at.join()) }));
+  }, [arcs, points, shown]);
 
-  const onArc = (i: number) => (e: ThreeEvent<PointerEvent>) => {
+  const tip = (a: GlobeArc) => (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
-    if (hover !== i) setHover(i);
-    const a = arcs[i];
+    const k = arcKey(a);
+    if (hover !== k) setHover(k);
     api.onHover({
       x: e.nativeEvent.clientX, y: e.nativeEvent.clientY,
       content: (
@@ -148,7 +132,6 @@ function Globe({ arcs, points = [], format = (v) => v.toLocaleString("zh-CN"), v
   };
 
   const sphereColor = useMemo(() => new THREE.Color(colors["--background"]).lerp(new THREE.Color(colors["--foreground"]), 0.004), [colors]);
-  const lookOut = (m: THREE.Object3D | null, v: THREE.Vector3) => { if (m) m.lookAt(v.clone().multiplyScalar(2)); };
 
   return (
     <group>
@@ -160,43 +143,127 @@ function Globe({ arcs, points = [], format = (v) => v.toLocaleString("zh-CN"), v
       <points geometry={dots}>
         <pointsMaterial color={colors["--muted-foreground"]} size={0.04} sizeAttenuation map={disc} transparent depthWrite={false} opacity={0.8} />
       </points>
-      {built.map((b, i) => (
-        <group key={i}>
-          <mesh geometry={b.tube}>
-            <meshBasicMaterial vertexColors transparent opacity={hover == null ? (animate ? 0.28 : 0.85) : hover === i ? 0.9 : 0.08} />
-          </mesh>
-          {animate && (
-            <mesh geometry={b.flowGeo}>
-              <meshBasicMaterial vertexColors transparent opacity={hover == null || hover === i ? 1 : 0.15} toneMapped={false} />
-            </mesh>
-          )}
-          <mesh geometry={b.hit} onPointerMove={onArc(i)} onPointerOut={() => { setHover(null); api.onHover(null); }}>
-            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-          </mesh>
-        </group>
-      ))}
+      {shown.map(({ a, out }, i) => {
+        const k = arcKey(a);
+        return (
+          <ArcLine key={k} arc={a} out={out} index={i} delay={firstPaint.current ? (i % 12) * 0.05 : 0} vmax={vmax} colors={colors} reduced={api.reduced} animate={animate} clock={clock}
+            dim={hover != null && hover !== k} lit={hover === k}
+            onMove={tip(a)} onOut={() => { setHover(null); api.onHover(null); }}
+            onGone={() => setLeaving((m) => { const n = new Map(m); n.delete(k); return n; })} />
+        );
+      })}
       <group ref={rings}>
-        {!api.reduced && ends.map((p, i) => {
+        {!api.reduced && ends.filter((p) => !p.out).map((p) => {
           const v = toVec(p.at[0], p.at[1], 1.004);
           return (
-            <mesh key={i} position={v} ref={(m) => lookOut(m, v)}>
+            <mesh key={p.at.join()} position={v} ref={(m) => lookOut(m, v)}>
               <ringGeometry args={[0.014, 0.019, 32]} />
               <meshBasicMaterial color={colors["--chart-1"]} transparent opacity={0.6} side={THREE.DoubleSide} depthWrite={false} />
             </mesh>
           );
         })}
       </group>
-      {ends.map((p, i) => {
-        const v = toVec(p.at[0], p.at[1], 1.005);
-        return (
-          <group key={i}>
-            <mesh position={v} ref={(m) => lookOut(m, v)}>
-              <circleGeometry args={[0.012, 24]} />
-              <meshBasicMaterial color={colors["--foreground"]} side={THREE.DoubleSide} />
-            </mesh>
-          </group>
-        );
-      })}
+      {ends.map((p) => <EndDot key={p.at.join()} at={p.at} out={p.out} reduced={api.reduced} color={colors["--foreground"]} />)}
+    </group>
+  );
+}
+
+export function arcKey(a: GlobeArc) {
+  return `${a.fromName ?? a.from.join()}→${a.toName ?? a.to.join()}`;
+}
+const lookOut = (m: THREE.Object3D | null, v: THREE.Vector3) => { if (m) m.lookAt(v.clone().multiplyScalar(2)); };
+
+/** 端点: 出现时放大, 离开时缩掉 */
+function EndDot({ at, out, reduced, color }: { at: [number, number]; out: boolean; reduced: boolean; color: string }) {
+  const ref = useRef<THREE.Mesh>(null);
+  const s = useRef(reduced ? 1 : 0);
+  const v = useMemo(() => toVec(at[0], at[1], 1.005), [at]);
+  useFrame((_, dt) => {
+    const m = ref.current; if (!m) return;
+    const to = out ? 0 : 1;
+    s.current = reduced ? to : s.current + (to - s.current) * Math.min(1, dt * 9);
+    m.scale.setScalar(Math.max(0.0001, s.current));
+  });
+  return (
+    <mesh ref={(m) => { ref.current = m; lookOut(m, v); }} position={v} scale={s.current || 0.0001}>
+      <circleGeometry args={[0.012, 24]} />
+      <meshBasicMaterial color={color} side={THREE.DoubleSide} />
+    </mesh>
+  );
+}
+
+const C0 = new THREE.Color(), C1 = new THREE.Color(), CT = new THREE.Color();
+function paintTube(g: THREE.BufferGeometry, c0: string, c1: string) {
+  C0.set(c0); C1.set(c1);
+  const n = g.getAttribute("position").count;
+  const col = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { const u = Math.floor(i / (RADIAL + 1)) / TUBE; CT.copy(C0).lerp(C1, u); col.set([CT.r, CT.g, CT.b], i * 3); }
+  g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+}
+
+/**
+ * 一条飞线. 画多少由 head / tail 决定 (0..1 沿线的位置): 进场 head 0→1, 离场 tail 0→1, 都画完再交给流光.
+ * 粗细按量, 变化时逐帧重建管子 (几十段, 很便宜).
+ */
+function ArcLine({ arc, out, index, delay, vmax, colors, reduced, animate, clock, dim, lit, onMove, onOut, onGone }: {
+  arc: GlobeArc; out: boolean; index: number; delay: number; vmax: number; colors: Colors; reduced: boolean; animate: boolean;
+  clock: React.MutableRefObject<number>; dim: boolean; lit: boolean;
+  onMove: (e: ThreeEvent<PointerEvent>) => void; onOut: () => void; onGone: () => void;
+}) {
+  const curve = useMemo(() => {
+    const A = toVec(arc.from[0], arc.from[1]), B = toVec(arc.to[0], arc.to[1]);
+    const alt = 0.06 + A.angleTo(B) * 0.2;
+    return new THREE.CatmullRomCurve3(Array.from({ length: 48 }, (_, k) => { const t = k / 47; return slerp(A, B, t).multiplyScalar(1 + alt * Math.sin(Math.PI * t)); }));
+  }, [arc.from.join(), arc.to.join()]); // eslint-disable-line react-hooks/exhaustive-deps
+  const radiusTo = 0.0032 + 0.0058 * ((arc.value ?? 1) / vmax);
+  const radius = useRef(radiusTo);
+  const built = useRef(radiusTo);
+  const build = (r: number) => { const t = new THREE.TubeGeometry(curve, TUBE, r, RADIAL, false); paintTube(t, colors["--chart-2"], colors["--chart-1"]); return t; };
+  const [tube, setTube] = useState(() => build(radiusTo));
+  const flowGeo = useMemo(() => { const f = tube.clone(); return f; }, [tube]);
+  const hit = useMemo(() => new THREE.TubeGeometry(curve, 24, 0.03, 4, false), [curve]);
+  useEffect(() => () => { tube.dispose(); flowGeo.dispose(); }, [tube, flowGeo]);
+  useEffect(() => () => hit.dispose(), [hit]);
+  useEffect(() => { setTube(build(radius.current)); }, [colors]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const head = useRef(reduced ? 1 : 0), tail = useRef(0);
+  const wait = useRef(reduced ? 0 : delay);
+  const done = useRef(false);
+  const phase = (index * 0.37) % 1, speed = 0.55 + (index % 3) * 0.12;
+  const per = RADIAL * 6;
+  useFrame((_, dt) => {
+    if (wait.current > 0) { wait.current -= dt; tube.setDrawRange(0, 0); flowGeo.setDrawRange(0, 0); return; }
+    const k = reduced ? 1 : Math.min(1, dt * 2.6);
+    head.current += (1 - head.current) * k; if (1 - head.current < 0.002) head.current = 1;
+    if (out) { tail.current += (1 - tail.current) * k; if (1 - tail.current < 0.004 && !done.current) { done.current = true; onGone(); } }
+    // 粗细过渡
+    radius.current += (radiusTo - radius.current) * Math.min(1, dt * 7);
+    if (Math.abs(radius.current - built.current) > 0.00025) { built.current = radius.current; setTube(build(radius.current)); return; }
+    const s = Math.floor(tail.current * TUBE), e = Math.ceil(head.current * TUBE);
+    tube.setDrawRange(s * per, Math.max(0, e - s) * per);
+    if (animate) {
+      const seg = 18;
+      const pos = ((clock.current * speed + phase) % 1) * (TUBE + seg) - seg;
+      const fs = Math.max(s, Math.floor(pos)), fe = Math.min(e, Math.floor(pos + seg));
+      flowGeo.setDrawRange(fs * per, Math.max(0, fe - fs) * per);
+    } else flowGeo.setDrawRange(0, 0);
+  });
+  const base = animate ? 0.28 : 0.85;
+  return (
+    <group>
+      <mesh geometry={tube}>
+        <meshBasicMaterial vertexColors transparent opacity={lit ? 0.9 : dim ? 0.08 : base} />
+      </mesh>
+      {animate && (
+        <mesh geometry={flowGeo}>
+          <meshBasicMaterial vertexColors transparent opacity={dim || out ? 0.15 : 1} toneMapped={false} />
+        </mesh>
+      )}
+      {!out && (
+        <mesh geometry={hit} onPointerMove={onMove} onPointerOut={onOut}>
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
+      )}
     </group>
   );
 }
