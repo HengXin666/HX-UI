@@ -1,18 +1,32 @@
 import * as React from "react";
-import { Search } from "lucide-react";
+import { ChevronRight, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SECTIONS, sectionOf } from "./sections";
 import { entriesOf } from "./registry";
 import { href, type Route } from "./router";
 import type { SectionId } from "./types";
 
-type Item = { key: string; label: string; href: string; active: boolean; group: string; tag?: string };
+type Item = { key: string; label: string; en?: string; href: string; active: boolean; group: string; tag?: string };
+
+const STORE = "hx-docs-collapsed";
+function useCollapsed() {
+  const [set, setSet] = React.useState<Set<string>>(() => {
+    try { return new Set(JSON.parse(localStorage.getItem(STORE) || "[]")); } catch { return new Set(); }
+  });
+  const toggle = (k: string) => setSet((old) => {
+    const n = new Set(old); if (n.has(k)) n.delete(k); else n.add(k);
+    try { localStorage.setItem(STORE, JSON.stringify([...n])); } catch { /* 隐私模式 */ }
+    return n;
+  });
+  return [set, toggle] as const;
+}
 
 /** 侧栏只列当前分区. 条目超过 12 个才出现筛选框 */
 export function Sidebar({ route, section, onNavigate, showSections }: { route: Route; section: SectionId; onNavigate?: () => void; showSections?: boolean }) {
   const [q, setQ] = React.useState("");
+  const [collapsed, toggle] = useCollapsed();
   const s = sectionOf(section);
-  const items: Item[] = entriesOf(section).map((e) => ({ key: e.slug, label: e.title, href: href.entry(e), active: route.name === "component" && route.slug === e.slug, group: e.group }));
+  const items: Item[] = entriesOf(section).map((e) => ({ key: e.slug, label: e.title, en: e.name, href: href.entry(e), active: route.name === "component" && route.slug === e.slug, group: e.group }));
   if (section === "ui") items.push({ key: "foundation", label: "更多基础件", href: href.foundation, active: route.name === "foundation", group: "未整理", tag: "待拆分" });
   const needle = q.trim().toLowerCase();
   const shown = needle ? items.filter((i) => i.label.toLowerCase().includes(needle) || i.key.includes(needle)) : items;
@@ -44,32 +58,60 @@ export function Sidebar({ route, section, onNavigate, showSections }: { route: R
           const list = shown.filter((i) => i.group === g);
           if (!list.length) return null;
           return (
-            <div key={g} className="mt-4 first:mt-1">
-              <p className="mb-1 px-2 text-xs text-muted-foreground">{g}</p>
-              <ul>
-                {list.map((i) => (
-                  <li key={i.key}>
-                    <a
-                      href={i.href}
-                      onClick={onNavigate}
-                      aria-current={i.active ? "page" : undefined}
-                      className={cn(
-                        "relative flex h-8 items-center justify-between rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground",
-                        "aria-[current=page]:bg-[color-mix(in_oklch,var(--cat)_14%,transparent)] aria-[current=page]:text-foreground",
-                      )}
-                    >
-                      {i.active && <span aria-hidden className="absolute inset-y-1.5 -left-1 w-0.5 rounded-full bg-[var(--cat)]" />}
-                      {i.label}
-                      {i.tag && <span className="rounded border px-1 font-mono text-[10px] text-muted-foreground">{i.tag}</span>}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Group
+              key={g}
+              id={`${section}-${g}`}
+              title={g}
+              count={list.length}
+              // 筛选时或当前页在组里时强制展开
+              open={!!needle || list.some((i) => i.active) || !collapsed.has(`${section}:${g}`)}
+              onToggle={() => toggle(`${section}:${g}`)}
+            >
+              {list.map((i) => (
+                <li key={i.key}>
+                  <a
+                    href={i.href}
+                    onClick={onNavigate}
+                    aria-current={i.active ? "page" : undefined}
+                    className={cn(
+                      "relative -ml-px flex h-8 items-center gap-2 border-l border-transparent pr-2 pl-3 text-sm text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground",
+                      "aria-[current=page]:border-[var(--cat)] aria-[current=page]:bg-[color-mix(in_oklch,var(--cat)_12%,transparent)] aria-[current=page]:font-medium aria-[current=page]:text-foreground",
+                    )}
+                  >
+                    <span className="flex-1 truncate">{i.label}</span>
+                    {i.en && <span className="font-mono text-[11px] text-muted-foreground">{i.en}</span>}
+                    {i.tag && <span className="rounded border px-1 font-mono text-[10px] text-muted-foreground">{i.tag}</span>}
+                  </a>
+                </li>
+              ))}
+            </Group>
           );
         })}
         {section === "pages" && !items.length && <p className="px-2 py-4 text-sm text-muted-foreground">筹备中。</p>}
       </div>
     </nav>
+  );
+}
+
+/** 分组标题是按钮 (可折叠), 条目挂在左侧竖线下, 一眼分清 "组" 和 "页" */
+function Group({ id, title, count, open, onToggle, children }: { id: string; title: string; count: number; open: boolean; onToggle: () => void; children: React.ReactNode }) {
+  const listId = `grp-${id}`;
+  return (
+    <div className="mt-2 first:mt-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        aria-controls={listId}
+        className="group flex h-8 w-full items-center gap-1.5 rounded-md px-1.5 text-[13px] font-semibold text-foreground hover:bg-accent/60"
+      >
+        <ChevronRight aria-hidden className={cn("size-3.5 text-muted-foreground transition-transform motion-reduce:transition-none", open && "rotate-90")} />
+        <span className="flex-1 text-left">{title}</span>
+        <span className="font-mono text-[11px] font-normal text-muted-foreground">{count}</span>
+      </button>
+      <ul id={listId} hidden={!open} className="mt-0.5 mb-1 ml-[13px] border-l">
+        {children}
+      </ul>
+    </div>
   );
 }
