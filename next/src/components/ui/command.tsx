@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Command as CommandPrimitive } from "cmdk"
+import { Command as CommandPrimitive, useCommandState } from "cmdk"
 import { cn } from "@/lib/utils"
 import { SearchIcon } from "lucide-react"
 
@@ -30,8 +30,8 @@ function Command({
 }
 
 function CommandDialog({
-  title = "Command Palette",
-  description = "Search for a command to run...",
+  title = "命令面板",
+  description = "搜索要执行的命令",
   children,
   className,
   showCloseButton = true,
@@ -44,14 +44,15 @@ function CommandDialog({
 }) {
   return (
     <Dialog {...props}>
-      <DialogHeader className="sr-only">
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
-      </DialogHeader>
       <DialogContent
         className={cn("overflow-hidden p-0", className)}
         showCloseButton={showCloseButton}
       >
+        {/* 标题要在 DialogContent 里面, 读屏才能把它当对话框的名字 */}
+        <DialogHeader className="sr-only">
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
         <Command className="**:data-[slot=command-input-wrapper]:h-12 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]]:px-2 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
           {children}
         </Command>
@@ -88,6 +89,7 @@ function CommandList({
 }: React.ComponentProps<typeof CommandPrimitive.List>) {
   return (
     <CommandPrimitive.List
+      label="搜索结果"
       data-slot="command-list"
       className={cn(
         "max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto",
@@ -126,17 +128,18 @@ function CommandGroup({
   )
 }
 
+/**
+ * 分隔线. 不用 cmdk 的 Separator: 它固定 role="separator", 而 listbox 里只允许 option / group,
+ * 读屏会报结构错误. 这里画一条纯装饰的线, 搜索时隐藏 (和 cmdk 行为一致).
+ */
 function CommandSeparator({
   className,
+  alwaysRender,
   ...props
-}: React.ComponentProps<typeof CommandPrimitive.Separator>) {
-  return (
-    <CommandPrimitive.Separator
-      data-slot="command-separator"
-      className={cn("-mx-1 h-px bg-border", className)}
-      {...props}
-    />
-  )
+}: React.ComponentProps<"div"> & { alwaysRender?: boolean }) {
+  const searching = useCommandState((s) => !!s.search)
+  if (searching && !alwaysRender) return null
+  return <div data-slot="command-separator" role="none" aria-hidden className={cn("-mx-1 my-1 h-px bg-border", className)} {...props} />
 }
 
 function CommandItem({
