@@ -1,6 +1,6 @@
 import type * as React from "react";
 
-export type CategoryId = "text" | "motion" | "background" | "interaction" | "foundation";
+export type SectionId = "ui" | "visual" | "pages";
 
 export type Values = Record<string, string | number | boolean>;
 
@@ -29,7 +29,9 @@ export interface DocEntry {
   name: string;
   /** 中文名 */
   title: string;
-  category: CategoryId;
+  section: SectionId;
+  /** 侧栏分组名, 取自 SECTIONS[].groups */
+  group: string;
   description: string;
   /** 组件文件在仓库里的路径 */
   file: string;

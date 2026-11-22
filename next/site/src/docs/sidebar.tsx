@@ -1,95 +1,51 @@
 import * as React from "react";
-import { Box, LayoutGrid, Layers, MousePointerClick, Search, Type, Wand2 } from "lucide-react";
+import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CATEGORIES } from "./categories";
-import { ENTRIES } from "./registry";
+import { SECTIONS, sectionOf } from "./sections";
+import { entriesOf } from "./registry";
 import { href, type Route } from "./router";
-import type { CategoryId } from "./types";
+import type { SectionId } from "./types";
 
-const ICONS: Record<CategoryId, React.ComponentType<{ className?: string }>> = {
-  text: Type,
-  motion: Wand2,
-  background: Layers,
-  interaction: MousePointerClick,
-  foundation: Box,
-};
+type Item = { key: string; label: string; href: string; active: boolean; group: string; tag?: string };
 
-type Item = { key: string; label: string; href: string; active: boolean; category: CategoryId; tag?: string };
-
-export function Sidebar({ route, onNavigate }: { route: Route; onNavigate?: () => void }) {
+/** 侧栏只列当前分区. 条目超过 12 个才出现筛选框 */
+export function Sidebar({ route, section, onNavigate, showSections }: { route: Route; section: SectionId; onNavigate?: () => void; showSections?: boolean }) {
   const [q, setQ] = React.useState("");
-  const [cat, setCat] = React.useState<CategoryId | null>(null);
-  const input = React.useRef<HTMLInputElement>(null);
-
-  React.useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const typing = /^(INPUT|TEXTAREA|SELECT)$/.test((e.target as HTMLElement).tagName);
-      if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !typing)) {
-        e.preventDefault();
-        input.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  const items: Item[] = [
-    ...ENTRIES.map((e) => ({ key: e.slug, label: e.title, sub: e.name, href: href.component(e.slug), active: route.name === "component" && route.slug === e.slug, category: e.category })),
-    { key: "foundation", label: "基础件合集", href: href.foundation, active: route.name === "foundation", category: "foundation" as const, tag: "待拆分" },
-  ];
+  const s = sectionOf(section);
+  const items: Item[] = entriesOf(section).map((e) => ({ key: e.slug, label: e.title, href: href.entry(e), active: route.name === "component" && route.slug === e.slug, group: e.group }));
+  if (section === "ui") items.push({ key: "foundation", label: "更多基础件", href: href.foundation, active: route.name === "foundation", group: "未整理", tag: "待拆分" });
   const needle = q.trim().toLowerCase();
-  const shown = items.filter((i) => (!cat || i.category === cat) && (!needle || i.label.toLowerCase().includes(needle) || i.key.includes(needle)));
+  const shown = needle ? items.filter((i) => i.label.toLowerCase().includes(needle) || i.key.includes(needle)) : items;
+  const groups = [...s.groups, "未整理"];
 
   return (
-    <nav aria-label="组件" className="flex h-full flex-col gap-3 p-3">
-      <a
-        href={href.overview}
-        onClick={onNavigate}
-        aria-current={route.name === "overview" ? "page" : undefined}
-        className="flex h-9 items-center gap-2 rounded-lg border bg-card/60 px-3 text-sm font-medium hover:bg-accent aria-[current=page]:bg-accent"
-      >
-        <LayoutGrid className="size-4" />全部组件
+    <nav aria-label={s.title} className="flex h-full flex-col gap-3 p-3" style={{ "--cat": s.color } as React.CSSProperties}>
+      {showSections && (
+        <div className="grid gap-1 border-b pb-3">
+          {SECTIONS.map((x) => (
+            <a key={x.id} href={href.section(x.id)} onClick={onNavigate} aria-current={x.id === section ? "true" : undefined} className="flex h-10 items-center gap-2 rounded-lg px-3 text-sm font-medium text-muted-foreground aria-[current]:bg-accent aria-[current]:text-foreground">
+              <span aria-hidden className="size-1.5 rounded-full" style={{ background: x.color }} />{x.title}
+            </a>
+          ))}
+        </div>
+      )}
+      <a href={href.section(section)} onClick={onNavigate} aria-current={route.name === "section" ? "page" : undefined} className="flex h-9 items-center justify-between rounded-lg px-2 text-sm font-medium hover:bg-accent/60 aria-[current=page]:bg-accent">
+        {s.title}总览<span className="font-mono text-xs text-muted-foreground">{entriesOf(section).length}</span>
       </a>
-      <div role="group" aria-label="按分类筛选" className="grid grid-cols-5 gap-1 rounded-lg border p-1">
-        {CATEGORIES.map((c) => {
-          const Icon = ICONS[c.id];
-          return (
-            <button
-              key={c.id}
-              type="button"
-              title={c.title}
-              aria-label={c.title}
-              aria-pressed={cat === c.id}
-              onClick={() => setCat((v) => (v === c.id ? null : c.id))}
-              style={{ "--cat": c.color } as React.CSSProperties}
-              className="grid h-8 place-items-center rounded-md text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-[color-mix(in_oklch,var(--cat)_18%,transparent)] aria-pressed:text-[var(--cat-ink)]"
-            >
-              <Icon className="size-4" />
-            </button>
-          );
-        })}
-      </div>
-      <label className="relative block">
-        <span className="sr-only">筛选组件</span>
-        <Search aria-hidden className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-        <input
-          ref={input}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder={`筛选 ${items.length} 个组件…`}
-          className="h-9 w-full rounded-lg border bg-transparent pr-9 pl-8 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
-        />
-        <kbd className="pointer-events-none absolute top-1/2 right-2 -translate-y-1/2 rounded border px-1.5 font-mono text-[10px] text-muted-foreground">/</kbd>
-      </label>
+      {items.length > 12 && (
+        <label className="relative block">
+          <span className="sr-only">筛选</span>
+          <Search aria-hidden className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="筛选…" className="h-9 w-full rounded-lg border bg-transparent pr-3 pl-8 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring" />
+        </label>
+      )}
       <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 pb-6">
-        {CATEGORIES.map((c) => {
-          const list = shown.filter((i) => i.category === c.id);
+        {groups.map((g) => {
+          const list = shown.filter((i) => i.group === g);
           if (!list.length) return null;
           return (
-            <div key={c.id} className="mt-4 first:mt-1" style={{ "--cat": c.color } as React.CSSProperties}>
-              <p className="mb-1 flex items-center gap-2 px-2 font-mono text-[11px] tracking-wider text-muted-foreground uppercase">
-                <span aria-hidden className="size-1.5 rounded-full bg-[var(--cat)]" />{c.no} {c.title}
-              </p>
+            <div key={g} className="mt-4 first:mt-1">
+              <p className="mb-1 px-2 text-xs text-muted-foreground">{g}</p>
               <ul>
                 {list.map((i) => (
                   <li key={i.key}>
@@ -112,7 +68,7 @@ export function Sidebar({ route, onNavigate }: { route: Route; onNavigate?: () =
             </div>
           );
         })}
-        {!shown.length && <p className="px-2 py-6 text-sm text-muted-foreground">没有匹配「{q}」的组件。</p>}
+        {section === "pages" && !items.length && <p className="px-2 py-4 text-sm text-muted-foreground">筹备中。</p>}
       </div>
     </nav>
   );

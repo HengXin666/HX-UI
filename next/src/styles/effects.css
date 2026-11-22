@@ -107,4 +107,20 @@
 
 @theme {
   @keyframes hx-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+}
+
+@layer components {
+/* Button variant="shimmer": 一道斜光从左扫到右, 只动 transform; 减弱动效时不显示 */
+.hx-btn-shimmer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, oklch(1 0 0 / 0.35) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: hx-sweep 2.6s var(--ease-in-out, ease-in-out) infinite;
+  pointer-events: none;
+}
+@keyframes hx-sweep { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .hx-btn-shimmer::before { animation: none; opacity: 0; } }
 }

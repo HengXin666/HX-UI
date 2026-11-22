@@ -1,16 +1,45 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+type CardProps = React.ComponentProps<"div"> & {
+  /** 卡片特效: spotlight 指针光斑, beam 沿边框流动的光 (用来标出推荐项) */
+  effect?: "none" | "spotlight" | "beam"
+  /** 特效颜色, 任意 CSS 颜色; 光斑建议带透明度 */
+  effectColor?: string
+}
+
+function Card({ className, effect = "none", effectColor, style, onPointerMove, onPointerLeave, children, ...props }: CardProps) {
+  const spot = effect === "spotlight"
+  const vars = effectColor ? { [spot ? "--spot-color" : "--beam-color"]: effectColor } : {}
   return (
     <div
       data-slot="card"
+      data-effect={effect === "none" ? undefined : effect}
       className={cn(
         "flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm",
+        effect !== "none" && "relative overflow-hidden",
+        spot && "hx-spotlight [&>*]:relative",
         className
       )}
+      style={{ ...vars, ...style } as React.CSSProperties}
+      onPointerMove={spot ? (e) => {
+        // 只写 CSS 变量, 不触发重渲染
+        const el = e.currentTarget
+        const r = el.getBoundingClientRect()
+        el.style.setProperty("--mx", `${e.clientX - r.left}px`)
+        el.style.setProperty("--my", `${e.clientY - r.top}px`)
+        el.style.setProperty("--spot-opacity", "1")
+        onPointerMove?.(e)
+      } : onPointerMove}
+      onPointerLeave={spot ? (e) => {
+        e.currentTarget.style.setProperty("--spot-opacity", "0")
+        onPointerLeave?.(e)
+      } : onPointerLeave}
       {...props}
-    />
+    >
+      {children}
+      {effect === "beam" && <span aria-hidden className="hx-beam animate-beam" />}
+    </div>
   )
 }
 

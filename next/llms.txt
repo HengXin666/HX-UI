@@ -2,10 +2,25 @@
 
 > React 19 + TypeScript 界面库. 基于 shadcn/ui (Radix + Tailwind v4), 动效用 Motion, 图表用 Recharts, 表格用 TanStack Table v8. 路径别名 "@/" 指向 next/src.
 
-## 用法
-1. 基础件从 `@/components/ui/<name>` 引 (与 shadcn 文档用法一致).
-2. 动效: 包一层 `Reveal` / `Stagger` + `StaggerItem`; 数字用 `AnimatedNumber`; 标题用 `TextReveal`.
-3. 交互: 从 `@/interactions` 挑 (SpeedCounter, StatefulButton ...).
+分三层:
+- UI 组件: 做产品用的基础件, 从 `@/components/ui/<name>` 引 (与 shadcn 用法一致). 特效只是它们的参数.
+- 视觉组件: 能撑起一屏主视觉的效果 (`@/text/*`, `@/effects/tilt-card`).
+- 落地页: 整页成品 (筹备中).
+
+## UI 组件
+- Button(variant?: "default"|"secondary"|"outline"|"ghost"|"destructive"|"link"|"shimmer", size?, asChild?): shimmer 是品牌色底加扫光, 一页最多一两个
+- StatefulButton(action: () => Promise, children, pendingLabel?, successLabel?, errorLabel?, resetAfter?, guard?, variant?, size?) from "@/interactions/stateful-button": 提交流程, 进行中禁用, 结果由读屏播报; 放进表单时传 type="submit"
+- Card(effect?: "none"|"spotlight"|"beam", effectColor?) + CardHeader/CardTitle/CardDescription/CardContent/CardFooter: spotlight 指针光斑, beam 边框流光 (标出推荐项)
+- Badge(variant?, dot?: "success"|"warning"|"destructive"|"info"|"muted", live?): 状态点 + 文字
+- Marquee(duration?, gap?, reverse?, vertical?, pauseOnHover?, fade?) from "@/effects/marquee": 品牌墙 / 评价无缝滚动
+
+## 视觉组件
+- SplitText(text, as?, split?: "chars"|"words", effect?: "rise"|"fade"|"blur"|"flip"|"pop"|"skew"|"wave", from?: "start"|"center"|"end"|"random", ease?: "out"|"inOut"|"spring", stagger?, duration?, delay?, trigger?: "mount"|"inView", hover?: "none"|"lift"|"brand", loop?, loopDelay?, onComplete?): 文字拆成字或词逐段登场; 读屏读整句
+- NumberRoll(value, mode?: "spring"|"digits", format?: Intl.NumberFormatOptions, locale?, duration?, from?): spring 整体弹到目标值, digits 逐位滚动
+- TiltCard(children, max?, scale?, glare?): 3D 倾斜 + 跟随指针的反光
+
+## 工具 (不单列)
+- Magnetic(strength?): 指针靠近时吸附; Backdrop(variant: "grid"|"dots"|"aurora"|"glow", size?): 区块底纹; 样式类 hx-grid, hx-dots, hx-noise
 
 ## 数据
 - AreaTrend(data, x, series[{key, label, color?}], stacked?, height?), BarCompare(data, x, series, stacked?, horizontal?), Donut(data[{key, label, value}], centerLabel?), Sparkline(values), DataTable(data, columns: ColumnDef<T>[], searchable?, pageSize?, loading?, onRowClick?)
@@ -14,12 +29,5 @@
 - 包 `ThemeProvider`; `useTheme()` 返回 { mode, resolved, accent, setMode, setAccent }; 强调色 indigo | emerald | rose | amber | zinc.
 - 令牌: background, foreground, card, muted, accent, primary, brand, brand-soft, success, warning, destructive, info, chart-1..5, border, ring.
 
-## 文字
-- SplitText(text, as?, split?: "chars"|"words", effect?: "rise"|"fade"|"blur"|"flip"|"pop"|"skew"|"wave", from?: "start"|"center"|"end"|"random", ease?: "out"|"inOut"|"spring", stagger?, duration?, delay?, trigger?: "mount"|"inView", hover?: "none"|"lift"|"brand", loop?, loopDelay?, onComplete?): 文字拆成字或词逐段登场; 中文标点不会落到行首; 读屏读整句
-
-## 交互
-- SpeedCounter(value, format?, locale?, duration?): 逐位滚动的数字
-- StatefulButton(action: () => Promise, children, pendingLabel?, successLabel?, errorLabel?, resetAfter?, guard?): 提交按钮的完整状态流; guard 返回 false 时不提交 (例如 form.reportValidity()); 放进表单时传 type="submit" 支持回车
-
 ## 示例
-所有组件的用法见 site/src/pages/components.tsx.
+每个组件的演示和调参在文档站 site/src/docs/entries/<slug>.demo.tsx.

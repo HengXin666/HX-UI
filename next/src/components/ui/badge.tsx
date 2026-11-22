@@ -2,6 +2,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 import { Slot } from "radix-ui"
+import { LiveDot } from "@/effects/live-dot"
 
 const badgeVariants = cva(
   "inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3",
@@ -29,9 +30,18 @@ function Badge({
   className,
   variant = "default",
   asChild = false,
+  dot,
+  live = false,
+  children,
   ...props
 }: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  VariantProps<typeof badgeVariants> & {
+    asChild?: boolean
+    /** 前置状态点; 颜色读主题令牌, 只是辅助, 文字仍要说清状态 */
+    dot?: "success" | "warning" | "destructive" | "info" | "muted"
+    /** 状态点外圈脉冲, 表示实时 */
+    live?: boolean
+  }) {
   const Comp = asChild ? Slot.Root : "span"
 
   return (
@@ -40,7 +50,10 @@ function Badge({
       data-variant={variant}
       className={cn(badgeVariants({ variant }), className)}
       {...props}
-    />
+    >
+      {dot && !asChild && <LiveDot tone={dot} live={live} className="size-1.5 [&>span]:size-1.5" />}
+      {children}
+    </Comp>
   )
 }
 

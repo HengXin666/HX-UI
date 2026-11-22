@@ -1,20 +1,23 @@
-import type { DocEntry } from "./types";
+import type { DocEntry, SectionId } from "./types";
+import { button } from "./entries/button";
+import { card } from "./entries/card";
+import { badge } from "./entries/badge";
+import { marquee, tiltCard } from "./entries/effects";
 import { splitText } from "./entries/split-text";
-import { animatedNumber } from "./entries/animated-number";
-import { speedCounter } from "./entries/speed-counter";
-import { statefulButton } from "./entries/stateful-button";
-import { backdrop, borderBeam, liveDot, magnetic, marquee, shimmerButton, spotlightCard, tiltCard } from "./entries/effects";
-import { CATEGORIES } from "./categories";
+import { numberRoll } from "./entries/number-roll";
+import { SECTIONS } from "./sections";
 
-/** 文档站的组件清单. 新组件: 在 entries/ 加 <slug>.ts + <slug>.demo.tsx, 再登记到这里. 按章节顺序排 */
-const ALL: DocEntry[] = [
-  splitText, animatedNumber, speedCounter,
-  spotlightCard, borderBeam, magnetic, tiltCard, marquee,
-  backdrop,
-  statefulButton, shimmerButton,
-  liveDot,
-];
-const rank = (e: DocEntry) => CATEGORIES.findIndex((c) => c.id === e.category);
+/**
+ * 文档站清单. 只收值得单独一页的东西:
+ * 一个参数就能表达的效果 (流光, 状态点, 光斑) 做成所属组件的参数, 不单列.
+ */
+const ALL: DocEntry[] = [button, card, badge, marquee, splitText, numberRoll, tiltCard];
+
+const rank = (e: DocEntry) => {
+  const s = SECTIONS.findIndex((x) => x.id === e.section);
+  return s * 100 + SECTIONS[s].groups.indexOf(e.group);
+};
 export const ENTRIES: DocEntry[] = [...ALL].sort((a, b) => rank(a) - rank(b));
 
+export const entriesOf = (s: SectionId) => ENTRIES.filter((e) => e.section === s);
 export const entryBySlug = (slug: string) => ENTRIES.find((e) => e.slug === slug);

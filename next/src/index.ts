@@ -11,3 +11,5 @@ export * as Data from "./data";
 export * from "./interactions";
 export { SplitText } from "./text/split-text";
 export type { SplitTextProps, SplitEffect, SplitFrom, SplitEase, SplitHover } from "./text/split-text";
+export { NumberRoll } from "./text/number-roll";
+export type { NumberRollProps } from "./text/number-roll";

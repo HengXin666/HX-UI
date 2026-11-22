@@ -18,6 +18,9 @@ const buttonVariants = cva(
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
+        // 主 CTA: 品牌色底 + 一道光扫过 (hx-btn-shimmer, 只动 transform) + 按压微缩. 一页最多一两个
+        shimmer:
+          "hx-btn-shimmer relative overflow-hidden bg-brand text-brand-foreground shadow-[0_8px_24px_-8px_var(--brand)] hover:shadow-[0_12px_32px_-8px_var(--brand)] active:scale-[0.97] focus-visible:ring-brand/40",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

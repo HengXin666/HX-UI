@@ -2,10 +2,10 @@ import * as React from "react";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Code2, Eye, Monitor, RotateCw, Smartphone, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CATEGORIES, categoryOf } from "./categories";
+import { sectionOf } from "./sections";
 import { CodeBlock, CopyButton } from "./code";
 import { ControlsPanel } from "./controls";
-import { ENTRIES } from "./registry";
+import { entriesOf } from "./registry";
 import { href } from "./router";
 import type { DocEntry, Values } from "./types";
 
@@ -40,7 +40,7 @@ function useSource(e: DocEntry) {
 }
 
 export function ComponentPage({ entry: e }: { entry: DocEntry }) {
-  const cat = categoryOf(e.category);
+  const cat = sectionOf(e.section);
   const [values, setValues] = React.useState<Values>(e.defaults);
   const [tab, setTab] = React.useState<"preview" | "code">("preview");
   const [device, setDevice] = React.useState<"desktop" | "mobile">("desktop");
@@ -55,9 +55,10 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
   }, [e]);
 
   const activePreset = e.presets?.findIndex((p) => Object.entries(p.values).every(([k, v]) => values[k] === v)) ?? -1;
-  const idx = ENTRIES.indexOf(e);
-  const prev = ENTRIES[idx - 1];
-  const next = ENTRIES[idx + 1];
+  const siblings = entriesOf(e.section);
+  const idx = siblings.indexOf(e);
+  const prev = siblings[idx - 1];
+  const next = siblings[idx + 1];
   const no = String(idx + 1).padStart(2, "0");
   const stageKey = `${run}:${JSON.stringify(values)}`;
 
@@ -65,7 +66,7 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
     <article className="mx-auto w-full max-w-5xl px-5 pt-10 pb-24 md:px-10" style={{ "--cat": cat.color } as React.CSSProperties}>
       <p className="mb-4 flex items-center gap-2 font-mono text-xs tracking-wide text-muted-foreground">
         <span className="size-2 rounded-full bg-[var(--cat)]" aria-hidden />
-        <span className="text-[var(--cat-ink)]">{cat.no} {cat.title}</span>
+        <a href={href.section(cat.id)} className="text-[var(--cat-ink)] hover:underline">{cat.title}</a><span aria-hidden>/</span><span>{e.group}</span>
         <span aria-hidden>/</span>
         <span>{no}</span>
       </p>
@@ -156,11 +157,11 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
       </section>
 
       <nav aria-label="上一个 / 下一个" className="mt-14 grid gap-3 sm:grid-cols-2">
-        {prev ? <a href={href.component(prev.slug)} className="group rounded-xl border p-4 hover:bg-accent/50"><span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" />上一个</span><span className="mt-1 block font-medium">{prev.title}</span></a> : <a href={href.overview} className="rounded-xl border p-4 hover:bg-accent/50"><span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" />总览</span><span className="mt-1 block font-medium">全部组件</span></a>}
+        {prev ? <a href={href.entry(prev)} className="group rounded-xl border p-4 hover:bg-accent/50"><span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" />上一个</span><span className="mt-1 block font-medium">{prev.title}</span></a> : <a href={href.section(cat.id)} className="rounded-xl border p-4 hover:bg-accent/50"><span className="flex items-center gap-1 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" />总览</span><span className="mt-1 block font-medium">{cat.title}</span></a>}
         {next ? (
-          <a href={href.component(next.slug)} className="rounded-xl border p-4 text-right hover:bg-accent/50"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">下一个<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{next.title}</span></a>
+          <a href={href.entry(next)} className="rounded-xl border p-4 text-right hover:bg-accent/50"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">下一个<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{next.title}</span></a>
         ) : (
-          <a href={href.foundation} className="rounded-xl border p-4 text-right hover:bg-accent/50"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">下一个<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{CATEGORIES[4].title}件合集</span></a>
+          <a href={cat.id === "ui" ? href.foundation : href.section(cat.id)} className="rounded-xl border p-4 text-right hover:bg-accent/50"><span className="flex items-center justify-end gap-1 text-xs text-muted-foreground">{cat.id === "ui" ? "下一个" : "回到"}<ArrowRight className="size-3.5" /></span><span className="mt-1 block font-medium">{cat.id === "ui" ? "更多基础件" : `${cat.title}总览`}</span></a>
         )}
       </nav>
       <p className="mt-10 flex items-center gap-2 text-xs text-muted-foreground"><Sparkles className="size-3.5" />系统开了「减弱动效」时，组件直接显示最终状态。</p>
