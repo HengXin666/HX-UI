@@ -41,3 +41,5 @@ export type { SunburstNode, SunburstProps } from "./charts/sunburst";
 export { Rose } from "./charts/rose";
 export type { RoseDatum, RoseProps, RoseSeries } from "./charts/rose";
 export { useArcTween, type Arc } from "./charts/arc-tween";
+export { Gantt, ganttDate } from "./charts/gantt";
+export type { GanttProps, GanttTask } from "./charts/gantt";
