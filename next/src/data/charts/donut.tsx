@@ -1,6 +1,7 @@
 import { Label, Pie, PieChart } from "recharts";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
+import { useChartAnimation, type ChartAnimationOptions } from "./animation";
 
 interface DonutProps {
   data: { key: string; label: string; value: number; color?: string }[];
@@ -9,10 +10,13 @@ interface DonutProps {
   centerLabel?: string;
   size?: number;
   className?: string;
+  /** 增删扇区时的动画. 默认按 key 配对: 新扇区展开, 删掉的收拢, 其余平滑让位 */
+  animation?: ChartAnimationOptions;
 }
 
 /** 环形占比图, 中心报总数. */
-export function Donut({ data, center, centerLabel = "总计", size = 220, className }: DonutProps) {
+export function Donut({ data, center, centerLabel = "总计", size = 220, className, animation }: DonutProps) {
+  const anim = useChartAnimation({ match: { dataKey: "key" }, ...animation }, data.length);
   const config: ChartConfig = Object.fromEntries(
     data.map((d, i) => [d.key, { label: d.label, color: d.color ?? `var(--chart-${(i % 5) + 1})` }]),
   );
@@ -22,7 +26,7 @@ export function Donut({ data, center, centerLabel = "总计", size = 220, classN
     <ChartContainer config={config} className={cn("mx-auto aspect-square", className)} style={{ height: size }}>
       <PieChart>
         <ChartTooltip content={<ChartTooltipContent nameKey="key" hideLabel />} />
-        <Pie data={rows} dataKey="value" nameKey="key" innerRadius="62%" outerRadius="88%" paddingAngle={2} cornerRadius={4} strokeWidth={0}>
+        <Pie data={rows} dataKey="value" nameKey="key" innerRadius="62%" outerRadius="88%" paddingAngle={2} cornerRadius={4} strokeWidth={0} {...anim}>
           <Label
             content={({ viewBox }) => {
               if (!viewBox || !("cx" in viewBox)) return null;
