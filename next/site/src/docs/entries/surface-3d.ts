@@ -1,0 +1,40 @@
+import type { DocEntry } from "../types";
+
+export const surface3d: DocEntry = {
+  slug: "surface-3d",
+  name: "Surface3D",
+  en: "Surface3D",
+  title: "3D 曲面图",
+  section: "ui",
+  group: "图表",
+  sub: "3D 图表",
+  description: "两个变量一起变时结果怎么走：定价 × 折扣 → 利润，并发 × 命中率 → 延迟。颜色按高度渐变，自动标出峰值；悬停显示三个值并落一条垂线到地面。换数据或分辨率时曲面平滑变形，减弱动效时直接到位。",
+  file: "src/data/charts3d/surface3d.tsx",
+  importFrom: "@/data",
+  demo: () => import("./surface-3d.demo"),
+  source: () => import("@/data/charts3d/impl/surface-scene.tsx?raw").then((m) => m.default),
+  stageHeight: 660,
+  defaults: { data: "profit", resolution: "40", wireframe: true, autoRotate: true },
+  componentDefaults: { wireframe: true, autoRotate: false },
+  demoOnly: ["data", "resolution"],
+  presets: [
+    { label: "定价利润", values: { data: "profit", resolution: "40", wireframe: true } },
+    { label: "延迟面", values: { data: "latency", resolution: "40", wireframe: true } },
+    { label: "双峰地形", values: { data: "wave", resolution: "60", wireframe: false } },
+  ],
+  controls: [
+    { type: "select", key: "data", label: "数据", options: [{ value: "profit", label: "定价 × 折扣" }, { value: "latency", label: "并发 × 命中率" }, { value: "wave", label: "双峰地形" }] },
+    { type: "select", key: "resolution", label: "采样", options: [{ value: "24", label: "24 × 24" }, { value: "40", label: "40 × 40" }, { value: "60", label: "60 × 60" }] },
+    { type: "toggle", key: "wireframe", label: "网格线" },
+    { type: "toggle", key: "autoRotate", label: "自动旋转" },
+  ],
+  usage: (v) => `import { Surface3D } from "@/data";\n\n<Surface3D\n  values={grid} // number[行][列]\n  xRange={[59, 199]}\n  yRange={[0, 40]}\n  xLabel="定价"\n  yLabel="折扣"\n  zLabel="月利润"\n  format={(v) => \`\${v.toFixed(1)} 万元\`}${v.wireframe ? "" : "\n  wireframe={false}"}${v.autoRotate ? "\n  autoRotate" : ""}\n/>\n`,
+  props: [
+    { name: "values", type: "number[][]", description: "等间距采样网格，行沿 Y 轴、列沿 X 轴，至少 2 × 2。" },
+    { name: "xRange / yRange", type: "[number, number]", default: "[0, 1]", description: "两条轴的取值范围，用于刻度和悬停读数。" },
+    { name: "xLabel / yLabel / zLabel", type: "string", default: '"X" / "Y" / "Z"', description: "三个量的名称。" },
+    { name: "format", type: "(v) => string", default: "两位小数", description: "高度值的格式，峰值标注和悬停共用。" },
+    { name: "wireframe / autoRotate", type: "boolean", default: "true / false", description: "叠细网格线；缓慢自转（减弱动效时关闭）。" },
+    { name: "height / label", type: "number / string", default: '440 / "3D 曲面图"', description: "高度和读屏名称；读屏会读到范围和峰值位置。" },
+  ],
+};

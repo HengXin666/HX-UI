@@ -7,6 +7,7 @@ import { Home, SectionIndex } from "./docs/overview";
 import { entryBySlug } from "./docs/registry";
 import { href, parse, useHash, type Route } from "./docs/router";
 import "./docs/docs.css";
+import { useReducedMotion } from "@/motion/use-reduced-motion";
 
 
 export function App() {
@@ -21,6 +22,7 @@ export function App() {
     window.location.replace(e ? href.entry(e) : href.home);
   }, [parsed]);
 
+  const reduced = useReducedMotion();
   const route: Route = parsed.name === "legacy" ? { name: "home" } : parsed;
   let page: React.ReactNode = <Home />;
   if (route.name === "section") page = <SectionIndex section={route.section} />;
@@ -32,7 +34,7 @@ export function App() {
   return (
     <Shell route={route}>
       {/* 换页衔接: 新页从下方 8px 淡入, 不等旧页退场, 不拖慢导航 */}
-      <m.div key={pageKey} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: ease.out }}>
+      <m.div key={pageKey} initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: ease.out }}>
         {page}
       </m.div>
     </Shell>

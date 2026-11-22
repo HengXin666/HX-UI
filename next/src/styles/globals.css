@@ -199,3 +199,8 @@
   &[data-fade="end"] { mask-image: linear-gradient(to left, transparent, #000 var(--fade)); }
   &[data-fade="both"] { mask-image: linear-gradient(to right, transparent, #000 var(--fade), #000 calc(100% - var(--fade)), transparent); }
 }
+
+@keyframes hx-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

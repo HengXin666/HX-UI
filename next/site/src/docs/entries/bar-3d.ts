@@ -1,0 +1,42 @@
+import type { DocEntry } from "../types";
+
+export const bar3d: DocEntry = {
+  slug: "bar-3d",
+  name: "Bar3D",
+  en: "Bar3D",
+  title: "3D 柱状图",
+  section: "ui",
+  group: "图表",
+  sub: "3D 图表",
+  description: "两个维度交叉的量放在一块地面上，高低一眼看出：地区 × 月份的 GMV、星期 × 时段的订单。柱子依次从地面长出，换数据时平滑升降；悬停高亮当前柱、其余变暗并显示读数。拖动旋转、滚轮缩放、双击复位，键盘方向键也能转。three.js 按需加载，不进首屏包；不支持 WebGL 时退回数据表。",
+  file: "src/data/charts3d/bar3d.tsx",
+  importFrom: "@/data",
+  demo: () => import("./bar-3d.demo"),
+  source: () => import("@/data/charts3d/impl/bar3d-scene.tsx?raw").then((m) => m.default),
+  stageHeight: 640,
+  defaults: { data: "gmv", colorMode: "value", gap: 0.28, autoRotate: true },
+  componentDefaults: { colorMode: "value", gap: 0.28, autoRotate: false },
+  demoOnly: ["data"],
+  presets: [
+    { label: "地区 × 月份", values: { data: "gmv", colorMode: "value", gap: 0.28 } },
+    { label: "星期 × 时段", values: { data: "orders", colorMode: "value", gap: 0.18 } },
+    { label: "按行配色", values: { data: "gmv", colorMode: "row", gap: 0.35 } },
+  ],
+  controls: [
+    { type: "select", key: "data", label: "数据", options: [{ value: "gmv", label: "地区 × 月份" }, { value: "orders", label: "星期 × 时段" }] },
+    { type: "select", key: "colorMode", label: "配色", options: [{ value: "value", label: "按数值渐变" }, { value: "row", label: "按行" }] },
+    { type: "number", key: "gap", label: "柱间距", min: 0.05, max: 0.6, step: 0.05 },
+    { type: "toggle", key: "autoRotate", label: "自动旋转" },
+  ],
+  usage: (v) => `import { Bar3D } from "@/data";\n\n<Bar3D\n  values={gmv} // number[行][列]\n  xLabels={["1月", "2月", /* … */]}\n  yLabels={["华东", "华南", /* … */]}\n  valueLabel="GMV"\n  format={(v) => \`\${v} 万元\`}${v.colorMode === "row" ? `\n  colorMode="row"` : ""}${Number(v.gap) !== 0.28 ? `\n  gap={${v.gap}}` : ""}${v.autoRotate ? "\n  autoRotate" : ""}\n/>\n`,
+  props: [
+    { name: "values", type: "number[][]", description: "values[行][列]，行对应 yLabels（纵深），列对应 xLabels。" },
+    { name: "xLabels / yLabels", type: "string[]", description: "两条轴的标签。" },
+    { name: "colorMode", type: '"value" | "row"', default: '"value"', description: "按数值从 chart-2 渐变到 chart-1，或每行一种主题色。" },
+    { name: "gap", type: "number", default: "0.28", description: "柱间空隙，0 到 0.8。" },
+    { name: "valueLabel / format", type: "string / (v) => string", default: '"数值" / 千分位', description: "悬停读数的名称和格式。" },
+    { name: "autoRotate", type: "boolean", default: "false", description: "缓慢自转；减弱动效时始终关闭。" },
+    { name: "height / label", type: "number / string", default: '420 / "3D 柱状图"', description: "高度和读屏名称；读屏还会读到完整数据表。" },
+    { name: "键盘", type: "—", description: "聚焦后 ← → 绕转，↑ ↓ 俯仰，+ / - 缩放，0 复位。" },
+  ],
+};
