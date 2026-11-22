@@ -15,7 +15,8 @@ function scrollToHash(href: string) {
  * 手机菜单: 顶部抽屉. 由 SiteHeader 第一次点开时才加载, 首屏不带 Sheet 的代码.
  * 点链接先关抽屉, 关完再滚动, 避免和滚动锁打架; 没有滚动时焦点回到菜单按钮.
  */
-export default function SiteHeaderMenu({ open, onOpenChange, links, menuActions, trigger }: {
+export default function SiteHeaderMenu({ brand, open, onOpenChange, links, menuActions, trigger }: {
+  brand: React.ReactNode;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   links: { label: string; href: string }[];
@@ -27,7 +28,7 @@ export default function SiteHeaderMenu({ open, onOpenChange, links, menuActions,
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="top"
-        className="gap-0 px-5 pt-14 pb-6"
+        className="gap-0 px-5 pb-6"
         onCloseAutoFocus={(e) => {
           e.preventDefault();
           const href = pending.current;
@@ -35,6 +36,8 @@ export default function SiteHeaderMenu({ open, onOpenChange, links, menuActions,
           if (!(href && scrollToHash(href))) trigger.current?.focus();
         }}
       >
+        {/* 抽屉盖住了顶栏, 品牌放回同一位置, 视觉上顶栏没动 */}
+        <div inert className="flex h-14 items-center text-[15px] font-semibold tracking-tight">{brand}</div>
         <SheetTitle className="sr-only">菜单</SheetTitle>
         <SheetDescription className="sr-only">站内导航</SheetDescription>
         <nav aria-label="主导航" className="flex flex-col">

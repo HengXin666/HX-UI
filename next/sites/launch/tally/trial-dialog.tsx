@@ -70,7 +70,7 @@ export default function TrialDialog({ intent, onClose, opener }: { intent: Trial
                 <DialogTitle>{copy.title}</DialogTitle>
                 <DialogDescription>
                   {copy.desc}
-                  {shown?.plan && <> 已选：<span className="font-medium text-foreground">{shown.plan}</span></>}
+                  {shown?.plan && <span className="mt-1.5 block">已选：<span className="font-medium text-foreground">{shown.plan}</span></span>}
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-2">

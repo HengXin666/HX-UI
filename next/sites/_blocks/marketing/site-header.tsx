@@ -63,7 +63,7 @@ export function SiteHeader({ brand, links, actions, menuActions, width = "max-w-
           </button>
           {menu && (
             <React.Suspense fallback={null}>
-              <SiteHeaderMenu open={open} onOpenChange={setOpen} links={links} menuActions={menuActions} trigger={trigger} />
+              <SiteHeaderMenu brand={brand} open={open} onOpenChange={setOpen} links={links} menuActions={menuActions} trigger={trigger} />
             </React.Suspense>
           )}
         </div>
