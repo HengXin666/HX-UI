@@ -25,6 +25,8 @@ export { ForceGraph } from "./charts/force-graph";
 export type { ForceGraphProps, GraphLink, GraphNode } from "./charts/force-graph";
 export { Waterfall } from "./charts/waterfall";
 export type { WaterfallItem, WaterfallProps } from "./charts/waterfall";
+export { Bullet } from "./charts/bullet";
+export type { BulletItem, BulletProps } from "./charts/bullet";
 export { sma, ema, macd, boll, kdj, rsi } from "./charts/indicators";
 export { Bar3D } from "./charts3d/bar3d";
 export type { Bar3DProps } from "./charts3d/bar3d";
