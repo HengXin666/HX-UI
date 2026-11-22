@@ -2,7 +2,7 @@ import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "r
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import { toConfig, type SeriesSpec } from "./area-trend";
-import { useChartAnimation } from "./animation";
+import { useChartAnimation, type ChartAnimationOptions } from "./animation";
 
 interface RadarCompareProps {
   /** 每行一个维度 */
@@ -16,11 +16,13 @@ interface RadarCompareProps {
   max?: number;
   size?: number;
   className?: string;
+  /** 增删维度时的动画. 默认按维度名配对: 多边形平滑变形, 新维度从圆心长出 */
+  animation?: ChartAnimationOptions;
 }
 
 /** 雷达图: 多维评分对比 (竞品, 能力模型, 门店体检). */
-export function RadarCompare({ data, axis, series, grid = "polygon", max, size = 300, className }: RadarCompareProps) {
-  const anim = useChartAnimation({ match: "index" }, data.length);
+export function RadarCompare({ data, axis, series, grid = "polygon", max, size = 300, className, animation }: RadarCompareProps) {
+  const anim = useChartAnimation({ match: { dataKey: axis }, ...animation }, data.length);
   return (
     <ChartContainer config={toConfig(series)} className={cn("mx-auto aspect-square", className)} style={{ height: size }}>
       <RadarChart data={data} outerRadius="72%">

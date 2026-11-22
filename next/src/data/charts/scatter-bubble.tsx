@@ -2,7 +2,7 @@ import { CartesianGrid, Scatter, ScatterChart, XAxis, YAxis, ZAxis } from "recha
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import { formatCompact } from "./area-trend";
-import { useChartAnimation } from "./animation";
+import { useChartAnimation, type ChartAnimationOptions } from "./animation";
 
 export interface ScatterGroup {
   key: string;
@@ -23,11 +23,13 @@ interface ScatterBubbleProps {
   yFormatter?: (v: number) => string;
   height?: number;
   className?: string;
+  /** 数据变化时的动画. 默认按点的 name 配对: 同一个点平滑移位, 新点长出, 删掉的点缩回 */
+  animation?: ChartAnimationOptions;
 }
 
 /** 散点 / 气泡图: 两个指标的相关性, 第三个指标用大小 (商品价格 vs 销量, 气泡 = 毛利). */
-export function ScatterBubble({ groups, xLabel, yLabel, zLabel, range = [40, 520], xFormatter, yFormatter, height = 300, className }: ScatterBubbleProps) {
-  const anim = useChartAnimation({ match: "index" }, groups.reduce((s, g) => s + g.points.length, 0));
+export function ScatterBubble({ groups, xLabel, yLabel, zLabel, range = [40, 520], xFormatter, yFormatter, height = 300, className, animation }: ScatterBubbleProps) {
+  const anim = useChartAnimation({ match: { dataKey: "name" }, ...animation }, groups.reduce((s, g) => s + g.points.length, 0));
   const config: ChartConfig = {
     ...Object.fromEntries(groups.map((g, i) => [g.key, { label: g.label, color: g.color ?? `var(--chart-${(i % 5) + 1})` }])),
     x: { label: xLabel }, y: { label: yLabel }, ...(zLabel ? { z: { label: zLabel } } : {}),

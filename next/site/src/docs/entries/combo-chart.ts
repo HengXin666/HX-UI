@@ -7,7 +7,7 @@ export const comboChart: DocEntry = {
   section: "ui",
   group: "图表",
   sub: "2D 图表",
-  description: "柱和线画在一张图里，量用柱、率用线，左右双轴各管各的刻度。经营看板最常见的一张：订单量配转化率、营收配增长率。",
+  description: "柱和线画在一张图里，量用柱、率用线，左右双轴各管各的刻度。经营看板最常见的一张：订单量配转化率、营收配增长率。数据变化时按 animation.match 指定的键配对，滑动窗口时柱和线整体左移，新的一天从底部长出。",
   file: "src/data/charts/combo-chart.tsx",
   importFrom: "@/data",
   demo: () => import("./combo-chart.demo"),
@@ -31,6 +31,6 @@ export const comboChart: DocEntry = {
     { name: "stacked", type: "boolean", default: "false", description: "柱堆叠。" },
     { name: "dualAxis", type: "boolean", default: "true", description: "线是否单独用右轴；关掉后和柱共用左轴。" },
     { name: "barFormatter / lineFormatter", type: "(v) => string", default: "缩写", description: "左右轴刻度格式。" },
-    { name: "height / animation", type: "number / ChartAnimationOptions", default: "280", description: "高度和增量动画。" },
+    { name: "height / animation", type: "number / ChartAnimationOptions", default: "280", description: "高度和增量动画。滑动窗口传 { match: { dataKey: \"id\" } }，按业务键配对。" },
   ],
 };
