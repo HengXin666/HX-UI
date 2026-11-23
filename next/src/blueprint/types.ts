@@ -12,7 +12,7 @@
 // Pin types
 
 /** How a pin type is drawn and how wires to it behave. */
-export type PinShape = "exec" | "data" | "array" | "set" | "map";
+export type PinShape = "exec" | "data" | "array" | "set" | "map" | "delegate";
 
 /** A registered pin type. `color` is a design token name, e.g. "bp-float" (renderer maps it to bg-/stroke- classes). */
 export interface PinTypeDef {
@@ -127,6 +127,13 @@ export interface BlueprintNode {
   readonly width?: number;
   /** Per-node comment bubble (UE5 node comment). */
   readonly comment?: string;
+  /**
+   * Disabled node (UE5 "Enabled State: Disabled"). Not evaluated: exec passes through to its first
+   * exec output, each data output passes the first input of an assignable type (else undefined).
+   */
+  readonly disabled?: boolean;
+  /** Variable id, for `var.get` / `var.set` nodes. Pins follow the variable's type. */
+  readonly variable?: string;
   readonly pins?: NodePins;
   /** Id of a SubGraphDef in the root graph. The node's pins are derived from that subgraph's tunnels. */
   readonly subgraph?: string;
@@ -154,6 +161,25 @@ export interface BlueprintComment {
   readonly moveWithNodes?: boolean;
 }
 
+/** A graph variable (UE5 "My Blueprint > Variables"). Get / Set nodes reference it by id, so renames propagate. */
+export interface VariableDef {
+  readonly id: string;
+  readonly name: string;
+  /** Pin type id from the registry (not exec). */
+  readonly type: string;
+  readonly default?: unknown;
+}
+
+/**
+ * What a collapsed graph is (UE5 has three):
+ *   graph    purely visual grouping, runs inline (the default)
+ *   function one exec in and one exec out at most, own local variables reset per call, the body
+ *            runs to completion before its exec output fires
+ *   macro    any number of exec pins, inlined: reaching an exit pin continues the outer graph
+ *            right away, then the body carries on
+ */
+export type SubgraphKind = "graph" | "function" | "macro";
+
 /**
  * A collapsed graph. Its external pins are NOT stored: they are the pins of its
  * tunnel nodes (`subgraph.in` outputs, `subgraph.out` inputs), so they can never drift.
@@ -162,6 +188,10 @@ export interface BlueprintComment {
 export interface SubGraphDef {
   readonly id: string;
   readonly label?: string;
+  /** Default "graph". */
+  readonly kind?: SubgraphKind;
+  /** Local variables (functions only). */
+  readonly variables?: readonly VariableDef[];
   readonly nodes: readonly BlueprintNode[];
   readonly edges: readonly BlueprintEdge[];
   readonly comments?: readonly BlueprintComment[];
@@ -173,11 +203,20 @@ export interface BlueprintGraph {
   readonly comments?: readonly BlueprintComment[];
   /** All subgraph definitions of the document, flat (nested subgraphs reference this same table). */
   readonly subgraphs?: Readonly<Record<string, SubGraphDef>>;
+  /** Graph-level variables (root only; an inner view carries the root's list read-only). */
+  readonly variables?: readonly VariableDef[];
+  /** Inner views of a function only: its local variables (written back to the definition). */
+  readonly locals?: readonly VariableDef[];
 }
 
-/** Anything that can resolve subgraph ids: the root graph, or an inner graph view that carries the table. */
+/**
+ * Anything that can resolve subgraph ids and variable ids: the root graph, or an inner graph view
+ * that carries the table (and the variables visible there).
+ */
 export interface SubgraphScope {
   readonly subgraphs?: Readonly<Record<string, SubGraphDef>>;
+  readonly variables?: readonly VariableDef[];
+  readonly locals?: readonly VariableDef[];
 }
 
 // ---------------------------------------------------------------------------
@@ -197,6 +236,9 @@ export type IssueCode =
   | "output-occupied"
   | "missing-input"
   | "missing-subgraph"
+  | "unknown-variable"
+  | "function-exec"
+  | "disabled-node"
   | "no-entry"
   | "custom";
 

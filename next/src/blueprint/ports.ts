@@ -1,6 +1,6 @@
 import type { Registry } from "./registry";
-import { SUBGRAPH_NODE, TUNNEL_IN, TUNNEL_OUT } from "./registry";
-import type { BlueprintEdge, BlueprintNode, Pin, PinRef, PinShape, SubgraphScope } from "./types";
+import { SUBGRAPH_NODE, TUNNEL_IN, TUNNEL_OUT, VAR_GET, VAR_SET } from "./registry";
+import type { BlueprintEdge, BlueprintNode, Pin, PinRef, PinShape, SubgraphScope, VariableDef } from "./types";
 
 /**
  * The ONE place that answers "which pins does this node have".
@@ -22,8 +22,8 @@ export interface ResolvedPin extends Pin {
 export interface NodePorts {
   readonly inputs: readonly ResolvedPin[];
   readonly outputs: readonly ResolvedPin[];
-  /** Set when the node cannot be resolved: unknown type, or a subgraph id missing from the scope. */
-  readonly missing?: "type" | "subgraph";
+  /** Set when the node cannot be resolved: unknown type, or a subgraph / variable id missing from the scope. */
+  readonly missing?: "type" | "subgraph" | "variable";
 }
 
 /**
@@ -59,6 +59,17 @@ export function subgraphPins(sgNodes: readonly BlueprintNode[]): { inputs: Pin[]
  *   Only needed for collapsed-graph nodes, without it they report `missing: "subgraph"`.
  */
 export function getPorts(node: BlueprintNode, registry: Registry, scope?: SubgraphScope): NodePorts {
+  if (node.type === VAR_GET || node.type === VAR_SET) {
+    const v = findVariable(scope, node.variable);
+    if (!v) return { inputs: [], outputs: [], missing: "variable" };
+    const value = { id: "value", type: v.type, label: v.name };
+    return node.type === VAR_GET
+      ? { inputs: [], outputs: resolve([value], "out", registry) }
+      : {
+        inputs: resolve([{ id: "exec", type: "exec" }, { ...value, ...(v.default !== undefined ? { default: v.default } : {}) }], "in", registry),
+        outputs: resolve([{ id: "then", type: "exec" }, value], "out", registry),
+      };
+  }
   if (node.subgraph !== undefined || node.type === SUBGRAPH_NODE) {
     const sg = node.subgraph !== undefined ? scope?.subgraphs?.[node.subgraph] : undefined;
     if (!sg) return { inputs: [], outputs: [], missing: "subgraph" };
@@ -73,6 +84,12 @@ export function getPorts(node: BlueprintNode, registry: Registry, scope?: Subgra
     outputs: resolve(outputs, "out", registry),
     ...(def ? {} : { missing: "type" as const }),
   };
+}
+
+/** A variable visible in `scope`: function locals first, then graph variables. */
+export function findVariable(scope: SubgraphScope | undefined, id: string | undefined): VariableDef | undefined {
+  if (id === undefined) return undefined;
+  return scope?.locals?.find((v) => v.id === id) ?? scope?.variables?.find((v) => v.id === id);
 }
 
 export function findPin(

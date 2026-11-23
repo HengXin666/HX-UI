@@ -1,17 +1,21 @@
 import { useEffect, useRef } from "react";
 import type { BlueprintEditor } from "./editor";
 
-/** F2 / double-click title: an input placed over the node header or comment title. Enter or blur saves, Esc cancels. */
+/**
+ * F2 / double-click title: an input placed over the node header or comment title. Enter or blur
+ * saves, Esc cancels. kind "note" edits a node's comment bubble (empty text removes it).
+ */
 
-export interface RenameTarget { readonly kind: "node" | "comment"; readonly id: string }
+export interface RenameTarget { readonly kind: "node" | "comment" | "note"; readonly id: string }
 
 export function RenameField({ ed, target, onDone }: { ed: BlueprintEditor; target: RenameTarget; onDone: () => void }) {
   const ref = useRef<HTMLInputElement>(null);
   const done = useRef(false);
   const g = ed.graph;
-  const node = target.kind === "node" ? g.nodes.find((n) => n.id === target.id) : undefined;
+  const note = target.kind === "note";
+  const node = target.kind !== "comment" ? g.nodes.find((n) => n.id === target.id) : undefined;
   const comment = target.kind === "comment" ? g.comments?.find((c) => c.id === target.id) : undefined;
-  const initial = node ? node.title ?? ed.registry.node(node.type)?.title ?? "" : comment?.title ?? "";
+  const initial = note ? node?.comment ?? "" : node ? node.title ?? ed.registry.node(node.type)?.title ?? "" : comment?.title ?? "";
   useEffect(() => {
     ref.current?.focus();
     ref.current?.select();
@@ -19,7 +23,7 @@ export function RenameField({ ed, target, onDone }: { ed: BlueprintEditor; targe
   if (!node && !comment) return null;
   const v = ed.viewport;
   const x = (node?.x ?? comment!.x) * v.z + v.x;
-  const y = (node?.y ?? comment!.y) * v.z + v.y;
+  const y = (node?.y ?? comment!.y) * v.z + v.y - (note ? 30 : 0);
   const w = Math.max(160, (node ? 176 : comment!.w) * v.z);
 
   const save = () => {
@@ -27,13 +31,14 @@ export function RenameField({ ed, target, onDone }: { ed: BlueprintEditor; targe
     done.current = true;
     const text = ref.current?.value.trim() ?? "";
     if (text !== initial) {
-      if (node) ed.apply([{ op: "updateNode", id: node.id, title: text || null }], { label: "重命名" });
+      if (note) ed.apply([{ op: "updateNode", id: node!.id, comment: text || null }], { label: "节点注释" });
+      else if (node) ed.apply([{ op: "updateNode", id: node.id, title: text || null }], { label: "重命名" });
       else ed.apply([{ op: "updateComment", id: comment!.id, title: text }], { label: "重命名注释" });
     }
     onDone();
   };
   return (
-    <input ref={ref} data-bp-overlay className="bp-rename" defaultValue={initial} aria-label={node ? "节点名称" : "注释标题"}
+    <input ref={ref} data-bp-overlay className="bp-rename" defaultValue={initial} placeholder={note ? "写一句注释" : undefined} aria-label={note ? "节点注释" : node ? "节点名称" : "注释标题"}
       style={{ left: x, top: y, width: w }} spellCheck={false}
       onPointerDown={(e) => e.stopPropagation()}
       onKeyDown={(e) => {

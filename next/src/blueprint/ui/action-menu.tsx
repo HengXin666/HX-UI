@@ -3,7 +3,9 @@ import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { nodesAcceptingPin, type PinMatch } from "../connect";
 import { createIdGen } from "../ids";
 import type { GraphOp } from "../ops";
-import type { NodeDef, PinRef } from "../types";
+import { getPorts } from "../ports";
+import { SUBGRAPH_NODE, VAR_GET, VAR_SET } from "../registry";
+import type { BlueprintNode, NodeDef, PinRef } from "../types";
 import type { BlueprintEditor } from "./editor";
 import { layoutNode, pinKey } from "./geometry";
 import { TYPE_LABEL } from "./labels";
@@ -31,12 +33,58 @@ export interface ActionMenuProps {
   readonly onClose: () => void;
 }
 
-interface Item { readonly def: NodeDef; readonly pin?: string | undefined; readonly conversion?: string | undefined }
+interface Item {
+  readonly def: NodeDef;
+  readonly pin?: string | undefined;
+  readonly conversion?: string | undefined;
+  /** Document items (function / macro call sites, variable Get / Set) override these. */
+  readonly key?: string;
+  readonly title?: string;
+  readonly category?: string;
+  readonly extra?: { readonly subgraph?: string; readonly variable?: string };
+}
 
-function matches(def: NodeDef, q: string): boolean {
+const titleOf = (i: Item) => i.title ?? i.def.title;
+const catOf = (i: Item) => i.category ?? i.def.category;
+
+function matches(i: Item, q: string): boolean {
   if (!q) return true;
-  const hay = `${def.title} ${def.id} ${def.category} ${def.description ?? ""}`.toLowerCase();
+  const hay = `${titleOf(i)} ${i.def.id} ${catOf(i)} ${i.def.description ?? ""}`.toLowerCase();
   return q.toLowerCase().split(/\s+/).every((w) => hay.includes(w));
+}
+
+/**
+ * Items that come from the document rather than the registry: a call site for every function and
+ * macro (UE5 lists them in the action menu), and Get / Set for every visible variable.
+ */
+function documentItems(ed: BlueprintEditor, from: MenuOrigin | undefined, contextual: boolean): Item[] {
+  const reg = ed.registry;
+  const g = ed.graph;
+  const out: Item[] = [];
+  const consider = (probe: BlueprintNode, base: Omit<Item, "pin">) => {
+    if (!from) return void out.push(base);
+    const ports = getPorts(probe, reg, g);
+    const exec = reg.isExec(from.type);
+    const pins = from.dir === "out" ? ports.inputs : ports.outputs;
+    const hit = pins.find((p) => p.exec === exec && (from.dir === "out" ? reg.assignable(from.type, p.type) : reg.assignable(p.type, from.type)));
+    if (hit || !contextual) out.push({ ...base, pin: hit?.id });
+  };
+  const subgraphDef = reg.node(SUBGRAPH_NODE)!;
+  for (const sg of Object.values(ed.root.subgraphs ?? {})) {
+    if (sg.kind !== "function" && sg.kind !== "macro") continue;
+    if (sg.id === ed.subgraph) continue;
+    consider({ id: "_", type: SUBGRAPH_NODE, x: 0, y: 0, subgraph: sg.id }, {
+      def: subgraphDef, key: `sg:${sg.id}`, title: sg.label ?? sg.id, category: sg.kind === "function" ? "函数" : "宏", extra: { subgraph: sg.id },
+    });
+  }
+  for (const v of [...(g.locals ?? []), ...(g.variables ?? [])]) {
+    for (const t of [VAR_GET, VAR_SET]) {
+      consider({ id: "_", type: t, x: 0, y: 0, variable: v.id }, {
+        def: reg.node(t)!, key: `${t}:${v.id}`, title: t === VAR_GET ? `获取 ${v.name}` : `设置 ${v.name}`, category: "变量", extra: { variable: v.id },
+      });
+    }
+  }
+  return out;
 }
 
 export function ActionMenu({ ed, sx, sy, from, onClose }: ActionMenuProps) {
@@ -49,16 +97,22 @@ export function ActionMenu({ ed, sx, sy, from, onClose }: ActionMenuProps) {
   const reg = ed.registry;
 
   const all = useMemo<Item[]>(() => {
-    if (from && contextual) return nodesAcceptingPin(from.type, from.dir, reg).map((x: PinMatch) => ({ def: x.node, pin: x.pin, conversion: x.conversion }));
+    const docs = documentItems(ed, from, contextual);
+    if (from && contextual) return [...docs, ...nodesAcceptingPin(from.type, from.dir, reg).map((x: PinMatch) => ({ def: x.node, pin: x.pin, conversion: x.conversion }))];
     const accepting = from ? new Map(nodesAcceptingPin(from.type, from.dir, reg).map((x) => [x.node.id, x])) : undefined;
-    return [...reg.nodes.values()].filter((d) => !d.internal)
+    return [...docs, ...[...reg.nodes.values()].filter((d) => !d.internal)
       .sort((a, b) => a.category.localeCompare(b.category) || a.title.localeCompare(b.title))
-      .map((def) => ({ def, pin: accepting?.get(def.id)?.pin, conversion: accepting?.get(def.id)?.conversion }));
-  }, [reg, from, contextual]);
-  const items = useMemo(() => all.filter((i) => matches(i.def, query.trim())), [all, query]);
+      .map((def) => ({ def, pin: accepting?.get(def.id)?.pin, conversion: accepting?.get(def.id)?.conversion }))];
+  }, [ed, reg, from, contextual]);
+  const items = useMemo(() => {
+    // listbox order must equal visual (grouped) order, so the arrow keys walk what you see
+    const hits = all.filter((i) => matches(i, query.trim()));
+    const cats = [...new Set(hits.map(catOf))];
+    return cats.flatMap((c) => hits.filter((i) => catOf(i) === c));
+  }, [all, query]);
   const groups = useMemo(() => {
     const out = new Map<string, { item: Item; index: number }[]>();
-    items.forEach((item, index) => out.set(item.def.category, [...(out.get(item.def.category) ?? []), { item, index }]));
+    items.forEach((item, index) => out.set(catOf(item), [...(out.get(catOf(item)) ?? []), { item, index }]));
     return [...out];
   }, [items]);
 
@@ -79,17 +133,17 @@ export function ActionMenu({ ed, sx, sy, from, onClose }: ActionMenuProps) {
   const pick = (item: Item) => {
     const at = ed.toGraph(sx, sy);
     const id = createIdGen(ed.root)("n");
-    const probe = layoutNode({ id, type: item.def.id, x: 0, y: 0 }, reg, ed.graph);
+    const probe = layoutNode({ id, type: item.def.id, x: 0, y: 0, ...item.extra }, reg, ed.graph);
     const pinAt = item.pin && from ? probe.pins.get(pinKey(from.dir === "out" ? "in" : "out", item.pin)) : undefined;
     const snap = (v: number) => (ed.snap > 1 ? Math.round(v / ed.snap) * ed.snap : Math.round(v));
     const x = snap(at.x - (pinAt?.x ?? 0));
     const y = Math.round(at.y - (pinAt?.y ?? 0));
-    const ops: GraphOp[] = [{ op: "addNode", id, type: item.def.id, at: [x, y] }];
+    const ops: GraphOp[] = [{ op: "addNode", id, type: item.def.id, at: [x, y], ...item.extra }];
     if (from && item.pin) {
       const mine = { node: id, pin: item.pin };
       ops.push(from.dir === "out" ? { op: "connect", from: from.ref, to: mine } : { op: "connect", from: mine, to: from.ref });
     }
-    ed.apply(ops, { label: `添加 ${item.def.title}` });
+    ed.apply(ops, { label: `添加 ${titleOf(item)}` });
     ed.select([id]);
     onClose();
     ed.el?.focus();
@@ -131,10 +185,10 @@ export function ActionMenu({ ed, sx, sy, from, onClose }: ActionMenuProps) {
           <div role="group" key={cat} aria-label={cat}>
             <div role="presentation" className="px-2 pt-2 pb-1 text-[11px] font-medium text-muted-foreground">{cat}</div>
             {list.map(({ item, index }) => (
-              <div key={item.def.id} id={`${listId}-${index}`} role="option" aria-selected={index === active}
+              <div key={item.key ?? item.def.id} id={`${listId}-${index}`} role="option" aria-selected={index === active}
                 onPointerMove={() => setActive(index)} onClick={() => pick(item)}
                 className="flex cursor-default items-center justify-between gap-2 rounded-md px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground">
-                <span className="truncate">{item.def.title}</span>
+                <span className="truncate">{titleOf(item)}</span>
                 <span className="shrink-0 font-mono text-[11px] text-muted-foreground">{item.conversion ? "自动转换" : item.pin ?? ""}</span>
               </div>
             ))}

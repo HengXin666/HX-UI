@@ -17,9 +17,12 @@ export function allIds(graph: BlueprintGraph): Set<string> {
     for (const c of g.comments ?? []) ids.add(c.id);
   };
   scan(graph);
+  for (const v of graph.variables ?? []) ids.add(v.id);
+  for (const v of graph.locals ?? []) ids.add(v.id);
   for (const [id, sg] of Object.entries(graph.subgraphs ?? {})) {
     ids.add(id);
     scan(sg);
+    for (const v of sg.variables ?? []) ids.add(v.id);
   }
   return ids;
 }

@@ -26,7 +26,7 @@ export function HelpSheet({ onClose }: { onClose: () => void }) {
               {SHORTCUTS.filter((s) => s.group === g).map((s) => (
                 <div key={s.id} className="flex items-center justify-between gap-3">
                   <dt>{s.label}</dt>
-                  <dd className="flex shrink-0 gap-1">{s.keys.slice(0, 1).map((k) => keyLabel(k).map((p, i) => <Kbd key={i}>{p}</Kbd>))}</dd>
+                  <dd className="flex shrink-0 gap-1">{s.display ? s.display.split(" ").map((p, i) => <Kbd key={i}>{p}</Kbd>) : s.keys.slice(0, 1).map((k) => keyLabel(k).map((p, i) => <Kbd key={i}>{p}</Kbd>))}</dd>
                 </div>
               ))}
             </dl>

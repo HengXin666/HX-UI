@@ -21,7 +21,9 @@ function describeLevel(g: Pick<BlueprintGraph, "nodes" | "edges" | "subgraphs">,
 
   for (const n of g.nodes) {
     const parts: string[] = [`${indent}- ${name(n.id)} type=${n.type}`];
-    if (n.subgraph !== undefined) parts.push(`collapsed graph "${n.subgraph}"`);
+    if (n.subgraph !== undefined) parts.push(`${g.subgraphs?.[n.subgraph]?.kind ?? "collapsed"} graph "${n.subgraph}"`);
+    if (n.variable !== undefined) parts.push(`variable "${n.variable}"`);
+    if (n.disabled) parts.push("DISABLED (skipped when run)");
     if (n.type === TUNNEL_IN) parts.push(`external inputs: ${(n.pins?.outputs ?? []).map((p) => `${p.id}:${p.type}`).join(", ") || "none"}`);
     if (n.type === TUNNEL_OUT) parts.push(`external outputs: ${(n.pins?.inputs ?? []).map((p) => `${p.id}:${p.type}`).join(", ") || "none"}`);
     const ins = g.edges.filter((e) => e.to.node === n.id && kindOf(e) === "data").map((e) => `${e.to.pin} <- ${name(e.from.node)}.${e.from.pin}`);
@@ -44,11 +46,13 @@ export function describeGraph(graph: BlueprintGraph, registry?: Registry): strin
   const sgs = Object.values(graph.subgraphs ?? {});
   const lines = [
     `Graph with ${graph.nodes.length} nodes, ${graph.edges.length} wires, ${graph.comments?.length ?? 0} comments, ${sgs.length} collapsed graphs.`,
+    ...(graph.variables?.length ? [`Variables: ${graph.variables.map((v) => `${v.name} [${v.id}]:${v.type}${v.default !== undefined ? `=${JSON.stringify(v.default)}` : ""}`).join(", ")}`] : []),
     ...describeLevel(graph, registry, ""),
   ];
   for (const c of graph.comments ?? []) lines.push(`Comment "${c.title ?? c.id}" at (${c.x}, ${c.y}) size ${c.w}x${c.h}${c.body ? `: ${c.body}` : ""}`);
   for (const sg of sgs) {
-    lines.push(`Collapsed graph "${sg.label ?? sg.id}" (${sg.id}):`);
+    const kind = sg.kind === "function" ? "Function" : sg.kind === "macro" ? "Macro" : "Collapsed graph";
+    lines.push(`${kind} "${sg.label ?? sg.id}" (${sg.id})${sg.variables?.length ? `, locals ${sg.variables.map((v) => `${v.name}:${v.type}`).join(", ")}` : ""}:`);
     lines.push(...describeLevel({ nodes: sg.nodes, edges: sg.edges, ...(graph.subgraphs ? { subgraphs: graph.subgraphs } : {}) }, registry, "  "));
   }
   if (registry) {

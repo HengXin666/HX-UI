@@ -1,9 +1,10 @@
 import { createHistory, type History, type StepOptions } from "../history";
 import { createIdGen, type IdGen } from "../ids";
-import type { ApplyResult, GraphOp } from "../ops";
+import type { DebugEvent, DebugOptions, DebugSession, DebugState } from "../debug";
+import { mergeInner, type ApplyResult, type GraphOp } from "../ops";
 import type { Registry } from "../registry";
 import { boundsOf, nodeBox, type Box } from "../size";
-import { subgraphAsGraph, writeSubgraph } from "../subgraph";
+import { subgraphAsGraph, subgraphPath } from "../subgraph";
 import type { BlueprintGraph, GraphValidation, ValidationIssue } from "../types";
 import { validateGraph } from "../validate";
 
@@ -32,6 +33,9 @@ export interface ViewValidation {
 }
 
 export const ZOOM = { min: 0.2, max: 2.5 } as const;
+const IDLE: DebugState = { status: "idle", steps: 0, trace: [], values: new Map() };
+/** Options of `run()`: the session options minus the breakpoints (the editor's own set is used). */
+export type RunOptions = Omit<DebugOptions, "breakpoints">;
 export const EMPTY_SELECTION: EditorSelection = { nodes: [], comments: [], edges: [] };
 
 const uniq = (a: readonly string[]) => [...new Set(a)];
@@ -42,6 +46,8 @@ export class BlueprintEditor {
   readonly history: History;
   readOnly = false;
   snap = 16;
+  /** Wheel behaviour, see useCanvas: "zoom" always, "ctrl" only with Ctrl / Cmd or once focused. */
+  wheel: "zoom" | "ctrl" = "ctrl";
   /** Set by the host (controlled mode). Called after every document change made by the editor. */
   onChange: ((graph: BlueprintGraph) => void) | undefined;
   /** In-memory clipboard, used when the system clipboard is unavailable. */
@@ -58,6 +64,20 @@ export class BlueprintEditor {
   private readonly listeners = new Set<() => void>();
   private readonly vpListeners = new Set<(v: Viewport) => void>();
   private viewCache: { root: BlueprintGraph; sg: string | undefined; graph: BlueprintGraph } | undefined;
+  /** Breakpoint keys: "node" on the main graph, "<subgraphId>/<node>" inside a collapsed graph. */
+  readonly breakpoints = new Set<string>();
+  /** Watched pins: "<level key>|in:<pin>" or "<level key>|out:<pin>". */
+  readonly watches = new Set<string>();
+  private dbg: DebugState = IDLE;
+  private session: DebugSession | undefined;
+  private readonly debugListeners = new Set<(e: DebugEvent) => void>();
+  /** Delay per exec hop for `run()` (the pulse animation), ms. */
+  stepMs = 200;
+  /** Screen space covered by docked panels; `fit` frames the graph in what is left. */
+  fitInset = { left: 0, top: 0, right: 0, bottom: 0 };
+  /** Short status line shown at the bottom of the editor (role=status). */
+  notice: string | undefined;
+  private noticeTimer: ReturnType<typeof setTimeout> | undefined;
   private valCache: { root: BlueprintGraph; sg: string | undefined; v: ViewValidation } | undefined;
 
   constructor(registry: Registry, initial: BlueprintGraph) {
@@ -145,7 +165,7 @@ export class BlueprintEditor {
     const next = fn(view, createIdGen(root));
     if (next === view) return;
     const sg = this.subgraph;
-    const merged = sg === undefined ? next : writeSubgraph({ ...root, ...(next.subgraphs ? { subgraphs: next.subgraphs } : {}) }, sg, next);
+    const merged = sg === undefined ? next : mergeInner(root, sg, next);
     this.history.set(merged, step);
   }
 
@@ -194,6 +214,31 @@ export class BlueprintEditor {
     this.bump();
     requestAnimationFrame(() => this.fit());
   }
+  /** Open a subgraph by its full path from the main graph (what breadcrumbs show). */
+  openPath(path: readonly string[]) {
+    const subs = this.root.subgraphs ?? {};
+    const ok = path.filter((id) => subs[id]);
+    this.pathIds = ok;
+    this.sel = EMPTY_SELECTION;
+    this.bump();
+    requestAnimationFrame(() => this.fit());
+  }
+  /** Open the level a validation-style id ("node" or "sg/node") lives on; returns the local id. */
+  reveal(key: string): string {
+    const i = key.lastIndexOf("/");
+    const sg = i < 0 ? undefined : key.slice(0, i).split("/").pop();
+    const local = i < 0 ? key : key.slice(i + 1);
+    if (sg !== this.subgraph) {
+      if (sg === undefined) this.exitTo(0);
+      else this.openPath(subgraphPath(this.root, sg) ?? [sg]);
+    }
+    return local;
+  }
+  /** Key ("node" / "sg/node") of a node on the level being edited. */
+  keyOf(localId: string): string {
+    const sg = this.subgraph;
+    return sg === undefined ? localId : `${sg}/${localId}`;
+  }
   /** Go back to `depth` levels (0 = the main graph). */
   exitTo(depth: number) {
     if (depth >= this.path.length) return;
@@ -202,6 +247,75 @@ export class BlueprintEditor {
     this.sel = left !== undefined ? { ...EMPTY_SELECTION, nodes: this.graph.nodes.filter((n) => n.subgraph === left).map((n) => n.id) } : EMPTY_SELECTION;
     this.bump();
     requestAnimationFrame(() => this.fit(this.sel.nodes.length ? this.sel.nodes : undefined));
+  }
+
+  /** Show a short message in the editor's status line for `ms`. */
+  notify(text: string, ms = 2200) {
+    clearTimeout(this.noticeTimer);
+    this.notice = text;
+    this.bump();
+    this.noticeTimer = setTimeout(() => {
+      this.notice = undefined;
+      this.bump();
+    }, ms);
+  }
+
+  // ------------------------------------------------------------------ debugging
+  /** F9: toggle breakpoints on these nodes of the level being edited (default: the selection). */
+  toggleBreakpoint(ids: readonly string[] = this.selection.nodes) {
+    if (!ids.length) return;
+    const keys = ids.map((id) => this.keyOf(id));
+    const on = !keys.every((k) => this.breakpoints.has(k));
+    keys.forEach((k) => (on ? this.breakpoints.add(k) : this.breakpoints.delete(k)));
+    this.bump();
+  }
+  toggleWatch(node: string, dir: "in" | "out", pin: string) {
+    const k = `${this.keyOf(node)}|${dir}:${pin}`;
+    if (!this.watches.delete(k)) this.watches.add(k);
+    this.bump();
+  }
+  get debug(): DebugState { return this.dbg; }
+  readonly onDebug = (fn: (e: DebugEvent) => void) => {
+    this.debugListeners.add(fn);
+    return () => void this.debugListeners.delete(fn);
+  };
+  /**
+   * Run the main graph from its entry (default: the first event node) with exec-flow pulses,
+   * breakpoints and watch values. The interpreter is loaded on first use (its own chunk).
+   */
+  async run(opts: RunOptions = {}) {
+    if (this.session && (this.dbg.status === "running" || this.dbg.status === "paused")) {
+      if (opts.startPaused) this.session.step();
+      else this.session.continue();
+      return this.dbg.result;
+    }
+    const { DebugSession } = await import("../debug");
+    const s = new DebugSession(this.root, this.registry, { stepMs: this.stepMs, ...opts, breakpoints: this.breakpoints }, (e) => {
+      if (this.session !== s) return;
+      if (e.type === "status") {
+        this.dbg = e.state;
+        this.bump();
+      }
+      this.debugListeners.forEach((l) => l(e));
+    });
+    this.session?.stop();
+    this.session = s;
+    this.dbg = IDLE;
+    this.debugListeners.forEach((l) => l({ type: "status", state: IDLE }));
+    return s.start();
+  }
+  /** Continue a paused run (or start one). */
+  continue() { return this.run(); }
+  /** Single step: run the paused node and pause before the next, or start a stepped run. */
+  step() { return this.run({ startPaused: true }); }
+  stop() { this.session?.stop(); }
+  /** Forget the last run (clears highlights and values). */
+  clearDebug() {
+    this.session?.stop();
+    this.session = undefined;
+    this.dbg = IDLE;
+    this.debugListeners.forEach((l) => l({ type: "status", state: IDLE }));
+    this.bump();
   }
 
   // ------------------------------------------------------------------ viewport
@@ -233,12 +347,16 @@ export class BlueprintEditor {
     const want = ids ?? (this.selection.nodes.length ? this.selection.nodes : undefined);
     const boxes: Box[] = g.nodes.filter((n) => !want || want.includes(n.id)).map((n) => nodeBox(n, this.registry, g));
     if (!want) boxes.push(...(g.comments ?? []));
-    const w = this.el?.clientWidth ?? 800;
-    const h = this.el?.clientHeight ?? 600;
-    if (!boxes.length) return this.setViewport({ x: w / 2 - 100, y: h / 2 - 60, z: 1 });
+    const ins = this.fitInset;
+    const fullW = this.el?.clientWidth ?? 800;
+    // ignore the inset when it would leave too little room (narrow editors)
+    const left = fullW - ins.left - ins.right >= 320 ? ins.left : 0;
+    const w = fullW - left - (left ? ins.right : 0);
+    const h = (this.el?.clientHeight ?? 600) - ins.top - ins.bottom;
+    if (!boxes.length) return this.setViewport({ x: left + w / 2 - 100, y: ins.top + h / 2 - 60, z: 1 });
     const b = boundsOf(boxes);
     const pad = Math.min(48, w * 0.06, h * 0.06);
     const z = clampZ(Math.min(1, (w - pad * 2) / Math.max(1, b.w), (h - pad * 2) / Math.max(1, b.h)));
-    this.setViewport({ x: w / 2 - (b.x + b.w / 2) * z, y: h / 2 - (b.y + b.h / 2) * z, z });
+    this.setViewport({ x: left + w / 2 - (b.x + b.w / 2) * z, y: ins.top + h / 2 - (b.y + b.h / 2) * z, z });
   }
 }

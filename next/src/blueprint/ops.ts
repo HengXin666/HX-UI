@@ -1,11 +1,11 @@
 import { addComment, boxAround, moveComment, removeComments, updateComment } from "./comment";
 import { connect } from "./connect";
 import { createIdGen, type IdGen } from "./ids";
-import { findPin, parsePinRef } from "./ports";
+import { findPin, findVariable, parsePinRef, subgraphPins } from "./ports";
 import type { Registry } from "./registry";
-import { REROUTE } from "./registry";
+import { REROUTE, VAR_GET, VAR_SET } from "./registry";
 import { collapse, expand, subgraphAsGraph, writeSubgraph } from "./subgraph";
-import type { BlueprintGraph, BlueprintNode, CommentTone, PinRef } from "./types";
+import type { BlueprintGraph, BlueprintNode, CommentTone, PinRef, SubgraphKind, VariableDef } from "./types";
 
 /**
  * JSON edit operations. One vocabulary for the UI, the history, and AI agents:
@@ -25,10 +25,16 @@ export type XY = readonly [number, number] | { readonly x: number; readonly y: n
 export type PinInput = string | PinRef;
 
 export type GraphOp =
-  | { readonly op: "addNode"; readonly type: string; readonly id?: string; readonly at?: XY; readonly title?: string; readonly values?: Readonly<Record<string, unknown>> }
+  | {
+    readonly op: "addNode"; readonly type: string; readonly id?: string; readonly at?: XY; readonly title?: string; readonly values?: Readonly<Record<string, unknown>>;
+    /** Call site of an existing function / macro / collapsed graph (with type "subgraph"). */
+    readonly subgraph?: string;
+    /** Variable id for "var.get" / "var.set". */
+    readonly variable?: string;
+  }
   | { readonly op: "removeNode"; readonly id: string | readonly string[] }
   | { readonly op: "moveNode"; readonly id: string; readonly to?: XY; readonly by?: XY }
-  | { readonly op: "updateNode"; readonly id: string; readonly title?: string | null; readonly comment?: string | null; readonly collapsed?: boolean; readonly width?: number | null }
+  | { readonly op: "updateNode"; readonly id: string; readonly title?: string | null; readonly comment?: string | null; readonly collapsed?: boolean; readonly width?: number | null; readonly disabled?: boolean | null }
   | { readonly op: "connect"; readonly from: PinInput; readonly to: PinInput; readonly convert?: boolean }
   | { readonly op: "disconnect"; readonly edge?: string; readonly pin?: PinInput; readonly from?: PinInput; readonly to?: PinInput }
   | { readonly op: "setValue"; readonly node: string; readonly key: string; readonly value?: unknown; readonly unset?: boolean }
@@ -36,7 +42,13 @@ export type GraphOp =
   | { readonly op: "updateComment"; readonly id: string; readonly title?: string; readonly body?: string; readonly tone?: CommentTone; readonly at?: XY; readonly size?: XY; readonly moveWithNodes?: boolean }
   | { readonly op: "moveComment"; readonly id: string; readonly to: XY; readonly carry?: boolean }
   | { readonly op: "removeComment"; readonly id: string | readonly string[] }
-  | { readonly op: "collapse"; readonly nodes: readonly string[]; readonly id?: string; readonly label?: string }
+  | { readonly op: "collapse"; readonly nodes: readonly string[]; readonly id?: string; readonly label?: string; readonly kind?: SubgraphKind }
+  | { readonly op: "updateSubgraph"; readonly id: string; readonly label?: string; readonly kind?: SubgraphKind }
+  /** `local` adds to the function being edited (only inside a function view). */
+  | { readonly op: "addVariable"; readonly id?: string; readonly name: string; readonly type: string; readonly default?: unknown; readonly local?: boolean }
+  | { readonly op: "updateVariable"; readonly id: string; readonly name?: string; readonly type?: string; readonly default?: unknown; readonly unsetDefault?: boolean }
+  /** Removes the variable and every Get / Set node that uses it. */
+  | { readonly op: "removeVariable"; readonly id: string }
   | { readonly op: "expand"; readonly node: string; readonly keepDefinition?: boolean }
   | { readonly op: "addReroute"; readonly edge?: string; readonly at?: XY; readonly id?: string };
 
@@ -60,6 +72,47 @@ export interface ApplyOptions {
   readonly subgraph?: string;
 }
 
+/**
+ * Fold an edited inner view back into the root: its subgraph table, the root variables (which the
+ * view carries), and the definition itself. Root nodes that used a removed variable go too.
+ */
+export function mergeInner(root: BlueprintGraph, sgId: string, inner: BlueprintGraph): BlueprintGraph {
+  const vars = inner.variables ?? [];
+  const gone = new Set((root.variables ?? []).filter((v) => !vars.some((x) => x.id === v.id)).map((v) => v.id));
+  let base: BlueprintGraph = { ...root, ...(inner.subgraphs ? { subgraphs: inner.subgraphs } : {}) };
+  if (vars.length) base = { ...base, variables: vars };
+  else if (base.variables) {
+    const { variables: _v, ...rest } = base;
+    void _v;
+    base = rest;
+  }
+  if (gone.size) base = dropVarNodes(base, gone);
+  return writeSubgraph(base, sgId, inner);
+}
+
+/** Remove Get / Set nodes of the given variables (and their wires) from one level. */
+function dropVarNodesLevel<T extends Pick<BlueprintGraph, "nodes" | "edges">>(g: T, gone: ReadonlySet<string>): T {
+  const dead = new Set(g.nodes.filter((n) => (n.type === VAR_GET || n.type === VAR_SET) && n.variable !== undefined && gone.has(n.variable)).map((n) => n.id));
+  if (!dead.size) return g;
+  return { ...g, nodes: g.nodes.filter((n) => !dead.has(n.id)), edges: g.edges.filter((e) => !dead.has(e.from.node) && !dead.has(e.to.node)) };
+}
+
+function dropVarNodes(g: BlueprintGraph, gone: ReadonlySet<string>): BlueprintGraph {
+  const top = dropVarNodesLevel(g, gone);
+  if (!g.subgraphs) return top;
+  const subgraphs = Object.fromEntries(Object.entries(g.subgraphs).map(([id, sg]) => [id, dropVarNodesLevel(sg, gone)]));
+  return { ...top, subgraphs };
+}
+
+/** Exec pin counts of a subgraph's tunnels. */
+function subgraphPinsOf(nodes: readonly BlueprintNode[], registry: Registry): { execIn: number; execOut: number } {
+  const p = subgraphPins(nodes);
+  return { execIn: p.inputs.filter((x) => registry.isExec(x.type)).length, execOut: p.outputs.filter((x) => registry.isExec(x.type)).length };
+}
+
+/** An inner view of a function (it carries `locals`, possibly empty). */
+const isFunctionView = (g: BlueprintGraph) => g.locals !== undefined;
+
 const xy = (p: XY): { x: number; y: number } => ("x" in p ? { x: p.x, y: p.y } : { x: p[0], y: p[1] });
 
 export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registry: Registry, opts: ApplyOptions = {}): ApplyResult {
@@ -67,8 +120,7 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
     const inner = subgraphAsGraph(graph, opts.subgraph);
     if (!inner) return { graph, errors: [{ index: -1, op: "*", message: `Subgraph "${opts.subgraph}" not found` }], created: {} };
     const r = applyOps(inner, ops, registry, { ...opts, subgraph: undefined, ids: opts.ids ?? createIdGen(graph) } as ApplyOptions);
-    const root = { ...graph, ...(r.graph.subgraphs ? { subgraphs: r.graph.subgraphs } : {}) };
-    return { ...r, graph: writeSubgraph(root, opts.subgraph, r.graph) };
+    return { ...r, graph: mergeInner(graph, opts.subgraph, r.graph) };
   }
 
   const ids = opts.ids ?? createIdGen(graph);
@@ -95,10 +147,15 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
     const node = (id: string) => g.nodes.find((n) => n.id === real(id));
     switch (op.op) {
       case "addNode": {
-        if (!registry.node(op.type)) return fail(`Unknown node type "${op.type}"`);
+        const type = op.type;
+        if (!registry.node(type)) return fail(`Unknown node type "${type}"`);
+        if (op.subgraph !== undefined && !g.subgraphs?.[op.subgraph]) return fail(`Subgraph "${op.subgraph}" not found`);
+        if ((type === VAR_GET || type === VAR_SET) && !findVariable(g, op.variable)) return fail(`Variable "${op.variable ?? "?"}" not found`);
         const at = op.at ? xy(op.at) : { x: 0, y: 0 };
         const n: BlueprintNode = {
-          id: claim(g, op.id, "n", index), type: op.type, ...at,
+          id: claim(g, op.id, "n", index), type, ...at,
+          ...(op.subgraph !== undefined ? { subgraph: op.subgraph } : {}),
+          ...(op.variable !== undefined ? { variable: op.variable } : {}),
           ...(op.title !== undefined ? { title: op.title } : {}),
           ...(op.values && Object.keys(op.values).length ? { values: { ...op.values } } : {}),
         };
@@ -122,8 +179,8 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
         const n = node(op.id);
         if (!n) return fail(`Node "${op.id}" not found`);
         const next: Record<string, unknown> = { ...n };
-        for (const k of ["title", "comment", "collapsed", "width"] as const) {
-          if (op[k] === null) delete next[k];
+        for (const k of ["title", "comment", "collapsed", "width", "disabled"] as const) {
+          if (op[k] === null || (k === "disabled" && op[k] === false)) delete next[k];
           else if (op[k] !== undefined) next[k] = op[k];
         }
         g = { ...g, nodes: g.nodes.map((x) => (x.id === n.id ? (next as unknown as BlueprintNode) : x)) };
@@ -200,6 +257,7 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
       case "collapse": {
         const r = collapse(g, op.nodes.map(real), registry, ids, {
           id: op.id === undefined ? ids("sg") : claim(g, op.id, "sg", index), ...(op.label !== undefined ? { label: op.label } : {}),
+          ...(op.kind ? { kind: op.kind } : {}),
         });
         if (r.error) return fail(r.error);
         g = r.graph;
@@ -210,6 +268,62 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
         const r = expand(g, real(op.node), registry, ids, op.keepDefinition ? { keepDefinition: true } : {});
         if (r.error) return fail(r.error);
         g = r.graph;
+        return;
+      }
+      case "updateSubgraph": {
+        const sg = g.subgraphs?.[real(op.id)];
+        if (!sg) return fail(`Subgraph "${op.id}" not found`);
+        if (op.kind === "function") {
+          const shellPorts = subgraphPinsOf(sg.nodes, registry);
+          if (shellPorts.execIn > 1 || shellPorts.execOut > 1) return fail("A function takes at most one exec input and one exec output");
+        }
+        const next = {
+          ...sg, ...(op.label !== undefined ? { label: op.label } : {}),
+          ...(op.kind !== undefined ? { kind: op.kind } : {}),
+        };
+        if (next.kind === "graph") delete (next as { kind?: SubgraphKind }).kind;
+        g = { ...g, subgraphs: { ...g.subgraphs, [sg.id]: next } };
+        return;
+      }
+      case "addVariable": {
+        if (!registry.type(op.type) || registry.isExec(op.type)) return fail(`Unknown or exec pin type "${op.type}"`);
+        if (!op.name.trim()) return fail("Variable name is empty");
+        const v: VariableDef = { id: claim(g, op.id, "v", index), name: op.name.trim(), type: op.type, ...(op.default !== undefined ? { default: op.default } : {}) };
+        if (op.local) {
+          if (!isFunctionView(g)) return fail("Local variables exist only inside a function");
+          g = { ...g, locals: [...(g.locals ?? []), v] };
+        } else g = { ...g, variables: [...(g.variables ?? []), v] };
+        return;
+      }
+      case "updateVariable": {
+        const id = real(op.id);
+        const where = g.locals?.some((v) => v.id === id) ? "locals" : g.variables?.some((v) => v.id === id) ? "variables" : undefined;
+        if (!where) return fail(`Variable "${op.id}" not found`);
+        if (op.type !== undefined && (!registry.type(op.type) || registry.isExec(op.type))) return fail(`Unknown or exec pin type "${op.type}"`);
+        if (op.name !== undefined && !op.name.trim()) return fail("Variable name is empty");
+        const list = (g[where] ?? []).map((v) => {
+          if (v.id !== id) return v;
+          const next: Record<string, unknown> = { ...v };
+          if (op.name !== undefined) next.name = op.name.trim();
+          if (op.type !== undefined) next.type = op.type;
+          if (op.unsetDefault || (op.type !== undefined && op.type !== v.type && op.default === undefined)) delete next.default;
+          if (op.default !== undefined) next.default = op.default;
+          return next as unknown as VariableDef;
+        });
+        g = { ...g, [where]: list };
+        return;
+      }
+      case "removeVariable": {
+        const id = real(op.id);
+        const local = g.locals?.some((v) => v.id === id);
+        if (!local && !g.variables?.some((v) => v.id === id)) return fail(`Variable "${op.id}" not found`);
+        const gone = new Set([id]);
+        g = local ? { ...dropVarNodesLevel(g, gone), locals: g.locals!.filter((v) => v.id !== id) } : { ...dropVarNodes(g, gone), variables: g.variables!.filter((v) => v.id !== id) };
+        if (!local && !g.variables!.length) {
+          const { variables: _v, ...rest } = g;
+          void _v;
+          g = rest;
+        }
         return;
       }
       case "addReroute": {

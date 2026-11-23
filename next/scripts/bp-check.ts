@@ -1,5 +1,5 @@
 /**
- * Blueprint logic self-check (M0 + M1). Run: node scripts/bp-check.ts   (Node 22.18+, type stripping)
+ * Blueprint logic self-check (M0 + M1 + M5). Run: node scripts/bp-check.ts   (Node 22.18+, type stripping)
  * No test runner, no dependencies: plain node:assert. Exits 1 on the first failure.
  */
 import assert from "node:assert/strict";
@@ -23,6 +23,7 @@ const bp: typeof import("../src/blueprint/index.ts") & typeof import("../src/blu
   ...(await import("../src/blueprint/agent/index.ts")),
 };
 type Graph = import("../src/blueprint/index.ts").BlueprintGraph;
+const { DebugSession } = await import("../src/blueprint/debug.ts");
 const { demoRegistry: reg, demoGraph } = bp;
 
 let passed = 0;
@@ -435,6 +436,283 @@ await check("describeGraph mentions collapsed graphs, comments and exec wires", 
   assert.match(text, /Collapsed graph "Add twice"/);
   assert.match(text, /--true-->/);
   assert.match(text, /No errors\./);
+});
+
+
+// ---------------------------------------------------------------------------
+// M5: debugging, disabled nodes, variables, functions vs macros
+
+await check("M5 eval trace: onBefore/onStep carry the exec wire taken, in order", async () => {
+  const before: string[] = [];
+  const steps: string[] = [];
+  const r = await bp.evaluateGraph(demoGraph, reg, {
+    entry: "start",
+    onBefore: (t) => void before.push(`${t.edge ?? "-"}>${t.node}`),
+    onStep: (s) => void steps.push(`${s.edge ?? "-"}>${s.node}:${s.fired.join(",")}`),
+  });
+  assert.ok(r.ok);
+  assert.deepEqual(before, ["->start", "e1>branch", "e5>yes"]);
+  assert.deepEqual(steps, ["->start:then", "e1>branch:true", "e5>yes:then"]);
+  // pure nodes report their values through onCompute
+  const computed = new Map<string, unknown>();
+  await bp.evaluateGraph(demoGraph, reg, { entry: "start", onCompute: (n, o) => void computed.set(n, o) });
+  assert.deepEqual(computed.get("cmp"), { out: true });
+  assert.deepEqual(computed.get("a"), { value: 7 });
+  // inside a collapsed graph, edges are reported as <shell>/<edge>
+  const yesShell = full.nodes.find((n) => n.subgraph === "sg_yes")!.id;
+  const inner: string[] = [];
+  await bp.evaluateGraph(full, reg, { entry: "start", onBefore: (t) => void inner.push(`${t.edge ?? "-"}>${t.node}`) });
+  assert.ok(inner.some((x) => x.startsWith(`${yesShell}/`) && x.endsWith(`>${yesShell}/yes`)), inner.join(" "));
+  // the path maps back to its level for breakpoints / watches
+  assert.deepEqual(bp.resolveNodePath(full, `${yesShell}/yes`), { sg: "sg_yes", id: "yes", key: "sg_yes/yes" });
+  assert.deepEqual(bp.subgraphPath(full, "sg_yes"), ["sg_yes"]);
+});
+
+await check("M5 breakpoints: pause before the node, step, continue, stop; one breakpoint in a definition hits every call site", async () => {
+  const bps = new Set(["branch"]);
+  const events: string[] = [];
+  const s = new DebugSession(demoGraph, reg, { breakpoints: bps }, (e) => {
+    if (e.type === "status") events.push(e.state.status);
+  });
+  const done = s.start();
+  const at = await s.waitForPause();
+  assert.deepEqual(at, { node: "branch", edge: "e1" });
+  assert.deepEqual(s.state.trace.map((x) => x.node), ["start"], "paused BEFORE branch ran");
+  s.step();
+  assert.deepEqual(await s.waitForPause(), { node: "yes", edge: "e5" }, "step pauses before the next exec node");
+  assert.deepEqual(s.state.trace.map((x) => x.node), ["start", "branch"]);
+  s.continue();
+  const r = await done;
+  assert.ok(r?.ok);
+  assert.equal(s.state.status, "done");
+  assert.deepEqual(s.state.trace.map((x) => x.node), ["start", "branch", "yes"]);
+  assert.equal(s.state.values.get("cmp")?.out, true, "pure values recorded for hover / watch");
+  assert.deepEqual(events.filter((x, i) => x !== events[i - 1]), ["running", "paused", "running", "paused", "running", "done"]);
+
+  // breakpoint keyed by definition: a function called twice stops twice
+  const fnG = bp.applyOps(demoGraph, [
+    { op: "disconnect", edge: "e1" },
+    { op: "connect", from: "start.then", to: "yes.exec" },
+    { op: "addNode", id: "p1", type: "flow.print", at: [900, 40] },
+    { op: "connect", from: "yes.then", to: "p1.exec" },
+    { op: "connect", from: "p1.then", to: "no.exec" },
+    { op: "collapse", nodes: ["p1"], id: "sg_p", label: "Log", kind: "function" },
+    { op: "addNode", id: "p2", type: "subgraph", subgraph: "sg_p", at: [900, 200] },
+    { op: "connect", from: "no.then", to: "p2.exec" },
+  ], reg);
+  ok(fnG);
+  const shell1 = fnG.graph.nodes.find((n) => n.subgraph === "sg_p" && n.id !== "p2")!.id;
+  const chained = fnG;
+  const s2 = new DebugSession(chained.graph, reg, { breakpoints: new Set(["sg_p/p1"]) });
+  const run2 = s2.start();
+  const hits: string[] = [];
+  for (let t = await s2.waitForPause(); t; t = await s2.waitForPause()) {
+    hits.push(t.node);
+    s2.continue();
+  }
+  await run2;
+  assert.deepEqual(hits, [`${shell1}/p1`, "p2/p1"]);
+
+  // stop ends a paused run
+  const s3 = new DebugSession(demoGraph, reg, { startPaused: true });
+  const run3 = s3.start();
+  assert.deepEqual(await s3.waitForPause(), { node: "start" });
+  s3.stop();
+  const r3 = await run3;
+  assert.ok(r3?.stopped && s3.state.status === "stopped" && r3.trace.length === 0);
+});
+
+await check("M5 disabled nodes: exec passes through, data passes a matching input, skipped in trace/outputs, validated as a warning", async () => {
+  const g = bp.applyOps(demoGraph, [
+    { op: "addNode", id: "p3", type: "flow.print", at: [900, 40], values: { prefix: "after" } },
+    { op: "connect", from: "yes.then", to: "p3.exec" },
+    { op: "connect", from: "yes.line", to: "p3.msg" },
+    { op: "updateNode", id: "yes", disabled: true },
+  ], reg);
+  ok(g);
+  const steps: string[] = [];
+  const r = await bp.evaluateGraph(g.graph, reg, { entry: "start", onStep: (s) => void steps.push(`${s.node}${s.disabled ? "(skip)" : ""}`) });
+  assert.ok(r.ok, JSON.stringify([...r.errors]));
+  assert.deepEqual(r.trace, ["start", "branch", "p3"], "disabled node is not in the trace");
+  assert.deepEqual(steps, ["start", "branch", "yes(skip)", "p3"]);
+  assert.ok(!r.outputs.has("yes"));
+  // yes.line (string) takes yes.msg (string, literal "a > b") through
+  assert.equal(r.outputs.get("p3")!.line, "after a > b");
+  const v = bp.validateGraph(g.graph, reg);
+  assert.ok(v.ok && v.issues.some((i) => i.code === "disabled-node" && i.level === "warning"));
+  // a disabled node never reports a missing input
+  const lonely = bp.applyOps({ nodes: [], edges: [] }, [{ op: "addNode", id: "c", type: "conv.toString" }, { op: "updateNode", id: "c", disabled: true }], reg).graph;
+  assert.ok(!bp.validateGraph(lonely, reg).issues.some((i) => i.code === "missing-input"));
+  // enabling again removes the flag
+  const back = bp.applyOps(g.graph, [{ op: "updateNode", id: "yes", disabled: false }], reg).graph;
+  assert.equal(back.nodes.find((n) => n.id === "yes")!.disabled, undefined);
+  // JSON / text keep it
+  assert.equal(bp.fromText(bp.toText(g.graph)).graph!.nodes.find((n) => n.id === "yes")!.disabled, true);
+});
+
+function varGraph(): Graph {
+  const r = bp.applyOps({ nodes: [], edges: [] }, [
+    { op: "addVariable", id: "v_n", name: "Count", type: "number", default: 0 },
+    { op: "addVariable", id: "v_s", name: "Label", type: "string", default: "hi" },
+    { op: "addNode", id: "start", type: "event.start" },
+    { op: "addNode", id: "get", type: "var.get", variable: "v_n" },
+    { op: "addNode", id: "inc", type: "math.add", values: { b: 1 } },
+    { op: "addNode", id: "set1", type: "var.set", variable: "v_n" },
+    { op: "addNode", id: "set2", type: "var.set", variable: "v_n" },
+    { op: "connect", from: "get.value", to: "inc.a" },
+    { op: "connect", from: "inc.out", to: "set1.value" },
+    { op: "connect", from: "inc.out", to: "set2.value" },
+    { op: "connect", from: "start.then", to: "set1.exec" },
+    { op: "connect", from: "set1.then", to: "set2.exec" },
+  ], reg);
+  ok(r);
+  return r.graph;
+}
+
+await check("M5 variables: Get/Set evaluate, pins follow the variable, rename propagates, remove drops its nodes", async () => {
+  const g = varGraph();
+  const r = await bp.evaluateGraph(g, reg, { entry: "start" });
+  assert.ok(r.ok, JSON.stringify([...r.errors]));
+  assert.equal(r.variables.get("v_n"), 2, "two sets, Get re-read between them (pure node per step)");
+  assert.equal((await bp.evaluateGraph(g, reg, { entry: "start", variables: { v_n: 10 } })).variables.get("v_n"), 12);
+  const get = g.nodes.find((n) => n.id === "get")!;
+  assert.deepEqual(bp.getPorts(get, reg, g).outputs.map((p) => `${p.id}:${p.type}:${p.label}`), ["value:number:Count"]);
+  const renamed = bp.applyOps(g, [{ op: "updateVariable", id: "v_n", name: "Total" }], reg).graph;
+  assert.equal(bp.getPorts(get, reg, renamed).outputs[0]!.label, "Total");
+  // type change: pins retype, the wire into inc.a (number) stays valid only for compatible types
+  const retyped = bp.applyOps(g, [{ op: "updateVariable", id: "v_n", type: "string" }], reg).graph;
+  assert.ok(bp.validateGraph(retyped, reg).issues.some((i) => i.code === "type-mismatch"));
+  assert.equal(retyped.variables!.find((v) => v.id === "v_n")!.default, undefined, "default dropped when the type changes");
+  const removed = bp.applyOps(g, [{ op: "removeVariable", id: "v_n" }], reg).graph;
+  assert.ok(!removed.nodes.some((n) => n.variable === "v_n") && !removed.edges.some((e) => e.from.node === "get"));
+  assert.deepEqual(removed.variables!.map((v) => v.id), ["v_s"]);
+  // dangling reference is an error, unknown type refused
+  const dangling: Graph = { ...g, variables: [] };
+  assert.ok(bp.validateGraph(dangling, reg).issues.some((i) => i.code === "unknown-variable"));
+  assert.equal(bp.applyOps(g, [{ op: "addVariable", name: "x", type: "exec" }], reg).errors.length, 1);
+  assert.equal(bp.applyOps(g, [{ op: "addNode", type: "var.get", variable: "nope" }], reg).errors.length, 1);
+});
+
+await check("M5 variables round-trip: JSON, schema, text, clipboard; v1 still reads", () => {
+  const g = varGraph();
+  const json = bp.toJSON(g);
+  assert.deepEqual(json.variables, [{ id: "v_n", name: "Count", type: "number", default: 0 }, { id: "v_s", name: "Label", type: "string", default: "hi" }]);
+  const back = bp.fromJSON(JSON.stringify(json));
+  assert.ok(back.ok, back.errors.join("\n"));
+  assert.deepEqual(bp.toJSON(back.graph!), json);
+  assert.deepEqual(schemaErrors(bp.graphSchema, JSON.parse(JSON.stringify(json))), []);
+  const text = bp.toText(g);
+  assert.match(text, /^variable v_n "Count" number default=0$/m);
+  const t = bp.fromText(text);
+  assert.ok(t.ok, t.errors.join("\n"));
+  assert.deepEqual(bp.toJSON(t.graph!), json);
+  assert.equal(bp.toText(t.graph!), text);
+  // copying a Get node carries its variable; pasting into a graph with a same-named variable reuses it
+  const clip = bp.copySelection(g, { nodes: ["get"] }, reg);
+  assert.deepEqual(clip.variables?.map((v) => v.id), ["v_n"]);
+  const fresh = bp.pasteClip({ nodes: [], edges: [] }, bp.fromText(bp.toText(clip)).graph!, bp.createIdGen({ nodes: [], edges: [] }));
+  assert.deepEqual(fresh.graph.variables?.map((v) => v.name), ["Count"]);
+  const twin: Graph = { nodes: [], edges: [], variables: [{ id: "other", name: "Count", type: "number" }] };
+  const reused = bp.pasteClip(twin, clip, bp.createIdGen(twin));
+  assert.equal(reused.graph.variables!.length, 1);
+  assert.equal(reused.graph.nodes[0]!.variable, "other");
+  // a v1 file (no variables anywhere) still reads
+  assert.ok(bp.fromJSON({ version: 1, nodes: [{ id: "n", type: "event.start", x: 0, y: 0 }], edges: [] }).ok);
+  // bad variable entries are reported with a path
+  const bad = bp.fromJSON({ version: 2, nodes: [], edges: [], variables: [{ id: "v", type: "number" }] });
+  assert.ok(!bad.ok && bad.errors[0]!.startsWith("graph.variables[0].name"));
+});
+
+await check("M5 function vs macro: exec rules, locals reset per call, macro exits continue inline", async () => {
+  // a node that fires two exec outputs in order (UE Sequence)
+  const seq = bp.demoTypes.defineNode({
+    id: "flow.seq", title: "Sequence", category: "Flow", kind: "flow",
+    inputs: [{ id: "exec", type: "exec" }],
+    outputs: [{ id: "a", type: "exec" }, { id: "b", type: "exec" }],
+  });
+  const reg2 = bp.createRegistry(bp.demoTypes, [...bp.demoNodes, seq]);
+  const base = bp.applyOps({ nodes: [], edges: [] }, [
+    { op: "addNode", id: "start", type: "event.start" },
+    { op: "addNode", id: "seq", type: "flow.seq" },
+    { op: "addNode", id: "inA", type: "flow.print", values: { prefix: "inA" } },
+    { op: "addNode", id: "inB", type: "flow.print", values: { prefix: "inB" } },
+    { op: "addNode", id: "outA", type: "flow.print", values: { prefix: "outA" } },
+    { op: "addNode", id: "outB", type: "flow.print", values: { prefix: "outB" } },
+    { op: "connect", from: "start.then", to: "seq.exec" },
+    { op: "connect", from: "seq.a", to: "inA.exec" },
+    { op: "connect", from: "seq.b", to: "inB.exec" },
+    { op: "connect", from: "inA.then", to: "outA.exec" },
+    { op: "connect", from: "inB.then", to: "outB.exec" },
+  ], reg2);
+  ok(base);
+  // two exec outputs leave the selection: a function refuses, a macro / graph accept
+  const asFn = bp.applyOps(base.graph, [{ op: "collapse", nodes: ["seq", "inA", "inB"], kind: "function" }], reg2);
+  assert.equal(asFn.errors.length, 1);
+  assert.match(asFn.errors[0]!.message, /function takes at most one exec input/);
+  const order = async (kind: "macro" | "graph") => {
+    const r = bp.applyOps(base.graph, [{ op: "collapse", nodes: ["seq", "inA", "inB"], id: "sg", kind }], reg2);
+    ok(r);
+    const ev = await bp.evaluateGraph(r.graph, reg2, { entry: "start" });
+    assert.ok(ev.ok, JSON.stringify([...ev.errors]));
+    const shellId = r.graph.nodes.find((n) => n.subgraph === "sg")!.id;
+    return ev.trace.map((p) => (p === shellId ? "SHELL" : p.split("/").pop()));
+  };
+  assert.deepEqual(await order("macro"), ["start", "SHELL", "seq", "inA", "outA", "inB", "outB"], "macro: an exit continues the outer flow at once");
+  assert.deepEqual(await order("graph"), ["start", "SHELL", "seq", "inA", "inB", "outA", "outB"], "collapsed graph: exits fire after the body");
+
+  // function: one exec in / out, a local counter that resets on every call, a return value
+  const fn = bp.applyOps({ nodes: [], edges: [] }, [
+    { op: "addNode", id: "start", type: "event.start" },
+    { op: "addNode", id: "body", type: "flow.print", values: { prefix: "call" } },
+    { op: "addNode", id: "after", type: "flow.print", values: { prefix: "after" } },
+    { op: "connect", from: "start.then", to: "body.exec" },
+    { op: "connect", from: "body.then", to: "after.exec" },
+    { op: "collapse", nodes: ["body"], id: "sg_f", label: "Tick", kind: "function" },
+  ], reg);
+  ok(fn);
+  const shell = fn.graph.nodes.find((n) => n.subgraph === "sg_f")!.id;
+  // inside the function: local counter = counter + 1, then return it
+  const inner = bp.applyOps(fn.graph, [
+    { op: "addVariable", id: "v_local", name: "n", type: "number", default: 0, local: true },
+    { op: "addNode", id: "lget", type: "var.get", variable: "v_local" },
+    { op: "addNode", id: "ladd", type: "math.add", values: { b: 1 } },
+    { op: "addNode", id: "lset", type: "var.set", variable: "v_local" },
+    { op: "connect", from: "lget.value", to: "ladd.a" },
+    { op: "connect", from: "ladd.out", to: "lset.value" },
+    { op: "connect", from: "body.then", to: "lset.exec" },
+    { op: "connect", from: "lset.then", to: `${bp.subgraphAsGraph(fn.graph, "sg_f")!.nodes.find((n) => n.type === bp.TUNNEL_OUT)!.id}.then` },
+  ], reg, { subgraph: "sg_f" });
+  ok(inner);
+  assert.deepEqual(inner.graph.subgraphs!.sg_f!.variables?.map((v) => v.id), ["v_local"], "locals live on the definition");
+  assert.equal(inner.graph.variables, undefined, "and not on the graph");
+  // two call sites: each sees the local start at 0
+  const two = bp.applyOps(inner.graph, [
+    { op: "addNode", id: "call2", type: "subgraph", subgraph: "sg_f" },
+    { op: "connect", from: `${shell}.then`, to: "call2.exec" },
+  ], reg);
+  ok(two);
+  const sets: unknown[] = [];
+  const ev = await bp.evaluateGraph(two.graph, reg, { entry: "start", onStep: (s) => { if (s.node.endsWith("/lset")) sets.push(s.outputs.value); } });
+  assert.ok(ev.ok, JSON.stringify([...ev.errors]));
+  assert.deepEqual(sets, [1, 1], "locals reset per call");
+  assert.deepEqual(ev.trace.filter((p) => !p.includes("/")), ["start", shell, "call2"]);
+  assert.deepEqual(ev.trace.filter((p) => p.startsWith(`${shell}/`)), [`${shell}/body`, `${shell}/lset`], "body runs to the return before the call continues");
+  // local variables only inside a function; converting a 2-exec graph to a function is refused
+  assert.equal(bp.applyOps(base.graph, [{ op: "addVariable", name: "x", type: "number", local: true }], reg2).errors.length, 1);
+  const g2 = bp.applyOps(base.graph, [{ op: "collapse", nodes: ["seq", "inA", "inB"], id: "sg", kind: "macro" }], reg2).graph;
+  assert.equal(bp.applyOps(g2, [{ op: "updateSubgraph", id: "sg", kind: "function" }], reg2).errors.length, 1);
+  // a function that grew a second exec output is flagged
+  const forced: Graph = { ...g2, subgraphs: { sg: { ...g2.subgraphs!.sg!, kind: "function" } } };
+  assert.ok(bp.validateGraph(forced, reg2).issues.some((i) => i.code === "function-exec"));
+  // kind and locals round-trip
+  const t = bp.fromText(bp.toText(two.graph));
+  assert.ok(t.ok, t.errors.join("\n"));
+  assert.deepEqual(bp.toJSON(t.graph!), bp.toJSON(two.graph));
+  assert.equal(t.graph!.subgraphs!.sg_f!.kind, "function");
+  // expanding a function promotes its locals to graph variables
+  const ex = bp.applyOps(two.graph, [{ op: "expand", node: "call2", keepDefinition: true }], reg);
+  ok(ex);
+  assert.deepEqual(ex.graph.variables?.map((v) => v.id), ["v_local"]);
 });
 
 console.log(`\n${passed} checks passed`);

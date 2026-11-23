@@ -3,7 +3,7 @@ import type { PinShape } from "../types";
 
 /**
  * Pin glyph (12x12 graph units). UE5 look: exec = white wedge, data = circle, array = 3x3 grid,
- * set = braces, map = two-colour (key | value). Hollow when unconnected, filled when connected.
+ * set = braces, map = two-colour (key | value), delegate = square. Hollow when unconnected, filled when connected.
  */
 export const PinGlyph = memo(function PinGlyph({
   shape, color, keyColor, connected,
@@ -41,6 +41,12 @@ export const PinGlyph = memo(function PinGlyph({
         </svg>
       );
     }
+    case "delegate":
+      return (
+        <svg viewBox="0 0 12 12" aria-hidden>
+          <rect x="1.8" y="1.8" width="8.4" height="8.4" rx="1.2" fill={fill} stroke={color} strokeWidth="1.5" />
+        </svg>
+      );
     default:
       return (
         <svg viewBox="0 0 12 12" aria-hidden>

@@ -2,7 +2,8 @@ import { nodesInComment } from "./comment";
 import type { IdGen } from "./ids";
 import type { Registry } from "./registry";
 import { subgraphRefCount } from "./subgraph";
-import type { BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, SubGraphDef } from "./types";
+import { findVariable } from "./ports";
+import type { BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, SubGraphDef, VariableDef } from "./types";
 
 /**
  * Copy / paste / duplicate / delete. All of them handle comments (B10) and collapsed graphs.
@@ -27,10 +28,17 @@ export function copySelection(graph: BlueprintGraph, sel: Selection, registry: R
     return inside.length > 0 && inside.every((id) => ids.has(id));
   });
   const subgraphs = referencedSubgraphs(graph, nodes);
+  // Variables used by Get / Set nodes (also inside carried subgraphs) travel with the clip.
+  const used = new Map<string, VariableDef>();
+  for (const n of [...nodes, ...Object.values(subgraphs).flatMap((sg) => sg.nodes)]) {
+    const v = findVariable(graph, n.variable);
+    if (v) used.set(v.id, v);
+  }
   return {
     nodes, edges,
     ...(comments.length ? { comments } : {}),
     ...(Object.keys(subgraphs).length ? { subgraphs } : {}),
+    ...(used.size ? { variables: [...used.values()] } : {}),
   };
 }
 
@@ -72,8 +80,21 @@ export function pasteClip(
     const target = existing ? ids("sg") : id;
     sgRename.set(id, target);
   }
-  const fixRef = (n: BlueprintNode): BlueprintNode =>
-    n.subgraph !== undefined && sgRename.has(n.subgraph) ? { ...n, subgraph: sgRename.get(n.subgraph)! } : n;
+  // Variables: same id kept, else a target variable with the same name and type, else added.
+  const varRename = new Map<string, string>();
+  const addedVars: VariableDef[] = [];
+  for (const v of clip.variables ?? []) {
+    if (findVariable(graph, v.id)) continue;
+    const twin = [...(graph.locals ?? []), ...(graph.variables ?? [])].find((x) => x.name === v.name && x.type === v.type);
+    if (twin) varRename.set(v.id, twin.id);
+    else addedVars.push(v);
+  }
+  const fixRef = (n: BlueprintNode): BlueprintNode => {
+    let out = n;
+    if (n.subgraph !== undefined && sgRename.has(n.subgraph)) out = { ...out, subgraph: sgRename.get(n.subgraph)! };
+    if (n.variable !== undefined && varRename.has(n.variable)) out = { ...out, variable: varRename.get(n.variable)! };
+    return out;
+  };
   for (const [id, target] of sgRename) {
     const def = clip.subgraphs![id]!;
     addedDefs[target] = { ...def, id: target, nodes: def.nodes.map(fixRef) };
@@ -88,9 +109,11 @@ export function pasteClip(
 
   const allComments = [...(graph.comments ?? []), ...comments];
   const subgraphs = { ...(graph.subgraphs ?? {}), ...addedDefs };
+  const variables = [...(graph.variables ?? []), ...addedVars];
   return {
     graph: {
       ...graph,
+      ...(variables.length ? { variables } : {}),
       nodes: [...graph.nodes, ...nodes],
       edges: [...graph.edges, ...edges],
       ...(allComments.length ? { comments: allComments } : {}),

@@ -1,4 +1,4 @@
-import { AlertTriangle, CircleCheck, CircleX, Keyboard, Maximize, Redo2, Undo2 } from "lucide-react";
+import { AlertTriangle, CircleCheck, CircleX, Keyboard, Maximize, Redo2, Search, Undo2, Variable } from "lucide-react";
 import { m } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import type { ValidationIssue } from "../types";
@@ -15,7 +15,11 @@ const PANEL = "rounded-lg border bg-popover/90 text-popover-foreground shadow-so
 
 export function Breadcrumb({ ed }: { ed: BlueprintEditor }) {
   const path = ed.path;
-  const label = (id: string) => ed.root.subgraphs?.[id]?.label ?? id;
+  const label = (id: string) => {
+    const sg = ed.root.subgraphs?.[id];
+    const kind = sg?.kind === "function" ? "函数 · " : sg?.kind === "macro" ? "宏 · " : "";
+    return `${kind}${sg?.label ?? id}`;
+  };
   return (
     <nav data-bp-overlay aria-label="图层级" className={`absolute top-2 left-2 z-20 flex max-w-[calc(100%-12rem)] items-center gap-1 px-2 py-1 text-xs ${PANEL}`}>
       {path.length === 0 ? <span className="px-1 font-medium">主图</span> : (
@@ -35,7 +39,10 @@ export function Breadcrumb({ ed }: { ed: BlueprintEditor }) {
   );
 }
 
-export function Toolbar({ ed, onHelp }: { ed: BlueprintEditor; onHelp: () => void }) {
+export function Toolbar({ ed, onHelp, hidden, find, onFind, vars }: {
+  ed: BlueprintEditor; onHelp: () => void; hidden: boolean; find: boolean; onFind: () => void;
+  vars: { readonly open: boolean; readonly toggle: () => void } | undefined;
+}) {
   const zoomRef = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const paint = () => { if (zoomRef.current) zoomRef.current.textContent = `${Math.round(ed.viewport.z * 100)}%`; };
@@ -43,7 +50,12 @@ export function Toolbar({ ed, onHelp }: { ed: BlueprintEditor; onHelp: () => voi
     return ed.onViewport(paint);
   }, [ed]);
   return (
-    <div data-bp-overlay role="toolbar" aria-label="编辑器工具" className={`absolute top-2 right-2 z-20 flex items-center gap-0.5 p-0.5 ${PANEL}`}>
+    <div data-bp-overlay role="toolbar" aria-label="编辑器工具" aria-hidden={hidden || undefined} inert={hidden || undefined}
+      className={`absolute top-2 right-2 z-20 flex items-center gap-0.5 p-0.5 ${PANEL} ${hidden ? "invisible" : ""}`}>
+      {vars ? (
+        <button type="button" className={`${BTN} aria-pressed:bg-accent aria-pressed:text-foreground`} aria-label="变量" title="变量面板" aria-pressed={vars.open} onClick={vars.toggle}><Variable className="size-4" /></button>
+      ) : null}
+      <button type="button" className={`${BTN} aria-pressed:bg-accent aria-pressed:text-foreground`} aria-label="查找" title="查找节点（Ctrl F）" aria-pressed={find} onClick={onFind}><Search className="size-4" /></button>
       {ed.readOnly ? null : (
         <>
           <button type="button" className={BTN} aria-label="撤销" title="撤销（Ctrl Z）" disabled={!ed.canUndo} onClick={() => ed.undo()}><Undo2 className="size-4" /></button>
@@ -79,8 +91,8 @@ export function IssuesStrip({ ed }: { ed: BlueprintEditor }) {
   const go = (i: ValidationIssue) => {
     const id = i.nodeIds?.[0] ?? i.edgeIds?.[0];
     if (!id) return;
-    const [sg, local] = id.includes("/") ? id.split("/") as [string, string] : [undefined, id];
-    if (sg !== ed.subgraph) sg === undefined ? ed.exitTo(0) : ed.enter(sg);
+    // open the full path to the level the issue lives on, so the breadcrumb shows every parent
+    const local = ed.reveal(id);
     requestAnimationFrame(() => {
       if (i.nodeIds?.length) {
         ed.select([local]);

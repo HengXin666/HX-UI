@@ -24,6 +24,10 @@ export interface NodeViewProps {
   readonly title: string;
   readonly subtitle: string | undefined;
   readonly selected: boolean;
+  /** Keyboard target (aria-activedescendant points at `domId`). */
+  readonly active: boolean;
+  readonly domId: string;
+  readonly breakpoint: boolean;
   /** Connected pin keys joined by "|" ("in:a|out:then"), a string so memo compares cheaply. */
   readonly connected: string;
   readonly badPins: string;
@@ -41,8 +45,8 @@ export const NodeView = memo(function NodeView(p: NodeViewProps) {
   if (node.type === REROUTE) {
     const t = layout.inputs[0]?.type ?? "any";
     return (
-      <div className="bp-reroute" data-node={node.id} data-selected={selected || undefined} title="转接点"
-        style={{ ...style, ["--bp-wire" as string]: typeColor(reg, t) }} />
+      <div className="bp-reroute" id={p.domId} data-node={node.id} data-selected={selected || undefined} data-active={p.active || undefined}
+        data-breakpoint={p.breakpoint || undefined} title="转接点" style={{ ...style, ["--bp-wire" as string]: typeColor(reg, t) }} />
     );
   }
 
@@ -51,11 +55,13 @@ export const NodeView = memo(function NodeView(p: NodeViewProps) {
   const rows = Math.max(layout.inputs.length, layout.outputs.length);
   const params = reg.node(node.type)?.params ?? [];
   return (
-    <div className="bp-node" data-node={node.id} data-kind={kind} data-selected={selected || undefined}
+    <div className="bp-node" id={p.domId} data-node={node.id} data-kind={kind} data-selected={selected || undefined}
+      data-active={p.active || undefined} data-breakpoint={p.breakpoint || undefined} data-disabled={node.disabled || undefined}
       data-collapsed={node.collapsed || undefined} role="group" aria-label={p.title} style={style}>
+      {node.comment ? <div className="bp-note">{node.comment}</div> : null}
       <div className="bp-head">
         <span className="bp-head-title">{p.title}</span>
-        {p.subtitle ? <span className="bp-head-sub">{p.subtitle}</span> : null}
+        {node.disabled ? <span className="bp-head-sub">已禁用</span> : p.subtitle ? <span className="bp-head-sub">{p.subtitle}</span> : null}
       </div>
       {node.collapsed ? null : (
         <div className="bp-body">

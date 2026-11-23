@@ -27,6 +27,9 @@ export const ISSUE_LABEL: Record<IssueCode, string> = {
   "output-occupied": "执行输出接了多条线",
   "missing-input": "必填输入未连接",
   "missing-subgraph": "折叠图丢失",
+  "unknown-variable": "变量不存在",
+  "function-exec": "函数只能有一个执行输入和输出",
+  "disabled-node": "节点已禁用",
   "no-entry": "执行流没有入口",
   custom: "节点自检",
 };

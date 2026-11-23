@@ -3,7 +3,7 @@ import { alignNodes, distributeNodes, type AlignMode } from "../layout";
 import { findPin } from "../ports";
 import { boundsOf, nodeBox } from "../size";
 import { toText, fromText } from "../text";
-import type { BlueprintGraph, PinRef } from "../types";
+import type { BlueprintGraph, PinRef, SubgraphKind } from "../types";
 import type { BlueprintEditor } from "./editor";
 import { pinPos } from "./geometry";
 
@@ -125,11 +125,18 @@ export function pinType(ed: BlueprintEditor, g: BlueprintGraph, ref: PinRef, dir
   return findPin(n, ref.pin, dir, ed.registry, g)?.type;
 }
 
-/** Collapse the selected nodes into a collapsed graph (UE5 "Collapse Nodes"). */
-export function collapseSelected(ed: BlueprintEditor): string | undefined {
+const KIND_LABEL = { graph: ["折叠的图", "折叠为子图"], function: ["新函数", "折叠为函数"], macro: ["新宏", "折叠为宏"] } as const;
+
+/**
+ * Collapse the selected nodes (UE5 "Collapse Nodes / to Function / to Macro"). A function refuses
+ * a selection with more than one exec wire in or out (the error comes back as the string).
+ */
+export function collapseSelected(ed: BlueprintEditor, kind: SubgraphKind = "graph"): string | undefined {
   const ids = ed.selection.nodes;
   if (!ids.length) return undefined;
-  const r = ed.apply([{ op: "collapse", nodes: ids, label: "折叠的图" }], { label: "折叠为子图" });
+  const [label, step] = KIND_LABEL[kind];
+  const r = ed.apply([{ op: "collapse", nodes: ids, label, kind }], { label: step });
+  if (r?.errors.length && kind === "function") ed.notify("函数只能有一个执行输入和一个执行输出，可以改为折叠为宏");
   const node = r && !r.errors.length ? r.created["#0"] : undefined;
   if (node) ed.select([node]);
   return node;
@@ -162,4 +169,77 @@ export function breakPinLinks(ed: BlueprintEditor, pin: PinRef) {
 export function breakNodeLinks(ed: BlueprintEditor, ids: readonly string[]) {
   const edges = ed.graph.edges.filter((e) => ids.includes(e.from.node) || ids.includes(e.to.node));
   if (edges.length) ed.apply(edges.map((e) => ({ op: "disconnect" as const, edge: e.id })), { label: "断开全部连线" });
+}
+
+/** Arrow keys: move the selection by one grid step (Shift: one unit). Merges into one undo step. */
+export function nudge(ed: BlueprintEditor, key: string, fine: boolean) {
+  const s = ed.selection;
+  if (!s.nodes.length && !s.comments.length) return false;
+  const step = fine || ed.snap <= 1 ? 1 : ed.snap;
+  const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[key] as [number, number] | undefined;
+  if (!d) return false;
+  const g = ed.graph;
+  ed.apply([
+    ...s.nodes.map((id) => ({ op: "moveNode" as const, id, by: d })),
+    ...s.comments.flatMap((id) => {
+      const c = g.comments?.find((x) => x.id === id);
+      return c ? [{ op: "updateComment" as const, id, at: [c.x + d[0], c.y + d[1]] as const }] : [];
+    }),
+  ], { tag: "nudge", label: "微移" });
+  return true;
+}
+
+/**
+ * Alt+Arrow: select the nearest node in that direction from the active one (keyboard navigation
+ * between nodes). With nothing selected, picks the node closest to the view centre.
+ */
+export function moveActive(ed: BlueprintEditor, key: string) {
+  const g = ed.graph;
+  if (!g.nodes.length) return;
+  const centre = (id: string) => {
+    const n = g.nodes.find((x) => x.id === id)!;
+    const b = nodeBox(n, ed.registry, g);
+    return { x: b.x + b.w / 2, y: b.y + b.h / 2 };
+  };
+  const cur = ed.selection.nodes[ed.selection.nodes.length - 1];
+  let pick: string | undefined;
+  if (cur === undefined) {
+    const host = ed.el;
+    const c = ed.toGraph((host?.clientWidth ?? 800) / 2, (host?.clientHeight ?? 600) / 2);
+    pick = [...g.nodes].sort((a, b) => dist(centre(a.id), c) - dist(centre(b.id), c))[0]?.id;
+  } else {
+    const o = centre(cur);
+    const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key] ?? [0, 0];
+    let best = Infinity;
+    for (const n of g.nodes) {
+      if (n.id === cur) continue;
+      const p = centre(n.id);
+      const dx = p.x - o.x, dy = p.y - o.y;
+      const along = dx * dir[0]! + dy * dir[1]!;
+      if (along <= 0) continue;
+      const across = Math.abs(dx * dir[1]! - dy * dir[0]!);
+      const score = along + across * 2;
+      if (score < best) { best = score; pick = n.id; }
+    }
+  }
+  if (pick === undefined) return;
+  ed.select([pick]);
+  const p = centre(pick);
+  const v = ed.viewport;
+  const host = ed.el;
+  const sx = p.x * v.z + v.x, sy = p.y * v.z + v.y;
+  if (host && (sx < 40 || sy < 40 || sx > host.clientWidth - 40 || sy > host.clientHeight - 40)) {
+    ed.setViewport({ ...v, x: host.clientWidth / 2 - p.x * v.z, y: host.clientHeight / 2 - p.y * v.z });
+  }
+}
+
+const dist = (a: { x: number; y: number }, b: { x: number; y: number }) => Math.hypot(a.x - b.x, a.y - b.y);
+
+/** Enable / disable the selected nodes (UE5 "Enabled State"). */
+export function toggleDisabled(ed: BlueprintEditor, ids: readonly string[] = ed.selection.nodes) {
+  const g = ed.graph;
+  const nodes = g.nodes.filter((n) => ids.includes(n.id));
+  if (!nodes.length) return;
+  const off = !nodes.every((n) => n.disabled);
+  ed.apply(nodes.map((n) => ({ op: "updateNode" as const, id: n.id, disabled: off })), { label: off ? "禁用节点" : "启用节点" });
 }

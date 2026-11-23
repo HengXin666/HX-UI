@@ -1,12 +1,15 @@
 import { TUNNEL_IN, TUNNEL_OUT } from "./registry";
 import type {
-  BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, CommentTone, NodePins, Pin, SubGraphDef,
+  BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, CommentTone, NodePins, Pin, SubGraphDef, SubgraphKind, VariableDef,
 } from "./types";
 
 /**
  * JSON form. Lossless (B2): nodes, edges, comments and every subgraph definition, with a version.
  * `toJSON` also canonicalises key order and drops undefined, so equal graphs give equal JSON text.
  * `fromJSON` checks structure (not semantics, use validateGraph for that) and reads v1 legacy files.
+ *
+ * Version 2 grew additively in M5 (graph `variables`, node `disabled` / `variable`, subgraph `kind` /
+ * `variables`). Every addition is optional, so files without them are unchanged and still read.
  */
 
 export const FORMAT_VERSION = 2;
@@ -39,12 +42,14 @@ const pinsOut = (p: NodePins): NodePins => ({
   ...(p.outputs ? { outputs: p.outputs.map(pinOut) } : {}),
 });
 const nodeOut = (n: BlueprintNode): BlueprintNode => ({
-  ...pick(n, ["id", "type", "x", "y", "title", "collapsed", "width", "comment", "subgraph"]),
+  ...pick(n, ["id", "type", "x", "y", "title", "collapsed", "width", "comment", "disabled", "subgraph", "variable"]),
   ...(n.values && Object.keys(n.values).length ? { values: clone(n.values) } : {}),
   ...(n.pins ? { pins: pinsOut(n.pins) } : {}),
 });
 const edgeOut = (e: BlueprintEdge): BlueprintEdge => ({ id: e.id, from: { node: e.from.node, pin: e.from.pin }, to: { node: e.to.node, pin: e.to.pin } });
 const commentOut = (c: BlueprintComment): BlueprintComment => pick(c, ["id", "x", "y", "w", "h", "title", "body", "tone", "moveWithNodes"]);
+
+const varOut = (v: VariableDef): VariableDef => clone(pick(v, ["id", "name", "type", "default"]));
 
 const levelOut = (g: Pick<BlueprintGraph, "nodes" | "edges" | "comments">) => ({
   nodes: g.nodes.map(nodeOut),
@@ -57,8 +62,16 @@ export function toJSON(graph: BlueprintGraph): GraphJSON {
   return {
     version: FORMAT_VERSION,
     ...levelOut(graph),
+    ...(graph.variables?.length ? { variables: graph.variables.map(varOut) } : {}),
     ...(sgs.length
-      ? { subgraphs: Object.fromEntries(sgs.map(([id, sg]) => [id, { id: sg.id, ...(sg.label !== undefined ? { label: sg.label } : {}), ...levelOut(sg) }])) }
+      ? {
+        subgraphs: Object.fromEntries(sgs.map(([id, sg]) => [id, {
+          id: sg.id, ...(sg.label !== undefined ? { label: sg.label } : {}),
+          ...(sg.kind && sg.kind !== "graph" ? { kind: sg.kind } : {}),
+          ...(sg.variables?.length ? { variables: sg.variables.map(varOut) } : {}),
+          ...levelOut(sg),
+        }])),
+      }
       : {}),
   };
 }
@@ -76,6 +89,7 @@ export function stripVersion(json: GraphJSON): BlueprintGraph {
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
 const TONES: readonly CommentTone[] = ["default", "primary", "warning", "success", "info", "danger", "neutral"];
+const KINDS: readonly SubgraphKind[] = ["graph", "function", "macro"];
 
 class Reader {
   readonly errors: string[] = [];
@@ -140,7 +154,8 @@ class Reader {
     return {
       id: this.str(v, "id", path), type: this.str(v, "type", path), x: this.num(v, "x", path), y: this.num(v, "y", path),
       ...this.optStr(v, "title", path), ...this.optBool(v, "collapsed", path), ...this.optNum(v, "width", path),
-      ...this.optStr(v, "comment", path), ...this.optStr(v, "subgraph", path),
+      ...this.optStr(v, "comment", path), ...this.optBool(v, "disabled", path), ...this.optStr(v, "subgraph", path),
+      ...this.optStr(v, "variable", path),
       ...(isObj(v.values) && Object.keys(v.values).length ? { values: clone(v.values) } : {}),
       ...(pins ? { pins } : {}),
     };
@@ -171,6 +186,21 @@ class Reader {
       ...(TONES.includes(v.tone as CommentTone) ? { tone: v.tone as CommentTone } : {}),
       ...this.optBool(v, "moveWithNodes", path),
     };
+  }
+  variables(o: Obj, path: string): { variables?: VariableDef[] } {
+    if (o.variables === undefined) return {};
+    const list = this.arr(o, "variables", path).map((v, i) => {
+      const p = `${path}.variables[${i}]`;
+      if (!isObj(v)) {
+        this.errors.push(`${p}: expected variable object`);
+        return { id: "", name: "", type: "any" };
+      }
+      return {
+        id: this.str(v, "id", p), name: this.str(v, "name", p), type: this.str(v, "type", p),
+        ...(v.default !== undefined ? { default: clone(v.default) } : {}),
+      };
+    });
+    return list.length ? { variables: list } : {};
   }
   level(v: Obj, path: string) {
     const comments = v.comments !== undefined ? this.arr(v, "comments", path).map((c, i) => this.comment(c, `${path}.comments[${i}]`)) : [];
@@ -215,10 +245,12 @@ function readV2(raw: Obj, isV1: boolean): ParseResult {
         continue;
       }
       if (v.id !== undefined && v.id !== id) r.errors.push(`subgraphs.${id}.id: must equal its key`);
-      subgraphs[id] = { id, ...r.optStr(v, "label", `subgraphs.${id}`), ...r.level(v, `subgraphs.${id}`) };
+      if (v.kind !== undefined && !KINDS.includes(v.kind as SubgraphKind)) r.errors.push(`subgraphs.${id}.kind: unknown kind`);
+      const kind = KINDS.includes(v.kind as SubgraphKind) && v.kind !== "graph" ? { kind: v.kind as SubgraphKind } : {};
+      subgraphs[id] = { id, ...r.optStr(v, "label", `subgraphs.${id}`), ...kind, ...r.variables(v, `subgraphs.${id}`), ...r.level(v, `subgraphs.${id}`) };
     }
   }
-  const graph: BlueprintGraph = { ...r.level(raw, "graph"), ...(Object.keys(subgraphs).length ? { subgraphs } : {}) };
+  const graph: BlueprintGraph = { ...r.level(raw, "graph"), ...r.variables(raw, "graph"), ...(Object.keys(subgraphs).length ? { subgraphs } : {}) };
   return r.errors.length
     ? { ok: false, errors: r.errors, warnings: r.warnings }
     : { ok: true, graph, errors: [], warnings: r.warnings };
@@ -306,6 +338,7 @@ export const graphSchema = {
   properties: {
     version: { const: FORMAT_VERSION },
     ...level,
+    variables: { type: "array", items: { $ref: "#/$defs/variable" } },
     subgraphs: { type: "object", additionalProperties: { $ref: "#/$defs/subgraph" } },
   },
   $defs: {
@@ -318,6 +351,8 @@ export const graphSchema = {
       properties: {
         id: { type: "string" }, type: { type: "string", description: "NodeDef id" }, x: { type: "number" }, y: { type: "number" },
         title: { type: "string" }, collapsed: { type: "boolean" }, width: { type: "number" }, comment: { type: "string" },
+        disabled: { type: "boolean", description: "Skipped when evaluating (exec and matching data pass through)" },
+        variable: { type: "string", description: "Variable id, for var.get / var.set nodes" },
         subgraph: { type: "string", description: "SubGraphDef id, pins come from its tunnels" },
         values: { type: "object", description: "Param values and literals of unconnected inputs" },
         pins: {
@@ -336,7 +371,14 @@ export const graphSchema = {
     },
     subgraph: {
       type: "object", required: ["id", "nodes", "edges"], additionalProperties: false,
-      properties: { id: { type: "string" }, label: { type: "string" }, ...level },
+      properties: {
+        id: { type: "string" }, label: { type: "string" }, kind: { enum: KINDS },
+        variables: { type: "array", items: { $ref: "#/$defs/variable" }, description: "Function locals" }, ...level,
+      },
+    },
+    variable: {
+      type: "object", required: ["id", "name", "type"], additionalProperties: false,
+      properties: { id: { type: "string" }, name: { type: "string" }, type: { type: "string" }, default: {} },
     },
   },
 } as const;

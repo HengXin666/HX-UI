@@ -41,6 +41,9 @@
   --bp-cmt-warning: var(--warning);
   --bp-cmt-danger: var(--destructive);
   --bp-cmt-neutral: oklch(0.6 0.005 270);
+  --bp-delegate: oklch(0.55 0.14 25);
+  --bp-run: oklch(0.6 0.15 235);
+  --bp-break: oklch(0.57 0.22 27);
 }
 
 .dark {
@@ -63,6 +66,9 @@
   --bp-selected: oklch(0.84 0.16 80);
   --bp-cmt-default: oklch(0.75 0.01 270);
   --bp-cmt-neutral: oklch(0.55 0.005 270);
+  --bp-delegate: oklch(0.7 0.16 25);
+  --bp-run: oklch(0.8 0.13 215);
+  --bp-break: oklch(0.66 0.22 27);
 }
 
 /* ---------------------------------------------------------------- root + grid */
@@ -237,7 +243,75 @@ input[type="checkbox"].bp-field { width: 13px; height: 13px; padding: 0; accent-
 .bp-root[data-lod="box"] .bp-node { background: color-mix(in oklch, var(--bp-node-fg) 18%, var(--bp-graph-bg)); }
 .bp-root[data-lod="box"] .bp-wire { stroke-width: 4; }
 
+/* ---------------------------------------------------------------- M5: node states */
+.bp-node[data-kind="variable"] .bp-head { background-color: var(--bp-head-pure); }
+.bp-node[data-breakpoint]::after, .bp-reroute[data-breakpoint]::after {
+  content: ""; position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 999px;
+  background: var(--bp-break); box-shadow: 0 0 0 2px var(--bp-graph-bg); pointer-events: none;
+}
+.bp-node[data-disabled] { outline: 1.5px dashed var(--bp-node-muted); outline-offset: 3px; }
+.bp-node[data-disabled] .bp-head { filter: grayscale(1); }
+.bp-node[data-disabled] .bp-body { opacity: 0.55; }
+.bp-root:focus-visible .bp-node[data-active], .bp-root:focus-visible .bp-reroute[data-active] { outline: 2px solid var(--ring); outline-offset: 4px; }
+.bp-note {
+  position: absolute; left: 0; bottom: calc(100% + 9px); max-width: 240px; width: max-content; padding: 4px 8px;
+  border-radius: 6px; border: 1px solid var(--border); background: var(--popover); color: var(--popover-foreground);
+  font-size: 11px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; box-shadow: var(--shadow-soft); cursor: text;
+}
+.bp-note::after {
+  content: ""; position: absolute; left: 14px; bottom: -5px; width: 8px; height: 8px; background: var(--popover);
+  border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transform: rotate(45deg);
+}
+.bp-root[data-lod="low"] .bp-note, .bp-root[data-lod="box"] .bp-note { visibility: hidden; }
+
+/* ---------------------------------------------------------------- M5: debug run */
+.bp-wire-g[data-run] .bp-wire { stroke: var(--bp-run); }
+.bp-pulse {
+  fill: none; stroke: var(--bp-run); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 0.16 1;
+  stroke-dashoffset: -1; pointer-events: none; filter: drop-shadow(0 0 4px var(--bp-run));
+}
+.bp-node[data-run]:not([data-selected]) { box-shadow: 0 0 0 2px color-mix(in oklch, var(--bp-run) 65%, transparent), var(--bp-node-shadow); }
+.bp-node[data-run="next"]:not([data-selected]) { box-shadow: 0 0 0 2px var(--bp-run), 0 0 16px 1px color-mix(in oklch, var(--bp-run) 40%, transparent), var(--bp-node-shadow); }
+.bp-node[data-run="skipped"]:not([data-selected]) { box-shadow: 0 0 0 1px color-mix(in oklch, var(--bp-run) 50%, transparent), var(--bp-node-shadow); }
+.bp-node[data-paused], .bp-node[data-paused][data-selected] {
+  box-shadow: 0 0 0 3px var(--bp-break), 0 0 20px 2px color-mix(in oklch, var(--bp-break) 45%, transparent), var(--bp-node-shadow);
+}
+.bp-run-dot { width: 8px; height: 8px; flex: none; border-radius: 999px; background: var(--muted-foreground); }
+.bp-run-dot[data-status="running"] { background: var(--bp-run); animation: bp-blink 1s ease-in-out infinite; }
+.bp-run-dot[data-status="paused"] { background: var(--bp-break); }
+.bp-run-dot[data-status="done"] { background: var(--success); }
+.bp-run-dot[data-status="error"] { background: var(--destructive); }
+@keyframes bp-blink { 50% { opacity: 0.35; } }
+.bp-watch {
+  position: absolute; left: 0; top: 0; z-index: 3; margin: -27px 0 0 4px; padding: 1px 6px; border-radius: 5px; white-space: nowrap;
+  border: 1px solid var(--bp-run); background: var(--popover); color: var(--popover-foreground); font: 10.5px/16px var(--font-mono);
+  pointer-events: none; box-shadow: var(--shadow-soft);
+}
+.bp-watch[data-dir="in"] { margin-left: -4px; translate: -100% 0; }
+.bp-watch-pin { margin-right: 5px; font-family: var(--font-sans); color: var(--muted-foreground); }
+.bp-vtip {
+  position: absolute; left: 0; top: 0; display: none; pointer-events: none; z-index: 30; padding: 2px 7px; border-radius: 6px;
+  font: 11px/18px var(--font-mono); white-space: nowrap; background: var(--popover); color: var(--popover-foreground);
+  border: 1px solid var(--border); box-shadow: var(--shadow-float);
+}
+.bp-root[data-lod="box"] .bp-watch { visibility: hidden; }
+
+/* The help sheet is modal-ish: chrome it would half cover (toolbar corner, run bar) steps aside. */
+.bp-root[data-help] > [data-bp-overlay]:not([role="dialog"]) { visibility: hidden; }
+
+/* ---------------------------------------------------------------- status line */
+.bp-notice {
+  position: absolute; left: 50%; bottom: 52px; z-index: 30; translate: -50% 0; max-width: calc(100% - 1rem);
+  padding: 4px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--popover); color: var(--popover-foreground);
+  font-size: 12px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; box-shadow: var(--shadow-soft);
+  opacity: 0; transition: opacity 180ms ease; pointer-events: none;
+}
+.bp-notice[data-show] { opacity: 1; }
+@media (max-width: 639px) { .bp-notice { bottom: 96px; } }
+.bp-notice:empty { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   .bp-wire { transition: none; }
   .bp-pin:hover svg { transform: none; }
+  .bp-run-dot[data-status="running"] { animation: none; }
 }

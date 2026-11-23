@@ -1,4 +1,4 @@
-import { edgeKind, findPin, getPorts } from "./ports";
+import { edgeKind, findPin, getPorts, subgraphPins } from "./ports";
 import type { Registry } from "./registry";
 import { TUNNEL_IN, TUNNEL_OUT } from "./registry";
 import type { BlueprintEdge, BlueprintGraph, GraphValidation, ValidationIssue } from "./types";
@@ -17,12 +17,24 @@ export interface ValidateOptions {
   readonly requireEntry?: boolean;
 }
 
-type GraphView = Pick<BlueprintGraph, "nodes" | "edges" | "subgraphs">;
+type GraphView = Pick<BlueprintGraph, "nodes" | "edges" | "subgraphs" | "variables" | "locals">;
 
 export function validateGraph(graph: BlueprintGraph, registry: Registry, opts: ValidateOptions = {}): GraphValidation {
   const issues = [...validateLevel(graph, registry, opts)];
   for (const [sgId, sg] of Object.entries(graph.subgraphs ?? {})) {
-    const inner = validateLevel({ nodes: sg.nodes, edges: sg.edges, subgraphs: graph.subgraphs }, registry, {});
+    const inner = validateLevel({
+      nodes: sg.nodes, edges: sg.edges, subgraphs: graph.subgraphs,
+      ...(graph.variables ? { variables: graph.variables } : {}), ...(sg.variables ? { locals: sg.variables } : {}),
+    }, registry, {});
+    if (sg.kind === "function") {
+      const p = subgraphPins(sg.nodes);
+      const execIn = p.inputs.filter((x) => registry.isExec(x.type)).length;
+      const execOut = p.outputs.filter((x) => registry.isExec(x.type)).length;
+      if (execIn > 1 || execOut > 1) {
+        const shells = graph.nodes.filter((n) => n.subgraph === sgId).map((n) => n.id);
+        issues.push({ code: "function-exec", level: "error", message: `Function "${sg.label ?? sgId}" has ${execIn} exec inputs and ${execOut} exec outputs (at most one each)`, nodeIds: shells.slice(0, 1) });
+      }
+    }
     for (const i of inner) {
       issues.push({
         ...i,
@@ -53,7 +65,10 @@ function validateLevel(g: GraphView, reg: Registry, opts: ValidateOptions): Vali
     if (seenIds.has(n.id)) push({ code: "duplicate-id", level: "error", message: `Duplicate node id "${n.id}"`, nodeIds: [n.id] });
     seenIds.add(n.id);
     const ports = getPorts(n, reg, g);
-    if (ports.missing === "subgraph") {
+    if (n.disabled) push({ code: "disabled-node", level: "warning", message: `Node "${n.id}" is disabled and will be skipped`, nodeIds: [n.id] });
+    if (ports.missing === "variable") {
+      push({ code: "unknown-variable", level: "error", message: `Variable "${n.variable ?? "?"}" not found`, nodeIds: [n.id] });
+    } else if (ports.missing === "subgraph") {
       push({ code: "missing-subgraph", level: "error", message: `Collapsed graph "${n.subgraph ?? "?"}" not found`, nodeIds: [n.id] });
     } else if (ports.missing === "type") {
       push({ code: "unknown-node-type", level: "error", message: `Unknown node type "${n.type}"`, nodeIds: [n.id] });
@@ -118,7 +133,7 @@ function validateLevel(g: GraphView, reg: Registry, opts: ValidateOptions): Vali
   // L2: required inputs. Tunnel pins are fed from outside the subgraph, so they are never "missing".
   const wiredInputs = new Set(live.map((e) => `${e.to.node}.${e.to.pin}`));
   for (const n of g.nodes) {
-    if (n.type === TUNNEL_IN || n.type === TUNNEL_OUT) continue;
+    if (n.type === TUNNEL_IN || n.type === TUNNEL_OUT || n.disabled) continue;
     for (const p of getPorts(n, reg, g).inputs) {
       if (p.exec || wiredInputs.has(`${n.id}.${p.id}`)) continue;
       if (p.default !== undefined || n.values?.[p.id] !== undefined) continue;

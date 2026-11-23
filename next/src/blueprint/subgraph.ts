@@ -3,7 +3,7 @@ import { findPin } from "./ports";
 import type { Registry } from "./registry";
 import { SUBGRAPH_NODE, TUNNEL_IN, TUNNEL_OUT } from "./registry";
 import { boundsOf, nodeBox } from "./size";
-import type { BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, Pin, SubGraphDef } from "./types";
+import type { BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, Pin, SubGraphDef, SubgraphKind } from "./types";
 
 /**
  * Collapse to graph / expand (UE5 "Collapse Nodes").
@@ -36,7 +36,7 @@ interface Boundary {
 
 export function collapse(
   graph: BlueprintGraph, nodeIds: readonly string[], registry: Registry, ids: IdGen,
-  opts: { readonly label?: string; readonly id?: string } = {},
+  opts: { readonly label?: string; readonly id?: string; readonly kind?: SubgraphKind } = {},
 ): CollapseResult {
   const inside = new Set(nodeIds.filter((id) => graph.nodes.some((n) => n.id === id)));
   if (inside.size === 0) return { graph, error: "Nothing to collapse" };
@@ -78,6 +78,12 @@ export function collapse(
     }
   }
 
+  if (opts.kind === "function") {
+    const execIn = [...ins.values()].filter((b) => b.exec).length;
+    const execOut = [...outs.values()].filter((b) => b.exec).length;
+    if (execIn > 1 || execOut > 1) return { graph, error: `A function takes at most one exec input and one exec output (selection has ${execIn} in, ${execOut} out); collapse to a macro instead` };
+  }
+
   const innerNodes = graph.nodes.filter((n) => inside.has(n.id));
   const box = boundsOf(innerNodes.map((n) => nodeBox(n, registry, graph)));
   const tIn: BlueprintNode = { id: ids("n"), type: TUNNEL_IN, x: box.x - 240, y: box.y, pins: { outputs: [...ins.values()].map((b) => b.pin) } };
@@ -110,6 +116,7 @@ export function collapse(
   const def: SubGraphDef = {
     id: sgId,
     ...(opts.label ? { label: opts.label } : {}),
+    ...(opts.kind && opts.kind !== "graph" ? { kind: opts.kind } : {}),
     nodes: [tIn, ...innerNodes, tOut],
     edges: innerEdges,
   };
@@ -174,6 +181,10 @@ export function expand(
     for (const i of inner) edges.push({ id: pairId(o, i, inner.length), from: ref(i.from), to: o.to });
   }
 
+  // A function's locals become graph variables (their Get / Set nodes now live in the outer graph).
+  const taken2 = new Set((graph.variables ?? []).map((v) => v.id));
+  const promoted = (sg.variables ?? []).filter((v) => !taken2.has(v.id));
+  const variables = [...(graph.variables ?? []), ...promoted];
   const movedComments: BlueprintComment[] = (sg.comments ?? []).map((c) => ({ ...c, id: keepId(c.id, "c"), x: c.x + dx, y: c.y + dy }));
   const comments = [...(graph.comments ?? []), ...movedComments];
   const nodes = [...graph.nodes.filter((n) => n.id !== nodeId), ...restored];
@@ -189,28 +200,79 @@ export function expand(
       nodes, edges,
       ...(comments.length ? { comments } : {}),
       ...(Object.keys(subgraphs).length ? { subgraphs } : {}),
+      ...(variables.length ? { variables } : {}),
     },
     nodes: restored.map((n) => n.id),
   };
 }
 
-/** Inner graph of a subgraph as an editable view (carries the root subgraph table so nesting resolves). */
+/**
+ * Inner graph of a subgraph as an editable view. Carries the root subgraph table (nesting resolves),
+ * the root variables, and, for a function, its local variables as `locals`.
+ */
 export function subgraphAsGraph(root: BlueprintGraph, sgId: string): BlueprintGraph | undefined {
   const sg = root.subgraphs?.[sgId];
   if (!sg) return undefined;
-  return { nodes: sg.nodes, edges: sg.edges, ...(sg.comments ? { comments: sg.comments } : {}), ...(root.subgraphs ? { subgraphs: root.subgraphs } : {}) };
+  return {
+    nodes: sg.nodes, edges: sg.edges, ...(sg.comments ? { comments: sg.comments } : {}),
+    ...(root.subgraphs ? { subgraphs: root.subgraphs } : {}),
+    ...(root.variables ? { variables: root.variables } : {}),
+    ...(sg.kind === "function" ? { locals: sg.variables ?? [] } : {}),
+  };
 }
 
-/** Write an edited inner graph back into its definition. Pins follow automatically (they live on the tunnels). */
-export function writeSubgraph(root: BlueprintGraph, sgId: string, inner: Pick<BlueprintGraph, "nodes" | "edges" | "comments">): BlueprintGraph {
+/**
+ * Write an edited inner graph back into its definition. Pins follow automatically (they live on
+ * the tunnels); `locals` become the definition's variables.
+ */
+export function writeSubgraph(root: BlueprintGraph, sgId: string, inner: Pick<BlueprintGraph, "nodes" | "edges" | "comments" | "locals">): BlueprintGraph {
   const sg = root.subgraphs?.[sgId];
   if (!sg) return root;
+  const locals = "locals" in inner ? inner.locals : sg.variables;
   const next: SubGraphDef = {
-    id: sg.id, ...(sg.label !== undefined ? { label: sg.label } : {}),
+    id: sg.id, ...(sg.label !== undefined ? { label: sg.label } : {}), ...(sg.kind ? { kind: sg.kind } : {}),
+    ...(locals?.length ? { variables: locals } : {}),
     nodes: inner.nodes, edges: inner.edges,
     ...(inner.comments?.length ? { comments: inner.comments } : {}),
   };
   return { ...root, subgraphs: { ...root.subgraphs, [sgId]: next } };
+}
+
+/**
+ * Chain of subgraph ids from the root down to `sgId` (inclusive), for breadcrumbs. A definition no
+ * call site reaches gives `[sgId]`; an unknown id gives undefined.
+ */
+export function subgraphPath(root: BlueprintGraph, sgId: string): string[] | undefined {
+  if (!root.subgraphs?.[sgId]) return undefined;
+  const seen = new Set<string>();
+  const queue: { id: string; path: string[] }[] = root.nodes.flatMap((n) => (n.subgraph !== undefined ? [{ id: n.subgraph, path: [n.subgraph] }] : []));
+  while (queue.length) {
+    const { id, path } = queue.shift()!;
+    if (id === sgId) return path;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    for (const n of root.subgraphs?.[id]?.nodes ?? []) if (n.subgraph !== undefined) queue.push({ id: n.subgraph, path: [...path, n.subgraph] });
+  }
+  return [sgId];
+}
+
+/**
+ * Where a runtime path (evaluate's "shell/shell/node") lives: the subgraph id of its level
+ * (undefined = root) and the local node id. `key` is the validation-style id ("sg/node" or "node").
+ */
+export function resolveNodePath(root: BlueprintGraph, path: string): { readonly sg: string | undefined; readonly id: string; readonly key: string } | undefined {
+  const parts = path.split("/");
+  let nodes = root.nodes;
+  let sg: string | undefined;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const shell = nodes.find((n) => n.id === parts[i]);
+    const next = shell?.subgraph !== undefined ? root.subgraphs?.[shell.subgraph] : undefined;
+    if (!next) return undefined;
+    sg = next.id;
+    nodes = next.nodes;
+  }
+  const id = parts[parts.length - 1]!;
+  return { sg, id, key: sg === undefined ? id : `${sg}/${id}` };
 }
 
 /** Call sites of a subgraph across the whole document (outer graph and every subgraph). */

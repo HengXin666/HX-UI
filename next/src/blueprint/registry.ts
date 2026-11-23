@@ -30,6 +30,8 @@ export const SUBGRAPH_NODE = "subgraph";
 export const TUNNEL_IN = "subgraph.in";
 export const TUNNEL_OUT = "subgraph.out";
 export const REROUTE = "reroute";
+export const VAR_GET = "var.get";
+export const VAR_SET = "var.set";
 
 /** Collapsed graph shell. Declares no pins: they come from the subgraph's tunnels (see getPorts). */
 const subgraphNode = defineNode({
@@ -57,7 +59,19 @@ const reroute = defineNode({
   evaluate: ({ inputs }) => ({ out: inputs.in }),
 });
 
-export const BUILTIN_NODES: readonly NodeDef[] = [subgraphNode, tunnelIn, tunnelOut, reroute];
+/** Variable getter. Declares no pins: `getPorts` derives them from the variable (node.variable). */
+const varGet = defineNode({
+  id: VAR_GET, title: "Get", category: "Variables", kind: "pure", internal: true,
+  description: "Reads a graph variable.",
+});
+
+/** Variable setter: exec in / out, the new value in, the stored value out. Pins from the variable. */
+const varSet = defineNode({
+  id: VAR_SET, title: "Set", category: "Variables", kind: "function", internal: true,
+  description: "Writes a graph variable.",
+});
+
+export const BUILTIN_NODES: readonly NodeDef[] = [subgraphNode, tunnelIn, tunnelOut, reroute, varGet, varSet];
 
 // ---------------------------------------------------------------------------
 

@@ -36,10 +36,10 @@ export interface ToolContext {
 const NO_INPUT = { type: "object", properties: {}, additionalProperties: false } as const;
 
 const OPS_HELP = [
-  "addNode {type, id?, at?:[x,y], title?, values?}",
+  "addNode {type, id?, at?:[x,y], title?, values?, subgraph? (type 'subgraph': call a function / macro), variable? (type 'var.get' | 'var.set')}",
   "removeNode {id | ids[]}",
   "moveNode {id, to?:[x,y], by?:[dx,dy]}",
-  "updateNode {id, title?, comment?, collapsed?, width?} (null clears)",
+  "updateNode {id, title?, comment?, collapsed?, width?, disabled?} (null clears)",
   "connect {from:'node.pin', to:'node.pin', convert?:true}",
   "disconnect {edge? | pin? | from+to}",
   "setValue {node, key, value | unset:true}",
@@ -47,7 +47,11 @@ const OPS_HELP = [
   "updateComment {id, ...}",
   "moveComment {id, to, carry?}",
   "removeComment {id}",
-  "collapse {nodes:[ids], label?}",
+  "collapse {nodes:[ids], label?, kind?:'graph'|'function'|'macro'}",
+  "updateSubgraph {id, label?, kind?}",
+  "addVariable {name, type, default?, id?, local?}",
+  "updateVariable {id, name?, type?, default? | unsetDefault:true}",
+  "removeVariable {id} (also removes its Get / Set nodes)",
   "expand {node}",
   "addReroute {edge?, at?}",
 ].join("; ");
