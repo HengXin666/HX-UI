@@ -5,7 +5,7 @@ import { diffProps } from "./_visual";
 const D = {
   shot: "turn", motion: "none", arrange: "single", device: "browser", background: "spotlight",
   size: 0.62, shadow: 0.7, softness: 0.65, reflection: 0, sheen: 0.5, dof: 0, grain: 0.12, vignette: 0.3, parallax: 0.4,
-  transition: 0.9, orbit: true, interactive: true,
+  transition: 0.9, orbit: true, interactive: true, selectable: false, thickness: 1,
 };
 const DEMO = { ...D, screen: "dashboard", title: "" };
 const opt = (o: Record<string, { label: string }>) => Object.entries(o).map(([value, x]) => ({ value, label: x.label }));
@@ -56,6 +56,8 @@ export const stage: DocEntry = {
     { type: "number", key: "transition", label: "切换时长", min: 0.1, max: 3, step: 0.05, unit: "s" },
     { type: "toggle", key: "orbit", label: "拖拽转镜头" },
     { type: "toggle", key: "interactive", label: "内容可操作" },
+    { type: "toggle", key: "selectable", label: "文字可拖选" },
+    { type: "number", key: "thickness", label: "机身厚度", min: 0, max: 3, step: 0.1 },
     { type: "text", key: "title", label: "标题" },
   ],
   usage: (v) => {
@@ -86,6 +88,8 @@ export const stage: DocEntry = {
     { name: "parallax", type: "number", default: "0.4", description: "光标视差强度。" },
     { name: "orbit", type: "boolean", default: "true", description: "在空白处拖动转镜头，双击复位；屏幕里照常操作。" },
     { name: "interactive", type: "boolean", default: "true", description: "屏幕内容能否点击。" },
+    { name: "selectable", type: "boolean", default: "false", description: "屏幕里的文字能否拖选。关闭时在屏幕上拖动会转镜头，点击照常；输入框、滑块和带 data-stage-keep 的元素不受影响。" },
+    { name: "thickness", type: "number", default: "1", description: "机身厚度倍数，0 为纸片。手机、平板、笔记本按真实比例有侧边和背壳。" },
     { name: "title / subtitle / textPosition", type: "ReactNode / ReactNode / \"top\" | \"bottom\"", description: "叠在画面上的大标题。" },
     { name: "paused", type: "boolean", default: "false", description: "冻结运镜。" },
     { name: "ref", type: "{ play, pause, seek(p), getShot }", description: "控制运镜，或读出当前镜头存成预设。" },

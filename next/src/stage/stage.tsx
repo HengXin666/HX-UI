@@ -77,6 +77,10 @@ export interface StageProps {
   textPosition?: "top" | "bottom";
   /** 屏幕里的内容能否点击操作 */
   interactive?: boolean;
+  /** 屏幕里的文字能否拖选. 默认关: 在屏幕上拖动是转镜头, 点击照常 */
+  selectable?: boolean;
+  /** 设备厚度倍数, 0 为纸片, 默认 1 */
+  thickness?: number;
   /** 冻结运镜 */
   paused?: boolean;
   onMotionEnd?: () => void;
@@ -91,6 +95,7 @@ export interface StageProps {
 
 interface Ctx {
   sw: number;
+  thickness: number;
   device: StageDevice;
   reflection: number;
   register: (el: HTMLElement, depth: number) => () => void;
@@ -99,6 +104,10 @@ const StageCtx = React.createContext<Ctx | null>(null);
 
 const ASPECT: Record<StageDevice, number> = { browser: 16 / 10, window: 16 / 10, phone: 9 / 19.5, tablet: 3 / 4, laptop: 16 / 10, card: 4 / 3, none: 16 / 10 };
 const SIZE: Partial<Record<StageDevice, number>> = { phone: 0.24, tablet: 0.36 };
+/** 外框在内容之外多出的高度, em (字号 = 屏宽 / 64) */
+const CHROME_EM: Partial<Record<StageDevice, number>> = { browser: 2.4, window: 2.4, laptop: 2.4, phone: 1.8, tablet: 2.4 };
+/** 机身厚度, 以屏宽为单位 */
+const DEPTH: Record<StageDevice, number> = { phone: 0.1, tablet: 0.05, laptop: 0.014, browser: 0.018, window: 0.018, card: 0.03, none: 0 };
 
 /** 自动排布: 返回 [x, y, z] (以屏幕宽度为单位), Y 轴旋转, 景深层号 */
 function place(arr: StageArrange, i: number, n: number, aspect: number): { p: [number, number, number]; ry: number; depth: number } {
@@ -151,6 +160,8 @@ export const Stage = React.forwardRef<StageHandle, StageProps>(function Stage(
     subtitle,
     textPosition = "bottom",
     interactive = true,
+    selectable = false,
+    thickness = 1,
     paused = false,
     onMotionEnd,
     className,
@@ -202,26 +213,30 @@ export const Stage = React.forwardRef<StageHandle, StageProps>(function Stage(
   const pausedRef = React.useRef(paused);
   pausedRef.current = paused;
   const manualPause = React.useRef(false);
+  const wakeRef = React.useRef<() => void>(() => {});
   const pointer = React.useRef({ x: 0, y: 0, sx: 0, sy: 0 });
-  const drag = React.useRef({ on: false, yaw: 0, pitch: 0, lx: 0, ly: 0, reset: false });
+  const drag = React.useRef({ on: false, pending: false, sx: 0, sy: 0, yaw: 0, pitch: 0, lx: 0, ly: 0, reset: false });
   const endCb = React.useRef(onMotionEnd);
   endCb.current = onMotionEnd;
   const opts = React.useRef({ sheen, dof, transition, parallax, scroll, m, base, reduce });
   opts.current = { sheen, dof, transition, parallax, scroll, m, base, reduce };
 
-  React.useEffect(() => { elapsed.current = 0; ended.current = false; }, [m]);
+  React.useEffect(() => { elapsed.current = 0; ended.current = false; wakeRef.current(); }, [m]);
 
   React.useImperativeHandle(ref, () => ({
-    play: () => { elapsed.current = 0; ended.current = false; manualPause.current = false; seekTo.current = null; },
+    play: () => { elapsed.current = 0; ended.current = false; manualPause.current = false; seekTo.current = null; wakeRef.current(); },
     pause: () => { manualPause.current = true; },
-    seek: (p) => { seekTo.current = clamp(p, 0, 1); },
+    seek: (p) => { seekTo.current = clamp(p, 0, 1); ended.current = false; wakeRef.current(); },
     getShot: () => ({ ...(cur.current ?? DEFAULT_SHOT) }),
   }), []);
 
   React.useEffect(() => {
     const el = root.current, wd = world.current;
     if (!el || !wd) return;
-    let raf = 0, last = 0, onScreen = true;
+    let raf = 0, last = 0, onScreen = true, still = 0;
+    // 画面静止后停掉 rAF, 有输入或参数变化时 wake() 再起
+    const wake = () => { still = 0; if (onScreen && !raf) { last = 0; raf = requestAnimationFrame(frame); } };
+    wakeRef.current = wake;
 
     let prev = "";
     const tiltEl = el.querySelector<HTMLElement>(".hx-st-tilt");
@@ -288,22 +303,45 @@ export const Stage = React.forwardRef<StageHandle, StageProps>(function Stage(
         for (const key of Object.keys(c) as (keyof Shot)[]) c[key] += (t[key] - c[key]) * k;
       }
       write(cur.current);
-      raf = onScreen ? requestAnimationFrame(frame) : 0;
+      const o = opts.current, c = cur.current, pt = pointer.current, dr = drag.current;
+      const timed = !!o.m && !o.reduce && !o.scroll && !pausedRef.current && !manualPause.current && !ended.current;
+      let gap = Math.abs(pt.x - pt.sx) + Math.abs(pt.y - pt.sy);
+      for (const key of Object.keys(c) as (keyof Shot)[]) gap = Math.max(gap, Math.abs(t[key] - c[key]));
+      still = timed || dr.on || dr.reset || gap > 1e-3 ? 0 : still + 1;
+      raf = onScreen && still < 3 ? requestAnimationFrame(frame) : 0;
     };
     const io = new IntersectionObserver(([e]) => {
       onScreen = e.isIntersecting;
-      if (onScreen && !raf) { last = 0; raf = requestAnimationFrame(frame); }
+      el.classList.toggle("hx-st-off", !onScreen);
+      if (onScreen) wake();
     });
     io.observe(el);
+    const ro = new ResizeObserver(wake);
+    ro.observe(el);
+    const onScroll = () => { if (opts.current.scroll) wake(); };
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
     raf = requestAnimationFrame(frame);
-    return () => { cancelAnimationFrame(raf); io.disconnect(); };
+    return () => { cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); window.removeEventListener("scroll", onScroll, { capture: true }); wakeRef.current = () => {}; };
   }, []);
+
+  // 参数变了, 叫醒渲染循环
+  React.useEffect(() => wakeRef.current(), [m, base, sheen, dof, transition, parallax, scroll, paused, reduce, W, H]);
 
   const onPointerMove = (e: React.PointerEvent) => {
     const r = e.currentTarget.getBoundingClientRect();
     pointer.current.x = ((e.clientX - r.left) / r.width - 0.5) * 2;
     pointer.current.y = ((e.clientY - r.top) / r.height - 0.5) * 2;
     const d = drag.current;
+    wakeRef.current();
+    if (d.pending && !d.on && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) > 4) {
+      // 从屏幕上起手: 拖过 4px 才算转镜头, 并吞掉随后的 click
+      d.on = true; d.pending = false; d.lx = e.clientX; d.ly = e.clientY;
+      e.currentTarget.setPointerCapture(e.pointerId);
+      window.getSelection()?.removeAllRanges();
+      const swallow = (ev: MouseEvent) => { ev.stopPropagation(); ev.preventDefault(); };
+      window.addEventListener("click", swallow, { capture: true, once: true });
+      setTimeout(() => window.removeEventListener("click", swallow, { capture: true }), 0);
+    }
     if (d.on) {
       d.yaw += (e.clientX - d.lx) * 0.25;
       d.pitch = clamp(d.pitch - (e.clientY - d.ly) * 0.2, -70, 70);
@@ -312,18 +350,28 @@ export const Stage = React.forwardRef<StageHandle, StageProps>(function Stage(
   };
   const onPointerDown = (e: React.PointerEvent) => {
     if (!orbit || reduce || e.button !== 0) return;
-    if ((e.target as HTMLElement).closest(".hx-st-item")) return; // 屏幕里的内容照常操作
+    const t = e.target as HTMLElement;
+    wakeRef.current();
+    // 叠在舞台上的按钮等控件照常点击, 不起拖拽
+    if (!t.closest(".hx-st-item") && t.closest("button, a, input, textarea, select, [role=button], [data-stage-keep]")) return;
+    if (t.closest(".hx-st-item")) {
+      // 屏幕上: 表单控件和标了 data-stage-keep 的元素照常操作; 可选文字时不抢拖动
+      if (selectable || t.closest("input, textarea, select, [contenteditable], [role=slider], [data-stage-keep]")) return;
+      drag.current = { ...drag.current, pending: true, sx: e.clientX, sy: e.clientY, reset: false };
+      return;
+    }
     drag.current = { ...drag.current, on: true, lx: e.clientX, ly: e.clientY, reset: false };
     e.currentTarget.setPointerCapture(e.pointerId);
   };
-  const endDrag = () => { drag.current.on = false; };
+  const endDrag = () => { drag.current.on = false; drag.current.pending = false; };
   const onDoubleClick = (e: React.MouseEvent) => {
     if (!orbit || (e.target as HTMLElement).closest(".hx-st-item")) return;
     drag.current.reset = true;
+    wakeRef.current();
   };
 
   const hasFloor = floor ?? (background === "studio" || background === "grid" || reflection > 0);
-  const floorY = sw / aspect / 2 + (device === "laptop" ? sw * 0.05 : 0) + sw * 0.03;
+  const floorY = (sw / aspect + sw * (CHROME_EM[device] ?? 0) / 64) / 2 + (device === "laptop" ? sw * DEPTH.laptop * 2.2 * thickness : 0) + sw * 0.01;
   const cssVars = {
     "--hx-st-bg": backgroundColor,
     "--hx-st-bg2": backgroundColor2,
@@ -335,12 +383,12 @@ export const Stage = React.forwardRef<StageHandle, StageProps>(function Stage(
   const meshColors = colors ?? ["var(--brand)", "var(--chart-2)", "var(--chart-4)"];
 
   return (
-    <StageCtx.Provider value={{ sw, device, reflection: hasFloor ? reflection : 0, register }}>
+    <StageCtx.Provider value={{ sw, thickness, device, reflection: hasFloor ? reflection : 0, register }}>
       <div
         ref={root}
         role="group"
         aria-label={ariaLabel}
-        className={cn("hx-stage", `hx-st-bg-${background}`, orbit && !reduce && "hx-st-orbit", !interactive && "hx-st-static", className)}
+        className={cn("hx-stage", `hx-st-bg-${background}`, orbit && !reduce && "hx-st-orbit", !interactive && "hx-st-static", !selectable && "hx-st-noselect", className)}
         style={{ ...cssVars, ...style }}
         onPointerMove={onPointerMove}
         onPointerLeave={() => { pointer.current.x = pointer.current.y = 0; endDrag(); }}
@@ -458,10 +506,22 @@ export function StageScreen({
   const r = rotation ?? [0, __auto?.ry ?? 0, 0];
   const transform = `translate(-50%, -50%) translate3d(${p[0] * sw}px, ${p[1] * sw}px, ${p[2] * sw}px) rotateX(${r[0]}deg) rotateY(${r[1]}deg) rotateZ(${r[2]}deg)`;
   const refl = ctx?.reflection ?? 0;
+  // 厚度: 背后叠几层同形状的薄片, 侧面看就是实心的机身. 只有纯色, 没有模糊, 很便宜
+  const t = sw * DEPTH[device] * (ctx?.thickness ?? 1);
+  const layers = t < 1 ? 0 : Math.min(10, Math.max(2, Math.round(t / 1.6)));
 
   return (
     <div ref={outer} className="hx-st-item" style={{ width: sw, fontSize: Math.max(6, sw / 64), transform }}>
-      <div className="hx-st-drop" aria-hidden="true" />
+      <div className="hx-st-drop" aria-hidden="true" style={{ transform: `translateZ(${-t - 1}px)` }} />
+      {Array.from({ length: layers }, (_, i) => (
+        <div
+          key={i}
+          aria-hidden="true"
+          className={cn("hx-st-slab", `hx-st-slab-${device}`, i === layers - 1 && "hx-st-back")}
+          style={{ transform: `translateZ(${(-t * (i + 1)) / layers}px)` }}
+        />
+      ))}
+      {device === "laptop" ? <LaptopDeck depth={(sw / aspect) * 0.72} t={t} /> : null}
       <div
         className={cn("hx-st-screen", `hx-st-dev-${device}`, className)}
         style={{
@@ -479,7 +539,23 @@ export function StageScreen({
           <div ref={content} className="hx-st-content">{children}</div>
           <div className="hx-st-sheen" aria-hidden="true" />
         </div>
-        {device === "laptop" ? <div className="hx-st-base" aria-hidden="true" /> : null}
+      </div>
+    </div>
+  );
+}
+
+/** 笔记本键盘底座: 一块真正水平放置的板, 从屏幕底边朝镜头伸出 */
+function LaptopDeck({ depth, t }: { depth: number; t: number }) {
+  const th = Math.max(2, t * 2.2);
+  const n = Math.min(6, Math.max(2, Math.round(th / 1.6)));
+  return (
+    <div className="hx-st-deck" aria-hidden="true" style={{ height: depth }}>
+      {Array.from({ length: n }, (_, i) => (
+        <div key={i} className={cn("hx-st-deck-layer", i === n - 1 && "hx-st-deck-bottom")} style={{ transform: `translateZ(${(-th * (i + 1)) / n}px)` }} />
+      ))}
+      <div className="hx-st-deck-top">
+        <div className="hx-st-keys" />
+        <div className="hx-st-pad" />
       </div>
     </div>
   );

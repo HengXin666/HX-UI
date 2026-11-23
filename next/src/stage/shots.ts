@@ -85,7 +85,7 @@ const kf = (at: number, shot: ShotInput, ease: StageEase = "inOut"): StageKeyfra
 
 /** 内置运镜 */
 export const MOTIONS = {
-  float: { label: "悬浮", motion: { duration: 6, loop: "pingpong", keyframes: [kf(0, { yaw: -12, pitch: 8, y: 0.012 }), kf(1, { yaw: -6, pitch: 4, y: -0.012 })] } },
+  float: { label: "悬浮", motion: { duration: 6, loop: "pingpong", keyframes: [kf(0, { yaw: -26, pitch: 8, y: 0.012 }), kf(1, { yaw: -14, pitch: 4, y: -0.012 })] } },
   orbit: { label: "环绕", motion: { duration: 9, loop: "pingpong", keyframes: [kf(0, { yaw: -34, pitch: 12, zoom: 0.9 }), kf(1, { yaw: 34, pitch: 12, zoom: 0.9 })] } },
   pushIn: { label: "推近", motion: { duration: 3.4, keyframes: [kf(0, { yaw: -24, pitch: 18, zoom: 0.55 }), kf(1, "hero", "out")] } },
   glide: { label: "横移", motion: { duration: 7, loop: "pingpong", keyframes: [kf(0, { yaw: -18, pitch: 8, x: 0.07 }), kf(1, { yaw: -4, pitch: 4, x: -0.07 })] } },

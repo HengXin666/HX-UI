@@ -216,14 +216,31 @@
   background: radial-gradient(closest-side, rgb(0 0 0 / calc(var(--hx-st-shadow) * 0.85)), rgb(0 0 0 / calc(var(--hx-st-shadow) * (0.5 - var(--hx-st-soft) * 0.4))) calc(60% - var(--hx-st-soft) * 30%), transparent);
 }
 
-.hx-st-item { position: absolute; left: 50%; top: 50%; }
+.hx-st-item { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; }
+.hx-st-noselect .hx-st-item { user-select: none; -webkit-user-select: none; }
+.hx-st-off .hx-st-mesh > span { animation-play-state: paused; }
+/* 机身: 同外形的纯色薄片往后叠, 中间几层亮一点像金属中框 */
+.hx-st-slab { position: absolute; inset: 0; border-radius: 0.9em; background: #18181c; border: 1px solid #2a2a31; pointer-events: none; }
+.hx-st-slab-phone { border-radius: 3.2em; background: #1d1d22; border-color: #3a3a42; }
+.hx-st-slab-tablet { border-radius: 2.2em; background: #1d1d22; border-color: #3a3a42; }
+.hx-st-slab-laptop { border-radius: 1.2em 1.2em 0.3em 0.3em; background: #1a1a1f; border-color: #33333b; }
+.hx-st-slab-card { border-radius: 1.4em; }
+.hx-st-slab-none { border-radius: 0.5em; }
+.hx-st-back { background: #121215; border-color: #26262c; }
+.hx-st-slab-phone.hx-st-back::before { content: ""; position: absolute; left: 7%; top: 3.5%; width: 34%; aspect-ratio: 1; border-radius: 22%; background: #0b0b0d; border: 1px solid #2e2e35; }
+.hx-st-deck { position: absolute; left: -9%; right: -9%; top: 100%; transform-origin: 50% 0; transform: rotateX(90deg); transform-style: preserve-3d; pointer-events: none; }
+.hx-st-deck-layer { position: absolute; inset: 0; border-radius: 0.6em 0.6em 1.4em 1.4em; background: #1c1c21; border: 1px solid #34343c; }
+.hx-st-deck-bottom { background: #101013; }
+.hx-st-deck-top { position: absolute; inset: 0; border-radius: 0.6em 0.6em 1.4em 1.4em; background: linear-gradient(#2b2b31, #222228); border: 1px solid #3b3b44; display: flex; flex-direction: column; align-items: center; padding: 6% 9% 4%; gap: 6%; }
+.hx-st-keys { width: 100%; flex: 0 0 52%; border-radius: 0.5em; background: repeating-linear-gradient(90deg, #17171b 0 6.2%, transparent 6.2% 6.9%), repeating-linear-gradient(#17171b 0 15%, transparent 15% 17.5%); opacity: 0.9; }
+.hx-st-pad { width: 38%; flex: 1; border-radius: 0.5em; background: #26262c; border: 1px solid #36363e; }
 /* 投影用预先模糊的渐变画, 不用 box-shadow 的大模糊: 3D 变换下每帧重绘 box-shadow 很贵 */
 .hx-st-drop {
   position: absolute; left: -8%; right: -8%; top: 6%; bottom: -14%; z-index: -1; pointer-events: none;
   background: radial-gradient(50% 50% at 50% 55%, rgb(0 0 0 / calc(var(--hx-st-shadow) * 0.75)), rgb(0 0 0 / calc(var(--hx-st-shadow) * 0.3)) calc(70% - var(--hx-st-soft) * 20%), transparent);
 }
 .hx-st-screen {
-  position: relative;
+  position: relative; transform: translateZ(0.5px); /* 自己成一层: 否则在 preserve-3d 里点不中缩放后的内容 */
   border-radius: 0.9em; overflow: hidden;
   background: color-mix(in oklab, var(--foreground) 6%, var(--background));
   border: 1px solid color-mix(in oklab, var(--foreground) 14%, transparent);
@@ -249,10 +266,8 @@
 .hx-st-dev-phone .hx-st-view, .hx-st-dev-tablet .hx-st-view { border-radius: 2.4em; }
 .hx-st-dev-tablet .hx-st-view { border-radius: 1.2em; }
 .hx-st-dev-phone .hx-st-view::before { content: ""; position: absolute; z-index: 2; left: 50%; top: 1.1em; width: 30%; height: 2.2em; transform: translateX(-50%); border-radius: 2em; background: #000; }
-.hx-st-dev-laptop { overflow: visible; padding: 1em 1em 1.4em; border-radius: 1.2em 1.2em 0.3em 0.3em; background: #0c0c0f; border: 1px solid rgb(255 255 255 / 0.14); }
+.hx-st-dev-laptop { overflow: hidden; padding: 1em 1em 1.4em; border-radius: 1.2em 1.2em 0.3em 0.3em; background: #0c0c0f; border: 1px solid rgb(255 255 255 / 0.14); }
 .hx-st-dev-laptop .hx-st-view { border-radius: 0.3em; }
-.hx-st-base { position: absolute; left: -9%; right: -9%; bottom: -1.6em; height: 1.6em; border-radius: 0 0 1.4em 1.4em; background: linear-gradient(#2a2a30, #121216); box-shadow: inset 0 0.2em 0 rgb(255 255 255 / 0.12); }
-.hx-st-base::before { content: ""; position: absolute; left: 50%; top: 0; width: 16%; height: 0.5em; transform: translateX(-50%); border-radius: 0 0 0.6em 0.6em; background: #0a0a0c; }
 
 .hx-st-tilt { display: none; position: absolute; inset: 0; pointer-events: none; z-index: 2; opacity: calc(var(--hx-st-tilt, 0) * 1.2); }
 .hx-st-tilt::before, .hx-st-tilt::after { content: ""; position: absolute; left: 0; right: 0; height: 38%; backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); }

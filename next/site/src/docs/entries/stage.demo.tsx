@@ -40,6 +40,8 @@ export default function StageDemo({ values: v, onEvent }: DemoProps) {
         transition={n("transition")}
         orbit={Boolean(v.orbit)}
         interactive={Boolean(v.interactive)}
+        selectable={Boolean(v.selectable)}
+        thickness={Number(v.thickness)}
         title={v.title ? String(v.title) : undefined}
         onMotionEnd={() => onEvent?.("运镜结束")}
         className="h-full w-full"
