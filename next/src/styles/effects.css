@@ -150,3 +150,30 @@
   @keyframes hx-fade-in { from { opacity: 0; } }
 }
 }
+
+/* DecryptedText */
+.hx-dt-c { white-space: pre-wrap; transition: color 300ms ease, opacity 300ms ease; }
+.hx-dt-c[data-encrypted] { color: var(--hx-dt-scramble, currentColor); }
+.hx-dt-fade[data-encrypted] { opacity: 0.32; }
+.hx-dt-flip { display: inline-block; transform-origin: 50% 70%; animation: hx-dt-flip 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes hx-dt-flip { from { transform: perspective(400px) rotateX(-88deg) translateY(-0.15em); opacity: 0.2; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .hx-dt-flip { animation: none; } }
+
+/* ScrollStack: 被压住时变暗 */
+.hx-stack-item::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: #000; opacity: var(--hx-stack-dim, 0); pointer-events: none; }
+
+/* ScrollReveal: 每段用 --v (0-1) 驱动 */
+.hx-sr { display: block; transform: rotate(var(--hx-sr-rot, 0deg)); transform-origin: 0% 50%; }
+.hx-sr-p { --v: 0; display: inline-block; white-space: pre-wrap; opacity: calc(var(--hx-sr-base, 0.1) + (1 - var(--hx-sr-base, 0.1)) * var(--v)); filter: blur(calc(var(--hx-sr-blur, 0px) * (1 - var(--v)))); transform: translateY(calc(var(--hx-sr-off, 0px) * (1 - var(--v)))); }
+.hx-sr-scale { transform: translateY(calc(var(--hx-sr-off, 0px) * (1 - var(--v)))) scale(calc(0.4 + 0.6 * var(--v))); }
+.hx-sr-flip { transform-origin: 50% 100%; transform: perspective(600px) translateY(calc(var(--hx-sr-off, 0px) * (1 - var(--v)))) rotateX(calc(90deg * (1 - var(--v)))); }
+.hx-sr-rise { overflow: hidden; vertical-align: bottom; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.hx-sr-in { display: inline-block; transform: translateY(calc(110% * (1 - var(--v)))); transition-delay: inherit; }
+.hx-sr-hl { transition: color 400ms ease; }
+.hx-sr-hl[data-state="mid"] { color: var(--hx-sr-hl); }
+.hx-sr-enter { transition: transform var(--hx-sr-dur, 0.8s) cubic-bezier(0.22, 1, 0.36, 1); }
+.hx-sr-enter .hx-sr-p, .hx-sr-enter .hx-sr-in { transition: opacity var(--hx-sr-dur, 0.8s) ease, filter var(--hx-sr-dur, 0.8s) ease, transform var(--hx-sr-dur, 0.8s) cubic-bezier(0.22, 1, 0.36, 1), color 400ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  .hx-sr, .hx-sr-enter .hx-sr-p, .hx-sr-enter .hx-sr-in { transition: opacity 200ms ease; }
+  .hx-sr-p, .hx-sr-scale, .hx-sr-flip, .hx-sr-in { transform: none; filter: none; }
+}

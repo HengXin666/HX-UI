@@ -60,6 +60,8 @@ export interface DocEntry {
   usageChildren?: string;
   /** 调参时是否整块重挂演示 (重播入场动画). 默认视觉组件 true, UI 组件 false */
   remountOnChange?: boolean;
+  /** 演示铺满整个舞台 (背景、滚动容器), 不留内边距 */
+  bleed?: boolean;
   /** 舞台高度 (默认 440) */
   stageHeight?: number;
   /** 静态缩略: 总览卡片上显示的一句话或小样 */
