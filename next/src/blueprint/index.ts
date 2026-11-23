@@ -1,0 +1,40 @@
+/**
+ * Blueprint logic layer (no React). The renderer and docs import from here.
+ */
+export * from "./types";
+export { defineTypes, defineNode, BASE_TYPES } from "./define";
+export type { TypeDecl, BaseTypes, PinTypes, PinDecl, ParamDecl, NodeDecl, InputsOf, OutputsOf, ParamsOf, TsOf } from "./define";
+export { createRegistry, BUILTIN_NODES, SUBGRAPH_NODE, TUNNEL_IN, TUNNEL_OUT, REROUTE } from "./registry";
+export type { Registry } from "./registry";
+export { createIdGen, allIds, slugId } from "./ids";
+export type { IdGen } from "./ids";
+export { getPorts, findPin, edgeKind, defaultMulti, subgraphPins, formatPinRef, parsePinRef, samePin } from "./ports";
+export type { Direction, ResolvedPin, NodePorts } from "./ports";
+export { NODE_METRICS, nodeSize, nodeBox, boundsOf, boxContains, boxesOverlap } from "./size";
+export type { Box } from "./size";
+export { canConnect, connect, nodesAcceptingPin } from "./connect";
+export type { ConnectResult, ConnectFailReason, ConnectOutcome, ConnectableGraph, PinMatch } from "./connect";
+export { validateGraph, findCycles, topoSort, upstreamOf } from "./validate";
+export type { ValidateOptions } from "./validate";
+export { collapse, expand, subgraphAsGraph, writeSubgraph, subgraphRefCount } from "./subgraph";
+export type { CollapseResult } from "./subgraph";
+export { addComment, updateComment, removeComments, moveComment, nodesInComment, commentRelation, boxAround, COMMENT_MIN, COMMENT_TITLE_H } from "./comment";
+export { copySelection, pasteClip, duplicateSelection, deleteSelection } from "./clipboard";
+export type { Selection, PasteResult } from "./clipboard";
+export { applyOps } from "./ops";
+export type { GraphOp, OpError, ApplyResult, ApplyOptions, XY, PinInput } from "./ops";
+export { createHistory } from "./history";
+export type { History, StepOptions } from "./history";
+export { autoLayout, applyLayout, alignNodes, distributeNodes, countOverlaps, countCrossings, findBackEdges } from "./layout";
+export type { Positions, LayoutOptions, AlignMode } from "./layout";
+export { evaluateGraph, findEntries } from "./evaluate";
+export type { EvalOptions, EvalResult, StepEvent } from "./evaluate";
+export { toJSON, fromJSON, stripVersion, graphSchema, FORMAT_VERSION } from "./serialize";
+export type { GraphJSON, ParseResult, FromJSONOptions } from "./serialize";
+export { toText, fromText } from "./text";
+export { describeGraph, describeRegistry } from "./describe";
+export { buildGraph } from "./agent/build";
+export type { AgentInput, AgentNode, AgentEnd, AgentBuildResult, RejectedWire } from "./agent/build";
+export { createBlueprintTools, toolManifest, dispatchTool } from "./agent/tools";
+export type { ToolDef, ToolResult, ToolContext } from "./agent/tools";
+export { demoTypes, demoNodes, demoRegistry, demoGraph } from "./demo";
