@@ -25,3 +25,7 @@ export { ScrollStack, ScrollStackItem } from "./scroll/scroll-stack";
 export type { ScrollStackProps, ScrollStackItemProps } from "./scroll/scroll-stack";
 export { ScrollReveal } from "./scroll/scroll-reveal";
 export type { ScrollRevealProps, RevealEffect } from "./scroll/scroll-reveal";
+export { Stage, StageScreen } from "./stage/stage";
+export type { StageProps, StageScreenProps, StageHandle, StageDevice, StageBackground, StageArrange } from "./stage/stage";
+export { SHOTS, MOTIONS, resolveShot, resolveMotion, sampleMotion } from "./stage/shots";
+export type { Shot, ShotName, ShotInput, StageMotion, StageKeyframe, MotionName, MotionInput, StageEase } from "./stage/shots";
