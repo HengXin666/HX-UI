@@ -18,7 +18,10 @@ export async function resolve(spec, ctx, next) {
 }`),
 );
 
-const bp: typeof import("../src/blueprint/index.ts") = await import("../src/blueprint/index.ts");
+const bp: typeof import("../src/blueprint/index.ts") & typeof import("../src/blueprint/agent/index.ts") = {
+  ...(await import("../src/blueprint/index.ts")),
+  ...(await import("../src/blueprint/agent/index.ts")),
+};
 type Graph = import("../src/blueprint/index.ts").BlueprintGraph;
 const { demoRegistry: reg, demoGraph } = bp;
 

@@ -9,6 +9,8 @@ import type { BlueprintNode, SubgraphScope } from "./types";
  */
 export const NODE_METRICS = {
   width: 176,
+  /** Pure nodes (no exec pins) are drawn compact, as in UE5. */
+  pureWidth: 160,
   header: 30,
   /** Gap between header and first pin row, and below the last row. */
   pad: 8,
@@ -29,7 +31,7 @@ export function nodeSize(node: BlueprintNode, registry: Registry, scope?: Subgra
   const M = NODE_METRICS;
   if (node.type === REROUTE) return { w: M.reroute, h: M.reroute };
   const def = registry.node(node.type);
-  const w = node.width ?? def?.width ?? M.width;
+  const w = node.width ?? def?.width ?? (def?.kind === "pure" ? M.pureWidth : M.width);
   if (node.collapsed) return { w, h: M.header };
   const ports = getPorts(node, registry, scope);
   const rows = Math.max(

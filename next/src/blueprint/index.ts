@@ -33,8 +33,5 @@ export { toJSON, fromJSON, stripVersion, graphSchema, FORMAT_VERSION } from "./s
 export type { GraphJSON, ParseResult, FromJSONOptions } from "./serialize";
 export { toText, fromText } from "./text";
 export { describeGraph, describeRegistry } from "./describe";
-export { buildGraph } from "./agent/build";
-export type { AgentInput, AgentNode, AgentEnd, AgentBuildResult, RejectedWire } from "./agent/build";
-export { createBlueprintTools, toolManifest, dispatchTool } from "./agent/tools";
-export type { ToolDef, ToolResult, ToolContext } from "./agent/tools";
+// Agent tools (buildGraph, createBlueprintTools, ...) live in ./agent/index.ts to keep the editor bundle small.
 export { demoTypes, demoNodes, demoRegistry, demoGraph } from "./demo";

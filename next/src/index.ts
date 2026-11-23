@@ -29,3 +29,7 @@ export { Stage, StageScreen } from "./stage/stage";
 export type { StageProps, StageScreenProps, StageHandle, StageDevice, StageBackground, StageArrange } from "./stage/stage";
 export { SHOTS, MOTIONS, resolveShot, resolveMotion, sampleMotion } from "./stage/shots";
 export type { Shot, ShotName, ShotInput, StageMotion, StageKeyframe, MotionName, MotionInput, StageEase } from "./stage/shots";
+export { Blueprint, useBlueprint, BlueprintEditor, SHORTCUTS as BLUEPRINT_SHORTCUTS } from "./blueprint/ui";
+export type { BlueprintProps, UseBlueprintOptions, BlueprintHandle, EditorSelection, Viewport as BlueprintViewport } from "./blueprint/ui";
+export { defineTypes, defineNode, createRegistry, toJSON, fromJSON, toText, fromText, applyOps, validateGraph, graphSchema } from "./blueprint";
+export type { BlueprintGraph, BlueprintNode, BlueprintEdge, BlueprintComment, NodeDef, PinTypeDef, Pin, PinRef, Registry, GraphOp } from "./blueprint";

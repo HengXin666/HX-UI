@@ -7,6 +7,7 @@ import { splitText } from "./entries/split-text";
 import { numberRoll } from "./entries/number-roll";
 import { decryptedText } from "./entries/decrypted-text";
 import { stage } from "./entries/stage";
+import { blueprint } from "./entries/blueprint";
 import { particles } from "./entries/particles";
 import { clickSpark } from "./entries/click-spark";
 import { scrollStack } from "./entries/scroll-stack";
@@ -70,7 +71,7 @@ import { SECTIONS } from "./sections";
  * 文档站清单. 只收值得单独一页的东西:
  * 一个参数就能表达的效果 (流光, 状态点, 光斑) 做成所属组件的参数, 不单列.
  */
-const ALL: DocEntry[] = [button, dropdownMenu, toggleGroup, command, tabs, breadcrumb, pagination, card, badge, avatar, tooltip, popover, accordion, kbd, marquee, dialog, sheet, toastEntry, alert, progress, skeleton, spin, input, textarea, select, checkbox, switchEntry, radioGroup, slider, datePicker, dataTable, charts, comboChart, radarCompare, gauge, scatterBubble, conversionFunnel, shareTreemap, sankeyFlow, heatCalendar, candlestick, intraday, depthChart, volumeProfile, forceGraph, waterfall, bullet, distribution, sunburst, rose, gantt, chinaMap, bar3d, surface3d, globeArcs, scatter3d, map3d, stage, splitText, decryptedText, numberRoll, scrollReveal, particles, clickSpark, scrollStack, tiltCard];
+const ALL: DocEntry[] = [button, dropdownMenu, toggleGroup, command, tabs, breadcrumb, pagination, card, badge, avatar, tooltip, popover, accordion, kbd, marquee, dialog, sheet, toastEntry, alert, progress, skeleton, spin, input, textarea, select, checkbox, switchEntry, radioGroup, slider, datePicker, dataTable, charts, comboChart, radarCompare, gauge, scatterBubble, conversionFunnel, shareTreemap, sankeyFlow, heatCalendar, candlestick, intraday, depthChart, volumeProfile, forceGraph, waterfall, bullet, distribution, sunburst, rose, gantt, chinaMap, bar3d, surface3d, globeArcs, scatter3d, map3d, stage, blueprint, splitText, decryptedText, numberRoll, scrollReveal, particles, clickSpark, scrollStack, tiltCard];
 
 const rank = (e: DocEntry) => {
   const s = SECTIONS.findIndex((x) => x.id === e.section);
