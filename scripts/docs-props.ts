@@ -6,8 +6,10 @@
  * 每个首字母大写, 第一个参数有自有属性的导出都进 JSON. 名字与根入口重名时以根入口为准.
  * 只收组件自己声明的属性与它包装的无头库 (Radix 等) 的属性; @types/react 里的 DOM 属性不收, 那些是原生语义.
  * 默认值读参数解构的初始值, 说明读属性上的 JSDoc.
+ * 可复现: 字面量联合按源码书写顺序输出 (读不出时按字典序), 不随 checker 的内部类型 id 变;
+ * 第三方包的说明随装的版本变, 所以生成前核对 node_modules 与 package-lock.json, 不一致先让人 npm ci.
  * 用法: node scripts/docs-props.ts 写 docs/face/docs/props/props.gen.json;
- * 加 --check 时与已入库的 JSON 比对, 不一致即失败.
+ * 加 --check 时与已入库的 JSON 比对, 不一致即失败. DOCS_PROPS_STATS=1 打印联合成员顺序的来源统计.
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
@@ -80,11 +82,129 @@ function own(symbol: ts.Symbol): boolean {
   return decls.some((d) => !d.getSourceFile().fileName.includes(DOM_TYPES));
 }
 
-/** 字面量联合 (含经类型别名起名的, 如 BlockTone) 展开成字面量, 读者不用再去翻别名. */
-function typeText(type: ts.Type): string {
+/**
+ * 联合成员在源码里写下的顺序. checker 给的 t.types 按内部类型 id 排, 而字面量类型是全程序共享的:
+ * 谁先在别的文件 (比如某个版本的 @radix-ui d.ts) 里出现过 "vertical", 谁就排在前面,
+ * 于是同一份源码在不同的 node_modules 下会生成 "vertical | horizontal" 或 "horizontal | vertical".
+ * 这里顺着属性声明的类型节点 (联合, 括号, 类型别名, T["k"] 索引访问, keyof typeof X 等) 读出书写顺序; 读不出来的返回 undefined.
+ *
+ * .agents/notes/implemented/process/2026-11-24-docs-props-deterministic.md
+ */
+function declaredOrder(node: ts.TypeNode | undefined, depth = 0): string[] | undefined {
+  if (!node || depth > 8) return undefined;
+  if (ts.isParenthesizedTypeNode(node)) return declaredOrder(node.type, depth + 1);
+  if (ts.isUnionTypeNode(node)) return collect(node.types, depth);
+  if (ts.isLiteralTypeNode(node)) {
+    if (node.literal.kind === ts.SyntaxKind.NullKeyword) return [];
+    return [checker.typeToString(checker.getTypeFromTypeNode(node), undefined, FLAGS)];
+  }
+  if (node.kind === ts.SyntaxKind.BooleanKeyword) return ["true", "false"];
+  if (node.kind === ts.SyntaxKind.UndefinedKeyword) return [];
+  if (ts.isTypeOperatorNode(node) && node.operator === ts.SyntaxKind.KeyOfKeyword && ts.isTypeQueryNode(node.type)) return queryOrder(node.type, "keys");
+  if (ts.isTypeOperatorNode(node) && node.operator === ts.SyntaxKind.ReadonlyKeyword) return declaredOrder(node.type, depth + 1);
+  if (ts.isTupleTypeNode(node)) return collect(node.elements, depth);
+  if (ts.isIndexedAccessTypeNode(node)) {
+    // (typeof X)[keyof typeof X] 与 (typeof ARR)[number]: 对象的值 / 数组的元素, 按书写顺序
+    const obj = ts.isParenthesizedTypeNode(node.objectType) ? node.objectType.type : node.objectType;
+    if (ts.isTypeQueryNode(obj) && ts.isTypeOperatorNode(node.indexType) && node.indexType.operator === ts.SyntaxKind.KeyOfKeyword) return queryOrder(obj, "values");
+    if (ts.isTypeQueryNode(obj) && node.indexType.kind === ts.SyntaxKind.NumberKeyword) return queryOrder(obj, "elements");
+  }
+  if (ts.isTypeReferenceNode(node) && node.typeArguments?.length === 1 && ts.isTypeQueryNode(node.typeArguments[0])) {
+    // ValueOf<typeof X> 这类 "T[keyof T]" 的单参别名
+    let sym = checker.getSymbolAtLocation(node.typeName);
+    if (sym && sym.flags & ts.SymbolFlags.Alias) sym = checker.getAliasedSymbol(sym);
+    const alias = sym?.getDeclarations()?.find(ts.isTypeAliasDeclaration);
+    if (alias?.typeParameters?.length === 1 && ts.isIndexedAccessTypeNode(alias.type) && ts.isTypeOperatorNode(alias.type.indexType)) return queryOrder(node.typeArguments[0], "values");
+    return undefined;
+  }
+  if (ts.isTypeReferenceNode(node) && !node.typeArguments) {
+    let sym = checker.getSymbolAtLocation(node.typeName);
+    if (sym && sym.flags & ts.SymbolFlags.Alias) sym = checker.getAliasedSymbol(sym);
+    const alias = sym?.getDeclarations()?.find(ts.isTypeAliasDeclaration);
+    return alias && !alias.typeParameters ? declaredOrder(alias.type, depth + 1) : undefined;
+  }
+  if (ts.isIndexedAccessTypeNode(node) && ts.isLiteralTypeNode(node.indexType) && ts.isStringLiteral(node.indexType.literal)) {
+    const prop = checker.getPropertyOfType(checker.getTypeFromTypeNode(node.objectType), node.indexType.literal.text);
+    const decl = prop?.getDeclarations()?.find((d): d is ts.PropertySignature => ts.isPropertySignature(d));
+    return declaredOrder(decl?.type, depth + 1);
+  }
+  return undefined;
+}
+
+function collect(nodes: readonly ts.TypeNode[], depth: number): string[] | undefined {
+  const out: string[] = [];
+  for (const n of nodes) {
+    const sub = declaredOrder(ts.isNamedTupleMember(n) ? n.type : n, depth + 1);
+    if (!sub) return undefined;
+    out.push(...sub);
+  }
+  return out;
+}
+
+/** 字面量表达式 -> 与 checker.typeToString 同格式的文本 ('a', 1, true) */
+function literalText(e: ts.Expression): string | undefined {
+  if (ts.isStringLiteral(e) || ts.isNoSubstitutionTemplateLiteral(e)) return `'${e.text}'`;
+  if (ts.isNumericLiteral(e)) return e.text;
+  if (e.kind === ts.SyntaxKind.TrueKeyword) return "true";
+  if (e.kind === ts.SyntaxKind.FalseKeyword) return "false";
+  if (ts.isPrefixUnaryExpression(e) && e.operator === ts.SyntaxKind.MinusToken && ts.isNumericLiteral(e.operand)) return `-${e.operand.text}`;
+  return undefined;
+}
+
+/** typeof X: X 的对象字面量的键 / 值, 或数组字面量 (含 d.ts 里的 readonly 元组注解) 的元素, 按书写顺序 */
+function queryOrder(q: ts.TypeQueryNode, mode: "keys" | "values" | "elements"): string[] | undefined {
+  let sym = checker.getSymbolAtLocation(q.exprName);
+  if (sym && sym.flags & ts.SymbolFlags.Alias) sym = checker.getAliasedSymbol(sym);
+  const v = sym?.getDeclarations()?.find(ts.isVariableDeclaration);
+  if (!v) return undefined;
+  let init = v.initializer;
+  while (init && (ts.isAsExpression(init) || ts.isSatisfiesExpression(init) || ts.isParenthesizedExpression(init))) init = init.expression;
+  if (!init) return mode === "elements" && v.type ? declaredOrder(v.type, 1) : undefined;
+  const all = (xs: (string | undefined)[]) => (xs.every((x) => x !== undefined) ? (xs as string[]) : undefined);
+  if (ts.isArrayLiteralExpression(init)) return mode === "elements" ? all(init.elements.map(literalText)) : undefined;
+  if (!ts.isObjectLiteralExpression(init) || mode === "elements") return undefined;
+  if (mode === "keys") return all(init.properties.map((p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) ? `'${p.name.text}'` : p.name && ts.isNumericLiteral(p.name) ? p.name.text : undefined)));
+  return all(init.properties.map((p) => (ts.isPropertyAssignment(p) ? literalText(p.initializer) : undefined)));
+}
+
+/**
+ * 属性的各个声明里第一个读得出书写顺序的: 带类型注解的属性 / 参数, 或 cva 这类
+ * "对象字面量的键 -> 联合" (VariantProps 映射出来的属性, 声明就是配置对象里的 variant: { a: ..., b: ... }).
+ */
+function writtenOrder(decls: readonly ts.Declaration[]): string[] | undefined {
+  for (const d of decls) {
+    if ((ts.isPropertySignature(d) || ts.isPropertyDeclaration(d) || ts.isParameter(d)) && d.type) {
+      const o = declaredOrder(d.type);
+      if (o) return o;
+    }
+    if (ts.isPropertyAssignment(d) && ts.isObjectLiteralExpression(d.initializer)) {
+      const keys = d.initializer.properties.map((p) => (p.name && (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name) || ts.isNumericLiteral(p.name)) ? p.name.text : undefined));
+      if (keys.every((k) => k !== undefined)) return keys.map((k) => (/^-?\d+(\.\d+)?$/.test(k!) || k === "true" || k === "false" ? k! : `'${k}'`));
+    }
+  }
+  return undefined;
+}
+
+/**
+ * 字面量联合 (含经类型别名起名的, 如 BlockTone) 展开成字面量, 读者不用再去翻别名.
+ * 成员顺序与 node_modules 无关: 能从声明读出书写顺序就按书写顺序, 读不出来 (cva 变体, 映射类型等) 按字典序;
+ * 同一份源码在任何机器上生成的 props.gen.json 都一样.
+ */
+function typeText(type: ts.Type, decls: readonly ts.Declaration[] = []): string {
   const t = checker.getNonNullableType(type);
   if (t.isUnion() && t.types.every((m) => m.isLiteral() || (m.flags & ts.TypeFlags.BooleanLiteral) !== 0)) {
-    const parts = t.types.map((m) => checker.typeToString(m, undefined, FLAGS));
+    const written = writtenOrder(decls);
+    const rank = (p: string) => {
+      const i = written ? written.indexOf(p) : -1;
+      return i < 0 ? Number.MAX_SAFE_INTEGER : i;
+    };
+    const parts = t.types
+      .map((m) => checker.typeToString(m, undefined, FLAGS))
+      .sort((a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0));
+    if (process.env.DOCS_PROPS_STATS) {
+      const ok = written && parts.every((p) => written.includes(p));
+      stats[ok ? "declared" : "sorted"]++;
+    }
     const bools = parts.filter((p) => p === "true" || p === "false");
     const rest = parts.filter((p) => p !== "true" && p !== "false");
     return clean([...rest, ...(bools.length === 2 ? ["boolean"] : bools)].join(" | "));
@@ -92,8 +212,39 @@ function typeText(type: ts.Type): string {
   return clean(checker.typeToString(t, undefined, FLAGS));
 }
 
+const stats = { declared: 0, sorted: 0 };
+
 function clean(type: string): string {
   return type.replace(/'/g, '"').replace(/ \| undefined$/, "").replace(/^undefined \| /, "");
+}
+
+/**
+ * 第三方包 (Radix 等) 的属性说明直接读自 node_modules 里的 d.ts, 所以 props.gen.json 也取决于装的版本:
+ * 本地 node_modules 比 package-lock.json 旧时, 生成结果会和 CI (npm ci) 的不一样 (例如 Radix 某版 JSDoc 里的 "so that that").
+ * 记下用到的包, 生成前与 lockfile 对一遍, 不一致就直接说清楚, 而不是报一个看不出原因的 diff.
+ */
+const usedPackages = new Set<string>();
+function noteDependency(file: string) {
+  const i = file.lastIndexOf("/node_modules/"); // ts 的文件名一律是正斜杠
+  if (i < 0) return;
+  const rest = file.slice(i + "/node_modules/".length).split("/");
+  const name = rest[0].startsWith("@") ? `${rest[0]}/${rest[1]}` : rest[0];
+  usedPackages.add(path.relative(ROOT, file.slice(0, i + "/node_modules/".length) + name).split(path.sep).join("/"));
+}
+function lockDrift(): string[] {
+  const lockFile = path.join(ROOT, "package-lock.json");
+  if (!existsSync(lockFile)) return [];
+  const lock = JSON.parse(readFileSync(lockFile, "utf8")) as { packages?: Record<string, { version?: string }> };
+  const out: string[] = [];
+  for (const dir of [...usedPackages].sort()) {
+    if (dir.includes("@types/react")) continue; // DOM 属性不收, 版本不影响输出
+    const want = lock.packages?.[dir]?.version;
+    const pj = path.join(ROOT, dir, "package.json");
+    if (!want || !existsSync(pj)) continue;
+    const have = (JSON.parse(readFileSync(pj, "utf8")) as { version?: string }).version;
+    if (have !== want) out.push(`${dir.replace(/^node_modules\//, "")} ${have} (lockfile ${want})`);
+  }
+  return out;
 }
 
 interface Row { name: string; type: string; default: string; desc: string; required: boolean }
@@ -109,9 +260,10 @@ function rowsOf(decl: ts.SignatureDeclaration): Row[] | undefined {
     const name = prop.getName();
     if (name === "key" || name === "ref") continue;
     const t = checker.getTypeOfSymbolAtLocation(prop, param);
+    for (const d of prop.getDeclarations() ?? []) noteDependency(d.getSourceFile().fileName);
     rows.push({
       name,
-      type: typeText(t),
+      type: typeText(t, prop.getDeclarations()),
       default: defaults.get(name) ?? NO_DEFAULT,
       desc: ts.displayPartsToString(prop.getDocumentationComment(checker)).replace(/\s+/g, " ").trim(),
       required: (prop.flags & ts.SymbolFlags.Optional) === 0,
@@ -167,9 +319,15 @@ if (missing.length > 0) {
   console.error(`docs-props: 组件页引用的导出读不到属性: ${missing.join(", ")}`);
   process.exit(1);
 }
+if (process.env.DOCS_PROPS_STATS) console.log(`docs-props: 字面量联合 ${stats.declared} 个按书写顺序, ${stats.sorted} 个按字典序`);
 const total = Object.keys(result).length;
 if (total < MIN_TOTAL || subCount < MIN_SUBPATH) {
   console.error(`docs-props: 只读到 ${total} 个组件 (子路径 ${subCount} 个), 应不少于 ${MIN_TOTAL} (子路径 ${MIN_SUBPATH}); 检查入口与 specs 扫描`);
+  process.exit(1);
+}
+const drift = lockDrift();
+if (drift.length > 0) {
+  console.error(`docs-props: node_modules 与 package-lock.json 不一致, 这些包的类型与说明会进 props.gen.json, 生成结果因此不可复现:\n  ${drift.join("\n  ")}\n先在仓库根目录跑 npm ci 再重新生成 / 检查`);
   process.exit(1);
 }
 const sorted = Object.fromEntries(Object.keys(result).sort().map((key) => [key, result[key]]));

@@ -93,7 +93,7 @@
   },
   {
    "name": "shape",
-   "type": "\"circle\" | \"square\"",
+   "type": "\"square\" | \"circle\"",
    "default": "-",
    "desc": "柱截面: square / circle.",
    "required": false
@@ -170,7 +170,7 @@
   },
   {
    "name": "hoverEffect",
-   "type": "\"press\" | \"none\" | \"lift\"",
+   "type": "\"press\" | \"lift\" | \"none\"",
    "default": "-",
    "desc": "悬停: press 压下 / lift 抬起 / none.",
    "required": false
@@ -277,14 +277,14 @@
   },
   {
    "name": "placement",
-   "type": "\"center\" | \"left\" | \"right\" | \"full\"",
+   "type": "\"full\" | \"center\" | \"left\" | \"right\"",
    "default": "-",
    "desc": "摆位: full 铺满 / center 居中 / left 靠左 / right 靠右.",
    "required": false
   },
   {
    "name": "material",
-   "type": "\"glass\" | \"crystal\" | \"frosted\"",
+   "type": "\"glass\" | \"frosted\" | \"crystal\"",
    "default": "-",
    "desc": "材质: glass 清玻璃 / frosted 磨砂 / crystal 强折射.",
    "required": false
@@ -375,7 +375,7 @@
   },
   {
    "name": "markers",
-   "type": "\"none\" | \"dots\" | \"plus\"",
+   "type": "\"plus\" | \"dots\" | \"none\"",
    "default": "-",
    "desc": "漂浮标记: plus 十字 / dots 双点 / none.",
    "required": false
@@ -491,7 +491,7 @@
   },
   {
    "name": "variant",
-   "type": "\"link\" | \"default\" | \"primary\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\" | \"gradient\"",
+   "type": "\"default\" | \"primary\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\" | \"link\" | \"gradient\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -514,7 +514,7 @@
   },
   {
    "name": "variant",
-   "type": "\"link\" | \"default\" | \"primary\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\" | \"gradient\"",
+   "type": "\"default\" | \"primary\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\" | \"link\" | \"gradient\"",
    "default": "\"outline\"",
    "desc": "",
    "required": false
@@ -737,7 +737,7 @@
   },
   {
    "name": "colorMode",
-   "type": "\"radial\" | \"random\" | \"conic\"",
+   "type": "\"conic\" | \"radial\" | \"random\"",
    "default": "-",
    "desc": "取色方式: conic 按方位角 / radial 按离指针距离 / random 每粒随机.",
    "required": false
@@ -991,49 +991,49 @@
   },
   {
    "name": "surfaceColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"card\"",
    "desc": "",
    "required": false
   },
   {
    "name": "textColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "placeholderColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "borderColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"border\"",
    "desc": "",
    "required": false
   },
   {
    "name": "buttonColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
   },
   {
    "name": "buttonTextColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"primary-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "shadowSize",
-   "type": "\"sm\" | \"lg\" | \"none\" | \"md\"",
+   "type": "\"none\" | \"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -1105,14 +1105,14 @@
   },
   {
    "name": "accentTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "inkTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -1254,7 +1254,7 @@
   },
   {
    "name": "axis",
-   "type": "\"x\" | \"y\" | \"both\"",
+   "type": "\"both\" | \"x\" | \"y\"",
    "default": "\"both\"",
    "desc": "",
    "required": false
@@ -1533,7 +1533,7 @@
   },
   {
    "name": "statusTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"success\"",
    "desc": "",
    "required": false
@@ -1887,7 +1887,7 @@
   },
   {
    "name": "clickEffect",
-   "type": "\"none\" | \"burst\"",
+   "type": "\"burst\" | \"none\"",
    "default": "-",
    "desc": "点击效果: burst 把附近的球炸开.",
    "required": false
@@ -2001,7 +2001,7 @@
   },
   {
    "name": "pattern",
-   "type": "\"lines\" | \"bayer\" | \"noise\" | \"floyd\" | \"atkinson\" | \"jarvis\" | \"sierra\"",
+   "type": "\"atkinson\" | \"bayer\" | \"floyd\" | \"jarvis\" | \"lines\" | \"noise\" | \"sierra\"",
    "default": "-",
    "desc": "抖动图样: 误差扩散 floyd / atkinson / jarvis / sierra, 或有序 bayer / noise / lines. 默认 floyd.",
    "required": false
@@ -2022,7 +2022,7 @@
   },
   {
    "name": "palette",
-   "type": "\"color\" | \"duotone\"",
+   "type": "\"duotone\" | \"color\"",
    "default": "-",
    "desc": "duotone 映到墨色到纸色; color 三通道各自抖动. 默认 duotone.",
    "required": false
@@ -2690,7 +2690,7 @@
   },
   {
    "name": "transition",
-   "type": "\"ripple\" | \"swirl\" | \"melt\" | \"shear\"",
+   "type": "\"melt\" | \"ripple\" | \"shear\" | \"swirl\"",
    "default": "\"melt\"",
    "desc": "",
    "required": false
@@ -2746,7 +2746,7 @@
   },
   {
    "name": "dotTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -2799,7 +2799,7 @@
  "Button": [
   {
    "name": "variant",
-   "type": "\"link\" | \"default\" | \"primary\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\" | \"gradient\"",
+   "type": "\"default\" | \"primary\" | \"outline\" | \"secondary\" | \"ghost\" | \"destructive\" | \"link\" | \"gradient\"",
    "default": "\"default\"",
    "desc": "",
    "required": false
@@ -2843,7 +2843,7 @@
  "ButtonGroup": [
   {
    "name": "orientation",
-   "type": "\"vertical\" | \"horizontal\"",
+   "type": "\"horizontal\" | \"vertical\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -2852,7 +2852,7 @@
  "ButtonGroupSeparator": [
   {
    "name": "orientation",
-   "type": "\"vertical\" | \"horizontal\"",
+   "type": "\"horizontal\" | \"vertical\"",
    "default": "\"vertical\"",
    "desc": "Either `vertical` or `horizontal`. Defaults to `horizontal`.",
    "required": false
@@ -2968,7 +2968,7 @@
   },
   {
    "name": "mask",
-   "type": "\"slot\" | \"none\" | \"aperture\" | \"shadow\"",
+   "type": "\"none\" | \"aperture\" | \"shadow\" | \"slot\"",
    "default": "-",
    "desc": "荫罩, 默认 aperture.",
    "required": false
@@ -3138,21 +3138,21 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"primary\"",
    "desc": "新鲜处的色调与陈旧处的色调 (语义 token); 不给 trailTone 时一色.",
    "required": false
   },
   {
    "name": "trailTone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "shape",
-   "type": "\"circle\" | \"square\" | \"diamond\"",
+   "type": "\"square\" | \"circle\" | \"diamond\"",
    "default": "\"square\"",
    "desc": "",
    "required": false
@@ -3261,35 +3261,35 @@
   },
   {
    "name": "tone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "backgroundTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
   },
   {
    "name": "onTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
   },
   {
    "name": "onBackgroundTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -3366,14 +3366,14 @@
   },
   {
    "name": "badgeTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"destructive\"",
    "desc": "",
    "required": false
   },
   {
    "name": "badgeTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"destructive-foreground\"",
    "desc": "",
    "required": false
@@ -3750,7 +3750,7 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"primary\"",
    "desc": "彗星与火星的色调 (语义 token).",
    "required": false
@@ -3813,7 +3813,7 @@
   },
   {
    "name": "hover",
-   "type": "\"none\" | \"lap\" | \"boost\"",
+   "type": "\"lap\" | \"boost\" | \"none\"",
    "default": "\"lap\"",
    "desc": "悬停或聚焦时: lap 加跑一圈, boost 加亮, none 不变.",
    "required": false
@@ -4486,7 +4486,7 @@
   },
   {
    "name": "imageFit",
-   "type": "\"fill\" | \"none\" | \"inherit\" | \"contain\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"cover\" | \"scale-down\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"contain\" | \"cover\" | \"fill\" | \"none\" | \"scale-down\"",
    "default": "\"cover\"",
    "desc": "",
    "required": false
@@ -4656,28 +4656,28 @@
   },
   {
    "name": "variant",
-   "type": "\"boxed\" | \"inline\" | \"full\"",
+   "type": "\"inline\" | \"boxed\" | \"full\"",
    "default": "\"boxed\"",
    "desc": "inline 横排 / boxed 卡片 / full 通栏. 默认 boxed.",
    "required": false
   },
   {
    "name": "fill",
-   "type": "\"gradient\" | \"none\" | \"mesh\"",
+   "type": "\"none\" | \"gradient\" | \"mesh\"",
    "default": "\"none\"",
    "desc": "渐变底纹: none / gradient (--gradient-brand) / mesh.",
    "required": false
   },
   {
    "name": "titleSize",
-   "type": "\"sm\" | \"lg\" | \"md\" | \"xl\" | \"2xl\"",
+   "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | \"2xl\"",
    "default": "\"lg\"",
    "desc": "",
    "required": false
   },
   {
    "name": "titleLevel",
-   "type": "1 | 4 | 3 | 2",
+   "type": "1 | 2 | 3 | 4",
    "default": "2",
    "desc": "",
    "required": false
@@ -4719,28 +4719,28 @@
   },
   {
    "name": "tone",
-   "type": "\"image\" | \"muted\" | \"plain\" | \"card\" | \"inverted\" | \"brand\"",
+   "type": "\"plain\" | \"muted\" | \"card\" | \"inverted\" | \"brand\" | \"image\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "pad",
-   "type": "\"sm\" | \"lg\" | \"none\" | \"md\" | \"xl\"",
+   "type": "\"none\" | \"sm\" | \"md\" | \"lg\" | \"xl\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "width",
-   "type": "\"content\" | \"max\" | \"full\" | \"prose\" | \"narrow\" | \"wide\" | \"bleed\"",
+   "type": "\"prose\" | \"narrow\" | \"content\" | \"wide\" | \"max\" | \"full\" | \"bleed\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\"",
+   "type": "\"start\" | \"center\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -4761,7 +4761,7 @@
   },
   {
    "name": "as",
-   "type": "\"article\" | \"aside\" | \"div\" | \"footer\" | \"header\" | \"section\"",
+   "type": "\"section\" | \"div\" | \"header\" | \"footer\" | \"aside\" | \"article\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -4840,7 +4840,7 @@
   },
   {
    "name": "edgeStyle",
-   "type": "\"none\" | \"solid\" | \"dashed\" | \"dotted\"",
+   "type": "\"dashed\" | \"dotted\" | \"none\" | \"solid\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -5038,21 +5038,21 @@
   },
   {
    "name": "surfaceColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"popover\"",
    "desc": "",
    "required": false
   },
   {
    "name": "inkColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"popover-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -5536,14 +5536,14 @@
   },
   {
    "name": "surface",
-   "type": "\"solid\" | \"glass\"",
+   "type": "\"glass\" | \"solid\"",
    "default": "\"glass\"",
    "desc": "",
    "required": false
   },
   {
    "name": "openOn",
-   "type": "\"hover\" | \"click\"",
+   "type": "\"click\" | \"hover\"",
    "default": "\"click\"",
    "desc": "click: 点开关展开; hover: 指针进入整条展开, 离开收起.",
    "required": false
@@ -5769,7 +5769,7 @@
   },
   {
    "name": "dotTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -5792,7 +5792,7 @@
  "DevelopFrame": [
   {
    "name": "status",
-   "type": "\"error\" | \"queued\" | \"generating\" | \"refining\" | \"complete\"",
+   "type": "\"queued\" | \"generating\" | \"refining\" | \"complete\" | \"error\"",
    "default": "\"generating\"",
    "desc": "",
    "required": false
@@ -5827,14 +5827,14 @@
   },
   {
    "name": "background",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
   },
   {
    "name": "color",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -6024,21 +6024,21 @@
  "DictateButton": [
   {
    "name": "accent",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "iconColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "background",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
@@ -6052,7 +6052,7 @@
   },
   {
    "name": "shape",
-   "type": "\"circle\" | \"pill\"",
+   "type": "\"pill\" | \"circle\"",
    "default": "\"pill\"",
    "desc": "",
    "required": false
@@ -6257,7 +6257,7 @@
   },
   {
    "name": "ditherMode",
-   "type": "\"none\" | \"lines\" | \"bayer\" | \"bayer4\" | \"bayer2\" | \"halftone\" | \"crosshatch\" | \"noise\"",
+   "type": "\"bayer\" | \"bayer4\" | \"bayer2\" | \"halftone\" | \"lines\" | \"crosshatch\" | \"noise\" | \"none\"",
    "default": "-",
    "desc": "抖动矩阵, 默认 bayer (8x8).",
    "required": false
@@ -6292,7 +6292,7 @@
   },
   {
    "name": "mouseEffect",
-   "type": "\"ripple\" | \"erase\" | \"reveal\"",
+   "type": "\"erase\" | \"reveal\" | \"ripple\"",
    "default": "-",
    "desc": "指针效果, 默认 erase.",
    "required": false
@@ -6746,7 +6746,7 @@
   },
   {
    "name": "fit",
-   "type": "\"fill\" | \"contain\" | \"cover\"",
+   "type": "\"contain\" | \"cover\" | \"fill\"",
    "default": "-",
    "desc": "铺法: cover 裁边铺满, contain 留边全见 (留边是纸色), fill 拉伸. 默认 cover.",
    "required": false
@@ -6767,14 +6767,14 @@
   },
   {
    "name": "mode",
-   "type": "\"color\" | \"mono\" | \"duotone\"",
+   "type": "\"color\" | \"duotone\" | \"mono\"",
    "default": "-",
    "desc": "上色方式: mono 单色网, duotone 双色套印, color 原色网点. 默认 mono.",
    "required": false
   },
   {
    "name": "shape",
-   "type": "\"ellipse\" | \"line\" | \"dot\" | \"square\" | \"cross\" | \"diamond\"",
+   "type": "\"cross\" | \"diamond\" | \"dot\" | \"ellipse\" | \"line\" | \"square\"",
    "default": "-",
    "desc": "网点形状, 默认 dot.",
    "required": false
@@ -6965,14 +6965,14 @@
   },
   {
    "name": "tone",
-   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "type": "\"current\" | \"primary\" | \"accent-2\" | \"success\" | \"warning\" | \"danger\" | \"foreground\" | \"muted-foreground\"",
    "default": "\"current\"",
    "desc": "正文颜色与制图线颜色 (语义 token 名).",
    "required": false
   },
   {
    "name": "accentTone",
-   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "type": "\"current\" | \"primary\" | \"accent-2\" | \"success\" | \"warning\" | \"danger\" | \"foreground\" | \"muted-foreground\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -7056,7 +7056,7 @@
   },
   {
    "name": "intro",
-   "type": "\"type\" | \"none\"",
+   "type": "\"none\" | \"type\"",
    "default": "\"none\"",
    "desc": "none 直接显示; type 逐字打出.",
    "required": false
@@ -7398,7 +7398,7 @@
   },
   {
    "name": "actionTone",
-   "type": "\"primary\" | \"destructive\" | \"neutral\"",
+   "type": "\"destructive\" | \"primary\" | \"neutral\"",
    "default": "\"destructive\"",
    "desc": "动作底色的语义色 (规格 actionColor). 抽屉与行底色固定走 muted / card token.",
    "required": false
@@ -7668,35 +7668,35 @@
   },
   {
    "name": "accentTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "surfaceTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"popover\"",
    "desc": "",
    "required": false
   },
   {
    "name": "highlightTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"accent\"",
    "desc": "",
    "required": false
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"popover-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -7717,7 +7717,7 @@
   },
   {
    "name": "placement",
-   "type": "\"top\" | \"bottom\"",
+   "type": "\"bottom\" | \"top\"",
    "default": "\"bottom\"",
    "desc": "",
    "required": false
@@ -7796,7 +7796,7 @@
   },
   {
    "name": "trigger",
-   "type": "\"view\" | \"auto\" | \"hover\" | \"click\"",
+   "type": "\"auto\" | \"click\" | \"hover\" | \"view\"",
    "default": "\"auto\"",
    "desc": "auto 挂载即落; click 点击; hover 指针进入; view 进视口.",
    "required": false
@@ -7838,7 +7838,7 @@
   },
   {
    "name": "order",
-   "type": "\"start\" | \"random\" | \"together\"",
+   "type": "\"random\" | \"start\" | \"together\"",
    "default": "\"random\"",
    "desc": "random 乱序; start 从头; together 同时.",
    "required": false
@@ -7968,7 +7968,7 @@
   },
   {
    "name": "side",
-   "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+   "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -7982,7 +7982,7 @@
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\" | \"end\"",
+   "type": "\"start\" | \"center\" | \"end\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -8024,7 +8024,7 @@
   },
   {
    "name": "sticky",
-   "type": "\"partial\" | \"always\"",
+   "type": "\"always\" | \"partial\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -8163,7 +8163,7 @@
   },
   {
    "name": "curve",
-   "type": "\"linear\" | \"ease-out\" | \"ease-in-out\" | \"bezier\" | \"ease-in\"",
+   "type": "\"linear\" | \"bezier\" | \"ease-in\" | \"ease-out\" | \"ease-in-out\"",
    "default": "\"linear\"",
    "desc": "",
    "required": false
@@ -8191,7 +8191,7 @@
   },
   {
    "name": "tint",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "-",
    "desc": "叠一层淡色调, 不给不叠.",
    "required": false
@@ -8249,7 +8249,7 @@
   },
   {
    "name": "glowTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -8335,35 +8335,35 @@
   },
   {
    "name": "trackTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
   },
   {
    "name": "thumbTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "activeTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -8519,14 +8519,14 @@
   },
   {
    "name": "axis",
-   "type": "\"x\" | \"y\" | \"both\"",
+   "type": "\"both\" | \"x\" | \"y\"",
    "default": "\"both\"",
    "desc": "",
    "required": false
   },
   {
    "name": "wall",
-   "type": "\"none\" | \"clamp\"",
+   "type": "\"clamp\" | \"none\"",
    "default": "\"clamp\"",
    "desc": "",
    "required": false
@@ -8733,14 +8733,14 @@
   },
   {
    "name": "faceTone",
-   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "type": "\"current\" | \"primary\" | \"accent-2\" | \"success\" | \"warning\" | \"danger\" | \"foreground\" | \"muted-foreground\"",
    "default": "\"current\"",
    "desc": "正面颜色.",
    "required": false
   },
   {
    "name": "depthTone",
-   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "type": "\"current\" | \"primary\" | \"accent-2\" | \"success\" | \"warning\" | \"danger\" | \"foreground\" | \"muted-foreground\"",
    "default": "\"primary\"",
    "desc": "侧面 (叠层) 颜色.",
    "required": false
@@ -8987,7 +8987,7 @@
   },
   {
    "name": "glyphs",
-   "type": "\"characters\" | \"dots\" | \"blocks\"",
+   "type": "\"blocks\" | \"dots\" | \"characters\"",
    "default": "-",
    "desc": "字形画法, 默认 blocks.",
    "required": false
@@ -9171,7 +9171,7 @@
   },
   {
    "name": "flowDirection",
-   "type": "\"none\" | \"left\" | \"right\" | \"up\" | \"down\"",
+   "type": "\"up\" | \"down\" | \"left\" | \"right\" | \"none\"",
    "default": "-",
    "desc": "图样漂移方向, 默认 down.",
    "required": false
@@ -9524,7 +9524,7 @@
  "FieldLegend": [
   {
    "name": "variant",
-   "type": "\"label\" | \"legend\"",
+   "type": "\"legend\" | \"label\"",
    "default": "\"legend\"",
    "desc": "",
    "required": false
@@ -9547,7 +9547,7 @@
   },
   {
    "name": "tone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -9682,7 +9682,7 @@
   },
   {
    "name": "align",
-   "type": "\"center\" | \"left\" | \"right\"",
+   "type": "\"left\" | \"center\" | \"right\"",
    "default": "\"left\"",
    "desc": "",
    "required": false
@@ -9696,14 +9696,14 @@
   },
   {
    "name": "order",
-   "type": "\"center\" | \"left\" | \"right\" | \"start\" | \"end\" | \"edges\" | \"random\" | \"evenodd\"",
+   "type": "\"left\" | \"right\" | \"start\" | \"end\" | \"center\" | \"edges\" | \"random\" | \"evenodd\"",
    "default": "\"left\"",
    "desc": "翻牌顺序. left 从左, right 从右, 其余同内核错峰.",
    "required": false
   },
   {
    "name": "trigger",
-   "type": "\"view\" | \"manual\" | \"mount\" | \"hover\" | \"click\"",
+   "type": "\"mount\" | \"view\" | \"hover\" | \"click\" | \"manual\"",
    "default": "\"view\"",
    "desc": "",
    "required": false
@@ -9854,7 +9854,7 @@
   },
   {
    "name": "fuseTone",
-   "type": "\"primary\" | \"destructive\" | \"warning\" | \"neutral\"",
+   "type": "\"neutral\" | \"warning\" | \"primary\" | \"destructive\"",
    "default": "\"warning\"",
    "desc": "引信条的语义色 (规格 fuseColor). 卡片底色与文字固定走 popover token.",
    "required": false
@@ -9903,7 +9903,7 @@
   },
   {
    "name": "fuse",
-   "type": "\"none\" | \"top\" | \"bottom\"",
+   "type": "\"bottom\" | \"top\" | \"none\"",
    "default": "\"bottom\"",
    "desc": "",
    "required": false
@@ -10108,7 +10108,7 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"color\" | \"inherit\" | \"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"saturation\" | \"plus-darker\" | \"plus-lighter\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"multiply\" | \"normal\" | \"overlay\" | \"saturation\" | \"screen\" | \"soft-light\" | \"plus-darker\" | \"plus-lighter\"",
    "default": "-",
    "desc": "宿主的混合模式, 默认 normal (颜色来自 token, 明暗主题都可读).",
    "required": false
@@ -10194,14 +10194,14 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"primary\"",
    "desc": "主色调与近处粒子的强调色调 (语义 token).",
    "required": false
   },
   {
    "name": "accentTone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -10243,14 +10243,14 @@
   },
   {
    "name": "idle",
-   "type": "\"still\" | \"roam\"",
+   "type": "\"roam\" | \"still\"",
    "default": "\"roam\"",
    "desc": "指针不在时: 漫游或原地.",
    "required": false
   },
   {
    "name": "clickEffect",
-   "type": "\"none\" | \"burst\"",
+   "type": "\"burst\" | \"none\"",
    "default": "\"burst\"",
    "desc": "",
    "required": false
@@ -10315,7 +10315,7 @@
   },
   {
    "name": "animateFrom",
-   "type": "\"center\" | \"top\" | \"bottom\" | \"left\" | \"right\" | \"random\"",
+   "type": "\"bottom\" | \"top\" | \"left\" | \"right\" | \"center\" | \"random\"",
    "default": "\"bottom\"",
    "desc": "",
    "required": false
@@ -10429,7 +10429,7 @@
   },
   {
    "name": "flowDirection",
-   "type": "\"left\" | \"right\" | \"up\" | \"down\"",
+   "type": "\"up\" | \"down\" | \"left\" | \"right\"",
    "default": "-",
    "desc": "流向, 默认 down.",
    "required": false
@@ -10492,7 +10492,7 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"color\" | \"inherit\" | \"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"saturation\" | \"plus-darker\" | \"plus-lighter\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"multiply\" | \"normal\" | \"overlay\" | \"saturation\" | \"screen\" | \"soft-light\" | \"plus-darker\" | \"plus-lighter\"",
    "default": "-",
    "desc": "宿主的混合模式.",
    "required": false
@@ -10571,7 +10571,7 @@
   },
   {
    "name": "order",
-   "type": "\"random\" | \"sequential\"",
+   "type": "\"sequential\" | \"random\"",
    "default": "\"sequential\"",
    "desc": "sequential 依次; random 乱序.",
    "required": false
@@ -10678,7 +10678,7 @@
   },
   {
    "name": "preset",
-   "type": "\"dots\" | \"plain\" | \"bursts\" | \"etch\" | \"rings\" | \"rays\"",
+   "type": "\"bursts\" | \"dots\" | \"etch\" | \"rings\" | \"rays\" | \"plain\"",
    "default": "\"bursts\"",
    "desc": "",
    "required": false
@@ -10720,7 +10720,7 @@
   },
   {
    "name": "foilTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
@@ -10806,7 +10806,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"vertical\" | \"horizontal\"",
+   "type": "\"horizontal\" | \"vertical\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -10869,14 +10869,14 @@
   },
   {
    "name": "accentTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -10934,21 +10934,21 @@
   },
   {
    "name": "color",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "accentColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"accent-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "lineColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"border\"",
    "desc": "",
    "required": false
@@ -11125,7 +11125,7 @@
   },
   {
    "name": "scope",
-   "type": "\"card\" | \"window\"",
+   "type": "\"window\" | \"card\"",
    "default": "\"window\"",
    "desc": "",
    "required": false
@@ -11281,14 +11281,14 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"normal\" | \"overlay\" | \"multiply\" | \"screen\" | \"darken\" | \"difference\" | \"exclusion\" | \"lighten\"",
+   "type": "\"difference\" | \"normal\" | \"screen\" | \"multiply\" | \"overlay\" | \"exclusion\" | \"lighten\" | \"darken\"",
    "default": "\"difference\"",
    "desc": "",
    "required": false
   },
   {
    "name": "renderer",
-   "type": "\"svg\" | \"auto\" | \"fallback\"",
+   "type": "\"auto\" | \"svg\" | \"fallback\"",
    "default": "\"auto\"",
    "desc": "auto: 支持时用 SVG 位移, 否则退回模糊; svg / fallback: 强制.",
    "required": false
@@ -11544,7 +11544,7 @@
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -11572,21 +11572,21 @@
   },
   {
    "name": "tone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "activeTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"primary-foreground\"",
    "desc": "",
    "required": false
@@ -11728,7 +11728,7 @@
   },
   {
    "name": "fiberStyle",
-   "type": "\"dots\" | \"lines\" | \"dashes\"",
+   "type": "\"dots\" | \"dashes\" | \"lines\"",
    "default": "-",
    "desc": "纤维画法: dots 点 / dashes 段 / lines 实线.",
    "required": false
@@ -11777,7 +11777,7 @@
   },
   {
    "name": "hoverEffect",
-   "type": "\"part\" | \"none\" | \"focus\"",
+   "type": "\"focus\" | \"part\" | \"none\"",
    "default": "-",
    "desc": "悬停效果: focus 提亮 / part 拨开 / none.",
    "required": false
@@ -11891,7 +11891,7 @@
   },
   {
    "name": "tintTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
@@ -11905,7 +11905,7 @@
   },
   {
    "name": "plate",
-   "type": "\"circle\" | \"none\" | \"offset\" | \"tilt\"",
+   "type": "\"tilt\" | \"offset\" | \"circle\" | \"none\"",
    "default": "\"tilt\"",
    "desc": "",
    "required": false
@@ -11926,14 +11926,14 @@
   },
   {
    "name": "hover",
-   "type": "\"press\" | \"none\" | \"lift\"",
+   "type": "\"press\" | \"lift\" | \"none\"",
    "default": "\"press\"",
    "desc": "",
    "required": false
   },
   {
    "name": "labels",
-   "type": "\"none\" | \"always\" | \"hover\"",
+   "type": "\"hover\" | \"always\" | \"none\"",
    "default": "\"hover\"",
    "desc": "",
    "required": false
@@ -11977,7 +11977,7 @@
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -12147,7 +12147,7 @@
   },
   {
    "name": "glowTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -12268,7 +12268,7 @@
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -12331,7 +12331,7 @@
   },
   {
    "name": "blobTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -12345,21 +12345,21 @@
   },
   {
    "name": "activeTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "hoverTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"accent\"",
    "desc": "",
    "required": false
@@ -12410,7 +12410,7 @@
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -12524,7 +12524,7 @@
   },
   {
    "name": "shape",
-   "type": "\"rise\" | \"horizon\" | \"pinch\" | \"eclipse\"",
+   "type": "\"horizon\" | \"pinch\" | \"rise\" | \"eclipse\"",
    "default": "-",
    "desc": "渐变形状, 默认 horizon.",
    "required": false
@@ -12922,21 +12922,21 @@
  "GradientText": [
   {
    "name": "from",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"heading\" | \"success\" | \"accent\"",
+   "type": "\"primary\" | \"link\" | \"accent\" | \"heading\" | \"success\" | \"warning\" | \"danger\"",
    "default": "-",
    "desc": "起点色标 (语义令牌名). from 与 to 都不给时使用品牌渐变令牌 --gradient-brand.",
    "required": false
   },
   {
    "name": "via",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"heading\" | \"success\" | \"accent\"",
+   "type": "\"primary\" | \"link\" | \"accent\" | \"heading\" | \"success\" | \"warning\" | \"danger\"",
    "default": "-",
    "desc": "可选中间色标.",
    "required": false
   },
   {
    "name": "to",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"heading\" | \"success\" | \"accent\"",
+   "type": "\"primary\" | \"link\" | \"accent\" | \"heading\" | \"success\" | \"warning\" | \"danger\"",
    "default": "-",
    "desc": "终点色标.",
    "required": false
@@ -13201,7 +13201,7 @@
   },
   {
    "name": "blendMode",
-   "type": "\"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\"",
+   "type": "\"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"normal\"",
    "default": "\"overlay\"",
    "desc": "",
    "required": false
@@ -13492,7 +13492,7 @@
   },
   {
    "name": "mode",
-   "type": "\"push\" | \"drag\" | \"swirl\"",
+   "type": "\"drag\" | \"push\" | \"swirl\"",
    "default": "-",
    "desc": "扰动方式: drag / push / swirl.",
    "required": false
@@ -13820,49 +13820,49 @@
   },
   {
    "name": "status",
-   "type": "\"done\" | \"error\" | \"working\"",
+   "type": "\"working\" | \"done\" | \"error\"",
    "default": "\"working\"",
    "desc": "",
    "required": false
   },
   {
    "name": "pattern",
-   "type": "\"sweep\" | \"orbit\"",
+   "type": "\"orbit\" | \"sweep\"",
    "default": "-",
    "desc": "不给时按 grid 取默认走法.",
    "required": false
   },
   {
    "name": "grid",
-   "type": "4 | 3",
+   "type": "3 | 4",
    "default": "3",
    "desc": "",
    "required": false
   },
   {
    "name": "shape",
-   "type": "\"square\" | \"round\"",
+   "type": "\"round\" | \"square\"",
    "default": "\"round\"",
    "desc": "",
    "required": false
   },
   {
    "name": "tone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "-",
    "desc": "不给时跟随文字色.",
    "required": false
   },
   {
    "name": "doneTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"success\"",
    "desc": "",
    "required": false
   },
   {
    "name": "errorTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"destructive\"",
    "desc": "",
    "required": false
@@ -13911,7 +13911,7 @@
   },
   {
    "name": "glowTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -14074,7 +14074,7 @@
   },
   {
    "name": "clickEffect",
-   "type": "\"none\" | \"ping\" | \"scan\"",
+   "type": "\"ping\" | \"scan\" | \"none\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -14146,14 +14146,14 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"primary\"",
    "desc": "主色调与尾部色调 (语义 token); 不给 secondaryTone 时一色.",
    "required": false
   },
   {
    "name": "secondaryTone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -14216,7 +14216,7 @@
   },
   {
    "name": "quality",
-   "type": "\"low\" | \"medium\" | \"high\"",
+   "type": "\"high\" | \"low\" | \"medium\"",
    "default": "\"high\"",
    "desc": "画质档: 模拟格精度, 压力迭代, 泛光级数. 默认 high.",
    "required": false
@@ -14260,7 +14260,7 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -14530,7 +14530,7 @@
  "Hero": [
   {
    "name": "layout",
-   "type": "\"split\" | \"centered\" | \"media-bg\" | \"video-bg\" | \"product\" | \"editorial\"",
+   "type": "\"centered\" | \"split\" | \"media-bg\" | \"video-bg\" | \"product\" | \"editorial\"",
    "default": "-",
    "desc": "版式, 默认 centered.",
    "required": false
@@ -14579,7 +14579,7 @@
   },
   {
    "name": "leadMeasure",
-   "type": "\"default\" | \"none\" | \"narrow\" | \"wide\"",
+   "type": "\"narrow\" | \"default\" | \"wide\" | \"none\"",
    "default": "-",
    "desc": "导语最大行宽档, 透传给 Lead 的 measure (narrow 45ch / default 60ch / wide 75ch / none). 默认 default.",
    "required": false
@@ -14656,14 +14656,14 @@
   },
   {
    "name": "titleSize",
-   "type": "\"sm\" | \"lg\" | \"md\" | \"xl\" | \"2xl\"",
+   "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | \"2xl\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "titleLevel",
-   "type": "1 | 4 | 3 | 2",
+   "type": "1 | 2 | 3 | 4",
    "default": "-",
    "desc": "",
    "required": false
@@ -14705,28 +14705,28 @@
   },
   {
    "name": "tone",
-   "type": "\"image\" | \"muted\" | \"plain\" | \"card\" | \"inverted\" | \"brand\"",
+   "type": "\"plain\" | \"muted\" | \"card\" | \"inverted\" | \"brand\" | \"image\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "pad",
-   "type": "\"sm\" | \"lg\" | \"none\" | \"md\" | \"xl\"",
+   "type": "\"none\" | \"sm\" | \"md\" | \"lg\" | \"xl\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "width",
-   "type": "\"content\" | \"max\" | \"full\" | \"prose\" | \"narrow\" | \"wide\" | \"bleed\"",
+   "type": "\"prose\" | \"narrow\" | \"content\" | \"wide\" | \"max\" | \"full\" | \"bleed\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\"",
+   "type": "\"start\" | \"center\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -14747,7 +14747,7 @@
   },
   {
    "name": "as",
-   "type": "\"article\" | \"aside\" | \"div\" | \"footer\" | \"header\" | \"section\"",
+   "type": "\"section\" | \"div\" | \"header\" | \"footer\" | \"aside\" | \"article\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -14789,7 +14789,7 @@
   },
   {
    "name": "mockFade",
-   "type": "\"none\" | \"top\" | \"bottom\"",
+   "type": "\"top\" | \"bottom\" | \"none\"",
    "default": "-",
    "desc": "frame=\"mock\" 时的渐隐边 (top / bottom / none), 默认 MV102_DEFAULT.heroMockFade.",
    "required": false
@@ -14833,7 +14833,7 @@
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -14847,7 +14847,7 @@
   },
   {
    "name": "fillDirection",
-   "type": "\"left\" | \"right\" | \"up\" | \"down\"",
+   "type": "\"right\" | \"left\" | \"up\" | \"down\"",
    "default": "FORWARD",
    "desc": "",
    "required": false
@@ -15019,7 +15019,7 @@
   },
   {
    "name": "side",
-   "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+   "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -15033,7 +15033,7 @@
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\" | \"end\"",
+   "type": "\"start\" | \"center\" | \"end\"",
    "default": "\"center\"",
    "desc": "",
    "required": false
@@ -15075,7 +15075,7 @@
   },
   {
    "name": "sticky",
-   "type": "\"partial\" | \"always\"",
+   "type": "\"always\" | \"partial\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -15387,7 +15387,7 @@
   },
   {
    "name": "quality",
-   "type": "\"low\" | \"medium\" | \"high\"",
+   "type": "\"high\" | \"low\" | \"medium\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -15494,7 +15494,7 @@
   },
   {
    "name": "textAlign",
-   "type": "\"center\" | \"left\" | \"right\"",
+   "type": "\"left\" | \"center\" | \"right\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -15508,7 +15508,7 @@
   },
   {
    "name": "pushPasswordManagerStrategy",
-   "type": "\"none\" | \"increase-width\"",
+   "type": "\"increase-width\" | \"none\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -15747,7 +15747,7 @@
   },
   {
    "name": "spotlightTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -15847,14 +15847,14 @@
   },
   {
    "name": "panelTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
   },
   {
    "name": "accentTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -15968,14 +15968,14 @@
   },
   {
    "name": "fit",
-   "type": "\"contain\" | \"cover\"",
+   "type": "\"cover\" | \"contain\"",
    "default": "\"cover\"",
    "desc": "",
    "required": false
   },
   {
    "name": "shape",
-   "type": "\"diamond\" | \"pill\" | \"torus\" | \"lens\" | \"blob\" | \"cube\" | \"prism\"",
+   "type": "\"lens\" | \"blob\" | \"cube\" | \"pill\" | \"torus\" | \"prism\" | \"diamond\"",
    "default": "\"torus\"",
    "desc": "",
    "required": false
@@ -16017,7 +16017,7 @@
   },
   {
    "name": "tintTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -16031,7 +16031,7 @@
   },
   {
    "name": "interaction",
-   "type": "\"drag\" | \"static\" | \"follow\"",
+   "type": "\"follow\" | \"drag\" | \"static\"",
    "default": "\"follow\"",
    "desc": "",
    "required": false
@@ -16294,7 +16294,7 @@
   },
   {
    "name": "shape",
-   "type": "\"circle\" | \"star\" | \"heart\"",
+   "type": "\"star\" | \"heart\" | \"circle\"",
    "default": "\"star\"",
    "desc": "",
    "required": false
@@ -16315,28 +16315,28 @@
   },
   {
    "name": "activeTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"warning\"",
    "desc": "",
    "required": false
   },
   {
    "name": "idleTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "tipTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "tipTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
@@ -16478,7 +16478,7 @@
   },
   {
    "name": "trigger",
-   "type": "\"press\" | \"hover\"",
+   "type": "\"hover\" | \"press\"",
    "default": "HOVER",
    "desc": "",
    "required": false
@@ -16627,7 +16627,7 @@
   },
   {
    "name": "quality",
-   "type": "\"low\" | \"medium\" | \"high\"",
+   "type": "\"high\" | \"low\" | \"medium\"",
    "default": "-",
    "desc": "画质档位: 决定步进通道的渲染比例与泛光级数.",
    "required": false
@@ -16685,7 +16685,7 @@
  "LightRays": [
   {
    "name": "raysOrigin",
-   "type": "\"left\" | \"right\" | \"top-left\" | \"top-center\" | \"top-right\" | \"bottom-left\" | \"bottom-center\" | \"bottom-right\"",
+   "type": "\"top-left\" | \"top-center\" | \"top-right\" | \"left\" | \"right\" | \"bottom-left\" | \"bottom-center\" | \"bottom-right\"",
    "default": "-",
    "desc": "光源方位.",
    "required": false
@@ -17498,7 +17498,7 @@
   },
   {
    "name": "icon",
-   "type": "\"star\" | \"heart\" | \"thumb\"",
+   "type": "\"heart\" | \"star\" | \"thumb\"",
    "default": "\"heart\"",
    "desc": "",
    "required": false
@@ -17696,7 +17696,7 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"color\" | \"inherit\" | \"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"saturation\" | \"plus-darker\" | \"plus-lighter\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"multiply\" | \"normal\" | \"overlay\" | \"saturation\" | \"screen\" | \"soft-light\" | \"plus-darker\" | \"plus-lighter\"",
    "default": "-",
    "desc": "宿主的混合模式.",
    "required": false
@@ -18094,14 +18094,14 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "lockTone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "-",
    "desc": "锁定时的色调, 不给沿用 tone.",
    "required": false
@@ -18243,7 +18243,7 @@
   },
   {
    "name": "cols",
-   "type": "6 | 4 | 3 | 5 | 8 | 7",
+   "type": "3 | 4 | 5 | 6 | 7 | 8",
    "default": "5",
    "desc": "网格在宽容器下的列数.",
    "required": false
@@ -18313,28 +18313,28 @@
   },
   {
    "name": "tone",
-   "type": "\"image\" | \"muted\" | \"plain\" | \"card\" | \"inverted\" | \"brand\"",
+   "type": "\"plain\" | \"muted\" | \"card\" | \"inverted\" | \"brand\" | \"image\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "pad",
-   "type": "\"sm\" | \"lg\" | \"none\" | \"md\" | \"xl\"",
+   "type": "\"none\" | \"sm\" | \"md\" | \"lg\" | \"xl\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "width",
-   "type": "\"content\" | \"max\" | \"full\" | \"prose\" | \"narrow\" | \"wide\" | \"bleed\"",
+   "type": "\"prose\" | \"narrow\" | \"content\" | \"wide\" | \"max\" | \"full\" | \"bleed\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\"",
+   "type": "\"start\" | \"center\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -18355,7 +18355,7 @@
   },
   {
    "name": "as",
-   "type": "\"article\" | \"aside\" | \"div\" | \"footer\" | \"header\" | \"section\"",
+   "type": "\"section\" | \"div\" | \"header\" | \"footer\" | \"aside\" | \"article\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -18660,7 +18660,7 @@
   },
   {
    "name": "mode",
-   "type": "\"repel\" | \"point\" | \"orbit\" | \"flow\"",
+   "type": "\"point\" | \"orbit\" | \"repel\" | \"flow\"",
    "default": "-",
    "desc": "朝向规则: point 指向 / orbit 绕行 / repel 背离 / flow 顺指针运动方向.",
    "required": false
@@ -19081,28 +19081,28 @@
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "surfaceTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
   },
   {
    "name": "bandTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "bandTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
@@ -19167,7 +19167,7 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -19432,7 +19432,7 @@
   },
   {
    "name": "side",
-   "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+   "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -19446,7 +19446,7 @@
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\" | \"end\"",
+   "type": "\"start\" | \"center\" | \"end\"",
    "default": "\"start\"",
    "desc": "",
    "required": false
@@ -19488,7 +19488,7 @@
   },
   {
    "name": "sticky",
-   "type": "\"partial\" | \"always\"",
+   "type": "\"always\" | \"partial\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -19625,14 +19625,14 @@
   },
   {
    "name": "variant",
-   "type": "\"outline\" | \"solid\" | \"contour\"",
+   "type": "\"solid\" | \"outline\" | \"contour\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "motion",
-   "type": "\"orbit\" | \"still\" | \"drift\"",
+   "type": "\"orbit\" | \"drift\" | \"still\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -20030,7 +20030,7 @@
   },
   {
    "name": "statusTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"success\"",
    "desc": "",
    "required": false
@@ -20079,7 +20079,7 @@
   },
   {
    "name": "tintTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -20391,7 +20391,7 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "方块的色调.",
    "required": false
@@ -20405,7 +20405,7 @@
   },
   {
    "name": "pattern",
-   "type": "\"center\" | \"top\" | \"bottom\" | \"left\" | \"right\" | \"diagonal\" | \"random\" | \"pointer\" | \"dither\"",
+   "type": "\"pointer\" | \"random\" | \"left\" | \"right\" | \"top\" | \"bottom\" | \"center\" | \"diagonal\" | \"dither\"",
    "default": "\"random\"",
    "desc": "",
    "required": false
@@ -20419,14 +20419,14 @@
   },
   {
    "name": "pixelAnimation",
-   "type": "\"pop\" | \"scale\" | \"fade\"",
+   "type": "\"pop\" | \"fade\" | \"scale\"",
    "default": "\"pop\"",
    "desc": "",
    "required": false
   },
   {
    "name": "pixelShape",
-   "type": "\"circle\" | \"square\"",
+   "type": "\"square\" | \"circle\"",
    "default": "\"square\"",
    "desc": "",
    "required": false
@@ -20447,7 +20447,7 @@
   },
   {
    "name": "trigger",
-   "type": "\"manual\" | \"hover\" | \"click\"",
+   "type": "\"hover\" | \"click\" | \"manual\"",
    "default": "\"hover\"",
    "desc": "",
    "required": false
@@ -20582,7 +20582,7 @@
   },
   {
    "name": "status",
-   "type": "\"success\" | \"idle\" | \"submitting\" | \"error\"",
+   "type": "\"idle\" | \"submitting\" | \"success\" | \"error\"",
    "default": "-",
    "desc": "受控状态 (调用方自管时传); 不传时内部状态机管理.",
    "required": false
@@ -20603,14 +20603,14 @@
   },
   {
    "name": "titleSize",
-   "type": "\"sm\" | \"lg\" | \"md\" | \"xl\" | \"2xl\"",
+   "type": "\"sm\" | \"md\" | \"lg\" | \"xl\" | \"2xl\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
   },
   {
    "name": "titleLevel",
-   "type": "1 | 4 | 3 | 2",
+   "type": "1 | 2 | 3 | 4",
    "default": "2",
    "desc": "",
    "required": false
@@ -20652,28 +20652,28 @@
   },
   {
    "name": "tone",
-   "type": "\"image\" | \"muted\" | \"plain\" | \"card\" | \"inverted\" | \"brand\"",
+   "type": "\"plain\" | \"muted\" | \"card\" | \"inverted\" | \"brand\" | \"image\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "pad",
-   "type": "\"sm\" | \"lg\" | \"none\" | \"md\" | \"xl\"",
+   "type": "\"none\" | \"sm\" | \"md\" | \"lg\" | \"xl\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "width",
-   "type": "\"content\" | \"max\" | \"full\" | \"prose\" | \"narrow\" | \"wide\" | \"bleed\"",
+   "type": "\"prose\" | \"narrow\" | \"content\" | \"wide\" | \"max\" | \"full\" | \"bleed\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\"",
+   "type": "\"start\" | \"center\"",
    "default": "\"start\"",
    "desc": "",
    "required": false
@@ -20694,7 +20694,7 @@
   },
   {
    "name": "as",
-   "type": "\"article\" | \"aside\" | \"div\" | \"footer\" | \"header\" | \"section\"",
+   "type": "\"section\" | \"div\" | \"header\" | \"footer\" | \"aside\" | \"article\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -20780,7 +20780,7 @@
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
@@ -20843,14 +20843,14 @@
   },
   {
    "name": "accentTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "chipTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
@@ -20901,14 +20901,14 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"primary\"",
    "desc": "点亮的格的色调与网格线色调 (语义 token).",
    "required": false
   },
   {
    "name": "gridTone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -20922,7 +20922,7 @@
   },
   {
    "name": "falloff",
-   "type": "\"linear\" | \"smooth\" | \"sharp\"",
+   "type": "\"smooth\" | \"linear\" | \"sharp\"",
    "default": "\"smooth\"",
    "desc": "",
    "required": false
@@ -20978,7 +20978,7 @@
   },
   {
    "name": "gridStyle",
-   "type": "\"dots\" | \"dashed\" | \"lines\" | \"crosses\"",
+   "type": "\"lines\" | \"dashed\" | \"dots\" | \"crosses\"",
    "default": "\"lines\"",
    "desc": "",
    "required": false
@@ -21241,7 +21241,7 @@
   },
   {
    "name": "shape",
-   "type": "\"circle\" | \"ellipse\" | \"square\" | \"star\"",
+   "type": "\"ellipse\" | \"circle\" | \"square\" | \"star\"",
    "default": "\"ellipse\"",
    "desc": "",
    "required": false
@@ -21311,7 +21311,7 @@
   },
   {
    "name": "direction",
-   "type": "\"reverse\" | \"normal\"",
+   "type": "\"normal\" | \"reverse\"",
    "default": "\"normal\"",
    "desc": "",
    "required": false
@@ -21390,7 +21390,7 @@
   },
   {
    "name": "onHover",
-   "type": "\"pause\" | \"speedUp\" | \"slowDown\" | \"goBonkers\"",
+   "type": "\"slowDown\" | \"speedUp\" | \"pause\" | \"goBonkers\"",
    "default": "\"speedUp\"",
    "desc": "悬停时的速度档: slowDown 0.5 倍, speedUp 4 倍, pause 停, goBonkers 20 倍并放大.",
    "required": false
@@ -21560,7 +21560,7 @@
   },
   {
    "name": "intro",
-   "type": "\"none\" | \"fade\"",
+   "type": "\"fade\" | \"none\"",
    "default": "\"fade\"",
    "desc": "",
    "required": false
@@ -21788,7 +21788,7 @@
   },
   {
    "name": "pattern",
-   "type": "\"line\" | \"dot\" | \"square\" | \"plus\" | \"glyph\"",
+   "type": "\"dot\" | \"square\" | \"plus\" | \"line\" | \"glyph\"",
    "default": "-",
    "desc": "记号: dot / square / plus / line / glyph, 默认 dot.",
    "required": false
@@ -21872,7 +21872,7 @@
   },
   {
    "name": "fade",
-   "type": "\"center\" | \"none\" | \"top\" | \"bottom\" | \"edges\"",
+   "type": "\"none\" | \"edges\" | \"center\" | \"bottom\" | \"top\"",
    "default": "-",
    "desc": "淡出方式 none / edges / center / bottom / top, 默认 edges.",
    "required": false
@@ -22270,14 +22270,14 @@
   },
   {
    "name": "surfaceTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"card\"",
    "desc": "",
    "required": false
   },
   {
    "name": "contentTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -22356,7 +22356,7 @@
   },
   {
    "name": "indicator",
-   "type": "\"dot\" | \"pill\" | \"both\"",
+   "type": "\"pill\" | \"dot\" | \"both\"",
    "default": "\"pill\"",
    "desc": "pill: 活动项底下一块; dot: 活动项下方一个点; both: 两者都有.",
    "required": false
@@ -22370,14 +22370,14 @@
   },
   {
    "name": "size",
-   "type": "\"sm\" | \"lg\" | \"md\"",
+   "type": "\"sm\" | \"md\" | \"lg\"",
    "default": "\"md\"",
    "desc": "",
    "required": false
   },
   {
    "name": "surface",
-   "type": "\"solid\" | \"glass\"",
+   "type": "\"glass\" | \"solid\"",
    "default": "\"glass\"",
    "desc": "glass 半透明加模糊, solid 实底.",
    "required": false
@@ -22398,28 +22398,28 @@
   },
   {
    "name": "highlightTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
   },
   {
    "name": "highlightTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "hoverTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"accent\"",
    "desc": "",
    "required": false
@@ -22477,7 +22477,7 @@
   },
   {
    "name": "status",
-   "type": "\"success\" | \"idle\" | \"error\"",
+   "type": "\"idle\" | \"success\" | \"error\"",
    "default": "\"idle\"",
    "desc": "",
    "required": false
@@ -22512,35 +22512,35 @@
   },
   {
    "name": "accentTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "通过态漫底色.",
    "required": false
   },
   {
    "name": "inkTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "普通态字符色.",
    "required": false
   },
   {
    "name": "slotTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
   },
   {
    "name": "digitTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"background\"",
    "desc": "漫底上的字符与对勾色.",
    "required": false
   },
   {
    "name": "dangerTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"destructive\"",
    "desc": "",
    "required": false
@@ -22612,7 +22612,7 @@
  "PixelBlast": [
   {
    "name": "variant",
-   "type": "\"circle\" | \"square\" | \"triangle\" | \"cross\" | \"diamond\" | \"ring\"",
+   "type": "\"square\" | \"circle\" | \"triangle\" | \"diamond\" | \"cross\" | \"ring\"",
    "default": "-",
    "desc": "像素形状, 默认 square.",
    "required": false
@@ -22710,7 +22710,7 @@
   },
   {
    "name": "hover",
-   "type": "\"none\" | \"reveal\" | \"grow\"",
+   "type": "\"none\" | \"grow\" | \"reveal\"",
    "default": "-",
    "desc": "指针悬停效果, 默认 grow.",
    "required": false
@@ -22824,7 +22824,7 @@
   },
   {
    "name": "shape",
-   "type": "\"circle\" | \"square\" | \"diamond\"",
+   "type": "\"square\" | \"circle\" | \"diamond\"",
    "default": "\"square\"",
    "desc": "",
    "required": false
@@ -22859,7 +22859,7 @@
   },
   {
    "name": "glowTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -22880,7 +22880,7 @@
   },
   {
    "name": "trigger",
-   "type": "\"always\" | \"hover\" | \"click\"",
+   "type": "\"hover\" | \"click\" | \"always\"",
    "default": "\"hover\"",
    "desc": "",
    "required": false
@@ -22945,7 +22945,7 @@
   },
   {
    "name": "variant",
-   "type": "\"mixed\" | \"dot\" | \"snowflake\" | \"star\" | \"crystal\"",
+   "type": "\"snowflake\" | \"star\" | \"dot\" | \"crystal\" | \"mixed\"",
    "default": "-",
    "desc": "雪花像素图案, 默认 snowflake.",
    "required": false
@@ -23094,7 +23094,7 @@
   },
   {
    "name": "direction",
-   "type": "\"reverse\" | \"forward\"",
+   "type": "\"forward\" | \"reverse\"",
    "default": "-",
    "desc": "穿行方向, 默认 forward.",
    "required": false
@@ -23455,28 +23455,28 @@
   },
   {
    "name": "trackTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
   },
   {
    "name": "trackOnTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
   },
   {
    "name": "thumbTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
   },
   {
    "name": "thumbOnTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"primary-foreground\"",
    "desc": "",
    "required": false
@@ -23604,7 +23604,7 @@
   },
   {
    "name": "animation",
-   "type": "\"pop\" | \"none\" | \"fade\" | \"slide\"",
+   "type": "\"pop\" | \"slide\" | \"fade\" | \"none\"",
    "default": "\"pop\"",
    "desc": "",
    "required": false
@@ -23653,7 +23653,7 @@
   },
   {
    "name": "accentTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"accent\"",
    "desc": "",
    "required": false
@@ -23811,7 +23811,7 @@
   },
   {
    "name": "side",
-   "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+   "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -23825,7 +23825,7 @@
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\" | \"end\"",
+   "type": "\"start\" | \"center\" | \"end\"",
    "default": "\"center\"",
    "desc": "",
    "required": false
@@ -23867,7 +23867,7 @@
   },
   {
    "name": "sticky",
-   "type": "\"partial\" | \"always\"",
+   "type": "\"always\" | \"partial\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -24046,7 +24046,7 @@
   },
   {
    "name": "animationType",
-   "type": "\"rotate\" | \"rotate3d\" | \"hover\"",
+   "type": "\"rotate\" | \"hover\" | \"rotate3d\"",
    "default": "-",
    "desc": "rotate 绕竖轴自转, hover 朝向跟指针, rotate3d 三轴翻滚.",
    "required": false
@@ -24202,7 +24202,7 @@
  "PrismOrb": [
   {
    "name": "preset",
-   "type": "\"storm\" | \"frost\" | \"calm\" | \"plasma\"",
+   "type": "\"plasma\" | \"storm\" | \"calm\" | \"frost\"",
    "default": "-",
    "desc": "一组打底的外观, 默认 plasma; 显式给的单项 props 覆盖它.",
    "required": false
@@ -24356,14 +24356,14 @@
   },
   {
    "name": "motion",
-   "type": "\"rise\" | \"orbit\" | \"drift\" | \"fall\"",
+   "type": "\"drift\" | \"fall\" | \"orbit\" | \"rise\"",
    "default": "-",
    "desc": "",
    "required": false
   },
   {
    "name": "particleShape",
-   "type": "\"square\" | \"round\"",
+   "type": "\"round\" | \"square\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -24428,7 +24428,7 @@
   },
   {
    "name": "animationType",
-   "type": "\"rotate\" | \"rotate3d\" | \"hover\"",
+   "type": "\"hover\" | \"rotate\" | \"rotate3d\"",
    "default": "-",
    "desc": "rotate 绕视轴自转, rotate3d 三轴翻滚, hover 朝向跟指针.",
    "required": false
@@ -24540,7 +24540,7 @@
   },
   {
    "name": "quality",
-   "type": "\"low\" | \"medium\" | \"high\"",
+   "type": "\"high\" | \"low\" | \"medium\"",
    "default": "-",
    "desc": "画质档位: 决定步进通道的渲染比例与泛光级数.",
    "required": false
@@ -24633,21 +24633,21 @@
   },
   {
    "name": "accentTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "markerTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"border\"",
    "desc": "",
    "required": false
@@ -24824,7 +24824,7 @@
   },
   {
    "name": "axis",
-   "type": "\"x\" | \"y\" | \"any\"",
+   "type": "\"any\" | \"x\" | \"y\"",
    "default": "\"any\"",
    "desc": "",
    "required": false
@@ -25087,7 +25087,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"vertical\" | \"horizontal\"",
+   "type": "\"horizontal\" | \"vertical\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -25217,14 +25217,14 @@
   },
   {
    "name": "color",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\" | \"currentColor\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\" | \"currentColor\"",
    "default": "\"currentColor\"",
    "desc": "",
    "required": false
   },
   {
    "name": "glyphColor",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -25359,14 +25359,14 @@
   },
   {
    "name": "textTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "activeTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -25508,7 +25508,7 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -25550,7 +25550,7 @@
   },
   {
    "name": "targetEffect",
-   "type": "\"none\" | \"lock\"",
+   "type": "\"lock\" | \"none\"",
    "default": "\"lock\"",
    "desc": "",
    "required": false
@@ -25715,7 +25715,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"vertical\" | \"horizontal\"",
+   "type": "\"horizontal\" | \"vertical\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -25864,7 +25864,7 @@
   },
   {
    "name": "variant",
-   "type": "\"dots\" | \"lines\" | \"cross\"",
+   "type": "\"lines\" | \"dots\" | \"cross\"",
    "default": "-",
    "desc": "样式: lines / dots / cross.",
    "required": false
@@ -25913,7 +25913,7 @@
   },
   {
    "name": "autoRipple",
-   "type": "\"center\" | \"none\" | \"random\"",
+   "type": "\"center\" | \"random\" | \"none\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -26125,7 +26125,7 @@
   },
   {
    "name": "trigger",
-   "type": "\"hover\" | \"both\" | \"click\"",
+   "type": "\"hover\" | \"click\" | \"both\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -26139,7 +26139,7 @@
   },
   {
    "name": "quality",
-   "type": "\"low\" | \"medium\" | \"high\"",
+   "type": "\"high\" | \"low\" | \"medium\"",
    "default": "-",
    "desc": "画质档: 像素比上限乘 0.4 / 0.7 / 1, 默认 low.",
    "required": false
@@ -26232,7 +26232,7 @@
   },
   {
    "name": "preset",
-   "type": "\"fade\" | \"fadeUp\" | \"fadeDown\" | \"scaleIn\" | \"blurIn\" | \"slideLeft\" | \"slideRight\"",
+   "type": "\"blurIn\" | \"fade\" | \"fadeDown\" | \"fadeUp\" | \"scaleIn\" | \"slideLeft\" | \"slideRight\"",
    "default": "\"fadeUp\"",
    "desc": "换词的进出场预设. 默认 fadeUp: 旧词上浮离场, 新词自下浮入.",
    "required": false
@@ -26246,7 +26246,7 @@
   },
   {
    "name": "staggerFrom",
-   "type": "\"center\" | \"first\" | \"last\"",
+   "type": "\"first\" | \"last\" | \"center\"",
    "default": "\"first\"",
    "desc": "逐字错峰的起点: first 从头, last 从尾, center 从中间向两边.",
    "required": false
@@ -26269,7 +26269,7 @@
  "RunChip": [
   {
    "name": "icon",
-   "type": "\"search\" | \"terminal\" | \"file\" | \"edit\"",
+   "type": "\"terminal\" | \"file\" | \"search\" | \"edit\"",
    "default": "\"terminal\"",
    "desc": "",
    "required": false
@@ -26290,7 +26290,7 @@
   },
   {
    "name": "status",
-   "type": "\"done\" | \"error\" | \"running\"",
+   "type": "\"running\" | \"done\" | \"error\"",
    "default": "RUNNING",
    "desc": "",
    "required": false
@@ -26588,14 +26588,14 @@
   },
   {
    "name": "mode",
-   "type": "\"pointer\" | \"settle\"",
+   "type": "\"settle\" | \"pointer\"",
    "default": "\"settle\"",
    "desc": "settle 乱码后按位停格 (解密, 洗牌); pointer 指针扫过处临时乱码.",
    "required": false
   },
   {
    "name": "animateOn",
-   "type": "\"view\" | \"manual\" | \"mount\" | \"hover\" | \"click\"",
+   "type": "\"mount\" | \"view\" | \"hover\" | \"click\" | \"manual\"",
    "default": "\"hover\"",
    "desc": "settle 的触发方式. 默认 hover.",
    "required": false
@@ -26630,7 +26630,7 @@
   },
   {
    "name": "revealDirection",
-   "type": "\"center\" | \"start\" | \"end\" | \"edges\" | \"random\" | \"evenodd\"",
+   "type": "\"start\" | \"end\" | \"center\" | \"edges\" | \"random\" | \"evenodd\"",
    "default": "\"start\"",
    "desc": "逐位停格的顺序, 含 evenodd (先奇位后偶位) 与 random.",
    "required": false
@@ -26858,14 +26858,14 @@
   },
   {
    "name": "order",
-   "type": "\"center\" | \"start\" | \"end\" | \"edges\" | \"random\" | \"evenodd\"",
+   "type": "\"start\" | \"end\" | \"center\" | \"edges\" | \"random\" | \"evenodd\"",
    "default": "\"start\"",
    "desc": "",
    "required": false
   },
   {
    "name": "mode",
-   "type": "\"enter\" | \"scrub\"",
+   "type": "\"scrub\" | \"enter\"",
    "default": "\"scrub\"",
    "desc": "scrub 跟随滚动来回; enter 进视口后按时长播一次.",
    "required": false
@@ -26986,7 +26986,7 @@
   },
   {
    "name": "mediaType",
-   "type": "\"video\" | \"image\"",
+   "type": "\"image\" | \"video\"",
    "default": "\"image\"",
    "desc": "",
    "required": false
@@ -27225,7 +27225,7 @@
  "ShapeGrid": [
   {
    "name": "shape",
-   "type": "\"circle\" | \"square\" | \"hex\" | \"triangle\"",
+   "type": "\"square\" | \"hex\" | \"circle\" | \"triangle\"",
    "default": "-",
    "desc": "格形: square / hex / circle / triangle.",
    "required": false
@@ -27246,7 +27246,7 @@
   },
   {
    "name": "direction",
-   "type": "\"none\" | \"left\" | \"right\" | \"up\" | \"down\" | \"diagonal\"",
+   "type": "\"diagonal\" | \"right\" | \"left\" | \"up\" | \"down\" | \"none\"",
    "default": "-",
    "desc": "滚动方向: diagonal / right / left / up / down / none.",
    "required": false
@@ -27577,7 +27577,7 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"color\" | \"inherit\" | \"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"saturation\" | \"plus-darker\" | \"plus-lighter\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"multiply\" | \"normal\" | \"overlay\" | \"saturation\" | \"screen\" | \"soft-light\" | \"plus-darker\" | \"plus-lighter\"",
    "default": "-",
    "desc": "宿主的混合模式.",
    "required": false
@@ -27642,7 +27642,7 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -27691,7 +27691,7 @@
   },
   {
    "name": "mode",
-   "type": "\"manual\" | \"loop\" | \"hover\"",
+   "type": "\"hover\" | \"loop\" | \"manual\"",
    "default": "\"hover\"",
    "desc": "hover 悬停触发, loop 每 interval 秒一次, manual 只由 intro 触发.",
    "required": false
@@ -27763,7 +27763,7 @@
   },
   {
    "name": "direction",
-   "type": "\"vertical\" | \"horizontal\" | \"diagonal\"",
+   "type": "\"horizontal\" | \"vertical\" | \"diagonal\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -27805,7 +27805,7 @@
   },
   {
    "name": "shineTone",
-   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"foreground\" | \"muted-foreground\"",
+   "type": "\"primary\" | \"success\" | \"warning\" | \"danger\" | \"foreground\" | \"muted-foreground\"",
    "default": "\"foreground\"",
    "desc": "光带颜色 token.",
    "required": false
@@ -27977,7 +27977,7 @@
   },
   {
    "name": "side",
-   "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+   "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
    "default": "\"right\"",
    "desc": "",
    "required": false
@@ -28049,7 +28049,7 @@
   },
   {
    "name": "mode",
-   "type": "\"shadow\" | \"slices\"",
+   "type": "\"slices\" | \"shadow\"",
    "default": "\"slices\"",
    "desc": "slices 副本按水平条错位; shadow 副本整体错位.",
    "required": false
@@ -28277,7 +28277,7 @@
   },
   {
    "name": "origin",
-   "type": "\"left\" | \"right\" | \"top-left\" | \"top-center\" | \"top-right\" | \"bottom-left\" | \"bottom-center\" | \"bottom-right\"",
+   "type": "\"top-left\" | \"top-center\" | \"top-right\" | \"left\" | \"right\" | \"bottom-left\" | \"bottom-center\" | \"bottom-right\"",
    "default": "-",
    "desc": "光源方位.",
    "required": false
@@ -28722,7 +28722,7 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"color\" | \"inherit\" | \"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"saturation\" | \"plus-darker\" | \"plus-lighter\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"multiply\" | \"normal\" | \"overlay\" | \"saturation\" | \"screen\" | \"soft-light\" | \"plus-darker\" | \"plus-lighter\"",
    "default": "-",
    "desc": "宿主的混合模式.",
    "required": false
@@ -29241,7 +29241,7 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"primary\"",
    "desc": "电弧色调 (语义 token).",
    "required": false
@@ -29767,7 +29767,7 @@
   },
   {
    "name": "direction",
-   "type": "\"left\" | \"right\" | \"up\" | \"down\"",
+   "type": "\"up\" | \"down\" | \"left\" | \"right\"",
    "default": "\"up\"",
    "desc": "每个单元从哪个方向进入. 默认 up (自下浮起).",
    "required": false
@@ -29809,7 +29809,7 @@
   },
   {
    "name": "staggerFrom",
-   "type": "\"center\" | \"start\" | \"end\"",
+   "type": "\"start\" | \"end\" | \"center\"",
    "default": "-",
    "desc": "错峰起点: start 从头, end 从尾, center 从中间向两边. 省略时同 start.",
    "required": false
@@ -29939,7 +29939,7 @@
   },
   {
    "name": "borderTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
@@ -30053,7 +30053,7 @@
   },
   {
    "name": "dotTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -30118,7 +30118,7 @@
   },
   {
    "name": "material",
-   "type": "\"balloon\" | \"chrome\" | \"jelly\" | \"clay\"",
+   "type": "\"balloon\" | \"chrome\" | \"clay\" | \"jelly\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -30246,7 +30246,7 @@
   },
   {
    "name": "variant",
-   "type": "\"mask\" | \"rise\" | \"blur\" | \"fold\"",
+   "type": "\"blur\" | \"rise\" | \"fold\" | \"mask\"",
    "default": "\"blur\"",
    "desc": "",
    "required": false
@@ -30274,7 +30274,7 @@
   },
   {
    "name": "from",
-   "type": "\"center\" | \"start\" | \"end\" | \"edges\" | \"random\" | \"evenodd\"",
+   "type": "\"start\" | \"end\" | \"center\" | \"edges\" | \"random\" | \"evenodd\"",
    "default": "\"start\"",
    "desc": "",
    "required": false
@@ -30323,7 +30323,7 @@
   },
   {
    "name": "trigger",
-   "type": "\"view\" | \"manual\" | \"mount\" | \"hover\" | \"click\"",
+   "type": "\"mount\" | \"view\" | \"hover\" | \"click\" | \"manual\"",
    "default": "\"view\"",
    "desc": "",
    "required": false
@@ -30486,7 +30486,7 @@
   },
   {
    "name": "tone",
-   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "type": "\"current\" | \"primary\" | \"accent-2\" | \"success\" | \"warning\" | \"danger\" | \"foreground\" | \"muted-foreground\"",
    "default": "\"current\"",
    "desc": "章的颜色 (语义 token 名).",
    "required": false
@@ -30749,35 +30749,35 @@
   },
   {
    "name": "activeTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
   },
   {
    "name": "activeTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"primary-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "idleTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
   },
   {
    "name": "idleTextTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"muted-foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "lineTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"border\"",
    "desc": "",
    "required": false
@@ -30942,7 +30942,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"vertical\" | \"horizontal\"",
+   "type": "\"horizontal\" | \"vertical\"",
    "default": "\"horizontal\"",
    "desc": "",
    "required": false
@@ -30963,7 +30963,7 @@
   },
   {
    "name": "valuePosition",
-   "type": "\"none\" | \"top\" | \"bottom\"",
+   "type": "\"top\" | \"bottom\" | \"none\"",
    "default": "\"top\"",
    "desc": "",
    "required": false
@@ -31198,21 +31198,21 @@
   },
   {
    "name": "fillTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "trackTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"input\"",
    "desc": "",
    "required": false
   },
   {
    "name": "crestTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "-",
    "desc": "尾迹峰值的颜色. 不给时与 fillTone 相同.",
    "required": false
@@ -31347,7 +31347,7 @@
   },
   {
    "name": "anchor",
-   "type": "\"center\" | \"left\" | \"right\"",
+   "type": "\"left\" | \"center\" | \"right\"",
    "default": "\"center\"",
    "desc": "",
    "required": false
@@ -31361,7 +31361,7 @@
   },
   {
    "name": "strapTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
@@ -31596,7 +31596,7 @@
   },
   {
    "name": "frameTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"secondary-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"border\" | \"success\" | \"warning\" | \"destructive\"",
    "default": "\"background\"",
    "desc": "",
    "required": false
@@ -31731,7 +31731,7 @@
   },
   {
    "name": "size",
-   "type": "\"default\" | \"sm\"",
+   "type": "\"sm\" | \"default\"",
    "default": "\"default\"",
    "desc": "",
    "required": false
@@ -31775,21 +31775,21 @@
   },
   {
    "name": "tone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"foreground\"",
    "desc": "边框与文字色.",
    "required": false
   },
   {
    "name": "fillTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
   },
   {
    "name": "checkTone",
-   "type": "\"primary\" | \"secondary\" | \"destructive\" | \"warning\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"secondary-foreground\" | \"destructive-foreground\"",
+   "type": "\"primary\" | \"primary-foreground\" | \"foreground\" | \"background\" | \"muted\" | \"muted-foreground\" | \"secondary\" | \"secondary-foreground\" | \"accent\" | \"accent-foreground\" | \"card\" | \"popover\" | \"popover-foreground\" | \"border\" | \"warning\" | \"destructive\" | \"destructive-foreground\" | \"success\"",
    "default": "\"primary-foreground\"",
    "desc": "",
    "required": false
@@ -31838,7 +31838,7 @@
   },
   {
    "name": "strike",
-   "type": "\"none\" | \"left\" | \"right\"",
+   "type": "\"left\" | \"right\" | \"none\"",
    "default": "\"left\"",
    "desc": "删除线从哪边画起, none 不画.",
    "required": false
@@ -31973,7 +31973,7 @@
   },
   {
    "name": "tone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "-",
    "desc": "不给时跟随文字色.",
    "required": false
@@ -32073,14 +32073,14 @@
   },
   {
    "name": "liquidTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"foreground\"",
    "desc": "",
    "required": false
   },
   {
    "name": "glassTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"muted\"",
    "desc": "",
    "required": false
@@ -32194,7 +32194,7 @@
   },
   {
    "name": "easing",
-   "type": "\"spring\" | \"ease-out\" | \"ease-in-out\"",
+   "type": "\"ease-out\" | \"ease-in-out\" | \"spring\"",
    "default": "\"ease-out\"",
    "desc": "",
    "required": false
@@ -32222,7 +32222,7 @@
   },
   {
    "name": "tone",
-   "type": "\"link\" | \"primary\" | \"warning\" | \"danger\" | \"done\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"primary\" | \"foreground\" | \"muted\" | \"link\" | \"success\" | \"warning\" | \"danger\" | \"done\" | \"background\"",
    "default": "\"primary\"",
    "desc": "",
    "required": false
@@ -32238,7 +32238,7 @@
  "TaskGlyph": [
   {
    "name": "status",
-   "type": "\"done\" | \"error\" | \"working\" | \"pending\"",
+   "type": "\"pending\" | \"working\" | \"done\" | \"error\"",
    "default": "\"pending\"",
    "desc": "",
    "required": false
@@ -32259,21 +32259,21 @@
   },
   {
    "name": "tone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "-",
    "desc": "不给时跟随文字色.",
    "required": false
   },
   {
    "name": "doneTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"success\"",
    "desc": "",
    "required": false
   },
   {
    "name": "errorTone",
-   "type": "\"input\" | \"primary\" | \"destructive\" | \"warning\" | \"muted\" | \"success\" | \"background\" | \"foreground\"",
+   "type": "\"foreground\" | \"primary\" | \"success\" | \"warning\" | \"destructive\" | \"muted\" | \"input\" | \"background\"",
    "default": "\"destructive\"",
    "desc": "",
    "required": false
@@ -32380,7 +32380,7 @@
   },
   {
    "name": "shape",
-   "type": "\"line\" | \"wave\" | \"arc\"",
+   "type": "\"line\" | \"arc\" | \"wave\"",
    "default": "\"line\"",
    "desc": "line 直线 (滚动速度条带); arc 弧形; wave 波浪. 给了 path 时忽略.",
    "required": false
@@ -32599,7 +32599,7 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"color\" | \"inherit\" | \"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"saturation\" | \"plus-darker\" | \"plus-lighter\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"multiply\" | \"normal\" | \"overlay\" | \"saturation\" | \"screen\" | \"soft-light\" | \"plus-darker\" | \"plus-lighter\"",
    "default": "-",
    "desc": "宿主的混合模式.",
    "required": false
@@ -32671,7 +32671,7 @@
   },
   {
    "name": "pattern",
-   "type": "\"center\" | \"top\" | \"bottom\" | \"left\" | \"right\" | \"diagonal\" | \"random\" | \"pointer\" | \"dither\"",
+   "type": "\"pointer\" | \"random\" | \"left\" | \"right\" | \"top\" | \"bottom\" | \"center\" | \"diagonal\" | \"dither\"",
    "default": "\"pointer\"",
    "desc": "",
    "required": false
@@ -32727,7 +32727,7 @@
   },
   {
    "name": "trigger",
-   "type": "\"manual\" | \"hover\" | \"click\"",
+   "type": "\"hover\" | \"click\" | \"manual\"",
    "default": "\"hover\"",
    "desc": "",
    "required": false
@@ -33032,7 +33032,7 @@
   },
   {
    "name": "reveal",
-   "type": "\"card\" | \"spotlight\"",
+   "type": "\"spotlight\" | \"card\"",
    "default": "\"spotlight\"",
    "desc": "spotlight: 指针附近一圈显色; card: 只有悬停的卡显色.",
    "required": false
@@ -33183,7 +33183,7 @@
   },
   {
    "name": "orientation",
-   "type": "\"vertical\" | \"horizontal\"",
+   "type": "\"horizontal\" | \"vertical\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -33343,7 +33343,7 @@
   },
   {
    "name": "side",
-   "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+   "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -33357,7 +33357,7 @@
   },
   {
    "name": "align",
-   "type": "\"center\" | \"start\" | \"end\"",
+   "type": "\"start\" | \"center\" | \"end\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -33399,7 +33399,7 @@
   },
   {
    "name": "sticky",
-   "type": "\"partial\" | \"always\"",
+   "type": "\"always\" | \"partial\"",
    "default": "-",
    "desc": "",
    "required": false
@@ -33436,7 +33436,7 @@
   },
   {
    "name": "side",
-   "type": "\"top\" | \"bottom\" | \"left\" | \"right\"",
+   "type": "\"top\" | \"right\" | \"bottom\" | \"left\"",
    "default": "\"top\"",
    "desc": "",
    "required": false
@@ -33566,7 +33566,7 @@
   },
   {
    "name": "direction",
-   "type": "\"left\" | \"right\" | \"forward\" | \"backward\"",
+   "type": "\"forward\" | \"backward\" | \"left\" | \"right\"",
    "default": "-",
    "desc": "地形流动方向, 默认 forward.",
    "required": false
@@ -33608,7 +33608,7 @@
   },
   {
    "name": "hoverEffect",
-   "type": "\"none\" | \"lift\" | \"sink\"",
+   "type": "\"lift\" | \"sink\" | \"none\"",
    "default": "-",
    "desc": "指针处地形抬起, 压下或不动, 默认 lift.",
    "required": false
@@ -33643,7 +33643,7 @@
   },
   {
    "name": "clickEffect",
-   "type": "\"none\" | \"pulse\"",
+   "type": "\"pulse\" | \"none\"",
    "default": "-",
    "desc": "点击在地形上推开一圈波, 默认 pulse.",
    "required": false
@@ -33736,7 +33736,7 @@
   },
   {
    "name": "fillMode",
-   "type": "\"none\" | \"fade\" | \"wipe\"",
+   "type": "\"wipe\" | \"fade\" | \"none\"",
    "default": "\"wipe\"",
    "desc": "wipe 从一侧擦出; fade 淡入; none 只留描边.",
    "required": false
@@ -33771,7 +33771,7 @@
   },
   {
    "name": "trigger",
-   "type": "\"view\" | \"manual\" | \"mount\" | \"hover\" | \"click\"",
+   "type": "\"mount\" | \"view\" | \"hover\" | \"click\" | \"manual\"",
    "default": "\"mount\"",
    "desc": "",
    "required": false
@@ -33955,14 +33955,14 @@
   },
   {
    "name": "background",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"card\"",
    "desc": "",
    "required": false
   },
   {
    "name": "color",
-   "type": "\"primary\" | \"secondary\" | \"warning\" | \"danger\" | \"popover\" | \"muted\" | \"border\" | \"success\" | \"background\" | \"accent\" | \"card\" | \"foreground\" | \"muted-foreground\" | \"primary-foreground\" | \"accent-foreground\" | \"popover-foreground\" | \"card-foreground\"",
+   "type": "\"foreground\" | \"muted-foreground\" | \"background\" | \"muted\" | \"primary\" | \"primary-foreground\" | \"accent\" | \"accent-foreground\" | \"secondary\" | \"popover\" | \"popover-foreground\" | \"card\" | \"card-foreground\" | \"border\" | \"danger\" | \"success\" | \"warning\"",
    "default": "\"card-foreground\"",
    "desc": "",
    "required": false
@@ -34034,7 +34034,7 @@
   },
   {
    "name": "deleteMode",
-   "type": "\"clear\" | \"backspace\"",
+   "type": "\"backspace\" | \"clear\"",
    "default": "\"backspace\"",
    "desc": "",
    "required": false
@@ -34162,7 +34162,7 @@
   },
   {
    "name": "direction",
-   "type": "\"left\" | \"right\" | \"up\" | \"down\"",
+   "type": "\"right\" | \"left\" | \"up\" | \"down\"",
    "default": "\"right\"",
    "desc": "漂移时残影朝哪边.",
    "required": false
@@ -34183,7 +34183,7 @@
   },
   {
    "name": "tint",
-   "type": "\"primary\" | \"warning\" | \"danger\" | \"success\" | \"accent-2\" | \"foreground\" | \"muted-foreground\" | \"current\"",
+   "type": "\"current\" | \"primary\" | \"accent-2\" | \"success\" | \"warning\" | \"danger\" | \"foreground\" | \"muted-foreground\"",
    "default": "\"accent-2\"",
    "desc": "残影颜色 (语义 token 名); 给了 echoColors 时按层轮换.",
    "required": false
@@ -34197,7 +34197,7 @@
   },
   {
    "name": "echoStyle",
-   "type": "\"outline\" | \"solid\"",
+   "type": "\"solid\" | \"outline\"",
    "default": "\"solid\"",
    "desc": "solid 实心; outline 只描边.",
    "required": false
@@ -34211,7 +34211,7 @@
   },
   {
    "name": "mode",
-   "type": "\"pointer\" | \"both\" | \"drift\"",
+   "type": "\"drift\" | \"pointer\" | \"both\"",
    "default": "\"both\"",
    "desc": "drift 自己漂; pointer 只跟指针; both 指针停下一会儿后回到漂移.",
    "required": false
@@ -34409,7 +34409,7 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"color\" | \"inherit\" | \"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"saturation\" | \"plus-darker\" | \"plus-lighter\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"multiply\" | \"normal\" | \"overlay\" | \"saturation\" | \"screen\" | \"soft-light\" | \"plus-darker\" | \"plus-lighter\"",
    "default": "-",
    "desc": "宿主的混合模式.",
    "required": false
@@ -34628,7 +34628,7 @@
   },
   {
    "name": "mixBlendMode",
-   "type": "\"color\" | \"inherit\" | \"normal\" | \"overlay\" | \"soft-light\" | \"multiply\" | \"screen\" | \"-moz-initial\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"saturation\" | \"plus-darker\" | \"plus-lighter\"",
+   "type": "\"-moz-initial\" | \"inherit\" | \"initial\" | \"revert\" | \"revert-layer\" | \"unset\" | \"color\" | \"color-burn\" | \"color-dodge\" | \"darken\" | \"difference\" | \"exclusion\" | \"hard-light\" | \"hue\" | \"lighten\" | \"luminosity\" | \"multiply\" | \"normal\" | \"overlay\" | \"saturation\" | \"screen\" | \"soft-light\" | \"plus-darker\" | \"plus-lighter\"",
    "default": "-",
    "desc": "宿主的混合模式.",
    "required": false
