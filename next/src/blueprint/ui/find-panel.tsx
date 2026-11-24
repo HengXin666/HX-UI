@@ -1,3 +1,5 @@
+"use client";
+
 import { Search, X } from "lucide-react";
 import { m } from "motion/react";
 import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";

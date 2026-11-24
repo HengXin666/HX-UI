@@ -1,3 +1,5 @@
+"use client";
+
 import { ArrowDown, ArrowUp, ExternalLink, Play, Plus, Trash2 } from "lucide-react";
 import { useSyncExternalStore, type ReactNode } from "react";
 import { nodesInComment } from "../comment";

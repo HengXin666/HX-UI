@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { hierarchy, partition, type HierarchyRectangularNode } from "d3-hierarchy";
 import { arc as d3arc } from "d3-shape";

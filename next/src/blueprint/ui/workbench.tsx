@@ -1,3 +1,5 @@
+"use client";
+
 import "./blueprint.css";
 import {
   CircleCheck, CircleStop, CircleX, Crosshair, Eraser, FunctionSquare, GitFork, Keyboard, Maximize, Maximize2, Minimize2, PanelBottom, PanelLeft, PanelRight,

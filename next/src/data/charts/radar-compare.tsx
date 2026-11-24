@@ -1,7 +1,9 @@
+"use client";
+
 import { PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart } from "recharts";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
-import { toConfig, type SeriesSpec } from "./area-trend";
+import { toConfig, type SeriesSpec } from "./helpers";
 import { useChartAnimation, type ChartAnimationOptions } from "./animation";
 
 interface RadarCompareProps {

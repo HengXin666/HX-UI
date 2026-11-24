@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { useMemo, useState } from "react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";

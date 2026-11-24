@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";

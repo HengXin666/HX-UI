@@ -1,3 +1,5 @@
+"use client";
+
 import { memo } from "react";
 import type { ResolvedPin } from "../ports";
 import type { Registry } from "../registry";

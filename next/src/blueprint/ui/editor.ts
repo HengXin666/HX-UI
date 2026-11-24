@@ -1,3 +1,4 @@
+// hx:server-safe 框架无关的编辑器状态类; requestAnimationFrame 只在方法里调用 (fit 等), 导入不碰浏览器. ZOOM 等常量要能在服务端读.
 import { createHistory, type History, type StepOptions } from "../history";
 import { createIdGen, type IdGen } from "../ids";
 import type { BreakpointSpec, DebugEvent, DebugOptions, DebugSession, DebugState } from "../debug";

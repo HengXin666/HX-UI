@@ -1,3 +1,5 @@
+"use client";
+
 import "./blueprint.css";
 import { useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
@@ -18,6 +20,8 @@ import { useCanvas } from "./use-canvas";
 import { deriveView } from "./view-model";
 import { Wires } from "./wires";
 import { lazyPart } from "./lazy-part";
+import { DEFAULT_PLACE_KEYS } from "./shortcuts";
+export { DEFAULT_PLACE_KEYS };
 
 // Optional pieces are separate chunks: debug UI, variables panel and Find load when switched on or
 // opened; menus and the help sheet are fetched right after mount (and at once on pointer or focus).
@@ -111,7 +115,6 @@ function OwnedBlueprint(props: BlueprintProps) {
   return <BlueprintView {...props} editor={ed} />;
 }
 
-export const DEFAULT_PLACE_KEYS: Readonly<Record<string, string>> = { b: "flow.branch", s: "flow.sequence", d: "flow.delay" };
 
 type Menu = { kind: "actions"; sx: number; sy: number; from?: MenuOrigin | undefined } | { kind: "context"; target: MenuTarget; sx: number; sy: number };
 

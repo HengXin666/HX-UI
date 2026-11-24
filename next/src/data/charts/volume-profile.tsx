@@ -1,8 +1,11 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { spring } from "@/motion/presets";
 import { cn } from "@/lib/utils";
+import { valueAreaOf } from "./helpers";
 
 export interface ProfileBin {
   /** 价格档 (档位下沿) */
@@ -31,19 +34,7 @@ export interface VolumeProfileProps {
 const PAD = { l: 52, r: 12, t: 8, b: 8 };
 const compact = new Intl.NumberFormat("zh-CN", { notation: "compact", maximumFractionDigits: 1 });
 
-/** 价值区: 从量最大的档位 (POC) 向两边扩, 每次并入量更大的一侧, 直到覆盖 share */
-export function valueAreaOf(bins: ProfileBin[], share = 0.7) {
-  const s = [...bins].sort((a, b) => a.price - b.price);
-  if (!s.length) return { poc: 0, lo: 0, hi: 0 };
-  const total = s.reduce((a, b) => a + b.volume, 0);
-  let p = 0; s.forEach((b, i) => { if (b.volume > s[p].volume) p = i; });
-  let lo = p, hi = p, acc = s[p].volume;
-  while (acc < total * share && (lo > 0 || hi < s.length - 1)) {
-    const dn = lo > 0 ? s[lo - 1].volume : -1, upv = hi < s.length - 1 ? s[hi + 1].volume : -1;
-    if (upv >= dn) { hi++; acc += upv; } else { lo--; acc += dn; }
-  }
-  return { poc: s[p].price, lo: s[lo].price, hi: s[hi].price };
-}
+export { valueAreaOf };
 
 /**
  * 筹码分布 / 成交量分布: 每个价位上堆了多少量, 横向柱子. 现价以下是获利盘, 以上是套牢盘;

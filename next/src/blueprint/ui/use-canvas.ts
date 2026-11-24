@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { VAR_GET, VAR_SET } from "../registry";
 import { createPointer, type CanvasRefs, type CanvasUI } from "./canvas-pointer";

@@ -1,3 +1,5 @@
+"use client";
+
 import { m } from "motion/react";
 import { Maximize2, Minus, Plus } from "lucide-react";
 import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";

@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertTriangle, CircleCheck, CircleX, Keyboard, Maximize, Redo2, Search, Undo2, Variable } from "lucide-react";
 import { m } from "motion/react";
 import { useEffect, useRef, useState } from "react";

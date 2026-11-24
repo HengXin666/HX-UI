@@ -7,6 +7,7 @@
  *   4. 样式    dist/styles.css   预编译 (@tailwindcss/cli 扫 src/), 不装 Tailwind 也能用
  *              dist/tailwind.css 给 Tailwind v4 使用方: 令牌 + @theme + @source 指向 dist
  *              dist/fonts.css    可选, Geist 字体 (@fontsource-variable/*)
+ *   5. 校验    scripts/check-client.ts --dist: 源码带 "use client" 的模块, 产物逐文件保留指令; 不带的也没被加上
  * 不引新依赖: 改写脚本就是下面几十行.
  */
 import { execFileSync } from "node:child_process";
@@ -119,6 +120,9 @@ if (leftover.length) {
   console.error("[build:lib] 产物里还有 @/ 导入:\n  " + leftover.map((f) => relative(DIST, f)).join("\n  "));
   process.exit(1);
 }
+step('"use client" 逐文件核对 (scripts/check-client.ts --dist)');
+run(process.execPath, [join(ROOT, "scripts", "check-client.ts"), "--dist"]);
+
 const files = walk(DIST);
 const kb = files.reduce((n, f) => n + statSync(f).size, 0) / 1024;
 console.log(`\n[build:lib] 完成: ${files.length} 个文件, ${kb.toFixed(0)} KB -> dist/`);

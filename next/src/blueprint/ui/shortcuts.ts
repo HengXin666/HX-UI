@@ -1,3 +1,4 @@
+// hx:server-safe SHORTCUTS / GESTURES 是数据, 文档页 (服务端组件) 要能直接渲染; navigator 有 typeof 守卫.
 /**
  * The ONE shortcut table. The keyboard handler matches against it and the help sheet ("?") renders it,
  * so they cannot drift. Keys are scoped to the focused editor (no window listeners).
@@ -65,6 +66,9 @@ export const SHORTCUTS: readonly Shortcut[] = [
 ];
 
 /** Pointer gestures, shown in the help sheet next to the keys. */
+/** 按住字母键点画布直接放节点 (UE5 的 B / S / D): 键 -> 节点类型. <Blueprint placeKeys> 的默认值. */
+export const DEFAULT_PLACE_KEYS: Readonly<Record<string, string>> = { b: "flow.branch", s: "flow.sequence", d: "flow.delay" };
+
 export const GESTURES: readonly { readonly keys: string; readonly label: string }[] = [
   { keys: "右键 / 中键 / 空格 + 拖动", label: "平移画布" },
   { keys: "Ctrl + 滚轮", label: "以光标为中心缩放（编辑器获得焦点后直接滚轮）" },

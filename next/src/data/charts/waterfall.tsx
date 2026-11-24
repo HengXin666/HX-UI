@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { scaleBand, scaleLinear } from "d3-scale";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";

@@ -1,7 +1,11 @@
-import * as React from "react";
+"use client";
 
-export type ThemeMode = "light" | "dark" | "system";
-export type ThemeAccent = "indigo" | "emerald" | "rose" | "amber" | "zinc";
+import * as React from "react";
+import { THEME_STORAGE_KEY, type ThemeAccent, type ThemeMode } from "./theme-script";
+
+export type { ThemeAccent, ThemeMode };
+/** 兼容 2.0.0 的导入路径; 服务端组件请从 "@hx/ui/theme" 引 (那里的 themeScript 是真正的字符串). */
+export { themeScript } from "./theme-script";
 
 interface ThemeState {
   mode: ThemeMode;
@@ -11,7 +15,7 @@ interface ThemeState {
   setAccent: (accent: ThemeAccent) => void;
 }
 
-const STORAGE_KEY = "hx-theme";
+const STORAGE_KEY = THEME_STORAGE_KEY;
 const ThemeContext = React.createContext<ThemeState | null>(null);
 
 function systemDark(): boolean {
@@ -82,5 +86,3 @@ export function useTheme(): ThemeState {
   return ctx;
 }
 
-/** 内联到 <head> 的首屏脚本, React 挂载前定好亮暗, 避免闪烁. */
-export const themeScript = `(()=>{try{var s=JSON.parse(localStorage.getItem("${STORAGE_KEY}")||"{}");var m=s.mode||"system";var d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);var e=document.documentElement;e.classList.toggle("dark",d);e.dataset.theme=s.accent||"indigo";}catch(_){}})()`;

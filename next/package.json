@@ -99,8 +99,8 @@
       "default": "./dist/stage/shots.js"
     },
     "./theme": {
-      "types": "./dist/hooks/use-theme.d.ts",
-      "default": "./dist/hooks/use-theme.js"
+      "types": "./dist/hooks/theme.d.ts",
+      "default": "./dist/hooks/theme.js"
     },
     "./hooks/*": {
       "types": "./dist/hooks/*.d.ts",
@@ -126,7 +126,8 @@
     "typecheck": "tsc -b",
     "check:budgets": "node --experimental-strip-types scripts/check-budgets.ts",
     "check:bp": "node scripts/bp-check.ts",
-    "check": "npm run check:budgets"
+    "check:client": "node scripts/check-client.ts",
+    "check": "npm run check:budgets && npm run check:client"
   },
   "peerDependencies": {
     "react": "^19.0.0",

@@ -1,3 +1,5 @@
+"use client";
+
 import type { ControlValues } from "../types";
 import { StatefulButton } from "./index";
 

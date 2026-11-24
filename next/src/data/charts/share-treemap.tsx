@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { hierarchy, treemap, treemapSquarify } from "d3-hierarchy";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";

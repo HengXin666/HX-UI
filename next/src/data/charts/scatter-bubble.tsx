@@ -1,7 +1,9 @@
+"use client";
+
 import { CartesianGrid, Scatter, ScatterChart, XAxis, YAxis, ZAxis } from "recharts";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
-import { formatCompact } from "./area-trend";
+import { formatCompact } from "./helpers";
 import { useChartAnimation, type ChartAnimationOptions } from "./animation";
 
 export interface ScatterGroup {

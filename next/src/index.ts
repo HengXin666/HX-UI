@@ -4,8 +4,8 @@
  * Data 命名空间只含 2D 图表 + 表格; 3D 图表单独从 "@hx/ui/data/3d" 引 (需要 three), 让根入口不依赖 three.
  */
 export { cn } from "./lib/utils";
-export { ThemeProvider, useTheme, themeScript } from "./hooks/use-theme";
-export type { ThemeMode, ThemeAccent } from "./hooks/use-theme";
+export { ThemeProvider, useTheme, themeScript, THEME_STORAGE_KEY } from "./hooks/theme";
+export type { ThemeMode, ThemeAccent } from "./hooks/theme";
 export * as Motion from "./motion";
 export * as Effects from "./effects";
 export * as Data from "./data/base";

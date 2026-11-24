@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertTriangle, CircleCheck, CircleX, Eye, Layers, Search, Trash2 } from "lucide-react";
 import { useId, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
 import { compileExpr } from "../expr";

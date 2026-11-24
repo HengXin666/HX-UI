@@ -1,3 +1,5 @@
+"use client";
+
 import { GripVertical, Plus, Trash2, X } from "lucide-react";
 import { m } from "motion/react";
 import { useSyncExternalStore } from "react";

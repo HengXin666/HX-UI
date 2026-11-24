@@ -1,6 +1,9 @@
+"use client";
+
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";
+import { aShareMinutes } from "./helpers";
 
 export interface IntradayPoint {
   /** 时间标签, 如 "09:31" */
@@ -208,11 +211,4 @@ export function Intraday({
   );
 }
 
-/** A 股一整天的分钟标签: 09:30–11:30, 13:01–15:00, 共 241 个 */
-export function aShareMinutes() {
-  const out: string[] = [];
-  const push = (h: number, m: number) => out.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
-  for (let k = 0; k <= 120; k++) { const t = 9 * 60 + 30 + k; push(Math.floor(t / 60), t % 60); }
-  for (let k = 1; k <= 120; k++) { const t = 13 * 60 + k; push(Math.floor(t / 60), t % 60); }
-  return out;
-}
+export { aShareMinutes };

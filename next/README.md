@@ -142,9 +142,48 @@ const bp = useBlueprint({ registry, initial: graph });
 | `@hx/ui/blueprint` / `/blueprint/ui` / `/blueprint/panels` / `/blueprint/agent` / `/blueprint/debug` | 蓝图逻辑 / 编辑器 / 面板 / AI 工具 / 调试 |
 | `@hx/ui/styles.css` / `@hx/ui/tailwind.css` / `@hx/ui/fonts.css` | 预编译样式 / Tailwind v4 入口 / 字体 |
 
-源码里写了 `"use client"` 的组件 (shadcn 来的 dialog / select / popover 等) 在包里保留了这条指令; 但大部分图表, 特效, 蓝图组件没有写. 在 Next.js App Router 里请在你自己标了 `"use client"` 的组件里使用它们.
-
 > 文档站里的示例代码写的是源码路径 (`@/components/ui/button`, `@/data`), 对应到包里分别是 `@hx/ui/ui/button`, `@hx/ui/data` (3D 是 `@hx/ui/data/3d`).
+
+### 7. Next.js App Router / React Server Components
+
+包里每个用到 hook, 事件, 浏览器 API 或 motion / recharts / three 的模块都带 `"use client"` (逐文件保留在 `dist/` 里), 纯工具和蓝图核心不带. 所以服务端组件 (默认的 `page.tsx` / `layout.tsx`) 可以直接引组件, 不用自己再包一层:
+
+```tsx
+// app/layout.tsx (服务端组件)
+import "@hx/ui/styles.css";
+import { ThemeProvider, themeScript } from "@hx/ui/theme"; // themeScript 在服务端就是字符串
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="zh-CN" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: themeScript }} /></head>
+      <body><ThemeProvider>{children}</ThemeProvider></body>
+    </html>
+  );
+}
+
+// app/page.tsx (服务端组件)
+import { Button } from "@hx/ui/ui/button";
+import { AreaTrend, formatCompact } from "@hx/ui/data"; // formatCompact 等纯工具可以在服务端直接调用
+
+export default async function Page() {
+  const data = await getData();
+  return <><Button>保存</Button><AreaTrend data={data} x="m" series={[{ key: "a", label: "A" }]} /></>;
+}
+```
+
+两条服务端组件本身的限制 (React 的规则, 不是包的):
+
+- 函数不能当 props 从服务端传给客户端组件: `onClick`, `valueFormatter`, 以及蓝图的 `registry` (节点带 `evaluate`). 要传函数就在你自己的 `"use client"` 文件里渲染, 例如蓝图:
+  ```tsx
+  "use client";
+  import { BlueprintWorkbench } from "@hx/ui/blueprint/ui";
+  import { registry } from "./registry";
+  export function Editor() { return <BlueprintWorkbench registry={registry} fullscreen={false} />; }
+  ```
+- 汇总入口 (`@hx/ui`, `@hx/ui/data`, `@hx/ui/theme`, `@hx/ui/blueprint/ui` 等) 里的常量和工具函数都来自服务端安全的模块; 逐文件入口 `@hx/ui/ui/*` 跟 shadcn 一样, 文件里附带的 `xxxVariants` 随文件走, 客户端组件文件里的只能在客户端用.
+
+已用 Next.js 15.5 (webpack) 和 16.4 (Turbopack) 的 `next build` 验证: 服务端页面直接引 Button, 图表, `@hx/ui/blueprint/ui`, 主题脚本.
 
 ## 分层
 
@@ -169,11 +208,14 @@ const bp = useBlueprint({ registry, initial: graph });
 3. 组件即源码: 基础件可以直接改, 改完在文件顶部注释写一句为什么.
 4. 每个新组件在文档站里有一个真实场景; 没在浏览器里看过不算完成.
 5. 状态变化都有过渡 (150-250ms), 选中态滑动跟随; 减弱动效时不位移只淡入.
+6. 用到 hook / 事件 / 浏览器 API / motion / recharts / three 的文件顶部写 `"use client"`; 纯工具, 常量, 类型不写, 要从汇总入口导出的常量和工具放在不带指令的模块里. `npm run check` 会查.
 
 ## 命令
 
 ```bash
-npm run check   # 交互组件体积预算
+npm run check         # 交互组件体积预算 + "use client" 边界检查 (scripts/check-client.ts)
+npm run check:bp      # 蓝图逻辑 + 编辑器的回归检查
+npm run pack:check    # 发布包: build:lib (含 dist 逐文件核对 "use client") + npm pack + verify-pack
 ```
 
 AI 使用说明见 `llms.txt`.

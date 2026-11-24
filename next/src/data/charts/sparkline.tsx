@@ -1,3 +1,5 @@
+"use client";
+
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
 import { useId } from "react";
 import { useChartAnimation } from "./animation";

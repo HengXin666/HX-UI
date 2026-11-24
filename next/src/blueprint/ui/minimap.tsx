@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useRef } from "react";
 import { boundsOf, nodeBox } from "../size";
 import type { BlueprintGraph } from "../types";

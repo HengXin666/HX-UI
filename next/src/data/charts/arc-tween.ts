@@ -1,3 +1,5 @@
+"use client";
+
 import { useLayoutEffect, useRef, useState } from "react";
 
 /** 一段扇环: 起止角 (弧度, 0 在 12 点, 顺时针), 内外半径, 透明度 */

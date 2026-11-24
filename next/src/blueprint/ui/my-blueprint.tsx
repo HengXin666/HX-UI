@@ -1,3 +1,5 @@
+"use client";
+
 import { Boxes, FunctionSquare, GitFork, Library, Plus, Search, SquareStack, Variable as VariableIcon, Workflow, X, MoreHorizontal } from "lucide-react";
 import { useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { callSites, brokenCallSites } from "../functions";

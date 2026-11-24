@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { geoConicEqualArea, geoPath, type GeoProjection } from "d3-geo";
 import { scaleQuantize, scaleSqrt } from "d3-scale";

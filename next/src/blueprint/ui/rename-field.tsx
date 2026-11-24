@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 import { compileExpr } from "../expr";
 import type { BlueprintEditor } from "./editor";

@@ -1,3 +1,4 @@
+// hx:server-safe 命令分发纯函数; requestAnimationFrame 只在执行命令时用.
 import type { RenameTarget } from "./rename-field";
 import {
   alignSelected, collapseSelected, commentSelected, deleteSelected, distributeSelected, duplicate, moveActive, nudge, straighten,

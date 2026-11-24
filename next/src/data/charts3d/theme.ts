@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 /** 把 CSS 变量 (oklch 等任意写法) 解析成 #rrggbb, three.js 只认 sRGB */

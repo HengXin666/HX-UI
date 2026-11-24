@@ -1,3 +1,5 @@
+"use client";
+
 import { m, type HTMLMotionProps } from "motion/react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { reveal, spring, type RevealPreset } from "./presets";

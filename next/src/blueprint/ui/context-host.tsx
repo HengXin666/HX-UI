@@ -1,3 +1,5 @@
+"use client";
+
 import { ContextMenu } from "./context-menu";
 import type { BlueprintEditor } from "./editor";
 import { menuFor, type MenuHost, type MenuTarget } from "./menu-items";

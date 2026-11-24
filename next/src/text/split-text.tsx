@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { m, useInView, type TargetAndTransition, type Transition } from "motion/react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";

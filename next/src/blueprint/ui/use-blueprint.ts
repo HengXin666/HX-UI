@@ -1,3 +1,5 @@
+"use client";
+
 import { useLayoutEffect, useState, useSyncExternalStore } from "react";
 import type { Registry } from "../registry";
 import { fromText as parseText, toText as printText } from "../text";

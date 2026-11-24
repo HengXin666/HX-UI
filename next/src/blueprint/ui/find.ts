@@ -1,3 +1,4 @@
+// hx:server-safe 纯函数 (收集 / 过滤 Find 结果); requestAnimationFrame 只在 revealFind 调用时用.
 import { findVariable, paramVariables } from "../ports";
 import { TUNNEL_IN, TUNNEL_OUT, VAR_GET, VAR_SET } from "../registry";
 import { subgraphPath } from "../subgraph";

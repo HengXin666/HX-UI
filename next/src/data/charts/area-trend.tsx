@@ -1,17 +1,13 @@
+"use client";
+
 import { useId } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
 import { useChartAnimation, type ChartAnimationOptions } from "./animation";
+import { formatCompact, toConfig, type SeriesSpec } from "./helpers";
 
-const compact = new Intl.NumberFormat("zh-CN", { notation: "compact", maximumFractionDigits: 1 });
-export const formatCompact = (v: number): string => compact.format(v);
-
-export interface SeriesSpec {
-  key: string;
-  label: string;
-  color?: string;
-}
+export { formatCompact, toConfig, type SeriesSpec } from "./helpers";
 
 interface AreaTrendProps {
   /** 行数据, 每行一个 x 值 + 各系列数值 */
@@ -26,12 +22,6 @@ interface AreaTrendProps {
   showAxis?: boolean;
   /** 数据更新时的动画策略, 见 animation.ts. 实时追加用默认 append, 滑动窗口用 { match: { dataKey } } */
   animation?: ChartAnimationOptions;
-}
-
-export function toConfig(series: SeriesSpec[]): ChartConfig {
-  return Object.fromEntries(
-    series.map((s, i) => [s.key, { label: s.label, color: s.color ?? `var(--chart-${(i % 5) + 1})` }]),
-  );
 }
 
 /** 面积趋势图: 渐变填充, 可堆叠. 首次绘制完整动画, 之后只动增量, 实时数据不抖. */

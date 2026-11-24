@@ -1,3 +1,5 @@
+"use client";
+
 import { m } from "motion/react";
 import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { nodesAcceptingPin, type PinMatch } from "../connect";

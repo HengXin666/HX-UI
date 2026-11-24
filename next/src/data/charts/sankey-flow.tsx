@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { sankey, sankeyJustify, type SankeyLink, type SankeyNode } from "d3-sankey";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";

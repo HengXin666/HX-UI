@@ -1,3 +1,5 @@
+"use client";
+
 import { m } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { CommentTone } from "../types";

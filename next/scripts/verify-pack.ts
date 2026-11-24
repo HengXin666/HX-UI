@@ -10,6 +10,7 @@
  *   4. JS 里的裸导入都在 dependencies / peerDependencies 里声明过
  *   5. 不带 site/, src/, dist-site/, tsbuildinfo 等文档站或构建垃圾
  *   6. styles.css 是预编译的完整样式 (令牌 + .dark + 关键帧 + 蓝图), tailwind.css 带 @source
+ *   7. "use client" 只出现在文件第一行 (RSC 打包器只认这里); 服务端安全的入口 (theme, utils, 图表工具) 不带
  * 最后打印体积报告.
  */
 import { execFileSync } from "node:child_process";
@@ -129,6 +130,19 @@ if (!/@source\s/.test(tw)) fail("tailwind.css 没有 @source");
 if (/@import\s+["']tailwindcss["']/.test(tw)) fail("tailwind.css 不应自己引 tailwindcss (由使用方引)");
 for (const m of tw.matchAll(/@import\s+["'](\.[^"']+)["']/g)) if (!has.has("dist/" + strip(m[1]))) fail(`tailwind.css 引了不存在的 ${m[1]}`);
 
+// ---- 7. "use client"
+const DIRECTIVE = /^["']use client["'];?\s*$/;
+let clientJs = 0;
+for (const f of jsFiles) {
+  const lines = readFileSync(join(PKG, f), "utf8").split("\n");
+  if (DIRECTIVE.test(lines[0].trim())) clientJs++;
+  else if (lines.some((l) => DIRECTIVE.test(l.trim()))) fail(`${f}: "use client" 不在第一行, 打包器会忽略`);
+}
+if (clientJs === 0) fail('包里一个带 "use client" 的模块都没有, build:lib 的指令补回失效了');
+for (const f of ["dist/hooks/theme.js", "dist/hooks/theme-script.js", "dist/lib/utils.js", "dist/data/charts/helpers.js", "dist/blueprint/index.js"]) {
+  if (has.has(f) && DIRECTIVE.test(readFileSync(join(PKG, f), "utf8").split("\n", 1)[0].trim())) fail(`${f} 应该是服务端安全的, 却带了 "use client"`);
+}
+
 // ---- 体积报告
 const size = (f: string) => statSync(join(PKG, f)).size;
 const kb = (n: number) => `${(n / 1024).toFixed(1)} KB`;
@@ -139,7 +153,7 @@ for (const f of files) {
   byDir.set(key, (byDir.get(key) ?? 0) + size(f));
 }
 const unpacked = files.reduce((n, f) => n + size(f), 0);
-console.log(`\n体积: tarball ${kb(statSync(tgz).size)}, 解包 ${kb(unpacked)}, JS ${jsFiles.length} 个 / .d.ts ${dtsFiles.length} 个, 入口 ${entryJs.size} 个`);
+console.log(`\n体积: tarball ${kb(statSync(tgz).size)}, 解包 ${kb(unpacked)}, JS ${jsFiles.length} 个 / .d.ts ${dtsFiles.length} 个, 入口 ${entryJs.size} 个, "use client" 模块 ${clientJs} 个`);
 for (const [k, v] of [...byDir].sort((a, b) => b[1] - a[1]).slice(0, 14)) console.log(`  ${kb(v).padStart(10)}  ${k}`);
 console.log("  最大的文件:");
 for (const f of [...files].sort((a, b) => size(b) - size(a)).slice(0, 6)) console.log(`  ${kb(size(f)).padStart(10)}  ${f}`);

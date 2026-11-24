@@ -1,3 +1,5 @@
+"use client";
+
 import { Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";

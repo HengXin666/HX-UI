@@ -1,3 +1,5 @@
+"use client";
+
 import { CircleStop, Eraser, Pause, Play, StepForward } from "lucide-react";
 import { m } from "motion/react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useSyncExternalStore } from "react";

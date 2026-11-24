@@ -1,3 +1,5 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { bin, extent, mean, quantileSorted } from "d3-array";
 import { scaleBand, scaleLinear } from "d3-scale";

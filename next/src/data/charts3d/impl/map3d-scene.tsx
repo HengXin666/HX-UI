@@ -1,3 +1,5 @@
+"use client";
+
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { geoConicEqualArea, type GeoProjection } from "d3-geo";
 import type { Geometry, Position } from "geojson";

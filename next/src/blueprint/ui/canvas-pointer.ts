@@ -1,3 +1,4 @@
+// hx:server-safe 框架无关的指针手势状态机; document 只在事件回调里用.
 import type { RefObject } from "react";
 import { boxContains, boxesOverlap, nodeBox } from "../size";
 import type { MenuOrigin } from "./action-menu";

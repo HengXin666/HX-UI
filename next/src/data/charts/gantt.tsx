@@ -1,7 +1,10 @@
+"use client";
+
 import { AnimatePresence, m } from "motion/react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";
 import { cn } from "@/lib/utils";
+import { ganttDate } from "./helpers";
 
 export interface GanttTask {
   id: string;
@@ -37,8 +40,7 @@ export interface GanttProps {
 }
 
 const DAY = 86400000;
-const toDay = (s: string) => { const [y, mo, d] = s.split("-").map(Number); return Math.round(Date.UTC(y, mo - 1, d) / DAY); };
-const toStr = (n: number) => new Date(n * DAY).toISOString().slice(0, 10);
+const { toDay, toStr } = ganttDate;
 const md = (n: number) => { const d = new Date(n * DAY); return `${d.getUTCMonth() + 1}月${d.getUTCDate()}日`; };
 const PALETTE = ["var(--chart-1)", "var(--chart-2)", "var(--chart-3)", "var(--chart-4)", "var(--chart-5)"];
 // 每天最少多少像素; 放得下时铺满宽度, 放不下就横向滚动
@@ -387,5 +389,4 @@ export function Gantt({
   );
 }
 
-/** 日期工具, 演示和业务里改期时用 */
-export const ganttDate = { toDay, toStr, add: (s: string, n: number) => toStr(toDay(s) + n) };
+export { ganttDate };

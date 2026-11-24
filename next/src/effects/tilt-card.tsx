@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { m, useMotionTemplate, useMotionValue, useSpring, useTransform } from "motion/react";
 import { useReducedMotion } from "@/motion/use-reduced-motion";

@@ -1,7 +1,9 @@
+"use client";
+
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { cn } from "@/lib/utils";
-import { formatCompact, toConfig, type SeriesSpec } from "./area-trend";
+import { formatCompact, toConfig, type SeriesSpec } from "./helpers";
 import { useChartAnimation, type ChartAnimationOptions } from "./animation";
 
 interface BarCompareProps {

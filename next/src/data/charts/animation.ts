@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState } from "react";
 import { matchAppend, matchByDataKey, matchByIndex } from "recharts";
 
@@ -25,8 +27,8 @@ export interface ChartAnimationOptions {
   readonly disabled?: boolean;
 }
 
-/** 上千点时每帧插值会在低端机掉帧, 超过这个数自动关动画. */
-export const ANIMATION_POINT_LIMIT = 800;
+import { ANIMATION_POINT_LIMIT } from "./helpers";
+export { ANIMATION_POINT_LIMIT };
 
 const reducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
