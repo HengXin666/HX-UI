@@ -1,0 +1,8 @@
+/*
+ * 发布包 styles.css 的源: 预编译, 使用方不装 Tailwind 也能用.
+ * 只扫描 src/ (库自身用到的类), 不扫 site/. 由 scripts/build-lib.ts 用 @tailwindcss/cli 编译.
+ */
+@import "tailwindcss" source("../");
+@import "./theme.css";
+@import "../blueprint/ui/blueprint.css";
+@import "../components/ui/spin.css";

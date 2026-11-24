@@ -4,6 +4,40 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## 2.0.0
+
+HX-UI 2 第一个正式版. 包名仍是 `@hx/ui`, 源码从仓库根目录换到 `next/`; 根目录的 0.18 转为 legacy (标签 `legacy-omni`).
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.0.0/hx-ui-2.0.0.tgz
+```
+
+### 不兼容变更 (相对 0.x)
+
+- 整套重写, 视觉换成 HX-UI 2 (OKLCH 令牌, 亮暗 + 5 种强调色, Geist 字体), 不再是旧的 GitHub 风格. 0.x 的组件和入口不保留, 需要按新文档迁移.
+- 样式必须显式引入一次: `import "@hx/ui/styles.css"` (不用 Tailwind) 或在 CSS 里 `@import "@hx/ui/tailwind.css"` (Tailwind v4).
+- 要求 React 19.
+
+### 新增
+
+- 基础件: 在 shadcn/ui 源码上加强的 40+ 组件, 一个组件一个入口 `@hx/ui/ui/<name>` (Button, Card, Input, Dialog, Select, Command, DatePicker, Field, ConfirmDialog, PaginationBar, Sidebar, Spin ...).
+- 主题: `ThemeProvider` / `useTheme` / `themeScript` (`@hx/ui/theme`), 亮 / 暗 / 跟随系统 + indigo / emerald / rose / amber / zinc 强调色; 变量名与 shadcn 主题格式一致, 可直接粘贴 tweakcn 等主题.
+- 动效 (`@hx/ui/motion`): 弹簧档位, Reveal / Stagger / AnimatedNumber / TextReveal, `MotionProvider` 按需加载特性并尊重减弱动效.
+- 特效 / 文字 / 背景 / 滚动 / Stage: Marquee, TiltCard, BorderBeam, ClickSpark, SplitText, NumberRoll, DecryptedText, Aurora, Particles, ScrollStack, ScrollReveal, Stage.
+- 图表 + 表格 (`@hx/ui/data`): AreaTrend, BarCompare, Donut, Sparkline, ComboChart, RadarCompare, Gauge, ScatterBubble, ConversionFunnel, ShareTreemap, SankeyFlow, HeatCalendar, Candlestick, Intraday, DepthChart, VolumeProfile, ForceGraph, Waterfall, Bullet, Distribution, Sunburst, Rose, Gantt, ChinaMap, DataTable.
+- 3D 图表 (`@hx/ui/data/3d`): Bar3D, Surface3D, GlobeArcs, Scatter3D, Map3D. three / @react-three/fiber / @react-three/drei 是可选 peer, 不用 3D 不必安装.
+- 蓝图: 逻辑层 `@hx/ui/blueprint` (定义类型 / 节点, 校验, 序列化, 求值, 调试), 编辑器 `@hx/ui/blueprint/ui` (`Blueprint`, `BlueprintWorkbench`, `useBlueprint`), 面板 `@hx/ui/blueprint/panels`, AI 工具 `@hx/ui/blueprint/agent`. 面板 / 调试 / 查找等按需懒加载.
+
+### 打包
+
+- 纯 ESM, preserveModules (按文件摇树), 依赖全部 external; 完整 `.d.ts` (bundler / NodeNext 都能解析).
+- `styles.css`: 预编译, 不装 Tailwind 也能用 (令牌 + `.dark` + 组件用到的工具类 + 关键帧 + 蓝图样式, 含 Preflight).
+- `tailwind.css`: 给 Tailwind v4 项目, 带 `@source` 指向包内产物.
+- `fonts.css`: 可选的 Geist / Geist Mono 字体.
+- 文档站 (next/site) 改由 Pages 工作流从 `next/` 构建部署.
+
 ## [Unreleased]
 
 ### Added

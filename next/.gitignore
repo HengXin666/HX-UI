@@ -3,4 +3,5 @@ dist/
 dist-site/
 *.log
 *.tsbuildinfo
-
+*.tgz
+pack.json

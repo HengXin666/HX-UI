@@ -1,47 +1,69 @@
+# 发布 @hx/ui 2.x: 推 v* 标签 (例如 v2.0.0) 时, 在 next/ 里构建库, 打成 tgz, 挂到 GitHub Release.
+# 不走 npm registry, 使用方不需要 npm 账号, 直接装 Release 里的 tgz:
+#   pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.0.0/hx-ui-2.0.0.tgz
+# 旧的 0.18 (仓库根目录) 不再从这里发布, 留在 legacy-omni 标签上.
 name: release
 
-# 打 tag 时构建库并把 tarball 挂到 GitHub Release: 使用者无需 npm 账号.
-# 安装: pnpm add https://github.com/HengXin666/HX-UI/releases/download/<tag>/hx-ui-<版本>.tgz
 on:
-    push:
-        tags: ["v*"]
-    workflow_dispatch:
+  push:
+    tags: ["v*"]
 
 permissions:
-    contents: write
+  contents: write # 创建 Release / 上传附件
 
 jobs:
-    release:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - uses: actions/setup-node@v4
-              with:
-                  node-version: 22
-            - name: install
-              run: npm ci
-            - name: tag 与 package.json 版本必须一致
-              run: |
-                  version=$(node -p "require('./package.json').version")
-                  tag="${GITHUB_REF_NAME#v}"
-                  if [ "$tag" != "$version" ]; then
-                      echo "tag v$tag 与 package.json 的 $version 不一致, 先改版本再打 tag" >&2
-                      exit 1
-                  fi
-            - name: build library
-              run: npm run build:lib
-            - name: pack
-              id: pack
-              run: |
-                  npm pack --json --ignore-scripts > pack.json
-                  node -e "const [p]=require('./pack.json'); console.log('file='+p.filename)" >> "$GITHUB_OUTPUT"
-            - name: 产物自检
-              run: node scripts/verify-pack.ts
-            - name: publish release asset
-              env:
-                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  TGZ: ${{ steps.pack.outputs.file }}
-              run: |
-                  tag="$GITHUB_REF_NAME"
-                  gh release create "$tag" "$TGZ" --title "$tag" --notes "HX-UI $tag" || gh release upload "$tag" "$TGZ" --clobber
-                  echo "install: pnpm add https://github.com/HengXin666/HX-UI/releases/download/$tag/$TGZ"
+  release:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: next # 2.0 的包在 next/ 里
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # scripts/*.ts 直接用 node 跑 (22.18+ 自带类型擦除)
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+
+      - name: 安装依赖
+        run: npm ci
+
+      # 标签必须和 next/package.json 的 version 一致, 防止打错标签发出错版本
+      - name: 检查标签与版本
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          version="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "v$version" ]; then
+            echo "::error::标签 $tag 与 next/package.json 的版本 $version 不一致 (应为 v$version)"
+            exit 1
+          fi
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      # 构建库: dist/ = JS (preserveModules) + .d.ts + styles.css + tailwind.css + fonts.css
+      - name: 构建
+        run: npm run build:lib
+
+      # --ignore-scripts: 上一步已经构建过, 不让 prepack 再跑一遍
+      - name: 打包
+        run: npm pack --json --ignore-scripts > pack.json
+
+      # 检查 tarball: exports 目标齐全, 每个入口有 .d.ts, 没有残留 "@/" 导入, 不带 site/, 体积报告
+      - name: 校验包内容
+        run: node scripts/verify-pack.ts
+
+      - name: 发布到 GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          TGZ="$(node -p "require('./pack.json')[0].filename")"
+          if [ "$TGZ" != "hx-ui-${VERSION}.tgz" ]; then
+            echo "::error::tarball 名字 $TGZ 不是预期的 hx-ui-${VERSION}.tgz"
+            exit 1
+          fi
+          url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${TGZ}"
+          notes="安装: pnpm add ${url}"$'\n\n'"文档: https://hengxin666.github.io/HX-UI/"$'\n'"用法见 next/README.md 的「安装」「调用」."
+          # 已有同名 Release (比如重跑) 就覆盖附件
+          gh release create "$tag" "$TGZ" --title "@hx/ui ${VERSION}" --notes "$notes" \
+            || gh release upload "$tag" "$TGZ" --clobber

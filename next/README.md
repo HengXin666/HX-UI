@@ -7,8 +7,144 @@ HX-UI 的第二代, 站在成熟生态上重建: **shadcn/ui + Tailwind v4 + Mot
 cd next
 npm ci
 npm run dev        # 文档站: http://localhost:5173
-npm run build      # tsc + vite build
+npm run build      # 文档站: tsc + vite build -> dist-site/
+npm run build:lib  # 发布包: -> dist/ (JS + .d.ts + styles.css + tailwind.css)
+npm run pack:check # build:lib + npm pack + scripts/verify-pack.ts
 ```
+
+## 安装
+
+2.0 通过 GitHub Release 发 tgz, 不需要 npm 账号, 直接装 URL:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.0.0/hx-ui-2.0.0.tgz
+# 或
+npm i https://github.com/HengXin666/HX-UI/releases/download/v2.0.0/hx-ui-2.0.0.tgz
+```
+
+要求 React 19 (`react` / `react-dom` 是 peerDependencies). 包是纯 ESM, 带完整 `.d.ts` (bundler / NodeNext 解析都能用).
+
+依赖怎么分:
+
+| 用到什么 | 需要额外装 | 说明 |
+|---|---|---|
+| 基础件, 动效, 特效, 文字, 蓝图 | 无 | radix-ui, motion, lucide-react, cmdk, sonner, vaul, react-day-picker, ldrs 等是 dependencies, 自动装上 |
+| 2D 图表 + 表格 (`@hx/ui/data`) | 无 | recharts, d3-*, topojson-client, @tanstack/react-table 也是 dependencies; 不 import 就不会进你的包 |
+| 3D 图表 (`@hx/ui/data/3d`) | `three @react-three/fiber @react-three/drei` | 可选 peer, 只用 Button 的项目不用装. 没装就别引 `@hx/ui/data/3d` |
+
+## 调用
+
+### 1. 样式 (只引一次, 放在入口文件)
+
+没用 Tailwind 的项目, 引预编译好的整份样式 (令牌 + 亮暗 + 组件用到的全部工具类 + 特效关键帧 + 蓝图样式):
+
+```ts
+import "@hx/ui/styles.css";
+import "@hx/ui/fonts.css"; // 可选: Geist / Geist Mono 字体, 不引就回退到系统字体
+```
+
+注意: `styles.css` 带 Tailwind 的 Preflight (基础重置), 会作用于整页; 里面只有库自己用到的工具类, 你自己写的 `className="grid-cols-3"` 之类不保证有, 要随手写工具类请走下面的 Tailwind v4 用法.
+
+### 2. 主题 (亮 / 暗 / 跟随系统 + 强调色) 和动效
+
+```tsx
+import { ThemeProvider, useTheme, themeScript } from "@hx/ui/theme";
+import { MotionProvider } from "@hx/ui/motion";
+
+createRoot(root).render(
+  <ThemeProvider defaultMode="system">   {/* 亮暗靠 <html class="dark">, 强调色靠 data-theme */}
+    <MotionProvider>                     {/* 动效特性按需加载, 尊重系统的减弱动效 */}
+      <App />
+    </MotionProvider>
+  </ThemeProvider>,
+);
+
+function ThemeToggle() {
+  const { resolved, setMode, setAccent } = useTheme(); // setAccent("emerald" | "rose" | "amber" | "zinc" | "indigo")
+  return <Button onClick={() => setMode(resolved === "dark" ? "light" : "dark")}>切换</Button>;
+}
+```
+
+首屏防闪烁: 把 `themeScript` (一段字符串) 内联进 `<head>`, 在 React 挂载前就给 `<html>` 加上 `.dark`. Next.js: `<script dangerouslySetInnerHTML={{ __html: themeScript }} />`; Vite: 把它的内容贴进 `index.html` 的 `<script>`. 它读的是默认的 `storageKey` (`hx-theme`), 改了 `storageKey` 就自己写一份.
+
+### 3. 基础件 (shadcn/ui 源码上加强, 一个组件一个入口)
+
+```tsx
+import { Button } from "@hx/ui/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@hx/ui/ui/card";
+import { Input } from "@hx/ui/ui/input";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@hx/ui/ui/dialog";
+
+<Dialog>
+  <DialogTrigger asChild><Button>打开</Button></DialogTrigger>
+  <DialogContent><DialogHeader><DialogTitle>标题</DialogTitle></DialogHeader></DialogContent>
+</Dialog>
+```
+
+`src/components/ui/<name>.tsx` 都能这样引: `@hx/ui/ui/<name>` (accordion, alert, badge, calendar, command, confirm-dialog, date-picker, drawer, dropdown-menu, field, pagination, select, sheet, sidebar, spin, tabs, tooltip ...). `cn` 在 `@hx/ui/utils`.
+
+### 4. 图表 / 表格
+
+```tsx
+import { AreaTrend, BarCompare, Donut, Sparkline, Candlestick, DataTable } from "@hx/ui/data";
+
+<AreaTrend data={rows} x="month" series={[{ key: "web", label: "网页" }, { key: "app", label: "App" }]} height={240} />
+<Donut data={[{ key: "web", label: "网页", value: 42 }, { key: "app", label: "App", value: 35 }]} />
+<Sparkline values={[3, 5, 4, 8, 6]} />
+
+// 3D (先装 three @react-three/fiber @react-three/drei; 场景本体懒加载)
+import { Bar3D } from "@hx/ui/data/3d";
+<Bar3D values={[[3, 5], [4, 6]]} xLabels={["一", "二"]} yLabels={["华东", "华南"]} height={360} />
+```
+
+颜色走令牌 (`--chart-1..5`, `--brand`), 亮暗自动跟随.
+
+### 5. 蓝图 (UE5 风格节点编辑器)
+
+```tsx
+import { defineTypes, defineNode, createRegistry, demoRegistry, demoGraph } from "@hx/ui/blueprint"; // 逻辑层, 不依赖 React
+import { Blueprint, BlueprintWorkbench, useBlueprint } from "@hx/ui/blueprint/ui";            // 画布 / 整套工作台
+
+// 整套工作台: 工具栏 + 我的蓝图 + 画布 + 细节 + 调试坞; 面板按需懒加载
+<div style={{ height: 600 }}>
+  <BlueprintWorkbench registry={demoRegistry} defaultValue={demoGraph} fullscreen={false} />
+</div>
+
+// 只要画布
+const bp = useBlueprint({ registry, initial: graph });
+<Blueprint editor={bp} />
+```
+
+其它入口: `@hx/ui/blueprint/panels` (MyBlueprintPanel, DetailsPanel, DebugDock, VariablesPanel, Splitter, 自己摆布局用), `@hx/ui/blueprint/agent` (buildGraph, createBlueprintTools, 给 AI 用的工具), `@hx/ui/blueprint/debug` (调试会话).
+
+### 6. 已经在用 Tailwind v4
+
+不引 `styles.css`, 改在你自己的 CSS 里:
+
+```css
+@import "tailwindcss";
+@import "@hx/ui/tailwind.css"; /* 令牌 + @theme (bg-brand, text-muted-foreground ...) + 暗色 variant + 关键帧 + 蓝图样式 */
+@import "@hx/ui/fonts.css";    /* 可选 */
+```
+
+`tailwind.css` 里有 `@source` 指向包内 `dist/`, 你的 Tailwind 会把组件用到的类一起生成, 你自己也能用同一套令牌类 (`bg-brand`, `dark:` ...). 换肤 = 覆盖 `:root` / `.dark` 里的变量 (与 shadcn 主题格式一致).
+
+### 包入口一览
+
+| 入口 | 内容 |
+|---|---|
+| `@hx/ui` | 汇总入口: cn, ThemeProvider, Motion / Effects / Data (2D) 命名空间, 文字, 背景, 滚动, Stage, Blueprint / BlueprintWorkbench. 不含 3D |
+| `@hx/ui/ui/*` | 基础件, 一个文件一个入口 |
+| `@hx/ui/theme` · `@hx/ui/hooks/*` · `@hx/ui/utils` | 主题 / hooks / cn |
+| `@hx/ui/motion` · `@hx/ui/effects` · `@hx/ui/effects/*` · `@hx/ui/interactions` | 动效预设, 特效件, StatefulButton 等 |
+| `@hx/ui/text/*` · `@hx/ui/backgrounds/*` · `@hx/ui/scroll/*` · `@hx/ui/stage` | SplitText, NumberRoll, Aurora, Particles, ScrollStack, Stage ... |
+| `@hx/ui/data` · `@hx/ui/data/3d` | 2D 图表 + DataTable / 3D 图表 |
+| `@hx/ui/blueprint` · `/blueprint/ui` · `/blueprint/panels` · `/blueprint/agent` · `/blueprint/debug` | 蓝图逻辑 / 编辑器 / 面板 / AI 工具 / 调试 |
+| `@hx/ui/styles.css` · `@hx/ui/tailwind.css` · `@hx/ui/fonts.css` | 预编译样式 / Tailwind v4 入口 / 字体 |
+
+源码里写了 `"use client"` 的组件 (shadcn 来的 dialog / select / popover 等) 在包里保留了这条指令; 但大部分图表, 特效, 蓝图组件没有写. 在 Next.js App Router 里请在你自己标了 `"use client"` 的组件里使用它们.
+
+> 文档站里的示例代码写的是源码路径 (`@/components/ui/button`, `@/data`), 对应到包里分别是 `@hx/ui/ui/button`, `@hx/ui/data` (3D 是 `@hx/ui/data/3d`).
 
 ## 分层
 

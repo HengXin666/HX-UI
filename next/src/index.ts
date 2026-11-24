@@ -1,13 +1,14 @@
 /**
  * @hx/ui 2 公共入口.
- * components/ui (shadcn 基础件, 按文件引), motion, effects, data, hooks, interactions.
+ * components/ui (shadcn 基础件, 按文件引: "@hx/ui/ui/button"), motion, effects, data, hooks, interactions.
+ * Data 命名空间只含 2D 图表 + 表格; 3D 图表单独从 "@hx/ui/data/3d" 引 (需要 three), 让根入口不依赖 three.
  */
 export { cn } from "./lib/utils";
 export { ThemeProvider, useTheme, themeScript } from "./hooks/use-theme";
 export type { ThemeMode, ThemeAccent } from "./hooks/use-theme";
 export * as Motion from "./motion";
 export * as Effects from "./effects";
-export * as Data from "./data";
+export * as Data from "./data/base";
 export * from "./interactions";
 export { SplitText } from "./text/split-text";
 export type { SplitTextProps, SplitEffect, SplitFrom, SplitEase, SplitHover } from "./text/split-text";
@@ -29,7 +30,7 @@ export { Stage, StageScreen } from "./stage/stage";
 export type { StageProps, StageScreenProps, StageHandle, StageDevice, StageBackground, StageArrange } from "./stage/stage";
 export { SHOTS, MOTIONS, resolveShot, resolveMotion, sampleMotion } from "./stage/shots";
 export type { Shot, ShotName, ShotInput, StageMotion, StageKeyframe, MotionName, MotionInput, StageEase } from "./stage/shots";
-export { Blueprint, useBlueprint, BlueprintEditor, SHORTCUTS as BLUEPRINT_SHORTCUTS } from "./blueprint/ui";
-export type { BlueprintProps, UseBlueprintOptions, BlueprintHandle, EditorSelection, Viewport as BlueprintViewport } from "./blueprint/ui";
+export { Blueprint, BlueprintWorkbench, useBlueprint, BlueprintEditor, SHORTCUTS as BLUEPRINT_SHORTCUTS } from "./blueprint/ui";
+export type { BlueprintProps, BlueprintWorkbenchProps, UseBlueprintOptions, BlueprintHandle, EditorSelection, Viewport as BlueprintViewport } from "./blueprint/ui";
 export { defineTypes, defineNode, createRegistry, toJSON, fromJSON, toText, fromText, applyOps, validateGraph, graphSchema } from "./blueprint";
 export type { BlueprintGraph, BlueprintNode, BlueprintEdge, BlueprintComment, NodeDef, PinTypeDef, Pin, PinRef, Registry, GraphOp } from "./blueprint";
