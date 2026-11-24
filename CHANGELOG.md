@@ -4,6 +4,38 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## 2.0.1
+
+修复 2.0.0 在 Next.js App Router (React Server Components) 里不能直接用的问题, 并补上 next/ 自己的 CI. 导出和导入路径与 2.0.0 一致.
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.0.1/hx-ui-2.0.1.tgz
+```
+
+### 修复
+
+- Next.js App Router: 用到 hook, context, 事件, 浏览器 API 或 motion / recharts / three 的模块都带上 `"use client"` (2.0.0 只有 14 个 shadcn 文件带), 逐文件保留在 `dist/` 里. 服务端组件 (`page.tsx` / `layout.tsx`) 可以直接引 Button, 图表, `BlueprintWorkbench` 等, 不用自己再包一层; 2.0.0 在服务端会报 `createContext is not a function`.
+- `@hx/ui/theme` 的 `themeScript` 在服务端组件里是真正的字符串, 可以直接内联进 `<head>` (2.0.0 拿到的是客户端引用).
+- 汇总入口里的纯工具在服务端可直接调用: `formatCompact`, `toConfig`, `ANIMATION_POINT_LIMIT`, `ganttDate`, `aShareMinutes`, `valueAreaOf` (`@hx/ui/data`), `SHORTCUTS`, `GESTURES`, `DEFAULT_PLACE_KEYS`, `BlueprintEditor` (`@hx/ui/blueprint/ui`). 纯逻辑和蓝图核心 (`@hx/ui/blueprint`) 不带指令.
+
+### 新增
+
+- `THEME_STORAGE_KEY` (`@hx/ui/theme`): ThemeProvider 和 themeScript 默认用的 localStorage 键.
+- next/README 新增 "Next.js App Router / React Server Components" 一节: 服务端 layout / page 写法, 函数类 props (事件, `valueFormatter`, 蓝图 `registry`) 要放在自己的 `"use client"` 文件里.
+
+### 变更
+
+- `@hx/ui/theme` 入口指向新的桶文件 `dist/hooks/theme.js` (导出不变); 从 `@hx/ui/hooks/use-theme` 引 themeScript 仍然可用, 但只在客户端拿得到字符串.
+- 图表的纯工具挪到 `data/charts/helpers`, 原模块照旧 re-export.
+
+### 工程
+
+- 新增 `npm run check:client` (并入 `npm run check`): 检查 `"use client"` 缺失, 多余, 位置不对, 模块顶层直接用浏览器全局, 以及汇总入口从客户端模块导出常量 / 工具; `build:lib` 之后逐文件核对 `dist/`, verify-pack 也检查指令必须在第一行.
+- 新增 `.github/workflows/next.yml`: next/ 的 tsc -b, check, bp-check, vite build, pack:check. 旧门禁 (0.18 的 src/, docs/) 不再扫 next/, 规则本身不变; 标签推送不再触发 quality-build / quality-code / quality-docs.
+- 已用 Next.js 15.5 (webpack) 和 16.4 (Turbopack) 对打出的 tgz 跑 `next build` 验证.
+
 ## 2.0.0
 
 HX-UI 2 第一个正式版. 包名仍是 `@hx/ui`, 源码从仓库根目录换到 `next/`; 根目录的 0.18 转为 legacy (标签 `legacy-omni`).
