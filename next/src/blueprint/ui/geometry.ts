@@ -1,6 +1,6 @@
 import { getPorts, type ResolvedPin } from "../ports";
 import type { Registry } from "../registry";
-import { REROUTE, SUBGRAPH_NODE, VAR_GET, VAR_SET } from "../registry";
+import { REROUTE, SUBGRAPH_NODE, TUNNEL_IN, TUNNEL_OUT, VAR_GET, VAR_SET } from "../registry";
 import { NODE_METRICS, nodeSize } from "../size";
 import type { BlueprintNode, SubgraphScope } from "../types";
 
@@ -27,14 +27,16 @@ export interface NodeLayout {
  * Keyed by node object; valid while the subgraph table and the variable lists are the same (they
  * only matter for collapsed nodes and variable nodes).
  */
-const cache = new WeakMap<BlueprintNode, { subs: SubgraphScope["subgraphs"]; vars: SubgraphScope["variables"]; locals: SubgraphScope["locals"]; layout: NodeLayout }>();
+const cache = new WeakMap<BlueprintNode, { subs: SubgraphScope["subgraphs"]; vars: SubgraphScope["variables"]; locals: SubgraphScope["locals"]; params: SubgraphScope["params"]; layout: NodeLayout }>();
 
 export const pinKey = (dir: "in" | "out", pin: string) => `${dir}:${pin}`;
 
 /** Size and pin offsets of a node. Cached per node object (graph updates are immutable). */
 export function layoutNode(node: BlueprintNode, registry: Registry, scope?: SubgraphScope): NodeLayout {
   const hit = cache.get(node);
-  if (hit && hit.subs === scope?.subgraphs && hit.vars === scope?.variables && hit.locals === scope?.locals) return hit.layout;
+  // params are re-derived per view, compare their content cheaply
+  const sameParams = hit && (hit.params === scope?.params || (hit.params?.length === scope?.params?.length && (hit.params ?? []).every((p, i) => p.id === scope!.params![i]!.id && p.type === scope!.params![i]!.type && p.name === scope!.params![i]!.name)));
+  if (hit && hit.subs === scope?.subgraphs && hit.vars === scope?.variables && hit.locals === scope?.locals && sameParams) return hit.layout;
   const M = NODE_METRICS;
   const { w, h } = nodeSize(node, registry, scope);
   const ports = getPorts(node, registry, scope);
@@ -53,7 +55,7 @@ export function layoutNode(node: BlueprintNode, registry: Registry, scope?: Subg
     outputs.forEach((p, i) => pins.set(pinKey("out", p.id), { x: w - PIN_INSET, y: rowY(i) }));
   }
   const layout: NodeLayout = { w, h, inputs, outputs, pins };
-  cache.set(node, { subs: scope?.subgraphs, vars: scope?.variables, locals: scope?.locals, layout });
+  cache.set(node, { subs: scope?.subgraphs, vars: scope?.variables, locals: scope?.locals, params: scope?.params, layout });
   return layout;
 }
 
@@ -79,9 +81,12 @@ export function wirePath(x1: number, y1: number, x2: number, y2: number): string
 /** Header colour role of a node. Collapsed graphs get their own; functions and macros their kind's. */
 export function nodeKindOf(node: BlueprintNode, registry: Registry, scope?: SubgraphScope): string {
   if (node.subgraph !== undefined || node.type === SUBGRAPH_NODE) {
-    const k = node.subgraph !== undefined ? scope?.subgraphs?.[node.subgraph]?.kind : undefined;
-    return k === "function" ? "function" : k === "macro" ? "macro" : "collapsed";
+    const sg = node.subgraph !== undefined ? scope?.subgraphs?.[node.subgraph] : undefined;
+    const k = sg?.kind;
+    return k === "function" ? (sg?.pure ? "pure" : "function") : k === "macro" ? "macro" : "collapsed";
   }
+  // entry / Return of a function read as function nodes; tunnels elsewhere as the macro colour
+  if (node.type === TUNNEL_IN || node.type === TUNNEL_OUT) return scope?.locals !== undefined ? "function" : "macro";
   if (node.type === VAR_GET || node.type === VAR_SET) return node.type === VAR_GET ? "variable" : "function";
   const k = registry.node(node.type)?.kind ?? "default";
   return ["event", "function", "pure", "flow", "macro", "cast"].includes(k) ? k : "default";

@@ -5,7 +5,11 @@ import { findPin, findVariable, parsePinRef, subgraphPins } from "./ports";
 import type { Registry } from "./registry";
 import { REROUTE, VAR_GET, VAR_SET } from "./registry";
 import { collapse, expand, subgraphAsGraph, writeSubgraph } from "./subgraph";
-import type { BlueprintGraph, BlueprintNode, CommentTone, PinRef, SubgraphKind, VariableDef } from "./types";
+import { createSubgraph, duplicateSubgraph, removeSubgraph, setPure, setSignature } from "./functions";
+import { importLibrary, type BlueprintLibrary } from "./library";
+import { TUNNEL_OUT } from "./registry";
+import type { BlueprintGraph, BlueprintNode, CommentTone, GraphMeta, Pin, PinRef, SubgraphKind, VariableDef } from "./types";
+import { PARAM_PREFIX } from "./types";
 
 /**
  * JSON edit operations. One vocabulary for the UI, the history, and AI agents:
@@ -34,7 +38,10 @@ export type GraphOp =
   }
   | { readonly op: "removeNode"; readonly id: string | readonly string[] }
   | { readonly op: "moveNode"; readonly id: string; readonly to?: XY; readonly by?: XY }
-  | { readonly op: "updateNode"; readonly id: string; readonly title?: string | null; readonly comment?: string | null; readonly collapsed?: boolean; readonly width?: number | null; readonly disabled?: boolean | null }
+  | {
+    readonly op: "updateNode"; readonly id: string; readonly title?: string | null; readonly comment?: string | null; readonly collapsed?: boolean;
+    readonly width?: number | null; readonly disabled?: boolean | null; readonly devOnly?: boolean | null; readonly commentPinned?: boolean | null;
+  }
   | { readonly op: "connect"; readonly from: PinInput; readonly to: PinInput; readonly convert?: boolean }
   | { readonly op: "disconnect"; readonly edge?: string; readonly pin?: PinInput; readonly from?: PinInput; readonly to?: PinInput }
   | { readonly op: "setValue"; readonly node: string; readonly key: string; readonly value?: unknown; readonly unset?: boolean }
@@ -42,11 +49,36 @@ export type GraphOp =
   | { readonly op: "updateComment"; readonly id: string; readonly title?: string; readonly body?: string; readonly tone?: CommentTone; readonly at?: XY; readonly size?: XY; readonly moveWithNodes?: boolean }
   | { readonly op: "moveComment"; readonly id: string; readonly to: XY; readonly carry?: boolean }
   | { readonly op: "removeComment"; readonly id: string | readonly string[] }
+  /** Comment z-order: "front" draws it above the others, "back" below. */
+  | { readonly op: "orderComment"; readonly id: string; readonly to: "front" | "back" }
   | { readonly op: "collapse"; readonly nodes: readonly string[]; readonly id?: string; readonly label?: string; readonly kind?: SubgraphKind }
-  | { readonly op: "updateSubgraph"; readonly id: string; readonly label?: string; readonly kind?: SubgraphKind }
+  | {
+    readonly op: "updateSubgraph"; readonly id: string; readonly label?: string; readonly kind?: SubgraphKind;
+    readonly pure?: boolean; readonly const?: boolean; readonly category?: string | null; readonly description?: string | null; readonly keywords?: string | null;
+  }
+  // Document-level ops: they act on the subgraph table, whatever level is being edited.
+  /** A new empty function / macro / collapsed graph (entry + Return tunnels), no call site. */
+  | {
+    readonly op: "addSubgraph"; readonly id?: string; readonly label?: string; readonly kind?: SubgraphKind; readonly pure?: boolean;
+    readonly category?: string; readonly description?: string; readonly inputs?: readonly Pin[]; readonly outputs?: readonly Pin[];
+  }
+  /** Removes the definition and every call site. */
+  | { readonly op: "removeSubgraph"; readonly id: string }
+  | { readonly op: "duplicateSubgraph"; readonly id: string; readonly label?: string }
+  /** Replace inputs and / or outputs (pins matched by id). Wires to removed pins are dropped everywhere. */
+  | { readonly op: "setSignature"; readonly id: string; readonly inputs?: readonly Pin[]; readonly outputs?: readonly Pin[] }
+  /** Copy a library's definitions into the document (all, or `items` and what they use). */
+  | { readonly op: "importLibrary"; readonly library: BlueprintLibrary; readonly items?: readonly string[]; readonly replace?: boolean }
+  | { readonly op: "setMeta"; readonly name?: string | null; readonly description?: string | null }
   /** `local` adds to the function being edited (only inside a function view). */
-  | { readonly op: "addVariable"; readonly id?: string; readonly name: string; readonly type: string; readonly default?: unknown; readonly local?: boolean }
-  | { readonly op: "updateVariable"; readonly id: string; readonly name?: string; readonly type?: string; readonly default?: unknown; readonly unsetDefault?: boolean }
+  | {
+    readonly op: "addVariable"; readonly id?: string; readonly name: string; readonly type: string; readonly default?: unknown; readonly local?: boolean;
+    readonly category?: string; readonly tooltip?: string;
+  }
+  | {
+    readonly op: "updateVariable"; readonly id: string; readonly name?: string; readonly type?: string; readonly default?: unknown; readonly unsetDefault?: boolean;
+    readonly category?: string | null; readonly tooltip?: string | null;
+  }
   /** Removes the variable and every Get / Set node that uses it. */
   | { readonly op: "removeVariable"; readonly id: string }
   | { readonly op: "expand"; readonly node: string; readonly keepDefinition?: boolean }
@@ -115,12 +147,49 @@ const isFunctionView = (g: BlueprintGraph) => g.locals !== undefined;
 
 const xy = (p: XY): { x: number; y: number } => ("x" in p ? { x: p.x, y: p.y } : { x: p[0], y: p[1] });
 
+/** Ops that act on the document's subgraph table: inside a subgraph view they run on the root. */
+const DOC_OPS = new Set<GraphOp["op"]>(["updateSubgraph", "addSubgraph", "removeSubgraph", "duplicateSubgraph", "setSignature", "importLibrary", "setMeta"]);
+
 export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registry: Registry, opts: ApplyOptions = {}): ApplyResult {
   if (opts.subgraph !== undefined) {
-    const inner = subgraphAsGraph(graph, opts.subgraph);
-    if (!inner) return { graph, errors: [{ index: -1, op: "*", message: `Subgraph "${opts.subgraph}" not found` }], created: {} };
-    const r = applyOps(inner, ops, registry, { ...opts, subgraph: undefined, ids: opts.ids ?? createIdGen(graph) } as ApplyOptions);
-    return { ...r, graph: mergeInner(graph, opts.subgraph, r.graph) };
+    const sgId = opts.subgraph;
+    if (!subgraphAsGraph(graph, sgId)) return { graph, errors: [{ index: -1, op: "*", message: `Subgraph "${sgId}" not found` }], created: {} };
+    const ids = opts.ids ?? createIdGen(graph);
+    let root = graph;
+    const errors: OpError[] = [];
+    const created: Record<string, string> = {};
+    // consecutive level ops run as one batch on the inner view; document ops run on the root between batches
+    let batch: { op: GraphOp; index: number }[] = [];
+    const collect = (r: ApplyResult, idx: readonly number[]) => {
+      r.errors.forEach((e) => errors.push({ ...e, index: idx[e.index] ?? e.index }));
+      for (const [k, v] of Object.entries(r.created)) {
+        const m = /^#(\d+)(.*)$/.exec(k);
+        created[m ? `#${idx[Number(m[1])] ?? m[1]}${m[2]}` : k] = v;
+      }
+    };
+    const flush = () => {
+      if (!batch.length) return;
+      const inner = subgraphAsGraph(root, sgId, registry);
+      if (!inner) {
+        batch.forEach((b) => errors.push({ index: b.index, op: b.op.op, message: `Subgraph "${sgId}" no longer exists` }));
+        batch = [];
+        return;
+      }
+      const r = applyOps(inner, batch.map((b) => b.op), registry, { ids });
+      collect(r, batch.map((b) => b.index));
+      root = mergeInner(root, sgId, r.graph);
+      batch = [];
+    };
+    ops.forEach((op, index) => {
+      if (!DOC_OPS.has(op.op)) return void batch.push({ op, index });
+      flush();
+      const r = applyOps(root, [op], registry, { ids });
+      collect(r, [index]);
+      root = r.graph;
+    });
+    flush();
+    if (opts.atomic && errors.length) return { graph, errors, created: {} };
+    return { graph: root, errors, created };
   }
 
   const ids = opts.ids ?? createIdGen(graph);
@@ -151,9 +220,14 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
         if (!registry.node(type)) return fail(`Unknown node type "${type}"`);
         if (op.subgraph !== undefined && !g.subgraphs?.[op.subgraph]) return fail(`Subgraph "${op.subgraph}" not found`);
         if ((type === VAR_GET || type === VAR_SET) && !findVariable(g, op.variable)) return fail(`Variable "${op.variable ?? "?"}" not found`);
+        if (type === VAR_SET && op.variable?.startsWith(PARAM_PREFIX)) return fail("Function inputs are read only");
         const at = op.at ? xy(op.at) : { x: 0, y: 0 };
+        // another Return node (UE5 allows several in a function): same signature as the first
+        const sig = type === TUNNEL_OUT ? g.nodes.find((n) => n.type === TUNNEL_OUT)?.pins : undefined;
+        if (type === TUNNEL_OUT && !isFunctionView(g)) return fail("Return nodes can only be added inside a function");
         const n: BlueprintNode = {
           id: claim(g, op.id, "n", index), type, ...at,
+          ...(type === TUNNEL_OUT ? { pins: { inputs: [...(sig?.inputs ?? [])] } } : {}),
           ...(op.subgraph !== undefined ? { subgraph: op.subgraph } : {}),
           ...(op.variable !== undefined ? { variable: op.variable } : {}),
           ...(op.title !== undefined ? { title: op.title } : {}),
@@ -179,8 +253,8 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
         const n = node(op.id);
         if (!n) return fail(`Node "${op.id}" not found`);
         const next: Record<string, unknown> = { ...n };
-        for (const k of ["title", "comment", "collapsed", "width", "disabled"] as const) {
-          if (op[k] === null || (k === "disabled" && op[k] === false)) delete next[k];
+        for (const k of ["title", "comment", "collapsed", "width", "disabled", "devOnly", "commentPinned"] as const) {
+          if (op[k] === null || ((k === "disabled" || k === "devOnly" || k === "commentPinned") && op[k] === false)) delete next[k];
           else if (op[k] !== undefined) next[k] = op[k];
         }
         g = { ...g, nodes: g.nodes.map((x) => (x.id === n.id ? (next as unknown as BlueprintNode) : x)) };
@@ -254,6 +328,63 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
         g = removeComments(g, list);
         return;
       }
+      case "orderComment": {
+        const id = real(op.id);
+        const c = g.comments?.find((x) => x.id === id);
+        if (!c) return fail(`Comment "${op.id}" not found`);
+        const rest = g.comments!.filter((x) => x.id !== id);
+        g = { ...g, comments: op.to === "front" ? [...rest, c] : [c, ...rest] };
+        return;
+      }
+      case "addSubgraph": {
+        const r = createSubgraph(g, {
+          id: op.id === undefined ? ids("sg") : claim(g, op.id, "sg", index),
+          ...(op.label !== undefined ? { label: op.label } : {}), ...(op.kind ? { kind: op.kind } : {}), ...(op.pure ? { pure: true } : {}),
+          ...(op.category ? { category: op.category } : {}), ...(op.description ? { description: op.description } : {}),
+          ...(op.inputs ? { inputs: op.inputs } : {}), ...(op.outputs ? { outputs: op.outputs } : {}),
+        }, ids);
+        if (r.error) return fail(r.error);
+        g = r.graph;
+        created[op.id ?? `#${index}`] = r.id;
+        return;
+      }
+      case "removeSubgraph": {
+        const r = removeSubgraph(g, real(op.id));
+        if (r.error) return fail(r.error);
+        g = r.graph;
+        return;
+      }
+      case "duplicateSubgraph": {
+        const r = duplicateSubgraph(g, real(op.id), ids, op.label);
+        if (r.error) return fail(r.error);
+        g = r.graph;
+        created[`#${index}`] = r.id!;
+        return;
+      }
+      case "setSignature": {
+        const r = setSignature(g, real(op.id), { ...(op.inputs ? { inputs: op.inputs } : {}), ...(op.outputs ? { outputs: op.outputs } : {}) }, registry);
+        if (r.error) return fail(r.error);
+        g = r.graph;
+        return;
+      }
+      case "importLibrary": {
+        const r = importLibrary(g, op.library, op.items, op.replace === false ? { replace: false } : {});
+        if (r.error) return fail(r.error);
+        g = r.graph;
+        r.ids.forEach((id, i) => (created[`#${index}${i ? `.${i}` : ""}`] = id));
+        return;
+      }
+      case "setMeta": {
+        const meta: Record<string, string> = { ...(g.meta ?? {}) };
+        for (const k of ["name", "description"] as const) {
+          if (op[k] === null || op[k] === "") delete meta[k];
+          else if (op[k] !== undefined) meta[k] = op[k];
+        }
+        const { meta: _m, ...bare } = g;
+        void _m;
+        g = Object.keys(meta).length ? { ...bare, meta: meta as GraphMeta } : bare;
+        return;
+      }
       case "collapse": {
         const r = collapse(g, op.nodes.map(real), registry, ids, {
           id: op.id === undefined ? ids("sg") : claim(g, op.id, "sg", index), ...(op.label !== undefined ? { label: op.label } : {}),
@@ -273,22 +404,42 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
       case "updateSubgraph": {
         const sg = g.subgraphs?.[real(op.id)];
         if (!sg) return fail(`Subgraph "${op.id}" not found`);
-        if (op.kind === "function") {
-          const shellPorts = subgraphPinsOf(sg.nodes, registry);
-          if (shellPorts.execIn > 1 || shellPorts.execOut > 1) return fail("A function takes at most one exec input and one exec output");
-        }
-        const next = {
+        const shellPorts = subgraphPinsOf(sg.nodes, registry);
+        if (op.kind === "function" && (shellPorts.execIn > 1 || shellPorts.execOut > 1)) return fail("A function takes at most one exec input and one exec output");
+        const next: Record<string, unknown> = {
           ...sg, ...(op.label !== undefined ? { label: op.label } : {}),
           ...(op.kind !== undefined ? { kind: op.kind } : {}),
         };
-        if (next.kind === "graph") delete (next as { kind?: SubgraphKind }).kind;
-        g = { ...g, subgraphs: { ...g.subgraphs, [sg.id]: next } };
+        for (const k of ["category", "description", "keywords"] as const) {
+          if (op[k] === null || op[k] === "") delete next[k];
+          else if (op[k] !== undefined) next[k] = op[k];
+        }
+        const kind = (next.kind as SubgraphKind | undefined) ?? "graph";
+        if (kind === "graph") delete next.kind;
+        if (kind !== "function") {
+          delete next.pure;
+          delete next.const;
+          delete next.variables;
+        } else {
+          // promoted to a function with no exec pins: it is pure
+          if (op.kind === "function" && sg.kind !== "function" && shellPorts.execIn + shellPorts.execOut === 0) next.pure = true;
+          if (op.const !== undefined) { if (op.const) next.const = true; else delete next.const; }
+        }
+        g = { ...g, subgraphs: { ...g.subgraphs, [sg.id]: next as unknown as typeof sg } };
+        if (op.pure !== undefined && kind === "function") {
+          const r = setPure(g, sg.id, op.pure, registry, ids);
+          if (r.error) return fail(r.error);
+          g = r.graph;
+        } else if (op.pure && kind !== "function") return fail("Only functions can be pure");
         return;
       }
       case "addVariable": {
         if (!registry.type(op.type) || registry.isExec(op.type)) return fail(`Unknown or exec pin type "${op.type}"`);
         if (!op.name.trim()) return fail("Variable name is empty");
-        const v: VariableDef = { id: claim(g, op.id, "v", index), name: op.name.trim(), type: op.type, ...(op.default !== undefined ? { default: op.default } : {}) };
+        const v: VariableDef = {
+          id: claim(g, op.id, "v", index), name: op.name.trim(), type: op.type, ...(op.default !== undefined ? { default: op.default } : {}),
+          ...(op.category ? { category: op.category } : {}), ...(op.tooltip ? { tooltip: op.tooltip } : {}),
+        };
         if (op.local) {
           if (!isFunctionView(g)) return fail("Local variables exist only inside a function");
           g = { ...g, locals: [...(g.locals ?? []), v] };
@@ -308,6 +459,10 @@ export function applyOps(graph: BlueprintGraph, ops: readonly GraphOp[], registr
           if (op.type !== undefined) next.type = op.type;
           if (op.unsetDefault || (op.type !== undefined && op.type !== v.type && op.default === undefined)) delete next.default;
           if (op.default !== undefined) next.default = op.default;
+          for (const k of ["category", "tooltip"] as const) {
+            if (op[k] === null || op[k] === "") delete next[k];
+            else if (op[k] !== undefined) next[k] = op[k];
+          }
           return next as unknown as VariableDef;
         });
         g = { ...g, [where]: list };

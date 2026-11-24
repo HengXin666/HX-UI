@@ -1,10 +1,8 @@
 import { Search, X } from "lucide-react";
 import { m } from "motion/react";
 import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { findVariable } from "../ports";
-import { TUNNEL_IN, TUNNEL_OUT, VAR_GET, VAR_SET } from "../registry";
-import type { BlueprintNode, SubgraphScope } from "../types";
 import type { BlueprintEditor } from "./editor";
+import { collectFind, filterFind, revealFind, type FindHit } from "./find";
 
 /**
  * Find (UE5 "Find Results", Ctrl+F). Searches every level of the document: titles, node types,
@@ -13,70 +11,21 @@ import type { BlueprintEditor } from "./editor";
  * Lazily loaded by <Blueprint>.
  */
 
-interface Hit {
-  readonly key: string;
-  readonly id: string;
-  readonly title: string;
-  readonly detail: string;
-  readonly where: string;
-}
-
-function nodeTitle(ed: BlueprintEditor, n: BlueprintNode, scope: SubgraphScope): string {
-  if (n.title) return n.title;
-  if (n.type === VAR_GET || n.type === VAR_SET) {
-    const v = findVariable(scope, n.variable)?.name ?? "?";
-    return n.type === VAR_GET ? v : `设置 ${v}`;
-  }
-  if (n.subgraph !== undefined) return ed.root.subgraphs?.[n.subgraph]?.label ?? n.subgraph;
-  return ed.registry.node(n.type)?.title ?? n.type;
-}
-
-function collect(ed: BlueprintEditor): (Hit & { hay: string })[] {
-  const root = ed.root;
-  const out: (Hit & { hay: string })[] = [];
-  const level = (nodes: readonly BlueprintNode[], sg: string | undefined, where: string, scope: SubgraphScope) => {
-    for (const n of nodes) {
-      if (n.type === TUNNEL_IN || n.type === TUNNEL_OUT) continue;
-      const title = nodeTitle(ed, n, scope);
-      const def = ed.registry.node(n.type);
-      const texts = Object.values(n.values ?? {}).filter((v): v is string => typeof v === "string");
-      const vals = Object.entries(n.values ?? {}).slice(0, 2).map(([k, v]) => `${k}：${typeof v === "string" ? v : JSON.stringify(v)}`);
-      out.push({
-        key: sg === undefined ? n.id : `${sg}/${n.id}`, id: n.id, title, where,
-        detail: [def?.title !== title ? def?.title : undefined, n.comment, ...vals].filter(Boolean).join(" · "),
-        hay: [title, n.type, def?.title, def?.category, n.comment, ...texts].filter(Boolean).join(" ").toLowerCase(),
-      });
-    }
-  };
-  level(root.nodes, undefined, "主图", root);
-  for (const sg of Object.values(root.subgraphs ?? {})) {
-    const kind = sg.kind === "function" ? "函数" : sg.kind === "macro" ? "宏" : "折叠图";
-    level(sg.nodes, sg.id, `${kind} · ${sg.label ?? sg.id}`, { ...root, ...(sg.variables ? { locals: sg.variables } : {}) });
-  }
-  return out;
-}
-
 export default function FindPanel({ ed, onClose }: { ed: BlueprintEditor; onClose: () => void }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const listId = useId();
   const input = useRef<HTMLInputElement>(null);
-  const all = useMemo(() => collect(ed), [ed, ed.root]); // eslint-disable-line react-hooks/exhaustive-deps
+  const all = useMemo(() => collectFind(ed), [ed, ed.root]); // eslint-disable-line react-hooks/exhaustive-deps
   const q = query.trim().toLowerCase();
-  const hits = useMemo(() => (q ? all.filter((h) => q.split(/\s+/).every((w) => h.hay.includes(w))) : []), [all, q]);
+  const hits = useMemo(() => filterFind(all, q), [all, q]);
 
   useLayoutEffect(() => input.current?.focus(), []);
   useLayoutEffect(() => {
     document.getElementById(`${listId}-${active}`)?.scrollIntoView({ block: "nearest" });
   }, [active, listId]);
 
-  const go = (h: Hit) => {
-    const local = ed.reveal(h.key);
-    requestAnimationFrame(() => {
-      ed.select([local]);
-      ed.fit([local]);
-    });
-  };
+  const go = (h: FindHit) => revealFind(ed, h);
   const onKey = (e: React.KeyboardEvent) => {
     e.stopPropagation();
     if (e.key === "Escape") { e.preventDefault(); onClose(); }

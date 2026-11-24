@@ -47,11 +47,15 @@ export function menuFor(ed: BlueprintEditor, t: MenuTarget, host: MenuHost): { t
   }
   if (t.kind === "comment") {
     const c = g.comments?.find((x) => x.id === t.id);
+    const carry = c?.moveWithNodes !== false;
     return {
       title: c?.title || "注释",
       items: [
         { label: "重命名", keys: "F2", disabled: ro, run: () => host.rename({ kind: "comment", id: t.id }) },
         { label: "选中框内节点", run: () => c && ed.select({ nodes: nodesInComment(g, c, ed.registry), comments: [t.id] }) },
+        { label: carry ? "移动时不带框内节点" : "移动时带上框内节点", disabled: ro, run: () => ed.apply([{ op: "updateComment", id: t.id, moveWithNodes: !carry }], { label: "注释移动方式" }) },
+        { label: "置于顶层", disabled: ro, run: () => ed.apply([{ op: "orderComment", id: t.id, to: "front" }], { label: "注释置顶" }) },
+        { label: "置于底层", disabled: ro, run: () => ed.apply([{ op: "orderComment", id: t.id, to: "back" }], { label: "注释置底" }) },
         { kind: "tones", value: c?.tone ?? "default", run: (tone) => { if (!ro) ed.apply([{ op: "updateComment", id: t.id, tone }], { label: "注释颜色" }); } },
         { kind: "sep" },
         { label: "删除注释", keys: "Delete", danger: true, disabled: ro, run: () => ed.apply([{ op: "removeComment", id: t.id }], { label: "删除注释" }) },
@@ -70,15 +74,26 @@ export function menuFor(ed: BlueprintEditor, t: MenuTarget, host: MenuHost): { t
     { label: "拉直连线", keys: "Q", disabled: ro, run: () => straighten(ed) },
     { label: n?.collapsed ? "展开节点" : "收起节点", disabled: ro, run: () => ed.apply(ed.selection.nodes.map((id) => ({ op: "updateNode" as const, id, collapsed: !n?.collapsed })), { label: "收起节点" }) },
     { label: n?.disabled ? "启用节点" : "禁用节点", disabled: ro, run: () => toggleDisabled(ed) },
+    {
+      label: n?.devOnly ? "取消仅开发时启用" : "仅开发时启用", disabled: ro || !!n?.disabled,
+      run: () => ed.apply(ed.selection.nodes.map((id) => ({ op: "updateNode" as const, id, devOnly: !n?.devOnly })), { label: "仅开发时启用" }),
+    },
+    ...(n?.comment ? [{ label: n.commentPinned ? "取消固定注释气泡" : "固定注释气泡（缩小时也显示）", disabled: ro, run: () => ed.apply([{ op: "updateNode", id: t.id, commentPinned: !n.commentPinned }], { label: "固定注释气泡" }) }] : []),
+    { kind: "sep" },
     { label: bp ? "移除断点" : "添加断点", keys: "F9", run: () => ed.toggleBreakpoint() },
+    ...(ed.debugEnabled ? [
+      { label: bp ? "编辑断点条件…" : "添加条件断点…", disabled: many, run: () => host.rename({ kind: "condition", id: t.id }) },
+      { label: "运行到此处", keys: "Mod+F10", disabled: many, run: () => void ed.runToCursor(t.id) },
+    ] : []),
+    ...(ed.breakpoints.size ? [{ label: `删除所有断点（${ed.breakpoints.size}）`, keys: "Mod+Shift+F9", run: () => ed.clearBreakpoints() }] : []),
   ];
   if (isGraph && n?.subgraph !== undefined) {
     const sg = n.subgraph;
     const kind = g.subgraphs?.[sg]?.kind ?? "graph";
     const conv = (["graph", "function", "macro"] as const).filter((k) => k !== kind).map((k): MenuEntry => ({
-      label: `转换为${k === "graph" ? "折叠图" : k === "function" ? "函数" : "宏"}`, disabled: ro,
+      label: kind === "graph" && k === "function" ? "提升为函数" : `转换为${k === "graph" ? "折叠图" : k === "function" ? "函数" : "宏"}`, disabled: ro,
       run: () => {
-        const r = ed.apply([{ op: "updateSubgraph", id: sg, kind: k }], { label: "转换子图类型" });
+        const r = ed.applyDocument([{ op: "updateSubgraph", id: sg, kind: k }], { label: "转换子图类型" });
         if (r?.errors.length) ed.notify("函数只能有一个执行输入和一个执行输出");
       },
     }));

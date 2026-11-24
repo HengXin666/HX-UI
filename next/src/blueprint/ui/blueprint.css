@@ -138,7 +138,16 @@
 .bp-pin { width: 12px; height: 12px; flex: none; display: grid; place-items: center; cursor: crosshair; }
 .bp-pin svg { width: 12px; height: 12px; overflow: visible; }
 .bp-pin[data-bad] svg { filter: drop-shadow(0 0 2px var(--bp-invalid)); }
+.bp-pin svg { transition: transform 120ms ease-out; }
 .bp-pin:hover svg { transform: scale(1.25); }
+.bp-pin:active svg { transform: scale(1.1); transition-duration: 60ms; }
+.bp-node { transition: box-shadow 140ms ease-out, opacity 140ms ease-out; }
+.bp-comment-bar { transition: background-color 120ms ease-out; }
+.bp-comment-bar:hover { background: color-mix(in oklch, var(--bp-tone) 42%, transparent); }
+.bp-reroute::before { transition: transform 120ms ease-out; }
+.bp-reroute:hover::before { transform: scale(1.2); }
+/* hold B / S / D: placing a node on click */
+.bp-root[data-tool="place"] { cursor: copy; }
 .bp-params { margin-top: 6px; }
 .bp-param { height: 24px; display: flex; align-items: center; gap: 6px; padding: 0 10px; }
 .bp-param > span { color: var(--bp-node-muted); font-size: 11px; flex: none; }
@@ -250,31 +259,50 @@ input[type="checkbox"].bp-field { width: 13px; height: 13px; padding: 0; accent-
   background: var(--bp-break); box-shadow: 0 0 0 2px var(--bp-graph-bg); pointer-events: none;
 }
 .bp-node[data-disabled] { outline: 1.5px dashed var(--bp-node-muted); outline-offset: 3px; }
-.bp-node[data-disabled] .bp-head { filter: grayscale(1); }
-.bp-node[data-disabled] .bp-body { opacity: 0.55; }
+.bp-node[data-disabled] .bp-head { filter: grayscale(1); opacity: 0.75; }
+.bp-node[data-disabled] .bp-body { opacity: 0.45; filter: grayscale(1); }
+.bp-node[data-devonly] { outline: 1.5px dashed color-mix(in oklch, var(--warning) 80%, transparent); outline-offset: 3px; }
+.bp-node[data-devonly] .bp-head-sub { opacity: 1; }
+/* pass-through line drawn over a disabled node's body: exec goes straight through */
+.bp-pass { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; z-index: 1; }
+.bp-pass path { fill: none; stroke: var(--bp-exec); stroke-width: 2; stroke-dasharray: 4 4; opacity: 0.6; }
+.bp-wire-g[data-dim] .bp-wire { opacity: 0.35; stroke-dasharray: 6 5; }
 .bp-root:focus-visible .bp-node[data-active], .bp-root:focus-visible .bp-reroute[data-active] { outline: 2px solid var(--ring); outline-offset: 4px; }
 .bp-note {
+  pointer-events: none; /* a bubble never blocks the comment title or wires under it */
   position: absolute; left: 0; bottom: calc(100% + 9px); max-width: 240px; width: max-content; padding: 4px 8px;
   border-radius: 6px; border: 1px solid var(--border); background: var(--popover); color: var(--popover-foreground);
-  font-size: 11px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; box-shadow: var(--shadow-soft); cursor: text;
+  font-size: 11px; line-height: 1.4; white-space: pre-wrap; overflow-wrap: anywhere; box-shadow: var(--shadow-soft);
 }
 .bp-note::after {
   content: ""; position: absolute; left: 14px; bottom: -5px; width: 8px; height: 8px; background: var(--popover);
   border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transform: rotate(45deg);
 }
 .bp-root[data-lod="low"] .bp-note, .bp-root[data-lod="box"] .bp-note { visibility: hidden; }
-
-/* ---------------------------------------------------------------- M5: debug run */
-.bp-wire-g[data-run] .bp-wire { stroke: var(--bp-run); }
-.bp-pulse {
-  fill: none; stroke: var(--bp-run); stroke-width: 6; stroke-linecap: round; stroke-dasharray: 0.16 1;
-  stroke-dashoffset: -1; pointer-events: none; filter: drop-shadow(0 0 4px var(--bp-run));
+/* a pinned bubble stays readable when zoomed out: it scales back up, anchored at its tail */
+.bp-root[data-lod="low"] .bp-note[data-pinned], .bp-root[data-lod="box"] .bp-note[data-pinned] {
+  visibility: visible; transform-origin: 0 100%; scale: min(3, calc(0.85 / var(--bp-z)));
 }
-.bp-node[data-run]:not([data-selected]) { box-shadow: 0 0 0 2px color-mix(in oklch, var(--bp-run) 65%, transparent), var(--bp-node-shadow); }
-.bp-node[data-run="next"]:not([data-selected]) { box-shadow: 0 0 0 2px var(--bp-run), 0 0 16px 1px color-mix(in oklch, var(--bp-run) 40%, transparent), var(--bp-node-shadow); }
-.bp-node[data-run="skipped"]:not([data-selected]) { box-shadow: 0 0 0 1px color-mix(in oklch, var(--bp-run) 50%, transparent), var(--bp-node-shadow); }
-.bp-node[data-paused], .bp-node[data-paused][data-selected] {
-  box-shadow: 0 0 0 3px var(--bp-break), 0 0 20px 2px color-mix(in oklch, var(--bp-break) 45%, transparent), var(--bp-node-shadow);
+.bp-note[data-pinned] { border-color: color-mix(in oklch, var(--bp-selected) 55%, var(--border)); }
+
+/* ---------------------------------------------------------------- M5 + M6: debug run
+ * Restrained on purpose: rings and opacity, no glows or gradients. The only motion is a short
+ * dash per exec hop and, while running, a slow dash flow on the wires already taken. */
+.bp-wire-g[data-run] .bp-wire { stroke: var(--bp-run); }
+.bp-root[data-running] .bp-wire-g[data-run] .bp-wire[data-kind="exec"] { stroke-dasharray: 9 7; animation: bp-flow 700ms linear infinite; }
+@keyframes bp-flow { to { stroke-dashoffset: -16; } }
+.bp-pulse {
+  fill: none; stroke: var(--bp-run); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 0.12 1;
+  stroke-dashoffset: -1; pointer-events: none;
+}
+.bp-node[data-run]:not([data-selected]) { box-shadow: 0 0 0 1.5px color-mix(in oklch, var(--bp-run) 70%, transparent), var(--bp-node-shadow); }
+.bp-node[data-run="next"]:not([data-selected]) { box-shadow: 0 0 0 2px var(--bp-run), var(--bp-node-shadow); }
+.bp-node[data-run="skipped"]:not([data-selected]) { box-shadow: 0 0 0 1px color-mix(in oklch, var(--bp-run) 45%, transparent), var(--bp-node-shadow); }
+.bp-node[data-frame] { outline: 1.5px dashed var(--bp-run); outline-offset: 4px; }
+.bp-node[data-paused], .bp-node[data-paused][data-selected] { box-shadow: 0 0 0 2.5px var(--bp-break), var(--bp-node-shadow); }
+.bp-node[data-paused] .bp-head::after {
+  content: "已暂停"; margin-left: auto; padding: 1px 5px; border-radius: 4px; font-size: 10px; font-weight: 600;
+  background: var(--bp-break); color: oklch(0.99 0 0);
 }
 .bp-run-dot { width: 8px; height: 8px; flex: none; border-radius: 999px; background: var(--muted-foreground); }
 .bp-run-dot[data-status="running"] { background: var(--bp-run); animation: bp-blink 1s ease-in-out infinite; }
@@ -311,7 +339,8 @@ input[type="checkbox"].bp-field { width: 13px; height: 13px; padding: 0; accent-
 .bp-notice:empty { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .bp-wire { transition: none; }
-  .bp-pin:hover svg { transform: none; }
+  .bp-wire, .bp-node, .bp-pin svg, .bp-comment-bar, .bp-reroute::before { transition: none; }
+  .bp-pin:hover svg, .bp-pin:active svg, .bp-reroute:hover::before { transform: none; }
   .bp-run-dot[data-status="running"] { animation: none; }
+  .bp-root[data-running] .bp-wire-g[data-run] .bp-wire[data-kind="exec"] { animation: none; stroke-dasharray: none; }
 }

@@ -1,6 +1,7 @@
 import { defineTypes } from "./define";
+import { defineLibrary } from "./library";
 import { createRegistry } from "./registry";
-import type { BlueprintGraph } from "./types";
+import type { BlueprintGraph, SubGraphDef } from "./types";
 
 /**
  * Demo registry and graph: number -> compare -> branch -> print. Used by docs and scripts/bp-check.ts.
@@ -38,6 +39,30 @@ export const demoNodes = [
     evaluate: ({ inputs }) => ({ out: inputs.a + inputs.b }),
   }),
   t.defineNode({
+    id: "math.subtract", title: "Subtract", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 0 }, { id: "b", type: "number", default: 0 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: inputs.a - inputs.b }),
+  }),
+  t.defineNode({
+    id: "math.multiply", title: "Multiply", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 1 }, { id: "b", type: "number", default: 1 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: inputs.a * inputs.b }),
+  }),
+  t.defineNode({
+    id: "math.min", title: "Min", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 0 }, { id: "b", type: "number", default: 0 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: Math.min(inputs.a, inputs.b) }),
+  }),
+  t.defineNode({
+    id: "math.max", title: "Max", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 0 }, { id: "b", type: "number", default: 0 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: Math.max(inputs.a, inputs.b) }),
+  }),
+  t.defineNode({
     id: "math.sum", title: "Sum", category: "Math",
     inputs: [{ id: "items", type: "numbers", default: [] }],
     outputs: [{ id: "out", type: "number" }],
@@ -57,6 +82,22 @@ export const demoNodes = [
     evaluate: ({ inputs }) => ({ $exec: inputs.cond ? "true" : "false" }),
   }),
   t.defineNode({
+    id: "flow.sequence", title: "Sequence", category: "Flow", kind: "flow",
+    description: "Fires each output in order (UE5 Sequence).",
+    inputs: [{ id: "exec", type: "exec" }],
+    outputs: [{ id: "then_0", type: "exec", label: "Then 0" }, { id: "then_1", type: "exec", label: "Then 1" }],
+  }),
+  t.defineNode({
+    id: "flow.delay", title: "Delay", category: "Flow", kind: "function",
+    description: "Waits, then continues (latent node). Duration in seconds.",
+    inputs: [{ id: "exec", type: "exec" }, { id: "duration", type: "number", default: 0.2, label: "Duration" }],
+    outputs: [{ id: "then", type: "exec", label: "Completed" }],
+    evaluate: async ({ inputs }) => {
+      await new Promise((r) => setTimeout(r, Math.max(0, Math.min(5, inputs.duration)) * 1000));
+      return {};
+    },
+  }),
+  t.defineNode({
     id: "flow.print", title: "Print", category: "Flow",
     description: "Side effect node: returns the line instead of logging, the host decides where it goes.",
     inputs: [{ id: "exec", type: "exec" }, { id: "msg", type: "string", default: "" }],
@@ -72,7 +113,53 @@ export const demoNodes = [
   }),
 ];
 
-export const demoRegistry = createRegistry(demoTypes, demoNodes);
+// A small library: two pure functions and a macro, offered in every document using demoRegistry.
+const square: SubGraphDef = {
+  id: "square", label: "平方", kind: "function", pure: true, category: "常用数学", description: "x × x", keywords: "square pow",
+  nodes: [
+    { id: "in", type: "subgraph.in", x: 0, y: 0, pins: { outputs: [{ id: "x", type: "number", label: "x" }] } },
+    { id: "mul", type: "math.multiply", x: 240, y: 0 },
+    { id: "out", type: "subgraph.out", x: 480, y: 0, pins: { inputs: [{ id: "out", type: "number", label: "结果" }] } },
+  ],
+  edges: [
+    { id: "e1", from: { node: "in", pin: "x" }, to: { node: "mul", pin: "a" } },
+    { id: "e2", from: { node: "in", pin: "x" }, to: { node: "mul", pin: "b" } },
+    { id: "e3", from: { node: "mul", pin: "out" }, to: { node: "out", pin: "out" } },
+  ],
+};
+const clamp: SubGraphDef = {
+  id: "clamp", label: "限制范围", kind: "function", pure: true, category: "常用数学", description: "把 x 限制在 [下限, 上限]", keywords: "clamp range",
+  nodes: [
+    { id: "in", type: "subgraph.in", x: 0, y: 0, pins: { outputs: [{ id: "x", type: "number", label: "x" }, { id: "lo", type: "number", label: "下限", default: 0 }, { id: "hi", type: "number", label: "上限", default: 1 }] } },
+    { id: "min", type: "math.min", x: 240, y: 0 },
+    { id: "max", type: "math.max", x: 440, y: 0 },
+    { id: "out", type: "subgraph.out", x: 660, y: 0, pins: { inputs: [{ id: "out", type: "number", label: "结果" }] } },
+  ],
+  edges: [
+    { id: "e1", from: { node: "in", pin: "x" }, to: { node: "min", pin: "a" } },
+    { id: "e2", from: { node: "in", pin: "hi" }, to: { node: "min", pin: "b" } },
+    { id: "e3", from: { node: "min", pin: "out" }, to: { node: "max", pin: "a" } },
+    { id: "e4", from: { node: "in", pin: "lo" }, to: { node: "max", pin: "b" } },
+    { id: "e5", from: { node: "max", pin: "out" }, to: { node: "out", pin: "out" } },
+  ],
+};
+const ifTrue: SubGraphDef = {
+  id: "if_true", label: "仅当为真", kind: "macro", category: "常用流程", description: "条件为真才继续", keywords: "if when",
+  nodes: [
+    { id: "in", type: "subgraph.in", x: 0, y: 0, pins: { outputs: [{ id: "exec", type: "exec" }, { id: "cond", type: "boolean", label: "条件" }] } },
+    { id: "br", type: "flow.branch", x: 240, y: 0 },
+    { id: "out", type: "subgraph.out", x: 480, y: 0, pins: { inputs: [{ id: "then", type: "exec", label: "是" }] } },
+  ],
+  edges: [
+    { id: "e1", from: { node: "in", pin: "exec" }, to: { node: "br", pin: "exec" } },
+    { id: "e2", from: { node: "in", pin: "cond" }, to: { node: "br", pin: "cond" } },
+    { id: "e3", from: { node: "br", pin: "true" }, to: { node: "out", pin: "then" } },
+  ],
+};
+
+export const demoLibrary = defineLibrary({ id: "demo", name: "示例库", version: "1.0.0", description: "演示用函数和宏", items: [square, clamp, ifTrue] });
+
+export const demoRegistry = createRegistry(demoTypes, demoNodes, { libraries: [demoLibrary] });
 
 export const demoGraph: BlueprintGraph = {
   nodes: [

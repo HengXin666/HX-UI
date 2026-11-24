@@ -8,6 +8,8 @@ export type { CanvasRefs, CanvasUI } from "./canvas-pointer";
 
 /** MIME type of a variable dragged from the variables panel (payload: the variable id). */
 export const VARIABLE_MIME = "application/x-hx-blueprint-variable";
+/** MIME type of a function / macro / collapsed graph dragged from My Blueprint (payload: subgraph id). */
+export const SUBGRAPH_MIME = "application/x-hx-blueprint-subgraph";
 
 /**
  * Canvas input wiring: the pointer state machine (canvas-pointer.ts), wheel zoom, double-click,
@@ -50,17 +52,45 @@ export function useCanvas(ed: BlueprintEditor, refs: CanvasRefs, ui: CanvasUI, l
     };
 
     const onDragOver = (e: DragEvent) => {
-      if (ed.readOnly || !e.dataTransfer?.types.includes(VARIABLE_MIME)) return;
+      const types = e.dataTransfer?.types ?? [];
+      if (ed.readOnly || (!types.includes(VARIABLE_MIME) && !types.includes(SUBGRAPH_MIME))) return;
       e.preventDefault();
-      e.dataTransfer.dropEffect = "copy";
+      e.dataTransfer!.dropEffect = "copy";
     };
     const onDrop = (e: DragEvent) => {
-      const id = e.dataTransfer?.getData(VARIABLE_MIME);
-      if (!id || ed.readOnly) return;
-      e.preventDefault();
+      if (ed.readOnly) return;
       const { sx, sy } = local(e);
       const p = ed.toGraph(sx, sy);
       const snap = (v: number) => (ed.snap > 1 ? Math.round(v / ed.snap) * ed.snap : Math.round(v));
+      const sg = e.dataTransfer?.getData(SUBGRAPH_MIME);
+      if (sg?.startsWith("lib|")) {
+        // a library item: import it (keeping an existing copy), then call it
+        e.preventDefault();
+        const [, libId, item] = sg.split("|");
+        const lib = ed.registry.libraries.find((l) => l.id === libId);
+        if (!lib || !item) return;
+        const r = ed.apply([
+          { op: "importLibrary", library: lib, items: [item], replace: false },
+          { op: "addNode", type: "subgraph", subgraph: `${libId}:${item}`, at: [snap(p.x), snap(p.y)] },
+        ], { label: "添加库函数" });
+        const nid = r?.created["#1"];
+        if (nid && !r.errors.length) ed.select([nid]);
+        root.focus({ preventScroll: true });
+        return;
+      }
+      if (sg) {
+        e.preventDefault();
+        // a function / macro dropped on its own body would call itself: refuse
+        if (sg === ed.subgraph) return void ed.notify("不能在函数内部调用它自己");
+        const r = ed.apply([{ op: "addNode", type: "subgraph", subgraph: sg, at: [snap(p.x), snap(p.y)] }], { label: "添加调用" });
+        const nid = r?.created["#0"];
+        if (nid && !r.errors.length) ed.select([nid]);
+        root.focus({ preventScroll: true });
+        return;
+      }
+      const id = e.dataTransfer?.getData(VARIABLE_MIME);
+      if (!id) return;
+      e.preventDefault();
       // UE5: plain drop = Get, Alt-drop = Set
       const set = e.altKey;
       const r = ed.apply([{ op: "addNode", type: set ? VAR_SET : VAR_GET, variable: id, at: [snap(p.x), snap(p.y)] }], { label: set ? "添加设置变量" : "添加获取变量" });
@@ -75,6 +105,13 @@ export function useCanvas(ed: BlueprintEditor, refs: CanvasRefs, ui: CanvasUI, l
       if (!root.contains(t)) return;
       if (t.closest("[data-bp-overlay], [data-nodrag]")) return;
       const { sx, sy } = local(e);
+      // node bubbles let pointers through (they never block a comment title): hit-test them by box
+      const note = [...root.querySelectorAll<HTMLElement>(".bp-note")].find((n) => {
+        const b = n.getBoundingClientRect();
+        return getComputedStyle(n).visibility === "visible" && e.clientX >= b.left && e.clientX <= b.right && e.clientY >= b.top && e.clientY <= b.bottom;
+      });
+      const noteNode = note?.closest<HTMLElement>("[data-node]")?.dataset.node;
+      if (noteNode && !ed.readOnly) return void uiRef.current.rename({ kind: "note", id: noteNode });
       const edge = t.closest<HTMLElement>("[data-edge]")?.dataset.edge;
       if (edge && !ed.readOnly) {
         const p = ed.toGraph(sx, sy);
@@ -86,7 +123,6 @@ export function useCanvas(ed: BlueprintEditor, refs: CanvasRefs, ui: CanvasUI, l
       const nodeId = t.closest<HTMLElement>("[data-node]")?.dataset.node;
       const node = nodeId ? ed.graph.nodes.find((n) => n.id === nodeId) : undefined;
       if (node?.subgraph !== undefined) return void ed.enter(node.subgraph);
-      if (node && t.closest(".bp-note")) return void uiRef.current.rename({ kind: "note", id: node.id });
       if (node && t.closest(".bp-head")) return void uiRef.current.rename({ kind: "node", id: node.id });
       const cm = t.closest("[data-part]") ? t.closest<HTMLElement>("[data-comment]")?.dataset.comment : undefined;
       if (cm) uiRef.current.rename({ kind: "comment", id: cm });

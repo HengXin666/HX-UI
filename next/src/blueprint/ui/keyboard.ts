@@ -45,6 +45,11 @@ export function runCommand(ed: BlueprintEditor, id: CommandId, ui: CommandUI, ke
     case "menu": return ui.openActions();
     case "help": return ui.toggleHelp();
     case "exit": return ed.exitTo(ed.path.length - 1);
+    case "enter": {
+      const n = sel.nodes.length === 1 ? ed.graph.nodes.find((x) => x.id === sel.nodes[0]) : undefined;
+      if (n?.subgraph === undefined) return false;
+      return ed.enter(n.subgraph);
+    }
     case "straighten": return straighten(ed);
     case "alignTop": return alignSelected(ed, "top");
     case "alignBottom": return alignSelected(ed, "bottom");
@@ -69,6 +74,13 @@ export function runCommand(ed: BlueprintEditor, id: CommandId, ui: CommandUI, ke
     case "run": if (!ui.debug) return false; void ed.run(); return;
     case "step": if (!ui.debug) return false; void ed.step(); return;
     case "stop": if (!ui.debug) return false; ed.stop(); return;
+    case "runToCursor": if (!ui.debug || sel.nodes.length !== 1) return false; void ed.runToCursor(); return;
+    case "clearBreakpoints": {
+      const n = ed.breakpoints.size;
+      ed.clearBreakpoints();
+      if (n) ed.notify(`已删除 ${n} 个断点`);
+      return;
+    }
     case "copy": case "cut": case "paste": return;
   }
 }

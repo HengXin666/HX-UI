@@ -1,6 +1,7 @@
 import type { Registry } from "./registry";
 import { SUBGRAPH_NODE, TUNNEL_IN, TUNNEL_OUT, VAR_GET, VAR_SET } from "./registry";
 import type { BlueprintEdge, BlueprintNode, Pin, PinRef, PinShape, SubgraphScope, VariableDef } from "./types";
+import { PARAM_PREFIX } from "./types";
 
 /**
  * The ONE place that answers "which pins does this node have".
@@ -42,15 +43,28 @@ function resolve(pins: readonly Pin[], direction: Direction, reg: Registry): Res
   });
 }
 
-/** Pins of a collapsed graph, read from its tunnel nodes (fixes B3: they can never drift from the inside). */
+/**
+ * Pins of a collapsed graph, read from its tunnel nodes (fixes B3: they can never drift from the inside).
+ * A function may have several Return nodes (UE5): they share one signature, so pins are taken once
+ * per id, first tunnel wins.
+ */
 export function subgraphPins(sgNodes: readonly BlueprintNode[]): { inputs: Pin[]; outputs: Pin[] } {
   const inputs: Pin[] = [];
   const outputs: Pin[] = [];
+  const seenIn = new Set<string>();
+  const seenOut = new Set<string>();
   for (const n of sgNodes) {
-    if (n.type === TUNNEL_IN) inputs.push(...(n.pins?.outputs ?? []));
-    if (n.type === TUNNEL_OUT) outputs.push(...(n.pins?.inputs ?? []));
+    if (n.type === TUNNEL_IN) for (const p of n.pins?.outputs ?? []) if (!seenIn.has(p.id)) { seenIn.add(p.id); inputs.push(p); }
+    if (n.type === TUNNEL_OUT) for (const p of n.pins?.inputs ?? []) if (!seenOut.has(p.id)) { seenOut.add(p.id); outputs.push(p); }
   }
   return { inputs, outputs };
+}
+
+/** A function's data inputs as read-only variables (`$in:<pin>`), what its inner view carries as `params`. */
+export function paramVariables(sgNodes: readonly BlueprintNode[], registry?: Registry): VariableDef[] {
+  return subgraphPins(sgNodes).inputs.filter((p) => (registry ? !registry.isExec(p.type) : p.type !== "exec")).map((p) => ({
+    id: `${PARAM_PREFIX}${p.id}`, name: p.label ?? p.id, type: p.type, ...(p.default !== undefined ? { default: p.default } : {}),
+  }));
 }
 
 /**
@@ -60,7 +74,8 @@ export function subgraphPins(sgNodes: readonly BlueprintNode[]): { inputs: Pin[]
  */
 export function getPorts(node: BlueprintNode, registry: Registry, scope?: SubgraphScope): NodePorts {
   if (node.type === VAR_GET || node.type === VAR_SET) {
-    const v = findVariable(scope, node.variable);
+    // function inputs are read only: a Set of one resolves to nothing
+    const v = node.type === VAR_SET && node.variable?.startsWith(PARAM_PREFIX) ? undefined : findVariable(scope, node.variable);
     if (!v) return { inputs: [], outputs: [], missing: "variable" };
     const value = { id: "value", type: v.type, label: v.name };
     return node.type === VAR_GET
@@ -86,9 +101,10 @@ export function getPorts(node: BlueprintNode, registry: Registry, scope?: Subgra
   };
 }
 
-/** A variable visible in `scope`: function locals first, then graph variables. */
+/** A variable visible in `scope`: function inputs (`$in:` ids), then locals, then graph variables. */
 export function findVariable(scope: SubgraphScope | undefined, id: string | undefined): VariableDef | undefined {
   if (id === undefined) return undefined;
+  if (id.startsWith(PARAM_PREFIX)) return scope?.params?.find((v) => v.id === id);
   return scope?.locals?.find((v) => v.id === id) ?? scope?.variables?.find((v) => v.id === id);
 }
 

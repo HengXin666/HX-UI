@@ -132,7 +132,17 @@ export interface BlueprintNode {
    * exec output, each data output passes the first input of an assignable type (else undefined).
    */
   readonly disabled?: boolean;
-  /** Variable id, for `var.get` / `var.set` nodes. Pins follow the variable's type. */
+  /**
+   * UE5 "Enabled State: Development Only": runs in normal / debug runs, skipped like a disabled node
+   * when evaluating with `shipping: true`. Ignored when `disabled` is set.
+   */
+  readonly devOnly?: boolean;
+  /** Keep the comment bubble visible (and readable) when zoomed out (UE5 pinned comment bubble). */
+  readonly commentPinned?: boolean;
+  /**
+   * Variable id, for `var.get` / `var.set` nodes. Pins follow the variable's type.
+   * Inside a function, `"$in:<pin>"` reads the function input `<pin>` (UE5 input getters, read only).
+   */
   readonly variable?: string;
   readonly pins?: NodePins;
   /** Id of a SubGraphDef in the root graph. The node's pins are derived from that subgraph's tunnels. */
@@ -168,7 +178,13 @@ export interface VariableDef {
   /** Pin type id from the registry (not exec). */
   readonly type: string;
   readonly default?: unknown;
+  /** Group in the My Blueprint list (UE5 variable category). */
+  readonly category?: string;
+  readonly tooltip?: string;
 }
+
+/** Prefix of a function-input getter's variable id (`"$in:<pin>"`). */
+export const PARAM_PREFIX = "$in:";
 
 /**
  * What a collapsed graph is (UE5 has three):
@@ -192,6 +208,20 @@ export interface SubGraphDef {
   readonly kind?: SubgraphKind;
   /** Local variables (functions only). */
   readonly variables?: readonly VariableDef[];
+  /**
+   * Pure function (functions only): no exec pins, called once per pull like a pure node.
+   * Its body may not contain exec nodes.
+   */
+  readonly pure?: boolean;
+  /** Const function (functions only): may not Set graph variables (locals are fine). */
+  readonly const?: boolean;
+  /** Action menu / My Blueprint category. */
+  readonly category?: string;
+  readonly description?: string;
+  /** Extra search words for the action menu (space separated). */
+  readonly keywords?: string;
+  /** Id of the BlueprintLibrary this definition was imported from (re-importing updates it). */
+  readonly library?: string;
   readonly nodes: readonly BlueprintNode[];
   readonly edges: readonly BlueprintEdge[];
   readonly comments?: readonly BlueprintComment[];
@@ -207,6 +237,15 @@ export interface BlueprintGraph {
   readonly variables?: readonly VariableDef[];
   /** Inner views of a function only: its local variables (written back to the definition). */
   readonly locals?: readonly VariableDef[];
+  /** Inner views of a function only: its inputs as read-only variables (`$in:<pin>`), derived, never stored. */
+  readonly params?: readonly VariableDef[];
+  /** Document name and description (graph settings). Root only. */
+  readonly meta?: GraphMeta;
+}
+
+export interface GraphMeta {
+  readonly name?: string;
+  readonly description?: string;
 }
 
 /**
@@ -217,6 +256,7 @@ export interface SubgraphScope {
   readonly subgraphs?: Readonly<Record<string, SubGraphDef>>;
   readonly variables?: readonly VariableDef[];
   readonly locals?: readonly VariableDef[];
+  readonly params?: readonly VariableDef[];
 }
 
 // ---------------------------------------------------------------------------
@@ -238,6 +278,9 @@ export type IssueCode =
   | "missing-subgraph"
   | "unknown-variable"
   | "function-exec"
+  | "pure-function"
+  | "const-function"
+  | "broken-call"
   | "disabled-node"
   | "no-entry"
   | "custom";

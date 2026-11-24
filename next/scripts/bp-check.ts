@@ -1,5 +1,5 @@
 /**
- * Blueprint logic self-check (M0 + M1 + M5). Run: node scripts/bp-check.ts   (Node 22.18+, type stripping)
+ * Blueprint logic self-check (M0 + M1 + M5 + M6). Run: node scripts/bp-check.ts   (Node 22.18+, type stripping)
  * No test runner, no dependencies: plain node:assert. Exits 1 on the first failure.
  */
 import assert from "node:assert/strict";
@@ -341,7 +341,7 @@ await check("canConnect suggests a conversion node, connect op inserts it, menu 
   assert.ok(ids.includes("math.add") && ids.includes("flow.print~"));
   assert.ok(ids.indexOf("math.add") < ids.indexOf("flow.print~"), "direct matches first");
   assert.ok(!ids.some((i) => i.startsWith("subgraph")), "internal nodes hidden");
-  assert.deepEqual(bp.nodesAcceptingPin("exec", "in", reg).map((m) => m.node.id).sort(), ["event.start", "flow.branch", "flow.print"]);
+  assert.deepEqual(bp.nodesAcceptingPin("exec", "in", reg).map((m) => m.node.id).sort(), ["event.start", "flow.branch", "flow.delay", "flow.print", "flow.sequence"]);
 });
 
 await check("history: one apply = one undo step, tags coalesce, redo works", () => {
@@ -713,6 +713,357 @@ await check("M5 function vs macro: exec rules, locals reset per call, macro exit
   const ex = bp.applyOps(two.graph, [{ op: "expand", node: "call2", keepDefinition: true }], reg);
   ok(ex);
   assert.deepEqual(ex.graph.variables?.map((v) => v.id), ["v_local"]);
+});
+
+
+// ---------------------------------------------------------------------------- M6: functions as library primitives
+
+/** start -> f(a.value) -> print(f.out); f = "加倍" function with an exec pin, two call sites. */
+function fnDoc(): Graph {
+  const base = bp.applyOps({ nodes: [], edges: [] }, [
+    { op: "addNode", id: "start", type: "event.start" },
+    { op: "addNode", id: "a", type: "value.number", values: { v: 4 } },
+    { op: "addSubgraph", id: "f", label: "加倍", kind: "function", inputs: [{ id: "x", type: "number", label: "x" }], outputs: [{ id: "out", type: "number", label: "结果" }] },
+  ], reg).graph;
+  // body: Get x + Get x -> Return.out
+  const body = bp.applyOps(base, [
+    { op: "addNode", id: "gx", type: "var.get", variable: "$in:x" },
+    { op: "addNode", id: "add", type: "math.add" },
+    { op: "connect", from: "gx.value", to: "add.a" },
+    { op: "connect", from: "gx.value", to: "add.b" },
+  ], reg, { subgraph: "f" });
+  assert.deepEqual(body.errors, []);
+  const ret = body.graph.subgraphs!.f!.nodes.find((n) => n.type === "subgraph.out")!.id;
+  const wired = bp.applyOps(body.graph, [{ op: "connect", from: "add.out", to: `${ret}.out` }], reg, { subgraph: "f" }).graph;
+  return bp.applyOps(wired, [
+    { op: "addNode", id: "call", type: "subgraph", subgraph: "f" },
+    { op: "addNode", id: "call2", type: "subgraph", subgraph: "f" },
+    { op: "addNode", id: "p", type: "flow.print" },
+    { op: "connect", from: "start.then", to: "call.exec" },
+    { op: "connect", from: "a.value", to: "call.x" },
+    { op: "connect", from: "call.then", to: "p.exec" },
+    { op: "connect", from: "call.out", to: "p.msg" },
+    { op: "connect", from: "a.value", to: "call2.x" },
+  ], reg).graph;
+}
+
+await check("M6 addSubgraph + input getters: a new function with entry / Return, $in: getters read the call site's pin", async () => {
+  const g = fnDoc();
+  const v = bp.validateGraph(g, reg);
+  assert.ok(v.ok, JSON.stringify(v.issues));
+  const r = await bp.evaluateGraph(g, reg, { entry: "start" });
+  assert.equal(r.outputs.get("p")?.line, "> 8");
+  // getters are read only: a Set of an input does not resolve
+  const set = bp.applyOps(g, [{ op: "addNode", id: "sx", type: "var.set", variable: "$in:x" }], reg, { subgraph: "f" });
+  assert.equal(set.errors.length, 1, "addNode refuses an unknown variable");
+  // getters outside a function do not resolve either
+  assert.equal(bp.applyOps(g, [{ op: "addNode", type: "var.get", variable: "$in:x" }], reg).errors.length, 1);
+});
+
+await check("M6 signature change propagates: rename keeps wires, retype breaks call sites (validated), remove drops wires everywhere", () => {
+  const g = fnDoc();
+  const sig = bp.signatureOf(g.subgraphs!.f!);
+  // rename: label only, every call site shows it, nothing breaks
+  const renamed = bp.applyOps(g, [{ op: "setSignature", id: "f", inputs: sig.inputs.map((p) => (p.id === "x" ? { ...p, label: "数值" } : p)) }], reg).graph;
+  assert.equal(bp.getPorts(renamed.nodes.find((n) => n.id === "call")!, reg, renamed).inputs.find((p) => p.id === "x")?.label, "数值");
+  assert.ok(bp.validateGraph(renamed, reg).ok);
+  // retype x to string: wires from a number output stay, validation reports the broken call sites
+  const retyped = bp.applyOps(g, [{ op: "setSignature", id: "f", inputs: sig.inputs.map((p) => (p.id === "x" ? { ...p, type: "string" } : p)) }], reg).graph;
+  const issues = bp.validateGraph(retyped, reg).issues.filter((i) => i.code === "broken-call");
+  assert.ok(issues.some((i) => i.nodeIds?.includes("call")) && issues.some((i) => i.nodeIds?.includes("call2")), JSON.stringify(issues));
+  assert.deepEqual(bp.brokenCallSites(retyped, "f", reg).map((c) => c.node.id).sort(), ["call", "call2"]);
+  // remove output "out": the call site wire out -> p.msg and the inner wire to Return are gone
+  const removed = bp.applyOps(g, [{ op: "setSignature", id: "f", outputs: sig.outputs.filter((p) => p.id !== "out") }], reg).graph;
+  assert.ok(!removed.edges.some((e) => e.from.node === "call" && e.from.pin === "out"));
+  assert.ok(!removed.subgraphs!.f!.edges.some((e) => e.to.pin === "out"));
+  // remove input "x": its getter dies with it, call-site literal / wire gone
+  const noX = bp.applyOps(g, [{ op: "setSignature", id: "f", inputs: sig.inputs.filter((p) => p.id !== "x") }], reg).graph;
+  assert.ok(!noX.subgraphs!.f!.nodes.some((n) => n.variable === "$in:x"));
+  assert.ok(!noX.edges.some((e) => e.to.node === "call2"));
+  // a stale wire written by hand shows as broken-call, not as a generic unknown pin
+  const stale: Graph = { ...g, edges: [...g.edges, { id: "zz", from: { node: "a", pin: "value" }, to: { node: "call2", pin: "nope" } }] };
+  assert.ok(bp.validateGraph(stale, reg).issues.some((i) => i.code === "broken-call" && i.edgeIds?.includes("zz")));
+  // exec rules still hold for functions
+  assert.equal(bp.applyOps(g, [{ op: "setSignature", id: "f", outputs: [...sig.outputs, { id: "then2", type: "exec" }] }], reg).errors.length, 1);
+  // signature edits inside the function's own view run on the document (DOC op), not on the view
+  const inside = bp.applyOps(g, [{ op: "setSignature", id: "f", inputs: [...sig.inputs, { id: "y", type: "number" }] }, { op: "addNode", id: "gy", type: "var.get", variable: "$in:y" }], reg, { subgraph: "f" });
+  assert.deepEqual(inside.errors, []);
+  assert.ok(bp.getPorts(inside.graph.nodes.find((n) => n.id === "call")!, reg, inside.graph).inputs.some((p) => p.id === "y"));
+  assert.ok(inside.graph.subgraphs!.f!.nodes.some((n) => n.id === "gy"));
+});
+
+await check("M6 Return nodes: several allowed in a function, one signature, the reached one returns", async () => {
+  // f(x): Branch(x > 5) true -> Return#1(out = 1), false -> Return#2(out = 2)
+  let g = bp.applyOps({ nodes: [], edges: [] }, [
+    { op: "addNode", id: "start", type: "event.start" },
+    { op: "addSubgraph", id: "f", kind: "function", label: "分级", inputs: [{ id: "x", type: "number" }], outputs: [{ id: "out", type: "number" }] },
+  ], reg).graph;
+  const def = g.subgraphs!.f!;
+  const entry = def.nodes.find((n) => n.type === "subgraph.in")!.id;
+  const ret1 = def.nodes.find((n) => n.type === "subgraph.out")!.id;
+  const inner = bp.applyOps(g, [
+    { op: "disconnect", pin: `${entry}.exec` },
+    { op: "addNode", id: "ret2", type: "subgraph.out", at: [480, 200] },
+    { op: "addNode", id: "gx", type: "var.get", variable: "$in:x" },
+    { op: "addNode", id: "cmp", type: "math.compare", values: { b: 5, op: "gt" } },
+    { op: "addNode", id: "br", type: "flow.branch" },
+    { op: "connect", from: "gx.value", to: "cmp.a" },
+    { op: "connect", from: "cmp.out", to: "br.cond" },
+    { op: "connect", from: `${entry}.exec`, to: "br.exec" },
+    { op: "connect", from: "br.true", to: `${ret1}.then` },
+    { op: "connect", from: "br.false", to: "ret2.then" },
+    { op: "setValue", node: ret1, key: "out", value: 1 },
+    { op: "setValue", node: "ret2", key: "out", value: 2 },
+  ], reg, { subgraph: "f" });
+  assert.deepEqual(inner.errors, []);
+  g = inner.graph;
+  const rets = g.subgraphs!.f!.nodes.filter((n) => n.type === "subgraph.out");
+  assert.equal(rets.length, 2);
+  assert.deepEqual(rets[1]!.pins, rets[0]!.pins, "the second Return copies the signature");
+  // call site pins counted once
+  g = bp.applyOps(g, [
+    { op: "addNode", id: "c", type: "subgraph", subgraph: "f", values: { x: 9 } },
+    { op: "addNode", id: "p", type: "flow.print" },
+    { op: "addNode", id: "s", type: "conv.toString" },
+    { op: "connect", from: "start.then", to: "c.exec" },
+    { op: "connect", from: "c.then", to: "p.exec" },
+    { op: "connect", from: "c.out", to: "s.in" },
+    { op: "connect", from: "s.out", to: "p.msg" },
+  ], reg).graph;
+  assert.equal(bp.getPorts(g.nodes.find((n) => n.id === "c")!, reg, g).outputs.length, 2);
+  assert.ok(bp.validateGraph(g, reg).ok, JSON.stringify(bp.validateGraph(g, reg).issues));
+  assert.equal((await bp.evaluateGraph(g, reg, { entry: "start" })).outputs.get("p")?.line, "> 1");
+  const low = bp.applyOps(g, [{ op: "setValue", node: "c", key: "x", value: 2 }], reg).graph;
+  assert.equal((await bp.evaluateGraph(low, reg, { entry: "start" })).outputs.get("p")?.line, "> 2");
+  // a Return node only exists inside functions; a function with two Returns cannot be inlined
+  assert.equal(bp.applyOps(g, [{ op: "addNode", type: "subgraph.out" }], reg).errors.length, 1);
+  assert.ok(bp.applyOps(g, [{ op: "expand", node: "c" }], reg).errors.length === 1);
+});
+
+await check("M6 pure functions: no exec pins, pulled per exec step like a pure node, validated", async () => {
+  // collapse a data-only selection to a function: pure automatically
+  const g0 = bp.applyOps(demoGraph, [{ op: "collapse", nodes: ["cmp"], id: "pf", label: "比较", kind: "function" }], reg).graph;
+  assert.equal(g0.subgraphs!.pf!.pure, true);
+  const r0 = await bp.evaluateGraph(g0, reg, { entry: "start" });
+  assert.deepEqual(r0.trace, ["start", "branch", "yes"]);
+  // a pure function is recomputed for each exec step that pulls it (counter variable changes between pulls)
+  let g = bp.applyOps({ nodes: [], edges: [], variables: [{ id: "n", name: "n", type: "number", default: 0 }] }, [
+    { op: "addSubgraph", id: "sq", kind: "function", pure: true, label: "平方", inputs: [{ id: "x", type: "number" }], outputs: [{ id: "out", type: "number" }] },
+  ], reg).graph;
+  assert.equal(bp.signatureOf(g.subgraphs!.sq!).inputs.some((p) => p.type === "exec"), false);
+  const ret = g.subgraphs!.sq!.nodes.find((n) => n.type === "subgraph.out")!.id;
+  g = bp.applyOps(g, [
+    { op: "addNode", id: "gx", type: "var.get", variable: "$in:x" },
+    { op: "addNode", id: "m", type: "math.multiply" },
+    { op: "connect", from: "gx.value", to: "m.a" },
+    { op: "connect", from: "gx.value", to: "m.b" },
+    { op: "connect", from: "m.out", to: `${ret}.out` },
+  ], reg, { subgraph: "sq" }).graph;
+  g = bp.applyOps(g, [
+    { op: "addNode", id: "start", type: "event.start" },
+    { op: "addNode", id: "get", type: "var.get", variable: "n" },
+    { op: "addNode", id: "inc", type: "math.add", values: { b: 3 } },
+    { op: "addNode", id: "set1", type: "var.set", variable: "n" },
+    { op: "addNode", id: "call", type: "subgraph", subgraph: "sq" },
+    { op: "addNode", id: "set2", type: "var.set", variable: "n" },
+    { op: "connect", from: "start.then", to: "set1.exec" },
+    { op: "connect", from: "get.value", to: "inc.a" },
+    { op: "connect", from: "inc.out", to: "set1.value" },
+    { op: "connect", from: "set1.then", to: "set2.exec" },
+    { op: "connect", from: "get.value", to: "call.x" },
+    { op: "connect", from: "call.out", to: "set2.value" },
+  ], reg).graph;
+  assert.ok(bp.validateGraph(g, reg).ok, JSON.stringify(bp.validateGraph(g, reg).issues));
+  const r = await bp.evaluateGraph(g, reg, { entry: "start" });
+  assert.equal(r.variables.get("n"), 9, "set2 pulled sq(n) after set1 made n = 3");
+  // exec nodes inside a pure function are an error; turning it impure adds exec pins back, wired through
+  const bad = bp.applyOps(g, [{ op: "addNode", id: "pp", type: "flow.print" }], reg, { subgraph: "sq" }).graph;
+  assert.ok(bp.validateGraph(bad, reg).issues.some((i) => i.code === "pure-function"));
+  const impure = bp.applyOps(g, [{ op: "updateSubgraph", id: "sq", pure: false }], reg).graph;
+  assert.equal(impure.subgraphs!.sq!.pure, undefined);
+  assert.ok(bp.signatureOf(impure.subgraphs!.sq!).inputs.some((p) => p.type === "exec"));
+  assert.ok(bp.applyOps(bad, [{ op: "updateSubgraph", id: "sq", pure: true }], reg).errors.length === 0, "already pure: no-op");
+  const backPure = bp.applyOps(impure, [{ op: "updateSubgraph", id: "sq", pure: true }], reg).graph;
+  assert.equal(backPure.subgraphs!.sq!.pure, true);
+  assert.ok(!bp.signatureOf(backPure.subgraphs!.sq!).inputs.some((p) => p.type === "exec"));
+  // const: setting a graph variable inside is an error, locals are fine
+  const cst = bp.applyOps(fnDoc(), [{ op: "updateSubgraph", id: "f", const: true }], reg).graph;
+  assert.ok(bp.validateGraph(cst, reg).ok);
+  const writes = bp.applyOps({ ...cst, variables: [{ id: "gv", name: "g", type: "number" }] }, [{ op: "addNode", id: "w", type: "var.set", variable: "gv" }], reg, { subgraph: "f" }).graph;
+  assert.ok(bp.validateGraph(writes, reg).issues.some((i) => i.code === "const-function"));
+});
+
+await check("M6 expand / inline a function call: input getters become wires or literals, round trip evaluates the same", async () => {
+  const g = fnDoc();
+  const lit = bp.applyOps(g, [{ op: "disconnect", edge: g.edges.find((e) => e.to.node === "call2")!.id }, { op: "setValue", node: "call2", key: "x", value: 10 }], reg).graph;
+  const ex = bp.applyOps(lit, [{ op: "expand", node: "call" }, { op: "expand", node: "call2", keepDefinition: true }], reg);
+  assert.deepEqual(ex.errors, []);
+  assert.ok(!ex.graph.nodes.some((n) => n.variable?.startsWith("$in:")), "no getter left outside the function");
+  assert.ok(bp.validateGraph(ex.graph, reg).ok, JSON.stringify(bp.validateGraph(ex.graph, reg).issues));
+  assert.equal((await bp.evaluateGraph(ex.graph, reg, { entry: "start" })).outputs.get("p")?.line, "> 8");
+  const adds = ex.graph.nodes.filter((n) => n.type === "math.add");
+  assert.ok(adds.some((n) => n.values?.a === 10 && n.values?.b === 10), "literal on the call site moved onto the inner pins");
+});
+
+await check("M6 My Blueprint ops: duplicate, remove (with call sites), meta, variable category / tooltip, container types", () => {
+  const g = fnDoc();
+  const d = bp.applyOps(g, [{ op: "duplicateSubgraph", id: "f" }], reg);
+  const copy = d.created["#0"]!;
+  assert.equal(d.graph.subgraphs![copy]!.label, "加倍 副本");
+  const rm = bp.applyOps(d.graph, [{ op: "removeSubgraph", id: "f" }], reg).graph;
+  assert.ok(!rm.subgraphs!.f && !rm.nodes.some((n) => n.subgraph === "f") && !rm.edges.some((e) => e.to.node === "call"));
+  const m = bp.applyOps(g, [{ op: "setMeta", name: "文档", description: "说明" }, { op: "addVariable", id: "list", name: "列表", type: "array<number>", default: [1, 2], category: "数据", tooltip: "一串数" }], reg).graph;
+  assert.deepEqual(m.meta, { name: "文档", description: "说明" });
+  assert.equal(reg.shape("array<number>"), "array");
+  assert.ok(reg.assignable("array<number>", "numbers") && reg.assignable("numbers", "array<number>"), "structural: same as a registered number array");
+  assert.ok(!reg.assignable("array<number>", "array<string>"));
+  assert.equal(reg.shape("map<string,boolean>"), "map");
+  assert.equal(reg.type("array<exec>"), undefined, "no containers of exec");
+  assert.deepEqual(bp.parseContainer("map<string,number>"), { kind: "map", key: "string", of: "number" });
+  // round trips: JSON, schema, text
+  const full = bp.applyOps(m, [{ op: "updateSubgraph", id: "f", category: "数学", description: "两倍", keywords: "double", const: true }, { op: "updateNode", id: "p", devOnly: true, comment: "开发用", commentPinned: true }], reg).graph;
+  const json = bp.toJSON(full);
+  assert.deepEqual(schemaErrors(bp.graphSchema, json), []);
+  const back = bp.fromJSON(JSON.stringify(json));
+  assert.ok(back.ok, back.errors.join());
+  assert.deepEqual(canon(back.graph!), canon(full));
+  const t = bp.fromText(bp.toText(full));
+  assert.ok(t.ok, t.errors.join());
+  assert.deepEqual(canon(t.graph!), canon(full));
+});
+
+await check("M6 libraries: define, menu items from the registry, import with dependencies, JSON / text round-trip, package a document", async () => {
+  const lib = bp.demoLibrary;
+  assert.ok(reg.libraries.some((l) => l.id === "demo"));
+  assert.throws(() => bp.defineLibrary({ id: "bad id", name: "x", items: [] }));
+  // import one item (pure function) and call it
+  const imp = bp.applyOps(demoGraph, [{ op: "importLibrary", library: lib, items: ["square"] }], reg);
+  assert.deepEqual(imp.errors, []);
+  const sid = imp.created["#0"]!;
+  assert.equal(sid, "demo:square");
+  assert.equal(imp.graph.subgraphs![sid]!.library, "demo");
+  const used = bp.applyOps(imp.graph, [
+    { op: "addNode", id: "sq", type: "subgraph", subgraph: sid },
+    { op: "connect", from: "a.value", to: "sq.x" },
+  ], reg).graph;
+  assert.ok(bp.validateGraph(used, reg).ok);
+  assert.equal((await bp.evaluateGraph(used, reg)).outputs.get("sq")?.out, 49);
+  // an item that calls another item brings it along
+  const nested = bp.defineLibrary({
+    id: "n2", name: "嵌套", items: [
+      lib.items.square!,
+      { ...lib.items.square!, id: "quad", label: "四次方", nodes: [
+        { id: "in", type: "subgraph.in", x: 0, y: 0, pins: { outputs: [{ id: "x", type: "number" }] } },
+        { id: "s1", type: "subgraph", subgraph: "square", x: 200, y: 0 },
+        { id: "s2", type: "subgraph", subgraph: "square", x: 400, y: 0 },
+        { id: "out", type: "subgraph.out", x: 600, y: 0, pins: { inputs: [{ id: "out", type: "number" }] } },
+      ], edges: [
+        { id: "e1", from: { node: "in", pin: "x" }, to: { node: "s1", pin: "x" } },
+        { id: "e2", from: { node: "s1", pin: "out" }, to: { node: "s2", pin: "x" } },
+        { id: "e3", from: { node: "s2", pin: "out" }, to: { node: "out", pin: "out" } },
+      ] },
+    ],
+  });
+  const q = bp.applyOps(demoGraph, [{ op: "importLibrary", library: nested, items: ["quad"] }, { op: "addNode", id: "q", type: "subgraph", subgraph: "n2:quad" }, { op: "connect", from: "b.value", to: "q.x" }], reg).graph;
+  assert.ok(q.subgraphs!["n2:square"], "dependency imported");
+  assert.equal((await bp.evaluateGraph(q, reg)).outputs.get("q")?.out, 625);
+  // replace: false keeps a locally edited copy
+  const edited = { ...q, subgraphs: { ...q.subgraphs, "n2:quad": { ...q.subgraphs!["n2:quad"]!, label: "改过" } } };
+  assert.equal(bp.applyOps(edited, [{ op: "importLibrary", library: nested, replace: false }], reg).graph.subgraphs!["n2:quad"]!.label, "改过");
+  assert.equal(bp.applyOps(edited, [{ op: "importLibrary", library: nested }], reg).graph.subgraphs!["n2:quad"]!.label, "四次方");
+  // JSON / text round-trip
+  const j = bp.libraryFromJSON(JSON.stringify(bp.libraryToJSON(nested)));
+  assert.ok(j.ok, j.errors.join());
+  assert.deepEqual(bp.libraryToJSON(j.library!), bp.libraryToJSON(nested));
+  const tx = bp.libraryFromText(bp.libraryToText(lib));
+  assert.ok(tx.ok, tx.errors.join());
+  assert.deepEqual(bp.libraryToJSON(tx.library!), bp.libraryToJSON(lib));
+  assert.equal(bp.libraryFromJSON("{}").ok, false);
+  // package a document's function (plus what it calls) as a library, then reuse it elsewhere
+  const pkg = bp.libraryFromGraph(q, ["n2:quad"], { id: "mine", name: "我的" });
+  assert.deepEqual(Object.keys(pkg.library.items).sort(), ["quad", "square"]);
+  assert.deepEqual(pkg.warnings, []);
+  assert.equal(pkg.library.items.quad!.nodes.find((n) => n.id === "s1")!.subgraph, "square");
+  const fromFn = bp.libraryFromGraph(fnDoc(), ["f"], { id: "fn", name: "函数" });
+  assert.ok(fromFn.library.items.f);
+});
+
+await check("M6 conditional breakpoints, hit counts, run to cursor, call stack", async () => {
+  // put an exec node (print "fp", fed by the input x) inside the function body
+  const base = fnDoc();
+  const def = base.subgraphs!.f!;
+  const entry = def.nodes.find((n) => n.type === "subgraph.in")!.id;
+  const ret = def.nodes.find((n) => n.type === "subgraph.out")!.id;
+  const g = bp.applyOps(base, [
+    { op: "disconnect", pin: `${entry}.exec` },
+    { op: "addNode", id: "fp", type: "flow.print" },
+    { op: "addNode", id: "ts", type: "conv.toString" },
+    { op: "connect", from: "gx.value", to: "ts.in" },
+    { op: "connect", from: "ts.out", to: "fp.msg" },
+    { op: "connect", from: `${entry}.exec`, to: "fp.exec" },
+    { op: "connect", from: "fp.then", to: `${ret}.then` },
+  ], reg, { subgraph: "f" }).graph;
+  assert.ok(bp.validateGraph(g, reg).ok, JSON.stringify(bp.validateGraph(g, reg).issues));
+  // condition over the node's input values: msg is computed on demand from the call site's x
+  const cond = new Map([["f/fp", { condition: "msg == '4' && hit >= 1" }]]);
+  const s = new DebugSession(g, reg, { breakpoints: new Set(["f/fp"]), conditions: cond });
+  void s.start();
+  const at = await s.waitForPause();
+  assert.equal(at?.node, "call/fp");
+  assert.equal(s.state.reason, "breakpoint");
+  assert.equal(s.state.hits.get("f/fp"), 1);
+  // call stack: the call site on the main graph, then the node inside the function
+  assert.deepEqual(bp.callStackOf(g, at!.node).map((f) => `${f.sg ?? "main"}:${f.id}`), ["main:call", "f:fp"]);
+  s.continue();
+  assert.equal(await s.waitForPause(), undefined);
+  assert.equal(s.state.status, "done");
+  // false condition never stops; broken expression stops (safer)
+  const s2 = new DebugSession(g, reg, { breakpoints: new Set(["f/fp"]), conditions: new Map([["f/fp", { condition: "msg == '5'" }]]) });
+  await s2.start();
+  assert.equal(s2.state.status, "done");
+  const s3 = new DebugSession(g, reg, { breakpoints: new Set(["p"]), conditions: new Map([["p", { condition: "msg ==" }]]) });
+  void s3.start();
+  assert.equal((await s3.waitForPause())?.node, "p");
+  s3.stop();
+  // hit count: a loop through a node, stop only from the 3rd visit; disabled spec never stops
+  assert.equal(bp.compileExpr("hit % 2 == 0").run({ hit: 4 }), true);
+  assert.equal(bp.compileExpr("items.length > 1 && name != ''").run({ items: [1, 2], name: "x" }), true);
+  assert.equal(bp.compileExpr("a.constructor").run({ a: {} }), undefined, "no prototype access");
+  assert.equal(bp.compileExpr("1 +").ok, false);
+  const s4 = new DebugSession(g, reg, { breakpoints: new Set(["p"]), conditions: new Map([["p", { enabled: false }]]) });
+  await s4.start();
+  assert.equal(s4.state.status, "done");
+  const s5 = new DebugSession(g, reg, { breakpoints: new Set(["p"]), conditions: new Map([["p", { hitCount: 2 }]]) });
+  await s5.start();
+  assert.equal(s5.state.status, "done", "reached once, hit count 2 never stops");
+  // run to cursor: one-shot, no breakpoint needed, from idle and from a pause
+  const s6 = new DebugSession(g, reg, {});
+  s6.runTo("p");
+  assert.equal((await s6.waitForPause())?.node, "p");
+  assert.equal(s6.state.reason, "cursor");
+  s6.continue();
+  assert.equal(await s6.waitForPause(), undefined);
+  const s7 = new DebugSession(g, reg, { startPaused: true });
+  void s7.start();
+  assert.equal((await s7.waitForPause())?.node, "start");
+  s7.runTo("f/fp");
+  assert.equal((await s7.waitForPause())?.node, "call/fp");
+  s7.stop();
+});
+
+await check("M6 development-only nodes run normally, are skipped in shipping runs", async () => {
+  const g = bp.applyOps(demoGraph, [{ op: "updateNode", id: "branch", devOnly: true }], reg).graph;
+  assert.deepEqual((await bp.evaluateGraph(g, reg, { entry: "start" })).trace, ["start", "branch", "yes"]);
+  assert.deepEqual((await bp.evaluateGraph(g, reg, { entry: "start", shipping: true })).trace, ["start", "yes"]);
+  // Sequence fires each output in order; Delay is latent (awaited)
+  const sq = bp.applyOps({ nodes: [], edges: [] }, [
+    { op: "addNode", id: "s", type: "event.start" }, { op: "addNode", id: "q", type: "flow.sequence" },
+    { op: "addNode", id: "d", type: "flow.delay", values: { duration: 0.01 } },
+    { op: "addNode", id: "p1", type: "flow.print" }, { op: "addNode", id: "p2", type: "flow.print" },
+    { op: "connect", from: "s.then", to: "q.exec" }, { op: "connect", from: "q.then_0", to: "d.exec" },
+    { op: "connect", from: "d.then", to: "p1.exec" }, { op: "connect", from: "q.then_1", to: "p2.exec" },
+  ], reg).graph;
+  assert.deepEqual((await bp.evaluateGraph(sq, reg, { entry: "s" })).trace, ["s", "q", "d", "p1", "p2"]);
 });
 
 console.log(`\n${passed} checks passed`);

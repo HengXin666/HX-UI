@@ -42,9 +42,11 @@ export const Wires = memo(function Wires({
       {graph.edges.map((e) => {
         const w = edgePathFor(graph, byId, e, registry);
         if (!w) return null;
+        // wires into or out of a disabled node carry nothing: drawn dimmed
+        const dim = byId.get(e.from.node)?.disabled || byId.get(e.to.node)?.disabled;
         return (
           <g key={e.id} className="bp-wire-g" data-edge={e.id} data-selected={sel.has(e.id) || undefined}
-            data-bad={badSet.has(e.id) || undefined} data-near={nearSet.has(e.id) || undefined}>
+            data-bad={badSet.has(e.id) || undefined} data-near={nearSet.has(e.id) || undefined} data-dim={dim || undefined}>
             <path className="bp-wire-hit" d={w.d} />
             <path className="bp-wire" data-kind={w.kind} d={w.d} style={{ ["--bp-wire" as string]: w.color }} />
           </g>

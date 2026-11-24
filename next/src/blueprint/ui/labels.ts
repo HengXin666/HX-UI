@@ -29,6 +29,9 @@ export const ISSUE_LABEL: Record<IssueCode, string> = {
   "missing-subgraph": "折叠图丢失",
   "unknown-variable": "变量不存在",
   "function-exec": "函数只能有一个执行输入和输出",
+  "pure-function": "纯函数不能有执行引脚或执行节点",
+  "const-function": "常量函数不能设置图变量",
+  "broken-call": "调用处与函数签名不符",
   "disabled-node": "节点已禁用",
   "no-entry": "执行流没有入口",
   custom: "节点自检",
@@ -37,3 +40,13 @@ export const ISSUE_LABEL: Record<IssueCode, string> = {
 export const TYPE_LABEL: Record<string, string> = {
   exec: "执行", any: "任意", number: "数字", string: "文本", boolean: "布尔", object: "对象",
 };
+
+export const KIND_LABEL = { graph: "折叠图", function: "函数", macro: "宏" } as const;
+
+/** Unique "新函数", "新函数 2", ... among `taken`. */
+export function uniqueName(base: string, taken: Iterable<string>): string {
+  const set = new Set(taken);
+  let name = base;
+  for (let i = 2; set.has(name); i++) name = `${base} ${i}`;
+  return name;
+}

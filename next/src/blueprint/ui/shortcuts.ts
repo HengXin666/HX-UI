@@ -10,7 +10,8 @@ export type CommandId =
   | "selectAll" | "escape" | "fit" | "menu" | "help" | "exit"
   | "straighten" | "alignTop" | "alignBottom" | "alignLeft" | "alignRight" | "alignMiddle" | "alignCenter"
   | "distributeX" | "distributeY"
-  | "nudge" | "nudgeFine" | "focusNode" | "activate" | "find" | "breakpoint" | "run" | "step" | "stop";
+  | "nudge" | "nudgeFine" | "focusNode" | "activate" | "find" | "breakpoint" | "run" | "step" | "stop"
+  | "enter" | "clearBreakpoints" | "runToCursor";
 
 export interface Shortcut {
   readonly id: CommandId;
@@ -43,6 +44,7 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: "activate", keys: ["Enter"], label: "进入折叠图，或重命名节点", group: "选择与视图" },
   { id: "find", keys: ["Mod+F"], label: "查找节点", group: "选择与视图" },
   { id: "menu", keys: ["Tab"], label: "在光标处打开操作菜单（Shift Tab 移出编辑器）", group: "选择与视图" },
+  { id: "enter", keys: ["PageDown"], label: "进入选中的折叠图、函数或宏", group: "选择与视图" },
   { id: "exit", keys: ["PageUp"], label: "返回上一层图", group: "选择与视图" },
   { id: "help", keys: ["?"], label: "快捷键一览", group: "选择与视图" },
   { id: "straighten", keys: ["Q"], label: "拉直选中节点的连线", group: "布局" },
@@ -58,6 +60,8 @@ export const SHORTCUTS: readonly Shortcut[] = [
   { id: "run", keys: ["F5"], label: "运行或继续", group: "调试" },
   { id: "step", keys: ["F10"], label: "单步", group: "调试" },
   { id: "stop", keys: ["Shift+F5"], label: "停止运行", group: "调试" },
+  { id: "runToCursor", keys: ["Mod+F10"], label: "运行到选中节点", group: "调试" },
+  { id: "clearBreakpoints", keys: ["Mod+Shift+F9"], label: "删除所有断点", group: "调试" },
 ];
 
 /** Pointer gestures, shown in the help sheet next to the keys. */
@@ -73,6 +77,8 @@ export const GESTURES: readonly { readonly keys: string; readonly label: string 
   { keys: "双击折叠图", label: "进入子图" },
   { keys: "右键引脚", label: "监视引脚的值" },
   { keys: "拖入变量（Alt 拖入）", label: "获取节点（设置节点）" },
+  { keys: "按住 B / S / D + 单击", label: "放置分支 / 序列 / 延迟节点" },
+  { keys: "拖入函数或宏", label: "调用节点" },
 ];
 
 interface Combo { mod: boolean; shift: boolean; alt: boolean; key: string }

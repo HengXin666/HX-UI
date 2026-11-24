@@ -1,6 +1,6 @@
-import { edgeKind, findPin, getPorts, subgraphPins } from "./ports";
+import { edgeKind, findPin, getPorts, paramVariables, subgraphPins } from "./ports";
 import type { Registry } from "./registry";
-import { TUNNEL_IN, TUNNEL_OUT } from "./registry";
+import { TUNNEL_IN, TUNNEL_OUT, VAR_SET } from "./registry";
 import type { BlueprintEdge, BlueprintGraph, GraphValidation, ValidationIssue } from "./types";
 
 /**
@@ -17,22 +17,33 @@ export interface ValidateOptions {
   readonly requireEntry?: boolean;
 }
 
-type GraphView = Pick<BlueprintGraph, "nodes" | "edges" | "subgraphs" | "variables" | "locals">;
+type GraphView = Pick<BlueprintGraph, "nodes" | "edges" | "subgraphs" | "variables" | "locals" | "params">;
 
 export function validateGraph(graph: BlueprintGraph, registry: Registry, opts: ValidateOptions = {}): GraphValidation {
   const issues = [...validateLevel(graph, registry, opts)];
   for (const [sgId, sg] of Object.entries(graph.subgraphs ?? {})) {
+    const isFn = sg.kind === "function";
     const inner = validateLevel({
       nodes: sg.nodes, edges: sg.edges, subgraphs: graph.subgraphs,
       ...(graph.variables ? { variables: graph.variables } : {}), ...(sg.variables ? { locals: sg.variables } : {}),
+      ...(isFn ? { params: paramVariables(sg.nodes, registry) } : {}),
     }, registry, {});
-    if (sg.kind === "function") {
+    if (isFn) {
       const p = subgraphPins(sg.nodes);
       const execIn = p.inputs.filter((x) => registry.isExec(x.type)).length;
       const execOut = p.outputs.filter((x) => registry.isExec(x.type)).length;
+      const shells = graph.nodes.filter((n) => n.subgraph === sgId).map((n) => n.id);
       if (execIn > 1 || execOut > 1) {
-        const shells = graph.nodes.filter((n) => n.subgraph === sgId).map((n) => n.id);
         issues.push({ code: "function-exec", level: "error", message: `Function "${sg.label ?? sgId}" has ${execIn} exec inputs and ${execOut} exec outputs (at most one each)`, nodeIds: shells.slice(0, 1) });
+      }
+      if (sg.pure) {
+        const impure = sg.nodes.filter((n) => n.type !== TUNNEL_IN && n.type !== TUNNEL_OUT && getPorts(n, registry, graph).inputs.some((x) => x.exec)).map((n) => `${sgId}/${n.id}`);
+        if (execIn || execOut || impure.length) issues.push({ code: "pure-function", level: "error", message: `Pure function "${sg.label ?? sgId}" has exec pins or exec nodes`, nodeIds: impure.length ? impure : shells.slice(0, 1) });
+      }
+      if (sg.const) {
+        const locals = new Set((sg.variables ?? []).map((v) => v.id));
+        const writes = sg.nodes.filter((n) => n.type === VAR_SET && n.variable !== undefined && !locals.has(n.variable)).map((n) => `${sgId}/${n.id}`);
+        if (writes.length) issues.push({ code: "const-function", level: "error", message: `Const function "${sg.label ?? sgId}" sets graph variables`, nodeIds: writes });
       }
     }
     for (const i of inner) {
@@ -91,7 +102,11 @@ function validateLevel(g: GraphView, reg: Registry, opts: ValidateOptions): Vali
     const dst = findPin(tn, e.to.pin, "in", reg, g);
     if (!src || !dst) {
       const bad = !src ? e.from : e.to;
-      push({ code: "unknown-pin", level: "error", message: `Pin "${bad.pin}" not found on "${bad.node}"`, edgeIds: [e.id], nodeIds: [bad.node], pin: bad });
+      const shell = byId.get(bad.node);
+      const sg = shell?.subgraph !== undefined ? g.subgraphs?.[shell.subgraph] : undefined;
+      // a call site wired to a pin its function no longer has (signature edited)
+      if (sg) push({ code: "broken-call", level: "error", message: `"${sg.label ?? sg.id}" has no pin "${bad.pin}" any more (call site "${bad.node}")`, edgeIds: [e.id], nodeIds: [bad.node], pin: bad });
+      else push({ code: "unknown-pin", level: "error", message: `Pin "${bad.pin}" not found on "${bad.node}"`, edgeIds: [e.id], nodeIds: [bad.node], pin: bad });
       continue;
     }
     if (e.from.node === e.to.node) {
@@ -109,7 +124,12 @@ function validateLevel(g: GraphView, reg: Registry, opts: ValidateOptions): Vali
       continue;
     }
     if (!reg.assignable(src.type, dst.type)) {
-      push({ code: "type-mismatch", level: "error", message: `Type mismatch ${src.type} -> ${dst.type} (${pair})`, edgeIds: [e.id], nodeIds: [e.to.node], pin: e.to });
+      const callSite = tn.subgraph !== undefined ? tn : fn.subgraph !== undefined ? fn : undefined;
+      push({
+        code: callSite ? "broken-call" : "type-mismatch", level: "error",
+        message: `Type mismatch ${src.type} -> ${dst.type} (${pair})${callSite ? " at a call site whose signature changed" : ""}`,
+        edgeIds: [e.id], nodeIds: [callSite?.id ?? e.to.node], pin: e.to,
+      });
       continue;
     }
     live.push(e);

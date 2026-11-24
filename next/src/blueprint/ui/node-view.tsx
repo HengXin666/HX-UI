@@ -54,14 +54,25 @@ export const NodeView = memo(function NodeView(p: NodeViewProps) {
   const bad = new Set(p.badPins.split("|"));
   const rows = Math.max(layout.inputs.length, layout.outputs.length);
   const params = reg.node(node.type)?.params ?? [];
+  // disabled: a dashed line shows where exec passes straight through (first exec in -> first exec out)
+  const passIn = node.disabled ? layout.inputs.find((x) => x.exec) : undefined;
+  const passOut = node.disabled ? layout.outputs.find((x) => x.exec) : undefined;
+  const a = passIn && layout.pins.get(`in:${passIn.id}`);
+  const b = passOut && layout.pins.get(`out:${passOut.id}`);
   return (
     <div className="bp-node" id={p.domId} data-node={node.id} data-kind={kind} data-selected={selected || undefined}
       data-active={p.active || undefined} data-breakpoint={p.breakpoint || undefined} data-disabled={node.disabled || undefined}
-      data-collapsed={node.collapsed || undefined} role="group" aria-label={p.title} style={style}>
-      {node.comment ? <div className="bp-note">{node.comment}</div> : null}
+      data-devonly={(!node.disabled && node.devOnly) || undefined}
+      data-collapsed={node.collapsed || undefined} role="group" aria-label={node.disabled ? `${p.title}（已禁用）` : p.title} style={style}>
+      {node.comment ? <div className="bp-note" data-pinned={node.commentPinned || undefined}>{node.comment}</div> : null}
+      {a && b && !node.collapsed ? (
+        <svg className="bp-pass" aria-hidden width={layout.w} height={layout.h}>
+          <path d={`M${a.x + 6},${a.y} C${layout.w / 2},${a.y} ${layout.w / 2},${b.y} ${b.x - 6},${b.y}`} />
+        </svg>
+      ) : null}
       <div className="bp-head">
         <span className="bp-head-title">{p.title}</span>
-        {node.disabled ? <span className="bp-head-sub">已禁用</span> : p.subtitle ? <span className="bp-head-sub">{p.subtitle}</span> : null}
+        {node.disabled ? <span className="bp-head-sub">已禁用</span> : node.devOnly ? <span className="bp-head-sub">仅开发</span> : p.subtitle ? <span className="bp-head-sub">{p.subtitle}</span> : null}
       </div>
       {node.collapsed ? null : (
         <div className="bp-body">

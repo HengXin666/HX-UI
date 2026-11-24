@@ -1,9 +1,10 @@
 import type { IdGen } from "./ids";
-import { findPin } from "./ports";
+import { findPin, paramVariables } from "./ports";
 import type { Registry } from "./registry";
-import { SUBGRAPH_NODE, TUNNEL_IN, TUNNEL_OUT } from "./registry";
+import { SUBGRAPH_NODE, TUNNEL_IN, TUNNEL_OUT, VAR_GET } from "./registry";
 import { boundsOf, nodeBox } from "./size";
 import type { BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, Pin, SubGraphDef, SubgraphKind } from "./types";
+import { PARAM_PREFIX } from "./types";
 
 /**
  * Collapse to graph / expand (UE5 "Collapse Nodes").
@@ -117,6 +118,8 @@ export function collapse(
     id: sgId,
     ...(opts.label ? { label: opts.label } : {}),
     ...(opts.kind && opts.kind !== "graph" ? { kind: opts.kind } : {}),
+    // a function with no exec pins at its boundary is pure: it is pulled like a pure node
+    ...(opts.kind === "function" && ![...ins.values(), ...outs.values()].some((b) => b.exec) ? { pure: true } : {}),
     nodes: [tIn, ...innerNodes, tOut],
     edges: innerEdges,
   };
@@ -145,7 +148,10 @@ export function expand(
   if (!shell || !sg) return { graph, error: `"${nodeId}" is not a collapsed graph node` };
 
   const tunnels = new Set(sg.nodes.filter((n) => n.type === TUNNEL_IN || n.type === TUNNEL_OUT).map((n) => n.id));
-  const content = sg.nodes.filter((n) => !tunnels.has(n.id));
+  if (sg.nodes.filter((n) => n.type === TUNNEL_OUT).length > 1) return { graph, error: `"${sg.label ?? sg.id}" has several Return nodes and cannot be inlined` };
+  // Function input getters ("$in:x") become wires from whatever feeds the call site's pin x (or its literal).
+  const getters = new Set(sg.nodes.filter((n) => n.type === VAR_GET && n.variable?.startsWith(PARAM_PREFIX)).map((n) => n.id));
+  const content = sg.nodes.filter((n) => !tunnels.has(n.id) && !getters.has(n.id));
   const box = boundsOf(content.map((n) => nodeBox(n, registry, graph)));
   const dx = content.length ? shell.x - box.x : 0;
   const dy = content.length ? shell.y - box.y : 0;
@@ -162,11 +168,25 @@ export function expand(
   for (const n of content) rename.set(n.id, keepId(n.id, "n"));
   const ref = (r: { node: string; pin: string }) => ({ node: rename.get(r.node) ?? r.node, pin: r.pin });
 
-  const restored = content.map((n) => ({ ...n, id: rename.get(n.id)!, x: n.x + dx, y: n.y + dy }));
+  let restored = content.map((n) => ({ ...n, id: rename.get(n.id)!, x: n.x + dx, y: n.y + dy }));
   const edges: BlueprintEdge[] = [...kept];
+  const literal = new Map<string, Record<string, unknown>>();
   for (const e of sg.edges) {
+    if (getters.has(e.from.node)) {
+      const g = sg.nodes.find((n) => n.id === e.from.node)!;
+      const pin = g.variable!.slice(PARAM_PREFIX.length);
+      const outer = graph.edges.find((o) => o.to.node === nodeId && o.to.pin === pin);
+      if (outer) edges.push({ id: keepId(e.id, "e"), from: outer.from, to: ref(e.to) });
+      else if (!tunnels.has(e.to.node)) {
+        const v = shell.values?.[pin] ?? sg.nodes.find((n) => n.type === TUNNEL_IN)?.pins?.outputs?.find((p) => p.id === pin)?.default;
+        if (v !== undefined) literal.set(rename.get(e.to.node)!, { ...(literal.get(rename.get(e.to.node)!) ?? {}), [e.to.pin]: v });
+      }
+      continue;
+    }
+    if (getters.has(e.to.node)) continue;
     if (!tunnels.has(e.from.node) && !tunnels.has(e.to.node)) edges.push({ id: keepId(e.id, "e"), from: ref(e.from), to: ref(e.to) });
   }
+  if (literal.size) restored = restored.map((n) => (literal.has(n.id) ? { ...n, values: { ...(n.values ?? {}), ...literal.get(n.id) } } : n));
 
   // Rejoin boundary wires: outer edge on shell pin P x inner edge on tunnel pin P.
   const outerIn = graph.edges.filter((e) => e.to.node === nodeId);
@@ -179,6 +199,20 @@ export function expand(
   for (const o of outerOut) {
     const inner = sg.edges.filter((i) => tunnels.has(i.to.node) && i.to.pin === o.from.pin && !tunnels.has(i.from.node));
     for (const i of inner) edges.push({ id: pairId(o, i, inner.length), from: ref(i.from), to: o.to });
+  }
+  // Pass-through wires (entry pin straight to an exit pin) join the outer source to the outer targets.
+  for (const i of sg.edges.filter((x) => tunnels.has(x.from.node) && tunnels.has(x.to.node))) {
+    const srcs = outerIn.filter((o) => o.to.pin === i.from.pin);
+    const dsts = outerOut.filter((o) => o.from.pin === i.to.pin);
+    for (const a of srcs) for (const b of dsts) edges.push({ id: keepId(dsts.length > 1 ? b.id : a.id, "e"), from: a.from, to: b.to });
+  }
+  // Literals typed on the call site's unconnected inputs move onto the inner pins they fed.
+  for (const [pin, v] of Object.entries(shell.values ?? {})) {
+    if (outerIn.some((o) => o.to.pin === pin)) continue;
+    for (const i of sg.edges.filter((x) => tunnels.has(x.from.node) && x.from.pin === pin && !tunnels.has(x.to.node) && !getters.has(x.to.node))) {
+      const id = rename.get(i.to.node)!;
+      restored = restored.map((n) => (n.id === id ? { ...n, values: { ...(n.values ?? {}), [i.to.pin]: v } } : n));
+    }
   }
 
   // A function's locals become graph variables (their Get / Set nodes now live in the outer graph).
@@ -210,14 +244,14 @@ export function expand(
  * Inner graph of a subgraph as an editable view. Carries the root subgraph table (nesting resolves),
  * the root variables, and, for a function, its local variables as `locals`.
  */
-export function subgraphAsGraph(root: BlueprintGraph, sgId: string): BlueprintGraph | undefined {
+export function subgraphAsGraph(root: BlueprintGraph, sgId: string, registry?: Registry): BlueprintGraph | undefined {
   const sg = root.subgraphs?.[sgId];
   if (!sg) return undefined;
   return {
     nodes: sg.nodes, edges: sg.edges, ...(sg.comments ? { comments: sg.comments } : {}),
     ...(root.subgraphs ? { subgraphs: root.subgraphs } : {}),
     ...(root.variables ? { variables: root.variables } : {}),
-    ...(sg.kind === "function" ? { locals: sg.variables ?? [] } : {}),
+    ...(sg.kind === "function" ? { locals: sg.variables ?? [], params: paramVariables(sg.nodes, registry) } : {}),
   };
 }
 
@@ -229,8 +263,10 @@ export function writeSubgraph(root: BlueprintGraph, sgId: string, inner: Pick<Bl
   const sg = root.subgraphs?.[sgId];
   if (!sg) return root;
   const locals = "locals" in inner ? inner.locals : sg.variables;
+  const { variables: _v, comments: _c, ...meta } = sg;
+  void _v, void _c;
   const next: SubGraphDef = {
-    id: sg.id, ...(sg.label !== undefined ? { label: sg.label } : {}), ...(sg.kind ? { kind: sg.kind } : {}),
+    ...meta,
     ...(locals?.length ? { variables: locals } : {}),
     nodes: inner.nodes, edges: inner.edges,
     ...(inner.comments?.length ? { comments: inner.comments } : {}),
@@ -280,4 +316,31 @@ export function subgraphRefCount(root: BlueprintGraph, sgId: string): number {
   let n = root.nodes.filter((x) => x.subgraph === sgId).length;
   for (const sg of Object.values(root.subgraphs ?? {})) n += sg.nodes.filter((x) => x.subgraph === sgId).length;
   return n;
+}
+
+export interface StackFrame {
+  /** Runtime path of this frame's node ("shell", "shell/inner", ...). */
+  readonly path: string;
+  /** Level the node lives on (undefined = main graph). */
+  readonly sg: string | undefined;
+  /** Local node id on that level. */
+  readonly id: string;
+  /** Validation / breakpoint key ("node" or "sg/node"). */
+  readonly key: string;
+}
+
+/**
+ * Call stack of a runtime path, outermost first: the call site on the main graph, the call site
+ * inside it, ..., then the node itself (UE5 Blueprint Debugger "Call Stack", newest last).
+ */
+export function callStackOf(root: BlueprintGraph, path: string): StackFrame[] {
+  const parts = path.split("/");
+  const out: StackFrame[] = [];
+  for (let i = 1; i <= parts.length; i++) {
+    const p = parts.slice(0, i).join("/");
+    const r = resolveNodePath(root, p);
+    if (!r) break;
+    out.push({ path: p, ...r });
+  }
+  return out;
 }

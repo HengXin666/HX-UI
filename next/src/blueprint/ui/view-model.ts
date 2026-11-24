@@ -1,5 +1,5 @@
 import { findVariable } from "../ports";
-import { VAR_GET, VAR_SET } from "../registry";
+import { TUNNEL_IN, TUNNEL_OUT, VAR_GET, VAR_SET } from "../registry";
 import type { BlueprintEditor } from "./editor";
 import { layoutNode, nodeKindOf } from "./geometry";
 import { ISSUE_LABEL } from "./labels";
@@ -38,12 +38,19 @@ export function deriveView(ed: BlueprintEditor): ViewModel {
     const isVar = n.type === VAR_GET || n.type === VAR_SET;
     const v = isVar ? findVariable(g, n.variable) : undefined;
     const varTitle = isVar ? (n.type === VAR_GET ? v?.name ?? "未知变量" : `设置 ${v?.name ?? "未知变量"}`) : undefined;
-    const sub = n.subgraph !== undefined ? (sg?.kind === "function" ? "函数" : sg?.kind === "macro" ? "宏" : "折叠图") : !def ? "未知类型" : n.type === VAR_SET ? "变量" : undefined;
+    // tunnels: a function's entry carries its name, its exits are Return nodes (UE5)
+    const here = ed.subgraph !== undefined ? ed.root.subgraphs?.[ed.subgraph] : undefined;
+    const tunnelTitle = n.type === TUNNEL_IN ? (here?.kind === "function" ? here.label ?? here.id : "输入")
+      : n.type === TUNNEL_OUT ? (here?.kind === "function" ? "返回节点" : "输出") : undefined;
+    const tunnelSub = n.type === TUNNEL_IN && here?.kind === "function" ? "函数入口" : undefined;
+    const callSub = sg?.kind === "function" ? (sg.pure ? "纯函数" : "函数") : sg?.kind === "macro" ? "宏" : "折叠图";
+    const sub = n.subgraph !== undefined ? (sg?.library ? `${callSub} · 库` : callSub)
+      : tunnelSub ?? (!def ? "未知类型" : n.type === VAR_SET ? "变量" : n.variable?.startsWith("$in:") ? "输入" : n.devOnly ? "仅开发" : undefined);
     return {
       node: n,
       layout: layoutNode(n, ed.registry, g),
       kind: nodeKindOf(n, ed.registry, g),
-      title: n.title ?? varTitle ?? sg?.label ?? def?.title ?? n.type,
+      title: n.title ?? varTitle ?? tunnelTitle ?? sg?.label ?? def?.title ?? n.type,
       subtitle: sub,
       selected: selNodes.has(n.id),
       breakpoint: ed.breakpoints.has(ed.keyOf(n.id)),

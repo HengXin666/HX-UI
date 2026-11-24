@@ -4,8 +4,9 @@ import { nodesAcceptingPin, type PinMatch } from "../connect";
 import { createIdGen } from "../ids";
 import type { GraphOp } from "../ops";
 import { getPorts } from "../ports";
-import { SUBGRAPH_NODE, VAR_GET, VAR_SET } from "../registry";
-import type { BlueprintNode, NodeDef, PinRef } from "../types";
+import { libraryItemId } from "../library";
+import { SUBGRAPH_NODE, TUNNEL_OUT, VAR_GET, VAR_SET } from "../registry";
+import type { BlueprintNode, NodeDef, PinRef, SubgraphScope } from "../types";
 import type { BlueprintEditor } from "./editor";
 import { layoutNode, pinKey } from "./geometry";
 import { TYPE_LABEL } from "./labels";
@@ -42,6 +43,9 @@ interface Item {
   readonly title?: string;
   readonly category?: string;
   readonly extra?: { readonly subgraph?: string; readonly variable?: string };
+  /** Ops to run first (importing a library item into the document). */
+  readonly prep?: readonly GraphOp[];
+  readonly keywords?: string;
 }
 
 const titleOf = (i: Item) => i.title ?? i.def.title;
@@ -49,7 +53,7 @@ const catOf = (i: Item) => i.category ?? i.def.category;
 
 function matches(i: Item, q: string): boolean {
   if (!q) return true;
-  const hay = `${titleOf(i)} ${i.def.id} ${catOf(i)} ${i.def.description ?? ""}`.toLowerCase();
+  const hay = `${titleOf(i)} ${i.def.id} ${catOf(i)} ${i.def.description ?? ""} ${i.keywords ?? ""}`.toLowerCase();
   return q.toLowerCase().split(/\s+/).every((w) => hay.includes(w));
 }
 
@@ -61,9 +65,9 @@ function documentItems(ed: BlueprintEditor, from: MenuOrigin | undefined, contex
   const reg = ed.registry;
   const g = ed.graph;
   const out: Item[] = [];
-  const consider = (probe: BlueprintNode, base: Omit<Item, "pin">) => {
+  const consider = (probe: BlueprintNode, base: Omit<Item, "pin">, scope: SubgraphScope = g) => {
     if (!from) return void out.push(base);
-    const ports = getPorts(probe, reg, g);
+    const ports = getPorts(probe, reg, scope);
     const exec = reg.isExec(from.type);
     const pins = from.dir === "out" ? ports.inputs : ports.outputs;
     const hit = pins.find((p) => p.exec === exec && (from.dir === "out" ? reg.assignable(from.type, p.type) : reg.assignable(p.type, from.type)));
@@ -74,8 +78,31 @@ function documentItems(ed: BlueprintEditor, from: MenuOrigin | undefined, contex
     if (sg.kind !== "function" && sg.kind !== "macro") continue;
     if (sg.id === ed.subgraph) continue;
     consider({ id: "_", type: SUBGRAPH_NODE, x: 0, y: 0, subgraph: sg.id }, {
-      def: subgraphDef, key: `sg:${sg.id}`, title: sg.label ?? sg.id, category: sg.kind === "function" ? "函数" : "宏", extra: { subgraph: sg.id },
+      def: subgraphDef, key: `sg:${sg.id}`, title: sg.label ?? sg.id, category: sg.category ?? (sg.kind === "function" ? "函数" : "宏"),
+      extra: { subgraph: sg.id }, ...(sg.keywords || sg.description ? { keywords: `${sg.keywords ?? ""} ${sg.description ?? ""}` } : {}),
     });
+  }
+  // library items not yet in the document: picking one imports it (with what it calls)
+  for (const lib of reg.libraries) {
+    for (const item of Object.values(lib.items)) {
+      const docId = libraryItemId(lib.id, item.id);
+      if (ed.root.subgraphs?.[docId] || docId === ed.subgraph) continue;
+      const scope: SubgraphScope = { ...g, subgraphs: { ...(g.subgraphs ?? {}), [docId]: item } };
+      consider({ id: "_", type: SUBGRAPH_NODE, x: 0, y: 0, subgraph: docId }, {
+        def: subgraphDef, key: `lib:${docId}`, title: item.label ?? item.id, category: item.category ?? lib.name,
+        extra: { subgraph: docId }, prep: [{ op: "importLibrary", library: lib, items: [item.id], replace: false }],
+        keywords: `${lib.name} ${item.keywords ?? ""} ${item.description ?? ""}`,
+      }, scope);
+    }
+  }
+  // inside a function: another Return node, and getters of its inputs
+  if (g.locals !== undefined) {
+    const sig = g.nodes.find((n) => n.type === TUNNEL_OUT)?.pins;
+    const ret = reg.node(TUNNEL_OUT);
+    if (ret) consider({ id: "_", type: TUNNEL_OUT, x: 0, y: 0, pins: { inputs: sig?.inputs ?? [] } }, { def: ret, key: "return", title: "返回节点", category: "函数", keywords: "return 返回" });
+    for (const v of g.params ?? []) {
+      consider({ id: "_", type: VAR_GET, x: 0, y: 0, variable: v.id }, { def: reg.node(VAR_GET)!, key: `param:${v.id}`, title: `获取 ${v.name}`, category: "函数输入", extra: { variable: v.id } });
+    }
   }
   for (const v of [...(g.locals ?? []), ...(g.variables ?? [])]) {
     for (const t of [VAR_GET, VAR_SET]) {
@@ -85,6 +112,12 @@ function documentItems(ed: BlueprintEditor, from: MenuOrigin | undefined, contex
     }
   }
   return out;
+}
+
+/** The library definition behind a document id "<lib>:<item>" offered by the registry. */
+function findLibItem(ed: BlueprintEditor, docId: string) {
+  for (const lib of ed.registry.libraries) for (const item of Object.values(lib.items)) if (libraryItemId(lib.id, item.id) === docId) return item;
+  return undefined;
 }
 
 export function ActionMenu({ ed, sx, sy, from, onClose }: ActionMenuProps) {
@@ -133,12 +166,13 @@ export function ActionMenu({ ed, sx, sy, from, onClose }: ActionMenuProps) {
   const pick = (item: Item) => {
     const at = ed.toGraph(sx, sy);
     const id = createIdGen(ed.root)("n");
-    const probe = layoutNode({ id, type: item.def.id, x: 0, y: 0, ...item.extra }, reg, ed.graph);
+    const lib = item.prep && item.extra?.subgraph ? { ...ed.graph, subgraphs: { ...(ed.graph.subgraphs ?? {}), [item.extra.subgraph]: findLibItem(ed, item.extra.subgraph)! } } : ed.graph;
+    const probe = layoutNode({ id, type: item.def.id, x: 0, y: 0, ...item.extra }, reg, lib);
     const pinAt = item.pin && from ? probe.pins.get(pinKey(from.dir === "out" ? "in" : "out", item.pin)) : undefined;
     const snap = (v: number) => (ed.snap > 1 ? Math.round(v / ed.snap) * ed.snap : Math.round(v));
     const x = snap(at.x - (pinAt?.x ?? 0));
     const y = Math.round(at.y - (pinAt?.y ?? 0));
-    const ops: GraphOp[] = [{ op: "addNode", id, type: item.def.id, at: [x, y], ...item.extra }];
+    const ops: GraphOp[] = [...(item.prep ?? []), { op: "addNode", id, type: item.def.id, at: [x, y], ...item.extra }];
     if (from && item.pin) {
       const mine = { node: id, pin: item.pin };
       ops.push(from.dir === "out" ? { op: "connect", from: from.ref, to: mine } : { op: "connect", from: mine, to: from.ref });

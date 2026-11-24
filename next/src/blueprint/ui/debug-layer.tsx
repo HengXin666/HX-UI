@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import type { DebugState } from "../debug";
 import type { StepEvent } from "../evaluate";
 import { findPin } from "../ports";
-import { resolveNodePath } from "../subgraph";
+import { callStackOf, resolveNodePath } from "../subgraph";
 import type { BlueprintEditor } from "./editor";
 import { esc } from "./drag-move";
 import { pinPos } from "./geometry";
@@ -49,7 +49,7 @@ function valuesByKey(ed: BlueprintEditor, st: DebugState) {
   return out;
 }
 
-export default function DebugLayer({ ed, minimap }: { ed: BlueprintEditor; minimap: boolean }) {
+export default function DebugLayer({ ed, minimap, bar = true }: { ed: BlueprintEditor; minimap: boolean; bar?: boolean }) {
   useSyncExternalStore(ed.subscribe, ed.version, ed.version);
   const st = ed.debug;
   const tip = useRef<HTMLDivElement>(null);
@@ -92,11 +92,15 @@ export default function DebugLayer({ ed, minimap }: { ed: BlueprintEditor; minim
     a.onfinish = a.oncancel = () => p.remove();
   };
   const clearMarks = () => {
-    ed.el?.querySelectorAll("[data-run], [data-paused]").forEach((x) => { x.removeAttribute("data-run"); x.removeAttribute("data-paused"); });
+    ed.el?.querySelectorAll("[data-run], [data-paused], [data-frame]").forEach((x) => { x.removeAttribute("data-run"); x.removeAttribute("data-paused"); x.removeAttribute("data-frame"); });
   };
   const paintAll = () => {
     clearMarks();
     const s = ed.debug;
+    if (ed.el) {
+      if (s.status === "running") ed.el.dataset.running = "";
+      else delete ed.el.dataset.running;
+    }
     if (s.status === "idle") return;
     for (const step of s.trace) mark(step, "done");
     if (s.status === "paused" && s.at) {
@@ -104,6 +108,10 @@ export default function DebugLayer({ ed, minimap }: { ed: BlueprintEditor; minim
       if (n !== undefined) ed.el?.querySelector(`[data-node="${esc(n)}"]`)?.setAttribute("data-paused", "");
       const e = localOf(s.at.edge);
       if (e !== undefined) ed.el?.querySelector(`[data-edge="${esc(e)}"]`)?.setAttribute("data-run", "");
+      // call stack: the call sites that lead to the paused node, on whatever level is open
+      for (const f of callStackOf(ed.root, s.at.node).slice(0, -1)) {
+        if (f.sg === ed.subgraph) ed.el?.querySelector(`[data-node="${esc(f.id)}"]`)?.setAttribute("data-frame", "");
+      }
     }
   };
 
@@ -118,7 +126,12 @@ export default function DebugLayer({ ed, minimap }: { ed: BlueprintEditor; minim
         const n = localOf(e.target.node);
         if (n !== undefined) ed.el?.querySelector(`[data-node="${esc(n)}"]`)?.setAttribute("data-run", "next");
       } else if (e.type === "step") mark(e.step, "done");
-      else if (e.state.status === "paused" && e.state.at) {
+      else if (e.state.status !== "paused") {
+        if (ed.el) {
+          if (e.state.status === "running") ed.el.dataset.running = "";
+          else delete ed.el.dataset.running;
+        }
+      } else if (e.state.at) {
         // UE5 jumps to the breakpoint: open its level and bring it into view
         const r = resolveNodePath(ed.root, e.state.at.node);
         if (r && r.sg !== ed.subgraph) ed.reveal(r.key);
@@ -134,7 +147,7 @@ export default function DebugLayer({ ed, minimap }: { ed: BlueprintEditor; minim
         });
       }
     });
-    return () => { off(); mq.removeEventListener("change", onMq); clearMarks(); };
+    return () => { off(); mq.removeEventListener("change", onMq); clearMarks(); if (ed.el) delete ed.el.dataset.running; };
   }, [ed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // React re-renders (an edit, entering a subgraph) do not keep imperative marks: repaint from the trace.
@@ -188,7 +201,7 @@ export default function DebugLayer({ ed, minimap }: { ed: BlueprintEditor; minim
     return n ? n.title ?? ed.registry.node(n.type)?.title ?? n.type : st.at.node;
   })();
   const live = st.status === "running" || st.status === "paused";
-  const status = st.status === "paused" ? `${STATUS.paused} · ${pausedTitle}`
+  const status = st.status === "paused" ? `${st.reason === "cursor" ? "已运行到光标" : STATUS.paused} · ${pausedTitle}`
     : st.status === "done" ? `${STATUS.done} · ${st.steps} 步`
       : st.status === "error" ? `${STATUS.error} · ${st.error === "No entry node to run" ? "没有入口事件节点" : st.error ?? ""}`
         : STATUS[st.status];
@@ -196,7 +209,7 @@ export default function DebugLayer({ ed, minimap }: { ed: BlueprintEditor; minim
 
   return (
     <>
-      <m.div data-bp-overlay role="toolbar" aria-label="调试" onPointerDown={(e) => e.stopPropagation()}
+      {bar ? <m.div data-bp-overlay role="toolbar" aria-label="调试" onPointerDown={(e) => e.stopPropagation()}
         initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}
         className={`absolute right-2 z-20 flex max-w-[calc(100%-1rem)] items-center gap-1 rounded-lg border bg-popover/90 p-0.5 pl-2.5 text-popover-foreground shadow-soft backdrop-blur ${minimap ? "bottom-12 sm:bottom-[8.5rem]" : "bottom-12 sm:bottom-2"}`}>
         <span className="bp-run-dot" data-status={st.status} aria-hidden />
@@ -213,7 +226,7 @@ export default function DebugLayer({ ed, minimap }: { ed: BlueprintEditor; minim
         {st.status === "done" || st.status === "stopped" || st.status === "error" ? (
           <button type="button" className={BTN} title="清除运行痕迹" onClick={() => ed.clearDebug()}><Eraser className="size-3.5" aria-hidden />清除</button>
         ) : null}
-      </m.div>
+      </m.div> : null}
       <div ref={tip} className="bp-vtip" aria-hidden />
       {world ? createPortal(
         <>

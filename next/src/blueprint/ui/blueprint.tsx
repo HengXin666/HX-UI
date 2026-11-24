@@ -72,9 +72,26 @@ export interface BlueprintProps {
    * and last values on hover. Loaded lazily. Pass an object for initial breakpoints (node ids, or
    * "<subgraphId>/<nodeId>") and the per-hop delay in ms (150–250 reads well).
    */
-  readonly debug?: boolean | { readonly breakpoints?: readonly string[]; readonly stepMs?: number };
+  readonly debug?: boolean | {
+    readonly breakpoints?: readonly string[];
+    readonly stepMs?: number;
+    /** Show the run bar (default true; BlueprintWorkbench puts the controls in its own toolbar). */
+    readonly bar?: boolean;
+  };
   /** Graph variables side panel (drag a variable in = Get, Alt-drag = Set). Loaded lazily. */
   readonly variables?: boolean;
+  /**
+   * Hold a key and left-click empty canvas to drop a node there (UE5: B = Branch, S = Sequence,
+   * D = Delay). Keys are single lowercase letters, values node type ids; types missing from the
+   * registry are ignored. Default { b: "flow.branch", s: "flow.sequence", d: "flow.delay" }; false = off.
+   */
+  readonly placeKeys?: Readonly<Record<string, string>> | false;
+  /** The floating toolbar (top right). Default true; BlueprintWorkbench has its own. */
+  readonly toolbar?: boolean;
+  /** The floating breadcrumb (top left). Default true. */
+  readonly breadcrumb?: boolean;
+  /** Ctrl+F and the toolbar's find button call this instead of opening the built-in Find overlay. */
+  readonly onFind?: () => void;
   readonly className?: string;
   readonly "aria-label"?: string;
   /** Extra overlay content (hints, badges) drawn over the canvas, under menus and the help sheet. */
@@ -94,16 +111,20 @@ function OwnedBlueprint(props: BlueprintProps) {
   return <BlueprintView {...props} editor={ed} />;
 }
 
+export const DEFAULT_PLACE_KEYS: Readonly<Record<string, string>> = { b: "flow.branch", s: "flow.sequence", d: "flow.delay" };
+
 type Menu = { kind: "actions"; sx: number; sy: number; from?: MenuOrigin | undefined } | { kind: "context"; target: MenuTarget; sx: number; sy: number };
 
 function BlueprintView({
   editor: ed, readOnly = false, snap = 16, minimap = false, lodThreshold = 0.5, issues = true, wheel = "ctrl", debug = false, variables = false,
+  placeKeys = DEFAULT_PLACE_KEYS, toolbar = true, breadcrumb = true, onFind,
   className, children, ...rest
 }: BlueprintProps & { editor: BlueprintHandle }) {
   useSyncExternalStore(ed.subscribe, ed.version, ed.version);
   ed.readOnly = readOnly;
   ed.snap = snap;
   ed.wheel = wheel;
+  ed.debugEnabled = Boolean(debug);
   const uid = useId();
   const domId = (node: string) => `${uid}-n-${node.replace(/\s/g, "_")}`;
   const root = useRef<HTMLDivElement>(null);
@@ -163,9 +184,22 @@ function BlueprintView({
   const graph = ed.graph;
   const vm = deriveView(ed);
 
+  const setPlacing = (type: string | undefined) => {
+    ed.placing = type;
+    const el = root.current;
+    if (!el) return;
+    if (type) { if (!el.dataset.tool) el.dataset.tool = "place"; } else if (el.dataset.tool === "place") delete el.dataset.tool;
+  };
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape" && cancel.current()) {
       e.preventDefault();
+      return;
+    }
+    // B / S / D held: the next click on empty canvas places that node
+    const place = placeKeys && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey && !isTypingTarget(e.target) ? placeKeys[e.key.toLowerCase()] : undefined;
+    if (place && ed.registry.node(place) && !readOnly) {
+      e.preventDefault();
+      setPlacing(place);
       return;
     }
     if (e.key === " " && !isTypingTarget(e.target)) {
@@ -201,12 +235,13 @@ function BlueprintView({
       closeAll: () => { const had = menu || rename || help || find; setMenu(null); setRename(null); setHelp(false); setFind(false); return Boolean(had); },
       toggleHelp: () => setHelp((h) => !h),
       rename: ui.rename,
-      openFind: () => setFind(true),
+      openFind: () => (onFind ? onFind() : setFind(true)),
       debug: Boolean(debug),
     }, e.key);
     if (handled !== false) e.preventDefault();
   };
   const onKeyUp = (e: React.KeyboardEvent) => {
+    if (placeKeys && ed.placing && placeKeys[e.key.toLowerCase()] === ed.placing) setPlacing(undefined);
     if (e.key !== " ") return;
     space.current = false;
     if (root.current?.dataset.tool === "space") delete root.current.dataset.tool;
@@ -233,7 +268,7 @@ function BlueprintView({
       aria-activedescendant={vm.active !== undefined ? domId(vm.active) : undefined}
       className={cn("bp-root", className)} data-readonly={readOnly || undefined} data-help={help || undefined} data-focus-wires={vm.wires.near ? "" : undefined}
       onKeyDown={onKeyDown} onKeyUp={onKeyUp} onCopy={(e) => onCopy(e)} onCut={(e) => onCopy(e, true)} onPaste={onPaste}
-      onBlur={() => { space.current = false; }} onPointerEnter={warm} onFocus={warm}>
+      onBlur={() => { space.current = false; setPlacing(undefined); }} onPointerEnter={warm} onFocus={warm}>
       <div ref={world} className="bp-world">
         {(graph.comments ?? []).map((c) => <CommentView key={c.id} comment={c} selected={ed.selection.comments.includes(c.id)} />)}
         <Wires graph={graph} registry={ed.registry} selected={vm.wires.selected} bad={vm.wires.bad} near={vm.wires.near} />
@@ -242,14 +277,16 @@ function BlueprintView({
       </div>
       <div ref={marquee} className="bp-marquee" />
       <div ref={tip} className="bp-tip" role="status" />
-      <Breadcrumb ed={ed} />
-      <Toolbar ed={ed} hidden={help} onHelp={() => setHelp((h) => !h)} find={find} onFind={() => setFind((f) => !f)}
-        vars={variables ? { open: Boolean(varsOpen), toggle: () => setVarsOpen((v) => !v) } : undefined} />
+      {breadcrumb ? <Breadcrumb ed={ed} /> : null}
+      {toolbar ? (
+        <Toolbar ed={ed} hidden={help} onHelp={() => setHelp((h) => !h)} find={find} onFind={() => (onFind ? onFind() : setFind((f) => !f))}
+          vars={variables ? { open: Boolean(varsOpen), toggle: () => setVarsOpen((v) => !v) } : undefined} />
+      ) : null}
       {issues ? <IssuesStrip ed={ed} /> : null}
       {minimap ? <Minimap ed={ed} graph={graph} /> : null}
       {variables && varsOpen && VariablesPanel ? <VariablesPanel editor={ed} docked onClose={() => { setVarsOpen(false); root.current?.focus(); }} /> : null}
       {find && FindPanel ? <FindPanel ed={ed} onClose={() => { setFind(false); root.current?.focus(); }} /> : null}
-      {debug && DebugLayer ? <DebugLayer ed={ed} minimap={minimap} /> : null}
+      {debug && DebugLayer ? <DebugLayer ed={ed} minimap={minimap} bar={dbgOpts?.bar !== false} /> : null}
       <div role="status" aria-live="polite" className="bp-notice" data-show={ed.notice ? "" : undefined}>{ed.notice}</div>
       {children}
       {graph.nodes.length === 0 && !menu ? (

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Code2, Eye, Monitor, RotateCw, Smartphone, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Code2, Eye, Maximize2, Monitor, RotateCw, Smartphone, Sparkles } from "lucide-react";
 import { AnimatePresence, m } from "motion/react";
 import { cn } from "@/lib/utils";
 import { ease, spring } from "@/motion/presets";
@@ -112,6 +112,11 @@ export function ComponentPage({ entry: e }: { entry: DocEntry }) {
             </m.div>
           )}
           </AnimatePresence>
+          {e.fullPage ? (
+            <a href={href.full(e)} className="inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground">
+              <Maximize2 className="size-4" aria-hidden />全屏打开
+            </a>
+          ) : null}
           <CopyButton text={aiPrompt(e, values, source)} label="复制给 AI" className="h-8 border px-3" />
         </div>
       </div>

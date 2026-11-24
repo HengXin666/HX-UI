@@ -1,6 +1,6 @@
 import { createHistory, type History, type StepOptions } from "../history";
 import { createIdGen, type IdGen } from "../ids";
-import type { DebugEvent, DebugOptions, DebugSession, DebugState } from "../debug";
+import type { BreakpointSpec, DebugEvent, DebugOptions, DebugSession, DebugState } from "../debug";
 import { mergeInner, type ApplyResult, type GraphOp } from "../ops";
 import type { Registry } from "../registry";
 import { boundsOf, nodeBox, type Box } from "../size";
@@ -32,10 +32,19 @@ export interface ViewValidation {
   readonly byEdge: ReadonlyMap<string, readonly ValidationIssue[]>;
 }
 
+/**
+ * What the Details panel shows when it is not the canvas selection: a variable or a function /
+ * macro / collapsed graph picked in My Blueprint. Selecting nodes or comments clears it.
+ */
+export type InspectTarget =
+  | { readonly kind: "variable"; readonly id: string; /** subgraph id for function locals */ readonly sg?: string | undefined }
+  | { readonly kind: "subgraph"; readonly id: string }
+  | { readonly kind: "graph" };
+
 export const ZOOM = { min: 0.2, max: 2.5 } as const;
-const IDLE: DebugState = { status: "idle", steps: 0, trace: [], values: new Map() };
+const IDLE: DebugState = { status: "idle", steps: 0, trace: [], values: new Map(), hits: new Map() };
 /** Options of `run()`: the session options minus the breakpoints (the editor's own set is used). */
-export type RunOptions = Omit<DebugOptions, "breakpoints">;
+export type RunOptions = Omit<DebugOptions, "breakpoints" | "conditions">;
 export const EMPTY_SELECTION: EditorSelection = { nodes: [], comments: [], edges: [] };
 
 const uniq = (a: readonly string[]) => [...new Set(a)];
@@ -55,6 +64,10 @@ export class BlueprintEditor {
   /** Last pointer position in graph units (paste / Tab menu / C place things there). */
   pointer: { x: number; y: number } | undefined;
   el: HTMLElement | null = null;
+  /** Node type placed by a click on empty canvas while a place key (B / S / D) is held. */
+  placing: string | undefined;
+  /** The view has debugging on (menus offer run to cursor, conditions). Set by <Blueprint>. */
+  debugEnabled = false;
 
   private sel: EditorSelection = EMPTY_SELECTION;
   private pathIds: readonly string[] = [];
@@ -66,8 +79,11 @@ export class BlueprintEditor {
   private viewCache: { root: BlueprintGraph; sg: string | undefined; graph: BlueprintGraph } | undefined;
   /** Breakpoint keys: "node" on the main graph, "<subgraphId>/<node>" inside a collapsed graph. */
   readonly breakpoints = new Set<string>();
+  /** Conditions / hit counts / enabled flags per breakpoint key (conditional breakpoints). */
+  readonly breakpointSpecs = new Map<string, BreakpointSpec>();
   /** Watched pins: "<level key>|in:<pin>" or "<level key>|out:<pin>". */
   readonly watches = new Set<string>();
+  private insp: InspectTarget | undefined;
   private dbg: DebugState = IDLE;
   private session: DebugSession | undefined;
   private readonly debugListeners = new Set<(e: DebugEvent) => void>();
@@ -126,7 +142,7 @@ export class BlueprintEditor {
     const root = this.root;
     const sg = this.subgraph;
     if (this.viewCache?.root === root && this.viewCache.sg === sg) return this.viewCache.graph;
-    const graph = (sg !== undefined && subgraphAsGraph(root, sg)) || root;
+    const graph = (sg !== undefined && subgraphAsGraph(root, sg, this.registry)) || root;
     this.viewCache = { root, sg, graph };
     return graph;
   }
@@ -149,6 +165,27 @@ export class BlueprintEditor {
   }
   get canUndo() { return this.history.canUndo; }
   get canRedo() { return this.history.canRedo; }
+
+  /**
+   * Apply JSON ops to the document root as ONE undo step, whatever level is on screen (My Blueprint
+   * and Details use it for functions, variables and graph settings).
+   */
+  applyDocument(ops: readonly GraphOp[], step: StepOptions = {}): ApplyResult | undefined {
+    if (this.readOnly || !ops.length) return undefined;
+    return this.history.apply(ops, this.registry, step);
+  }
+
+  /** Apply JSON ops on a given level (undefined = main graph, else a subgraph id) as ONE undo step. */
+  applyAt(sg: string | undefined, ops: readonly GraphOp[], step: StepOptions = {}): ApplyResult | undefined {
+    if (this.readOnly || !ops.length) return undefined;
+    return this.history.apply(ops, this.registry, { ...step, ...(sg !== undefined ? { subgraph: sg } : {}) });
+  }
+
+  /** Open a subgraph by id, through the full path of call sites that reach it (breadcrumb). */
+  open(sgId: string | undefined) {
+    if (sgId === undefined) return this.exitTo(0);
+    this.openPath(subgraphPath(this.root, sgId) ?? [sgId]);
+  }
 
   /** Apply JSON ops to the level being edited as ONE undo step. */
   apply(ops: readonly GraphOp[], step: StepOptions = {}): ApplyResult | undefined {
@@ -198,6 +235,26 @@ export class BlueprintEditor {
     const same = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((x, i) => x === b[i]);
     if (same(sel.nodes, cur.nodes) && same(sel.comments, cur.comments) && same(sel.edges, cur.edges)) return;
     this.sel = sel;
+    if (sel.nodes.length || sel.comments.length) this.insp = undefined;
+    this.bump();
+  }
+
+  // ------------------------------------------------------------------ inspection (Details panel)
+  /** The item My Blueprint picked, while no canvas selection overrides it. */
+  get inspected(): InspectTarget | undefined {
+    const t = this.insp;
+    if (!t) return undefined;
+    if (t.kind === "subgraph" && !this.root.subgraphs?.[t.id]) return undefined;
+    if (t.kind === "variable") {
+      const list = t.sg !== undefined ? this.root.subgraphs?.[t.sg]?.variables : this.root.variables;
+      if (!list?.some((v) => v.id === t.id)) return undefined;
+    }
+    return t;
+  }
+  /** Show a variable / function / the graph settings in Details (clears the canvas selection). */
+  inspect(t: InspectTarget | undefined) {
+    this.insp = t;
+    this.sel = EMPTY_SELECTION;
     this.bump();
   }
   clearSelection() { this.select(EMPTY_SELECTION); }
@@ -269,6 +326,31 @@ export class BlueprintEditor {
     keys.forEach((k) => (on ? this.breakpoints.add(k) : this.breakpoints.delete(k)));
     this.bump();
   }
+  /** Set (or clear with undefined) the condition / hit count of a breakpoint key; adds the breakpoint. */
+  setBreakpointSpec(key: string, spec: BreakpointSpec | undefined) {
+    const clean = spec && (spec.condition?.trim() || (spec.hitCount ?? 0) > 1 || spec.enabled === false) ? spec : undefined;
+    if (clean) {
+      this.breakpointSpecs.set(key, clean);
+      this.breakpoints.add(key);
+    } else this.breakpointSpecs.delete(key);
+    this.bump();
+  }
+  removeBreakpoint(key: string) {
+    this.breakpoints.delete(key);
+    this.breakpointSpecs.delete(key);
+    this.bump();
+  }
+  /** Ctrl+Shift+F9: remove every breakpoint (all levels). */
+  clearBreakpoints() {
+    if (!this.breakpoints.size) return;
+    this.breakpoints.clear();
+    this.breakpointSpecs.clear();
+    this.bump();
+  }
+  /** Remove a watch by its full key ("<level key>|in:<pin>"). */
+  removeWatch(key: string) {
+    if (this.watches.delete(key)) this.bump();
+  }
   toggleWatch(node: string, dir: "in" | "out", pin: string) {
     const k = `${this.keyOf(node)}|${dir}:${pin}`;
     if (!this.watches.delete(k)) this.watches.add(k);
@@ -285,12 +367,13 @@ export class BlueprintEditor {
    */
   async run(opts: RunOptions = {}) {
     if (this.session && (this.dbg.status === "running" || this.dbg.status === "paused")) {
-      if (opts.startPaused) this.session.step();
+      if (opts.runTo !== undefined) this.session.runTo(opts.runTo);
+      else if (opts.startPaused) this.session.step();
       else this.session.continue();
       return this.dbg.result;
     }
     const { DebugSession } = await import("../debug");
-    const s = new DebugSession(this.root, this.registry, { stepMs: this.stepMs, ...opts, breakpoints: this.breakpoints }, (e) => {
+    const s = new DebugSession(this.root, this.registry, { stepMs: this.stepMs, ...opts, breakpoints: this.breakpoints, conditions: this.breakpointSpecs }, (e) => {
       if (this.session !== s) return;
       if (e.type === "status") {
         this.dbg = e.state;
@@ -303,6 +386,14 @@ export class BlueprintEditor {
     this.dbg = IDLE;
     this.debugListeners.forEach((l) => l({ type: "status", state: IDLE }));
     return s.start();
+  }
+  /**
+   * Run to cursor: run (or continue) until this node of the level being edited is reached, once.
+   * Default: the selected node. Breakpoints on the way still stop.
+   */
+  runToCursor(localId: string | undefined = this.selection.nodes[this.selection.nodes.length - 1]) {
+    if (localId === undefined) return undefined;
+    return this.run({ runTo: this.keyOf(localId) });
   }
   /** Continue a paused run (or start one). */
   continue() { return this.run(); }

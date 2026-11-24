@@ -11,7 +11,8 @@ import type { BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, Pi
  *   edge e1 n1.then -> n3.exec
  *   comment c1 @0,0 420x200 title="Setup" tone="info"
  *   variable v1 "Count" number default=0
- *   subgraph sg1 label="Double" kind="function" {
+ *   meta name="Doc" description="…"
+ *   subgraph sg1 label="Double" kind="function" pure=true category="Math" {
  *     variable v2 "Tmp" number
  *     node n7 subgraph.in @-240,0 pins={"outputs":[{"id":"x","type":"number"}]}
  *     edge e9 n7.x -> n8.a
@@ -31,11 +32,13 @@ const attrs = (o: object, keys: readonly string[]) =>
     return v === undefined ? [] : [`${k}=${JSON.stringify(v)}`];
   });
 
-const NODE_ATTRS = ["title", "subgraph", "variable", "collapsed", "width", "comment", "disabled", "values", "pins"] as const;
+const NODE_ATTRS = ["title", "subgraph", "variable", "collapsed", "width", "comment", "commentPinned", "disabled", "devOnly", "values", "pins"] as const;
+const SUBGRAPH_ATTRS = ["label", "kind", "pure", "const", "category", "description", "keywords", "library"] as const;
+const VAR_ATTRS = ["default", "category", "tooltip"] as const;
 const COMMENT_ATTRS = ["title", "body", "tone", "moveWithNodes"] as const;
 
 const varLines = (vs: readonly VariableDef[] | undefined, indent: string) =>
-  (vs ?? []).map((v) => [`${indent}variable`, word(v.id, BARE_ID), JSON.stringify(v.name), word(v.type, BARE_TYPE), ...attrs(v, ["default"])].join(" "));
+  (vs ?? []).map((v) => [`${indent}variable`, word(v.id, BARE_ID), JSON.stringify(v.name), word(v.type, BARE_TYPE), ...attrs(v, VAR_ATTRS)].join(" "));
 
 function levelLines(g: Pick<BlueprintGraph, "nodes" | "edges" | "comments">, indent: string): string[] {
   return [
@@ -47,9 +50,9 @@ function levelLines(g: Pick<BlueprintGraph, "nodes" | "edges" | "comments">, ind
 
 export function toText(graph: BlueprintGraph): string {
   const g = toJSON(graph);
-  const lines = [`blueprint v${FORMAT_VERSION}`, ...varLines(g.variables, ""), ...levelLines(g, "")];
+  const lines = [`blueprint v${FORMAT_VERSION}`, ...(g.meta ? [["meta", ...attrs(g.meta, ["name", "description"])].join(" ")] : []), ...varLines(g.variables, ""), ...levelLines(g, "")];
   for (const sg of Object.values(g.subgraphs ?? {})) {
-    lines.push([`subgraph ${word(sg.id, BARE_ID)}`, ...attrs(sg, ["label", "kind"]), "{"].join(" "));
+    lines.push([`subgraph ${word(sg.id, BARE_ID)}`, ...attrs(sg, SUBGRAPH_ATTRS), "{"].join(" "));
     lines.push(...varLines(sg.variables, "  "), ...levelLines(sg, "  "), "}");
   }
   return lines.join("\n") + "\n";
@@ -146,7 +149,8 @@ interface Level { nodes: BlueprintNode[]; edges: BlueprintEdge[]; comments: Blue
 
 export function fromText(text: string): ParseResult {
   const top: Level = { nodes: [], edges: [], comments: [], variables: [] };
-  const subgraphs: Record<string, Level & { id: string; label?: string; kind?: string }> = {};
+  const subgraphs: Record<string, Level & { id: string; attrs: Record<string, unknown> }> = {};
+  let meta: Record<string, unknown> | undefined;
   let cur: Level = top;
   let inSub = false;
   const errors: string[] = [];
@@ -164,18 +168,21 @@ export function fromText(text: string): ParseResult {
         if (inSub) throw new Error("subgraph blocks cannot nest (the table is flat)");
         if (t[t.length - 1] !== "{") throw new Error("expected { at end of subgraph line");
         const id = unword(t[1] ?? "");
-        const a = parseAttrs(t.slice(2, -1), ["label", "kind"]);
-        const sg = { id, ...(typeof a.label === "string" ? { label: a.label } : {}), ...(typeof a.kind === "string" ? { kind: a.kind } : {}), nodes: [], edges: [], comments: [], variables: [] };
+        const a = parseAttrs(t.slice(2, -1), SUBGRAPH_ATTRS);
+        const sg = { id, attrs: a, nodes: [], edges: [], comments: [], variables: [] };
         subgraphs[id] = sg;
         cur = sg;
         inSub = true;
+      } else if (kw === "meta") {
+        if (inSub) throw new Error("meta belongs to the main graph");
+        meta = parseAttrs(t.slice(1), ["name", "description"]);
       } else if (kw === "node") {
         const [x, y] = parsePair(t[3], AT, "@x,y");
         cur.nodes.push({ id: unword(t[1] ?? ""), type: unword(t[2] ?? ""), x, y, ...parseAttrs(t.slice(4), NODE_ATTRS) } as BlueprintNode);
       } else if (kw === "variable") {
         const name = t[2] ?? "";
         if (!name.startsWith('"')) throw new Error("expected: variable <id> \"<name>\" <type>");
-        cur.variables.push({ id: unword(t[1] ?? ""), name: unword(name), type: unword(t[3] ?? ""), ...parseAttrs(t.slice(4), ["default"]) } as VariableDef);
+        cur.variables.push({ id: unword(t[1] ?? ""), name: unword(name), type: unword(t[3] ?? ""), ...parseAttrs(t.slice(4), VAR_ATTRS) } as VariableDef);
       } else if (kw === "edge") {
         if (t[3] !== "->") throw new Error("expected: edge <id> <node.pin> -> <node.pin>");
         cur.edges.push({ id: unword(t[1] ?? ""), from: parseRef(t[2] ?? ""), to: parseRef(t[4] ?? "") });
@@ -195,11 +202,12 @@ export function fromText(text: string): ParseResult {
   });
   return fromJSON({
     version: FORMAT_VERSION,
+    ...(meta ? { meta } : {}),
     ...level(top),
     ...(Object.keys(subgraphs).length
       ? {
         subgraphs: Object.fromEntries(Object.entries(subgraphs).map(([id, s]) => [id, {
-          id, ...(s.label !== undefined ? { label: s.label } : {}), ...(s.kind !== undefined ? { kind: s.kind } : {}), ...level(s),
+          id, ...s.attrs, ...level(s),
         }])),
       }
       : {}),

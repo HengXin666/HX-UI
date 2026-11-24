@@ -41,7 +41,11 @@ export function addComment(
 ): { graph: BlueprintGraph; id: string } {
   const id = c.id ?? ids("c");
   const comment: BlueprintComment = { ...c, id, w: Math.max(COMMENT_MIN.w, c.w), h: Math.max(COMMENT_MIN.h, c.h) };
-  return { graph: { ...graph, comments: [...(graph.comments ?? []), comment] }, id };
+  // z-order: a comment that wraps existing comments goes behind them (outer boxes stay underneath)
+  const list = graph.comments ?? [];
+  const first = list.findIndex((o) => boxContains(comment, o));
+  const comments = first < 0 ? [...list, comment] : [...list.slice(0, first), comment, ...list.slice(first)];
+  return { graph: { ...graph, comments }, id };
 }
 
 export function updateComment(graph: BlueprintGraph, id: string, patch: Partial<Omit<BlueprintComment, "id">>): BlueprintGraph {

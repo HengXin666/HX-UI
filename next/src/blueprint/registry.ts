@@ -1,4 +1,5 @@
 import { defineNode, defineTypes, type PinTypes } from "./define";
+import type { BlueprintLibrary } from "./library";
 import type { NodeDef, PinShape, PinTypeDef } from "./types";
 import { ANY } from "./types";
 
@@ -21,6 +22,31 @@ export interface Registry {
   conversion(from: string, to: string): string | undefined;
   /** Colour token of a pin type. */
   color(typeId: string): string | undefined;
+  /**
+   * Function / macro libraries available to every document using this registry. Their items show
+   * in the action menu by category; picking one copies the definition into the document.
+   */
+  readonly libraries: readonly BlueprintLibrary[];
+}
+
+// ---------------------------------------------------------------------------
+// Container types: "array<T>", "set<T>", "map<K,V>" resolve for any registered T (UE5 variable
+// container switch) without registering each combination.
+
+export type ContainerKind = "single" | "array" | "set" | "map";
+
+/** Type id of a container of `of` ("single" returns `of`). */
+export function containerType(kind: ContainerKind, of: string, key = "string"): string {
+  return kind === "single" ? of : kind === "map" ? `map<${key},${of}>` : `${kind}<${of}>`;
+}
+
+/** Split a container type id; plain ids give `{ kind: "single", of: id }`. */
+export function parseContainer(id: string): { kind: ContainerKind; of: string; key?: string } {
+  const m = /^(array|set)<(.+)>$/.exec(id);
+  if (m) return { kind: m[1] as "array" | "set", of: m[2]! };
+  const mm = /^map<([^,<>]+),(.+)>$/.exec(id);
+  if (mm) return { kind: "map", key: mm[1]!, of: mm[2]! };
+  return { kind: "single", of: id };
 }
 
 // ---------------------------------------------------------------------------
@@ -83,6 +109,7 @@ export const BUILTIN_NODES: readonly NodeDef[] = [subgraphNode, tunnelIn, tunnel
 export function createRegistry(
   types: Pick<PinTypes<unknown>, "list"> | readonly PinTypeDef[] = defineTypes({}),
   nodes: readonly NodeDef[] = [],
+  opts: { readonly libraries?: readonly BlueprintLibrary[] } = {},
 ): Registry {
   const typeMap = new Map<string, PinTypeDef>();
   for (const t of defineTypes({}).list) typeMap.set(t.id, t);
@@ -91,7 +118,25 @@ export function createRegistry(
   const nodeMap = new Map<string, NodeDef>();
   for (const n of [...BUILTIN_NODES, ...nodes]) nodeMap.set(n.id, n);
 
-  const shape = (id: string): PinShape => typeMap.get(id)?.shape ?? "data";
+  const synth = new Map<string, PinTypeDef | null>();
+  /** Registered type, or a synthesized container of registered types. */
+  const typeOf = (id: string): PinTypeDef | undefined => {
+    const t = typeMap.get(id);
+    if (t) return t;
+    if (!id.includes("<")) return undefined;
+    if (synth.has(id)) return synth.get(id) ?? undefined;
+    const c = parseContainer(id);
+    let def: PinTypeDef | null = null;
+    if (c.kind !== "single" && typeOf(c.of) && !isExecId(c.of) && (c.key === undefined || (typeOf(c.key) && !isExecId(c.key)))) {
+      const inner = typeOf(c.of)!;
+      const label = `${c.kind === "array" ? "Array" : c.kind === "set" ? "Set" : "Map"} of ${inner.label ?? inner.id}`;
+      def = { id, shape: c.kind, of: c.of, label, ...(c.key !== undefined ? { key: c.key } : {}) };
+    }
+    synth.set(id, def);
+    return def ?? undefined;
+  };
+  const isExecId = (id: string) => typeMap.get(id)?.shape === "exec";
+  const shape = (id: string): PinShape => typeOf(id)?.shape ?? "data";
   const isExec = (id: string) => shape(id) === "exec";
 
   /** Walk `extends` from `from` looking for `to`. Guards against cycles in bad registrations. */
@@ -112,8 +157,8 @@ export function createRegistry(
     if (from === ANY || to === ANY) return true;
     if (extendsTo(from, to)) return true;
     // Containers are structural: number[] fits any[] when both are declared array types.
-    const a = typeMap.get(from);
-    const b = typeMap.get(to);
+    const a = typeOf(from);
+    const b = typeOf(to);
     if (!a || !b || a.shape !== b.shape || a.shape === "data") return false;
     const ofOk = a.of !== undefined && b.of !== undefined && assignable(a.of, b.of);
     const keyOk = a.shape !== "map" || (a.key !== undefined && b.key !== undefined && assignable(a.key, b.key));
@@ -137,11 +182,12 @@ export function createRegistry(
     types: typeMap,
     nodes: nodeMap,
     node: (id) => nodeMap.get(id),
-    type: (id) => typeMap.get(id),
+    type: typeOf,
     shape,
     isExec,
     assignable,
     conversion,
-    color: (id) => typeMap.get(id)?.color,
+    color: (id) => typeOf(id)?.color,
+    libraries: opts.libraries ?? [],
   };
 }

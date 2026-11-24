@@ -1,6 +1,6 @@
 import { TUNNEL_IN, TUNNEL_OUT } from "./registry";
 import type {
-  BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, CommentTone, NodePins, Pin, SubGraphDef, SubgraphKind, VariableDef,
+  BlueprintComment, BlueprintEdge, BlueprintGraph, BlueprintNode, CommentTone, GraphMeta, NodePins, Pin, SubGraphDef, SubgraphKind, VariableDef,
 } from "./types";
 
 /**
@@ -9,7 +9,9 @@ import type {
  * `fromJSON` checks structure (not semantics, use validateGraph for that) and reads v1 legacy files.
  *
  * Version 2 grew additively in M5 (graph `variables`, node `disabled` / `variable`, subgraph `kind` /
- * `variables`). Every addition is optional, so files without them are unchanged and still read.
+ * `variables`) and M6 (graph `meta`; node `devOnly` / `commentPinned`; variable `category` / `tooltip`;
+ * subgraph `pure` / `const` / `category` / `description` / `keywords` / `library`; container type ids
+ * such as "array<number>"). Every addition is optional, so files without them are unchanged and still read.
  */
 
 export const FORMAT_VERSION = 2;
@@ -42,14 +44,14 @@ const pinsOut = (p: NodePins): NodePins => ({
   ...(p.outputs ? { outputs: p.outputs.map(pinOut) } : {}),
 });
 const nodeOut = (n: BlueprintNode): BlueprintNode => ({
-  ...pick(n, ["id", "type", "x", "y", "title", "collapsed", "width", "comment", "disabled", "subgraph", "variable"]),
+  ...pick(n, ["id", "type", "x", "y", "title", "collapsed", "width", "comment", "commentPinned", "disabled", "devOnly", "subgraph", "variable"]),
   ...(n.values && Object.keys(n.values).length ? { values: clone(n.values) } : {}),
   ...(n.pins ? { pins: pinsOut(n.pins) } : {}),
 });
 const edgeOut = (e: BlueprintEdge): BlueprintEdge => ({ id: e.id, from: { node: e.from.node, pin: e.from.pin }, to: { node: e.to.node, pin: e.to.pin } });
 const commentOut = (c: BlueprintComment): BlueprintComment => pick(c, ["id", "x", "y", "w", "h", "title", "body", "tone", "moveWithNodes"]);
 
-const varOut = (v: VariableDef): VariableDef => clone(pick(v, ["id", "name", "type", "default"]));
+const varOut = (v: VariableDef): VariableDef => clone(pick(v, ["id", "name", "type", "default", "category", "tooltip"]));
 
 const levelOut = (g: Pick<BlueprintGraph, "nodes" | "edges" | "comments">) => ({
   nodes: g.nodes.map(nodeOut),
@@ -61,6 +63,7 @@ export function toJSON(graph: BlueprintGraph): GraphJSON {
   const sgs = Object.entries(graph.subgraphs ?? {}).sort(([a], [b]) => a.localeCompare(b));
   return {
     version: FORMAT_VERSION,
+    ...(graph.meta && (graph.meta.name || graph.meta.description) ? { meta: pick(graph.meta, ["name", "description"]) } : {}),
     ...levelOut(graph),
     ...(graph.variables?.length ? { variables: graph.variables.map(varOut) } : {}),
     ...(sgs.length
@@ -68,6 +71,7 @@ export function toJSON(graph: BlueprintGraph): GraphJSON {
         subgraphs: Object.fromEntries(sgs.map(([id, sg]) => [id, {
           id: sg.id, ...(sg.label !== undefined ? { label: sg.label } : {}),
           ...(sg.kind && sg.kind !== "graph" ? { kind: sg.kind } : {}),
+          ...(pick(sg, ["pure", "const", "category", "description", "keywords", "library"]) as Partial<SubGraphDef>),
           ...(sg.variables?.length ? { variables: sg.variables.map(varOut) } : {}),
           ...levelOut(sg),
         }])),
@@ -154,7 +158,8 @@ class Reader {
     return {
       id: this.str(v, "id", path), type: this.str(v, "type", path), x: this.num(v, "x", path), y: this.num(v, "y", path),
       ...this.optStr(v, "title", path), ...this.optBool(v, "collapsed", path), ...this.optNum(v, "width", path),
-      ...this.optStr(v, "comment", path), ...this.optBool(v, "disabled", path), ...this.optStr(v, "subgraph", path),
+      ...this.optStr(v, "comment", path), ...this.optBool(v, "commentPinned", path), ...this.optBool(v, "disabled", path),
+      ...this.optBool(v, "devOnly", path), ...this.optStr(v, "subgraph", path),
       ...this.optStr(v, "variable", path),
       ...(isObj(v.values) && Object.keys(v.values).length ? { values: clone(v.values) } : {}),
       ...(pins ? { pins } : {}),
@@ -198,6 +203,7 @@ class Reader {
       return {
         id: this.str(v, "id", p), name: this.str(v, "name", p), type: this.str(v, "type", p),
         ...(v.default !== undefined ? { default: clone(v.default) } : {}),
+        ...this.optStr(v, "category", p), ...this.optStr(v, "tooltip", p),
       };
     });
     return list.length ? { variables: list } : {};
@@ -247,10 +253,26 @@ function readV2(raw: Obj, isV1: boolean): ParseResult {
       if (v.id !== undefined && v.id !== id) r.errors.push(`subgraphs.${id}.id: must equal its key`);
       if (v.kind !== undefined && !KINDS.includes(v.kind as SubgraphKind)) r.errors.push(`subgraphs.${id}.kind: unknown kind`);
       const kind = KINDS.includes(v.kind as SubgraphKind) && v.kind !== "graph" ? { kind: v.kind as SubgraphKind } : {};
-      subgraphs[id] = { id, ...r.optStr(v, "label", `subgraphs.${id}`), ...kind, ...r.variables(v, `subgraphs.${id}`), ...r.level(v, `subgraphs.${id}`) };
+      const at = `subgraphs.${id}`;
+      subgraphs[id] = {
+        id, ...r.optStr(v, "label", at), ...kind,
+        ...r.optBool(v, "pure", at), ...r.optBool(v, "const", at), ...r.optStr(v, "category", at), ...r.optStr(v, "description", at),
+        ...r.optStr(v, "keywords", at), ...r.optStr(v, "library", at),
+        ...r.variables(v, at), ...r.level(v, at),
+      };
     }
   }
-  const graph: BlueprintGraph = { ...r.level(raw, "graph"), ...r.variables(raw, "graph"), ...(Object.keys(subgraphs).length ? { subgraphs } : {}) };
+  let meta: GraphMeta | undefined;
+  if (raw.meta !== undefined) {
+    if (!isObj(raw.meta)) r.errors.push("meta: expected object");
+    else {
+      const m = { ...r.optStr(raw.meta, "name", "meta"), ...r.optStr(raw.meta, "description", "meta") };
+      if (Object.keys(m).length) meta = m;
+    }
+  }
+  const graph: BlueprintGraph = {
+    ...(meta ? { meta } : {}), ...r.level(raw, "graph"), ...r.variables(raw, "graph"), ...(Object.keys(subgraphs).length ? { subgraphs } : {}),
+  };
   return r.errors.length
     ? { ok: false, errors: r.errors, warnings: r.warnings }
     : { ok: true, graph, errors: [], warnings: r.warnings };
@@ -337,6 +359,7 @@ export const graphSchema = {
   additionalProperties: false,
   properties: {
     version: { const: FORMAT_VERSION },
+    meta: { type: "object", additionalProperties: false, properties: { name: { type: "string" }, description: { type: "string" } } },
     ...level,
     variables: { type: "array", items: { $ref: "#/$defs/variable" } },
     subgraphs: { type: "object", additionalProperties: { $ref: "#/$defs/subgraph" } },
@@ -351,7 +374,9 @@ export const graphSchema = {
       properties: {
         id: { type: "string" }, type: { type: "string", description: "NodeDef id" }, x: { type: "number" }, y: { type: "number" },
         title: { type: "string" }, collapsed: { type: "boolean" }, width: { type: "number" }, comment: { type: "string" },
+        commentPinned: { type: "boolean", description: "Comment bubble stays visible when zoomed out" },
         disabled: { type: "boolean", description: "Skipped when evaluating (exec and matching data pass through)" },
+        devOnly: { type: "boolean", description: "Development only: skipped like a disabled node in shipping runs" },
         variable: { type: "string", description: "Variable id, for var.get / var.set nodes" },
         subgraph: { type: "string", description: "SubGraphDef id, pins come from its tunnels" },
         values: { type: "object", description: "Param values and literals of unconnected inputs" },
@@ -373,12 +398,14 @@ export const graphSchema = {
       type: "object", required: ["id", "nodes", "edges"], additionalProperties: false,
       properties: {
         id: { type: "string" }, label: { type: "string" }, kind: { enum: KINDS },
+        pure: { type: "boolean" }, const: { type: "boolean" }, category: { type: "string" }, description: { type: "string" },
+        keywords: { type: "string" }, library: { type: "string", description: "Library the definition was imported from" },
         variables: { type: "array", items: { $ref: "#/$defs/variable" }, description: "Function locals" }, ...level,
       },
     },
     variable: {
       type: "object", required: ["id", "name", "type"], additionalProperties: false,
-      properties: { id: { type: "string" }, name: { type: "string" }, type: { type: "string" }, default: {} },
+      properties: { id: { type: "string" }, name: { type: "string" }, type: { type: "string" }, default: {}, category: { type: "string" }, tooltip: { type: "string" } },
     },
   },
 } as const;

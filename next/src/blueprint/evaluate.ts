@@ -1,7 +1,8 @@
-import { edgeKind, getPorts, type ResolvedPin } from "./ports";
+import { edgeKind, getPorts, paramVariables, type ResolvedPin } from "./ports";
 import type { Registry } from "./registry";
 import { TUNNEL_IN, TUNNEL_OUT, VAR_GET, VAR_SET } from "./registry";
 import type { BlueprintEdge, BlueprintGraph, BlueprintNode, EvalOutput, SubGraphDef, SubgraphScope, VariableDef } from "./types";
+import { PARAM_PREFIX } from "./types";
 import { topoSort } from "./validate";
 
 /**
@@ -43,6 +44,11 @@ export interface StepEvent {
 export interface StepTarget {
   readonly node: string;
   readonly edge?: string;
+  /**
+   * Values arriving at the node's data inputs, pulled on demand (conditional breakpoints read them).
+   * Pure upstream nodes are computed for it; impure ones give their last outputs.
+   */
+  readonly inputs?: () => Promise<Readonly<Record<string, unknown>>>;
 }
 
 export interface EvalOptions {
@@ -58,6 +64,8 @@ export interface EvalOptions {
   readonly variables?: Readonly<Record<string, unknown>>;
   /** Abort to stop the run between steps. */
   readonly signal?: AbortSignal;
+  /** Shipping run: "development only" nodes are skipped like disabled ones. Default false. */
+  readonly shipping?: boolean;
 }
 
 export interface EvalResult {
@@ -89,6 +97,8 @@ interface Scope {
   readonly fn?: boolean;
   /** Set once a function body has returned: nothing more runs in it. */
   halted?: boolean;
+  /** The Return node reached first (a function may have several). */
+  exitNode?: string;
 }
 
 type Cache = Map<string, Record<string, unknown>>;
@@ -107,6 +117,8 @@ export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, o
   const root: Scope = { level: graph, prefix: "", exits: [], locals: undefined };
   let stopped = false;
   const isImpure = (n: BlueprintNode, s: Scope) => getPorts(n, registry, s.level).inputs.some((p) => p.exec);
+  /** Passed through instead of run: disabled, or development only in a shipping run. */
+  const skipped = (n: BlueprintNode) => !!n.disabled || (!!opts.shipping && !!n.devOnly);
   const store = (s: Scope, id: string | undefined) => (id !== undefined && s.locals?.has(id) ? s.locals : globals);
 
   /** Data outputs of a node, computing it if needed. */
@@ -123,7 +135,7 @@ export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, o
       const out = await compute(s, n, cache);
       if (out) {
         cache.set(path, out);
-        if (!n.disabled) opts.onCompute?.(path, out);
+        if (!skipped(n)) opts.onCompute?.(path, out);
       }
       return out;
     } catch (err) {
@@ -156,7 +168,7 @@ export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, o
   };
 
   const compute = async (s: Scope, n: BlueprintNode, cache: Cache): Promise<Record<string, unknown> | undefined> => {
-    if (n.disabled) return passThrough(s, n, cache);
+    if (skipped(n)) return passThrough(s, n, cache);
     const ports = getPorts(n, registry, s.level);
     if (n.type === TUNNEL_IN) {
       const out: Record<string, unknown> = {};
@@ -165,6 +177,8 @@ export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, o
     }
     if (n.type === VAR_GET) {
       if (ports.missing) throw new Error(`Variable "${n.variable ?? "?"}" not found`);
+      // a function input getter reads the call site's pin
+      if (n.variable!.startsWith(PARAM_PREFIX)) return { value: await s.tunnelInput?.(n.variable!.slice(PARAM_PREFIX.length)) };
       return { value: store(s, n.variable).get(n.variable!) };
     }
     if (n.type === VAR_SET) {
@@ -188,11 +202,13 @@ export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, o
     return { ...(await def.evaluate({ inputs, params, node: n })) };
   };
 
-  /** Data outputs of a collapsed graph: the exit tunnel's inputs. */
+  /** Data outputs of a collapsed graph: the inputs of the exit tunnel reached (else the first one). */
   const exitValues = async (sg: SubGraphDef, inner: Scope) => {
     const out: Record<string, unknown> = {};
     const cache: Cache = new Map();
-    for (const t of sg.nodes.filter((x) => x.type === TUNNEL_OUT)) {
+    const exits = sg.nodes.filter((x) => x.type === TUNNEL_OUT);
+    const reached = exits.filter((x) => x.id === inner.exitNode);
+    for (const t of reached.length ? reached : exits.slice(0, 1)) {
       for (const p of getPorts(t, registry, inner.level).inputs) if (!p.exec) out[p.id] = await inputValue(inner, t, p.id, undefined, cache);
     }
     return out;
@@ -209,12 +225,13 @@ export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, o
       nodes: sg.nodes, edges: sg.edges,
       ...(graph.subgraphs ? { subgraphs: graph.subgraphs } : {}),
       ...(graph.variables ? { variables: graph.variables } : {}),
-      ...(isFn ? { locals: sg.variables ?? [] } : s.level.locals ? { locals: s.level.locals } : {}),
+      ...(isFn ? { locals: sg.variables ?? [], params: paramVariables(sg.nodes, registry) } : s.level.locals ? { locals: s.level.locals } : {}),
     };
     const inner: Scope = {
       level,
       prefix: `${shellPath}/`,
-      tunnelInput: (pin) => inputValue(s, shell, pin, undefined, cache),
+      // unwired, no literal: the input's declared default (function inputs have defaults, UE5)
+      tunnelInput: (pin) => inputValue(s, shell, pin, getPorts(shell, registry, s.level).inputs.find((p) => p.id === pin)?.default, cache),
       exits: [],
       locals: isFn ? initVars(sg.variables) : s.locals,
       fn: isFn,
@@ -252,6 +269,7 @@ export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, o
   const execute = async (s: Scope, n: BlueprintNode, via: string, edge?: string): Promise<void> => {
     if (n.type === TUNNEL_OUT) {
       s.exits.push(via);
+      s.exitNode ??= n.id;
       if (s.fn) s.halted = true;
       if (s.onExit) await s.onExit(via);
       return;
@@ -265,13 +283,24 @@ export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, o
       return;
     }
     const path = s.prefix + n.id;
-    await opts.onBefore?.({ node: path, ...(edge !== undefined ? { edge } : {}) });
+    if (opts.onBefore) {
+      const peek = async () => {
+        const vals: Record<string, unknown> = {};
+        const cache: Cache = new Map();
+        for (const p of getPorts(n, registry, s.level).inputs) if (!p.exec) vals[p.id] = await inputValue(s, n, p.id, p.default, cache);
+        return vals;
+      };
+      const target: StepTarget = { node: path, ...(edge !== undefined ? { edge } : {}) };
+      // non-enumerable: the target stays a plain { node, edge } for logs, equality and JSON
+      Object.defineProperty(target, "inputs", { value: peek, enumerable: false });
+      await opts.onBefore(target);
+    }
     if (opts.signal?.aborted) {
       stopped = true;
       return;
     }
     const execOuts = getPorts(n, registry, s.level).outputs.filter((p) => p.exec).map((p) => p.id);
-    if (n.disabled) {
+    if (skipped(n)) {
       const fired = execOuts.slice(0, 1);
       opts.onStep?.({ node: path, outputs: {}, fired, ...(edge !== undefined ? { edge } : {}), disabled: true });
       await fire(s, n, fired);

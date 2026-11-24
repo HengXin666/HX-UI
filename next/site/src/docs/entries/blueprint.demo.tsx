@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Blueprint } from "@/blueprint/ui";
+import { Blueprint, BlueprintWorkbench } from "@/blueprint/ui";
 import { applyOps, demoGraph, demoRegistry, type BlueprintEdge, type BlueprintGraph, type BlueprintNode } from "@/blueprint";
 import type { DemoProps } from "../types";
+import { workbenchDoc } from "./blueprint.sample";
 
 // 演示数据为虚构: 节点和数值只用来展示编辑器, 不对应任何真实业务.
 
@@ -101,11 +102,35 @@ const GRAPHS: Record<string, () => BlueprintGraph> = {
   vars: () => vars,
   fn: fnGraph,
   stress,
+  workbench: workbenchDoc,
 };
 
 export default function BlueprintDemo({ values: v }: DemoProps) {
   const key = String(v.graph);
+  if (key === "workbench") return <Workbench v={v} />;
   return <Editor key={key} k={key} initial={(GRAPHS[key] ?? GRAPHS.flow!)()} v={v} />;
+}
+
+/** The whole workbench, embedded (fills the stage). 「全屏打开」 shows it filling the viewport. */
+function Workbench({ v }: { v: DemoProps["values"] }) {
+  const [graph, setGraph] = useState(workbenchDoc);
+  return (
+    <div className="absolute inset-0">
+      <BlueprintWorkbench
+        registry={demoRegistry}
+        value={graph}
+        onChange={setGraph}
+        fullscreen={false}
+        snap={Number(v.snap)}
+        minimap={Boolean(v.minimap)}
+        readOnly={Boolean(v.readOnly)}
+        lodThreshold={Number(v.lod)}
+        debug={{ breakpoints: ["fn_damage/log"], stepMs: 200 }}
+        aria-label="蓝图工作台演示"
+        className="rounded-none border-0"
+      />
+    </div>
+  );
 }
 
 function Editor({ initial, k, v }: { initial: BlueprintGraph; k: string; v: DemoProps["values"] }) {

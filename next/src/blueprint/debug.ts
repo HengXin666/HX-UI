@@ -1,4 +1,5 @@
 import { evaluateGraph, findEntries, type EvalResult, type StepEvent, type StepTarget } from "./evaluate";
+import { compileExpr } from "./expr";
 import type { Registry } from "./registry";
 import { resolveNodePath } from "./subgraph";
 import type { BlueprintGraph } from "./types";
@@ -21,6 +22,21 @@ import type { BlueprintGraph } from "./types";
 
 export type DebugStatus = "idle" | "running" | "paused" | "done" | "stopped" | "error";
 
+/**
+ * Extra settings of one breakpoint. Without a spec a breakpoint always stops.
+ *   condition  expression over the node's input values and `hit` (see expr.ts), e.g. "a > 5 && hit > 2"
+ *   hitCount   stop only from the n-th time the node is reached (1 = every time)
+ *   enabled    false keeps the breakpoint but never stops
+ */
+export interface BreakpointSpec {
+  readonly condition?: string;
+  readonly hitCount?: number;
+  readonly enabled?: boolean;
+}
+
+/** Why a pause happened. */
+export type PauseReason = "breakpoint" | "step" | "cursor";
+
 export interface DebugState {
   readonly status: DebugStatus;
   /** Where the run is paused (or about to go). */
@@ -32,6 +48,9 @@ export interface DebugState {
   readonly values: ReadonlyMap<string, Readonly<Record<string, unknown>>>;
   readonly result?: EvalResult;
   readonly error?: string;
+  /** Times each breakpoint key was reached this run. */
+  readonly hits: ReadonlyMap<string, number>;
+  readonly reason?: PauseReason;
 }
 
 export type DebugEvent =
@@ -44,15 +63,21 @@ export interface DebugOptions {
   readonly entry?: string;
   /** Breakpoint keys, read live (a Set you keep editing works). */
   readonly breakpoints?: { has(key: string): boolean };
+  /** Conditions / hit counts per breakpoint key, read live (a Map works). */
+  readonly conditions?: { get(key: string): BreakpointSpec | undefined };
+  /** Run to cursor: pause the first time this key is reached (once). */
+  readonly runTo?: string;
   /** Pause before the first node. */
   readonly startPaused?: boolean;
   /** Wait this long before each exec step (lets a UI animate the hop). Default 0. */
   readonly stepMs?: number;
   readonly variables?: Readonly<Record<string, unknown>>;
   readonly maxSteps?: number;
+  /** Skip "development only" nodes (shipping run). */
+  readonly shipping?: boolean;
 }
 
-export const IDLE_DEBUG: DebugState = { status: "idle", steps: 0, trace: [], values: new Map() };
+export const IDLE_DEBUG: DebugState = { status: "idle", steps: 0, trace: [], values: new Map(), hits: new Map() };
 
 export class DebugSession {
   private readonly graph: BlueprintGraph;
@@ -66,6 +91,8 @@ export class DebugSession {
   private st: DebugState = IDLE_DEBUG;
   private readonly trace: StepEvent[] = [];
   private readonly values = new Map<string, Readonly<Record<string, unknown>>>();
+  private readonly hits = new Map<string, number>();
+  private target: string | undefined;
 
   constructor(graph: BlueprintGraph, registry: Registry, opts: DebugOptions = {}, onEvent: (e: DebugEvent) => void = () => {}) {
     this.graph = graph;
@@ -73,6 +100,24 @@ export class DebugSession {
     this.opts = opts;
     this.emit = onEvent;
     this.mode = opts.startPaused ? "step" : "run";
+    this.target = opts.runTo;
+  }
+
+  /** Does a breakpoint stop here? Counts the hit first; a broken condition stops (safer than skipping). */
+  private async breaks(key: string, target: StepTarget): Promise<boolean> {
+    if (!this.opts.breakpoints?.has(key)) return false;
+    const hit = (this.hits.get(key) ?? 0) + 1;
+    this.hits.set(key, hit);
+    const spec = this.opts.conditions?.get(key);
+    if (!spec) return true;
+    if (spec.enabled === false) return false;
+    if (spec.hitCount !== undefined && spec.hitCount > 1 && hit < spec.hitCount) return false;
+    const src = spec.condition?.trim();
+    if (!src) return true;
+    const c = compileExpr(src);
+    if (!c.ok) return true;
+    const inputs = target.inputs ? await target.inputs() : {};
+    return Boolean(c.run({ ...inputs, hit }));
   }
 
   get state(): DebugState { return this.st; }
@@ -83,7 +128,7 @@ export class DebugSession {
   }
 
   private set(patch: Partial<DebugState>) {
-    this.st = { ...this.st, ...patch, steps: this.trace.length, trace: this.trace, values: this.values };
+    this.st = { ...this.st, ...patch, steps: this.trace.length, trace: this.trace, values: this.values, hits: this.hits };
     this.emit({ type: "status", state: this.st });
     if (this.st.status !== "running") {
       const w = this.pauseWaiters;
@@ -108,11 +153,16 @@ export class DebugSession {
         ...(this.opts.maxSteps !== undefined ? { maxSteps: this.opts.maxSteps } : {}),
         ...(this.opts.variables ? { variables: this.opts.variables } : {}),
         signal: this.abort.signal,
+        ...(this.opts.shipping ? { shipping: true } : {}),
         onBefore: async (target) => {
           this.emit({ type: "before", target });
-          const hit = this.mode === "step" || !!this.opts.breakpoints?.has(this.keyOf(target.node));
-          if (hit && !this.abort.signal.aborted) {
-            this.set({ status: "paused", at: target });
+          const key = this.keyOf(target.node);
+          const cursor = this.target !== undefined && this.target === key;
+          if (cursor) this.target = undefined;
+          const bp = await this.breaks(key, target);
+          const reason: PauseReason | undefined = cursor ? "cursor" : bp ? "breakpoint" : this.mode === "step" ? "step" : undefined;
+          if (reason && !this.abort.signal.aborted) {
+            this.set({ status: "paused", at: target, reason });
             await new Promise<void>((r) => (this.resume = r));
             this.resume = undefined;
           } else if (delay > 0 && !this.abort.signal.aborted) {
@@ -137,6 +187,14 @@ export class DebugSession {
       this.set({ status: "error", error: err instanceof Error ? err.message : String(err) });
       return undefined;
     }
+  }
+
+  /** Run until `key` is reached (once), stopping at breakpoints on the way. Starts a run when idle. */
+  runTo(key: string) {
+    this.target = key;
+    this.mode = "run";
+    if (this.st.status === "idle") void this.start();
+    else this.wake();
   }
 
   /** Run to the next breakpoint or the end. */

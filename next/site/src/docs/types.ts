@@ -66,4 +66,6 @@ export interface DocEntry {
   stageHeight?: number;
   /** 静态缩略: 总览卡片上显示的一句话或小样 */
   thumb?: string;
+  /** 整页演示: 文档页上出现「全屏打开」, 地址 #/<分区>/<slug>/full, 不带文档外壳, 铺满视口 */
+  fullPage?: { label: string; load: () => Promise<{ default: React.ComponentType }> };
 }

@@ -180,6 +180,14 @@ export function createPointer(
     }
     const edge = t.closest<HTMLElement>("[data-edge]")?.dataset.edge;
     if (edge) return void ed.select({ edges: [edge] }, e.shiftKey ? "add" : mod ? "toggle" : "replace");
+    // UE5: hold B / S / D (see placeKeys) and click empty space to drop that node there
+    if (ed.placing && !ed.readOnly && ed.registry.node(ed.placing)) {
+      const p = ed.toGraph(sx, sy);
+      const r = ed.apply([{ op: "addNode", type: ed.placing, at: [snapV(p.x - 12), snapV(p.y - 15)] }], { label: `添加 ${ed.registry.node(ed.placing)!.title}` });
+      const id = r?.created["#0"];
+      if (id && !r.errors.length) ed.select([id]);
+      return;
+    }
     if (e.pointerType === "touch") {
       g = { t: "pan", px: sx, py: sy, button: 0, moved: false, target: undefined };
       return;
