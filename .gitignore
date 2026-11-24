@@ -21,3 +21,6 @@ scripts/.hx_code_quality/
 
 # 本地探针脚本 (playwright 调试用), 不进仓库
 .tmp-check/
+
+# hxoa 文件桥的本地登录状态 (含 token), 不进仓库
+.hxoa/
