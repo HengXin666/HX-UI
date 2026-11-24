@@ -63,7 +63,7 @@ jobs:
             exit 1
           fi
           url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${TGZ}"
-          notes="安装: pnpm add ${url}"$'\n\n'"文档: https://hengxin666.github.io/HX-UI/"$'\n'"用法见 next/README.md 的「安装」「调用」."
+          notes="安装: pnpm add ${url}"$'\n\n'"文档: https://hengxin666.github.io/HX-UI/"$'\n'"用法见 next/README.md 的 安装 / 调用 两节."
           # 已有同名 Release (比如重跑) 就覆盖附件
           gh release create "$tag" "$TGZ" --title "@hx/ui ${VERSION}" --notes "$notes" \
             || gh release upload "$tag" "$TGZ" --clobber

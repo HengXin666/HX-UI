@@ -9,7 +9,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { EXIT_TOOL, GIT, JSON_INDENT, NEWLINE, REPO_UP_FROM_GATE_SUBDIR, UTF8, WALK_SKIP } from "../../constants/gates.ts";
+import { EXIT_TOOL, GIT, JSON_INDENT, NEWLINE, REPO_UP_FROM_GATE_SUBDIR, SEPARATE_PACKAGES, UTF8, WALK_SKIP } from "../../constants/gates.ts";
 
 const HERE = import.meta.dirname;
 const ROOT = process.env.CHECK_UI_ROOT ? path.resolve(process.env.CHECK_UI_ROOT) : path.resolve(HERE, REPO_UP_FROM_GATE_SUBDIR);
@@ -28,12 +28,15 @@ function linesOf(file: string): number {
 
 /**
  * 待量的 ts / tsx 文件: 优先 git ls-files, 夹具无 git 时遍历目录.
+ * 独立包 (SEPARATE_PACKAGES, 即 next/) 不量: 它有自己的门禁, 这里的上限与基线是按 0.18 的 src/ 与 docs/ 定的.
  *
+ * .agents/notes/implemented/process/2026-11-24-next-separate-package-gates.md
  * .agents/notes/implemented/process/2026-11-08-gates-ts.md
  */
 function listFiles(): string[] {
   const r = spawnSync(GIT, ["ls-files", "*.ts", "*.tsx"], { cwd: ROOT, encoding: UTF8 });
-  if (r.status === 0) return (r.stdout ?? "").split(NEWLINE).map((s) => s.trim()).filter(Boolean);
+  const own = (f: string) => !SEPARATE_PACKAGES.some((p) => f.startsWith(p));
+  if (r.status === 0) return (r.stdout ?? "").split(NEWLINE).map((s) => s.trim()).filter(Boolean).filter(own);
   // 探针夹具可能是无 git 的目录树
   const out: string[] = [];
   const SKIP = new Set(WALK_SKIP);
@@ -42,10 +45,10 @@ function listFiles(): string[] {
       if (SKIP.has(e.name)) continue;
       const full = path.join(dir, e.name);
       if (e.isDirectory()) walk(full);
-      else if (/\.tsx?$/.test(e.name)) out.push(path.relative(ROOT, full));
+      else if (/\.tsx?$/.test(e.name)) out.push(path.relative(ROOT, full).split(path.sep).join("/"));
     }
   })(ROOT);
-  return out;
+  return out.filter(own);
 }
 
 /** 上限按扩展名分档: tsx 是页面与组件, ts 里有纯逻辑模块, 两者分布不同. */

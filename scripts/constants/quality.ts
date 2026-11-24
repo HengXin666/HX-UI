@@ -42,8 +42,17 @@ export const INVENTORY_FILE = "docs/reference/quality/inventory.md";
 export const SCOPE_ENV = "HX_QUALITY_SCOPE";
 export const BUILD_ENV = "HX_QUALITY_BUILD";
 
-/** Paths never read as project content: vendored upstream skill and dependency trees. */
-export const IGNORED_PREFIXES = [VENDOR_PREFIX, "node_modules/", "docs/node_modules/", "docs/dist/", STATE_DIR + SLASH];
+/**
+ * Separate packages with their own toolchain and CI job: next/ is HX-UI 2 (@hx/ui 2.x), checked by
+ * .github/workflows/next.yml (tsc -b, vite build, bp-check, check-client, pack:check). The rules here encode the
+ * 0.18 conventions of src/ and docs/ (4-space style, no "@/" alias paths, directory width), so they do not read it.
+ *
+ * .agents/notes/implemented/process/2026-11-24-next-separate-package-gates.md
+ */
+export const SEPARATE_PACKAGES = ["next/"];
+
+/** Paths never read as project content: vendored upstream skill and dependency trees, and separate packages. */
+export const IGNORED_PREFIXES = [VENDOR_PREFIX, "node_modules/", "docs/node_modules/", "docs/dist/", STATE_DIR + SLASH, ...SEPARATE_PACKAGES];
 export const LOCKFILES = ["package-lock.json", "docs/package-lock.json"];
 export const TEXT_EXTENSIONS = [".ts", ".tsx", ".css", ".md", ".mdx", ".json", ".yml", ".yaml", ".sh", ".html"];
 export const TEXT_NAMES = ["CODEOWNERS"];

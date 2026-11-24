@@ -93,8 +93,10 @@ for (const l of LANES) {
   }
 }
 
+// 与认领判定用同一个 matches(): 目录型免检 ("next/") 要能对上顶层条目 "next" (顶层条目不带斜杠)
+// .agents/notes/implemented/process/2026-11-24-next-separate-package-gates.md
 for (const e of NO_GATE_ENTRIES) {
-  if (!topLevel.some((t) => t === e.prefix || t.startsWith(e.prefix))) {
+  if (!topLevel.some((t) => matches(t, e.prefix))) {
     violations.push({
       rule: "stale-exemption",
       where: `NO_GATE_ENTRIES 的 ${e.prefix}`,

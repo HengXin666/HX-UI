@@ -135,12 +135,12 @@ const bp = useBlueprint({ registry, initial: graph });
 |---|---|
 | `@hx/ui` | 汇总入口: cn, ThemeProvider, Motion / Effects / Data (2D) 命名空间, 文字, 背景, 滚动, Stage, Blueprint / BlueprintWorkbench. 不含 3D |
 | `@hx/ui/ui/*` | 基础件, 一个文件一个入口 |
-| `@hx/ui/theme` · `@hx/ui/hooks/*` · `@hx/ui/utils` | 主题 / hooks / cn |
-| `@hx/ui/motion` · `@hx/ui/effects` · `@hx/ui/effects/*` · `@hx/ui/interactions` | 动效预设, 特效件, StatefulButton 等 |
-| `@hx/ui/text/*` · `@hx/ui/backgrounds/*` · `@hx/ui/scroll/*` · `@hx/ui/stage` | SplitText, NumberRoll, Aurora, Particles, ScrollStack, Stage ... |
-| `@hx/ui/data` · `@hx/ui/data/3d` | 2D 图表 + DataTable / 3D 图表 |
-| `@hx/ui/blueprint` · `/blueprint/ui` · `/blueprint/panels` · `/blueprint/agent` · `/blueprint/debug` | 蓝图逻辑 / 编辑器 / 面板 / AI 工具 / 调试 |
-| `@hx/ui/styles.css` · `@hx/ui/tailwind.css` · `@hx/ui/fonts.css` | 预编译样式 / Tailwind v4 入口 / 字体 |
+| `@hx/ui/theme` / `@hx/ui/hooks/*` / `@hx/ui/utils` | 主题 / hooks / cn |
+| `@hx/ui/motion` / `@hx/ui/effects` / `@hx/ui/effects/*` / `@hx/ui/interactions` | 动效预设, 特效件, StatefulButton 等 |
+| `@hx/ui/text/*` / `@hx/ui/backgrounds/*` / `@hx/ui/scroll/*` / `@hx/ui/stage` | SplitText, NumberRoll, Aurora, Particles, ScrollStack, Stage ... |
+| `@hx/ui/data` / `@hx/ui/data/3d` | 2D 图表 + DataTable / 3D 图表 |
+| `@hx/ui/blueprint` / `/blueprint/ui` / `/blueprint/panels` / `/blueprint/agent` / `/blueprint/debug` | 蓝图逻辑 / 编辑器 / 面板 / AI 工具 / 调试 |
+| `@hx/ui/styles.css` / `@hx/ui/tailwind.css` / `@hx/ui/fonts.css` | 预编译样式 / Tailwind v4 入口 / 字体 |
 
 源码里写了 `"use client"` 的组件 (shadcn 来的 dialog / select / popover 等) 在包里保留了这条指令; 但大部分图表, 特效, 蓝图组件没有写. 在 Next.js App Router 里请在你自己标了 `"use client"` 的组件里使用它们.
 
@@ -161,6 +161,8 @@ const bp = useBlueprint({ registry, initial: graph });
 | `site` | 文档站, 三个分区: UI 组件 (操作 / 导航 / 展示 / 反馈 / 表单 / 数据), 视觉组件, 落地页. 每个组件一页: 预览 / 代码 / 调参 / 属性表 / 复制给 AI. 新组件写 `site/src/docs/entries/<slug>.ts` + `<slug>.demo.tsx`, 在 `registry.ts` 登记 | |
 
 ## 规则 (只有这几条)
+
+给 AI / 代理的工作说明 (命令, 边界, 发版) 在 [AGENTS.md](./AGENTS.md).
 
 1. 颜色只用令牌类 (`bg-brand`, `text-muted-foreground` ...), 不写裸色值; 换肤 = 换一份 `:root` / `.dark`.
 2. 动效只动 `transform` / `opacity` / `filter`; 弹簧用 `spring.*` 档位; 必须在 `prefers-reduced-motion` 下给终态.

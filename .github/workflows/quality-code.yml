@@ -1,6 +1,10 @@
 name: quality-code
 on:
+    # Branch pushes only: a tag push (v2.0.1 ...) is a release, built by release.yml from a commit that was
+    # already checked on its branch. For an annotated tag the event "after" is the tag object, not a commit,
+    # so ci.ts cannot match the checkout and fails with "Checkout does not match the event head".
     push:
+        branches: ["**"]
     pull_request:
 permissions:
     contents: read

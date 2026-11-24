@@ -1,0 +1,56 @@
+# HX-UI 2 (next/, @hx/ui 2.x) gates. next/ is a separate package with its own lockfile and toolchain,
+# so it gets its own job; the legacy gates (quality*.yml, scripts/gates, scripts/quality) check the 0.18
+# root (src/, docs/) and skip next/ (SEPARATE_PACKAGES in scripts/constants/*.ts).
+name: next
+
+on:
+  push:
+    branches: ["**"]
+    paths: ["next/**", ".github/workflows/next.yml"]
+  pull_request:
+    paths: ["next/**", ".github/workflows/next.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: next-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  next:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: next
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # scripts/*.ts run directly on node (type stripping, 22.18+)
+          cache: npm
+          cache-dependency-path: next/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck (tsc -b)
+        run: npx tsc -b
+
+      # "use client" boundary + interaction size budgets (scripts/check-client.ts, scripts/check-budgets.ts)
+      - name: Checks (npm run check)
+        run: npm run check
+
+      - name: Blueprint regression (bp-check)
+        run: npm run check:bp
+
+      - name: Docs site build (vite build)
+        run: npx vite build
+
+      # build:lib (JS + .d.ts + css, then check-client --dist per file) + npm pack + verify-pack
+      - name: Package (pack:check)
+        run: npm run pack:check

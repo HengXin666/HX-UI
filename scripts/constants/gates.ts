@@ -79,5 +79,14 @@ export const HOOKS_DIR = "scripts/gates/hooks";
 export const PRE_COMMIT = "pre-commit";
 export const LINE_BUDGET_BASELINE = "scripts/gates/baselines/line-budget.json";
 
+/**
+ * 独立包: 有自己的 package.json / lockfile / tsconfig 和自己的门禁 (next/ 是 HX-UI 2, 见 .github/workflows/next.yml
+ * 与 next/package.json 的 check / check:bp / pack:check). 这里的门禁 (行数棘轮等) 针对 0.18 的 src/ 与 docs/,
+ * 不扫这些目录; lane 表里它们登记为 NO_GATE_ENTRIES, 理由同此.
+ *
+ * .agents/notes/implemented/process/2026-11-24-next-separate-package-gates.md
+ */
+export const SEPARATE_PACKAGES = ["next/"];
+
 /** 无 git 时遍历文件系统要跳过的目录. */
 export const WALK_SKIP = ["node_modules", ".git", "dist", ".vite", ".bpprobe"];

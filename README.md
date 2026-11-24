@@ -12,7 +12,7 @@
 > import { Button } from "@hx/ui/ui/button";
 > ```
 >
-> 文档站: <https://hengxin666.github.io/HX-UI/> · 用法: [next/README.md](./next/README.md) 的「安装」「调用」
+> 文档站: <https://hengxin666.github.io/HX-UI/> | 用法: [next/README.md](./next/README.md) 的 "安装" 与 "调用" 两节
 >
 > 仓库根目录下的 `@hx/ui` 0.18 (旧的 GitHub 风格界面) 是 **legacy**, 不再更新, 最后的版本留在 [`legacy-omni`](https://github.com/HengXin666/HX-UI/tree/legacy-omni) 标签上. 还在装 0.x tgz 看到旧样式的, 换成上面的 2.0 安装命令即可.
 
@@ -89,11 +89,11 @@
 `HxLineChart` `HxAreaChart` `HxBarChart` `HxPieChart` `HxRadarChart` `HxRadialChart`
 外加 `ChartFrame` + `ChartChrome`, 需要 Recharts 完整能力时自己拼.
 
-**蓝图**（`src/blueprint/`） 节点图编辑器
-`BlueprintEditor` 默认形态（面板 + 画布 + 诊断）；`BlueprintCanvas` 只要画布；
-`canConnect` / `validateGraph` 是纯函数，没有 React 也能跑，后端可以拿同一份判据校验上传上来的图。
+**蓝图** (`src/blueprint/`) 节点图编辑器
+`BlueprintEditor` 默认形态 (面板 + 画布 + 诊断); `BlueprintCanvas` 只要画布;
+`canConnect` / `validateGraph` 是纯函数, 没有 React 也能跑, 后端可以拿同一份判据校验上传上来的图.
 
-自定义节点是**注册**进来的，不用改库源码：
+自定义节点是**注册**进来的, 不用改库源码:
 
 ```ts
 const reg = createRegistry();
@@ -107,10 +107,10 @@ reg.node({
 });
 ```
 
-连接合法性只有一份判据 `canConnect`，拖拽反馈与落地都调它  写成两处迟早出现
-“提示能连、连完报错”。独占输入被占时不报错而是顶掉旧线，并把被顶掉的边 id
-回传给你提示。校验分四层（结构 → 局部 → 环 → 业务钩子），环的报错挂在**边**上
-而不是节点上：删环上任意一条边都能解开，挂节点会让人以为要删节点。
+连接合法性只有一份判据 `canConnect`, 拖拽反馈与落地都调它  写成两处迟早出现
+"提示能连, 连完报错". 独占输入被占时不报错而是顶掉旧线, 并把被顶掉的边 id
+回传给你提示. 校验分四层 (结构 → 局部 → 环 → 业务钩子), 环的报错挂在**边**上
+而不是节点上: 删环上任意一条边都能解开, 挂节点会让人以为要删节点.
 
 ## 分层结构 (0.7.0 起)
 
@@ -138,20 +138,20 @@ reg.node({
 `npm run build` 里的设计规约门禁 (`scripts/quality`) 会把这条约定变成退出码 (硬编色值 / 非语义调色盘 /
 非 1px 线条 / 漏写 `type` 的原生 button 都会失败). 规则文档写在注释里不会失败, 这个会.
 
-蓝图另有 `check-blueprint.mjs`：38 条断言跑真实源码（类型协变 / 连接判定 / 独占顶替 /
-环检测 / 分支求值 / 序列化往返）。判据写错时 tsc、构建、冒烟全绿，只有这层能抓到。
+蓝图另有 `check-blueprint.mjs`: 38 条断言跑真实源码 (类型协变 / 连接判定 / 独占顶替 /
+环检测 / 分支求值 / 序列化往返). 判据写错时 tsc, 构建, 冒烟全绿, 只有这层能抓到.
 
-**二、蓝图里执行流与数据流共存。** 有副作用的节点必须挂 `execIn`，求值沿 exec 边走，
-没走到的分支不求值  这正是分支的语义。数据节点惰性求值，按拓扑序 + 缓存，
-菱形图上公共上游只算一次。
+**二. 蓝图里执行流与数据流共存.** 有副作用的节点必须挂 `execIn`, 求值沿 exec 边走,
+没走到的分支不求值  这正是分支的语义. 数据节点惰性求值, 按拓扑序 + 缓存,
+菱形图上公共上游只算一次.
 
-**三、图表的增量动画。** Recharts 默认按数组下标配对数据，数量变化时按比例拉伸 
-5 个点变 15 个点时每个旧点"覆盖"约 3 个新点，整条线从头重排。
-这里区分「首次加载」与「后续增量」：首次播完整绘制动画，之后用 `matchAppend`
-（或 `matchByDataKey`）让已存在的点留在原位，只有新点淡入。
+**三. 图表的增量动画.** Recharts 默认按数组下标配对数据, 数量变化时按比例拉伸 
+5 个点变 15 个点时每个旧点"覆盖"约 3 个新点, 整条线从头重排.
+这里区分"首次加载"与"后续增量": 首次播完整绘制动画, 之后用 `matchAppend`
+(或 `matchByDataKey`) 让已存在的点留在原位, 只有新点淡入.
 
-**四、Spin 有 41 种形态，支持轮播。** 形态来自 [UI Ball LDRS](https://uiball.com/ldrs/)（MIT）。
-`mode="rotate"` 会定时随机换一个形态并交叉淡入；`mode="fixed"`（默认）固定不动。
+**四. Spin 有 41 种形态, 支持轮播.** 形态来自 [UI Ball LDRS](https://uiball.com/ldrs/) (MIT).
+`mode="rotate"` 会定时随机换一个形态并交叉淡入; `mode="fixed"` (默认) 固定不动.
 
 ## 开发
 
@@ -175,8 +175,8 @@ npm run hooks:install     # 启用 .githooks (会先调用 .git/hooks 下的同�
 
 ### 门禁
 
-所有检查的**唯一注册表**在 `scripts/gates/registry.ts`，唯一入口是 `scripts/gates/run.ts`。
-本地钩子与 CI 调的是同一行命令，所以"某个检查点悄悄少跑几条"这件事不会发生。
+所有检查的**唯一注册表**在 `scripts/gates/registry.ts`, 唯一入口是 `scripts/gates/run.ts`.
+本地钩子与 CI 调的是同一行命令, 所以"某个检查点悄悄少跑几条"这件事不会发生.
 
 ```bash
 npm run gates:list        # 有哪些检查、各自拦什么、依赖什么产物
@@ -187,13 +187,13 @@ npm run gates:probe       # 20 条负向/接线探针 (证明门禁真的会红)
 npm run gates:fingerprint # 严格度与接线指纹 (防静默放松)
 ```
 
-三条容易踩的坑，已由机器兜住：`check-docs-registry.ts` 对账
-`nav.ts ↔ App.tsx 分支 ↔ 页面文件 ↔ 图标表 ↔ 库导出`（`nav` 有页面而 `App` 没有 case 时
-会渲染成占位页，而冒烟抓不到它  有负向探针钉着）；`check-line-budget.ts` 管单文件行数
-（tsx ≤ 250 / ts ≤ 450，存量 12 个文件逐个冻结、只降不升）；`check-lanes.ts` 保证
-每个顶层目录都被某条 lane 认领（否则改它一条门禁都不跑）。
+三条容易踩的坑, 已由机器兜住: `check-docs-registry.ts` 对账
+`nav.ts ↔ App.tsx 分支 ↔ 页面文件 ↔ 图标表 ↔ 库导出` (`nav` 有页面而 `App` 没有 case 时
+会渲染成占位页, 而冒烟抓不到它  有负向探针钉着); `check-line-budget.ts` 管单文件行数
+(tsx ≤ 250 / ts ≤ 450, 存量 12 个文件逐个冻结, 只降不升); `check-lanes.ts` 保证
+每个顶层目录都被某条 lane 认领 (否则改它一条门禁都不跑).
 
-当前有效检查、缺口与不装项见 `docs/code-quality-landscape.md`。
+当前有效检查, 缺口与不装项见 `docs/code-quality-landscape.md`.
 
 ```bash
 # 文档站

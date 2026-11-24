@@ -51,13 +51,17 @@ export const LANES: Lane[] = [
 
 /**
  * 明确"改了它们确实不需要跑门禁"的顶层条目  名单要小, 且每条都要写理由.
- * 这些是纯元数据: 改它们不可能让代码或文档的行为发生变化.
+ * 两类: 纯元数据 (改它们不可能让代码或文档的行为发生变化), 以及由自己的工作流把关的独立包.
  */
 export const NO_GATE_ENTRIES: Array<{ prefix: string; why: string }> = [
   { prefix: ".gitignore", why: "忽略规则, 不参与构建产物" },
   { prefix: "LICENSE", why: "许可原文, 与运行态无关" },
   { prefix: "NOTICE", why: "第三方归属声明, 与运行态无关" },
   { prefix: "UPSTREAM_COMMIT", why: "上游快照指针, 只被 sync-upstream.sh 读" },
+  {
+    prefix: "next/",
+    why: "HX-UI 2 独立包 (自己的 package.json / lockfile / tsconfig), 由 .github/workflows/next.yml 跑 tsc -b, vite build, bp-check, check-client, pack:check; 这里的门禁针对 0.18 的 src/ 与 docs/",
+  },
 ];
 
 /**
