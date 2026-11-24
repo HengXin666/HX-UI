@@ -6,7 +6,10 @@ Decision-ID: docs-props-deterministic
 
 ## Code
 
-- `scripts/docs-props.ts`
+- `scripts/docs-props.ts`: 入口, 抽属性并写 / 比对 props.gen.json
+- `scripts/docs-props/union-order.ts`: 联合成员的书写顺序
+- `scripts/docs-props/lock-drift.ts`: 用到的第三方包与 package-lock.json 的版本核对
+- `scripts/constants/docs-props.ts`: 以上共用的字面量
 
 ## Problem
 
