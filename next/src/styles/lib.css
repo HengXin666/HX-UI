@@ -1,8 +1,17 @@
 /*
  * 发布包 styles.css 的源: 预编译, 使用方不装 Tailwind 也能用.
  * 只扫描 src/ (库自身用到的类), 不扫 site/. 由 scripts/build-lib.ts 用 @tailwindcss/cli 编译.
+ * 蓝图是拓展包: 不扫 src/blueprint, 不带 blueprint.css; 它的预编译样式是 blueprint-lib.css -> dist/blueprint/styles.css.
  */
 @import "tailwindcss" source("../");
+@source not "../blueprint";
 @import "./theme.css";
-@import "../blueprint/ui/blueprint.css";
 @import "../components/ui/spin.css";
+
+/* --font-sans 是公开令牌 (fonts.css, README): 以前靠 blueprint.css 的 var() 引用才被输出, 现在显式保留 */
+@layer theme {
+  :root,
+  :host {
+    --font-sans: --theme(--font-sans inline);
+  }
+}

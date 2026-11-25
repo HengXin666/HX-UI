@@ -5,7 +5,9 @@
  *   2. 类型    tsc -p tsconfig.lib.json           (只出 .d.ts)
  *   3. 改写    .d.ts 里的 "@/x" 改成相对路径, 相对路径补上 .js 后缀 (nodenext 使用方也能解析)
  *   4. 样式    dist/styles.css   预编译 (@tailwindcss/cli 扫 src/), 不装 Tailwind 也能用
- *              dist/tailwind.css 给 Tailwind v4 使用方: 令牌 + @theme + @source 指向 dist
+ *              dist/tailwind.css 给 Tailwind v4 使用方: 令牌 + @theme + @source 指向 dist (不含 dist/blueprint)
+ *              蓝图拓展包另出两份: dist/blueprint.css (Tailwind v4 入口, @source 只指 dist/blueprint)
+ *                                  dist/blueprint/styles.css (预编译, 配 styles.css 用)
  *              dist/fonts.css    可选, Geist 字体 (@fontsource-variable/*)
  *   5. 校验    scripts/check-client.ts --dist: 源码带 "use client" 的模块, 产物逐文件保留指令; 不带的也没被加上
  * 不引新依赖: 改写脚本就是下面几十行.
@@ -82,6 +84,7 @@ if (unresolved.length) {
 
 step("样式 (styles.css 预编译 / tailwind.css / fonts.css)");
 run(bin("tailwindcss"), ["-i", "src/styles/lib.css", "-o", "dist/styles.css", "--minify"]);
+run(bin("tailwindcss"), ["-i", "src/styles/blueprint-lib.css", "-o", "dist/blueprint/styles.css", "--minify"]);
 const copies: [string, string][] = [
   ["src/styles/theme.css", "dist/styles/theme.css"],
   ["src/styles/effects.css", "dist/styles/effects.css"],
@@ -92,19 +95,42 @@ for (const [from, to] of copies) {
   mkdirSync(dirname(join(ROOT, to)), { recursive: true });
   copyFileSync(join(ROOT, from), join(ROOT, to));
 }
+// 蓝图是拓展包: 核心入口的 @source 逐个列出 dist 下除 blueprint/ 以外的目录 (不用 `@source not`,
+// 免得它把使用方另引的 blueprint.css 里的 @source 也排除掉).
+// dist 根上的 index.js 只做再导出, 没有类名, 不列: 实测 (tailwindcss 4.3.5) 根上的 "./*.js" 或 "./index.js"
+// 会让整个 dist 被扫描, 蓝图的工具类又回到核心 CSS 里.
+const EXTENSIONS = new Set(["blueprint"]);
+const coreSources = readdirSync(DIST)
+  .filter((d) => statSync(join(DIST, d)).isDirectory() && !EXTENSIONS.has(d))
+  .sort()
+  .map((d) => `@source "./${d}/**/*.js";`);
 writeFileSync(
   join(DIST, "tailwind.css"),
   `/*
  * @hx/ui 2 · 给 Tailwind v4 使用方的样式入口. 用法 (你自己的 CSS 里):
  *   @import "tailwindcss";
  *   @import "@hx/ui/tailwind.css";
- * 带上令牌 (:root / .dark), @theme 映射, 基础样式, 特效关键帧, 蓝图与 Spin 的样式;
- * 组件用到的工具类由你的 Tailwind 扫描下面的 @source 生成 (不要再引 styles.css).
+ *   @import "@hx/ui/blueprint.css";   (只在用蓝图时)
+ * 带上令牌 (:root / .dark), @theme 映射, 基础样式, 特效关键帧, Spin 的样式;
+ * 组件用到的工具类由你的 Tailwind 扫描下面的 @source 生成 (不要再引 styles.css). 不含蓝图.
  */
 @import "./styles/theme.css";
-@import "./blueprint/ui/blueprint.css";
 @import "./components/ui/spin.css";
-@source "./**/*.js";
+${coreSources.join("\n")}
+`,
+);
+writeFileSync(
+  join(DIST, "blueprint.css"),
+  `/*
+ * @hx/ui 2 · 蓝图拓展包的 Tailwind v4 样式入口, 排在 tailwind.css 之后:
+ *   @import "tailwindcss";
+ *   @import "@hx/ui/tailwind.css";
+ *   @import "@hx/ui/blueprint.css";
+ * 带上蓝图样式 (--bp-* 令牌, 画布, 节点), 并让你的 Tailwind 扫描蓝图用到的工具类.
+ * 不用 Tailwind 的项目改引 "@hx/ui/blueprint/styles.css" (预编译, 排在 styles.css 之后).
+ */
+@import "./blueprint/ui/blueprint.css";
+@source "./blueprint/**/*.js";
 `,
 );
 writeFileSync(

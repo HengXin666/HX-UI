@@ -36,7 +36,7 @@ npm i https://github.com/HengXin666/HX-UI/releases/download/v2.0.1/hx-ui-2.0.1.t
 
 ### 1. 样式 (只引一次, 放在入口文件)
 
-没用 Tailwind 的项目, 引预编译好的整份样式 (令牌 + 亮暗 + 组件用到的全部工具类 + 特效关键帧 + 蓝图样式):
+没用 Tailwind 的项目, 引预编译好的整份样式 (令牌 + 亮暗 + 组件用到的全部工具类 + 特效关键帧; 蓝图是拓展包, 样式另引, 见第 5 节):
 
 ```ts
 import "@hx/ui/styles.css";
@@ -99,7 +99,22 @@ import { Bar3D } from "@hx/ui/data/3d";
 
 颜色走令牌 (`--chart-1..5`, `--brand`), 亮暗自动跟随.
 
-### 5. 蓝图 (UE5 风格节点编辑器)
+### 5. 蓝图 (UE5 风格节点编辑器, 拓展包)
+
+蓝图是拓展包: 根入口 `@hx/ui` 和 `styles.css` / `tailwind.css` 都不带它, 不用蓝图就不为它付任何 JS / CSS. 要用时从子路径引, 再多引一份样式 (排在核心样式之后):
+
+```ts
+// 没用 Tailwind: 跟在 styles.css 后面
+import "@hx/ui/styles.css";
+import "@hx/ui/blueprint/styles.css";
+```
+
+```css
+/* Tailwind v4: 跟在 tailwind.css 后面, 它带蓝图样式和只指向蓝图目录的 @source */
+@import "tailwindcss";
+@import "@hx/ui/tailwind.css";
+@import "@hx/ui/blueprint.css";
+```
 
 ```tsx
 import { defineTypes, defineNode, createRegistry, demoRegistry, demoGraph } from "@hx/ui/blueprint"; // 逻辑层, 不依赖 React
@@ -123,24 +138,26 @@ const bp = useBlueprint({ registry, initial: graph });
 
 ```css
 @import "tailwindcss";
-@import "@hx/ui/tailwind.css"; /* 令牌 + @theme (bg-brand, text-muted-foreground ...) + 暗色 variant + 关键帧 + 蓝图样式 */
+@import "@hx/ui/tailwind.css"; /* 令牌 + @theme (bg-brand, text-muted-foreground ...) + 暗色 variant + 关键帧 */
+@import "@hx/ui/blueprint.css"; /* 只在用蓝图时 */
 @import "@hx/ui/fonts.css";    /* 可选 */
 ```
 
-`tailwind.css` 里有 `@source` 指向包内 `dist/`, 你的 Tailwind 会把组件用到的类一起生成, 你自己也能用同一套令牌类 (`bg-brand`, `dark:` ...). 换肤 = 覆盖 `:root` / `.dark` 里的变量 (与 shadcn 主题格式一致).
+`tailwind.css` 里有 `@source` 指向包内 `dist/` (不含 `dist/blueprint/`, 蓝图的由 `blueprint.css` 自己的 `@source` 扫), 你的 Tailwind 会把组件用到的类一起生成, 你自己也能用同一套令牌类 (`bg-brand`, `dark:` ...). 换肤 = 覆盖 `:root` / `.dark` 里的变量 (与 shadcn 主题格式一致).
 
 ### 包入口一览
 
 | 入口 | 内容 |
 |---|---|
-| `@hx/ui` | 汇总入口: cn, ThemeProvider, Motion / Effects / Data (2D) 命名空间, 文字, 背景, 滚动, Stage, Blueprint / BlueprintWorkbench. 不含 3D |
+| `@hx/ui` | 汇总入口: cn, ThemeProvider, Motion / Effects / Data (2D) 命名空间, 文字, 背景, 滚动, Stage. 不含 3D 和蓝图 |
 | `@hx/ui/ui/*` | 基础件, 一个文件一个入口 |
 | `@hx/ui/theme` / `@hx/ui/hooks/*` / `@hx/ui/utils` | 主题 / hooks / cn |
 | `@hx/ui/motion` / `@hx/ui/effects` / `@hx/ui/effects/*` / `@hx/ui/interactions` | 动效预设, 特效件, StatefulButton 等 |
 | `@hx/ui/text/*` / `@hx/ui/backgrounds/*` / `@hx/ui/scroll/*` / `@hx/ui/stage` | SplitText, NumberRoll, Aurora, Particles, ScrollStack, Stage ... |
 | `@hx/ui/data` / `@hx/ui/data/3d` | 2D 图表 + DataTable / 3D 图表 |
-| `@hx/ui/blueprint` / `/blueprint/ui` / `/blueprint/panels` / `/blueprint/agent` / `/blueprint/debug` | 蓝图逻辑 / 编辑器 / 面板 / AI 工具 / 调试 |
-| `@hx/ui/styles.css` / `@hx/ui/tailwind.css` / `@hx/ui/fonts.css` | 预编译样式 / Tailwind v4 入口 / 字体 |
+| `@hx/ui/blueprint` / `/blueprint/ui` / `/blueprint/panels` / `/blueprint/agent` / `/blueprint/debug` | 蓝图拓展包: 逻辑 / 编辑器 / 面板 / AI 工具 / 调试 |
+| `@hx/ui/styles.css` / `@hx/ui/tailwind.css` / `@hx/ui/fonts.css` | 预编译样式 / Tailwind v4 入口 / 字体 (都不含蓝图) |
+| `@hx/ui/blueprint/styles.css` / `@hx/ui/blueprint.css` | 蓝图样式: 预编译 (配 styles.css) / Tailwind v4 入口 (配 tailwind.css) |
 
 > 文档站里的示例代码写的是源码路径 (`@/components/ui/button`, `@/data`), 对应到包里分别是 `@hx/ui/ui/button`, `@hx/ui/data` (3D 是 `@hx/ui/data/3d`).
 

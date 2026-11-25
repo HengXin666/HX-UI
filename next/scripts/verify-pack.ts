@@ -9,7 +9,9 @@
  *   3. JS 和 .d.ts 里没有残留的 "@/" 导入; 相对导入都能在包里找到文件
  *   4. JS 里的裸导入都在 dependencies / peerDependencies 里声明过
  *   5. 不带 site/, src/, dist-site/, tsbuildinfo 等文档站或构建垃圾
- *   6. styles.css 是预编译的完整样式 (令牌 + .dark + 关键帧 + 蓝图), tailwind.css 带 @source
+ *   6. styles.css 是预编译的核心样式 (令牌 + .dark + 关键帧), tailwind.css 带 @source; 两者都不含蓝图.
+ *      蓝图拓展包: blueprint/styles.css 预编译 (只含蓝图, 不重复 Preflight / 令牌), blueprint.css 带指向 blueprint/ 的 @source;
+ *      根入口 index.js 不引蓝图
  *   7. "use client" 只出现在文件第一行 (RSC 打包器只认这里); 服务端安全的入口 (theme, utils, 图表工具) 不带
  * 最后打印体积报告.
  */
@@ -32,7 +34,9 @@ if (!tgz) {
     process.exit(1);
   }
   const info = JSON.parse(readFileSync(packJson, "utf8"));
-  tgz = (Array.isArray(info) ? info[0] : info).filename;
+  // npm <= 11: [{ filename }]; npm 12: { "<name>": { filename } }
+  const entry = Array.isArray(info) ? info[0] : "filename" in info ? info : Object.values<{ filename: string }>(info)[0];
+  tgz = entry.filename;
 }
 tgz = resolve(ROOT, tgz);
 if (!existsSync(tgz)) {
@@ -121,14 +125,31 @@ const mustStyles: [string, RegExp][] = [
   ["暗色 .dark", /\.dark\s*\{|\.dark\{/],
   ["Tailwind 工具类 (.bg-background)", /\.bg-background[{,\s]/],
   ["特效关键帧", /@keyframes\s*hx-/],
-  ["蓝图样式 --bp-graph-bg", /--bp-graph-bg/],
   ["Preflight", /box-sizing:\s*border-box/],
 ];
 for (const [what, re] of mustStyles) if (!re.test(styles)) fail(`styles.css 缺 ${what}`);
-const tw = css("dist/tailwind.css").replace(/\/\*[\s\S]*?\*\//g, "");
-if (!/@source\s/.test(tw)) fail("tailwind.css 没有 @source");
-if (/@import\s+["']tailwindcss["']/.test(tw)) fail("tailwind.css 不应自己引 tailwindcss (由使用方引)");
-for (const m of tw.matchAll(/@import\s+["'](\.[^"']+)["']/g)) if (!has.has("dist/" + strip(m[1]))) fail(`tailwind.css 引了不存在的 ${m[1]}`);
+const BP_TOKEN = /--bp-graph-bg/;
+if (BP_TOKEN.test(styles)) fail("styles.css 不应带蓝图样式 (蓝图是拓展包, 走 blueprint/styles.css)");
+const bpStyles = css("dist/blueprint/styles.css");
+if (!BP_TOKEN.test(bpStyles)) fail("blueprint/styles.css 缺蓝图样式 --bp-graph-bg");
+if (/box-sizing:\s*border-box/.test(bpStyles) || /--brand:/.test(bpStyles)) fail("blueprint/styles.css 不应再带 Preflight 或核心令牌 (由 styles.css 提供)");
+// 只去掉行首开始的注释块: "@source \"./x/**/*.js\"" 里的 "/**/" 不是注释
+const noComments = (s: string) => s.replace(/^\s*\/\*[\s\S]*?\*\//gm, "");
+const sourcesOf = (s: string) => [...s.matchAll(/@source\s+["']([^"']+)["']/g)].map((m) => m[1]);
+const checkTwEntry = (name: string) => {
+  const text = noComments(css(name));
+  if (!sourcesOf(text).length) fail(`${name} 没有 @source`);
+  if (/@import\s+["']tailwindcss["']/.test(text)) fail(`${name} 不应自己引 tailwindcss (由使用方引)`);
+  for (const m of text.matchAll(/@import\s+["'](\.[^"']+)["']/g)) if (!has.has(join(dirname(name), strip(m[1])).replace(/\\/g, "/"))) fail(`${name} 引了不存在的 ${m[1]}`);
+  return text;
+};
+const tw = checkTwEntry("dist/tailwind.css");
+if (/blueprint/.test(tw)) fail("tailwind.css 不应引蓝图样式或扫描 blueprint/ (蓝图走 blueprint.css)");
+// 每条都得是 "./<目录>/**/*.js": dist 根上的源 ("./**/*.js", "./*.js", "./index.js") 会让整个 dist 被扫, 把蓝图带回来
+for (const s of sourcesOf(tw)) if (!/^\.\/[^/*]+\/\*\*\/\*\.js$/.test(s)) fail(`tailwind.css 的 @source ${s} 会扫到整个 dist (含 blueprint/)`);
+const bpTw = checkTwEntry("dist/blueprint.css");
+if (!sourcesOf(bpTw).every((s) => s.startsWith("./blueprint/"))) fail("blueprint.css 的 @source 只应指向 ./blueprint/");
+if (/\bblueprint\//.test(css("dist/index.js"))) fail("根入口 index.js 不应引蓝图 (蓝图从 @hx/ui/blueprint/* 引)");
 
 // ---- 7. "use client"
 const DIRECTIVE = /^["']use client["'];?\s*$/;

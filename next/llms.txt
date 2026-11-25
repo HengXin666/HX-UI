@@ -54,6 +54,10 @@
 ## 数据
 - AreaTrend(data, x, series[{key, label, color?}], stacked?, height?), BarCompare(data, x, series, stacked?, horizontal?), Donut(data[{key, label, value}], centerLabel?), Sparkline(values), DataTable(data, columns: ColumnDef<T>[], searchable?, pageSize?, loading?, onRowClick?)
 
+## 蓝图 (拓展包)
+- 蓝图编辑器不在根入口和核心样式里, 按需引入: 逻辑 "@hx/ui/blueprint" (defineTypes, defineNode, createRegistry, toJSON/fromJSON, applyOps ...), 编辑器 "@hx/ui/blueprint/ui" (Blueprint, BlueprintWorkbench, useBlueprint), 面板 "@hx/ui/blueprint/panels", AI 工具 "@hx/ui/blueprint/agent", 调试 "@hx/ui/blueprint/debug". 源码路径 "@/blueprint", "@/blueprint/ui".
+- 样式另引, 排在核心样式之后: 不用 Tailwind 引 "@hx/ui/blueprint/styles.css" (跟在 "@hx/ui/styles.css" 后); Tailwind v4 在 CSS 里 @import "@hx/ui/blueprint.css" (跟在 "@hx/ui/tailwind.css" 后).
+
 ## 主题
 - 包 `ThemeProvider`; `useTheme()` 返回 { mode, resolved, accent, setMode, setAccent }; 强调色 indigo | emerald | rose | amber | zinc.
 - 令牌: background, foreground, card, muted, accent, primary, brand, brand-soft, success, warning, destructive, info, chart-1..5, border, ring.

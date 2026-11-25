@@ -112,6 +112,8 @@
     },
     "./styles.css": "./dist/styles.css",
     "./tailwind.css": "./dist/tailwind.css",
+    "./blueprint.css": "./dist/blueprint.css",
+    "./blueprint/styles.css": "./dist/blueprint/styles.css",
     "./fonts.css": "./dist/fonts.css",
     "./package.json": "./package.json"
   },

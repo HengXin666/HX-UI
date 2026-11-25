@@ -1,0 +1,12 @@
+/*
+ * 发布包 blueprint/styles.css 的源: 蓝图拓展包的预编译样式, 给引 styles.css (不装 Tailwind) 的使用方.
+ * 只含蓝图自己的样式 (blueprint.css) + 蓝图目录用到、styles.css 里可能没有的工具类.
+ * 令牌, Preflight, @theme 映射都在 styles.css 里: 这里只 @reference, 不再输出一份.
+ * 由 scripts/build-lib.ts 用 @tailwindcss/cli 编译; 必须排在 styles.css 之后引.
+ */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities) source(none);
+@reference "./theme.css";
+@source "../blueprint";
+@import "../blueprint/ui/blueprint.css";
