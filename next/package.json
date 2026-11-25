@@ -1,6 +1,6 @@
 {
   "name": "@hx/ui",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "HX-UI 2: React 19 + Tailwind v4 + shadcn/ui + Motion + Recharts 的组件库 (基础件, 图表, 蓝图编辑器, 特效)",
   "license": "Apache-2.0",
   "repository": {

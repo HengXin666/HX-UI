@@ -4,6 +4,45 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## 2.1.0
+
+蓝图编辑器改成拓展包 ([#46](https://github.com/HengXin666/HX-UI/issues/46)): 不用蓝图的项目不再为它付 CSS. 含一处破坏性变更 (根入口不再导出蓝图), 见下方迁移.
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.1.0/hx-ui-2.1.0.tgz
+```
+
+### 移除
+
+- 根入口 `@hx/ui` 不再导出 `Blueprint`, `BlueprintWorkbench`, `useBlueprint`, `BlueprintEditor`, `BLUEPRINT_SHORTCUTS`, `defineTypes`, `defineNode`, `createRegistry`, `toJSON` / `fromJSON`, `toText` / `fromText`, `applyOps`, `validateGraph`, `graphSchema` 及相关类型. 子路径 `@hx/ui/blueprint`, `@hx/ui/blueprint/ui` 等不变.
+- `styles.css` 与 `tailwind.css` 不再带蓝图样式, `tailwind.css` 的 `@source` 不再扫 `dist/blueprint/`.
+
+### 新增
+
+- `@hx/ui/blueprint.css`: 蓝图的 Tailwind v4 样式入口 (蓝图样式 + 只指向蓝图目录的 `@source`), 排在 `tailwind.css` 之后.
+- `@hx/ui/blueprint/styles.css`: 蓝图的预编译样式, 排在 `styles.css` 之后; 不重复 Preflight 和核心令牌.
+
+### 变更
+
+- 只用核心组件的项目 CSS 变小: 实测 (Vite 7 + React 19 + Tailwind 4, Button / Select / Dialog / DataTable / 主题) Tailwind 路径 218.7 kB (gzip 34.2) -> 192.2 kB (gzip 29.3), 预编译 `styles.css` 220.1 kB (gzip 34.3) -> 193.5 kB (gzip 29.5). 用蓝图的项目样式与 2.0.1 一致.
+- `--font-sans` 在 `styles.css` 里显式输出 (以前靠蓝图样式引用才带上).
+
+### Migration
+
+```diff
+- import { BlueprintWorkbench, defineNode } from "@hx/ui";
++ import { BlueprintWorkbench } from "@hx/ui/blueprint/ui";
++ import { defineNode } from "@hx/ui/blueprint";
+```
+
+样式再加一行: Tailwind v4 在 CSS 里 `@import "@hx/ui/blueprint.css";` (跟在 `@hx/ui/tailwind.css` 后); 不用 Tailwind 的 `import "@hx/ui/blueprint/styles.css";` (跟在 `@hx/ui/styles.css` 后).
+
+### 工程
+
+- verify-pack 核对核心样式不含蓝图, 蓝图两份样式齐全, 根入口不引蓝图, `tailwind.css` 的每条 `@source` 都是子目录; 兼容 npm 12 的 `npm pack --json` 输出.
+
 ## 2.0.1
 
 修复 2.0.0 在 Next.js App Router (React Server Components) 里不能直接用的问题, 并补上 next/ 自己的 CI. 导出和导入路径与 2.0.0 一致.
