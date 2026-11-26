@@ -2,6 +2,7 @@ import * as React from "react";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { AnimatePresence, m } from "motion/react";
 import { useTheme } from "@/hooks/use-theme";
+import { THEME_ACCENTS, type ThemeAccent } from "@/hooks/theme-script";
 import { ease, spring } from "@/motion/presets";
 import { Sidebar } from "./sidebar";
 import { SECTIONS } from "./sections";
@@ -31,6 +32,28 @@ function ThemeSwitch() {
         </m.span>
       </AnimatePresence>
     </button>
+  );
+}
+
+const SKIN_LABEL: Record<ThemeAccent, string> = { indigo: "靛蓝", emerald: "翠绿", rose: "玫红", amber: "琥珀", zinc: "锌灰", ink: "墨" };
+
+/*
+ * 顶栏的皮肤切换, 让每个皮肤 (含连中性色一起换的 ink) 在文档站上都能直接看到.
+ */
+function SkinSwitch() {
+  const { accent, setAccent } = useTheme();
+  return (
+    <select
+      aria-label="皮肤"
+      title="皮肤"
+      value={accent}
+      onChange={(e) => setAccent(e.target.value as ThemeAccent)}
+      className="h-9 rounded-lg border bg-background px-2 text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
+    >
+      {THEME_ACCENTS.map((a) => (
+        <option key={a} value={a}>{SKIN_LABEL[a]}</option>
+      ))}
+    </select>
   );
 }
 
@@ -81,6 +104,7 @@ export function Shell({ route, children }: { route: Route; children: React.React
         </nav>
         <div className="ml-auto flex items-center gap-2">
           <span className="hidden font-mono text-xs text-muted-foreground sm:inline">React 19 · Tailwind v4 · Motion</span>
+          <SkinSwitch />
           <ThemeSwitch />
         </div>
       </header>

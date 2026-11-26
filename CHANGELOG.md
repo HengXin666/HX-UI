@@ -4,6 +4,24 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## 2.3.0
+
+给非 Web 端 (安卓 Compose 等) 用的机器可读令牌与组件清单, 以及连中性色一起换的 `ink` 皮肤 (ChatGPT 式深色).
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.3.0/hx-ui-2.3.0.tgz
+```
+
+### 新增
+
+- `@hx/ui/tokens.json`: 基础亮 / 暗令牌与每个皮肤合并后的完整色板 (sRGB 十六进制), 圆角档位 (px), 动效时长与缓动, 字体栈, 图标集版本. 构建时从 `theme.css` 解析, 不另外维护.
+- `@hx/ui/components.json`: 各基础件 cva 的变体与尺寸, 以及默认值, 供其它端对照实现.
+- 皮肤 `ink`: `setAccent("ink")` 或 `data-theme="ink"`. 亮色白底; 暗色纯黑底, 卡片与浮层 #212121 加细描边, 侧栏 #0d0d0d, 次要文字 #afafaf.
+- `THEME_ACCENTS`: 全部皮肤的有序清单 (`@hx/ui/theme`).
+- 文档站顶栏加皮肤切换.
+
 ## 2.2.0
 
 蓝图编辑器的调试可以交给别处执行 ([#49](https://github.com/HengXin666/HX-UI/issues/49)): 图由服务端真正运行时, 运行条, 执行脉冲, 断点 (含条件断点), 运行到此处, 监视和悬停取值照常工作. 不设置时行为与 2.1.0 相同.

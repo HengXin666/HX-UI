@@ -59,7 +59,7 @@
 - 样式另引, 排在核心样式之后: 不用 Tailwind 引 "@hx/ui/blueprint/styles.css" (跟在 "@hx/ui/styles.css" 后); Tailwind v4 在 CSS 里 @import "@hx/ui/blueprint.css" (跟在 "@hx/ui/tailwind.css" 后).
 
 ## 主题
-- 包 `ThemeProvider`; `useTheme()` 返回 { mode, resolved, accent, setMode, setAccent }; 强调色 indigo | emerald | rose | amber | zinc.
+- 包 `ThemeProvider`; `useTheme()` 返回 { mode, resolved, accent, setMode, setAccent }; 强调色 indigo | emerald | rose | amber | zinc | ink (ink 连中性色一起换, ChatGPT 式). 非 Web 端用 `@hx/ui/tokens.json` 与 `@hx/ui/components.json`.
 - 令牌: background, foreground, card, muted, accent, primary, brand, brand-soft, success, warning, destructive, info, chart-1..5, border, ring.
 
 ## 示例

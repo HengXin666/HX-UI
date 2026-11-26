@@ -9,7 +9,7 @@
 /*
  * HX-UI 2 设计令牌
  * - 变量名与 shadcn/ui 主题格式完全一致: 任何 shadcn 主题 (tweakcn 等) 的 :root / .dark 块可以直接粘贴覆盖.
- * - 颜色用 OKLCH, 亮暗两套; 强调色可用 data-theme 切换 (zinc 默认 / indigo / emerald / rose / amber).
+ * - 颜色用 OKLCH, 亮暗两套; 强调色可用 data-theme 切换 (zinc 默认 / indigo / emerald / rose / amber); ink 是连中性色一起换的皮肤.
  * - 动效时长与缓动也是令牌, 组件与 motion 预设都从这里读.
  */
 
@@ -112,6 +112,52 @@
 .dark[data-theme="emerald"], .dark [data-theme="emerald"] { --brand: oklch(0.72 0.15 160); }
 .dark[data-theme="rose"], .dark [data-theme="rose"] { --brand: oklch(0.7 0.19 12); }
 .dark[data-theme="zinc"], .dark [data-theme="zinc"] { --brand: oklch(0.8 0.01 270); }
+
+/*
+ * 墨 (ink) 皮肤: 中性色一起换, 取 ChatGPT App 实测色. 亮色白底; 暗色纯黑底, 卡片 / 浮层 #212121 + 细描边, 侧栏 #0d0d0d.
+ * 强调色就是前景色 (黑 / 白), 不另加彩色.
+ */
+[data-theme="ink"] {
+  --background: #ffffff;
+  --foreground: #0d0d0d;
+  --card: #ffffff;
+  --popover: #f9f9f9;
+  --primary: #0d0d0d;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f4;
+  --secondary-foreground: #0d0d0d;
+  --muted: #f4f4f4;
+  --muted-foreground: #838286;
+  --accent: #ececec;
+  --accent-foreground: #0d0d0d;
+  --border: #e4e4e4;
+  --input: #e4e4e4;
+  --ring: #b4b4b4;
+  --brand: #0d0d0d;
+  --brand-soft: rgb(13 13 13 / 0.08);
+  --sidebar: #f9f9f9;
+}
+.dark[data-theme="ink"], .dark [data-theme="ink"] {
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #212121;
+  --popover: #212121;
+  --primary: #ffffff;
+  --primary-foreground: #000000;
+  --secondary: #2b2b2b;
+  --secondary-foreground: #ffffff;
+  --muted: #212121;
+  --muted-foreground: #afafaf;
+  --accent: #2b2b2b;
+  --accent-foreground: #ffffff;
+  --border: #373737;
+  --input: #373737;
+  --ring: #4d4d4d;
+  --brand: #ffffff;
+  --brand-foreground: #000000;
+  --brand-soft: rgb(255 255 255 / 0.1);
+  --sidebar: #0d0d0d;
+}
 
 @theme inline {
   --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
