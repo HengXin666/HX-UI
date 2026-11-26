@@ -79,7 +79,44 @@ export interface DebugOptions {
 
 export const IDLE_DEBUG: DebugState = { status: "idle", steps: 0, trace: [], values: new Map(), hits: new Map() };
 
-export class DebugSession {
+/**
+ * What the editor drives during a run: the local `DebugSession`, or an executor elsewhere (a server
+ * that runs the graph for real). The editor calls these from its run bar, F5 / F10 / F11 and menus.
+ */
+export interface DebugController {
+  /** Start the run. Resolves when it ends (finished, stopped or failed). */
+  start(): Promise<EvalResult | undefined>;
+  /** Run the paused node and pause before the next one (starts a stepped run when idle). */
+  step(): void;
+  /** Leave a pause and run to the next breakpoint or the end. */
+  continue(): void;
+  /** Run until this breakpoint key is reached, once (starts a run when idle). */
+  runTo(key: string): void;
+  stop(): void;
+  /** The editor changed its breakpoints or their specs (the live sets in the options). Remote executors sync here. */
+  breakpointsChanged?(): void;
+}
+
+/** Everything a backend gets for one run. `options.breakpoints` / `conditions` are the editor's live sets. */
+export interface DebugBackendContext {
+  readonly graph: BlueprintGraph;
+  readonly registry: Registry;
+  readonly options: DebugOptions;
+  /** Report progress. "status" events replace the editor's `debug` state (see `createDebugState`). */
+  emit(event: DebugEvent): void;
+}
+
+/**
+ * Factory of one run's controller. Set `editor.debugBackend` to run graphs somewhere else and keep
+ * the editor's debugging UI (run bar, exec pulses, breakpoints, watches, call stack, hover values).
+ */
+export type DebugBackend = (ctx: DebugBackendContext) => DebugController;
+
+/** The default backend: interpret the graph in the browser. */
+export const localDebugBackend: DebugBackend = ({ graph, registry, options, emit }) =>
+  new DebugSession(graph, registry, options, emit);
+
+export class DebugSession implements DebugController {
   private readonly graph: BlueprintGraph;
   private readonly registry: Registry;
   private readonly opts: DebugOptions;

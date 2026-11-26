@@ -1,7 +1,7 @@
 // hx:server-safe 框架无关的编辑器状态类; requestAnimationFrame 只在方法里调用 (fit 等), 导入不碰浏览器. ZOOM 等常量要能在服务端读.
 import { createHistory, type History, type StepOptions } from "../history";
 import { createIdGen, type IdGen } from "../ids";
-import type { BreakpointSpec, DebugEvent, DebugOptions, DebugSession, DebugState } from "../debug";
+import type { BreakpointSpec, DebugBackend, DebugController, DebugEvent, DebugOptions, DebugState } from "../debug";
 import { mergeInner, type ApplyResult, type GraphOp } from "../ops";
 import type { Registry } from "../registry";
 import { boundsOf, nodeBox, type Box } from "../size";
@@ -86,10 +86,17 @@ export class BlueprintEditor {
   readonly watches = new Set<string>();
   private insp: InspectTarget | undefined;
   private dbg: DebugState = IDLE;
-  private session: DebugSession | undefined;
+  private session: DebugController | undefined;
+  /** Increases with every run and with clearDebug, so a superseded run's events are ignored. */
+  private runToken = 0;
   private readonly debugListeners = new Set<(e: DebugEvent) => void>();
   /** Delay per exec hop for `run()` (the pulse animation), ms. */
   stepMs = 200;
+  /**
+   * Where `run()` executes the graph. Unset: in the browser (`DebugSession`, loaded on first run).
+   * Set it to drive a remote executor with the same run bar, breakpoints and highlights.
+   */
+  debugBackend: DebugBackend | undefined;
   /** Screen space covered by docked panels; `fit` frames the graph in what is left. */
   fitInset = { left: 0, top: 0, right: 0, bottom: 0 };
   /** Short status line shown at the bottom of the editor (role=status). */
@@ -325,7 +332,7 @@ export class BlueprintEditor {
     const keys = ids.map((id) => this.keyOf(id));
     const on = !keys.every((k) => this.breakpoints.has(k));
     keys.forEach((k) => (on ? this.breakpoints.add(k) : this.breakpoints.delete(k)));
-    this.bump();
+    this.breakpointsChanged();
   }
   /** Set (or clear with undefined) the condition / hit count of a breakpoint key; adds the breakpoint. */
   setBreakpointSpec(key: string, spec: BreakpointSpec | undefined) {
@@ -334,18 +341,22 @@ export class BlueprintEditor {
       this.breakpointSpecs.set(key, clean);
       this.breakpoints.add(key);
     } else this.breakpointSpecs.delete(key);
-    this.bump();
+    this.breakpointsChanged();
   }
   removeBreakpoint(key: string) {
     this.breakpoints.delete(key);
     this.breakpointSpecs.delete(key);
-    this.bump();
+    this.breakpointsChanged();
   }
   /** Ctrl+Shift+F9: remove every breakpoint (all levels). */
   clearBreakpoints() {
     if (!this.breakpoints.size) return;
     this.breakpoints.clear();
     this.breakpointSpecs.clear();
+    this.breakpointsChanged();
+  }
+  private breakpointsChanged() {
+    this.session?.breakpointsChanged?.();
     this.bump();
   }
   /** Remove a watch by its full key ("<level key>|in:<pin>"). */
@@ -373,19 +384,25 @@ export class BlueprintEditor {
       else this.session.continue();
       return this.dbg.result;
     }
-    const { DebugSession } = await import("../debug");
-    const s = new DebugSession(this.root, this.registry, { stepMs: this.stepMs, ...opts, breakpoints: this.breakpoints, conditions: this.breakpointSpecs }, (e) => {
-      if (this.session !== s) return;
-      if (e.type === "status") {
-        this.dbg = e.state;
-        this.bump();
-      }
-      this.debugListeners.forEach((l) => l(e));
-    });
+    const backend = this.debugBackend ?? (await import("../debug")).localDebugBackend;
+    const token = ++this.runToken;
     this.session?.stop();
-    this.session = s;
     this.dbg = IDLE;
     this.debugListeners.forEach((l) => l({ type: "status", state: IDLE }));
+    const s = backend({
+      graph: this.root,
+      registry: this.registry,
+      options: { stepMs: this.stepMs, ...opts, breakpoints: this.breakpoints, conditions: this.breakpointSpecs },
+      emit: (e) => {
+        if (this.runToken !== token) return;
+        if (e.type === "status") {
+          this.dbg = e.state;
+          this.bump();
+        }
+        this.debugListeners.forEach((l) => l(e));
+      },
+    });
+    this.session = s;
     return s.start();
   }
   /**
@@ -405,6 +422,7 @@ export class BlueprintEditor {
   clearDebug() {
     this.session?.stop();
     this.session = undefined;
+    this.runToken++;
     this.dbg = IDLE;
     this.debugListeners.forEach((l) => l({ type: "status", state: IDLE }));
     this.bump();

@@ -522,6 +522,66 @@ await check("M5 breakpoints: pause before the node, step, continue, stop; one br
   assert.ok(r3?.stopped && s3.state.status === "stopped" && r3.trace.length === 0);
 });
 
+await check("debug backend: run / step / continue / stop go to a custom backend, breakpoint edits are forwarded, local stays default", async () => {
+  const { BlueprintEditor } = await import("../src/blueprint/ui/editor.ts");
+  const calls: string[] = [];
+  let ctx: import("../src/blueprint/debug.ts").DebugBackendContext | undefined;
+  let finish: (() => void) | undefined;
+  const ed = new BlueprintEditor(reg, demoGraph);
+  ed.debugBackend = (c) => {
+    ctx = c;
+    calls.push(`create:${c.options.startPaused ? "paused" : "run"}`);
+    return {
+      start: () => {
+        calls.push("start");
+        c.emit({ type: "status", state: bp.createDebugState({ status: "paused", at: { node: "branch" }, trace: [{ node: "start", outputs: {}, fired: ["then"] }] }) });
+        return new Promise((r) => (finish = () => {
+          c.emit({ type: "status", state: bp.createDebugState({ status: "done", trace: [{ node: "start", outputs: { n: 1 }, fired: ["then"] }] }) });
+          r(undefined);
+        }));
+      },
+      step: () => calls.push("step"),
+      continue: () => calls.push("continue"),
+      runTo: (key) => calls.push(`runTo:${key}`),
+      stop: () => calls.push("stop"),
+      breakpointsChanged: () => calls.push(`bps:${[...ctx!.options.breakpoints! as Set<string>].join(",")}`),
+    };
+  };
+  const done = ed.run({ startPaused: true });
+  assert.equal(ctx?.graph, ed.root, "backend gets the main graph");
+  assert.equal(ed.debug.status, "paused");
+  assert.deepEqual(ed.debug.at, { node: "branch" });
+  assert.equal(ed.debug.steps, 1);
+  ed.step();
+  ed.continue();
+  ed.toggleBreakpoint(["yes"]);
+  ed.runToCursor("no");
+  finish!();
+  await done;
+  assert.equal(ed.debug.status, "done");
+  assert.equal(ed.debug.values.get("start")?.n, 1, "createDebugState fills values from the trace");
+  assert.deepEqual(calls, ["create:paused", "start", "step", "continue", "bps:yes", "runTo:no"]);
+
+  // a new run stops the old one; late events of the old run are ignored
+  const old = ctx!;
+  const second = ed.run();
+  assert.deepEqual(calls.slice(-3), ["stop", "create:run", "start"]);
+  old.emit({ type: "status", state: bp.createDebugState({ status: "error", error: "late" }) });
+  assert.equal(ed.debug.status, "paused", "superseded run cannot overwrite the state");
+  ed.clearDebug();
+  ctx!.emit({ type: "status", state: bp.createDebugState({ status: "running" }) });
+  assert.equal(ed.debug.status, "idle", "clearDebug detaches the running backend");
+  void second;
+
+  // no backend: the local interpreter, as before
+  const local = new BlueprintEditor(reg, demoGraph);
+  local.stepMs = 0;
+  const r = await local.run();
+  assert.ok(r?.ok);
+  assert.equal(local.debug.status, "done");
+  assert.deepEqual(local.debug.trace.map((x) => x.node), ["start", "branch", "yes"]);
+});
+
 await check("M5 disabled nodes: exec passes through, data passes a matching input, skipped in trace/outputs, validated as a warning", async () => {
   const g = bp.applyOps(demoGraph, [
     { op: "addNode", id: "p3", type: "flow.print", at: [900, 40], values: { prefix: "after" } },
