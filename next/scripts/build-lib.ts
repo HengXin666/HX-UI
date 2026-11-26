@@ -9,13 +9,15 @@
  *              蓝图拓展包另出两份: dist/blueprint.css (Tailwind v4 入口, @source 只指 dist/blueprint)
  *                                  dist/blueprint/styles.css (预编译, 配 styles.css 用)
  *              dist/fonts.css    可选, Geist 字体 (@fontsource-variable/*)
- *   5. 校验    scripts/check-client.ts --dist: 源码带 "use client" 的模块, 产物逐文件保留指令; 不带的也没被加上
+ *   5. 令牌    scripts/export-tokens.ts: dist/tokens.json 与 dist/components.json, 给安卓等非 Web 端生成代码用
+ *   6. 校验    scripts/check-client.ts --dist: 源码带 "use client" 的模块, 产物逐文件保留指令; 不带的也没被加上
  * 不引新依赖: 改写脚本就是下面几十行.
  */
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { exportTokens } from "./export-tokens.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
@@ -146,6 +148,10 @@ if (leftover.length) {
   console.error("[build:lib] 产物里还有 @/ 导入:\n  " + leftover.map((f) => relative(DIST, f)).join("\n  "));
   process.exit(1);
 }
+
+step("令牌与组件清单 (tokens.json / components.json)");
+exportTokens(DIST);
+
 step('"use client" 逐文件核对 (scripts/check-client.ts --dist)');
 run(process.execPath, [join(ROOT, "scripts", "check-client.ts"), "--dist"]);
 

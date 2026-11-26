@@ -3,7 +3,12 @@
  * 不写 "use client": Next.js App Router 的 layout (服务端组件) 要能直接拿到 themeScript 这个字符串内联进 <head>.
  */
 export type ThemeMode = "light" | "dark" | "system";
-export type ThemeAccent = "indigo" | "emerald" | "rose" | "amber" | "zinc";
+export type ThemeAccent = "indigo" | "emerald" | "rose" | "amber" | "zinc" | "ink";
+
+/*
+ * 全部皮肤的有序清单, 文档站的切换器与导出的 tokens.json 都以 theme.css 为准, 这里只给 TS 端枚举用.
+ */
+export const THEME_ACCENTS: readonly ThemeAccent[] = ["indigo", "emerald", "rose", "amber", "zinc", "ink"];
 
 /** ThemeProvider 默认的 localStorage 键; themeScript 读的也是它. */
 export const THEME_STORAGE_KEY = "hx-theme";
