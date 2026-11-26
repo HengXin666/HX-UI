@@ -170,7 +170,8 @@ function components() {
   const out: Record<string, Record<string, unknown>> = {};
   for (const file of readdirSync(UI_DIR).filter((f) => f.endsWith(".tsx")).sort()) {
     const src = readFileSync(join(UI_DIR, file), "utf8");
-    for (const m of src.matchAll(/const\s+(\w+)Variants\s*=\s*cva\(/g)) {
+    // 任何 cva 赋值都算 (progress 的 track 不带 Variants 后缀), 名字去掉 Variants 后缀
+    for (const m of src.matchAll(/const\s+(\w+?)(?:Variants)?\s*=\s*cva\(/g)) {
       const at = src.indexOf("variants:", m.index);
       if (at < 0) continue;
       const body = braced(src, src.indexOf("{", at));
@@ -199,7 +200,7 @@ export function exportTokens(outDir: string) {
   writeFileSync(join(outDir, "components.json"), JSON.stringify({ $schema: SCHEMA, components: components() }, null, 2) + "\n");
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
   exportTokens(resolve(ROOT, process.argv[2] ?? "dist"));
   console.log("[export-tokens] tokens.json, components.json");
 }

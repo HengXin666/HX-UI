@@ -154,6 +154,7 @@
   --input: #373737;
   --ring: #4d4d4d;
   --brand: #ffffff;
+  --brand-foreground: #000000;
   --brand-soft: rgb(255 255 255 / 0.1);
   --sidebar: #0d0d0d;
 }
