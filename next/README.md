@@ -17,9 +17,9 @@ npm run pack:check # build:lib + npm pack + scripts/verify-pack.ts
 2.0 通过 GitHub Release 发 tgz, 不需要 npm 账号, 直接装 URL:
 
 ```bash
-pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.1.0/hx-ui-2.1.0.tgz
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.2.0/hx-ui-2.2.0.tgz
 # 或
-npm i https://github.com/HengXin666/HX-UI/releases/download/v2.1.0/hx-ui-2.1.0.tgz
+npm i https://github.com/HengXin666/HX-UI/releases/download/v2.2.0/hx-ui-2.2.0.tgz
 ```
 
 要求 React 19 (`react` / `react-dom` 是 peerDependencies). 包是纯 ESM, 带完整 `.d.ts` (bundler / NodeNext 解析都能用).

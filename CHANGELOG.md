@@ -4,6 +4,22 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## 2.2.0
+
+蓝图编辑器的调试可以交给别处执行 ([#49](https://github.com/HengXin666/HX-UI/issues/49)): 图由服务端真正运行时, 运行条, 执行脉冲, 断点 (含条件断点), 运行到此处, 监视和悬停取值照常工作. 不设置时行为与 2.1.0 相同.
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.2.0/hx-ui-2.2.0.tgz
+```
+
+### 新增
+
+- `BlueprintEditor.debugBackend`: `run` / `step` / `continue` / `runToCursor` / `stop` 交给它返回的 `DebugController`; 编辑器改断点时调用 `breakpointsChanged()`. 被新运行替换的运行, 以及 `clearDebug` 之后的迟到事件不再改动编辑器状态.
+- `@hx/ui/blueprint`: 类型 `DebugBackend`, `DebugBackendContext`, `DebugController`; 函数 `createDebugState` (由远端事件拼 `DebugState`, 不引解释器).
+- `@hx/ui/blueprint/debug`: `localDebugBackend` (默认后端, 即 `DebugSession`).
+
 ## 2.1.0
 
 蓝图编辑器改成拓展包 ([#46](https://github.com/HengXin666/HX-UI/issues/46)): 不用蓝图的项目不再为它付 CSS. 含一处破坏性变更 (根入口不再导出蓝图), 见下方迁移.
