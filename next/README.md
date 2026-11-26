@@ -132,6 +132,18 @@ const bp = useBlueprint({ registry, initial: graph });
 
 其它入口: `@hx/ui/blueprint/panels` (MyBlueprintPanel, DetailsPanel, DebugDock, VariablesPanel, Splitter, 自己摆布局用), `@hx/ui/blueprint/agent` (buildGraph, createBlueprintTools, 给 AI 用的工具), `@hx/ui/blueprint/debug` (调试会话).
 
+调试默认在浏览器里解释整张图. 图由别处真正执行时 (例如服务端), 给编辑器设 `debugBackend`, 运行条, 执行脉冲, 断点 (含条件断点), 监视和悬停取值照常工作:
+
+```ts
+const bp = useBlueprint({ registry, initial: graph });
+bp.debugBackend = ({ graph, options, emit }) => ({
+  start: () => remote.run(graph, { breakpoints: [...options.breakpoints] }), // 结束时 resolve
+  step: () => remote.step(), continue: () => remote.continue(), runTo: (key) => remote.runTo(key), stop: () => remote.stop(),
+  breakpointsChanged: () => remote.setBreakpoints([...options.breakpoints]),
+});
+// 收到远端进度时: emit({ type: "status", state: createDebugState({ status: "paused", at: { node }, trace }) })
+```
+
 ### 6. 已经在用 Tailwind v4
 
 不引 `styles.css`, 改在你自己的 CSS 里:

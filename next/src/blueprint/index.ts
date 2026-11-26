@@ -36,7 +36,11 @@ export type { Positions, LayoutOptions, AlignMode } from "./layout";
 export { evaluateGraph, findEntries } from "./evaluate";
 export type { EvalOptions, EvalResult, StepEvent, StepTarget } from "./evaluate";
 // The debug session is its own module (import "@/blueprint/debug") so editors that never debug do not ship it.
-export type { DebugState, DebugStatus, DebugEvent, DebugOptions, BreakpointSpec, PauseReason } from "./debug";
+export type {
+  DebugState, DebugStatus, DebugEvent, DebugOptions, BreakpointSpec, PauseReason,
+  DebugBackend, DebugBackendContext, DebugController,
+} from "./debug";
+export { createDebugState } from "./debug-state";
 export { toJSON, fromJSON, stripVersion, graphSchema, FORMAT_VERSION } from "./serialize";
 export type { GraphJSON, ParseResult, FromJSONOptions } from "./serialize";
 export { toText, fromText } from "./text";
