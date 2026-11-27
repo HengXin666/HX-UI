@@ -50,6 +50,9 @@ export interface AgentActions {
   onInspect?: (call: ToolCallData) => void;
 }
 
+/** 对话流里待办调用的画法 */
+export type PlanCallDisplay = "hidden" | "line" | "card";
+
 export interface AgentUIConfig {
   toolViews: ToolViews;
   actions: AgentActions;
@@ -58,6 +61,11 @@ export interface AgentUIConfig {
   markdown?: AgentMarkdownDefaults;
   /** 显示模式: grouped (默认, 连续的过程折成一行), flat (逐条), hide-success (藏起成功的调用), zen (只看结论) */
   mode?: ActivityMode;
+  /**
+   * 对话里的待办 / 计划调用怎么画: hidden (默认) 更新时不显示, 只在第一次列出计划时留一行 "列出计划 · 9 项", 完整计划交给输入框上方的 PlanPanel;
+   * line 每次更新都留一行很淡的变更摘要 "更新计划 · 完成 X · 3/9"; card 是没有 PlanPanel 时的回退: 最新一步画整张实时计划卡, 更早的收成可展开的一行.
+   */
+  planCalls?: PlanCallDisplay;
   /** 子 Agent 的嵌套时间线由 AgentParts 注入, 避免模块循环 */
   renderParts?: (parts: AgentPart[], opts: { streaming: boolean }) => React.ReactNode;
 }

@@ -162,9 +162,14 @@ import { math, mathFences } from "@hx/ui/agent/math";    // 可选, 另引 "kate
 
 // 整个 Agent 会话: 事件流 -> useAgentStream (按帧合批) -> MessageList
 function Chat() {
-  const { messages, push, busy } = useAgentStream();
+  const { messages, agents, push, busy } = useAgentStream();
+  const [open, setOpen] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
+  const [model, setModel] = useState({ client: "codex", model: "gpt-5", effort: "medium" });
   // push({ type: "text-delta", messageId, partId, delta }) / "reasoning-delta" / "tool-start" / "tool-args-delta"
   //      / "tool-status" / "tool-output-delta" / "tool-result" / "tool-child" / "message-end" ...
+  // 用量: "usage" (提示 / 缓存 / 上下文快照), "usage-delta" (输出 token 增量, 算实时 tokens/s; 不发就按文字估)
+  // 子 Agent: task 调用里嵌 tool-child { agent-spawn }, 再推 agent-status / agent-handoff / agent-message; 子 Agent 的消息带 agentId
   // AI SDK: fromAiSdkMessages(useChat().messages, { streaming })
   return (
     <AgentProvider
@@ -172,13 +177,31 @@ function Chat() {
       toolViews={{ deploy: myDeployView }}               // 按工具名注册视图, 内置 bash / read / edit / grep / web / todo / 提问 / 子 Agent ...
       actions={{ onApprove, onDeny, onAnswer, onOpenFile }}
       mode="grouped"                                      // grouped | flat | hide-success | zen
+      agents={agents} messages={messages}                 // 派出子 Agent 的消息里出现编排框; 子 Agent 的审批上浮到父线程
+      openAgentId={open} onOpenAgent={setOpen}            // 点编排框里的子 Agent
     >
-      <Conversation className="h-dvh" footer={<PromptInput busy={busy} onSubmit={send} onStop={stop} />}>
-        <MessageList messages={messages} />
-      </Conversation>
+      <AgentSwitcher value={viewing} onValueChange={setViewing} />         {/* 顶栏: 主 Agent / 子 Agent 切换, 各自 tok/s */}
+      {viewing ? <SubagentConversation agentId={viewing} onBack={() => setViewing(null)} /> : (
+        <Conversation
+          className="h-dvh"
+          overlay={<OrchestraDock />}                                         // 编排框可弹出成悬浮面板
+          footer={<>
+            <PlanPanel />                                                     {/* 计划: 从 todo_write / OMP todo 调用派生, 嵌套可折叠 */}
+            <PromptInput busy={busy} onSubmit={send} onStop={stop}
+              toolbar={<EffortControl levels={levels} value={model.effort} onValueChange={(effort) => setModel({ ...model, effort })} />}  // 推理强度: 输入框里直接拖
+              status={<AgentModelPicker clients={clients} value={model} onValueChange={setModel} />} />                                    // 客户端 + 模型: 控件栏右边
+            <SessionMeter messages={messages} agents={agents} onOpenContext={openContext} />  {/* 默认居中; 上下文弹层可进 AgentContextView */}
+          </>}
+        >
+          <MessageList messages={messages} />
+        </Conversation>
+      )}
+      {open && <AgentThread agentId={open} onClose={() => setOpen(null)} />}  {/* 子 Agent 的只读会话 */}
     </AgentProvider>
   );
 }
+// 轨迹账本 (对标 DSH 的 Trajectory): <AgentTrajectory messages={messages} agents={agents} />
+// 每个 Agent 的实时速率: agentTokenRates(messages, agents, Date.now()).get(agentId)
 ```
 
 自定义围栏渲染器拿到 `{ code, lang, meta, incomplete, theme }`, `incomplete` 为真表示围栏还在生成, 可以自己做流式渲染.
@@ -268,8 +291,8 @@ export default async function Page() {
 | `src/interactions` | StatefulButton (Button 的提交流程), SpeedCounter (并入 NumberRoll) | 自写 |
 | `src/data` | AreaTrend, BarCompare, Donut, Sparkline, ComboChart, RadarCompare, Gauge, ScatterBubble, ConversionFunnel, ShareTreemap, SankeyFlow, HeatCalendar, Candlestick, DataTable | Recharts + TanStack Table v8 |
 | `src/text` | 文字组件 (SplitText ...) | 自写, 思路参考 React Bits |
-| `src/agent` | Agent 拓展包: Markdown (流式), CodeBlock, 围栏 (svg / mermaid / 公式 / html), Reasoning, ToolCall + 内置工具视图, ActivityGroup, Conversation, MessageList, PromptInput, 事件 reducer, AI SDK 适配 | Streamdown (解析切块) + Shiki (高亮) + 自写; 交互参考 T3 Code / DSH, 代码块参考 HXLoLi 博客 |
-| `site` | 文档站, 四个分区: UI 组件 (操作 / 导航 / 展示 / 反馈 / 表单 / 数据), 视觉组件, Agent 界面, 落地页. 每个组件一页: 预览 / 代码 / 调参 / 属性表 / 复制给 AI. 新组件写 `site/src/docs/entries/<slug>.ts` + `<slug>.demo.tsx`, 在 `registry.ts` 登记 | |
+| `src/agent` | Agent 拓展包: Markdown (流式), CodeBlock, 围栏 (svg / mermaid / 公式 / html), Reasoning, ToolCall + 内置工具视图, ActivityGroup, Conversation, MessageList (含对话内编排框), PromptInput, SessionMeter (实时上下文 / 用量), AgentContextView (上下文检视器), PlanPanel (计划 / TODO), AgentModelPicker + EffortControl (客户端 / 模型, 推理强度), AgentSwitcher, OrchestraDock, AgentTrajectory, AgentThread, 事件 reducer, AI SDK 适配 | Streamdown (解析切块) + Shiki (高亮) + 自写; 交互参考 T3 Code / DSH / dsh-context / Codex / oh-my-pi, 代码块参考 HXLoLi 博客 |
+| `site` | 文档站, 三个分区: UI 组件 (操作 / 导航 / 展示 / 反馈 / 表单 / 数据 / 图表 / 3D / 编辑器 / Agent), 视觉组件, 落地页. 旧的 #/agent/* 链接重定向到 #/ui/*. 每个组件一页: 预览 / 代码 / 调参 / 属性表 / 复制给 AI. 新组件写 `site/src/docs/entries/<slug>.ts` + `<slug>.demo.tsx`, 在 `registry.ts` 登记 | |
 
 ## 规则 (只有这几条)
 
@@ -287,7 +310,7 @@ export default async function Page() {
 ```bash
 npm run check         # 交互组件体积预算 + "use client" 边界检查 (scripts/check-client.ts)
 npm run check:bp      # 蓝图逻辑 + 编辑器的回归检查
-npm run check:agent   # Agent 拓展包的逻辑检查 (围栏, 组合代码块, 部分 JSON, 事件 reducer, diff, ANSI)
+npm run check:agent   # Agent 拓展包的逻辑检查 (围栏, 组合代码块, 部分 JSON, 事件 reducer, 多 Agent, 实时用量, 轨迹, diff, ANSI)
 npm run pack:check    # 发布包: build:lib (含 dist 逐文件核对 "use client") + npm pack + verify-pack
 ```
 

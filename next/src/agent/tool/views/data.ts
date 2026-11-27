@@ -1,6 +1,7 @@
 /**
  * 从工具调用里取视图要的数据 (纯函数, 服务端安全): 终端输出, 退出码, diff, 搜索命中, 网页结果, 图片, 待办, 提问.
  */
+import { normalizePlanStatus } from "../../model/todos";
 import type { ToolCallData } from "../../model/types";
 import { diffLines, parseUnifiedDiff, withContext, type DiffRow } from "../../parts/diff";
 import { arr, num, obj, PATH_KEYS, resultText, str } from "../args";
@@ -123,8 +124,7 @@ export function todosOf(c: ToolCallData): TodoItem[] {
   return list
     .map((x) => {
       const o = obj(x);
-      const raw = (str(o, "status", "state") ?? "pending").toLowerCase().replace(/-/g, "_");
-      const status: TodoStatus = raw === "completed" || raw === "done" ? "completed" : raw === "in_progress" || raw === "active" || raw === "doing" ? "in_progress" : raw === "cancelled" || raw === "canceled" ? "cancelled" : "pending";
+      const status: TodoStatus = normalizePlanStatus(str(o, "status", "state"));
       return { id: str(o, "id"), content: str(o, "content", "step", "title", "text", "task") ?? (typeof x === "string" ? x : ""), status, activeForm: str(o, "activeForm", "active_form") };
     })
     .filter((t) => t.content);

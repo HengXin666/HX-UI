@@ -1,10 +1,13 @@
 "use client";
 import * as React from "react";
+import { emptyAgentTree, type AgentTree } from "./agents";
 import { emptyAgentState, reduceAgentEvents, type AgentEvent, type AgentState } from "./events";
 import type { AgentMessage } from "./types";
 
 export interface AgentStream {
   messages: AgentMessage[];
+  /** 多 Agent 父子树 (agent-* 事件) */
+  agents: AgentTree;
   /** 推一个或多个事件; 同一帧里的事件合成一次提交 */
   push: (e: AgentEvent | readonly AgentEvent[]) => void;
   /** 立即提交 (测试或需要同步读的时候) */
@@ -19,7 +22,7 @@ export interface AgentStream {
  * 页面在后台 (rAF 停了) 时退回 50ms 定时器, 回来时不会一下子堆一大批.
  */
 export function useAgentStream(initial?: AgentMessage[]): AgentStream {
-  const [state, setState] = React.useState<AgentState>(() => (initial ? { messages: initial } : emptyAgentState()));
+  const [state, setState] = React.useState<AgentState>(() => (initial ? { messages: initial, agents: emptyAgentTree() } : emptyAgentState()));
   const queue = React.useRef<AgentEvent[]>([]);
   const frame = React.useRef<{ raf: number | null; timer: number | null }>({ raf: null, timer: null });
 
@@ -49,7 +52,7 @@ export function useAgentStream(initial?: AgentMessage[]): AgentStream {
 
   const reset = React.useCallback((messages?: AgentMessage[]) => {
     queue.current = [];
-    setState({ messages: messages ?? [] });
+    setState({ messages: messages ?? [], agents: emptyAgentTree() });
   }, []);
 
   React.useEffect(() => () => {
@@ -59,5 +62,5 @@ export function useAgentStream(initial?: AgentMessage[]): AgentStream {
   }, []);
 
   const busy = state.messages.some((m) => m.status === "streaming");
-  return { messages: state.messages, push, flush, reset, busy };
+  return { messages: state.messages, agents: state.agents, push, flush, reset, busy };
 }

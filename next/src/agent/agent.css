@@ -104,3 +104,172 @@
 
 /* Mermaid / SVG 预览: 图里的文字跟随主题字体 */
 .hx-diagram svg { max-width: 100%; height: auto; font-family: var(--font-sans); }
+
+/* 计划 (PlanTree): 新完成的项划线从左扫过 (scaleX), 勾选图标弹一下, 新加的项淡入. 只动 transform / opacity */
+.hx-plan-text[data-done]::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.55;
+  transform-origin: left center;
+}
+@keyframes hx-plan-strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes hx-plan-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+@keyframes hx-plan-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.hx-plan-text[data-fresh]::after { animation: hx-plan-strike 520ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both; }
+.hx-plan-check[data-fresh] { animation: hx-plan-pop 360ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.hx-plan-added { animation: hx-plan-in 320ms ease-out both; }
+
+/*
+ * 编排框的派生树 (AgentGraph): 节点是完整的 HTML 卡片, 布局是 DOM (flex), 连线是 1px 边框画的树枝.
+ * 宽容器: 父在左, 子从父的右侧长出来竖排 (父卡片竖直居中于子节点); 窄容器 (< 34rem): 竖向树, 子缩进挂在父下面.
+ * 活跃的枝 (子 Agent 在跑 / 等人) 用强调色; 新派出的子节点从父那一侧长出来 (枝 scaleX + 卡片平移淡入).
+ */
+.hx-otree { container: hx-orch / inline-size; --otree-gap: 20px; --otree-stub: 24px; }
+.hx-otree ul { list-style: none; margin: 0; padding: 0; }
+.hx-otree > ul { width: max-content; min-width: 100%; }
+.hx-otree > ul > .hx-otree-branch { padding-left: 0; }
+.hx-otree-row { display: flex; align-items: center; min-width: 0; }
+.hx-otree-kids { position: relative; padding-left: var(--otree-gap); }
+.hx-otree-kids::before { content: ""; position: absolute; left: 0; top: 50%; width: var(--otree-gap); border-top: 1px solid var(--border); }
+.hx-otree-kids[data-active]::before { border-color: var(--brand); }
+.hx-otree-branch { position: relative; padding: 4px 0 4px var(--otree-gap); }
+.hx-otree-kids > .hx-otree-branch::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; border-left: 1px solid var(--border); }
+.hx-otree-kids > .hx-otree-branch:first-child::before { top: 50%; }
+.hx-otree-kids > .hx-otree-branch:last-child::before { bottom: 50%; }
+.hx-otree-kids > .hx-otree-branch:only-child::before { display: none; }
+.hx-otree-kids > .hx-otree-branch::after { content: ""; position: absolute; left: 0; top: 50%; width: var(--otree-gap); border-top: 1px solid var(--border); transform-origin: left center; }
+.hx-otree-kids > .hx-otree-branch[data-active]::after { border-color: var(--brand); }
+.hx-otree-card { flex: none; width: 13.5rem; transform-origin: left center; }
+@container hx-orch (max-width: 34rem) {
+  .hx-otree > ul { width: auto; }
+  .hx-otree-row { flex-direction: column; align-items: stretch; }
+  .hx-otree-kids { margin-left: 12px; padding-left: 0; }
+  .hx-otree-kids::before { display: none; }
+  .hx-otree-branch { padding: 6px 0 0 16px; }
+  .hx-otree-kids > .hx-otree-branch:first-child::before { top: 0; }
+  .hx-otree-kids > .hx-otree-branch:last-child::before,
+  .hx-otree-kids > .hx-otree-branch:only-child::before { display: block; bottom: auto; height: var(--otree-stub); }
+  .hx-otree-kids > .hx-otree-branch::after { top: var(--otree-stub); width: 16px; }
+  .hx-otree-card { width: 100%; max-width: 22rem; transform-origin: left top; }
+}
+@keyframes hx-otree-grow { from { opacity: 0; transform: translateX(-10px) scale(0.94); } to { opacity: 1; transform: none; } }
+@keyframes hx-otree-grow-y { from { opacity: 0; transform: translateY(-8px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes hx-otree-stub { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.hx-otree-branch[data-grow] > .hx-otree-row > .hx-otree-card { animation: hx-otree-grow 420ms cubic-bezier(0.22, 1, 0.36, 1) 80ms both; }
+.hx-otree-branch[data-grow]::after { animation: hx-otree-stub 260ms ease-out both; }
+@container hx-orch (max-width: 34rem) {
+  .hx-otree-branch[data-grow] > .hx-otree-row > .hx-otree-card { animation-name: hx-otree-grow-y; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-plan-text[data-fresh]::after,
+  .hx-plan-check[data-fresh],
+  .hx-plan-added,
+  .hx-otree-branch[data-grow] > .hx-otree-row > .hx-otree-card,
+  .hx-otree-branch[data-grow]::after { animation: none; }
+}
+
+/*
+ * 推理强度的渐变档位条 (EffortTrack): 淡蓝紫 → 蓝 → 靛 → 紫, 全部由语义 token 混出来.
+ * 档位越高越亮越鲜艳 (组件里随档位改 filter / opacity), 流光是一条半透明的光带, 只做 translateX, 时长随档位缩短.
+ */
+.hx-effort-fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklab, var(--info) 34%, var(--background)) 0%,
+    color-mix(in oklab, var(--info) 62%, var(--background)) 20%,
+    var(--info) 46%,
+    var(--brand) 74%,
+    color-mix(in oklab, var(--brand) 60%, var(--chart-4)) 100%
+  );
+}
+@keyframes hx-effort-sheen { from { transform: translateX(-100%); } to { transform: translateX(240%); } }
+.hx-effort-sheen {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 42%;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--hx-effort-knob) 70%, transparent), transparent);
+  animation: hx-effort-sheen 2400ms linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hx-effort-sheen { animation: none; opacity: 0 !important; }
+}
+
+/*
+ * 滑块 / 刻度 / 流光的浅色: 亮色主题取背景色, 暗色主题取前景色, 所以在任何主题 (含黑白 ink, 它的 brand-foreground 在暗色是黑) 下都是浅色圆点.
+ * 边框跟着反过来取, 浅色圆点压在浅色渐变上也有轮廓.
+ */
+[data-slot="effort-track"] {
+  --hx-effort-knob: var(--background);
+  --hx-effort-knob-edge: color-mix(in oklab, var(--foreground) 18%, transparent);
+}
+[data-slot="effort-track"]:is(.dark *) {
+  --hx-effort-knob: var(--foreground);
+  --hx-effort-knob-edge: color-mix(in oklab, var(--background) 45%, transparent);
+}
+.hx-effort-knob { background: var(--hx-effort-knob); border-color: var(--hx-effort-knob-edge); }
+.hx-effort-tick { background: var(--hx-effort-knob); }
+
+/*
+ * 档位徽标 (EffortBadge / EffortGlyph): 每档一种样子, 跟渐变条同一套 token 色阶.
+ *   off  70% 的弱前景, 无柱     low  弱前景, 1 柱     mid  前景, 2 柱
+ *   high 品牌色 + 中等字重, 3 柱     max  渐变字 (info → brand → chart-4) + 粗一档 + 光晕, 4 柱渐变
+ * 黑白主题 (ink) 的品牌色就是前景色: high / max 仍靠柱数, 字重, 渐变里的 info 与光晕跟 mid 分开.
+ */
+.hx-effort-badge[data-effort-tone="off"], [data-slot="effort-glyph"][data-effort-tone="off"] { color: color-mix(in oklab, var(--muted-foreground) 70%, transparent); }
+.hx-effort-badge[data-effort-tone="low"], [data-slot="effort-glyph"][data-effort-tone="low"] { color: var(--muted-foreground); }
+.hx-effort-badge[data-effort-tone="mid"], [data-slot="effort-glyph"][data-effort-tone="mid"] { color: var(--foreground); }
+.hx-effort-badge[data-effort-tone="high"], [data-slot="effort-glyph"][data-effort-tone="high"] { color: var(--brand); }
+.hx-effort-badge[data-effort-tone="max"], [data-slot="effort-glyph"][data-effort-tone="max"] { color: var(--brand); }
+.hx-effort-bar { background: color-mix(in oklab, var(--muted-foreground) 30%, transparent); }
+.hx-effort-bar[data-on] { background: currentColor; }
+[data-effort-tone="max"] > .hx-effort-bar[data-on] {
+  background: linear-gradient(0deg, var(--info), var(--brand) 70%, color-mix(in oklab, var(--brand) 60%, var(--chart-4)));
+}
+.hx-effort-badge[data-effort-tone="max"] > .hx-effort-word {
+  background: linear-gradient(90deg, color-mix(in oklab, var(--info) 85%, var(--foreground)), var(--brand) 55%, color-mix(in oklab, var(--brand) 55%, var(--chart-4)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* 最高档的光晕: 一团模糊的 info + 品牌色 (黑白主题里也带一点蓝, 不发灰), 只做 opacity 呼吸; 减弱动效时停在中间值 */
+@keyframes hx-effort-glow { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.8; } }
+.hx-effort-glow {
+  position: absolute;
+  inset: -3px -6px;
+  border-radius: 9999px;
+  pointer-events: none;
+  background: color-mix(in oklab, color-mix(in oklab, var(--info) 45%, var(--brand)) 24%, transparent);
+  filter: blur(6px);
+  animation: hx-effort-glow 2400ms ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hx-effort-glow { animation: none; opacity: 0.55; }
+}
+
+/* 编排框的节点卡片: grid 排版, 窄容器压成两行紧凑卡 (名字 · 状态点 · 时长 / 尾部一行 · tok/s) */
+.hx-otree-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "head head" "sub sub" "tail tail" "rate rate";
+  row-gap: 2px;
+}
+.hx-otree-card > [data-area="head"] { grid-area: head; }
+.hx-otree-card > [data-area="sub"] { grid-area: sub; }
+.hx-otree-card > [data-area="tail"] { grid-area: tail; }
+.hx-otree-card > [data-area="tail1"] { display: none; }
+.hx-otree-card > [data-area="rate"] { grid-area: rate; border-top: 1px solid var(--border); padding-top: 4px; }
+@container hx-orch (max-width: 34rem) {
+  .hx-otree-card { grid-template-areas: "head head" "tail rate"; column-gap: 8px; row-gap: 0; padding-block: 4px; }
+  .hx-otree-card > [data-area="sub"],
+  .hx-otree-card > [data-area="tail"],
+  .hx-otree-card [data-area="tokens"] { display: none; }
+  .hx-otree-card > [data-area="tail1"] { display: block; grid-area: tail; }
+  .hx-otree-card > [data-area="rate"] { border-top: 0; padding-top: 0; }
+}

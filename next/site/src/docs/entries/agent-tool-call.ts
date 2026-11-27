@@ -4,8 +4,9 @@ export const agentToolCall: DocEntry = {
   slug: "tool-call",
   name: "ToolCall",
   title: "工具调用",
-  section: "agent",
-  group: "过程",
+  section: "ui",
+  group: "Agent",
+  sub: "过程",
   description:
     "一次工具调用一行，折叠时就给出最重要的信息：命令描述、文件路径、写入大小、diff 增删数、命中数、非零退出码胶囊。生命周期是 preparing（参数还在流式生成，摘要随参数增长）、running（微光 + 计时，终端输出实时滚动）、success / error / interrupted / denied，以及 awaiting-approval（挂审批条）。按工具名找视图，内置终端、读写改文件、搜索、网页、图片、待办、提问、子 Agent，常见 Agent 的工具名都已收录；没注册的工具走通用 IN / OUT 卡片，MCP 前缀会自动去掉。连续的调用由 ActivityGroup 折成一行摘要。",
   file: "src/agent/tool/tool-call.tsx",

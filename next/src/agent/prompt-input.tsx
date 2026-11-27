@@ -4,7 +4,7 @@
  * "/" 命令与 "@" 提及菜单 (上下键选, Enter / Tab 确认, Esc 关), 生成中按钮变成停止.
  */
 import * as React from "react";
-import { ArrowUp, Paperclip, Square, X } from "lucide-react";
+import { ArrowUp, Paperclip, Plus, Square, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatBytes } from "./parts/format";
 import { IconButton } from "./parts/copy";
@@ -40,6 +40,13 @@ export interface PromptInputProps {
   status?: React.ReactNode;
   /** 最大高度 (px, 默认 240) */
   maxHeight?: number;
+  /**
+   * 空闲且没聚焦时收成一行胶囊 ("+ 文字 发送", 控件栏藏起), 聚焦或有内容时展开成两行 (手机, DSH Go 的输入条).
+   * 默认 false: 始终两行 (Codex 桌面).
+   */
+  collapsible?: boolean;
+  /** 生成中的占位文字 (默认 "生成中…") */
+  busyPlaceholder?: string;
   autoFocus?: boolean;
   className?: string;
 }
@@ -62,7 +69,7 @@ export function PromptInput({
   onSubmit,
   busy = false,
   onStop,
-  placeholder = "给 Agent 发消息…",
+  placeholder = "让 Agent 做任何事, @ 添加文件, / 使用命令",
   disabled,
   attachments = true,
   accept,
@@ -71,6 +78,8 @@ export function PromptInput({
   toolbar,
   status,
   maxHeight = 240,
+  collapsible = false,
+  busyPlaceholder = "生成中…",
   autoFocus,
   className,
 }: PromptInputProps) {
@@ -140,13 +149,25 @@ export function PromptInput({
     });
   };
 
+  const [focused, setFocused] = React.useState(false);
   const menuOpen = trigger != null && items.length > 0;
+  const collapsed = collapsible && !focused && !value && !files.length && !menuOpen;
+  const hint = busy ? busyPlaceholder : placeholder;
   const canSend = !disabled && (value.trim() !== "" || files.length > 0);
 
   return (
     <div
       data-slot="prompt-input"
       data-drag={drag || undefined}
+      data-collapsed={collapsed || undefined}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        // 焦点去了自己里面, 或去了从这里打开的弹层 / 菜单 (模型, 权限, 用量): 不收起, 否则弹层的触发器会跟着消失
+        const next = e.relatedTarget as HTMLElement | null;
+        if (next && (e.currentTarget.contains(next) || next.closest("[role=dialog],[role=menu]"))) return;
+        if (!next && document.querySelector("[role=dialog][data-state=open],[role=menu][data-state=open]")) return;
+        setFocused(false);
+      }}
       onDragOver={(e) => {
         if (!attachments || !e.dataTransfer.types.includes("Files")) return;
         e.preventDefault();
@@ -159,7 +180,11 @@ export function PromptInput({
         setDrag(false);
         addFiles(e.dataTransfer.files);
       }}
-      className={cn("relative rounded-2xl border bg-card shadow-soft transition-[border-color,box-shadow] duration-150 focus-within:border-ring/60 data-[drag]:border-brand data-[drag]:ring-2 data-[drag]:ring-brand/20", className)}
+      className={cn(
+        "relative rounded-[1.25rem] border bg-card shadow-soft transition-[border-color,box-shadow] duration-150 focus-within:border-ring/50 data-[drag]:border-brand data-[drag]:ring-2 data-[drag]:ring-brand/20",
+        collapsed && "flex items-center gap-1 rounded-full p-1.5",
+        className,
+      )}
     >
       {menuOpen && (
         <div id={listId} role="listbox" className="absolute inset-x-2 bottom-full z-20 mb-2 overflow-hidden rounded-xl border bg-popover p-1 text-popover-foreground shadow-float animate-in fade-in-0 slide-in-from-bottom-1">
@@ -203,7 +228,7 @@ export function PromptInput({
         rows={1}
         autoFocus={autoFocus}
         disabled={disabled}
-        placeholder={placeholder}
+        placeholder={hint}
         aria-label={placeholder}
         aria-expanded={menuOpen}
         aria-controls={menuOpen ? listId : undefined}
@@ -235,28 +260,31 @@ export function PromptInput({
             onStop();
           }
         }}
-        className="block w-full resize-none bg-transparent px-4 pt-3.5 pb-2 text-[15px] leading-6 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed scrollbar-thin"
+        className={cn(
+          "block w-full resize-none bg-transparent px-4 pt-3 pb-1 text-sm leading-6 outline-none placeholder:text-muted-foreground/80 disabled:cursor-not-allowed scrollbar-thin",
+          collapsed ? "order-2 min-w-0 flex-1 px-1.5 py-1.5 text-[15px] whitespace-nowrap" : "min-h-12",
+        )}
         style={{ maxHeight }}
       />
-      <div className="flex items-center gap-1 px-2 pb-2">
+      <div className={cn("flex min-w-0 items-center gap-0.5 px-2 pb-2", collapsed && "contents")}>
         {attachments && (
           <>
-            <IconButton label="添加附件" className="size-8 text-muted-foreground [&_svg]:size-4" onClick={() => fileInput.current?.click()} disabled={disabled}>
-              <Paperclip />
+            <IconButton label="添加文件等" className={cn("size-8 shrink-0 rounded-full text-muted-foreground [&_svg]:size-[18px]", collapsed && "order-1 size-9 bg-muted/70")} onClick={() => fileInput.current?.click()} disabled={disabled}>
+              <Plus />
             </IconButton>
             <input ref={fileInput} type="file" multiple accept={accept} hidden onChange={(e) => (addFiles(e.target.files), (e.target.value = ""))} />
           </>
         )}
-        {toolbar}
-        <div className="ml-auto flex items-center gap-2">
-          {status}
+        {!collapsed && toolbar}
+        <div className={cn("ml-auto flex shrink-0 items-center gap-1", collapsed && "order-3 ml-0")}>
+          {!collapsed && status}
           {busy ? (
-            <button type="button" aria-label="停止" onClick={onStop} disabled={!onStop} className="grid size-8 place-items-center rounded-full bg-foreground text-background transition-transform duration-150 active:scale-95 disabled:opacity-40">
-              <Square className="size-3 fill-current" />
+            <button type="button" aria-label="停止 (Esc)" title="停止 (Esc)" onClick={onStop} disabled={!onStop} className={cn("grid size-7 place-items-center rounded-full bg-foreground text-background transition-transform duration-150 active:scale-95 disabled:opacity-40", collapsed && "size-9")}>
+              <Square className="size-2.5 fill-current" />
             </button>
           ) : (
-            <button type="button" aria-label="发送" onClick={submit} disabled={!canSend} className="grid size-8 place-items-center rounded-full bg-foreground text-background transition-[transform,opacity] duration-150 active:scale-95 disabled:opacity-30">
-              <ArrowUp className="size-4" />
+            <button type="button" aria-label="发送 (Enter)" title="发送 (Enter) · 换行 (Shift+Enter)" onClick={submit} disabled={!canSend} className={cn("grid size-7 place-items-center rounded-full bg-foreground text-background transition-[transform,background-color] duration-150 active:scale-95 disabled:bg-muted-foreground/30 disabled:text-background", collapsed && "size-9")}>
+              <ArrowUp className="size-4" strokeWidth={2.25} />
             </button>
           )}
         </div>

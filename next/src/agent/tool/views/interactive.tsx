@@ -143,26 +143,37 @@ export function SubagentBody({ call }: ToolViewProps) {
 
 /* ---------------- 审批条 ---------------- */
 
-/** 工具在 awaiting-approval 时挂在卡片下面: 允许一次 / 总是允许 / 拒绝 */
-export function ApprovalBar({ call }: ToolViewProps) {
+/**
+ * 工具在 awaiting-approval 时挂在卡片下面: 允许一次 / 总是允许 / 拒绝.
+ * source: 请求来自子 Agent 时, 上浮到父线程的那一条标明来源 (例如 "实现 · coder")
+ */
+export function ApprovalBar({ call, source }: ToolViewProps & { source?: React.ReactNode }) {
   const { actions } = useAgentUI();
   const what = str(call.args, ...COMMAND_KEYS) ?? str(call.args, ...PATH_KEYS) ?? call.name;
   return (
-    <div data-slot="approval" role="group" aria-label="需要你的批准" className="my-1.5 flex flex-wrap items-center gap-2 rounded-lg border border-warning/40 bg-warning/8 px-3 py-2">
-      <ShieldAlert className="size-4 shrink-0 text-warning" />
-      <span className="min-w-0 flex-1 text-[13px]">
-        需要你的批准: <span className="font-mono text-[12px]">{firstLine(what, 80)}</span>
-      </span>
-      <div className="flex gap-1.5">
-        <Button size="sm" variant="ghost" onClick={() => actions.onDeny?.(call.id)} disabled={!actions.onDeny}>
-          拒绝
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => actions.onApprove?.(call.id, "always")} disabled={!actions.onApprove}>
-          总是允许
-        </Button>
-        <Button size="sm" onClick={() => actions.onApprove?.(call.id, "once")} disabled={!actions.onApprove}>
-          允许
-        </Button>
+    <div data-slot="approval" data-source={source ? "" : undefined} role="group" aria-label="需要你的批准" className="@container/approval my-1.5 rounded-lg border border-warning/40 bg-warning/8 px-3 py-2">
+      <div className="flex flex-wrap items-center gap-2 @max-md/approval:gap-y-2.5">
+        <ShieldAlert className="size-4 shrink-0 text-warning" />
+        {/* 基准宽 14rem: 窄屏时按钮整组换到下一行, 不把说明和来源挤成竖排 */}
+        <span className="min-w-0 flex-[1_1_14rem] text-[13px]">
+          {source && <span className="mr-1.5 inline-flex h-5 max-w-full items-center gap-1 whitespace-nowrap rounded-full border bg-background px-1.5 align-middle text-[11px] text-muted-foreground">来自 {source}</span>}
+          需要你的批准: <span className="font-mono text-[12px] @max-md/approval:mt-1.5 @max-md/approval:block @max-md/approval:rounded-md @max-md/approval:bg-background/70 @max-md/approval:px-2 @max-md/approval:py-1.5 @max-md/approval:break-all">{firstLine(what, 80)}</span>
+        </span>
+        {/* 窄处 (手机, DSH Go 的审批卡): 拒绝 / 允许 两个等宽大键 (拇指够得着, 主色只给允许), "总是允许" 降成下面一行文字键, 免得误触 */}
+        <div className="ml-auto flex gap-1.5 @max-md/approval:ml-0 @max-md/approval:grid @max-md/approval:w-full @max-md/approval:grid-cols-2 @max-md/approval:gap-2">
+          <Button size="sm" variant="ghost" onClick={() => actions.onDeny?.(call.id)} disabled={!actions.onDeny} className="@max-md/approval:h-10 @max-md/approval:border @max-md/approval:bg-background">
+            拒绝
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => actions.onApprove?.(call.id, "always")} disabled={!actions.onApprove} className="@max-md/approval:hidden">
+            总是允许
+          </Button>
+          <Button size="sm" onClick={() => actions.onApprove?.(call.id, "once")} disabled={!actions.onApprove} className="@max-md/approval:h-10">
+            允许
+          </Button>
+        </div>
+        <button type="button" onClick={() => actions.onApprove?.(call.id, "always")} disabled={!actions.onApprove} className="hidden h-8 w-full rounded-md text-[13px] text-muted-foreground active:bg-accent @max-md/approval:block">
+          总是允许 (本会话不再问)
+        </button>
       </div>
     </div>
   );

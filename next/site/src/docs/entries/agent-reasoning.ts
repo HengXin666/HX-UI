@@ -4,8 +4,9 @@ export const agentReasoning: DocEntry = {
   slug: "reasoning",
   name: "Reasoning",
   title: "思考过程",
-  section: "agent",
-  group: "过程",
+  section: "ui",
+  group: "Agent",
+  sub: "过程",
   description:
     "模型的思考。生成中标题是带微光的「思考中」和实时计时，折叠时显示最新一行；结束后自动收起成「已思考 12 秒」，折叠时显示首行。展开后正文是紧凑排版的流式 Markdown。用户手动开合过就不再自动开合。",
   file: "src/agent/reasoning.tsx",

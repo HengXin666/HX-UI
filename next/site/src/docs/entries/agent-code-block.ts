@@ -6,8 +6,9 @@ export const agentCodeBlock: DocEntry = {
   slug: "code-block",
   name: "CodeBlock",
   title: "代码块",
-  section: "agent",
-  group: "内容",
+  section: "ui",
+  group: "Agent",
+  sub: "内容",
   description:
     "博客同款代码块：One Dark Pro 深色面板，默认带行号，右上角是语言名，换行 / 下载 / 复制平时隐身、悬停时浮现。支持标题栏、行高亮、起始行号、超长折叠。Shiki 高亮（JS 正则引擎，不加载 wasm），语言和主题按需懒加载；流式中节流高亮，写完的行颜色不闪。Markdown 里的围栏、组合选项卡、工具卡片里的代码都是它。",
   file: "src/agent/code/code-block.tsx",

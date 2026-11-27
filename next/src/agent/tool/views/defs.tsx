@@ -11,7 +11,8 @@ import type { ToolView, ToolViews } from "../context";
 import { DiffStat } from "../diff-view";
 import { EditBody, ExternalLink, GenericBody, ImageBody, PathLink, ReadBody, SearchBody, TerminalBody, WebFetchBody, WebSearchBody, WriteBody } from "./basic";
 import { editFiles, exitCodeOf, isRunning, searchHits, todosOf, webResults, answersOf, questionsOf } from "./data";
-import { QuestionCard, SubagentBody, TodoList } from "./interactive";
+import { TodoCallCard } from "../../plan";
+import { QuestionCard, SubagentBody } from "./interactive";
 
 export const terminalView: ToolView = {
   kind: "command",
@@ -132,6 +133,7 @@ export const imageView: ToolView = {
   Body: ImageBody,
 };
 
+/** 待办 / 计划: 始终露在外面; 所属计划的最新一步是实时卡片, 更早的收成一行 (plan.tsx 的 TodoCallCard) */
 export const todoView: ToolView = {
   kind: "todo",
   icon: <ListTodo />,
@@ -148,7 +150,8 @@ export const todoView: ToolView = {
       </span>
     ) : null;
   },
-  Body: ({ call }) => <TodoList items={todosOf(call)} />,
+  pinned: () => true,
+  Body: TodoCallCard,
 };
 
 export const questionView: ToolView = {

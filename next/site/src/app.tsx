@@ -32,15 +32,16 @@ export function App() {
   const parsed = React.useMemo(() => parse(hash), [hash]);
   React.useEffect(() => { window.scrollTo(0, 0); }, [hash]);
 
-  // 旧链接 #/c/<slug>: 换成所属分区的新地址
+  // 旧链接 #/c/<slug>: 换成所属分区的新地址; 旧分区 #/agent/*: 换成 #/ui/*
   React.useEffect(() => {
+    if (parsed.name === "redirect") window.location.replace(parsed.to);
     if (parsed.name !== "legacy") return;
     const e = entryBySlug(parsed.slug);
     window.location.replace(e ? href.entry(e) : href.home);
   }, [parsed]);
 
   const reduced = useReducedMotion();
-  const route: Route = parsed.name === "legacy" ? { name: "home" } : parsed;
+  const route: Route = parsed.name === "legacy" || parsed.name === "redirect" ? { name: "home" } : parsed;
   // 整页演示 (#/<分区>/<slug>/full): 不带文档外壳, 演示自己铺满视口
   if (route.name === "full") {
     const e = entryBySlug(route.slug);

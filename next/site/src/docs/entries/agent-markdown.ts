@@ -4,8 +4,9 @@ export const agentMarkdown: DocEntry = {
   slug: "markdown",
   name: "Markdown",
   title: "流式 Markdown",
-  section: "agent",
-  group: "内容",
+  section: "ui",
+  group: "Agent",
+  sub: "内容",
   description:
     "给 AI 回答用的 Markdown。按顶层块切开逐块 memo，只有最后一块随 token 重渲染；半截的粗体、链接、代码围栏在生成中就按补全后的样子显示，不露标记；末尾有光标，新文字淡入。代码围栏走博客同款代码块（One Dark Pro、行号、组合选项卡），mermaid、svg、公式在围栏闭合后才渲染，生成中先显示源码。外观全部是本库令牌，解析与切块借 Streamdown。",
   file: "src/agent/markdown/markdown.tsx",

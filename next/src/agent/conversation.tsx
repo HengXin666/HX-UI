@@ -73,32 +73,40 @@ export interface ConversationProps extends React.ComponentProps<"div"> {
   contentClassName?: string;
   /** 底部固定区 (输入框) */
   footer?: React.ReactNode;
+  /**
+   * 叠在会话区上的浮层 (例如弹出的编排面板 OrchestraDock), 相对会话区定位;
+   * 可以用 var(--hx-footer-h) 避开底部输入区.
+   */
+  overlay?: React.ReactNode;
 }
 
-export function Conversation({ children, className, contentClassName, footer, ...rest }: ConversationProps) {
+export function Conversation({ children, className, contentClassName, footer, overlay, ...rest }: ConversationProps) {
   const { scrollRef, contentRef, atBottom, scrollToBottom } = useStickToBottom();
   return (
-    <div data-slot="conversation" className={cn("relative flex min-h-0 flex-col", className)} {...rest}>
+    <div data-slot="conversation" className={cn("@container/conv relative flex min-h-0 flex-col", className)} {...rest}>
       <div ref={scrollRef} role="log" aria-live="polite" className="min-h-0 flex-1 overflow-y-auto scrollbar-thin [overflow-anchor:none]">
         <div ref={contentRef} className={cn("mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-6", contentClassName)}>
           {children}
         </div>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 flex justify-center" style={{ bottom: footer ? "calc(var(--hx-footer-h, 0px) + 12px)" : 12 }}>
+      {/* 窄容器 (< 40rem, 手机): 收成右下角的圆形图标按钮, 不横在卡片文字中间 */}
+      <div className="pointer-events-none absolute inset-x-0 flex justify-center @max-xl/conv:justify-end @max-xl/conv:pr-3" style={{ bottom: footer ? "calc(var(--hx-footer-h, 0px) + 12px)" : 12 }}>
         <button
           type="button"
           aria-label="回到最新"
+          title="回到最新"
           tabIndex={atBottom ? -1 : 0}
           onClick={() => scrollToBottom()}
           className={cn(
-            "pointer-events-auto inline-flex h-8 items-center gap-1.5 rounded-full border bg-background/90 px-3 text-xs text-muted-foreground shadow-soft backdrop-blur transition-[opacity,transform] duration-200 hover:text-foreground",
+            "pointer-events-auto inline-flex h-8 items-center gap-1.5 rounded-full border bg-background/90 px-3 text-xs text-muted-foreground shadow-soft backdrop-blur transition-[opacity,transform] duration-200 hover:text-foreground @max-xl/conv:w-8 @max-xl/conv:justify-center @max-xl/conv:px-0",
             atBottom ? "pointer-events-none translate-y-2 opacity-0" : "translate-y-0 opacity-100",
           )}
         >
-          <ArrowDown className="size-3.5" />
-          回到最新
+          <ArrowDown className="size-3.5 shrink-0" />
+          <span className="@max-xl/conv:sr-only">回到最新</span>
         </button>
       </div>
+      {overlay}
       {footer && <FooterMeasure>{footer}</FooterMeasure>}
     </div>
   );
