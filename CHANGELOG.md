@@ -4,6 +4,33 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## 2.4.0
+
+Agent 界面拓展包 `@hx/ui/agent` ([#53](https://github.com/HengXin666/HX-UI/issues/53)): 流式 Markdown, 博客同款代码块, 思考过程, 各类工具调用, 以及把它们串起来的会话. 与蓝图一样不进根入口, 不引就不进使用方的包.
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.4.0/hx-ui-2.4.0.tgz
+```
+
+### 新增
+
+- `Markdown`: 流式 Markdown. 未闭合语法补全, 只重渲染最后一块, 末尾光标与新字淡入; 元素全部是本库组件与令牌.
+- `CodeBlock`: One Dark Pro, 行号, 右上角语言名, 悬停出现换行 / 下载 / 复制, `title=`, `{1,3-5}` 行高亮, `[组名-标签]` 相邻围栏合成选项卡, 超长折叠. Shiki 按需加载语言与主题.
+- 围栏渲染器 `fences`: 渲染器拿到 `{ code, lang, meta, incomplete, theme }`, 生成中也能流式渲染. 内置 svg 预览 (清洗后); `@hx/ui/agent/mermaid` 与 `@hx/ui/agent/math` 是可选入口 (需装 `mermaid` / `@streamdown/math katex`); `DiagramFrame` 提供图 / 源码切换, 下载, 全屏缩放.
+- `Reasoning`: 思考过程, 生成中计时并显示最新一行.
+- `ToolCall`: 7 种状态, 参数流式时摘要随之增长; 内置终端, 读写改文件 (diff), 搜索, 网页, 图片, 待办, 提问, 子 Agent 等视图, 未注册的工具走通用 IN / OUT; `AgentProvider.toolViews` 可覆盖或补充.
+- `ActivityGroup`, `AgentParts`: 连续的思考和工具调用折成一行摘要, 显示模式 grouped / flat / hide-success / zen.
+- `Conversation`, `MessageList`, `UserMessage`, `AssistantMessage`, `PromptInput`, `WorkingIndicator`, `ContextMeter`, `UsageSummary`.
+- `useAgentStream` / `reduceAgentEvents`: 事件流到消息的纯函数 reducer, 按帧合批; `fromAiSdkMessages` 适配 Vercel AI SDK.
+- 样式入口 `@hx/ui/agent/styles.css` (预编译) 与 `@hx/ui/agent.css` (Tailwind v4).
+- 文档站新增 "Agent 界面" 分区 (5 页, 带回放).
+
+### 依赖
+
+- 新增 dependencies `streamdown`, `shiki`; 可选 peer `mermaid`, `katex`, `@streamdown/math`.
+
 ## 2.3.0
 
 给非 Web 端 (安卓 Compose 等) 用的机器可读令牌与组件清单, 以及连中性色一起换的 `ink` 皮肤 (ChatGPT 式深色).
