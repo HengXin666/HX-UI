@@ -1,10 +1,11 @@
 /*
  * 发布包 styles.css 的源: 预编译, 使用方不装 Tailwind 也能用.
  * 只扫描 src/ (库自身用到的类), 不扫 site/. 由 scripts/build-lib.ts 用 @tailwindcss/cli 编译.
- * 蓝图是拓展包: 不扫 src/blueprint, 不带 blueprint.css; 它的预编译样式是 blueprint-lib.css -> dist/blueprint/styles.css.
+ * 蓝图 / Agent 是拓展包: 不扫 src/blueprint, src/agent, 不带它们的 CSS; 预编译样式分别是 blueprint-lib.css, agent-lib.css.
  */
 @import "tailwindcss" source("../");
 @source not "../blueprint";
+@source not "../agent";
 @import "./theme.css";
 @import "../components/ui/spin.css";
 

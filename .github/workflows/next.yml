@@ -48,6 +48,10 @@ jobs:
       - name: Blueprint regression (bp-check)
         run: npm run check:bp
 
+      # streaming markdown / fences / partial JSON / event reducer / diff / ANSI (scripts/agent-check.ts)
+      - name: Agent regression (agent-check)
+        run: npm run check:agent
+
       - name: Docs site build (vite build)
         run: npx vite build
 

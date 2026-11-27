@@ -12,7 +12,7 @@ const sub = (cb: () => void) => {
   return () => window.removeEventListener("hashchange", cb);
 };
 
-const isSection = (s: string): s is SectionId => s === "ui" || s === "visual" || s === "pages";
+const isSection = (s: string): s is SectionId => s === "ui" || s === "visual" || s === "agent" || s === "pages";
 
 /** 旧链接 #/c/<slug> 由 app 按清单找到所属分区 */
 export function parse(hash: string): Route | { name: "legacy"; slug: string } {

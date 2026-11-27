@@ -11,7 +11,7 @@
  *   5. 不带 site/, src/, dist-site/, tsbuildinfo 等文档站或构建垃圾
  *   6. styles.css 是预编译的核心样式 (令牌 + .dark + 关键帧), tailwind.css 带 @source; 两者都不含蓝图.
  *      蓝图拓展包: blueprint/styles.css 预编译 (只含蓝图, 不重复 Preflight / 令牌), blueprint.css 带指向 blueprint/ 的 @source;
- *      根入口 index.js 不引蓝图
+ *      根入口 index.js 不引蓝图. Agent 拓展包同理: agent/styles.css 预编译, agent.css 的 @source 只指 agent/
  *   7. "use client" 只出现在文件第一行 (RSC 打包器只认这里); 服务端安全的入口 (theme, utils, 图表工具) 不带
  * 最后打印体积报告.
  */
@@ -150,6 +150,16 @@ for (const s of sourcesOf(tw)) if (!/^\.\/[^/*]+\/\*\*\/\*\.js$/.test(s)) fail(`
 const bpTw = checkTwEntry("dist/blueprint.css");
 if (!sourcesOf(bpTw).every((s) => s.startsWith("./blueprint/"))) fail("blueprint.css 的 @source 只应指向 ./blueprint/");
 if (/\bblueprint\//.test(css("dist/index.js"))) fail("根入口 index.js 不应引蓝图 (蓝图从 @hx/ui/blueprint/* 引)");
+// Agent 拓展包
+const AGENT_TOKEN = /--hx-code-bg/;
+if (AGENT_TOKEN.test(styles)) fail("styles.css 不应带 Agent 样式 (Agent 是拓展包, 走 agent/styles.css)");
+const agentStyles = css("dist/agent/styles.css");
+if (!AGENT_TOKEN.test(agentStyles)) fail("agent/styles.css 缺 Agent 样式 --hx-code-bg");
+if (/box-sizing:\s*border-box/.test(agentStyles) || /--brand:/.test(agentStyles)) fail("agent/styles.css 不应再带 Preflight 或核心令牌 (由 styles.css 提供)");
+if (/\bagent\//.test(tw)) fail("tailwind.css 不应引 Agent 样式或扫描 agent/ (Agent 走 agent.css)");
+const agentTw = checkTwEntry("dist/agent.css");
+if (!sourcesOf(agentTw).every((s) => s.startsWith("./agent/"))) fail("agent.css 的 @source 只应指向 ./agent/");
+if (/\bagent\//.test(css("dist/index.js"))) fail("根入口 index.js 不应引 Agent 拓展包 (从 @hx/ui/agent 引)");
 
 // ---- 7. "use client"
 const DIRECTIVE = /^["']use client["'];?\s*$/;
@@ -160,7 +170,7 @@ for (const f of jsFiles) {
   else if (lines.some((l) => DIRECTIVE.test(l.trim()))) fail(`${f}: "use client" 不在第一行, 打包器会忽略`);
 }
 if (clientJs === 0) fail('包里一个带 "use client" 的模块都没有, build:lib 的指令补回失效了');
-for (const f of ["dist/hooks/theme.js", "dist/hooks/theme-script.js", "dist/lib/utils.js", "dist/data/charts/helpers.js", "dist/blueprint/index.js"]) {
+for (const f of ["dist/hooks/theme.js", "dist/hooks/theme-script.js", "dist/lib/utils.js", "dist/data/charts/helpers.js", "dist/blueprint/index.js", "dist/agent/index.js", "dist/agent/code/highlight.js", "dist/agent/markdown/fence.js"]) {
   if (has.has(f) && DIRECTIVE.test(readFileSync(join(PKG, f), "utf8").split("\n", 1)[0].trim())) fail(`${f} 应该是服务端安全的, 却带了 "use client"`);
 }
 

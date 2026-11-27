@@ -1,6 +1,6 @@
 import type * as React from "react";
 
-export type SectionId = "ui" | "visual" | "pages";
+export type SectionId = "ui" | "visual" | "agent" | "pages";
 
 export type Values = Record<string, string | number | boolean>;
 

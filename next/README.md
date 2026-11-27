@@ -28,9 +28,11 @@ npm i https://github.com/HengXin666/HX-UI/releases/download/v2.3.0/hx-ui-2.3.0.t
 
 | 用到什么 | 需要额外装 | 说明 |
 |---|---|---|
-| 基础件, 动效, 特效, 文字, 蓝图 | 无 | radix-ui, motion, lucide-react, cmdk, sonner, vaul, react-day-picker, ldrs 等是 dependencies, 自动装上 |
+| 基础件, 动效, 特效, 文字, 蓝图, Agent 界面 | 无 | radix-ui, motion, lucide-react, cmdk, sonner, vaul, react-day-picker, ldrs 等是 dependencies, 自动装上 |
 | 2D 图表 + 表格 (`@hx/ui/data`) | 无 | recharts, d3-*, topojson-client, @tanstack/react-table 也是 dependencies; 不 import 就不会进你的包 |
 | 3D 图表 (`@hx/ui/data/3d`) | `three @react-three/fiber @react-three/drei` | 可选 peer, 只用 Button 的项目不用装. 没装就别引 `@hx/ui/data/3d` |
+| Mermaid 围栏 (`@hx/ui/agent/mermaid`) | `mermaid` | 可选 peer |
+| 公式 (`@hx/ui/agent/math`) | `@streamdown/math katex` | 可选 peer, 另引 `katex/dist/katex.min.css` |
 
 ## 调用
 
@@ -144,7 +146,44 @@ bp.debugBackend = ({ graph, options, emit }) => ({
 // 收到远端进度时: emit({ type: "status", state: createDebugState({ status: "paused", at: { node }, trace }) })
 ```
 
-### 6. 已经在用 Tailwind v4
+### 6. Agent 界面 (流式 Markdown, 代码块, 思考, 工具调用, 会话; 拓展包)
+
+和蓝图一样不进根入口. 样式另引 (`@hx/ui/agent/styles.css` 排在 `styles.css` 之后, 或 Tailwind v4 的 `@hx/ui/agent.css`).
+代码高亮用 Shiki (dependency, 语言和主题按需懒加载); Mermaid 与公式是可选入口, 用到才装 `mermaid` / `@streamdown/math katex`.
+
+```tsx
+import "@hx/ui/agent/styles.css";
+import { AgentProvider, Conversation, MessageList, PromptInput, Markdown, useAgentStream } from "@hx/ui/agent";
+import { mermaidFences } from "@hx/ui/agent/mermaid";   // 可选
+import { math, mathFences } from "@hx/ui/agent/math";    // 可选, 另引 "katex/dist/katex.min.css"
+
+// 单独渲染一段流式回答: 半截语法补全, 只重渲染最后一块, 博客同款代码块 (One Dark Pro, 行号, [组-标签] 选项卡)
+<Markdown streaming={generating} fences={{ ...mermaidFences, ...mathFences, chart: MyChart }} plugins={{ math }}>{text}</Markdown>
+
+// 整个 Agent 会话: 事件流 -> useAgentStream (按帧合批) -> MessageList
+function Chat() {
+  const { messages, push, busy } = useAgentStream();
+  // push({ type: "text-delta", messageId, partId, delta }) / "reasoning-delta" / "tool-start" / "tool-args-delta"
+  //      / "tool-status" / "tool-output-delta" / "tool-result" / "tool-child" / "message-end" ...
+  // AI SDK: fromAiSdkMessages(useChat().messages, { streaming })
+  return (
+    <AgentProvider
+      markdown={{ fences: mermaidFences }}
+      toolViews={{ deploy: myDeployView }}               // 按工具名注册视图, 内置 bash / read / edit / grep / web / todo / 提问 / 子 Agent ...
+      actions={{ onApprove, onDeny, onAnswer, onOpenFile }}
+      mode="grouped"                                      // grouped | flat | hide-success | zen
+    >
+      <Conversation className="h-dvh" footer={<PromptInput busy={busy} onSubmit={send} onStop={stop} />}>
+        <MessageList messages={messages} />
+      </Conversation>
+    </AgentProvider>
+  );
+}
+```
+
+自定义围栏渲染器拿到 `{ code, lang, meta, incomplete, theme }`, `incomplete` 为真表示围栏还在生成, 可以自己做流式渲染.
+
+### 7. 已经在用 Tailwind v4
 
 不引 `styles.css`, 改在你自己的 CSS 里:
 
@@ -152,10 +191,11 @@ bp.debugBackend = ({ graph, options, emit }) => ({
 @import "tailwindcss";
 @import "@hx/ui/tailwind.css"; /* 令牌 + @theme (bg-brand, text-muted-foreground ...) + 暗色 variant + 关键帧 */
 @import "@hx/ui/blueprint.css"; /* 只在用蓝图时 */
+@import "@hx/ui/agent.css";     /* 只在用 Agent 界面时 */
 @import "@hx/ui/fonts.css";    /* 可选 */
 ```
 
-`tailwind.css` 里有 `@source` 指向包内 `dist/` (不含 `dist/blueprint/`, 蓝图的由 `blueprint.css` 自己的 `@source` 扫), 你的 Tailwind 会把组件用到的类一起生成, 你自己也能用同一套令牌类 (`bg-brand`, `dark:` ...). 换肤 = 覆盖 `:root` / `.dark` 里的变量 (与 shadcn 主题格式一致).
+`tailwind.css` 里有 `@source` 指向包内 `dist/` (不含 `dist/blueprint/` 与 `dist/agent/`, 它们由 `blueprint.css` / `agent.css` 自己的 `@source` 扫), 你的 Tailwind 会把组件用到的类一起生成, 你自己也能用同一套令牌类 (`bg-brand`, `dark:` ...). 换肤 = 覆盖 `:root` / `.dark` 里的变量 (与 shadcn 主题格式一致).
 
 ### 包入口一览
 
@@ -168,12 +208,14 @@ bp.debugBackend = ({ graph, options, emit }) => ({
 | `@hx/ui/text/*` / `@hx/ui/backgrounds/*` / `@hx/ui/scroll/*` / `@hx/ui/stage` | SplitText, NumberRoll, Aurora, Particles, ScrollStack, Stage ... |
 | `@hx/ui/data` / `@hx/ui/data/3d` | 2D 图表 + DataTable / 3D 图表 |
 | `@hx/ui/blueprint` / `/blueprint/ui` / `/blueprint/panels` / `/blueprint/agent` / `/blueprint/debug` | 蓝图拓展包: 逻辑 / 编辑器 / 面板 / AI 工具 / 调试 |
-| `@hx/ui/styles.css` / `@hx/ui/tailwind.css` / `@hx/ui/fonts.css` | 预编译样式 / Tailwind v4 入口 / 字体 (都不含蓝图) |
+| `@hx/ui/agent` / `/agent/mermaid` / `/agent/math` | Agent 拓展包: 流式 Markdown, 代码块, 思考, 工具调用, 会话, 事件模型 / Mermaid 围栏 / 公式 |
+| `@hx/ui/styles.css` / `@hx/ui/tailwind.css` / `@hx/ui/fonts.css` | 预编译样式 / Tailwind v4 入口 / 字体 (都不含蓝图和 Agent) |
 | `@hx/ui/blueprint/styles.css` / `@hx/ui/blueprint.css` | 蓝图样式: 预编译 (配 styles.css) / Tailwind v4 入口 (配 tailwind.css) |
+| `@hx/ui/agent/styles.css` / `@hx/ui/agent.css` | Agent 样式: 预编译 (配 styles.css) / Tailwind v4 入口 (配 tailwind.css) |
 
 > 文档站里的示例代码写的是源码路径 (`@/components/ui/button`, `@/data`), 对应到包里分别是 `@hx/ui/ui/button`, `@hx/ui/data` (3D 是 `@hx/ui/data/3d`).
 
-### 7. Next.js App Router / React Server Components
+### 8. Next.js App Router / React Server Components
 
 包里每个用到 hook, 事件, 浏览器 API 或 motion / recharts / three 的模块都带 `"use client"` (逐文件保留在 `dist/` 里), 纯工具和蓝图核心不带. 所以服务端组件 (默认的 `page.tsx` / `layout.tsx`) 可以直接引组件, 不用自己再包一层:
 
@@ -226,7 +268,8 @@ export default async function Page() {
 | `src/interactions` | StatefulButton (Button 的提交流程), SpeedCounter (并入 NumberRoll) | 自写 |
 | `src/data` | AreaTrend, BarCompare, Donut, Sparkline, ComboChart, RadarCompare, Gauge, ScatterBubble, ConversionFunnel, ShareTreemap, SankeyFlow, HeatCalendar, Candlestick, DataTable | Recharts + TanStack Table v8 |
 | `src/text` | 文字组件 (SplitText ...) | 自写, 思路参考 React Bits |
-| `site` | 文档站, 三个分区: UI 组件 (操作 / 导航 / 展示 / 反馈 / 表单 / 数据), 视觉组件, 落地页. 每个组件一页: 预览 / 代码 / 调参 / 属性表 / 复制给 AI. 新组件写 `site/src/docs/entries/<slug>.ts` + `<slug>.demo.tsx`, 在 `registry.ts` 登记 | |
+| `src/agent` | Agent 拓展包: Markdown (流式), CodeBlock, 围栏 (svg / mermaid / 公式 / html), Reasoning, ToolCall + 内置工具视图, ActivityGroup, Conversation, MessageList, PromptInput, 事件 reducer, AI SDK 适配 | Streamdown (解析切块) + Shiki (高亮) + 自写; 交互参考 T3 Code / DSH, 代码块参考 HXLoLi 博客 |
+| `site` | 文档站, 四个分区: UI 组件 (操作 / 导航 / 展示 / 反馈 / 表单 / 数据), 视觉组件, Agent 界面, 落地页. 每个组件一页: 预览 / 代码 / 调参 / 属性表 / 复制给 AI. 新组件写 `site/src/docs/entries/<slug>.ts` + `<slug>.demo.tsx`, 在 `registry.ts` 登记 | |
 
 ## 规则 (只有这几条)
 
@@ -244,6 +287,7 @@ export default async function Page() {
 ```bash
 npm run check         # 交互组件体积预算 + "use client" 边界检查 (scripts/check-client.ts)
 npm run check:bp      # 蓝图逻辑 + 编辑器的回归检查
+npm run check:agent   # Agent 拓展包的逻辑检查 (围栏, 组合代码块, 部分 JSON, 事件 reducer, diff, ANSI)
 npm run pack:check    # 发布包: build:lib (含 dist 逐文件核对 "use client") + npm pack + verify-pack
 ```
 

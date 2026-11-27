@@ -58,6 +58,19 @@
 - 蓝图编辑器不在根入口和核心样式里, 按需引入: 逻辑 "@hx/ui/blueprint" (defineTypes, defineNode, createRegistry, toJSON/fromJSON, applyOps ...), 编辑器 "@hx/ui/blueprint/ui" (Blueprint, BlueprintWorkbench, useBlueprint), 面板 "@hx/ui/blueprint/panels", AI 工具 "@hx/ui/blueprint/agent", 调试 "@hx/ui/blueprint/debug". 源码路径 "@/blueprint", "@/blueprint/ui".
 - 样式另引, 排在核心样式之后: 不用 Tailwind 引 "@hx/ui/blueprint/styles.css" (跟在 "@hx/ui/styles.css" 后); Tailwind v4 在 CSS 里 @import "@hx/ui/blueprint.css" (跟在 "@hx/ui/tailwind.css" 后).
 
+## Agent 界面 (拓展包)
+
+- 入口 "@hx/ui/agent" (不在根入口和核心样式里). 样式: 不用 Tailwind 引 "@hx/ui/agent/styles.css" (跟在 "@hx/ui/styles.css" 后); Tailwind v4 在 CSS 里 @import "@hx/ui/agent.css" (跟在 "@hx/ui/tailwind.css" 后). 源码路径 "@/agent".
+- Markdown: 流式 Markdown. <Markdown streaming={generating} fences={...} plugins={{ math }}>{text}</Markdown>. 未闭合语法补全, 只重渲染最后一块, 末尾光标. 围栏 meta: title="a.ts", {1,3-5} 行高亮, startLine=10, collapse=20, showLineNumbers=false, [组名-标签] 相邻同组合成选项卡.
+- 围栏渲染器: fences={{ lang: Comp }}, Comp 拿到 { code, lang, meta, incomplete, theme }. 内置 svg (清洗后预览); HtmlFence 需显式注册; Mermaid 从 "@hx/ui/agent/mermaid" 引 mermaidFences (需装 mermaid); 公式从 "@hx/ui/agent/math" 引 math 插件与 mathFences (需装 @streamdown/math katex, 引 katex/dist/katex.min.css).
+- CodeBlock: 博客同款代码块, One Dark Pro, 行号, 复制 / 换行 / 下载. 属性 code, language, title, theme ("dark" | "auto"), lineNumbers, startLine, highlightLines, collapse, maxHeight, wrap, incomplete, actions.
+- Reasoning: 思考过程, 生成中计时并显示最新一行, 结束收成 "已思考 N 秒".
+- ToolCall: 工具调用, status 为 preparing | awaiting-approval | running | success | error | interrupted | denied. 按工具名找视图 (defaultToolViews 内置 bash, read_file, write_file, edit, apply_patch, grep, glob, web_fetch, web_search, todo_write, ask_user_question, task ...), 未注册走通用 IN / OUT. 自定义 ToolView: { kind, icon, title(call), summary(call), suffix(call), Body, defaultOpen(call), pinned(call) }.
+- AgentProvider: toolViews, actions ({ onApprove, onDeny, onAnswer, onOpenFile, onOpenUrl, onInspect }), cwd, markdown (Markdown 默认设置), mode ("grouped" | "flat" | "hide-success" | "zen").
+- AgentParts / ActivityGroup: 一条消息的 parts; 连续的思考和工具调用折成 "已处理 8 秒 · 修改了 2 个文件, 运行了 3 条命令".
+- 会话: Conversation (贴底跟随, footer 放输入框), MessageList (messages, onRetry, onEdit), UserMessage, AssistantMessage, PromptInput (onSubmit(text, files), busy, onStop, commands, mentions, toolbar, status), WorkingIndicator, ContextMeter, UsageSummary.
+- 数据: AgentMessage { id, role, parts, status, usage }, AgentPart = text | reasoning | tool | notice | file. useAgentStream() -> { messages, push(event), busy }; 事件 message-start, text-delta, reasoning-delta, tool-start, tool-args-delta, tool-args, tool-status, tool-output-delta, tool-result, tool-child, notice, usage, message-end. reduceAgentEvents 是纯函数. fromAiSdkMessages 适配 Vercel AI SDK 的 UIMessage.
+
 ## 主题
 - 包 `ThemeProvider`; `useTheme()` 返回 { mode, resolved, accent, setMode, setAccent }; 强调色 indigo | emerald | rose | amber | zinc | ink (ink 连中性色一起换, ChatGPT 式). 非 Web 端用 `@hx/ui/tokens.json` 与 `@hx/ui/components.json`.
 - 令牌: background, foreground, card, muted, accent, primary, brand, brand-soft, success, warning, destructive, info, chart-1..5, border, ring.
