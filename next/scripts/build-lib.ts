@@ -8,6 +8,8 @@
  *              dist/tailwind.css 给 Tailwind v4 使用方: 令牌 + @theme + @source 指向 dist (不含 dist/blueprint)
  *              蓝图拓展包另出两份: dist/blueprint.css (Tailwind v4 入口, @source 只指 dist/blueprint)
  *                                  dist/blueprint/styles.css (预编译, 配 styles.css 用)
+ *              Agent 拓展包同样两份: dist/agent.css (Tailwind v4 入口, @source 只指 dist/agent)
+ *                                    dist/agent/styles.css (预编译, 配 styles.css 用)
  *              dist/fonts.css    可选, Geist 字体 (@fontsource-variable/*)
  *   5. 令牌    scripts/export-tokens.ts: dist/tokens.json 与 dist/components.json, 给安卓等非 Web 端生成代码用
  *   6. 校验    scripts/check-client.ts --dist: 源码带 "use client" 的模块, 产物逐文件保留指令; 不带的也没被加上
@@ -87,21 +89,23 @@ if (unresolved.length) {
 step("样式 (styles.css 预编译 / tailwind.css / fonts.css)");
 run(bin("tailwindcss"), ["-i", "src/styles/lib.css", "-o", "dist/styles.css", "--minify"]);
 run(bin("tailwindcss"), ["-i", "src/styles/blueprint-lib.css", "-o", "dist/blueprint/styles.css", "--minify"]);
+run(bin("tailwindcss"), ["-i", "src/styles/agent-lib.css", "-o", "dist/agent/styles.css", "--minify"]);
 const copies: [string, string][] = [
   ["src/styles/theme.css", "dist/styles/theme.css"],
   ["src/styles/effects.css", "dist/styles/effects.css"],
   ["src/blueprint/ui/blueprint.css", "dist/blueprint/ui/blueprint.css"],
+  ["src/agent/agent.css", "dist/agent/agent.css"],
   ["src/components/ui/spin.css", "dist/components/ui/spin.css"],
 ];
 for (const [from, to] of copies) {
   mkdirSync(dirname(join(ROOT, to)), { recursive: true });
   copyFileSync(join(ROOT, from), join(ROOT, to));
 }
-// 蓝图是拓展包: 核心入口的 @source 逐个列出 dist 下除 blueprint/ 以外的目录 (不用 `@source not`,
+// 蓝图 / Agent 是拓展包: 核心入口的 @source 逐个列出 dist 下除拓展目录以外的目录 (不用 `@source not`,
 // 免得它把使用方另引的 blueprint.css 里的 @source 也排除掉).
 // dist 根上的 index.js 只做再导出, 没有类名, 不列: 实测 (tailwindcss 4.3.5) 根上的 "./*.js" 或 "./index.js"
 // 会让整个 dist 被扫描, 蓝图的工具类又回到核心 CSS 里.
-const EXTENSIONS = new Set(["blueprint"]);
+const EXTENSIONS = new Set(["blueprint", "agent"]);
 const coreSources = readdirSync(DIST)
   .filter((d) => statSync(join(DIST, d)).isDirectory() && !EXTENSIONS.has(d))
   .sort()
@@ -113,8 +117,9 @@ writeFileSync(
  *   @import "tailwindcss";
  *   @import "@hx/ui/tailwind.css";
  *   @import "@hx/ui/blueprint.css";   (只在用蓝图时)
+ *   @import "@hx/ui/agent.css";       (只在用 Agent 界面时)
  * 带上令牌 (:root / .dark), @theme 映射, 基础样式, 特效关键帧, Spin 的样式;
- * 组件用到的工具类由你的 Tailwind 扫描下面的 @source 生成 (不要再引 styles.css). 不含蓝图.
+ * 组件用到的工具类由你的 Tailwind 扫描下面的 @source 生成 (不要再引 styles.css). 不含蓝图和 Agent.
  */
 @import "./styles/theme.css";
 @import "./components/ui/spin.css";
@@ -133,6 +138,21 @@ writeFileSync(
  */
 @import "./blueprint/ui/blueprint.css";
 @source "./blueprint/**/*.js";
+`,
+);
+writeFileSync(
+  join(DIST, "agent.css"),
+  `/*
+ * @hx/ui 2 · Agent 拓展包 (流式 Markdown, 代码块, 思考, 工具调用, 会话) 的 Tailwind v4 样式入口, 排在 tailwind.css 之后:
+ *   @import "tailwindcss";
+ *   @import "@hx/ui/tailwind.css";
+ *   @import "@hx/ui/agent.css";
+ * 带上 Agent 样式 (--hx-code-* 代码面板令牌, Shiki 双主题取色, 流式光标, 微光), 并让你的 Tailwind 扫描 Agent 用到的工具类.
+ * 不用 Tailwind 的项目改引 "@hx/ui/agent/styles.css" (预编译, 排在 styles.css 之后).
+ * 公式另需 "katex/dist/katex.min.css".
+ */
+@import "./agent/agent.css";
+@source "./agent/**/*.js";
 `,
 );
 writeFileSync(

@@ -10,6 +10,7 @@ npm ci
 npx tsc -b            # typecheck src/ + site/
 npm run check         # size budgets + "use client" boundary (scripts/check-client.ts)
 npm run check:bp      # blueprint logic + editor regression (34 checks)
+npm run check:agent   # agent extension logic: fences, code groups, partial JSON, event reducer, diff, ANSI
 npx vite build        # docs site -> dist-site/
 npm run pack:check    # build:lib (runs check-client --dist) + npm pack + scripts/verify-pack.ts
 ```

@@ -1,0 +1,106 @@
+/*
+ * Agent 拓展包的样式: 代码面板令牌 (--hx-code-*), Shiki 双主题取色, 流式光标, 思考 / 工具行的微光.
+ * 只动 transform / opacity / background-position; 减弱动效由 theme.css 统一停掉.
+ */
+
+/* 代码面板: 默认 One Dark Pro (博客同款), 亮暗都是深色面板 */
+:root {
+  --hx-code-bg: #282c34;
+  --hx-code-fg: #abb2bf;
+  --hx-code-muted: #7f848e;
+  --hx-code-ln: #4b5263;
+  --hx-code-border: oklch(1 0 0 / 0.07);
+  --hx-code-hl: oklch(1 0 0 / 0.06);
+  --hx-code-hl-bar: #61afef;
+  --hx-code-add: oklch(0.72 0.17 150 / 0.16);
+  --hx-code-del: oklch(0.65 0.2 25 / 0.18);
+  --hx-code-add-fg: #98c379;
+  --hx-code-del-fg: #e06c75;
+  --hx-term-bg: #21252b;
+  /* 思考过程, 工具调用等 "过程" 文字的颜色 */
+  --hx-agent-process: var(--muted-foreground);
+}
+
+/* theme="auto": 亮色跟随 One Light */
+.hx-code[data-code-theme="auto"] {
+  --hx-code-bg: #fafafa;
+  --hx-code-fg: #383a42;
+  --hx-code-muted: #a0a1a7;
+  --hx-code-ln: #b6b7bb;
+  --hx-code-border: var(--border);
+  --hx-code-hl: oklch(0 0 0 / 0.05);
+  --hx-code-hl-bar: #4078f2;
+}
+.dark .hx-code[data-code-theme="auto"] {
+  --hx-code-bg: #282c34;
+  --hx-code-fg: #abb2bf;
+  --hx-code-muted: #7f848e;
+  --hx-code-ln: #4b5263;
+  --hx-code-border: oklch(1 0 0 / 0.07);
+  --hx-code-hl: oklch(1 0 0 / 0.06);
+  --hx-code-hl-bar: #61afef;
+}
+
+/* Shiki 双主题: token 上带 --shiki-light / --shiki-dark */
+.hx-code [data-tk] {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style, inherit);
+  font-weight: var(--shiki-light-font-weight, inherit);
+  text-decoration: var(--shiki-light-text-decoration, inherit);
+}
+.dark .hx-code [data-tk] {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style, inherit);
+  font-weight: var(--shiki-dark-font-weight, inherit);
+  text-decoration: var(--shiki-dark-text-decoration, inherit);
+}
+.hx-code ::selection { background: oklch(0.62 0.12 250 / 0.35); }
+
+/* 流式光标: 1 个字宽以内的竖条, 闪烁用 opacity */
+@keyframes hx-caret-blink { 0%, 45% { opacity: 1; } 55%, 100% { opacity: 0; } }
+.hx-caret {
+  display: inline-block;
+  width: 0.5em;
+  height: 1.1em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.75;
+  animation: hx-caret-blink 1s steps(1) infinite;
+}
+
+/* 进行中的标题 ("思考中", "运行中 npm test"): 只做透明度呼吸, 不用渐变扫光 */
+@keyframes hx-shimmer-text { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.hx-shimmer-text { animation: hx-shimmer-text 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .hx-shimmer-text { animation: none; }
+}
+
+/* 新到的文字淡入 (Markdown animated) */
+@keyframes hx-token-in { from { opacity: 0; } to { opacity: 1; } }
+.hx-md [data-sd-animate] { animation: hx-token-in var(--sd-duration, 280ms) var(--sd-easing, ease-out) var(--sd-delay, 0ms) both; }
+
+/* 流式中, 最后一段文字末尾的光标 (代码块自己画) */
+.hx-md[data-streaming] > :is(p, h1, h2, h3, h4, h5, h6):last-child::after,
+.hx-md[data-streaming] > :is(ul, ol):last-child > li:last-child:not(:has(> :is(p, ul, ol)))::after,
+.hx-md[data-streaming] > :is(ul, ol):last-child > li:last-child > p:last-child::after,
+.hx-md[data-streaming] > blockquote:last-child > p:last-child::after {
+  content: "";
+  display: inline-block;
+  width: 0.5em;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.7;
+  animation: hx-caret-blink 1s steps(1) infinite;
+}
+
+/* Markdown 正文里的 KaTeX 跟随前景色 */
+.hx-md .katex { color: inherit; }
+.hx-md .katex-display { overflow-x: auto; overflow-y: hidden; padding: 0.25rem 0; }
+
+/* Mermaid / SVG 预览: 图里的文字跟随主题字体 */
+.hx-diagram svg { max-width: 100%; height: auto; font-family: var(--font-sans); }
