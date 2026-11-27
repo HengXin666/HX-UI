@@ -9,6 +9,11 @@ const GATE_UI_RULES = "check-ui-rules";
 const GATE_DOCS_REGISTRY = "check-docs-registry";
 const GATE_LINE_BUDGET = "check-line-budget";
 const GATE_LANES = "check-lanes";
+/**
+ * 夹具里给独立包 (next/) 放一个占位文件: NO_GATE_ENTRIES 声明了 next/ 免检, 夹具里没有它时
+ * check-lanes 会报 stale-exemption, 控制组就不再是 "全部认领" 而是失败.
+ */
+const SEPARATE_PACKAGE_STUB: Record<string, string> = { "next/package.json": "{}" };
 const SMALL_TS = "src/small.ts";
 const SMALL_SRC = "export const x = 1;\n";
 
@@ -207,7 +212,7 @@ export const STATIC_PROBES: Probe[] = [
       "所以这是分流设计里唯一必须自动化的一环",
     run: () => {
       const dir = fixture("lanes-unclaimed");
-      writeFiles(dir, docsSkeleton({ "brand-new-dir/a.txt": "" }));
+      writeFiles(dir, docsSkeleton({ "brand-new-dir/a.txt": "", ...SEPARATE_PACKAGE_STUB }));
       return run(...CHECK.lanes, rootAt(dir));
     },
     expectIn: ["unclaimed-top-level", "brand-new-dir"],
@@ -219,7 +224,7 @@ export const STATIC_PROBES: Probe[] = [
     reason: "防误报: 前缀匹配写成 p === prefix 时, 目录型前缀会认不出任何东西",
     run: () => {
       const dir = fixture("lanes-ok");
-      writeFiles(dir, docsSkeleton());
+      writeFiles(dir, docsSkeleton(SEPARATE_PACKAGE_STUB));
       return run(...CHECK.lanes, rootAt(dir));
     },
   },
