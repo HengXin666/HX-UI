@@ -83,7 +83,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from 
 </Dialog>
 ```
 
-`src/components/ui/<name>.tsx` 都能这样引: `@hx/ui/ui/<name>` (accordion, alert, badge, calendar, command, confirm-dialog, date-picker, drawer, dropdown-menu, field, pagination, select, sheet, sidebar, spin, tabs, tooltip ...). `cn` 在 `@hx/ui/utils`.
+`src/components/ui/<name>.tsx` 都能这样引: `@hx/ui/ui/<name>` (accordion, alert, badge, calendar, command, confirm-dialog, date-picker, drawer, dropdown-menu, field, pagination, select, sheet, sidebar, spin, tabs, tooltip, tree ...). `cn` 在 `@hx/ui/utils`.
 
 ### 4. 图表 / 表格
 

@@ -8,7 +8,7 @@ The repository root (src/, docs/, scripts/gates, scripts/quality) is the legacy 
 ```bash
 npm ci
 npx tsc -b            # typecheck src/ + site/
-npm run check         # size budgets + "use client" boundary (scripts/check-client.ts)
+npm run check         # size budgets + "use client" boundary (scripts/check-client.ts) + base component logic (scripts/ui-check.ts: Tree keys / selection)
 npm run check:bp      # blueprint logic + editor regression (34 checks)
 npm run check:agent   # agent extension logic: fences, code groups, partial JSON, event reducer, diff, ANSI
 npx vite build        # docs site -> dist-site/

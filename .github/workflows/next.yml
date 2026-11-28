@@ -41,7 +41,7 @@ jobs:
       - name: Typecheck (tsc -b)
         run: npx tsc -b
 
-      # "use client" boundary + interaction size budgets (scripts/check-client.ts, scripts/check-budgets.ts)
+      # "use client" boundary + interaction size budgets + base component logic (scripts/check-client.ts, scripts/check-budgets.ts, scripts/ui-check.ts)
       - name: Checks (npm run check)
         run: npm run check
 
