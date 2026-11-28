@@ -4,9 +4,15 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
-## Unreleased
+## 2.7.0
 
-新增 9 个基础件 (#58 到 #66, 来自 HX-AIOA Web 端对齐安卓的需求), 展开 / 收起动效 Unfold, 全局自定义滚动条. 无破坏性变化.
+新增 9 个基础件 (#58 到 #66, 来自 HX-AIOA Web 端对齐安卓的需求), 展开 / 收起动效 Unfold, 全局自定义滚动条; 仓库布局改为 2.x 在根目录. 包的 API 无破坏性变化.
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.7.0/hx-ui-2.7.0.tgz
+```
 
 ### 新增
 

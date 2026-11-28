@@ -6,7 +6,7 @@ React 19 + Tailwind v4 + shadcn/ui + Motion 的组件库: 基础件, 图表, 蓝
 - 安装与调用: [docs/guide.md](./docs/guide.md); 给 AI 的速查: [llms.txt](./llms.txt)
 
 ```bash
-pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.6.1/hx-ui-2.6.1.tgz
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.7.0/hx-ui-2.7.0.tgz
 ```
 
 ```ts
