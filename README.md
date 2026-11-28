@@ -4,7 +4,7 @@
 > **HX-UI 2.0 已发布, 代码在 [`next/`](./next).** 新的设计 (shadcn/ui + Tailwind v4 + Motion + Recharts, 亮暗主题, 图表, 蓝图编辑器) 都在 2.0 里.
 >
 > ```bash
-> pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.6.0/hx-ui-2.6.0.tgz
+> pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.6.1/hx-ui-2.6.1.tgz
 > ```
 >
 > ```ts

@@ -4,6 +4,26 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## 2.6.1
+
+`Tree` 的外观与交互对齐 HX-CF-Drive 的目录树 (同系列项目里实际在用的树), 文档页 `#/ui/tree` 深色重做; 修复 `quality-docs` 工作流. API 不变, 无破坏性变化.
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.6.1/hx-ui-2.6.1.tgz
+```
+
+### 修复
+
+- `Tree` 外观: 行高 32px, 行间 2px, 圆角行, 悬停 `accent/60`; 选中改为 `accent` 底 + 1px `border` 描边 (原为品牌色淡底 `brand-soft`); 箭头 20px 热区, 悬停变前景色; 禁用透明度 40%. 与 HX-CF-Drive `FolderTree` 和 hxoa 面板的工作区树一致.
+- `Tree` 动效: 去掉新露出行的淡入下移, 只保留箭头旋转 (参考树的做法); 减弱动效时箭头直接到位.
+- `Tree` 连接线 (`lines`): 竖线落在父级箭头中线上并跨过行间距, 枝的横线接到箭头, 叶子接到图标前.
+- `Tree` 级联勾选 (`checkboxes`): 选中只由复选框表达, 不再整片铺选中底色.
+- `Tree` 的 `expandOnClick={false}`: 双击枝也能开合 (原来只有箭头和键盘).
+- 文档页 `#/ui/tree`: 演示外框改为实心面板 + 1px 边框树框 (超高时框内滚动), 文件夹图标用 `warning` 色, 默认示例关掉连接线, 舞台加高到 560px.
+- `quality-docs` 工作流自 2.5.0 起失败 (13 项 HC-TEXT): 2.5.0 条目直接引用的界面文案里有非 ASCII 标点, 现改为行内代码引用.
+
 ## 2.6.0
 
 新增通用树组件 `Tree` (基础件, 无破坏性变化). 引入 `@hx/ui/ui/tree`, 文档站 UI 组件 > 导航 > 树 (`#/ui/tree`).
