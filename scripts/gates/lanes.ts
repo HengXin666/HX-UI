@@ -58,10 +58,6 @@ export const NO_GATE_ENTRIES: Array<{ prefix: string; why: string }> = [
   { prefix: "LICENSE", why: "许可原文, 与运行态无关" },
   { prefix: "NOTICE", why: "第三方归属声明, 与运行态无关" },
   { prefix: "UPSTREAM_COMMIT", why: "上游快照指针, 只被 sync-upstream.sh 读" },
-  {
-    prefix: "next/",
-    why: "HX-UI 2 独立包 (自己的 package.json / lockfile / tsconfig), 由 .github/workflows/next.yml 跑 tsc -b, vite build, bp-check, check-client, pack:check; 这里的门禁针对 0.18 的 src/ 与 docs/",
-  },
 ];
 
 /**

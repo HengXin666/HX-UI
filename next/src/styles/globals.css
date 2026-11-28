@@ -1,7 +1,0 @@
-@import "tailwindcss";
-@import "./theme.css";
-
-/* 文档站的样式入口 (site/src/main.tsx 引). 发布包的产物和构建脚本不是文档站的源, 不扫 */
-@source not "../../dist";
-@source not "../../scripts";
-@source not "../../*.tgz";

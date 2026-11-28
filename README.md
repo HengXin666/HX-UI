@@ -1,20 +1,8 @@
 # HX-UI
 
 > [!IMPORTANT]
-> **HX-UI 2.0 已发布, 代码在 [`next/`](./next).** 新的设计 (shadcn/ui + Tailwind v4 + Motion + Recharts, 亮暗主题, 图表, 蓝图编辑器) 都在 2.0 里.
->
-> ```bash
-> pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.6.1/hx-ui-2.6.1.tgz
-> ```
->
-> ```ts
-> import "@hx/ui/styles.css";
-> import { Button } from "@hx/ui/ui/button";
-> ```
->
-> 文档站: <https://hengxin666.github.io/HX-UI/> | 用法: [next/README.md](./next/README.md) 的 "安装" 与 "调用" 两节
->
-> 仓库根目录下的 `@hx/ui` 0.18 (旧的 GitHub 风格界面) 是 **legacy**, 不再更新, 最后的版本留在 [`legacy-omni`](https://github.com/HengXin666/HX-UI/tree/legacy-omni) 标签上. 还在装 0.x tgz 看到旧样式的, 换成上面的 2.0 安装命令即可.
+> **这是 legacy 分支 (`legacy/v1`): `@hx/ui` 0.18 / 1.x 旧版 (GitHub 风格界面), 已停止维护, 只作存档.**
+> 当前版本是 2.x, 在 [`main`](https://github.com/HengXin666/HX-UI) 分支; 安装与用法看 main 的 README, 文档站: <https://hengxin666.github.io/HX-UI/>.
 
 
 一套 React + TypeScript 的 UI 组件库, 视觉沿用 [open-vetta](https://github.com/openvetta/open-vetta) 的设计语言,
