@@ -11,7 +11,9 @@
  * 键盘 (WAI-ARIA treeview): 上下 行, 右 展开 / 进第一个孩子, 左 收起 / 回父, Home / End 首尾,
  * Enter 展开收起枝 / 触发 onAction, Space 选中 (多选时切换), * 展开同级, 打字 跳到以它开头的行,
  * 多选另有 Shift+上下 / Shift+点击 连选, Ctrl/⌘+点击 切换, Ctrl/⌘+A 全选.
- * 动效: 新露出的行淡入并下移 4px, 箭头旋转; 只动 transform / opacity, 减弱动效时直接到位.
+ * 外观与 HX-CF-Drive 的目录树 (FolderTree) 和 hxoa 面板的工作区树一致: 行高 32px, 行间留 2px, 圆角行,
+ * 悬停 accent/60, 选中 accent 底 + 1px border 描边, 20px 的箭头热区 (悬停变前景色), 每级缩进 16px, 默认无连接线.
+ * 动效: 只有箭头旋转 (transform); 展开的子行直接出现, 不做位移. 减弱动效时箭头直接到位.
  */
 
 import * as React from "react"
@@ -94,6 +96,14 @@ export interface TreeProps<T = unknown> {
 const DEFAULT_INDENT = 16
 /** 行首留白 (px), 连接线的横坐标从这里算 */
 const PAD = 6
+/** 箭头热区边长 (px), 与参考的目录树一致 (size-5); 缩进比它窄时会盖住上一级图标的左半, 正好让箭头落在父级图标下方 */
+const CHEVRON = 20
+/** 行间距 (px, 对应 gap-0.5); 连接线要跨过它才连得上 */
+const ROW_GAP = 2
+/** 箭头图标在热区里的左边距 (px): (20 - 14) / 2 */
+const CHEVRON_INSET = 3
+/** 行内元素间距 (px, 对应 gap-1.5), 懒加载提示与子行图标对齐用 */
+const ITEM_GAP = 6
 /** 连按字母时, 两次按键间隔超过它就重新开始拼 */
 const TYPEAHEAD_MS = 500
 const SKELETON_ROWS = [72, 56, 64, 44]
@@ -121,19 +131,24 @@ function TreeCheck({ state }: { state: CheckState }) {
   )
 }
 
-/** 连接线: 祖先层还有后续兄弟的画贯穿竖线, 自己这层画 ├ 或 └ */
+/** 连接线: 祖先层还有后续兄弟的画贯穿竖线, 自己这层画 ├ 或 └; 竖线落在父级箭头的中线上, 上下各伸出 ROW_GAP 跨过行间距 */
 function Guides({ row, indent }: { row: TreeRow<unknown>; indent: number }) {
   if (row.depth === 0) return null
-  const x = (level: number) => PAD + level * indent + indent / 2
+  const x = (level: number) => PAD + level * indent + CHEVRON / 2
   const own = row.depth - 1
+  // 横线: 枝连到自己的箭头图标, 叶子 (没有箭头) 连到图标前 4px
+  const arm = row.branch ? indent - CHEVRON / 2 + CHEVRON_INSET : indent + CHEVRON / 2 - 4
   return (
     <span aria-hidden className="pointer-events-none absolute inset-y-0 left-0">
       {/* x(level) 这条竖线连着第 level+1 层的兄弟: 路径上那一层的祖先后面还有兄弟才画 */}
       {row.guides.slice(1).map((on, level) =>
-        on ? <span key={level} className="absolute inset-y-0 w-px bg-border" style={{ left: x(level) }} /> : null
+        on ? <span key={level} className="absolute w-px bg-border" style={{ left: x(level), top: -ROW_GAP, bottom: -ROW_GAP }} /> : null
       )}
-      <span className={cn("absolute top-0 w-px bg-border", row.last ? "h-1/2" : "h-full")} style={{ left: x(own) }} />
-      <span className="absolute top-1/2 h-px bg-border" style={{ left: x(own), width: indent / 2 + (row.branch ? 0 : indent / 2) }} />
+      <span
+        className="absolute w-px bg-border"
+        style={{ left: x(own), top: -ROW_GAP, ...(row.last ? { height: `calc(50% + ${ROW_GAP}px)` } : { bottom: -ROW_GAP }) }}
+      />
+      <span className="absolute top-1/2 h-px bg-border" style={{ left: x(own), width: arm }} />
     </span>
   )
 }
@@ -176,16 +191,6 @@ function Tree<T = unknown>({
   const index = React.useMemo(() => indexTree(nodes), [nodes])
   const multiple = selectionMode === "multiple"
   const cascade = multiple && checkboxes
-
-  // 新露出的行: 挂载后才算 (首屏不播), 播一次淡入
-  const seen = React.useRef<ReadonlySet<string> | null>(null)
-  const entering = React.useMemo(() => {
-    const before = seen.current
-    return before ? new Set(rows.filter((r) => !before.has(r.node.id)).map((r) => r.node.id)) : new Set<string>()
-  }, [rows])
-  React.useEffect(() => {
-    seen.current = new Set(rows.map((r) => r.node.id))
-  }, [rows])
 
   // 当前 Tab 停靠的行: 记住的焦点; 它被折进去了就落到最近的可见祖先; 都没有就第一个选中, 再没有就第一行
   const visible = React.useMemo(() => new Set(rows.map((r) => r.node.id)), [rows])
@@ -331,9 +336,9 @@ function Tree<T = unknown>({
 
   if (loading) {
     return (
-      <div data-slot="tree" aria-busy="true" className={cn("grid gap-1 py-1", className)} style={style}>
+      <div data-slot="tree" aria-busy="true" className={cn("grid gap-0.5", className)} style={style}>
         {SKELETON_ROWS.map((w, i) => (
-          <div key={i} className={cn("flex items-center gap-2", rowH)} style={{ paddingLeft: PAD + (i % 2) * indent }}>
+          <div key={i} className={cn("flex items-center gap-1.5", rowH)} style={{ paddingLeft: PAD + CHEVRON + ITEM_GAP + (i % 2) * indent }}>
             <Skeleton className="size-4 rounded" />
             <Skeleton className="h-3 rounded" style={{ width: `${w}%` }} />
           </div>
@@ -357,7 +362,7 @@ function Tree<T = unknown>({
       aria-multiselectable={multiple || undefined}
       aria-busy={pending.size > 0 || undefined}
       onKeyDown={onKeyDown}
-      className={cn("grid min-w-0 py-0.5", className)}
+      className={cn("grid min-w-0 content-start gap-0.5", className)}
       style={style}
       {...aria}
     >
@@ -387,23 +392,33 @@ function Tree<T = unknown>({
             aria-label={typeof node.label === "string" ? undefined : textOf(node)}
             tabIndex={node.id === tabId ? 0 : -1}
             data-state={branch ? (expanded ? "open" : "closed") : undefined}
+            data-selected={isSelected && !cascade ? "" : undefined}
             onClick={(e) => onRowClick(e, row)}
-            onDoubleClick={() => !branch && !node.disabled && onAction?.(node)}
+            onDoubleClick={() => {
+              if (node.disabled) return
+              // 枝: 关掉整行点击开合时, 双击开合 (同参考的目录树); 叶子: 打开
+              if (branch) {
+                if (!expandOnClick) toggle(node)
+              } else onAction?.(node)
+            }}
             onFocus={(e) => e.target === e.currentTarget && setFocusId(node.id)}
             className={cn(
-              "group/tree-item relative flex min-w-0 cursor-default items-center gap-1.5 rounded-md pr-2 outline-none select-none pointer-coarse:h-10",
-              "transition-colors duration-150 hover:bg-accent/60 focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset",
-              "aria-selected:bg-brand-soft aria-selected:text-foreground aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
-              rowH,
-              entering.has(node.id) && "animate-in fade-in-0 slide-in-from-top-1 duration-200 motion-reduce:animate-none"
+              "group/tree-item relative flex min-w-0 cursor-pointer items-center gap-1.5 rounded-md pr-2 outline-none select-none pointer-coarse:h-10",
+              "transition-colors duration-150 not-data-selected:hover:bg-accent/60 focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-inset",
+              // 选中底色只给单选 / 普通多选; 级联勾选靠复选框表达, 不再整片铺底
+              "data-selected:bg-accent data-selected:text-accent-foreground data-selected:ring-1 data-selected:ring-border",
+              "aria-disabled:cursor-not-allowed aria-disabled:opacity-40",
+              rowH
             )}
             style={{ paddingLeft: PAD + depth * indent }}
           >
             {lines && <Guides row={row as TreeRow<unknown>} indent={indent} />}
             <span
               aria-hidden
-              className="grid shrink-0 place-items-center text-muted-foreground"
-              style={{ width: indent }}
+              className={cn(
+                "grid size-5 shrink-0 place-items-center rounded text-muted-foreground",
+                branch && !node.disabled && "transition-colors duration-150 hover:text-foreground"
+              )}
               onClick={(e) => {
                 if (!branch || node.disabled) return
                 // 箭头只开合, 不改选中
@@ -439,7 +454,7 @@ function Tree<T = unknown>({
         return (
           <React.Fragment key={node.id}>
             {rowEl}
-            <div aria-hidden className={cn("flex items-center gap-1.5 text-muted-foreground", rowH)} style={{ paddingLeft: PAD + (depth + 1) * indent + indent }}>
+            <div aria-hidden className="py-1 text-xs text-muted-foreground" style={{ paddingLeft: PAD + (depth + 1) * indent + CHEVRON + ITEM_GAP }}>
               加载中…
             </div>
           </React.Fragment>

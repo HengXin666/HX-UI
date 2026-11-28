@@ -6,10 +6,23 @@ import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { DemoProps } from "../types";
 
-const CARD = "w-full max-w-md rounded-2xl border bg-background/85 p-2 shadow-float backdrop-blur";
-const NOTE = "px-2 pt-2 text-xs text-muted-foreground";
-const FOLDER = <FolderIcon className="text-brand" />;
-const FOLDER_OPEN = <FolderOpenIcon className="text-brand" />;
+/** 外框照 HX-CF-Drive "移动到" 对话框: 实心面板, 树放在带 1px 边框的浅底框里 */
+const CARD = "w-full max-w-md rounded-xl border bg-popover p-3 text-popover-foreground shadow-float";
+const TREE_BOX = "max-h-[27rem] overflow-y-auto overscroll-contain rounded-lg border bg-background/50 p-1.5";
+const NOTE = "px-1 pt-2.5 text-xs text-muted-foreground";
+const FOLDER = <FolderIcon className="text-warning" />;
+const FOLDER_OPEN = <FolderOpenIcon className="text-warning" />;
+
+/** 演示面板: 可选的顶部工具条, 树框, 底部说明 */
+function Panel({ head, note, children }: { head?: React.ReactNode; note?: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div className={CARD}>
+      {head}
+      <div className={TREE_BOX}>{children}</div>
+      {note != null && <p className={NOTE}>{note}</p>}
+    </div>
+  );
+}
 
 /** 文档目录 (基础 / 受控 / 自定义渲染共用) */
 const DOCS: TreeNode[] = [
@@ -86,19 +99,17 @@ type Common = { lines: boolean; size: "sm" | "default"; onEvent?: (msg: string) 
 function Basic({ lines, size }: Common) {
   const [sel, setSel] = React.useState<string[]>(["tree"]);
   return (
-    <div className={CARD}>
+    <Panel note={<>当前：{sel.length ? labelOf(DOCS, sel[0]) : "无"}</>}>
       <Tree aria-label="文档目录" nodes={DOCS} defaultExpanded={["components", "nav"]} selected={sel} onSelectedChange={setSel} lines={lines} size={size} />
-      <p className={NOTE}>当前：{sel.length ? labelOf(DOCS, sel[0]) : "无"}</p>
-    </div>
+    </Panel>
   );
 }
 
 function Files({ lines, size, onEvent }: Common) {
   return (
-    <div className={CARD}>
-      <Tree aria-label="文件" nodes={FILES} defaultExpanded={["src", "src/components"]} lines={lines} size={size} onAction={(n) => onEvent?.(`打开 ${n.id}`)} />
-      <p className={NOTE}>双击或回车打开文件；文件夹点整行开合。</p>
-    </div>
+    <Panel note="双击或回车打开文件；文件夹点整行开合。">
+      <Tree aria-label="文件" nodes={FILES} defaultExpanded={["src", "src/components"]} defaultSelected={["src/components/tree.tsx"]} lines={lines} size={size} onAction={(n) => onEvent?.(`打开 ${n.id}`)} />
+    </Panel>
   );
 }
 
@@ -106,24 +117,26 @@ function Multiple({ lines, size }: Common) {
   const [sel, setSel] = React.useState<string[]>(["proj.read", "deploy.preview"]);
   const leaves = sel.filter((id) => PERM_LEAVES.has(id));
   return (
-    <div className={CARD}>
+    <Panel note={<>已授权 {leaves.length} 项：{leaves.map((id) => labelOf(PERMS, id)).join("、") || "无"}</>}>
       <Tree aria-label="权限" nodes={PERMS} selectionMode="multiple" checkboxes defaultExpanded={["proj", "deploy", "deploy.prod"]} selected={sel} onSelectedChange={setSel} lines={lines} size={size} />
-      <p className={NOTE}>已授权 {leaves.length} 项：{leaves.map((id) => labelOf(PERMS, id)).join("、") || "无"}</p>
-    </div>
+    </Panel>
   );
 }
 
 function Controlled({ lines, size }: Common) {
   const [open, setOpen] = React.useState<string[]>(["start"]);
   return (
-    <div className={CARD}>
-      <div className="flex items-center gap-1.5 border-b px-1 pb-2">
-        <Button type="button" size="xs" variant="outline" onClick={() => setOpen(branchIds(DOCS))}>全部展开</Button>
-        <Button type="button" size="xs" variant="outline" onClick={() => setOpen([])}>全部收起</Button>
-        <span className="ml-auto text-xs text-muted-foreground tabular">展开 {open.length} 个</span>
-      </div>
-      <Tree aria-label="文档目录" nodes={DOCS} expanded={open} onExpandedChange={setOpen} selectionMode="none" lines={lines} size={size} className="pt-1" />
-    </div>
+    <Panel
+      head={
+        <div className="flex items-center gap-1.5 pb-2">
+          <Button type="button" size="xs" variant="outline" onClick={() => setOpen(branchIds(DOCS))}>全部展开</Button>
+          <Button type="button" size="xs" variant="outline" onClick={() => setOpen([])}>全部收起</Button>
+          <span className="ml-auto text-xs text-muted-foreground tabular">展开 {open.length} 个</span>
+        </div>
+      }
+    >
+      <Tree aria-label="文档目录" nodes={DOCS} expanded={open} onExpandedChange={setOpen} selectionMode="none" lines={lines} size={size} />
+    </Panel>
   );
 }
 
@@ -140,11 +153,14 @@ function Custom({ lines, size }: Common) {
   const [q, setQ] = React.useState("表");
   const shown = q ? filterTree(DOCS, q) : DOCS;
   return (
-    <div className={CARD}>
-      <div className="relative px-1 pb-2">
-        <SearchIcon aria-hidden className="pointer-events-none absolute top-1/2 left-3.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-        <Input aria-label="过滤" value={q} onChange={(e) => setQ(e.target.value)} placeholder="过滤目录" className="h-8 pl-8" />
-      </div>
+    <Panel
+      head={
+        <div className="relative pb-2">
+          <SearchIcon aria-hidden className="pointer-events-none absolute top-4 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Input aria-label="过滤" value={q} onChange={(e) => setQ(e.target.value)} placeholder="过滤目录" className="h-8 pl-8" />
+        </div>
+      }
+    >
       <Tree
         aria-label="文档目录"
         nodes={shown}
@@ -166,7 +182,7 @@ function Custom({ lines, size }: Common) {
           );
         }}
       />
-    </div>
+    </Panel>
   );
 }
 
@@ -188,14 +204,17 @@ function States({ lines, size }: Common) {
       }, LAZY_MS),
     );
   return (
-    <div className={CARD}>
-      <ToggleGroup type="single" size="sm" variant="outline" value={mode} onValueChange={(v) => v && setMode(v)} className="mb-2 px-1">
-        <ToggleGroupItem value="lazy">懒加载</ToggleGroupItem>
-        <ToggleGroupItem value="loading">加载中</ToggleGroupItem>
-        <ToggleGroupItem value="empty">空</ToggleGroupItem>
-      </ToggleGroup>
+    <Panel
+      head={
+        <ToggleGroup type="single" size="sm" variant="outline" value={mode} onValueChange={(v) => v && setMode(v)} className="mb-2">
+          <ToggleGroupItem value="lazy">懒加载</ToggleGroupItem>
+          <ToggleGroupItem value="loading">加载中</ToggleGroupItem>
+          <ToggleGroupItem value="empty">空</ToggleGroupItem>
+        </ToggleGroup>
+      }
+    >
       <Tree aria-label="机房" nodes={mode === "empty" ? [] : nodes} loading={mode === "loading"} loadChildren={load} lines={lines} size={size} empty="还没有机房，先去创建一个。" />
-    </div>
+    </Panel>
   );
 }
 
