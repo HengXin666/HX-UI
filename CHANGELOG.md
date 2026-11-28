@@ -4,6 +4,23 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## 2.6.0
+
+新增通用树组件 `Tree` (基础件, 无破坏性变化). 引入 `@hx/ui/ui/tree`, 文档站 UI 组件 > 导航 > 树 (`#/ui/tree`).
+
+安装:
+
+```bash
+pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.6.0/hx-ui-2.6.0.tgz
+```
+
+### 新增
+
+- `Tree`: 多级嵌套, 可折叠 (`expanded` / `defaultExpanded` / `onExpandedChange`), 选中方式 `selectionMode="none" | "single" | "multiple"` (`selected` / `defaultSelected` / `onSelectedChange`), `checkboxes` 级联勾选 (部分勾上显示半选), `loadChildren` 懒加载子节点, `lines` 1px 连接线, 节点的 `icon` / `iconExpanded` / `trailing` 插槽, `renderLabel` 自定义渲染, `loading` 骨架与 `empty` 空状态, `size="sm" | "default"` (触屏行高自动加到 40px), `onAction` (叶子上回车或双击).
+- 键盘与读屏按 WAI-ARIA treeview: `role="tree"` / `treeitem`, `aria-level` / `aria-setsize` / `aria-posinset` / `aria-expanded` / `aria-selected`, roving tabindex; 上下 / 左右 / Home / End / Enter / 空格 / `*` / 打字跳转, 多选时 Shift 连选, Ctrl(⌘) 切换, Ctrl(⌘)+A 全选. 折叠的子树不进 DOM. 动效只动 transform / opacity, 减弱动效时直接到位.
+- 工具函数 `branchIds`, `subtreeIds`, `flattenVisible`, `checkState` (与 `Tree` 同一入口导出; 纯逻辑在 `tree-model`, 不带 `"use client"`).
+- `npm run check:components` (并入 `npm run check`): 基础件纯逻辑自检, 目前覆盖 Tree 的键盘导航, 展开与选中.
+
 ## 2.5.0
 
 Agent 会话界面第二版 ([#57](https://github.com/HengXin666/HX-UI/issues/57)): 对话内的多 Agent 编排, 实时用量与上下文, 计划, Codex 式输入区与推理强度. 对标 Codex / DSH / DSH Go / dsh-context / T3 Code / oh-my-pi, 研究笔记在 `next/docs/dsh-conversation-research.md`. 含几处默认渲染与类型上的破坏性变化 (按 2.1.0 的先例走 minor), 见下方迁移.
