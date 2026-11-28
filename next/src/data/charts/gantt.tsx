@@ -237,7 +237,7 @@ export function Gantt({
   return (
     <div ref={box} className={cn("relative w-full", className)}>
       {width > 0 && (
-        <div ref={scroller} onScroll={(e) => setScrollX(e.currentTarget.scrollLeft)} className="relative overflow-auto rounded-lg border [scrollbar-width:thin]" style={{ maxHeight: maxHeight + headH }}>
+        <div ref={scroller} onScroll={(e) => setScrollX(e.currentTarget.scrollLeft)} className="relative overflow-auto rounded-lg border scrollbar-thin" style={{ maxHeight: maxHeight + headH }}>
           <div className="relative" style={{ width: nameW + plotW, height: headH + H }}>
             {/* 表头 */}
             <div className="sticky top-0 z-20 flex border-b bg-background/95 backdrop-blur" style={{ height: headH, width: nameW + plotW }}>

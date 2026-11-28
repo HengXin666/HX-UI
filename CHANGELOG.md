@@ -4,6 +4,27 @@
 
 每个版本按 Added / Changed / Deprecated / Removed / Fixed / Security 分段, 没有内容的段省略. 0.x 期间 minor 允许破坏性变更, 但凡有破坏, 该版本必须带 `### Migration` 段.
 
+## Unreleased
+
+新增 9 个基础件 (#58 到 #66, 来自 HX-AIOA Web 端对齐安卓的需求), 展开 / 收起动效 Unfold, 全局自定义滚动条. 无破坏性变化.
+
+### 新增
+
+- `Item` 列表行 (`@hx/ui/ui/item`): 媒体 / 主副标题 / 时间角标 / 尾部操作, 选中态, 自带 FLIP 滑动高亮, roving 键盘焦点 (#58)
+- `Empty` 空状态 (`@hx/ui/ui/empty`): 整页 / 卡片内两档, 纯 CSS 依次入场, 可在服务端组件里用 (#59)
+- `VirtualList` 虚拟列表 (`@hx/ui/ui/virtual-list`): 不定高, 反向聊天列表, 向上加载不跳, `scrollToKey` 居中定位, 零依赖 (#60)
+- `ResizablePanelGroup` 可拖宽分栏 (`@hx/ui/ui/resizable`): 级联推挤, 折叠 / 复位动画, 持久化与跨标签页同步, 键盘可调 (#61)
+- `Dropzone` + `UploadList` 拖放上传 (`@hx/ui/ui/dropzone`, `@hx/ui/ui/upload-list`): 覆盖层, 校验, 粘贴, 进度 / 暂停 / 重试 (#62)
+- `ImageCropper` 图片裁剪 (`@hx/ui/ui/image-cropper`): 拖动, 滚轮 / 双指缩放, 任意角度拉直, 自由裁剪框, 输出压缩后的 Blob (#63)
+- `MentionInput` @ 提及输入 (`@hx/ui/ui/mention-input`): 光标处候选, 多触发符, 输入法友好, 提及着色 (#64)
+- `CopyField` 可复制字段 (`@hx/ui/ui/copy-field`): 遮罩, 复制反馈, 多行, 接入 Field (#65)
+- `ChipGroup` 筛选标签 (`@hx/ui/ui/chip-group`): 计数徽标, 横向滚动渐隐, 单选 / 多选, 滑动指示器 (#66)
+- 动效 `useUnfold` / `Unfold` (`@hx/ui/motion`): 列表展开 / 收起时下方行平滑让位, Tree 的 `animation` 参数
+
+### 变更
+
+- 滚动条: 所有可滚区域 (包括页面) 统一为不抢眼的自定义细滚动条, 跟随主题; 新增 `scrollbar-none`, `scrollbar-thin` 改为更细一档. 组件里不再写 `scrollbar-width` 任意值
+
 ## 2.6.1
 
 `Tree` 的外观与交互对齐 HX-CF-Drive 的目录树 (同系列项目里实际在用的树), 文档页 `#/ui/tree` 深色重做; 修复 `quality-docs` 工作流. API 不变, 无破坏性变化.

@@ -37,7 +37,17 @@ import { tooltip } from "./entries/tooltip";
 import { popover } from "./entries/popover";
 import { accordion } from "./entries/accordion";
 import { tree } from "./entries/tree";
+import { unfold } from "./entries/unfold";
 import { kbd } from "./entries/kbd";
+import { item } from "./entries/item";
+import { empty } from "./entries/empty";
+import { copyField } from "./entries/copy-field";
+import { virtualList } from "./entries/virtual-list";
+import { resizable } from "./entries/resizable";
+import { dropzone } from "./entries/dropzone";
+import { imageCropper } from "./entries/image-cropper";
+import { mentionInput } from "./entries/mention-input";
+import { chipGroup } from "./entries/chip-group";
 import { datePicker } from "./entries/date-picker";
 import { dataTable } from "./entries/data-table";
 import { charts } from "./entries/charts";
@@ -77,7 +87,7 @@ import { SECTIONS } from "./sections";
  * 文档站清单. 只收值得单独一页的东西:
  * 一个参数就能表达的效果 (流光, 状态点, 光斑) 做成所属组件的参数, 不单列.
  */
-const ALL: DocEntry[] = [button, dropdownMenu, toggleGroup, command, tabs, breadcrumb, pagination, tree, card, badge, avatar, tooltip, popover, accordion, kbd, marquee, dialog, sheet, toastEntry, alert, progress, skeleton, spin, input, textarea, select, checkbox, switchEntry, radioGroup, slider, datePicker, dataTable, charts, comboChart, radarCompare, gauge, scatterBubble, conversionFunnel, shareTreemap, sankeyFlow, heatCalendar, candlestick, intraday, depthChart, volumeProfile, forceGraph, waterfall, bullet, distribution, sunburst, rose, gantt, chinaMap, bar3d, surface3d, globeArcs, scatter3d, map3d, stage, blueprint, splitText, decryptedText, numberRoll, scrollReveal, particles, clickSpark, scrollStack, tiltCard, agentMarkdown, agentCodeBlock, agentReasoning, agentToolCall, agentConversation];
+const ALL: DocEntry[] = [button, chipGroup, dropdownMenu, toggleGroup, command, tabs, breadcrumb, pagination, tree, card, item, resizable, badge, avatar, tooltip, popover, accordion, unfold, kbd, marquee, dialog, sheet, toastEntry, alert, progress, skeleton, empty, spin, input, textarea, mentionInput, copyField, dropzone, imageCropper, select, checkbox, switchEntry, radioGroup, slider, datePicker, virtualList, dataTable, charts, comboChart, radarCompare, gauge, scatterBubble, conversionFunnel, shareTreemap, sankeyFlow, heatCalendar, candlestick, intraday, depthChart, volumeProfile, forceGraph, waterfall, bullet, distribution, sunburst, rose, gantt, chinaMap, bar3d, surface3d, globeArcs, scatter3d, map3d, stage, blueprint, splitText, decryptedText, numberRoll, scrollReveal, particles, clickSpark, scrollStack, tiltCard, agentMarkdown, agentCodeBlock, agentReasoning, agentToolCall, agentConversation];
 
 const rank = (e: DocEntry) => {
   const s = SECTIONS.findIndex((x) => x.id === e.section);

@@ -230,16 +230,53 @@
   }
 }
 
-/* 细滚动条: 平时很淡, 悬停容器时加深. 横向表格, 热力日历等可滚区域用 */
+/*
+ * 滚动条: 全局自定义, 所有可滚区域 (包括页面本身) 都不用浏览器原生样式, 也不抢眼.
+ * - Blink / WebKit: ::-webkit-scrollbar 画. 10px 热区, 透明边框把滑块收成 4px 细条; 平时很淡, 悬停所在容器时加深,
+ *   指针移到滑块上变粗变深, 拖动时最深; 没有箭头按钮, 轨道和角落透明, 不占视觉.
+ * - scrollbar-width / scrollbar-color 只给不认 ::-webkit-scrollbar 的浏览器 (Firefox): Chrome 121+ 只要元素上设了这两个
+ *   标准属性就忽略 ::-webkit-scrollbar 退回原生绘制, 所以它们必须放进 @supports not selector(::-webkit-scrollbar).
+ * - 颜色全部由 --foreground 混出来, 跟随亮暗主题和强调色. 组件里不要再写 [scrollbar-width:*] 之类的任意值.
+ * - 要隐藏滚动条 (横滑标签栏这类) 用 scrollbar-none; scrollbar-thin 保留为语义别名 (再细一档, 6px 热区).
+ */
+@layer base {
+  ::-webkit-scrollbar { width: 10px; height: 10px; background: transparent; }
+  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+  ::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+  ::-webkit-scrollbar-thumb {
+    min-width: 32px;
+    min-height: 32px;
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+    background-color: color-mix(in oklch, var(--foreground) 14%, transparent);
+  }
+  :hover::-webkit-scrollbar-thumb { background-color: color-mix(in oklch, var(--foreground) 24%, transparent); }
+  ::-webkit-scrollbar-thumb:hover { border-width: 2px; background-color: color-mix(in oklch, var(--foreground) 36%, transparent); }
+  ::-webkit-scrollbar-thumb:active { border-width: 2px; background-color: color-mix(in oklch, var(--foreground) 46%, transparent); }
+  @supports not selector(::-webkit-scrollbar) {
+    * { scrollbar-width: thin; scrollbar-color: color-mix(in oklch, var(--foreground) 20%, transparent) transparent; }
+  }
+}
+
+/*
+ * 不放进 @layer: 未分层的规则压过所有层. Tailwind 4 自带同名工具类 scrollbar-thin / scrollbar-none (写 scrollbar-width),
+ * 和下面的 @utility 合并后仍会输出 scrollbar-width; 任意值 [scrollbar-width:*] 也一样. 在认 ::-webkit-scrollbar 的浏览器里
+ * 把两个标准属性统一压回 auto, 自定义滚动条才不会被 Chrome 121+ 换回原生绘制. 隐藏仍然有效 (scrollbar-none 的 display: none).
+ */
+@supports selector(::-webkit-scrollbar) {
+  * { scrollbar-width: auto; scrollbar-color: auto; }
+}
+
 @utility scrollbar-thin {
-  scrollbar-width: thin;
-  scrollbar-color: color-mix(in oklch, var(--foreground) 14%, transparent) transparent;
-  transition: scrollbar-color 200ms;
-  &:hover, &:focus-visible { scrollbar-color: color-mix(in oklch, var(--foreground) 32%, transparent) transparent; }
-  &::-webkit-scrollbar { height: 6px; width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb { border-radius: 999px; background: color-mix(in oklch, var(--foreground) 14%, transparent); }
-  &:hover::-webkit-scrollbar-thumb { background: color-mix(in oklch, var(--foreground) 32%, transparent); }
+  &::-webkit-scrollbar { width: 6px; height: 6px; }
+  &::-webkit-scrollbar-thumb { border-width: 1px; }
+  &::-webkit-scrollbar-thumb:hover, &::-webkit-scrollbar-thumb:active { border-width: 0; }
+}
+
+@utility scrollbar-none {
+  &::-webkit-scrollbar { display: none; }
+  @supports not selector(::-webkit-scrollbar) { scrollbar-width: none; }
 }
 
 /* 可横滚区域两侧的渐隐, 提示还有内容. data-fade 由组件按滚动位置给 start / end / both */
