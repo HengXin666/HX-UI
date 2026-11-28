@@ -36,11 +36,11 @@ pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.5.0/hx-ui-2.5.
 - 多 Agent: 事件 `agent-spawn` / `agent-status` / `agent-handoff` / `agent-message` (可嵌在派发调用的 `tool-child` 里), 父子树 `reduceAgentTree` 与选择器 (`agentRoots`, `childrenOf`, `agentTail` ...); `useAgentStream()` 多返回 `agents`.
 - 对话内编排: 派出子 Agent 的消息里出现 `AgentOrchestraBlock` (关系图 / 泳道 / 卡片墙, 节点显示子 Agent 最新流式尾部与 tok/s), `OrchestraDock` 可弹出停靠; 子 Agent 的审批上浮到父线程; `AgentThread` / `SubagentConversation` 看子 Agent 只读会话; `AgentSwitcher` 顶栏切换.
 - 用量: `usage` 事件新增 `scope: "request"` (一次请求的提示 / 缓存 / 上下文 / 费用, reducer 累加成累计值, 命中率读累计), `usage-delta` 算实时 tokens/s; `sessionUsage`, `agentTokenRates`, `usageLabels` 等纯函数.
-- 底栏指标: `ComposerMeters` ("82 tok/s · 3 路 · 累计 398万 · 命中 96% · 本轮 · $0.54", 每次请求都带费用) 与 `ContextLeft` (实时上下文 "◔ 上下文 68% · 13.6万 / 20万", 悬停给精确值) 分开标签, 手机留 tok/s · 累计 · 命中 | 上下文环 + 百分比; 点开是用量明细 (实时上下文 / 累计 两节). 另有 `SessionMeter`, `TurnUsage`, `MeterRing`.
+- 底栏指标: `ComposerMeters` (`"82 tok/s · 3 路 · 累计 398万 · 命中 96% · 本轮 · $0.54"`, 每次请求都带费用) 与 `ContextLeft` (实时上下文 `"◔ 上下文 68% · 13.6万 / 20万"`, 悬停给精确值) 分开标签, 手机只留 tok/s, 累计, 命中与上下文环 + 百分比; 点开是用量明细 (实时上下文 / 累计 两节). 另有 `SessionMeter`, `TurnUsage`, `MeterRing`.
 - 上下文: `AgentContextView` (构成条, 各类来源, 每次请求一根柱的演变, 压缩线) 与 `contextBreakdown` / `contextSeries`; `compaction` 事件.
 - 轨迹: `AgentTrajectory` 与 `buildTrajectory` (按轮次的工具 / 思考 / 回答账本).
 - 计划: 从 `todo_write` / OMP `todo` 调用派生计划树 (`planOf`, `planProgress` ...), `PlanPanel` (输入框上方停靠或侧栏, 嵌套可折叠), `PlanTree`, `PlanCard`, `TodoCallCard`; `AgentProvider.planCalls` (`"hidden" | "line" | "card"`).
-- 输入区: `ComposerModelMenu` (Codex 式触发器 "hx-opus ▂▄▆ 高 ⌄", 卡片菜单 "模型 …… hx-opus ›" + 推理强度; 手机是底部弹层), `EffortTrack` 渐变档位条 (越高越亮越鲜艳, 流光越快; 可点可拖, WAI-ARIA slider), `EffortBadge` / `EffortGlyph` (每档不同样式: 关闭 / 低 淡, 中 正常, 高 品牌色, 最高 渐变字 + 光晕; 黑白主题靠柱数与字重), `effortLook`; `ComposerSelect` (权限 / 运行位置), `ComposerActivity` (生成中 "• 工作中 (12 秒 · esc 中断)"), `ComposerSheet`; `AgentModelPicker`, `EffortControl`, `EffortSlider`.
+- 输入区: `ComposerModelMenu` (Codex 式触发器 `"hx-opus ▂▄▆ 高 ⌄"`, 卡片菜单 `"模型 …… hx-opus ›"` + 推理强度; 手机是底部弹层), `EffortTrack` 渐变档位条 (越高越亮越鲜艳, 流光越快; 可点可拖, WAI-ARIA slider), `EffortBadge` / `EffortGlyph` (每档不同样式: 关闭 / 低 淡, 中 正常, 高 品牌色, 最高 渐变字 + 光晕; 黑白主题靠柱数与字重), `effortLook`; `ComposerSelect` (权限 / 运行位置), `ComposerActivity` (生成中 `"• 工作中 (12 秒 · esc 中断)"`), `ComposerSheet`; `AgentModelPicker`, `EffortControl`, `EffortSlider`.
 - `PromptInput`: `collapsible` (手机空闲时收成一行胶囊), `busyPlaceholder`; `Conversation`: `overlay`.
 - AI SDK 适配: `agentEventsFromAiSdk`.
 - 文档站: Agent 页面并入 "UI 组件" 分区的 Agent 分组 (旧的 `#/agent/*` 重定向), 会话页新增 "完整会话" 整页回放 (`#/ui/conversation/full`).
