@@ -1,187 +1,182 @@
-import { createRegistry, type BlueprintRegistryImpl } from "./registry";
-import { ANY, EXEC, type NodeTypeDef } from "./types";
+import { defineTypes } from "./define";
+import { defineLibrary } from "./library";
+import { createRegistry } from "./registry";
+import type { BlueprintGraph, SubGraphDef } from "./types";
 
 /**
- * 演示节点库。
- *
- * 它不是"蓝图库的一部分", 是**使用方该怎么写节点定义**的样板。
- * 真实项目里照这个形状写自己的节点, 一个文件就能扩出几十个。
- *
- * 三条从样板里能看出来的约定:
- * 1. 纯数据节点没有 execIn  它只在被别人取值时才算 (惰性)。
- * 2. 有副作用的节点 (发请求 / 写文件 / 打印) 必须有 execIn 
- * 否则它在图里的求值时机无法确定, 分支语义也会失效。
- * 3. 参数缺省值写在 ParamDef.default 上, 不写在 evaluate 里兜 
- * 后者会让"节点上显示的值"与"实际用的值"不是同一个。
+ * Demo registry and graph: number -> compare -> branch -> print. Used by docs and scripts/bp-check.ts.
+ * Also shows a custom array type and a number -> string autocast.
  */
 
-const DEMO_NODES: Record<string, NodeTypeDef> = {
-  // ── 值 ──────────────────────────────────────────────────────────
-  number: {
-    type: "number",
-    label: "数值",
-    category: "值",
-    description: "一个常量数字",
-    outputs: [{ id: "value", label: "值", type: "number" }],
-    params: [{ id: "v", label: "值", kind: "number", default: 1 }],
-    evaluate: ({ params }) => ({ value: Number(params.v ?? 0) }),
-  },
-  text: {
-    type: "text",
-    label: "文本",
-    category: "值",
-    outputs: [{ id: "value", label: "值", type: "string" }],
-    params: [{ id: "v", label: "内容", kind: "text", default: "hello" }],
-    evaluate: ({ params }) => ({ value: String(params.v ?? "") }),
-  },
+export const demoTypes = defineTypes({
+  number: { label: "Number", color: "bp-float", ts: 0 as number, convert: { string: "conv.toString" } },
+  numbers: { label: "Number Array", color: "bp-float", shape: "array", of: "number" },
+});
 
-  // ── 计算 ────────────────────────────────────────────────────────
-  math: {
-    type: "math",
-    label: "四则运算",
-    category: "计算",
-    inputs: [
-      { id: "a", label: "a", type: "number", default: 0 },
-      { id: "b", label: "b", type: "number", default: 0 },
-    ],
-    outputs: [{ id: "out", label: "结果", type: "number" }],
-    params: [
-      {
-        id: "op", label: "运算", kind: "select", default: "add",
-        options: [
-          { value: "add", label: "加" },
-          { value: "sub", label: "减" },
-          { value: "mul", label: "乘" },
-          { value: "div", label: "除" },
-        ],
-      },
-    ],
-    evaluate: ({ inputs, params }) => {
-      const a = Number(inputs.a ?? 0);
-      const b = Number(inputs.b ?? 0);
-      switch (params.op) {
-        case "sub": return { out: a - b };
-        case "mul": return { out: a * b };
-        case "div": return { out: b === 0 ? 0 : a / b };
-        default: return { out: a + b };
-      }
+const t = demoTypes;
+
+export const demoNodes = [
+  t.defineNode({
+    id: "event.start", title: "Start", category: "Events",
+    outputs: [{ id: "then", type: "exec" }],
+  }),
+  t.defineNode({
+    id: "value.number", title: "Number", category: "Values",
+    outputs: [{ id: "value", type: "number" }],
+    params: [{ id: "v", kind: "number", default: 1 }],
+    evaluate: ({ params }) => ({ value: params.v }),
+  }),
+  t.defineNode({
+    id: "value.text", title: "Text", category: "Values",
+    outputs: [{ id: "value", type: "string" }],
+    params: [{ id: "v", kind: "text", default: "hello" }],
+    evaluate: ({ params }) => ({ value: params.v }),
+  }),
+  t.defineNode({
+    id: "math.add", title: "Add", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 0 }, { id: "b", type: "number", default: 0 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: inputs.a + inputs.b }),
+  }),
+  t.defineNode({
+    id: "math.subtract", title: "Subtract", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 0 }, { id: "b", type: "number", default: 0 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: inputs.a - inputs.b }),
+  }),
+  t.defineNode({
+    id: "math.multiply", title: "Multiply", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 1 }, { id: "b", type: "number", default: 1 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: inputs.a * inputs.b }),
+  }),
+  t.defineNode({
+    id: "math.min", title: "Min", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 0 }, { id: "b", type: "number", default: 0 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: Math.min(inputs.a, inputs.b) }),
+  }),
+  t.defineNode({
+    id: "math.max", title: "Max", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 0 }, { id: "b", type: "number", default: 0 }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: Math.max(inputs.a, inputs.b) }),
+  }),
+  t.defineNode({
+    id: "math.sum", title: "Sum", category: "Math",
+    inputs: [{ id: "items", type: "numbers", default: [] }],
+    outputs: [{ id: "out", type: "number" }],
+    evaluate: ({ inputs }) => ({ out: inputs.items.reduce((s, x) => s + x, 0) }),
+  }),
+  t.defineNode({
+    id: "math.compare", title: "Compare", category: "Math",
+    inputs: [{ id: "a", type: "number", default: 0 }, { id: "b", type: "number", default: 0 }],
+    outputs: [{ id: "out", type: "boolean" }],
+    params: [{ id: "op", kind: "select", default: "gt", options: [{ value: "gt", label: ">" }, { value: "lt", label: "<" }, { value: "eq", label: "=" }] }],
+    evaluate: ({ inputs, params }) => ({ out: params.op === "lt" ? inputs.a < inputs.b : params.op === "eq" ? inputs.a === inputs.b : inputs.a > inputs.b }),
+  }),
+  t.defineNode({
+    id: "flow.branch", title: "Branch", category: "Flow", kind: "flow",
+    inputs: [{ id: "exec", type: "exec" }, { id: "cond", type: "boolean", default: false }],
+    outputs: [{ id: "true", type: "exec" }, { id: "false", type: "exec" }],
+    evaluate: ({ inputs }) => ({ $exec: inputs.cond ? "true" : "false" }),
+  }),
+  t.defineNode({
+    id: "flow.sequence", title: "Sequence", category: "Flow", kind: "flow",
+    description: "Fires each output in order (UE5 Sequence).",
+    inputs: [{ id: "exec", type: "exec" }],
+    outputs: [{ id: "then_0", type: "exec", label: "Then 0" }, { id: "then_1", type: "exec", label: "Then 1" }],
+  }),
+  t.defineNode({
+    id: "flow.delay", title: "Delay", category: "Flow", kind: "function",
+    description: "Waits, then continues (latent node). Duration in seconds.",
+    inputs: [{ id: "exec", type: "exec" }, { id: "duration", type: "number", default: 0.2, label: "Duration" }],
+    outputs: [{ id: "then", type: "exec", label: "Completed" }],
+    evaluate: async ({ inputs }) => {
+      await new Promise((r) => setTimeout(r, Math.max(0, Math.min(5, inputs.duration)) * 1000));
+      return {};
     },
-  },
-  compare: {
-    type: "compare",
-    label: "比较",
-    category: "计算",
-    description: "两个数比较, 输出布尔",
-    inputs: [
-      { id: "a", label: "a", type: "number", default: 0 },
-      { id: "b", label: "b", type: "number", default: 0 },
-    ],
-    outputs: [{ id: "out", label: "结果", type: "boolean" }],
-    params: [
-      {
-        id: "op", label: "运算", kind: "select", default: "gt",
-        options: [
-          { value: "gt", label: ">" },
-          { value: "lt", label: "<" },
-          { value: "eq", label: "=" },
-        ],
-      },
-    ],
-    evaluate: ({ inputs, params }) => {
-      const a = Number(inputs.a ?? 0);
-      const b = Number(inputs.b ?? 0);
-      switch (params.op) {
-        case "lt": return { out: a < b };
-        case "eq": return { out: a === b };
-        default: return { out: a > b };
-      }
-    },
-  },
+  }),
+  t.defineNode({
+    id: "flow.print", title: "Print", category: "Flow",
+    description: "Side effect node: returns the line instead of logging, the host decides where it goes.",
+    inputs: [{ id: "exec", type: "exec" }, { id: "msg", type: "string", default: "" }],
+    outputs: [{ id: "then", type: "exec" }, { id: "line", type: "string" }],
+    params: [{ id: "prefix", kind: "text", default: ">" }],
+    evaluate: ({ inputs, params }) => ({ line: `${params.prefix} ${inputs.msg}` }),
+  }),
+  t.defineNode({
+    id: "conv.toString", title: "To String", category: "Conversions", kind: "cast",
+    inputs: [{ id: "in", type: "number" }],
+    outputs: [{ id: "out", type: "string" }],
+    evaluate: ({ inputs }) => ({ out: String(inputs.in) }),
+  }),
+];
 
-  // ── 流程 ────────────────────────────────────────────────────────
-  start: {
-    type: "start",
-    label: "开始",
-    category: "流程",
-    description: "执行入口。一张执行图从这里开始。",
-    execIn: false,
-    execOut: ["then"],
-    outputs: [],
-  },
-  branch: {
-    type: "branch",
-    label: "分支",
-    category: "流程",
-    description: "按条件走真/假两条执行流  走哪条由求值器决定",
-    execIn: true,
-    execOut: ["true", "false"],
-    inputs: [{ id: "cond", label: "条件", type: "boolean", default: false }],
-  },
-  log: {
-    type: "log",
-    label: "打印",
-    category: "流程",
-    description: "有副作用的节点, 必须挂在执行流上",
-    execIn: true,
-    execOut: ["then"],
-    inputs: [{ id: "msg", label: "内容", type: ANY, default: "" }],
-    outputs: [{ id: "line", label: "输出行", type: "string" }],
-    params: [{ id: "prefix", label: "前缀", kind: "text", default: "»" }],
-    /**
-     * 刻意**不在这里 console.log**。
-     *
-     * 库不该替使用方决定输出目标 (控制台 / 文件 / 网络 / 界面上的日志框)。
-     * 所以这个节点把"要打印的那一行"作为值吐出来, 由宿主决定往哪送 
-     * 副作用收敛到宿主那一侧, 节点本身保持纯的、可测的。
-     */
-    evaluate: ({ inputs, params }) => ({
-      line: `${String(params.prefix ?? "")} ${String(inputs.msg ?? "")}`,
-    }),
-  },
-
-  // ── 收集 ────────────────────────────────────────────────────────
-  merge: {
-    type: "merge",
-    label: "合并",
-    category: "流程",
-    description: "多入执行口: 两条分支可以汇到这里",
-    execIn: true,
-    execOut: ["then"],
-    evaluate: () => ({}),
-  },
-};
-
-/** 演示用的注册中心。含内置类型 + 上面这些节点。 
- * .agents/notes/implemented/process/2026-10-08-repository-agent-notes-v2-adoption.md
- */
-export function createDemoRegistry(): BlueprintRegistryImpl {
-  const reg = createRegistry();
-  reg.type({ id: "image", label: "图像", colorClass: "bg-amber-400", extends: "object" });
-  for (const def of Object.values(DEMO_NODES)) reg.node(def);
-  return reg;
-}
-
-export const demoRegistry: BlueprintRegistryImpl = createDemoRegistry();
-
-/** 演示图: 数值 → 比较 → 分支 → 打印。改一个参数就能看到执行流换分支。 */
-export const demoGraph = {
+// A small library: two pure functions and a macro, offered in every document using demoRegistry.
+const square: SubGraphDef = {
+  id: "square", label: "平方", kind: "function", pure: true, category: "常用数学", description: "x × x", keywords: "square pow",
   nodes: [
-    { id: "n1", type: "start", x: 40, y: 60 },
-    { id: "n2", type: "number", x: 40, y: 180, params: { v: 7 } },
-    { id: "n3", type: "number", x: 40, y: 300, params: { v: 5 } },
-    { id: "n4", type: "compare", x: 260, y: 220, params: { op: "gt" } },
-    { id: "n5", type: "branch", x: 480, y: 90 },
-    { id: "n6", type: "log", x: 700, y: 40, params: { prefix: "真" } },
-    { id: "n7", type: "log", x: 700, y: 180, params: { prefix: "假" } },
+    { id: "in", type: "subgraph.in", x: 0, y: 0, pins: { outputs: [{ id: "x", type: "number", label: "x" }] } },
+    { id: "mul", type: "math.multiply", x: 240, y: 0 },
+    { id: "out", type: "subgraph.out", x: 480, y: 0, pins: { inputs: [{ id: "out", type: "number", label: "结果" }] } },
   ],
   edges: [
-    { id: "e1", from: { node: "n1", port: "then" }, to: { node: "n5", port: "exec-in" }, kind: "exec" as const },
-    { id: "e2", from: { node: "n2", port: "value" }, to: { node: "n4", port: "a" }, kind: "data" as const },
-    { id: "e3", from: { node: "n3", port: "value" }, to: { node: "n4", port: "b" }, kind: "data" as const },
-    { id: "e4", from: { node: "n4", port: "out" }, to: { node: "n5", port: "cond" }, kind: "data" as const },
-    { id: "e5", from: { node: "n5", port: "true" }, to: { node: "n6", port: "exec-in" }, kind: "exec" as const },
-    { id: "e6", from: { node: "n5", port: "false" }, to: { node: "n7", port: "exec-in" }, kind: "exec" as const },
+    { id: "e1", from: { node: "in", pin: "x" }, to: { node: "mul", pin: "a" } },
+    { id: "e2", from: { node: "in", pin: "x" }, to: { node: "mul", pin: "b" } },
+    { id: "e3", from: { node: "mul", pin: "out" }, to: { node: "out", pin: "out" } },
+  ],
+};
+const clamp: SubGraphDef = {
+  id: "clamp", label: "限制范围", kind: "function", pure: true, category: "常用数学", description: "把 x 限制在 [下限, 上限]", keywords: "clamp range",
+  nodes: [
+    { id: "in", type: "subgraph.in", x: 0, y: 0, pins: { outputs: [{ id: "x", type: "number", label: "x" }, { id: "lo", type: "number", label: "下限", default: 0 }, { id: "hi", type: "number", label: "上限", default: 1 }] } },
+    { id: "min", type: "math.min", x: 240, y: 0 },
+    { id: "max", type: "math.max", x: 440, y: 0 },
+    { id: "out", type: "subgraph.out", x: 660, y: 0, pins: { inputs: [{ id: "out", type: "number", label: "结果" }] } },
+  ],
+  edges: [
+    { id: "e1", from: { node: "in", pin: "x" }, to: { node: "min", pin: "a" } },
+    { id: "e2", from: { node: "in", pin: "hi" }, to: { node: "min", pin: "b" } },
+    { id: "e3", from: { node: "min", pin: "out" }, to: { node: "max", pin: "a" } },
+    { id: "e4", from: { node: "in", pin: "lo" }, to: { node: "max", pin: "b" } },
+    { id: "e5", from: { node: "max", pin: "out" }, to: { node: "out", pin: "out" } },
+  ],
+};
+const ifTrue: SubGraphDef = {
+  id: "if_true", label: "仅当为真", kind: "macro", category: "常用流程", description: "条件为真才继续", keywords: "if when",
+  nodes: [
+    { id: "in", type: "subgraph.in", x: 0, y: 0, pins: { outputs: [{ id: "exec", type: "exec" }, { id: "cond", type: "boolean", label: "条件" }] } },
+    { id: "br", type: "flow.branch", x: 240, y: 0 },
+    { id: "out", type: "subgraph.out", x: 480, y: 0, pins: { inputs: [{ id: "then", type: "exec", label: "是" }] } },
+  ],
+  edges: [
+    { id: "e1", from: { node: "in", pin: "exec" }, to: { node: "br", pin: "exec" } },
+    { id: "e2", from: { node: "in", pin: "cond" }, to: { node: "br", pin: "cond" } },
+    { id: "e3", from: { node: "br", pin: "true" }, to: { node: "out", pin: "then" } },
   ],
 };
 
-export { DEMO_NODES, EXEC };
+export const demoLibrary = defineLibrary({ id: "demo", name: "示例库", version: "1.0.0", description: "演示用函数和宏", items: [square, clamp, ifTrue] });
+
+export const demoRegistry = createRegistry(demoTypes, demoNodes, { libraries: [demoLibrary] });
+
+export const demoGraph: BlueprintGraph = {
+  nodes: [
+    { id: "start", type: "event.start", x: 40, y: 60 },
+    { id: "a", type: "value.number", x: 40, y: 180, values: { v: 7 } },
+    { id: "b", type: "value.number", x: 40, y: 300, values: { v: 5 } },
+    { id: "cmp", type: "math.compare", x: 260, y: 220, values: { op: "gt" } },
+    { id: "branch", type: "flow.branch", x: 480, y: 90 },
+    { id: "yes", type: "flow.print", x: 700, y: 40, values: { prefix: "yes", msg: "a > b" } },
+    { id: "no", type: "flow.print", x: 700, y: 200, values: { prefix: "no", msg: "a <= b" } },
+  ],
+  edges: [
+    { id: "e1", from: { node: "start", pin: "then" }, to: { node: "branch", pin: "exec" } },
+    { id: "e2", from: { node: "a", pin: "value" }, to: { node: "cmp", pin: "a" } },
+    { id: "e3", from: { node: "b", pin: "value" }, to: { node: "cmp", pin: "b" } },
+    { id: "e4", from: { node: "cmp", pin: "out" }, to: { node: "branch", pin: "cond" } },
+    { id: "e5", from: { node: "branch", pin: "true" }, to: { node: "yes", pin: "exec" } },
+    { id: "e6", from: { node: "branch", pin: "false" }, to: { node: "no", pin: "exec" } },
+  ],
+};

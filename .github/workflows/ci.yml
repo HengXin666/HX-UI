@@ -1,0 +1,54 @@
+# @hx/ui 2.x gates: typecheck, component logic, blueprint / agent regression, docs build, package check.
+# The same list is documented in AGENTS.md and CONTRIBUTING.md.
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22 # scripts/*.ts run directly on node (type stripping, 22.18+)
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck (tsc -b)
+        run: npx tsc -b
+
+      # "use client" boundary + interaction size budgets + base component logic (scripts/check-client.ts, scripts/check-budgets.ts, scripts/ui-check.ts)
+      - name: Checks (npm run check)
+        run: npm run check
+
+      - name: Blueprint regression (bp-check)
+        run: npm run check:bp
+
+      # streaming markdown / fences / partial JSON / event reducer / diff / ANSI (scripts/agent-check.ts)
+      - name: Agent regression (agent-check)
+        run: npm run check:agent
+
+      - name: Docs site build (vite build)
+        run: npx vite build
+
+      # build:lib (JS + .d.ts + css, then check-client --dist per file) + npm pack + verify-pack
+      - name: Package (pack:check)
+        run: npm run pack:check

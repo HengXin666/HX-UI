@@ -1,5 +1,4 @@
-# 文档站: main 分支有推送 (或手动触发) 时, 构建 next/ 的 2.0 文档站并部署到 GitHub Pages.
-# 旧的 docs/ (0.18) 不再部署.
+# 文档站: main 分支有推送 (或手动触发) 时, 构建 2.x 文档站并部署到 GitHub Pages.
 name: pages
 
 on:
@@ -30,18 +29,18 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: next/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: 安装依赖
         run: npm ci
 
-      # vite.config.ts: base "./" + hash 路由, 放在 Pages 子路径下也能用; 产物在 next/dist-site
+      # vite.config.ts: base "./" + hash 路由, 放在 Pages 子路径下也能用; 产物在 dist-site
       - name: 构建文档站
         run: npx vite build
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: next/dist-site
+          path: dist-site
 
   # 部署单独一个 job, 只有它拿 pages / id-token 权限, 而且只在 main 上跑
   deploy:

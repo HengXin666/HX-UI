@@ -1,223 +1,354 @@
-import type {
-  BlueprintGraph,
-  BlueprintRegistry,
-  EvalContext,
-} from "./types";
-import { EXEC_IN_PORT, execOutIds } from "./connect";
+import { edgeKind, getPorts, paramVariables, type ResolvedPin } from "./ports";
+import type { Registry } from "./registry";
+import { TUNNEL_IN, TUNNEL_OUT, VAR_GET, VAR_SET } from "./registry";
+import type { BlueprintEdge, BlueprintGraph, BlueprintNode, EvalOutput, SubGraphDef, SubgraphScope, VariableDef } from "./types";
+import { PARAM_PREFIX } from "./types";
 import { topoSort } from "./validate";
 
 /**
- * 求值引擎。
+ * Interpreter.
  *
- * ## 它是可选的
+ * With an `entry`, it walks exec wires from that node (UE5 semantics): each executed node pulls its
+ * data inputs, pure nodes are recomputed per execution step (cached within the step), impure nodes
+ * keep their last outputs. `$exec` in a node's result picks the exec outputs to fire, otherwise all
+ * fire in declared order. Loops are allowed, bounded by `maxSteps`.
  *
- * 蓝图库的本职是"图 + 合法性"。很多用法根本不需要在这里跑:
- * 导出 JSON 给后端、生成代码、只当配置编辑器。所以 `evaluate` 在节点定义上
- * 是可选字段, 引擎遇到没有它的节点就当"透传"处理。
+ * Without an entry it evaluates every node once in data order (handy for pure graphs and previews).
  *
- * ## 为什么按拓扑序而不是递归
+ * Collapsed graphs run by kind (see SubgraphKind): "graph" walks its body and then fires the exit
+ * pins it reached; "macro" is inlined, an exit pin continues the outer graph immediately; "function"
+ * gets fresh local variables, stops at the first exit it reaches (return) and then fires its single
+ * exec output. Node ids inside are reported as `<shellId>/<innerId>`.
  *
- * 递归求值在菱形图上会把公共上游算两遍 (A→B、A→C、B/C→D 时 A 算两次)。
- * 拓扑序 + 结果缓存保证每个节点只算一次。
+ * Disabled nodes are skipped: exec passes through to the first exec output, each data output takes
+ * the first input of an assignable type. They are reported to `onStep` with `disabled: true` but do
+ * not appear in `trace` or `outputs`.
  *
- * ## 执行流怎么和数据流共存
- *
- * 拓扑序只保证"数据先于消费", 但执行流要求的是"沿 exec 边走, 走到才求值"。
- * 所以分两趟: 先用 exec 边从入口走一遍得到**执行路径**, 路径上每个节点
- * 求值其数据输入 (数据输入再按拓扑序回溯求值)。没被走到的分支不求值 
- * 这正是"分支"的语义, 也是副作用节点必须挂在 exec 上的理由。
+ * Variables: `var.get` reads, `var.set` writes (function locals first, then graph variables).
+ * Initial values are the variable defaults, overridable with `opts.variables`.
  */
-import type { BlueprintNode } from "./types";
+
+export interface StepEvent {
+  /** Path id of the node that ran. */
+  readonly node: string;
+  readonly outputs: Readonly<Record<string, unknown>>;
+  /** Exec outputs that fired after it. */
+  readonly fired: readonly string[];
+  /** Path id of the exec wire that led here (`<shellId>/<edgeId>` inside collapsed graphs). */
+  readonly edge?: string;
+  /** The node is disabled: it was passed through, not run. */
+  readonly disabled?: boolean;
+}
+
+/** Before an exec step: where execution is about to go. */
+export interface StepTarget {
+  readonly node: string;
+  readonly edge?: string;
+  /**
+   * Values arriving at the node's data inputs, pulled on demand (conditional breakpoints read them).
+   * Pure upstream nodes are computed for it; impure ones give their last outputs.
+   */
+  readonly inputs?: () => Promise<Readonly<Record<string, unknown>>>;
+}
+
+export interface EvalOptions {
+  readonly entry?: string;
+  readonly maxSteps?: number;
+  /** Called after every executed node, the hook for exec-flow animation and watch values. */
+  readonly onStep?: (step: StepEvent) => void;
+  /** Awaited before every exec step: the hook for breakpoints and stepping (return a promise to pause). */
+  readonly onBefore?: (target: StepTarget) => void | Promise<void>;
+  /** Called whenever a node's data outputs are computed (pure nodes included), for "last value" readouts. */
+  readonly onCompute?: (node: string, outputs: Readonly<Record<string, unknown>>) => void;
+  /** Initial variable values by id (defaults come from the variable definitions). */
+  readonly variables?: Readonly<Record<string, unknown>>;
+  /** Abort to stop the run between steps. */
+  readonly signal?: AbortSignal;
+  /** Shipping run: "development only" nodes are skipped like disabled ones. Default false. */
+  readonly shipping?: boolean;
+}
 
 export interface EvalResult {
-  /** 节点 id -> 输出值 (输出端口 id -> 值)。没跑到的节点不在里面。 */
-  readonly outputs: ReadonlyMap<string, Record<string, unknown>>;
-  /** 报错的节点 id -> 错误信息。 */
+  readonly outputs: ReadonlyMap<string, Readonly<Record<string, unknown>>>;
   readonly errors: ReadonlyMap<string, string>;
+  /** Path ids in exec order (empty without an entry). */
+  readonly trace: readonly string[];
+  /** Graph variable values at the end. */
+  readonly variables: ReadonlyMap<string, unknown>;
+  /** The run was aborted through `signal`. */
+  readonly stopped: boolean;
   readonly ok: boolean;
 }
 
-/** 某节点各输入口的来源边。 */
-function inEdges(graph: BlueprintGraph, nodeId: string) {
-  return graph.edges.filter((e) => e.to.node === nodeId);
+type Level = { readonly nodes: readonly BlueprintNode[]; readonly edges: readonly BlueprintEdge[] } & SubgraphScope;
+
+interface Scope {
+  readonly level: Level;
+  readonly prefix: string;
+  /** Value of an external input pin, for `subgraph.in` nodes. */
+  readonly tunnelInput?: (pin: string) => Promise<unknown>;
+  /** Called when exec reaches an exit tunnel pin. */
+  readonly onExit?: (pin: string) => Promise<void>;
+  /** Exit tunnel pins reached during an exec walk. */
+  readonly exits: string[];
+  /** Function locals of this call (shared by macros / graphs inlined inside it). */
+  readonly locals: Map<string, unknown> | undefined;
+  /** A function body: the first exit reached returns. */
+  readonly fn?: boolean;
+  /** Set once a function body has returned: nothing more runs in it. */
+  halted?: boolean;
+  /** The Return node reached first (a function may have several). */
+  exitNode?: string;
 }
 
-/** 参数取值: 节点上的覆盖值优先, 否则用定义默认值。 */
-function paramValue(node: BlueprintNode, key: string, fallback: unknown): unknown {
-  const v = node.params?.[key];
-  return v === undefined ? fallback : v;
-}
+type Cache = Map<string, Record<string, unknown>>;
 
-/**
- * 求值一张图。
- *
- * @param entry 执行流起点。不传则退化为"按拓扑序求值所有数据节点"。
- */
-export async function evaluateGraph(
-  reg: BlueprintRegistry,
-  graph: BlueprintGraph,
-  opts: { readonly entry?: string } = {}
-): Promise<EvalResult> {
+const clone = (v: unknown): unknown => (v === undefined || typeof v !== "object" || v === null ? v : JSON.parse(JSON.stringify(v)));
+const initVars = (defs: readonly VariableDef[] | undefined, over: Readonly<Record<string, unknown>> = {}) =>
+  new Map((defs ?? []).map((v) => [v.id, v.id in over ? over[v.id] : clone(v.default)]));
+
+export async function evaluateGraph(graph: BlueprintGraph, registry: Registry, opts: EvalOptions = {}): Promise<EvalResult> {
   const outputs = new Map<string, Record<string, unknown>>();
   const errors = new Map<string, string>();
-  const nodeById = new Map(graph.nodes.map((n) => [n.id, n]));
-
-  /**
-   * 求某个节点的**数据**输出。带缓存, 带环保护。
-   * `stack` 用来把求值时的环报错落到具体节点上。
-   */
+  const trace: string[] = [];
   const computing = new Set<string>();
-  const evalData = async (id: string): Promise<Record<string, unknown> | undefined> => {
-    if (outputs.has(id)) return outputs.get(id);
-    if (computing.has(id)) {
-      const chain = [...computing, id].join(" → ");
-      errors.set(id, `求值过程中出现循环依赖: ${chain}`);
-      return undefined;
-    }
-    const node = nodeById.get(id);
-    if (!node) return undefined;
-    const def = reg.nodeTypes.get(node.type);
-    if (!def) {
-      errors.set(id, `未注册的节点类型: ${node.type}`);
-      return undefined;
-    }
+  const maxSteps = opts.maxSteps ?? 10_000;
+  const globals = initVars(graph.variables, opts.variables);
+  const root: Scope = { level: graph, prefix: "", exits: [], locals: undefined };
+  let stopped = false;
+  const isImpure = (n: BlueprintNode, s: Scope) => getPorts(n, registry, s.level).inputs.some((p) => p.exec);
+  /** Passed through instead of run: disabled, or development only in a shipping run. */
+  const skipped = (n: BlueprintNode) => !!n.disabled || (!!opts.shipping && !!n.devOnly);
+  const store = (s: Scope, id: string | undefined) => (id !== undefined && s.locals?.has(id) ? s.locals : globals);
 
-    computing.add(id);
+  /** Data outputs of a node, computing it if needed. */
+  const pull = async (s: Scope, n: BlueprintNode, cache: Cache): Promise<Record<string, unknown> | undefined> => {
+    const path = s.prefix + n.id;
+    if (isImpure(n, s) && outputs.has(path)) return outputs.get(path);
+    if (cache.has(path)) return cache.get(path);
+    if (computing.has(path)) {
+      errors.set(path, `Data cycle while evaluating: ${[...computing, path].join(" -> ")}`);
+      return undefined;
+    }
+    computing.add(path);
     try {
-      const inputs: Record<string, unknown> = {};
-      for (const port of def.inputs ?? []) {
-        const e = inEdges(graph, id).find((x) => x.to.port === port.id);
-        if (e) {
-          const up = await evalData(e.from.node);
-          inputs[port.id] = up?.[e.from.port];
-        } else if (port.default !== undefined) {
-          inputs[port.id] = port.default;
-        }
+      const out = await compute(s, n, cache);
+      if (out) {
+        cache.set(path, out);
+        if (!skipped(n)) opts.onCompute?.(path, out);
       }
-      const params: Record<string, unknown> = {};
-      for (const p of def.params ?? []) params[p.id] = paramValue(node, p.id, p.default);
-
-      /**
-       * 子图节点: 进去跑一遍里面的图, 把结果接回来。
-       *
-       * 入参怎么进来: 隧道输入节点读 `params.__value`  它的 evaluate 就是
-       * 把这值原样吐出。这样"外部 -> 隧道 -> 内部"是一条普通的边,
-       * 求值器不需要知道子图这回事。
-       */
-      if (node.subgraph) {
-        const sg = graph.subgraphs?.[node.subgraph];
-        if (!sg) {
-          errors.set(id, `子图不存在: ${node.subgraph}`);
-          return undefined;
-        }
-        const innerGraph: BlueprintGraph = { nodes: sg.nodes, edges: sg.edges, subgraphs: graph.subgraphs };
-        /**
-         * 给每个输入隧道灌值, 并从输出隧道收值。
-         *
-         * 隧道的"对外端口 id"与它的 `params.name` 是**两回事**:
-         * 前者是连线用的 (如 "a"/"out"), 后者是给人看的标签 (如 "结果")。
-         * 这里必须按**端口 id** 对齐  用 label 对齐的话, 一旦两个端口
-         * 同名或用户改了标签, 值就会喂错地方, 而且不报错。
-         */
-        /**
-         * 隧道节点的端口固定叫 "value"; 它对应哪个**对外端口**由
-         * 子图定义里的隧道顺序决定  第 i 个输入隧道对第 i 个 inputs[i],
-         * 输出同理。这个对应关系是折叠时按同一份数组建的, 两边同序即可。
-         */
-        const inTunnels = sg.nodes.filter((n) => n.type === "subgraph.input");
-        const outTunnels = sg.nodes.filter((n) => n.type === "subgraph.output");
-
-        const seeded = {
-          ...innerGraph,
-          nodes: innerGraph.nodes.map((n) => {
-            if (n.type !== "subgraph.input") return n;
-            const i = inTunnels.findIndex((t) => t.id === n.id);
-            const portId = (sg.inputs ?? [])[i]?.id;
-            return { ...n, params: { ...(n.params ?? {}), __value: inputs[portId ?? ""] } };
-          }),
-        };
-        /**
-         * 子图**不传 entry**。
-         *
-         * 子图里的执行流是它自己的事 (很多子图压根没有执行流, 纯是数据变换)。
-         * 外层沿 exec 走进来时, 要的是"把这片数据算出结果", 而不是
-         * "在子图里再找一条执行链"  后者会因为隧道节点没有 execIn 而
-         * 一个节点都走不到, 结果就是空输出且不报错。
-         */
-        const r = await evaluateGraph(reg, seeded);
-        const out: Record<string, unknown> = {};
-        for (const [nid, vals] of r.outputs) {
-          const i = outTunnels.findIndex((t) => t.id === nid);
-          if (i < 0) continue;
-          const portId = (sg.outputs ?? [])[i]?.id;
-          if (portId) out[portId] = vals.value;
-        }
-        for (const [nid, msg] of r.errors) errors.set(`${id}/${nid}`, msg);
-        outputs.set(id, out);
-        return out;
-      }
-
-      if (!def.evaluate) {
-        // 没有求值函数: 当成"把输入原样透传到同名输出", 让图不至于断掉
-        const passthrough: Record<string, unknown> = {};
-        for (const o of def.outputs ?? []) passthrough[o.id] = inputs[o.id];
-        outputs.set(id, passthrough);
-        return passthrough;
-      }
-      const ctx: EvalContext = { inputs, params };
-      const out = await def.evaluate(ctx);
-      outputs.set(id, out);
       return out;
     } catch (err) {
-      errors.set(id, err instanceof Error ? err.message : String(err));
+      errors.set(path, err instanceof Error ? err.message : String(err));
       return undefined;
     } finally {
-      computing.delete(id);
+      computing.delete(path);
     }
   };
 
-  // ── 有执行入口: 沿 exec 边走 ────────────────────────────────────
-  if (opts.entry) {
-    const visited = new Set<string>();
-    const stack: Array<{ id: string; via?: string }> = [{ id: opts.entry }];
-    while (stack.length) {
-      const cur = stack.pop()!;
-      if (visited.has(cur.id)) continue; // 分支合并回同一节点时只走一次
-      visited.add(cur.id);
-      const def = reg.nodeTypes.get(nodeById.get(cur.id)?.type ?? "");
-      await evalData(cur.id);
-      if (!def) continue;
-      const outs = execOutIds(def);
-      for (const oid of outs) {
-        const next = graph.edges.find((e) => e.from.node === cur.id && e.from.port === oid);
-        if (next) stack.push({ id: next.to.node, via: oid });
+  /** Value arriving at an input pin: wire, then literal, then pin default. */
+  const inputValue = async (s: Scope, n: BlueprintNode, pin: string, fallback: unknown, cache: Cache) => {
+    const e = s.level.edges.find((x) => x.to.node === n.id && x.to.pin === pin);
+    const src = e && s.level.nodes.find((x) => x.id === e.from.node);
+    if (e && src) return (await pull(s, src, cache))?.[e.from.pin];
+    return n.values?.[pin] ?? fallback;
+  };
+
+  /** Disabled node: each data output passes the first input whose type fits (same id first). */
+  const passThrough = async (s: Scope, n: BlueprintNode, cache: Cache) => {
+    const ports = getPorts(n, registry, s.level);
+    const ins = ports.inputs.filter((p) => !p.exec);
+    const out: Record<string, unknown> = {};
+    for (const o of ports.outputs) {
+      if (o.exec) continue;
+      const src: ResolvedPin | undefined = ins.find((p) => p.id === o.id && registry.assignable(p.type, o.type)) ?? ins.find((p) => registry.assignable(p.type, o.type));
+      out[o.id] = src ? await inputValue(s, n, src.id, src.default, cache) : undefined;
+    }
+    return out;
+  };
+
+  const compute = async (s: Scope, n: BlueprintNode, cache: Cache): Promise<Record<string, unknown> | undefined> => {
+    if (skipped(n)) return passThrough(s, n, cache);
+    const ports = getPorts(n, registry, s.level);
+    if (n.type === TUNNEL_IN) {
+      const out: Record<string, unknown> = {};
+      for (const p of ports.outputs) if (!p.exec) out[p.id] = await s.tunnelInput?.(p.id);
+      return out;
+    }
+    if (n.type === VAR_GET) {
+      if (ports.missing) throw new Error(`Variable "${n.variable ?? "?"}" not found`);
+      // a function input getter reads the call site's pin
+      if (n.variable!.startsWith(PARAM_PREFIX)) return { value: await s.tunnelInput?.(n.variable!.slice(PARAM_PREFIX.length)) };
+      return { value: store(s, n.variable).get(n.variable!) };
+    }
+    if (n.type === VAR_SET) {
+      if (ports.missing) throw new Error(`Variable "${n.variable ?? "?"}" not found`);
+      const v = await inputValue(s, n, "value", ports.inputs.find((p) => p.id === "value")?.default, cache);
+      store(s, n.variable).set(n.variable!, v);
+      return { value: v };
+    }
+    if (n.subgraph !== undefined) return runSubgraph(s, n, undefined, cache);
+    const def = registry.node(n.type);
+    if (!def) throw new Error(`Unknown node type "${n.type}"`);
+    const inputs: Record<string, unknown> = {};
+    for (const p of ports.inputs) if (!p.exec) inputs[p.id] = await inputValue(s, n, p.id, p.default, cache);
+    const params: Record<string, unknown> = {};
+    for (const p of def.params) params[p.id] = n.values?.[p.id] ?? p.default;
+    if (!def.evaluate) {
+      const pass: Record<string, unknown> = {};
+      for (const o of ports.outputs) if (!o.exec) pass[o.id] = inputs[o.id];
+      return pass;
+    }
+    return { ...(await def.evaluate({ inputs, params, node: n })) };
+  };
+
+  /** Data outputs of a collapsed graph: the inputs of the exit tunnel reached (else the first one). */
+  const exitValues = async (sg: SubGraphDef, inner: Scope) => {
+    const out: Record<string, unknown> = {};
+    const cache: Cache = new Map();
+    const exits = sg.nodes.filter((x) => x.type === TUNNEL_OUT);
+    const reached = exits.filter((x) => x.id === inner.exitNode);
+    for (const t of reached.length ? reached : exits.slice(0, 1)) {
+      for (const p of getPorts(t, registry, inner.level).inputs) if (!p.exec) out[p.id] = await inputValue(inner, t, p.id, undefined, cache);
+    }
+    return out;
+  };
+
+  /** Run a collapsed graph. With `viaExec`, walk exec from that entry pin, otherwise only pull data. */
+  const runSubgraph = async (s: Scope, shell: BlueprintNode, viaExec: string | undefined, cache: Cache) => {
+    const sg = shell.subgraph !== undefined ? graph.subgraphs?.[shell.subgraph] : undefined;
+    if (!sg) throw new Error(`Collapsed graph "${shell.subgraph ?? "?"}" not found`);
+    const kind = sg.kind ?? "graph";
+    const shellPath = s.prefix + shell.id;
+    const isFn = kind === "function";
+    const level: Level = {
+      nodes: sg.nodes, edges: sg.edges,
+      ...(graph.subgraphs ? { subgraphs: graph.subgraphs } : {}),
+      ...(graph.variables ? { variables: graph.variables } : {}),
+      ...(isFn ? { locals: sg.variables ?? [], params: paramVariables(sg.nodes, registry) } : s.level.locals ? { locals: s.level.locals } : {}),
+    };
+    const inner: Scope = {
+      level,
+      prefix: `${shellPath}/`,
+      // unwired, no literal: the input's declared default (function inputs have defaults, UE5)
+      tunnelInput: (pin) => inputValue(s, shell, pin, getPorts(shell, registry, s.level).inputs.find((p) => p.id === pin)?.default, cache),
+      exits: [],
+      locals: isFn ? initVars(sg.variables) : s.locals,
+      fn: isFn,
+      ...(kind === "macro" && viaExec !== undefined
+        ? {
+          onExit: async (pin: string) => {
+            const data = await exitValues(sg, inner);
+            outputs.set(shellPath, data);
+            opts.onStep?.({ node: shellPath, outputs: data, fired: [pin] });
+            await fire(s, shell, [pin]);
+          },
+        }
+        : {}),
+    };
+    if (viaExec !== undefined) {
+      for (const t of sg.nodes.filter((x) => x.type === TUNNEL_IN)) await fire(inner, t, [viaExec]);
+      if (kind === "macro") return undefined;
+    }
+    const out = await exitValues(sg, inner);
+    return viaExec !== undefined ? { ...out, $exec: isFn ? inner.exits.slice(0, 1) : inner.exits } : out;
+  };
+
+  let steps = 0;
+  /** Follow the wires leaving `pins` of node `n`. */
+  const fire = async (s: Scope, n: BlueprintNode, pins: readonly string[]) => {
+    for (const pin of pins) {
+      for (const e of s.level.edges.filter((x) => x.from.node === n.id && x.from.pin === pin)) {
+        if (s.halted || stopped || errors.has("*")) return;
+        const next = s.level.nodes.find((x) => x.id === e.to.node);
+        if (next) await execute(s, next, e.to.pin, s.prefix + e.id);
       }
     }
-    return { outputs, errors, ok: errors.size === 0 };
+  };
+
+  const execute = async (s: Scope, n: BlueprintNode, via: string, edge?: string): Promise<void> => {
+    if (n.type === TUNNEL_OUT) {
+      s.exits.push(via);
+      s.exitNode ??= n.id;
+      if (s.fn) s.halted = true;
+      if (s.onExit) await s.onExit(via);
+      return;
+    }
+    if (opts.signal?.aborted) {
+      stopped = true;
+      return;
+    }
+    if (++steps > maxSteps) {
+      errors.set("*", `Stopped after ${maxSteps} exec steps (infinite loop?)`);
+      return;
+    }
+    const path = s.prefix + n.id;
+    if (opts.onBefore) {
+      const peek = async () => {
+        const vals: Record<string, unknown> = {};
+        const cache: Cache = new Map();
+        for (const p of getPorts(n, registry, s.level).inputs) if (!p.exec) vals[p.id] = await inputValue(s, n, p.id, p.default, cache);
+        return vals;
+      };
+      const target: StepTarget = { node: path, ...(edge !== undefined ? { edge } : {}) };
+      // non-enumerable: the target stays a plain { node, edge } for logs, equality and JSON
+      Object.defineProperty(target, "inputs", { value: peek, enumerable: false });
+      await opts.onBefore(target);
+    }
+    if (opts.signal?.aborted) {
+      stopped = true;
+      return;
+    }
+    const execOuts = getPorts(n, registry, s.level).outputs.filter((p) => p.exec).map((p) => p.id);
+    if (skipped(n)) {
+      const fired = execOuts.slice(0, 1);
+      opts.onStep?.({ node: path, outputs: {}, fired, ...(edge !== undefined ? { edge } : {}), disabled: true });
+      await fire(s, n, fired);
+      return;
+    }
+    trace.push(path);
+    let result: Record<string, unknown> | undefined;
+    try {
+      result = n.subgraph !== undefined ? await runSubgraph(s, n, via, new Map()) : await compute(s, n, new Map());
+    } catch (err) {
+      errors.set(path, err instanceof Error ? err.message : String(err));
+      return;
+    }
+    if (!result) return;
+    const { $exec, ...data } = result as EvalOutput;
+    outputs.set(path, data);
+    if (n.subgraph === undefined) opts.onCompute?.(path, data);
+    const fired = $exec === undefined ? execOuts : (typeof $exec === "string" ? [$exec] : [...$exec]).filter((p) => execOuts.includes(p));
+    opts.onStep?.({ node: path, outputs: data, fired, ...(edge !== undefined ? { edge } : {}) });
+    await fire(s, n, fired);
+  };
+
+  if (opts.entry !== undefined) {
+    const start = graph.nodes.find((n) => n.id === opts.entry);
+    if (!start) errors.set(opts.entry, `Entry node "${opts.entry}" not found`);
+    else await execute(root, start, "");
+    return { outputs, errors, trace, variables: globals, stopped, ok: errors.size === 0 };
   }
 
-  // ── 无执行入口: 按拓扑序求值全部 ────────────────────────────────
-  const order = topoSort(graph);
-  if (!order) {
-    /**
-     * 拓扑序失败时**仍然逐节点求值**, 而不是直接报错退出。
-     *
-     * 直接退出只能报一句"图中存在循环", 指不出是哪些节点  用户拿到这条
-     * 报错还得自己去找环。而逐节点求值时 `evaluating` 集合会在真正回环的
-     * 那一步命中, 报出**具体是哪几个节点**互相等着对方。
-     * 差别是"图里有环"和"a 和 b 互相依赖", 后者才能动手修。
-     */
-    for (const n of graph.nodes) await evalData(n.id);
-    if (errors.size === 0) errors.set("*", "图中存在循环, 无法确定求值顺序");
-    return { outputs, errors, ok: false };
+  // Data mode: everything once, in data order. Cycles still evaluate node by node so the error names them.
+  const dataEdges = graph.edges.filter((e) => edgeKind(graph, e, registry) === "data");
+  const order = topoSort(graph.nodes.map((n) => n.id), dataEdges) ?? graph.nodes.map((n) => n.id);
+  const cache: Cache = new Map();
+  for (const id of order) {
+    const n = graph.nodes.find((x) => x.id === id)!;
+    const out = await pull(root, n, cache);
+    if (out) outputs.set(id, out);
   }
-  for (const id of order) await evalData(id);
-  return { outputs, errors, ok: errors.size === 0 };
+  return { outputs, errors, trace, variables: globals, stopped, ok: errors.size === 0 };
 }
 
-/** 找出可作为执行起点的节点 (有 execIn 且没有上游 exec 边)。 */
-export function findEntries(graph: BlueprintGraph): string[] {
-  return graph.nodes
-    .filter((n) => !graph.edges.some((e) => e.to.node === n.id && e.to.port === EXEC_IN_PORT))
-    .map((n) => n.id);
+/** Exec entry candidates: event nodes (exec out, no exec in), else exec nodes with no incoming exec wire. */
+export function findEntries(graph: BlueprintGraph, registry: Registry): string[] {
+  const events = graph.nodes.filter((n) => {
+    const p = getPorts(n, registry, graph);
+    return !p.inputs.some((x) => x.exec) && p.outputs.some((x) => x.exec);
+  });
+  if (events.length) return events.map((n) => n.id);
+  const fed = new Set(graph.edges.filter((e) => edgeKind(graph, e, registry) === "exec").map((e) => e.to.node));
+  return graph.nodes.filter((n) => getPorts(n, registry, graph).inputs.some((x) => x.exec) && !fed.has(n.id)).map((n) => n.id);
 }

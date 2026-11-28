@@ -1,123 +1,193 @@
-import {
-  BASE_TYPES,
-  ANY,
-  type BlueprintRegistry,
-  type DataTypeDef,
-  type DataTypeId,
-  type NodeTypeDef,
-  type NodeValidator,
-} from "./types";
+import { defineNode, defineTypes, type PinTypes } from "./define";
+import type { BlueprintLibrary } from "./library";
+import type { NodeDef, PinShape, PinTypeDef } from "./types";
+import { ANY } from "./types";
 
 /**
- * 注册中心。
- *
- * 为什么不用 React Context: 节点定义是**静态**的, 与组件树无关。
- * 放进 Context 会逼着每个使用方包一层 Provider, 而校验函数在图外也要能跑
- * (后端导出、单元测试)  那时根本没有 React。
- *
- * 但**自定义校验钩子**(`validators`)是一次性的、按实例装的, 所以放在这里
- * 而不写进 NodeTypeDef: 定义是可序列化的 JSON, 钩子不是。
+ * Registry: the static half of a blueprint (pin types + node definitions).
+ * It knows nothing about graphs. It is a plain object, no React context, so validation,
+ * evaluation and tests run anywhere.
  */
-export class BlueprintRegistryImpl implements BlueprintRegistry {
-  readonly nodeTypes = new Map<string, NodeTypeDef>();
-  readonly dataTypes = new Map<DataTypeId, DataTypeDef>();
-  /** 按节点类型装的自定义校验钩子。 */
-  readonly validators = new Map<string, NodeValidator>();
-
-  constructor(withBaseTypes = true) {
-    if (withBaseTypes) for (const t of Object.values(BASE_TYPES)) this.dataTypes.set(t.id, t);
-  }
-
-  /** 注册一个节点类型。重名覆盖  交给源码的最后一版说话。 */
-  node(def: NodeTypeDef): this {
-    this.nodeTypes.set(def.type, def);
-    return this;
-  }
-
-  /** 批量注册。写成 `nodes({...})` 的话用这个。 */
-  nodes(defs: Record<string, NodeTypeDef>): this {
-    for (const def of Object.values(defs)) {
-      this.nodeTypes.set(def.type ?? def.type, def);
-    }
-    return this;
-  }
-
-  /** 注册数据类型。 */
-  type(def: DataTypeDef): this {
-    this.dataTypes.set(def.id, def);
-    return this;
-  }
-
-  /** 给某个节点类型装校验钩子。返回拆卸函数。 */
-  validator(type: string, fn: NodeValidator): () => void {
-    this.validators.set(type, fn);
-    return () => {
-      if (this.validators.get(type) === fn) this.validators.delete(type);
-    };
-  }
-
-  /** 取节点定义。未知类型返回 undefined  调用方按"未注册"处理。 */
-  def(type: string): NodeTypeDef | undefined {
-    return this.nodeTypes.get(type);
-  }
-
-  /** 必须存在的节点定义。未知类型抛错, 用于"这里理论上不可能未知"的地方。 */
-  requireDef(type: string): NodeTypeDef {
-    const d = this.nodeTypes.get(type);
-    if (!d) throw new Error(`[blueprint] 未注册的节点类型: ${type}`);
-    return d;
-  }
-
+export interface Registry {
+  readonly types: ReadonlyMap<string, PinTypeDef>;
+  readonly nodes: ReadonlyMap<string, NodeDef>;
+  node(id: string): NodeDef | undefined;
+  type(id: string): PinTypeDef | undefined;
+  /** Shape of a pin type. Unknown types count as "data". */
+  shape(typeId: string): PinShape;
+  isExec(typeId: string): boolean;
+  /** Can a value of type `from` flow into a pin of type `to` without conversion? */
+  assignable(from: string, to: string): boolean;
+  /** Conversion node id that turns `from` into `to`, if one is registered (UE5 autocast). */
+  conversion(from: string, to: string): string | undefined;
+  /** Colour token of a pin type. */
+  color(typeId: string): string | undefined;
   /**
-   * 类型相容判定: `from` 的值能不能喂给 `to` 输入口。
-   *
-   * 沿 `extends` 链向上走 (协变)。`any` 在两个方向都通:
-   * - 输出端是 any  ->  能进任何输入口 (编译器不知道它是什么, 只能放行)
-   * - 输入端是 any  ->  任何输出都能进
-   * 相等短路在前面, 免得自引用类型走进死循环。
+   * Function / macro libraries available to every document using this registry. Their items show
+   * in the action menu by category; picking one copies the definition into the document.
    */
-  assignable(from: DataTypeId, to: DataTypeId): boolean {
-    if (from === to) return true;
-    if (from === ANY || to === ANY) return true;
-    const seen = new Set<DataTypeId>([from]);
-    let cur: DataTypeId | undefined = from;
-    while (cur) {
-      const parent: DataTypeId | undefined = this.dataTypes.get(cur)?.extends;
-      if (!parent) return false;
-      if (parent === to) return true;
-      if (seen.has(parent)) return false; // 环: 注册写错了, 不让它拖死 UI
-      seen.add(parent);
-      cur = parent;
+  readonly libraries: readonly BlueprintLibrary[];
+}
+
+// ---------------------------------------------------------------------------
+// Container types: "array<T>", "set<T>", "map<K,V>" resolve for any registered T (UE5 variable
+// container switch) without registering each combination.
+
+export type ContainerKind = "single" | "array" | "set" | "map";
+
+/** Type id of a container of `of` ("single" returns `of`). */
+export function containerType(kind: ContainerKind, of: string, key = "string"): string {
+  return kind === "single" ? of : kind === "map" ? `map<${key},${of}>` : `${kind}<${of}>`;
+}
+
+/** Split a container type id; plain ids give `{ kind: "single", of: id }`. */
+export function parseContainer(id: string): { kind: ContainerKind; of: string; key?: string } {
+  const m = /^(array|set)<(.+)>$/.exec(id);
+  if (m) return { kind: m[1] as "array" | "set", of: m[2]! };
+  const mm = /^map<([^,<>]+),(.+)>$/.exec(id);
+  if (mm) return { kind: "map", key: mm[1]!, of: mm[2]! };
+  return { kind: "single", of: id };
+}
+
+// ---------------------------------------------------------------------------
+// Built-in node types, always registered
+
+export const SUBGRAPH_NODE = "subgraph";
+export const TUNNEL_IN = "subgraph.in";
+export const TUNNEL_OUT = "subgraph.out";
+export const REROUTE = "reroute";
+export const VAR_GET = "var.get";
+export const VAR_SET = "var.set";
+
+/** Collapsed graph shell. Declares no pins: they come from the subgraph's tunnels (see getPorts). */
+const subgraphNode = defineNode({
+  id: SUBGRAPH_NODE, title: "Collapsed Graph", category: "Graph", kind: "macro", internal: true, width: 200,
+  description: "A collapsed graph. Its pins mirror the tunnels inside.",
+});
+
+/** Entry tunnel inside a subgraph. Its OUTPUT pins (per instance) are the subgraph's external inputs. */
+const tunnelIn = defineNode({
+  id: TUNNEL_IN, title: "Inputs", category: "Graph", kind: "macro", internal: true,
+  description: "External inputs of the collapsed graph.",
+});
+
+/** Exit tunnel inside a subgraph. Its INPUT pins (per instance) are the subgraph's external outputs. */
+const tunnelOut = defineNode({
+  id: TUNNEL_OUT, title: "Outputs", category: "Graph", kind: "macro", internal: true,
+  description: "External outputs of the collapsed graph.",
+});
+
+/** Reroute (knot). Pins default to `any`, `addReroute` retypes them to the wire it splits. */
+const reroute = defineNode({
+  id: REROUTE, title: "Reroute", category: "Graph", kind: "default", width: 16,
+  inputs: [{ id: "in", type: "any" }],
+  outputs: [{ id: "out", type: "any" }],
+  evaluate: ({ inputs }) => ({ out: inputs.in }),
+});
+
+/** Variable getter. Declares no pins: `getPorts` derives them from the variable (node.variable). */
+const varGet = defineNode({
+  id: VAR_GET, title: "Get", category: "Variables", kind: "pure", internal: true,
+  description: "Reads a graph variable.",
+});
+
+/** Variable setter: exec in / out, the new value in, the stored value out. Pins from the variable. */
+const varSet = defineNode({
+  id: VAR_SET, title: "Set", category: "Variables", kind: "function", internal: true,
+  description: "Writes a graph variable.",
+});
+
+export const BUILTIN_NODES: readonly NodeDef[] = [subgraphNode, tunnelIn, tunnelOut, reroute, varGet, varSet];
+
+// ---------------------------------------------------------------------------
+
+/**
+ * Build a registry.
+ * @param types result of `defineTypes`, or a list of PinTypeDef. Base types are added when missing.
+ * @param nodes node definitions from `defineNode`. Later duplicates win.
+ */
+export function createRegistry(
+  types: Pick<PinTypes<unknown>, "list"> | readonly PinTypeDef[] = defineTypes({}),
+  nodes: readonly NodeDef[] = [],
+  opts: { readonly libraries?: readonly BlueprintLibrary[] } = {},
+): Registry {
+  const typeMap = new Map<string, PinTypeDef>();
+  for (const t of defineTypes({}).list) typeMap.set(t.id, t);
+  for (const t of "list" in types ? types.list : types) typeMap.set(t.id, t);
+
+  const nodeMap = new Map<string, NodeDef>();
+  for (const n of [...BUILTIN_NODES, ...nodes]) nodeMap.set(n.id, n);
+
+  const synth = new Map<string, PinTypeDef | null>();
+  /** Registered type, or a synthesized container of registered types. */
+  const typeOf = (id: string): PinTypeDef | undefined => {
+    const t = typeMap.get(id);
+    if (t) return t;
+    if (!id.includes("<")) return undefined;
+    if (synth.has(id)) return synth.get(id) ?? undefined;
+    const c = parseContainer(id);
+    let def: PinTypeDef | null = null;
+    if (c.kind !== "single" && typeOf(c.of) && !isExecId(c.of) && (c.key === undefined || (typeOf(c.key) && !isExecId(c.key)))) {
+      const inner = typeOf(c.of)!;
+      const label = `${c.kind === "array" ? "Array" : c.kind === "set" ? "Set" : "Map"} of ${inner.label ?? inner.id}`;
+      def = { id, shape: c.kind, of: c.of, label, ...(c.key !== undefined ? { key: c.key } : {}) };
+    }
+    synth.set(id, def);
+    return def ?? undefined;
+  };
+  const isExecId = (id: string) => typeMap.get(id)?.shape === "exec";
+  const shape = (id: string): PinShape => typeOf(id)?.shape ?? "data";
+  const isExec = (id: string) => shape(id) === "exec";
+
+  /** Walk `extends` from `from` looking for `to`. Guards against cycles in bad registrations. */
+  const extendsTo = (from: string, to: string): boolean => {
+    const seen = new Set<string>();
+    for (let cur: string | undefined = from; cur && !seen.has(cur); cur = typeMap.get(cur)?.extends) {
+      if (cur === to) return true;
+      seen.add(cur);
     }
     return false;
-  }
+  };
 
-  /** 数据流类型的显示色 (bg-*)。未注册的类型走默认描边。 */
-  typeColor(type: DataTypeId): string | undefined {
-    return this.dataTypes.get(type)?.colorClass;
-  }
+  const assignable = (from: string, to: string): boolean => {
+    if (from === to) return true;
+    const fe = isExec(from);
+    if (fe !== isExec(to)) return false;
+    if (fe) return extendsTo(from, to);
+    if (from === ANY || to === ANY) return true;
+    if (extendsTo(from, to)) return true;
+    // Containers are structural: number[] fits any[] when both are declared array types.
+    const a = typeOf(from);
+    const b = typeOf(to);
+    if (!a || !b || a.shape !== b.shape || a.shape === "data") return false;
+    const ofOk = a.of !== undefined && b.of !== undefined && assignable(a.of, b.of);
+    const keyOk = a.shape !== "map" || (a.key !== undefined && b.key !== undefined && assignable(a.key, b.key));
+    return ofOk && keyOk;
+  };
 
-  /**
-   * 连线的颜色 (stroke-*)。
-   *
-   * 没写 strokeClass 时从 colorClass 把 `bg-` 换成 `stroke-` 推导 
-   * 这样注册一个类型只需写一处颜色, 圆点与连线自动一致。
-   * 显式写了 strokeClass 就以它为准。
-   */
-  typeStroke(type: DataTypeId): string | undefined {
-    const def = this.dataTypes.get(type);
-    if (!def) return undefined;
-    if (def.strokeClass) return def.strokeClass;
-    if (!def.colorClass) return undefined;
-    const m = /(^|\s)bg-([a-z0-9-]+(?:\/[0-9]+)?)/.exec(def.colorClass);
-    return m ? `stroke-${m[2]}` : undefined;
-  }
+  const conversion = (from: string, to: string): string | undefined => {
+    const seen = new Set<string>();
+    for (let cur: string | undefined = from; cur && !seen.has(cur); cur = typeMap.get(cur)?.extends) {
+      seen.add(cur);
+      const conv = typeMap.get(cur)?.convert;
+      if (!conv) continue;
+      for (const [target, nodeId] of Object.entries(conv)) {
+        if (nodeMap.has(nodeId) && (target === to || extendsTo(target, to))) return nodeId;
+      }
+    }
+    return undefined;
+  };
+
+  return {
+    types: typeMap,
+    nodes: nodeMap,
+    node: (id) => nodeMap.get(id),
+    type: typeOf,
+    shape,
+    isExec,
+    assignable,
+    conversion,
+    color: (id) => typeOf(id)?.color,
+    libraries: opts.libraries ?? [],
+  };
 }
-
-/** 建一个注册中心。`withBaseTypes = false` 时不预置内置类型。 */
-export function createRegistry(withBaseTypes = true): BlueprintRegistryImpl {
-  return new BlueprintRegistryImpl(withBaseTypes);
-}
-
-/** 内置类型注册好的默认中心。用它做一次性演示, 自己的东西另建。 */
-export const defaultRegistry: BlueprintRegistryImpl = createRegistry();

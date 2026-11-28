@@ -1,26 +1,16 @@
 node_modules/
 dist/
+dist-site/
 .vite/
 *.log
+*.tsbuildinfo
+*.tgz
+pack.json
 .DS_Store
 
-# check-blueprint 的打包中间产物 (正常跑完会自己删; 跑挂时留在这里)
-docs/.bpprobe/
-
-# e2e 截图: 每次跑都会重新生成, 且文件名含中文与空格 
-# git 会给它们加引号, 而引号路径会被 lanes 门禁切成 "scripts 这种伪顶层条目。
-scripts/e2e/shots/
-
-# record-browser-gif 的录制产物 (分镜, 截图, 视频, GIF): GIF 发布到 pr-assets 分支, 永不进 PR 分支
-.playwright-gif/
-
-# >>> hx-agent-code quality state >>>
-scripts/.hx_code_quality/
-# <<< hx-agent-code quality state <<<
-*.tgz
-
-# 本地探针脚本 (playwright 调试用), 不进仓库
+# 本地探针 / 录屏产物 (playwright 调试用), 不进仓库
 .tmp-check/
+.playwright-gif/
 
 # hxoa 文件桥的本地登录状态 (含 token), 不进仓库
 .hxoa/

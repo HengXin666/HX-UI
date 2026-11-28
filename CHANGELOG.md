@@ -23,6 +23,7 @@
 
 ### 变更
 
+- 仓库布局: main 只保留 2.x, 原 `next/` 移到仓库根目录, 1.x 旧版存档到 `legacy/v1` 分支; README 只写重构说明, 安装与用法移到 `docs/guide.md`. 发布包内容与入口不变
 - 滚动条: 所有可滚区域 (包括页面) 统一为不抢眼的自定义细滚动条, 跟随主题; 新增 `scrollbar-none`, `scrollbar-thin` 改为更细一档. 组件里不再写 `scrollbar-width` 任意值
 
 ## 2.6.1
@@ -64,7 +65,7 @@ pnpm add https://github.com/HengXin666/HX-UI/releases/download/v2.6.0/hx-ui-2.6.
 
 ## 2.5.0
 
-Agent 会话界面第二版 ([#57](https://github.com/HengXin666/HX-UI/issues/57)): 对话内的多 Agent 编排, 实时用量与上下文, 计划, Codex 式输入区与推理强度. 对标 Codex / DSH / DSH Go / dsh-context / T3 Code / oh-my-pi, 研究笔记在 `next/docs/dsh-conversation-research.md`. 含几处默认渲染与类型上的破坏性变化 (按 2.1.0 的先例走 minor), 见下方迁移.
+Agent 会话界面第二版 ([#57](https://github.com/HengXin666/HX-UI/issues/57)): 对话内的多 Agent 编排, 实时用量与上下文, 计划, Codex 式输入区与推理强度. 对标 Codex / DSH / DSH Go / dsh-context / T3 Code / oh-my-pi, 研究笔记在 `docs/dsh-conversation-research.md`. 含几处默认渲染与类型上的破坏性变化 (按 2.1.0 的先例走 minor), 见下方迁移.
 
 安装:
 

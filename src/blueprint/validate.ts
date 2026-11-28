@@ -1,444 +1,275 @@
-import type {
-  BlueprintEdge,
-  BlueprintGraph,
-  BlueprintNode,
-  BlueprintRegistry,
-  GraphValidation,
-  NodeValidation,
-  PortDef,
-  ValidationIssue,
-} from "./types";
-import { EXEC_IN_PORT, execOutIds, resolvePort, nodeShape } from "./connect";
+import { edgeKind, findPin, getPorts, paramVariables, subgraphPins } from "./ports";
+import type { Registry } from "./registry";
+import { TUNNEL_IN, TUNNEL_OUT, VAR_SET } from "./registry";
+import type { BlueprintEdge, BlueprintGraph, GraphValidation, ValidationIssue } from "./types";
 
 /**
- * 图校验。
- *
- * ## 分层 (这是整套设计的要点)
- *
- * L1 结构  节点类型注册了吗 / 端口存在吗 / 边指向的节点在吗
- * L2 局部  这条线的类型对不对 / 必填输入有没有连
- * L3 全局  有没有环
- * L4 业务  节点自带的 validate 钩子
- *
- * 只有 L1 通过了才跑 L2  拿一个未知端口去做类型比较没有意义,
- * 而且会产出两条互相矛盾的报错。L3 必须最后跑: 环上的每个节点都"局部正确",
- * 只有把整张图连起来看才出问题。
- *
- * ## 关于环
- *
- * 环不是"某一行代码错了", 它是**一组边**的属性。所以环的报错挂在边上
- * (`byEdge`), 而不是节点上  挂节点会让人以为删掉那个节点就好,
- * 实际得删环上任意一条边。
+ * Static validation, layered:
+ *   L1 structure: ids, node types, subgraph refs, edge ends
+ *   L2 local: exec/data mix, types, duplicates, wire multiplicity, required inputs
+ *   L3 global: cycles. Data-only cycles are errors (B1), exec loops are warnings (intentional loops are normal)
+ *   L4 custom: NodeDef.validate hooks
+ * Then every subgraph definition is validated once, issues prefixed with its label.
  */
 
-/** 入边索引: 输入端口 -> 边列表。全图只建一次, 各处复用。 */
-function indexIncoming(graph: BlueprintGraph): Map<string, BlueprintEdge[]> {
-  const m = new Map<string, BlueprintEdge[]>();
-  for (const e of graph.edges) {
-    const key = `${e.to.node}:${e.to.port}`;
-    const list = m.get(key);
-    if (list) list.push(e);
-    else m.set(key, [e]);
-  }
-  return m;
+export interface ValidateOptions {
+  /** Require at least one exec entry (exec node without incoming exec wire) when the graph has exec nodes. */
+  readonly requireEntry?: boolean;
 }
 
-/** 端口形貌统一走 nodeShape  子图节点与实例 ports 才能被正确识别。 */
-function outPorts(reg: BlueprintRegistry, graph: BlueprintGraph, node: BlueprintNode): PortDef[] {
-  return [...nodeShape(reg, graph, node.id).outputs];
-}
+type GraphView = Pick<BlueprintGraph, "nodes" | "edges" | "subgraphs" | "variables" | "locals" | "params">;
 
-function inPorts(reg: BlueprintRegistry, graph: BlueprintGraph, node: BlueprintNode): PortDef[] {
-  return [...nodeShape(reg, graph, node.id).inputs];
-}
-
-/**
- * 全图校验。
- *
- * @param reg 注册中心
- * @param graph 待校验的图
- * @param opts.requireEntry 有执行入口的图是否必须有一个"起点" (无入边执行流的节点)
- */
-export function validateGraph(
-  reg: BlueprintRegistry,
-  graph: BlueprintGraph,
-  opts: { readonly requireEntry?: boolean; readonly _visited?: Set<string> } = {}
-): GraphValidation {
-  /** 已校验过的子图 id。递归时透传, 防止子图互相引用导致无限递归。 */
-  const visited = opts._visited ?? new Set<string>();
-  const issues: ValidationIssue[] = [];
-  const byNode = new Map<string, NodeValidation>();
-  const byEdge = new Map<string, ValidationIssue[]>();
-  const incoming = indexIncoming(graph);
-  const nodeById = new Map(graph.nodes.map((n) => [n.id, n]));
-
-  const push = (issue: ValidationIssue) => {
-    issues.push(issue);
-    for (const id of issue.nodeIds ?? []) {
-      const cur = byNode.get(id);
-      const next: NodeValidation = cur
-        ? { ...cur, issues: [...cur.issues, issue], ok: cur.ok && issue.level !== "error" }
-        : {
-            nodeId: id,
-            portErrors: {},
-            issues: [issue],
-            ok: issue.level !== "error",
-          };
-      byNode.set(id, next);
-    }
-    for (const id of issue.edgeIds ?? []) {
-      byEdge.set(id, [...(byEdge.get(id) ?? []), issue]);
-    }
-  };
-
-  // ── L1 结构 ──────────────────────────────────────────────────────
-  for (const node of graph.nodes) {
-    if (!reg.nodeTypes.has(node.type)) {
-      push({
-        code: "unknown-node-type",
-        level: "error",
-        message: `未注册的节点类型: ${node.type}`,
-        nodeIds: [node.id],
-      });
-    } else {
-      byNode.set(node.id, { nodeId: node.id, portErrors: {}, issues: [], ok: true });
-    }
-  }
-
-  const liveEdges: BlueprintEdge[] = [];
-  for (const e of graph.edges) {
-    const srcOk = !!resolvePort(reg, graph, e.from, "out");
-    const dstOk = !!resolvePort(reg, graph, e.to, "in");
-    if (!nodeById.has(e.from.node) || !nodeById.has(e.to.node)) {
-      push({ code: "dangling-ref", level: "error", message: `连线指向不存在的节点`, edgeIds: [e.id] });
-      continue;
-    }
-    if (!srcOk || !dstOk) {
-      push({
-        code: "unknown-port",
-        level: "error",
-        message: `端口不存在: ${srcOk ? "" : e.from.port} ${dstOk ? "" : e.to.port}`.trim(),
-        edgeIds: [e.id],
-        nodeIds: [srcOk ? e.to.node : e.from.node],
-      });
-      continue;
-    }
-    liveEdges.push(e);
-  }
-
-  // ── L2 局部: 类型 + 必填 + 占位 ──────────────────────────────────
-  const seenPair = new Set<string>();
-  for (const e of liveEdges) {
-    const src = resolvePort(reg, graph, e.from, "out");
-    const dst = resolvePort(reg, graph, e.to, "in");
-    if (!src || !dst) continue;
-
-    const pair = `${e.from.node}:${e.from.port}>${e.to.node}:${e.to.port}`;
-    if (seenPair.has(pair)) {
-      push({ code: "duplicate-edge", level: "error", message: "重复连线", edgeIds: [e.id] });
-      continue;
-    }
-    seenPair.add(pair);
-
-    if (src.isExec !== dst.isExec) {
-      push({ code: "type-mismatch", level: "error", message: "执行流与数据流不能互连", edgeIds: [e.id] });
-      continue;
-    }
-    if (!reg.assignable(src.port.type, dst.port.type)) {
-      push({
-        code: "type-mismatch",
-        level: "error",
-        message: `类型不匹配: ${src.port.type} → ${dst.port.type}`,
-        edgeIds: [e.id],
-        nodeIds: [e.to.node],
-      });
-      continue;
-    }
-
-    const key = `${e.to.node}:${e.to.port}`;
-    const list = incoming.get(key) ?? [];
-    if (!dst.port.multi && list.length > 1) {
-      push({
-        code: "input-occupied",
-        level: "error",
-        message: `输入口 ${e.to.port} 接了 ${list.length} 条线`,
-        edgeIds: list.map((x) => x.id),
-        nodeIds: [e.to.node],
-      });
-    }
-  }
-
-  // 必填输入 + 节点红点
-  for (const node of graph.nodes) {
-    if (!reg.nodeTypes.has(node.type)) continue;
-    const portErrors: Record<string, ValidationIssue> = {};
-    for (const p of inPorts(reg, graph, node)) {
-      const has = (incoming.get(`${node.id}:${p.id}`) ?? []).length > 0;
-      // 子图输入隧道的值来自**外部调用点**, 内部没连不算错
-      const isTunnelIn = node.type === "subgraph.input";
-      if (!has && p.default === undefined && !isTunnelIn) {
-        const issue: ValidationIssue = {
-          code: "missing-input",
-          level: "error",
-          message: `缺少输入: ${p.label ?? p.id}`,
-          nodeIds: [node.id],
-        };
-        portErrors[p.id] = issue;
-        push(issue);
+export function validateGraph(graph: BlueprintGraph, registry: Registry, opts: ValidateOptions = {}): GraphValidation {
+  const issues = [...validateLevel(graph, registry, opts)];
+  for (const [sgId, sg] of Object.entries(graph.subgraphs ?? {})) {
+    const isFn = sg.kind === "function";
+    const inner = validateLevel({
+      nodes: sg.nodes, edges: sg.edges, subgraphs: graph.subgraphs,
+      ...(graph.variables ? { variables: graph.variables } : {}), ...(sg.variables ? { locals: sg.variables } : {}),
+      ...(isFn ? { params: paramVariables(sg.nodes, registry) } : {}),
+    }, registry, {});
+    if (isFn) {
+      const p = subgraphPins(sg.nodes);
+      const execIn = p.inputs.filter((x) => registry.isExec(x.type)).length;
+      const execOut = p.outputs.filter((x) => registry.isExec(x.type)).length;
+      const shells = graph.nodes.filter((n) => n.subgraph === sgId).map((n) => n.id);
+      if (execIn > 1 || execOut > 1) {
+        issues.push({ code: "function-exec", level: "error", message: `Function "${sg.label ?? sgId}" has ${execIn} exec inputs and ${execOut} exec outputs (at most one each)`, nodeIds: shells.slice(0, 1) });
+      }
+      if (sg.pure) {
+        const impure = sg.nodes.filter((n) => n.type !== TUNNEL_IN && n.type !== TUNNEL_OUT && getPorts(n, registry, graph).inputs.some((x) => x.exec)).map((n) => `${sgId}/${n.id}`);
+        if (execIn || execOut || impure.length) issues.push({ code: "pure-function", level: "error", message: `Pure function "${sg.label ?? sgId}" has exec pins or exec nodes`, nodeIds: impure.length ? impure : shells.slice(0, 1) });
+      }
+      if (sg.const) {
+        const locals = new Set((sg.variables ?? []).map((v) => v.id));
+        const writes = sg.nodes.filter((n) => n.type === VAR_SET && n.variable !== undefined && !locals.has(n.variable)).map((n) => `${sgId}/${n.id}`);
+        if (writes.length) issues.push({ code: "const-function", level: "error", message: `Const function "${sg.label ?? sgId}" sets graph variables`, nodeIds: writes });
       }
     }
-    const cur = byNode.get(node.id);
-    if (cur) byNode.set(node.id, { ...cur, portErrors, ok: cur.ok && Object.keys(portErrors).length === 0 });
-  }
-
-  // ── L3 全局: 环 ──────────────────────────────────────────────────
-  /**
-   * 环检测只看**执行流边**。
-   *
-   * 数据边不参与: 它是"取值"不是"控制流"。把数据边算进来会误判 
-   * 例如一条横跨两段的取值边, 而那两段之间又有执行流回路,
-   * 于是那条数据边被圈进执行环, 整个环被判成"数据环"而报错。
-   * 实际上数据在图上从来没有回环, 是控制流在回环。
-   *
-   * 那数据依赖的环就不管了吗? 管  求值器里有独立的环保护
-   * (`evaluating` 集合), 它报的是"求值过程中出现循环依赖", 且落在具体节点上,
-   * 比在这里静态报更准。这里的职责是"图能不能连", 不是"值能不能算出来"。
-   */
-  const execEdges = liveEdges.filter((e) => e.kind === "exec");
-
-  /**
-   * 只有**数据流**上的环才是错误。
-   *
-   * 执行流上的回路是 agent loop 这类东西的正常形态  "做完再来一轮"
-   * 就是一条回到起点的边。把执行回路报成错误, 会让所有带循环的图
-   * 永远红着, 于是人们只能关掉这条规则, 那时真正的数据环也没人管了。
-   *
-   * 所以判据是: 环里只要有一条**数据边**就报错; 纯执行回路放行。
-   * 数据环是真错误, 因为求值无法确定顺序  上游依赖下游的值。
-   */
-  for (const cycle of findCycles(graph, execEdges)) {
-    const edgesOnCycle = cycleEdges(execEdges, cycle);
-    const hasData = edgesOnCycle.some((e) => e.kind !== "exec");
-    if (hasData) {
-      push({
-        code: "cycle",
-        level: "error",
-        message: `数据依赖存在循环: ${cycle.join(" → ")}`,
-        edgeIds: edgesOnCycle.map((e) => e.id),
-        nodeIds: cycle,
-      });
-    } else {
-      push({
-        code: "cycle",
-        level: "warning",
-        message: `执行流回路: ${cycle.join(" → ")} (循环是刻意的, 不是错误)`,
-        edgeIds: edgesOnCycle.map((e) => e.id),
-        nodeIds: cycle,
-      });
-    }
-  }
-
-  // ── L4 业务钩子 ──────────────────────────────────────────────────
-  const validatorMap = (reg as { validators?: Map<string, (c: unknown) => readonly ValidationIssue[]> }).validators;
-  if (validatorMap) {
-    for (const node of graph.nodes) {
-      const def = reg.nodeTypes.get(node.type);
-      const fn = def && validatorMap.get(node.type);
-      if (!def || !fn) continue;
-      const inDegree: Record<string, number> = {};
-      for (const p of inPorts(reg, graph, node)) inDegree[p.id] = (incoming.get(`${node.id}:${p.id}`) ?? []).length;
-      const out = fn({ node, def, params: node.params ?? {}, inDegree });
-      for (const i of out) push({ ...i, nodeIds: i.nodeIds ?? [node.id] });
-    }
-  }
-
-  // ── 子图: 逐张递归校验 ──────────────────────────────────────────
-  // 子图内部的报错要带上"哪张子图"的前缀, 否则用户看到一条报错却不知道
-  // 该进哪一层去修  那是最折磨人的一类诊断。
-  for (const [sgId, sg] of Object.entries(graph.subgraphs ?? {})) {
-    /**
-     * 递归必须带"已访问"集合。
-     *
-     * 第一版把整张 subgraphs 表原样传下去, 于是每张子图都会再校验一遍
-     * **全部**子图 (包括它自己)  一层嵌套就是无限递归, 直接爆栈。
-     * 子图之间的引用不是树而是任意图 (一个子图可以被多个子图调用),
-     * 所以这里必须按 id 去重, 而不是靠"深度递减"。
-     */
-    if (visited.has(sgId)) continue;
-    visited.add(sgId);
-    const inner = validateGraph(
-      reg,
-      { nodes: sg.nodes, edges: sg.edges, subgraphs: graph.subgraphs },
-      { ...opts, _visited: visited }
-    );
-    for (const i of inner.issues) {
-      push({
+    for (const i of inner) {
+      issues.push({
         ...i,
         message: `[${sg.label ?? sgId}] ${i.message}`,
-        nodeIds: i.nodeIds?.map((id) => `${sgId}/${id}`),
+        ...(i.nodeIds ? { nodeIds: i.nodeIds.map((id) => `${sgId}/${id}`) } : {}),
+        ...(i.edgeIds ? { edgeIds: i.edgeIds.map((id) => `${sgId}/${id}`) } : {}),
       });
     }
   }
+  const byNode = new Map<string, ValidationIssue[]>();
+  const byEdge = new Map<string, ValidationIssue[]>();
+  const add = (m: Map<string, ValidationIssue[]>, k: string, i: ValidationIssue) => m.set(k, [...(m.get(k) ?? []), i]);
+  for (const i of issues) {
+    for (const id of i.nodeIds ?? []) add(byNode, id, i);
+    for (const id of i.edgeIds ?? []) add(byEdge, id, i);
+  }
+  return { ok: issues.every((i) => i.level !== "error"), issues, byNode, byEdge };
+}
 
-  // 执行图至少要有个起点, 否则连不出来一条可执行的链
-  if (opts.requireEntry) {
-    const execNodes = graph.nodes.filter((n) => reg.nodeTypes.get(n.type)?.execIn);
-    if (execNodes.length > 0) {
-      const hasEntry = execNodes.some(
-        (n) => !liveEdges.some((e) => e.to.node === n.id && e.to.port === EXEC_IN_PORT)
-      );
-      if (!hasEntry) {
-        push({
-          code: "no-entry",
-          level: "error",
-          message: "执行图缺少起点 (每个执行节点都有上游, 没有入口)",
-        });
-      }
+function validateLevel(g: GraphView, reg: Registry, opts: ValidateOptions): ValidationIssue[] {
+  const out: ValidationIssue[] = [];
+  const push = (i: ValidationIssue) => out.push(i);
+  const byId = new Map(g.nodes.map((n) => [n.id, n]));
+
+  // L1: nodes
+  const seenIds = new Set<string>();
+  for (const n of g.nodes) {
+    if (seenIds.has(n.id)) push({ code: "duplicate-id", level: "error", message: `Duplicate node id "${n.id}"`, nodeIds: [n.id] });
+    seenIds.add(n.id);
+    const ports = getPorts(n, reg, g);
+    if (n.disabled) push({ code: "disabled-node", level: "warning", message: `Node "${n.id}" is disabled and will be skipped`, nodeIds: [n.id] });
+    if (ports.missing === "variable") {
+      push({ code: "unknown-variable", level: "error", message: `Variable "${n.variable ?? "?"}" not found`, nodeIds: [n.id] });
+    } else if (ports.missing === "subgraph") {
+      push({ code: "missing-subgraph", level: "error", message: `Collapsed graph "${n.subgraph ?? "?"}" not found`, nodeIds: [n.id] });
+    } else if (ports.missing === "type") {
+      push({ code: "unknown-node-type", level: "error", message: `Unknown node type "${n.type}"`, nodeIds: [n.id] });
     }
   }
 
-  return {
-    ok: issues.every((i) => i.level !== "error"),
-    issues,
-    byNode,
-    byEdge,
-  };
-}
+  // L1 + L2: edges
+  const live: BlueprintEdge[] = [];
+  const seenPairs = new Set<string>();
+  const wiresOn = new Map<string, BlueprintEdge[]>();
+  const count = (key: string, e: BlueprintEdge) => wiresOn.set(key, [...(wiresOn.get(key) ?? []), e]);
+  for (const e of g.edges) {
+    const fn = byId.get(e.from.node);
+    const tn = byId.get(e.to.node);
+    if (!fn || !tn) {
+      push({ code: "dangling-edge", level: "error", message: `Wire ${e.id} points to a missing node`, edgeIds: [e.id] });
+      continue;
+    }
+    const src = findPin(fn, e.from.pin, "out", reg, g);
+    const dst = findPin(tn, e.to.pin, "in", reg, g);
+    if (!src || !dst) {
+      const bad = !src ? e.from : e.to;
+      const shell = byId.get(bad.node);
+      const sg = shell?.subgraph !== undefined ? g.subgraphs?.[shell.subgraph] : undefined;
+      // a call site wired to a pin its function no longer has (signature edited)
+      if (sg) push({ code: "broken-call", level: "error", message: `"${sg.label ?? sg.id}" has no pin "${bad.pin}" any more (call site "${bad.node}")`, edgeIds: [e.id], nodeIds: [bad.node], pin: bad });
+      else push({ code: "unknown-pin", level: "error", message: `Pin "${bad.pin}" not found on "${bad.node}"`, edgeIds: [e.id], nodeIds: [bad.node], pin: bad });
+      continue;
+    }
+    if (e.from.node === e.to.node) {
+      push({ code: "self-loop", level: "error", message: `Node "${e.from.node}" is wired to itself`, edgeIds: [e.id], nodeIds: [e.from.node] });
+      continue;
+    }
+    const pair = `${e.from.node}.${e.from.pin}>${e.to.node}.${e.to.pin}`;
+    if (seenPairs.has(pair)) {
+      push({ code: "duplicate-edge", level: "error", message: `Duplicate wire ${pair}`, edgeIds: [e.id] });
+      continue;
+    }
+    seenPairs.add(pair);
+    if (src.exec !== dst.exec) {
+      push({ code: "exec-data-mix", level: "error", message: `Exec and data pins cannot be wired (${pair})`, edgeIds: [e.id], nodeIds: [e.to.node] });
+      continue;
+    }
+    if (!reg.assignable(src.type, dst.type)) {
+      const callSite = tn.subgraph !== undefined ? tn : fn.subgraph !== undefined ? fn : undefined;
+      push({
+        code: callSite ? "broken-call" : "type-mismatch", level: "error",
+        message: `Type mismatch ${src.type} -> ${dst.type} (${pair})${callSite ? " at a call site whose signature changed" : ""}`,
+        edgeIds: [e.id], nodeIds: [callSite?.id ?? e.to.node], pin: e.to,
+      });
+      continue;
+    }
+    live.push(e);
+    if (!dst.multi) count(`in:${e.to.node}.${e.to.pin}`, e);
+    if (!src.multi) count(`out:${e.from.node}.${e.from.pin}`, e);
+  }
 
-/** 环上那些边 (用于把红线画在边上)。 */
-/**
- * 构成这个环的那些边。
- *
- * 判据是"首尾相接", 不是"两端都落在环节点集合里"  后者会把环上节点之间
- * 的**其它**边也圈进来, 于是纯执行回路会被误判成数据环。
- */
-function cycleEdges(edges: readonly BlueprintEdge[], cycle: readonly string[]): BlueprintEdge[] {
-  const out: BlueprintEdge[] = [];
-  for (let i = 0; i < cycle.length; i++) {
-    const from = cycle[i];
-    const to = cycle[(i + 1) % cycle.length];
-    for (const e of edges) {
-      if (e.from.node === from && e.to.node === to) out.push(e);
+  // L2: multiplicity (B5 rules come from ResolvedPin.multi)
+  for (const [key, es] of wiresOn) {
+    if (es.length < 2) continue;
+    const isIn = key.startsWith("in:");
+    const ref = isIn ? es[0]!.to : es[0]!.from;
+    push({
+      code: isIn ? "input-occupied" : "output-occupied",
+      level: "error",
+      message: `${isIn ? "Input" : "Exec output"} ${ref.node}.${ref.pin} has ${es.length} wires but takes one`,
+      edgeIds: es.map((x) => x.id), nodeIds: [ref.node], pin: ref,
+    });
+  }
+
+  // L2: required inputs. Tunnel pins are fed from outside the subgraph, so they are never "missing".
+  const wiredInputs = new Set(live.map((e) => `${e.to.node}.${e.to.pin}`));
+  for (const n of g.nodes) {
+    if (n.type === TUNNEL_IN || n.type === TUNNEL_OUT || n.disabled) continue;
+    for (const p of getPorts(n, reg, g).inputs) {
+      if (p.exec || wiredInputs.has(`${n.id}.${p.id}`)) continue;
+      if (p.default !== undefined || n.values?.[p.id] !== undefined) continue;
+      push({ code: "missing-input", level: "error", message: `Input "${p.label ?? p.id}" of "${n.id}" is not connected`, nodeIds: [n.id], pin: { node: n.id, pin: p.id } });
+    }
+  }
+
+  // L3: cycles
+  const dataEdges = live.filter((e) => edgeKind(g, e, reg) === "data");
+  const execEdges = live.filter((e) => edgeKind(g, e, reg) === "exec");
+  for (const cyc of findCycles(g.nodes.map((n) => n.id), dataEdges)) {
+    push({ code: "cycle", level: "error", message: `Data cycle: ${cyc.join(" -> ")}`, nodeIds: cyc, edgeIds: cycleEdges(dataEdges, cyc) });
+  }
+  for (const cyc of findCycles(g.nodes.map((n) => n.id), execEdges)) {
+    push({ code: "cycle", level: "warning", message: `Exec loop: ${cyc.join(" -> ")}`, nodeIds: cyc, edgeIds: cycleEdges(execEdges, cyc) });
+  }
+
+  // L4: custom hooks
+  for (const n of g.nodes) {
+    const def = reg.node(n.type);
+    if (!def?.validate) continue;
+    const inDegree: Record<string, number> = {};
+    for (const p of getPorts(n, reg, g).inputs) inDegree[p.id] = live.filter((e) => e.to.node === n.id && e.to.pin === p.id).length;
+    for (const i of def.validate({ node: n, def, inDegree })) push({ ...i, nodeIds: i.nodeIds ?? [n.id] });
+  }
+
+  if (opts.requireEntry) {
+    const execNodes = g.nodes.filter((n) => getPorts(n, reg, g).inputs.some((p) => p.exec));
+    const hasEntryEvent = g.nodes.some((n) => {
+      const p = getPorts(n, reg, g);
+      return !p.inputs.some((x) => x.exec) && p.outputs.some((x) => x.exec);
+    });
+    const fed = new Set(execEdges.map((e) => e.to.node));
+    if (execNodes.length > 0 && !hasEntryEvent && execNodes.every((n) => fed.has(n.id))) {
+      push({ code: "no-entry", level: "error", message: "Exec graph has no entry: every exec node has an upstream wire" });
     }
   }
   return out;
 }
 
-/**
- * 找出所有环 (DFS + 着色)。
- *
- * 返回的是环上的节点 id 列表。节点数很多时环可能很多, 这里只做完整枚举 
- * 蓝图规模通常在百级, 不值得为它写 Tarjan 那种强连通分量分解
- * (而且 SCC 会把"两个环共用一个节点"合并成一片, 报出来反而不如逐个清楚)。
- */
-export function findCycles(graph: BlueprintGraph, edges?: readonly BlueprintEdge[]): string[][] {
-  const es = edges ?? graph.edges;
-  const adj = new Map<string, string[]>();
-  for (const e of es) {
-    if (e.from.node === e.to.node) continue; // 自环已单独报
-    const list = adj.get(e.from.node);
-    if (list) list.push(e.to.node);
-    else adj.set(e.from.node, [e.to.node]);
-  }
+/** Edges that close the cycle, matched head-to-tail (not "both ends on the cycle", which over-collects). */
+function cycleEdges(edges: readonly BlueprintEdge[], cycle: readonly string[]): string[] {
+  const ids: string[] = [];
+  cycle.forEach((from, i) => {
+    const to = cycle[(i + 1) % cycle.length];
+    for (const e of edges) if (e.from.node === from && e.to.node === to) ids.push(e.id);
+  });
+  return ids;
+}
 
-  const WHITE = 0;
-  const GRAY = 1;
-  const BLACK = 2;
-  const color = new Map<string, number>();
+/** Elementary cycles found by DFS back edges, deduplicated by node set. Self-loops are reported elsewhere. */
+export function findCycles(nodeIds: readonly string[], edges: readonly BlueprintEdge[]): string[][] {
+  const adj = new Map<string, string[]>();
+  for (const e of edges) {
+    if (e.from.node === e.to.node) continue;
+    adj.set(e.from.node, [...(adj.get(e.from.node) ?? []), e.to.node]);
+  }
+  const state = new Map<string, 1 | 2>(); // 1 = on stack, 2 = done
   const stack: string[] = [];
   const cycles: string[][] = [];
   const seen = new Set<string>();
-
   const visit = (u: string) => {
-    color.set(u, GRAY);
+    state.set(u, 1);
     stack.push(u);
     for (const v of adj.get(u) ?? []) {
-      const c = color.get(v) ?? WHITE;
-      if (c === GRAY) {
-        // 回边: 从 v 在栈上的位置到栈顶就是一个环
-        const start = stack.indexOf(v);
-        const cyc = stack.slice(start);
+      const s = state.get(v);
+      if (s === 1) {
+        const cyc = stack.slice(stack.indexOf(v));
         const key = [...cyc].sort().join("|");
         if (!seen.has(key)) {
           seen.add(key);
           cycles.push(cyc);
         }
-      } else if (c === WHITE) {
-        visit(v);
-      }
+      } else if (s === undefined) visit(v);
     }
     stack.pop();
-    color.set(u, BLACK);
+    state.set(u, 2);
   };
-
-  for (const n of graph.nodes) if ((color.get(n.id) ?? WHITE) === WHITE) visit(n.id);
+  for (const id of nodeIds) if (!state.has(id)) visit(id);
   return cycles;
 }
 
-/**
- * 拓扑排序 (Kahn)。有环时返回 null  调用方拿它当"能不能执行"的判据。
- */
-export function topoSort(graph: BlueprintGraph, edges?: readonly BlueprintEdge[]): string[] | null {
-  const es = edges ?? graph.edges;
-  const indeg = new Map<string, number>();
+/** Kahn topological order of node ids, or null when the edges contain a cycle. */
+export function topoSort(nodeIds: readonly string[], edges: readonly BlueprintEdge[]): string[] | null {
+  const indeg = new Map(nodeIds.map((id) => [id, 0]));
   const adj = new Map<string, string[]>();
-  for (const n of graph.nodes) indeg.set(n.id, 0);
-  for (const e of es) {
-    if (e.from.node === e.to.node) continue;
-    indeg.set(e.to.node, (indeg.get(e.to.node) ?? 0) + 1);
-    const list = adj.get(e.from.node);
-    if (list) list.push(e.to.node);
-    else adj.set(e.from.node, [e.to.node]);
+  for (const e of edges) {
+    if (e.from.node === e.to.node || !indeg.has(e.to.node) || !indeg.has(e.from.node)) continue;
+    indeg.set(e.to.node, indeg.get(e.to.node)! + 1);
+    adj.set(e.from.node, [...(adj.get(e.from.node) ?? []), e.to.node]);
   }
-  const queue = graph.nodes.filter((n) => (indeg.get(n.id) ?? 0) === 0).map((n) => n.id);
-  const out: string[] = [];
+  const queue = nodeIds.filter((id) => indeg.get(id) === 0);
+  const order: string[] = [];
   while (queue.length) {
     const u = queue.shift()!;
-    out.push(u);
+    order.push(u);
     for (const v of adj.get(u) ?? []) {
-      const d = (indeg.get(v) ?? 0) - 1;
+      const d = indeg.get(v)! - 1;
       indeg.set(v, d);
       if (d === 0) queue.push(v);
     }
   }
-  return out.length === graph.nodes.length ? out : null;
+  return order.length === nodeIds.length ? order : null;
 }
 
-/** 某节点的上游节点 (递归)。用于"改了这个节点, 哪些要重算"。 */
-export function upstreamOf(graph: BlueprintGraph, nodeId: string): Set<string> {
-  const rev = new Map<string, string[]>();
-  for (const e of graph.edges) {
-    const list = rev.get(e.to.node);
-    if (list) list.push(e.from.node);
-    else rev.set(e.to.node, [e.from.node]);
-  }
+/** All nodes upstream of `nodeId` (transitively), following every edge backwards. */
+export function upstreamOf(edges: readonly BlueprintEdge[], nodeId: string): Set<string> {
   const out = new Set<string>();
   const stack = [nodeId];
   while (stack.length) {
     const u = stack.pop()!;
-    for (const p of rev.get(u) ?? []) {
-      if (out.has(p)) continue;
-      out.add(p);
-      stack.push(p);
+    for (const e of edges) {
+      if (e.to.node !== u || out.has(e.from.node)) continue;
+      out.add(e.from.node);
+      stack.push(e.from.node);
     }
   }
   return out;
-}
-
-/**
- * 端口形貌汇总, 序列化与调试用。
- * 需要传 graph  子图节点的外形由子图定义决定, 光有 node 算不出来。
- */
-export function allPorts(
-  reg: BlueprintRegistry,
-  graph: BlueprintGraph,
-  node: BlueprintNode
-): { inputs: PortDef[]; outputs: PortDef[]; execIn: boolean; execOuts: string[] } {
-  const shape = nodeShape(reg, graph, node.id);
-  return {
-    inputs: inPorts(reg, graph, node),
-    outputs: outPorts(reg, graph, node),
-    execIn: shape.execIn,
-    execOuts: execOutIds(shape),
-  };
 }

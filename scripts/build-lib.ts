@@ -1,87 +1,180 @@
 /**
- * 构建 dist 并给相对导入补扩展名.
+ * 构建发布包 @hx/ui 到 dist/.  Run: node scripts/build-lib.ts   (Node 22.18+, 直接跑 TS)
  *
- * Node 在 ESM 下不会补 "./x" 的 .js 后缀, tsc 的产物因此无法被 node 直接 import.
- * 这里在 tsc 之后统一改写相对说明符 (目录的补 /index.js), 再拷 CSS 与许可证.
- * 决策与取舍见 release-tarball-packaging 决策记录 (锚点在 rewrite 上方).
+ *   1. JS      vite build -c vite.lib.config.ts   (ESM, preserveModules, 依赖全 external)
+ *   2. 类型    tsc -p tsconfig.lib.json           (只出 .d.ts)
+ *   3. 改写    .d.ts 里的 "@/x" 改成相对路径, 相对路径补上 .js 后缀 (nodenext 使用方也能解析)
+ *   4. 样式    dist/styles.css   预编译 (@tailwindcss/cli 扫 src/), 不装 Tailwind 也能用
+ *              dist/tailwind.css 给 Tailwind v4 使用方: 令牌 + @theme + @source 指向 dist (不含 dist/blueprint)
+ *              蓝图拓展包另出两份: dist/blueprint.css (Tailwind v4 入口, @source 只指 dist/blueprint)
+ *                                  dist/blueprint/styles.css (预编译, 配 styles.css 用)
+ *              Agent 拓展包同样两份: dist/agent.css (Tailwind v4 入口, @source 只指 dist/agent)
+ *                                    dist/agent/styles.css (预编译, 配 styles.css 用)
+ *              dist/fonts.css    可选, Geist 字体 (@fontsource-variable/*)
+ *   5. 令牌    scripts/export-tokens.ts: dist/tokens.json 与 dist/components.json, 给安卓等非 Web 端生成代码用
+ *   6. 校验    scripts/check-client.ts --dist: 源码带 "use client" 的模块, 产物逐文件保留指令; 不带的也没被加上
+ * 不引新依赖: 改写脚本就是下面几十行.
  */
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { join, relative } from "node:path";
-import { LICENSE_FILE, SRC_DIR } from "./constants/pack.ts";
-import { NODE_MODULES, STDIO_INHERIT, UTF8 } from "./constants/quality.ts";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { dirname, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { exportTokens } from "./export-tokens.ts";
 
-const ROOT = process.cwd();
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const DIST = join(ROOT, "dist");
-const SRC = join(ROOT, SRC_DIR);
-/** base.css 是可选的全局重置 (@layer hx.base), 与令牌分开发布, 由使用方自行决定是否引入. */
-const CSS_FILES = ["tokens.css", "base.css", "styles.css", "motion.css", "spin-variants.css", "native-select.css", "effects.css"];
-const EXTRA_FILES = [LICENSE_FILE, "NOTICE"];
-const SPECIFIER = /((?:from|import)\s*["'])(\.{1,2}\/[^"']+)(["'])/g;
+const bin = (name: string) => join(ROOT, "node_modules", ".bin", name);
+const run = (cmd: string, args: string[]) => execFileSync(cmd, args, { cwd: ROOT, stdio: "inherit" });
+const step = (s: string) => console.log(`\n[build:lib] ${s}`);
 
-/** 递归列出目录下的文件 (不跟随符号链接). */
-function walk(dir: string): string[] {
-  const out: string[] = [];
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      out.push(...walk(full));
-    } else {
-      out.push(full);
-    }
+function walk(dir: string, out: string[] = []) {
+  for (const f of readdirSync(dir)) {
+    const p = join(dir, f);
+    if (statSync(p).isDirectory()) walk(p, out);
+    else out.push(p);
   }
   return out;
 }
 
-/** 把一个相对说明符解析成 dist 里真实存在的路径, 补上 /index.js 或 .js. */
-function resolveSpecifier(spec: string, fromFile: string): string {
-  if (/\.(?:js|json|css)$/.test(spec)) {
-    return spec;
-  }
-  const dir = fromFile.slice(0, fromFile.length - (fromFile.split(/[\\/]/).pop() ?? "").length);
-  const base = join(dir, spec);
-  if (existsSync(base) && statSync(base).isDirectory()) {
-    return existsSync(join(base, "index.js")) ? spec + "/index.js" : spec;
-  }
-  if (existsSync(base + ".js")) {
-    return spec + ".js";
-  }
-  return spec;
-}
-
-/**
- * .agents/notes/implemented/architecture/2026-10-22-release-tarball-packaging.md
- */
-function rewrite(): number {
-  let changed = 0;
-  for (const file of walk(DIST)) {
-    if (!/\.(?:js|d\.ts)$/.test(file)) {
-      continue;
-    }
-    const before = readFileSync(file, UTF8);
-    const after = before.replace(SPECIFIER, (_all: string, head: string, spec: string, tail: string) => {
-      return head + resolveSpecifier(spec, file) + tail;
-    });
-    if (after !== before) {
-      writeFileSync(file, after);
-      changed += 1;
-    }
-  }
-  return changed;
-}
-
-/** 复用旧 dist 会把已删除或已改名的模块继续打进 tarball, 所以每次构建前先清空输出目录. */
 rmSync(DIST, { recursive: true, force: true });
-execFileSync(process.execPath, [join(ROOT, NODE_MODULES, "typescript", "bin", "tsc"), "-p", "tsconfig.build.json"], {
-  stdio: STDIO_INHERIT,
-});
-for (const name of CSS_FILES) {
-  cpSync(join(SRC, name), join(DIST, name));
+
+step("JS (vite library mode)");
+run(bin("vite"), ["build", "-c", "vite.lib.config.ts"]);
+
+step("类型声明 (tsc -p tsconfig.lib.json)");
+run(bin("tsc"), ["-p", "tsconfig.lib.json"]);
+
+step("改写 .d.ts 路径");
+const toRel = (fromFile: string, target: string) => {
+  let r = relative(dirname(fromFile), target).replace(/\\/g, "/");
+  if (!r.startsWith(".")) r = "./" + r;
+  return r;
+};
+/** dist 里的目标 (不带后缀) -> 带 .js 的具体文件 */
+const withExt = (abs: string): string | null => {
+  if (existsSync(abs + ".d.ts") || existsSync(abs + ".js")) return abs + ".js";
+  if (existsSync(join(abs, "index.d.ts"))) return join(abs, "index.js");
+  if (/\.js$/.test(abs) && existsSync(abs)) return abs;
+  return null;
+};
+const SPEC = /(\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)(["'])([^"']+)\2/g;
+let rewritten = 0;
+const unresolved: string[] = [];
+for (const file of walk(DIST).filter((f) => f.endsWith(".d.ts"))) {
+  const src = readFileSync(file, "utf8");
+  // tsc 会把 `import "./x.css"` 原样留在 .d.ts 里; 包里不带组件级 CSS, 删掉
+  const out = src.replace(/^import\s+["'][^"']+\.css["'];?[ \t]*\r?\n?/gm, "").replace(SPEC, (all, pre: string, q: string, spec: string) => {
+    let abs: string | null = null;
+    if (spec.startsWith("@/")) abs = join(DIST, spec.slice(2));
+    else if (spec === "." || spec === ".." || spec.startsWith("./") || spec.startsWith("../")) abs = resolve(dirname(file), spec);
+    else return all;
+    const target = withExt(abs.replace(/\.(js|ts|tsx)$/, ""));
+    if (!target) {
+      unresolved.push(`${relative(DIST, file)}: ${spec}`);
+      return all;
+    }
+    return `${pre}${q}${toRel(file, target)}${q}`;
+  });
+  if (out !== src) {
+    writeFileSync(file, out);
+    rewritten++;
+  }
 }
-/** 皮肤层 (skins/index.css 及其 @import 的各皮肤与 density.css) 整目录拷贝, 对应 exports 的 ./skins.css 与 ./density.css. */
-cpSync(join(SRC, "skins"), join(DIST, "skins"), { recursive: true, filter: (src: string) => !src.endsWith(".ts") });
-for (const name of EXTRA_FILES) {
-  cpSync(join(ROOT, name), join(DIST, name));
+console.log(`  ${rewritten} 个 .d.ts 已改写`);
+if (unresolved.length) {
+  console.error("  解析不到的导入:\n  " + unresolved.join("\n  "));
+  process.exit(1);
 }
-const rewritten = rewrite();
-console.log("build-lib: dist 就绪 (" + relative(ROOT, DIST) + "), 改写说明符 " + rewritten + " 个文件");
+
+step("样式 (styles.css 预编译 / tailwind.css / fonts.css)");
+run(bin("tailwindcss"), ["-i", "src/styles/lib.css", "-o", "dist/styles.css", "--minify"]);
+run(bin("tailwindcss"), ["-i", "src/styles/blueprint-lib.css", "-o", "dist/blueprint/styles.css", "--minify"]);
+run(bin("tailwindcss"), ["-i", "src/styles/agent-lib.css", "-o", "dist/agent/styles.css", "--minify"]);
+const copies: [string, string][] = [
+  ["src/styles/theme.css", "dist/styles/theme.css"],
+  ["src/styles/effects.css", "dist/styles/effects.css"],
+  ["src/blueprint/ui/blueprint.css", "dist/blueprint/ui/blueprint.css"],
+  ["src/agent/agent.css", "dist/agent/agent.css"],
+  ["src/components/ui/spin.css", "dist/components/ui/spin.css"],
+];
+for (const [from, to] of copies) {
+  mkdirSync(dirname(join(ROOT, to)), { recursive: true });
+  copyFileSync(join(ROOT, from), join(ROOT, to));
+}
+// 蓝图 / Agent 是拓展包: 核心入口的 @source 逐个列出 dist 下除拓展目录以外的目录 (不用 `@source not`,
+// 免得它把使用方另引的 blueprint.css 里的 @source 也排除掉).
+// dist 根上的 index.js 只做再导出, 没有类名, 不列: 实测 (tailwindcss 4.3.5) 根上的 "./*.js" 或 "./index.js"
+// 会让整个 dist 被扫描, 蓝图的工具类又回到核心 CSS 里.
+const EXTENSIONS = new Set(["blueprint", "agent"]);
+const coreSources = readdirSync(DIST)
+  .filter((d) => statSync(join(DIST, d)).isDirectory() && !EXTENSIONS.has(d))
+  .sort()
+  .map((d) => `@source "./${d}/**/*.js";`);
+writeFileSync(
+  join(DIST, "tailwind.css"),
+  `/*
+ * @hx/ui 2 · 给 Tailwind v4 使用方的样式入口. 用法 (你自己的 CSS 里):
+ *   @import "tailwindcss";
+ *   @import "@hx/ui/tailwind.css";
+ *   @import "@hx/ui/blueprint.css";   (只在用蓝图时)
+ *   @import "@hx/ui/agent.css";       (只在用 Agent 界面时)
+ * 带上令牌 (:root / .dark), @theme 映射, 基础样式, 特效关键帧, Spin 的样式;
+ * 组件用到的工具类由你的 Tailwind 扫描下面的 @source 生成 (不要再引 styles.css). 不含蓝图和 Agent.
+ */
+@import "./styles/theme.css";
+@import "./components/ui/spin.css";
+${coreSources.join("\n")}
+`,
+);
+writeFileSync(
+  join(DIST, "blueprint.css"),
+  `/*
+ * @hx/ui 2 · 蓝图拓展包的 Tailwind v4 样式入口, 排在 tailwind.css 之后:
+ *   @import "tailwindcss";
+ *   @import "@hx/ui/tailwind.css";
+ *   @import "@hx/ui/blueprint.css";
+ * 带上蓝图样式 (--bp-* 令牌, 画布, 节点), 并让你的 Tailwind 扫描蓝图用到的工具类.
+ * 不用 Tailwind 的项目改引 "@hx/ui/blueprint/styles.css" (预编译, 排在 styles.css 之后).
+ */
+@import "./blueprint/ui/blueprint.css";
+@source "./blueprint/**/*.js";
+`,
+);
+writeFileSync(
+  join(DIST, "agent.css"),
+  `/*
+ * @hx/ui 2 · Agent 拓展包 (流式 Markdown, 代码块, 思考, 工具调用, 会话) 的 Tailwind v4 样式入口, 排在 tailwind.css 之后:
+ *   @import "tailwindcss";
+ *   @import "@hx/ui/tailwind.css";
+ *   @import "@hx/ui/agent.css";
+ * 带上 Agent 样式 (--hx-code-* 代码面板令牌, Shiki 双主题取色, 流式光标, 微光), 并让你的 Tailwind 扫描 Agent 用到的工具类.
+ * 不用 Tailwind 的项目改引 "@hx/ui/agent/styles.css" (预编译, 排在 styles.css 之后).
+ * 公式另需 "katex/dist/katex.min.css".
+ */
+@import "./agent/agent.css";
+@source "./agent/**/*.js";
+`,
+);
+writeFileSync(
+  join(DIST, "fonts.css"),
+  `/* @hx/ui 2 · 可选: Geist / Geist Mono 字体 (令牌里 --font-sans / --font-mono 的首选). 需要打包器解析 CSS @import. */
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+`,
+);
+
+const leftover = walk(DIST).filter((f) => /\.(js|d\.ts)$/.test(f) && /(from\s*|import\s*\(\s*|import\s+)["']@\//.test(readFileSync(f, "utf8")));
+if (leftover.length) {
+  console.error("[build:lib] 产物里还有 @/ 导入:\n  " + leftover.map((f) => relative(DIST, f)).join("\n  "));
+  process.exit(1);
+}
+
+step("令牌与组件清单 (tokens.json / components.json)");
+exportTokens(DIST);
+
+step('"use client" 逐文件核对 (scripts/check-client.ts --dist)');
+run(process.execPath, [join(ROOT, "scripts", "check-client.ts"), "--dist"]);
+
+const files = walk(DIST);
+const kb = files.reduce((n, f) => n + statSync(f).size, 0) / 1024;
+console.log(`\n[build:lib] 完成: ${files.length} 个文件, ${kb.toFixed(0)} KB -> dist/`);

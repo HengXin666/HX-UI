@@ -3,7 +3,7 @@
 # 下游只留临时组合或调用点, 不要手搓第二套通用控件. 本仓以后按议题实现.
 #
 # 什么是公共控件: 换一个产品还能用, 不绑死某一产品的文案, 路由或业务数据结构,
-# 并且会进入 HX-UI 公共 API (src/primitives, src/layout, src/charts, src/blueprint).
+# 并且会进入 HX-UI 公共 API (src/components/ui, src/data, src/agent, src/blueprint).
 # 不要提: 已有组件的缺陷 (用 bug.yml), 已有组件加能力 (用 feature.yml),
 # 只服务一个页面的业务界面.
 #
@@ -28,7 +28,7 @@ body:
 
               缺的是公共控件才提交: 换一个产品还能用, 不绑文案, 路由或业务数据结构, 并且会进入 HX-UI 公共 API. 提完继续当前任务, 下游只留临时组合或调用点, 不要手搓第二套通用控件. 本仓按议题再实现.
 
-              提交前先搜文档站和 src/primitives, src/layout, src/charts, src/blueprint. 已有组件的缺陷用 Bug 报告, 已有组件加能力用功能需求, 只服务一个页面的业务界面不要提.
+              提交前先搜文档站和 src/components/ui, src/data, src/agent, src/blueprint. 已有组件的缺陷用 Bug 报告, 已有组件加能力用功能需求, 只服务一个页面的业务界面不要提.
 
               不能开网页时读本文件顶部注释, 用 `gh issue create --repo HengXin666/HX-UI` 提交. 正文的小标题必须与下面每个字段的 label 逐字相同.
     - type: checkboxes

@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "guarded": [
-    ".agents/skills/hx-agent-notes",
-    "docs/src",
-    "scripts",
-    "src"
-  ]
-}

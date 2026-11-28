@@ -1,101 +1,199 @@
 /**
- * 发布产物自检: 打包 -> 装进临时目录 -> 逐个 exports 入口解析.
+ * 检查 npm pack 出来的 tarball 能不能发.  Run:
+ *   npm run build:lib && npm pack --json --ignore-scripts > pack.json && node scripts/verify-pack.ts
+ * 也可以直接给 tarball 路径: node scripts/verify-pack.ts hx-ui-2.0.0.tgz
  *
- * 缺扩展名, exports 指向未打包目录这类问题在 tsc 与门禁里都是绿的, 只有真装一遍才暴露.
- * 决策与取舍见 release-tarball-packaging 决策记录 (锚点在 scripts/build-lib.ts).
+ * 检查项 (任一失败 exit 1):
+ *   1. package.json 的 exports 每个目标都在包里; 通配 ("./ui/*") 至少命中一个
+ *   2. 每个 JS 入口都有同名 .d.ts; 其余 JS 只允许内部模块 (_virtual/, 数据文件) 没有 .d.ts
+ *   3. JS 和 .d.ts 里没有残留的 "@/" 导入; 相对导入都能在包里找到文件
+ *   4. JS 里的裸导入都在 dependencies / peerDependencies 里声明过
+ *   5. 不带 site/, src/, dist-site/, tsbuildinfo 等文档站或构建垃圾
+ *   6. styles.css 是预编译的核心样式 (令牌 + .dark + 关键帧), tailwind.css 带 @source; 两者都不含蓝图.
+ *      蓝图拓展包: blueprint/styles.css 预编译 (只含蓝图, 不重复 Preflight / 令牌), blueprint.css 带指向 blueprint/ 的 @source;
+ *      根入口 index.js 不引蓝图. Agent 拓展包同理: agent/styles.css 预编译, agent.css 的 @source 只指 agent/
+ *   7. "use client" 只出现在文件第一行 (RSC 打包器只认这里); 服务端安全的入口 (theme, utils, 图表工具) 不带
+ * 最后打印体积报告.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { DOT, NODE_MODULES, UTF8 } from "./constants/quality.ts";
+import { dirname, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = process.cwd();
-const CSS_ENTRIES = ["styles.css", "tokens.css", "motion.css", "spin-variants.css", "native-select.css"];
-/** exports 里的通配符; 出现多次所以提成常量. */
-const WILDCARD = "*";
-const manifest = JSON.parse(readFileSync(join(ROOT, "package.json"), UTF8)) as {
-  name: string;
-  exports: Record<string, unknown>;
-};
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const errors: string[] = [];
+const fail = (msg: string) => errors.push(msg);
 
-function run(cwd: string, args: string[]): string {
-  return execFileSync("npm", args, { cwd, encoding: UTF8, stdio: ["ignore", "pipe", "pipe"] });
-}
-
-/** --ignore-scripts: 否则 prepare 会在 pack 时构建一遍, 它的日志会污染 --json 输出. */
-const packJson = JSON.parse(run(ROOT, ["pack", "--json", "--ignore-scripts"])) as { filename: string }[];
-const tarball = join(ROOT, packJson[0].filename);
-const work = mkdtempSync(join(tmpdir(), "hx-ui-pack-"));
-run(work, ["init", "-y"]);
-/**
- * react / react-dom 是 peerDependency: 不在装包里, 但缺了连 import 都过不去,
- * 所以自检时显式装上, 模拟真实宿主而不是空工程.
- */
-run(work, ["install", tarball, "react@19", "react-dom@19", "--ignore-scripts", "--no-audit", "--no-fund"]);
-
-const specs = [
-  manifest.name,
-  ...Object.keys(manifest.exports)
-    .filter((key) => key !== DOT && !key.includes(WILDCARD))
-    .map((key) => manifest.name + key.slice(1)),
-];
-/**
- * 通配导出没法整条解析, 用 tarball 里真实存在的样本代替:
- * `./src/*` 取 src/index.ts, 验证这条映射确实指到了打包进去的源码目录.
- */
-const wildcardSpecs = Object.keys(manifest.exports)
-  .filter((key) => key.includes(WILDCARD))
-  .map((key) => manifest.name + key.slice(1).replace(WILDCARD, "index.ts"));
-const allSpecs = [...specs, ...wildcardSpecs];
-
-/** 在临时工程里跑一段解析脚本: 只有真的装过包, import.meta.resolve 才有意义. */
-const PROBE = [
-  "import { existsSync } from 'node:fs';",
-  "import { fileURLToPath } from 'node:url';",
-  "const specs = JSON.parse(process.argv[1]);",
-  "let bad = 0;",
-  "for (const spec of specs) {",
-  "  try {",
-  "    const url = import.meta.resolve(spec);",
-  // import.meta.resolve 只看 exports 映射, 不保证文件真在包里, 所以再查一次磁盘.
-  "    if (!existsSync(fileURLToPath(url))) { bad += 1; process.stdout.write('FAIL ' + spec + ' missing-file\\n'); continue; }",
-  // CSS 与 ./src/* 样本只校验文件落地: 前者是样式, 后者是 TS 源码 (node_modules 里不能类型剥离), 都不 import.
-  "    if (!spec.endsWith('.css') && !spec.includes('/src/')) await import(url);",
-  "    process.stdout.write(spec + ' -> ' + url + '\\n');",
-  "  } catch (error) { bad += 1; process.stdout.write('FAIL ' + spec + ' ' + (error.code ?? error.message) + '\\n'); }",
-  "}",
-  "try { await import(specs[0]); } catch (error) { bad += 1; process.stdout.write('FAIL root-import ' + error.code + '\\n'); }",
-  "process.exit(bad === 0 ? 0 : 1);",
-].join("\n");
-
-let report = "";
-let failed = false;
-try {
-  report = execFileSync(process.execPath, ["--input-type=module", "-e", PROBE, JSON.stringify(allSpecs)], {
-    cwd: work,
-    encoding: UTF8,
-  });
-} catch (error) {
-  const failure = error as { stdout?: string; stderr?: string };
-  report = (failure.stdout ?? "") + (failure.stderr ?? "");
-  failed = true;
-}
-
-const failures = report.split("\n").filter((line) => line.startsWith("FAIL ") || /Error/.test(line));
-const installed = join(work, NODE_MODULES, manifest.name);
-for (const css of CSS_ENTRIES) {
-  if (!existsSync(join(installed, "dist", css))) {
-    failures.push("缺少 CSS 入口: dist/" + css);
+// ---- 找 tarball
+let tgz = process.argv[2];
+if (!tgz) {
+  const packJson = join(ROOT, "pack.json");
+  if (!existsSync(packJson)) {
+    console.error("verify-pack: 没有 pack.json, 先跑 npm pack --json --ignore-scripts > pack.json (或传 tarball 路径)");
+    process.exit(1);
   }
+  const info = JSON.parse(readFileSync(packJson, "utf8"));
+  // npm <= 11: [{ filename }]; npm 12: { "<name>": { filename } }
+  const entry = Array.isArray(info) ? info[0] : "filename" in info ? info : Object.values<{ filename: string }>(info)[0];
+  tgz = entry.filename;
 }
-
-if (failures.length > 0 || failed) {
-  console.error("verify-pack: 失败 (" + failures.length + " 项)");
-  for (const item of failures) {
-    console.error("  " + item.trim());
-  }
+tgz = resolve(ROOT, tgz);
+if (!existsSync(tgz)) {
+  console.error(`verify-pack: 找不到 ${tgz}`);
   process.exit(1);
 }
-console.log(report.trim());
-console.log("verify-pack: 通过 (包根 + " + (allSpecs.length - 1) + " 个子入口 + " + CSS_ENTRIES.length + " 个 CSS 全部可解析)");
+
+// ---- 解包
+const tmp = mkdtempSync(join(tmpdir(), "hx-ui-pack-"));
+execFileSync("tar", ["-xzf", tgz, "-C", tmp]);
+const PKG = join(tmp, "package");
+function walk(dir: string, out: string[] = []) {
+  for (const f of readdirSync(dir)) {
+    const p = join(dir, f);
+    if (statSync(p).isDirectory()) walk(p, out);
+    else out.push(p);
+  }
+  return out;
+}
+const files = walk(PKG).map((f) => relative(PKG, f).replace(/\\/g, "/"));
+const has = new Set(files);
+const pkg = JSON.parse(readFileSync(join(PKG, "package.json"), "utf8"));
+console.log(`verify-pack: ${pkg.name}@${pkg.version}  (${files.length} 个文件)`);
+
+// ---- 1 + 2. exports
+const entryJs = new Set<string>();
+const strip = (p: string) => p.replace(/^\.\//, "");
+for (const [key, target] of Object.entries<Record<string, string> | string>(pkg.exports ?? {})) {
+  const targets = typeof target === "string" ? { default: target } : target;
+  for (const [cond, t] of Object.entries(targets)) {
+    const path = strip(t);
+    if (path.includes("*")) {
+      const re = new RegExp("^" + path.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace("*", "([^/]+)") + "$");
+      const hits = files.filter((f) => re.test(f));
+      if (!hits.length) fail(`exports["${key}"].${cond} -> ${t}: 包里一个都没匹配到`);
+      if (cond === "default") hits.forEach((h) => entryJs.add(h));
+    } else {
+      if (!has.has(path)) fail(`exports["${key}"].${cond} -> ${t}: 包里没有这个文件`);
+      if (cond === "default" && path.endsWith(".js")) entryJs.add(path);
+    }
+  }
+}
+for (const js of entryJs) if (!has.has(js.replace(/\.js$/, ".d.ts"))) fail(`入口 ${js} 没有 .d.ts`);
+const internalNoDts = /^dist\/(_virtual\/|data\/charts\/geo\/)/;
+const jsFiles = files.filter((f) => f.endsWith(".js"));
+const dtsFiles = files.filter((f) => f.endsWith(".d.ts"));
+for (const js of jsFiles) {
+  if (!has.has(js.replace(/\.js$/, ".d.ts")) && !internalNoDts.test(js)) fail(`${js} 没有 .d.ts`);
+}
+
+// ---- 3 + 4. 导入
+const declared = new Set([...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.peerDependencies ?? {})]);
+const SPEC = /(?:^|[\s;])(?:import|export)\s[^"'`;]*?from\s*["']([^"']+)["']|(?:^|[\s;])import\s*["']([^"']+)["']|\bimport\(\s*["']([^"']+)["']\s*\)/gm;
+const bareUsed = new Map<string, number>();
+for (const f of [...jsFiles, ...dtsFiles]) {
+  const code = readFileSync(join(PKG, f), "utf8");
+  for (const m of code.matchAll(SPEC)) {
+    const spec = m[1] ?? m[2] ?? m[3];
+    if (spec.startsWith("@/")) {
+      fail(`${f}: 残留 "@/" 导入 ${spec}`);
+      continue;
+    }
+    if (spec.startsWith(".")) {
+      const target = relative(PKG, resolve(dirname(join(PKG, f)), spec)).replace(/\\/g, "/");
+      if (!has.has(target)) fail(`${f}: 相对导入 ${spec} 在包里找不到`);
+      continue;
+    }
+    if (f.endsWith(".js")) {
+      const name = spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : spec.split("/")[0];
+      bareUsed.set(name, (bareUsed.get(name) ?? 0) + 1);
+      if (!declared.has(name)) fail(`${f}: 用了 "${spec}", 但 ${name} 不在 dependencies / peerDependencies`);
+    }
+  }
+}
+
+// ---- 5. 不该进包的东西
+for (const f of files) {
+  if (/^(site|src|dist-site|dist-sites|docs|tests|scripts|node_modules)\//.test(f) || /\.tsbuildinfo$|(^|\/)pack\.json$|\.tgz$/.test(f)) fail(`不该进包: ${f}`);
+}
+
+// ---- 6. 样式
+const css = (p: string) => (has.has(p) ? readFileSync(join(PKG, p), "utf8") : "");
+const styles = css("dist/styles.css");
+const mustStyles: [string, RegExp][] = [
+  ["令牌 --brand", /--brand:/],
+  ["暗色 .dark", /\.dark\s*\{|\.dark\{/],
+  ["Tailwind 工具类 (.bg-background)", /\.bg-background[{,\s]/],
+  ["特效关键帧", /@keyframes\s*hx-/],
+  ["Preflight", /box-sizing:\s*border-box/],
+];
+for (const [what, re] of mustStyles) if (!re.test(styles)) fail(`styles.css 缺 ${what}`);
+const BP_TOKEN = /--bp-graph-bg/;
+if (BP_TOKEN.test(styles)) fail("styles.css 不应带蓝图样式 (蓝图是拓展包, 走 blueprint/styles.css)");
+const bpStyles = css("dist/blueprint/styles.css");
+if (!BP_TOKEN.test(bpStyles)) fail("blueprint/styles.css 缺蓝图样式 --bp-graph-bg");
+if (/box-sizing:\s*border-box/.test(bpStyles) || /--brand:/.test(bpStyles)) fail("blueprint/styles.css 不应再带 Preflight 或核心令牌 (由 styles.css 提供)");
+// 只去掉行首开始的注释块: "@source \"./x/**/*.js\"" 里的 "/**/" 不是注释
+const noComments = (s: string) => s.replace(/^\s*\/\*[\s\S]*?\*\//gm, "");
+const sourcesOf = (s: string) => [...s.matchAll(/@source\s+["']([^"']+)["']/g)].map((m) => m[1]);
+const checkTwEntry = (name: string) => {
+  const text = noComments(css(name));
+  if (!sourcesOf(text).length) fail(`${name} 没有 @source`);
+  if (/@import\s+["']tailwindcss["']/.test(text)) fail(`${name} 不应自己引 tailwindcss (由使用方引)`);
+  for (const m of text.matchAll(/@import\s+["'](\.[^"']+)["']/g)) if (!has.has(join(dirname(name), strip(m[1])).replace(/\\/g, "/"))) fail(`${name} 引了不存在的 ${m[1]}`);
+  return text;
+};
+const tw = checkTwEntry("dist/tailwind.css");
+if (/blueprint/.test(tw)) fail("tailwind.css 不应引蓝图样式或扫描 blueprint/ (蓝图走 blueprint.css)");
+// 每条都得是 "./<目录>/**/*.js": dist 根上的源 ("./**/*.js", "./*.js", "./index.js") 会让整个 dist 被扫, 把蓝图带回来
+for (const s of sourcesOf(tw)) if (!/^\.\/[^/*]+\/\*\*\/\*\.js$/.test(s)) fail(`tailwind.css 的 @source ${s} 会扫到整个 dist (含 blueprint/)`);
+const bpTw = checkTwEntry("dist/blueprint.css");
+if (!sourcesOf(bpTw).every((s) => s.startsWith("./blueprint/"))) fail("blueprint.css 的 @source 只应指向 ./blueprint/");
+if (/\bblueprint\//.test(css("dist/index.js"))) fail("根入口 index.js 不应引蓝图 (蓝图从 @hx/ui/blueprint/* 引)");
+// Agent 拓展包
+const AGENT_TOKEN = /--hx-code-bg/;
+if (AGENT_TOKEN.test(styles)) fail("styles.css 不应带 Agent 样式 (Agent 是拓展包, 走 agent/styles.css)");
+const agentStyles = css("dist/agent/styles.css");
+if (!AGENT_TOKEN.test(agentStyles)) fail("agent/styles.css 缺 Agent 样式 --hx-code-bg");
+if (/box-sizing:\s*border-box/.test(agentStyles) || /--brand:/.test(agentStyles)) fail("agent/styles.css 不应再带 Preflight 或核心令牌 (由 styles.css 提供)");
+if (/\bagent\//.test(tw)) fail("tailwind.css 不应引 Agent 样式或扫描 agent/ (Agent 走 agent.css)");
+const agentTw = checkTwEntry("dist/agent.css");
+if (!sourcesOf(agentTw).every((s) => s.startsWith("./agent/"))) fail("agent.css 的 @source 只应指向 ./agent/");
+if (/\bagent\//.test(css("dist/index.js"))) fail("根入口 index.js 不应引 Agent 拓展包 (从 @hx/ui/agent 引)");
+
+// ---- 7. "use client"
+const DIRECTIVE = /^["']use client["'];?\s*$/;
+let clientJs = 0;
+for (const f of jsFiles) {
+  const lines = readFileSync(join(PKG, f), "utf8").split("\n");
+  if (DIRECTIVE.test(lines[0].trim())) clientJs++;
+  else if (lines.some((l) => DIRECTIVE.test(l.trim()))) fail(`${f}: "use client" 不在第一行, 打包器会忽略`);
+}
+if (clientJs === 0) fail('包里一个带 "use client" 的模块都没有, build:lib 的指令补回失效了');
+for (const f of ["dist/hooks/theme.js", "dist/hooks/theme-script.js", "dist/lib/utils.js", "dist/data/charts/helpers.js", "dist/blueprint/index.js", "dist/agent/index.js", "dist/agent/code/highlight.js", "dist/agent/markdown/fence.js"]) {
+  if (has.has(f) && DIRECTIVE.test(readFileSync(join(PKG, f), "utf8").split("\n", 1)[0].trim())) fail(`${f} 应该是服务端安全的, 却带了 "use client"`);
+}
+
+// ---- 体积报告
+const size = (f: string) => statSync(join(PKG, f)).size;
+const kb = (n: number) => `${(n / 1024).toFixed(1)} KB`;
+const byDir = new Map<string, number>();
+for (const f of files) {
+  const parts = f.split("/");
+  const key = parts[0] === "dist" && parts.length > 2 ? `dist/${parts[1]}/` : f;
+  byDir.set(key, (byDir.get(key) ?? 0) + size(f));
+}
+const unpacked = files.reduce((n, f) => n + size(f), 0);
+console.log(`\n体积: tarball ${kb(statSync(tgz).size)}, 解包 ${kb(unpacked)}, JS ${jsFiles.length} 个 / .d.ts ${dtsFiles.length} 个, 入口 ${entryJs.size} 个, "use client" 模块 ${clientJs} 个`);
+for (const [k, v] of [...byDir].sort((a, b) => b[1] - a[1]).slice(0, 14)) console.log(`  ${kb(v).padStart(10)}  ${k}`);
+console.log("  最大的文件:");
+for (const f of [...files].sort((a, b) => size(b) - size(a)).slice(0, 6)) console.log(`  ${kb(size(f)).padStart(10)}  ${f}`);
+console.log(`  运行时裸依赖: ${[...bareUsed.keys()].sort().join(", ")}`);
+
+rmSync(tmp, { recursive: true, force: true });
+if (errors.length) {
+  console.error(`\nverify-pack: ${errors.length} 个问题`);
+  for (const e of errors.slice(0, 60)) console.error("  x " + e);
+  process.exit(1);
+}
+console.log("\nverify-pack: OK");

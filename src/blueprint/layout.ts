@@ -1,447 +1,315 @@
-import type { BlueprintEdge, BlueprintGraph, BlueprintNode, BlueprintRegistry } from "./types";
-import { nodeHeight, nodeWidth } from "./geometry";
-import { compactRanks, findBackEdges, resolveOverlaps, worstBackPull, type LayoutNode } from "./layout-parts";
-export { countCrossings } from "./layout-parts";
-
-/** 布局结果: 节点 id -> 新坐标。 */
-export type LayoutResult = ReadonlyMap<string, { x: number; y: number }>;
+import type { Registry } from "./registry";
+import { boxesOverlap, nodeBox, nodeSize } from "./size";
+import type { BlueprintEdge, BlueprintGraph } from "./types";
 
 /**
- * 自动布局。
+ * Deterministic layered layout (left to right), tolerant of exec loops, plus align / distribute.
  *
- * ## 为什么需要
- *
- * 手写坐标摆出来的一定难看  人会摆成一条直线或者一堆对齐的方块,
- * 而节点图真正要传达的是**流向与层次**。手写坐标还有个更实际的问题:
- * 图一改(加两个节点)就得重新摆一遍。
- *
- * ## 用什么算法
- *
- * 简化版的 **Sugiyama (分层) 布局**, 四步:
- *
- * 1. 分层     按最长路径把节点分到各层, 保证边一律从左往右
- * 2. 定序     层内排序, 减少交叉 ( barycenter 重心法, 迭代若干轮 )
- * 3. 定坐标   按序分配 y, 再按重心把相邻层拉近
- * 4. 拉直     把能对齐的父节点吸到子节点重心上
- *
- * 为什么不是力导向 (force-directed): 力导向出来的图"有机"但没有方向感,
- * 而且每次跑出来的形状都不一样  对需要稳定复现的图 (进 git diff) 是灾难。
- * 分层布局是确定性的: 同样的图永远得到同样的坐标。
- * UE5 的 "Auto Arrange" 与 ComfyUI 的多数整理插件走的也是这一类。
- *
- * ## 三条刻意的选择
- *
- * 1. **确定性**。不用随机数, 同图必得同结果。排序用稳定排序 + id 兜底。
- * 2. **只动没手动摆过的**。给 `preserve` 传入一批节点 id, 它们保持原位 
- * 自动布局不该拆掉用户辛苦摆好的部分。
- * 3. **纯函数**。不依赖 React、不改原图, 返回新坐标表。
+ * Steps: break back edges (DFS) -> rank by longest path -> merge unlinked adjacent ranks ->
+ * barycenter ordering sweeps -> wrap ranks into rows toward a 2:1 aspect -> stack, centre on
+ * neighbours -> push apart any remaining overlaps. Ties break on node id, so output is stable.
  */
+
+export type Positions = ReadonlyMap<string, { x: number; y: number }>;
 
 export interface LayoutOptions {
-  /** 层间水平间距。 */
+  /** Horizontal gap between ranks. Default 120. */
   readonly rankGap?: number;
-  /** 层内节点垂直间距。 */
+  /** Vertical gap between nodes in a rank. Default 40. */
   readonly nodeGap?: number;
-  /** 定序迭代轮数。越多交叉越少, 但越慢。 */
+  /** Ordering sweeps. Default 4. */
   readonly iterations?: number;
-  /** 这些节点保持原坐标不动。 */
+  /** Node ids that keep their current position. */
   readonly preserve?: readonly string[];
-  /** 边的方向: "lr" 左到右 (默认), "tb" 上到下。 */
-  readonly direction?: "lr" | "tb";
 }
 
-/**
- * 主入口: 算一张图的自动布局。
- *
- * 有环时先**拆环**  分层要求偏序, 有环就没法分层。
- * 拆法: 反向边的深度优先序里"回边"挑出来临时反转, 分完层再还原。
- * 环上的边不参与定序权重, 免得互相拉扯。
- */
-export function autoLayout(
-  reg: BlueprintRegistry,
-  graph: BlueprintGraph,
-  opts: LayoutOptions = {}
-): LayoutResult {
+interface LNode { id: string; w: number; h: number; rank: number; y: number }
+
+export function autoLayout(graph: BlueprintGraph, registry: Registry, opts: LayoutOptions = {}): Positions {
   const gapX = opts.rankGap ?? 120;
   const gapY = opts.nodeGap ?? 40;
   const iterations = opts.iterations ?? 4;
-  const dir = opts.direction ?? "lr";
-  const preserve = new Set(opts.preserve ?? []);
+  if (!graph.nodes.length) return new Map();
 
-  if (graph.nodes.length === 0) return new Map();
-
-  // ── 建图 ──────────────────────────────────────────────────────────
-  const nodes = new Map<string, LayoutNode>();
-  for (const n of graph.nodes) {
-    nodes.set(n.id, {
-      id: n.id,
-      node: n,
-      w: nodeWidth(reg, n),
-      h: nodeHeight(reg, n),
-      rank: 0,
-      y: 0,
-    });
-  }
+  const nodes = new Map<string, LNode>();
+  for (const n of graph.nodes) nodes.set(n.id, { id: n.id, ...nodeSize(n, registry, graph), rank: 0, y: 0 });
+  const edges = graph.edges.filter((e) => e.from.node !== e.to.node && nodes.has(e.from.node) && nodes.has(e.to.node));
+  const back = new Set(findBackEdges(graph.nodes.map((n) => n.id), edges).map((e) => e.id));
 
   const succ = new Map<string, string[]>();
   const pred = new Map<string, string[]>();
-  const link = (m: Map<string, string[]>, a: string, b: string) => {
-    const l = m.get(a);
-    if (l) {
-      if (!l.includes(b)) l.push(b);
-    } else m.set(a, [b]);
+  const link = (a: string, b: string) => {
+    const s = succ.get(a) ?? [];
+    if (!s.includes(b)) succ.set(a, [...s, b]);
+    const p = pred.get(b) ?? [];
+    if (!p.includes(a)) pred.set(b, [...p, a]);
   };
+  for (const e of edges) (back.has(e.id) ? link(e.to.node, e.from.node) : link(e.from.node, e.to.node));
 
-  /** 参与布局的边。自环忽略  它不影响层次。 */
-  const edges = graph.edges.filter((e) => e.from.node !== e.to.node && nodes.has(e.from.node) && nodes.has(e.to.node));
-
-  // ── 拆环: 反向边(回边)临时反转 ────────────────────────────────────
-  const backEdges = findBackEdges(graph.nodes.map((n) => n.id), edges);
-  const backSet = new Set(backEdges.map((e) => e.id));
-  const flowEdges = edges.filter((e) => !backSet.has(e.id));
-
-  for (const e of flowEdges) {
-    link(succ, e.from.node, e.to.node);
-    link(pred, e.to.node, e.from.node);
-  }
-  for (const e of backEdges) {
-    // 反转后方向变成 to -> from
-    link(succ, e.to.node, e.from.node);
-    link(pred, e.from.node, e.to.node);
-  }
-
-  // ── 1. 分层: 最长路径 ─────────────────────────────────────────────
-  const indeg = new Map<string, number>();
-  for (const n of nodes.values()) indeg.set(n.id, (pred.get(n.id) ?? []).length);
-  const queue: string[] = [];
-  for (const n of nodes.values()) if ((indeg.get(n.id) ?? 0) === 0) queue.push(n.id);
-
+  // Rank = longest path from a source, in Kahn order.
+  const indeg = new Map([...nodes.keys()].map((id) => [id, pred.get(id)?.length ?? 0]));
+  const queue = [...nodes.keys()].filter((id) => indeg.get(id) === 0);
   const order: string[] = [];
   while (queue.length) {
     const u = queue.shift()!;
     order.push(u);
     for (const v of succ.get(u) ?? []) {
-      const d = (indeg.get(v) ?? 0) - 1;
-      indeg.set(v, d);
-      if (d === 0) queue.push(v);
+      indeg.set(v, indeg.get(v)! - 1);
+      if (indeg.get(v) === 0) queue.push(v);
     }
   }
-  // 有孤立节点(或环没拆干净)时兜底: 剩下的按 id 稳定追加
-  for (const n of nodes.values()) if (!order.includes(n.id)) order.push(n.id);
-
-  /**
-   * 分层: **尽量靠左**, 而不是最长路径。
-   *
-   * 最长路径分层会把链上每个节点都推到新的一列  dsh 图会摆出 28 列、
-   * 宽高比 39.6 (8000 x 202), 一条细长带子, 缩放到适应后节点小得看不清。
-   * 这就是"整理得难看"的根源。
-   *
-   * 改成: 只要所有前驱都已经定层, 就放在 (前驱最大层 + 1), 但因为我们是
-   * 按拓扑序推进的, 这个值与最长路径相同。真正的修正在下面 
-   * 用**列容量**把节点压进更少的列。
-   */
+  for (const id of nodes.keys()) if (!order.includes(id)) order.push(id);
   for (const id of order) {
-    const n = nodes.get(id)!;
-    let rank = 0;
-    for (const p of pred.get(id) ?? []) {
-      rank = Math.max(rank, (nodes.get(p)?.rank ?? 0) + 1);
-    }
-    n.rank = rank;
+    nodes.get(id)!.rank = Math.max(0, ...(pred.get(id) ?? []).map((p) => nodes.get(p)!.rank + 1));
   }
 
-  /**
-   * 列的紧凑化: 把过长的链折叠进更少的列。
-   *
-   * 目标: 列数接近 sqrt(节点数) 的若干倍, 让宽高比落在 1~3  那是人眼
-   * 看着舒服的形状。做法: 若列数超过上限, 就按"每列的累计高度"把相邻列
-   * 合并, 优先合并节点少的列 (合并代价小)。
-   */
-
-  // ── 按层分组 ──────────────────────────────────────────────────────
   const ranks = new Map<number, string[]>();
-  for (const n of nodes.values()) {
-    const l = ranks.get(n.rank);
-    if (l) l.push(n.id);
-    else ranks.set(n.rank, [n.id]);
-  }
-  void pred; void succ;
-  /**
-   * 列紧凑化必须在 ranks 建好之后、定序之前。
-   * 放在定序之后会打乱已经算好的层内顺序。
-   */
+  for (const n of nodes.values()) ranks.set(n.rank, [...(ranks.get(n.rank) ?? []), n.id]);
   compactRanks(nodes, ranks, succ);
+  const keys = [...ranks.keys()].sort((a, b) => a - b);
+  for (const k of keys) ranks.get(k)!.sort((a, b) => a.localeCompare(b));
 
-  const rankKeys = [...ranks.keys()].sort((a, b) => a - b);
-  for (const k of rankKeys) {
-    // 稳定排序 + id 兜底, 保证确定性
-    ranks.get(k)!.sort((a, b) => a.localeCompare(b));
-  }
-
-  // ── 2. 定序: barycenter 迭代 ──────────────────────────────────────
-  /** 层内索引。 */
-  const posInRank = new Map<string, number>();
-  const reindex = () => {
-    for (const k of rankKeys) {
-      ranks.get(k)!.forEach((id, i) => posInRank.set(id, i));
-    }
-  };
+  // Barycenter sweeps, alternating direction.
+  const pos = new Map<string, number>();
+  const reindex = () => keys.forEach((k) => ranks.get(k)!.forEach((id, i) => pos.set(id, i)));
   reindex();
-
-  const barycenter = (id: string, side: "pred" | "succ"): number | null => {
-    const nb = (side === "pred" ? pred : succ).get(id) ?? [];
-    if (nb.length === 0) return null;
-    let sum = 0;
-    let cnt = 0;
-    for (const o of nb) {
-      const p = posInRank.get(o);
-      if (p === undefined) continue;
-      sum += p;
-      cnt += 1;
-    }
-    return cnt === 0 ? null : sum / cnt;
-  };
-
   for (let it = 0; it < iterations; it++) {
-    const downward = it % 2 === 0;
-    const keys = downward ? rankKeys : [...rankKeys].reverse();
-    for (const k of keys) {
+    const down = it % 2 === 0;
+    for (const k of down ? keys : [...keys].reverse()) {
       const layer = ranks.get(k)!;
-      const measure = new Map<string, number>();
-      layer.forEach((id, i) => {
-        const b = barycenter(id, downward ? "pred" : "succ");
-        // 没有邻居时保持当前位置, 免得被挤到边上
-        measure.set(id, b ?? i);
-      });
-      layer.sort((a, b) => {
-        const d = (measure.get(a) ?? 0) - (measure.get(b) ?? 0);
-        return d !== 0 ? d : a.localeCompare(b); // id 兜底 = 确定性
-      });
-      ranks.set(k, layer);
+      const score = new Map(layer.map((id, i) => {
+        const nb = (down ? pred : succ).get(id) ?? [];
+        return [id, nb.length ? nb.reduce((s, o) => s + (pos.get(o) ?? 0), 0) / nb.length : i];
+      }));
+      layer.sort((a, b) => score.get(a)! - score.get(b)! || a.localeCompare(b));
       reindex();
     }
   }
 
-  // ── 3. 定坐标 ─────────────────────────────────────────────────────
-  /**
-   * x: 按层累计宽度, **超过阈值就折行**。
-   *
-   * 为什么必须折行: 一条 28 层的链, 每层 296px (节点宽 176 + 间距 120),
-   * 摊开是 8000 x 202 的一条细带  宽高比 39.6, 缩放到适应后每个节点
-   * 都小得看不清, 整理完反而更难看。
-   *
-   * 折行让宽高比回到 1~3。折行处 y 拉开一个"行距", 视觉上是一个明显的
-   * 断点, 不会误读成同一行。
-   */
-  const colWidths = rankKeys.map((k) => Math.max(...ranks.get(k)!.map((id) => nodes.get(id)!.w)));
-  const rowHeightOf = (keys: number[]): number => {
-    let maxH = 0;
-    for (const k of keys) {
-      const layer = ranks.get(k)!;
-      const h = layer.reduce((acc, id) => acc + nodes.get(id)!.h + gapY, 0);
-      maxH = Math.max(maxH, h);
-    }
-    return maxH;
-  };
-
-  /** 迭代试算而非解析式: 解析式假设"每行高度=全局最高列", 误差极大。 */
-  const totalW = colWidths.reduce((a, b) => a + b + gapX, 0);
-  const ASPECT = 2.0; // 目标宽高比
-  const stairStep = Math.round((colWidths[0] ?? 176) * 1.5);
-
-  const measure = (rowW: number): { w: number; h: number } => {
-    let cursor = 0;
-    let rows = 1;
-    let rowMaxH = 0;
-    let h = 0;
-    for (let i = 0; i < rankKeys.length; i++) {
-      const w = colWidths[i];
-      const colH = ranks.get(rankKeys[i])!.reduce((acc, id) => acc + nodes.get(id)!.h + gapY, 0);
-      if (cursor > 0 && cursor + w > rowW) {
-        h += rowMaxH + gapY * 2.5;
-        rows += 1;
-        cursor = 0;
-        rowMaxH = 0;
-      }
-      cursor += w + gapX;
-      rowMaxH = Math.max(rowMaxH, colH);
-    }
-    h += rowMaxH;
-    const w = Math.min(rowW, totalW);
-    void rows;
-    return { w, h: Math.max(1, h) };
-  };
-
-  /**
-   * 阶梯步长: 每折一行, 起点右移多少。
-   *
-   * 取**行宽的七成**。这是个取舍: 步长越接近行宽, 跨行的那条边回拉越短
-   * (回边长度 ≈ 行宽 - 步长), 但整幅图越宽。
-   *
-   * 用户明确抱怨"从左边深入右边又拉回去"的长边, 所以这里优先短回边,
-   * 接受图更宽  反正可以缩放和平移, 而一条横穿整幅图的线没法看。
-   *
-   * 归零折行 dx=-592; 步长=1.5 列宽 时 -328; 步长=0.7 行宽 时更短。
-   */
-  let maxRowW = totalW;
-  let bestErr = Infinity;
-  const maxPull = Math.max(1, totalW);
-  // 候选: 从"每行 2 列"逐步放宽到"不折行"
-  for (let colsPerRow = 2; colsPerRow <= rankKeys.length + 1; colsPerRow++) {
-    const rowW = colWidths.slice(0, colsPerRow).reduce((a, b) => a + b + gapX, 0);
-    const m = measure(rowW);
-    const aspectErr = Math.abs(Math.log(m.w / m.h) - Math.log(ASPECT));
-    // 回边惩罚权重: 与宽高比同量级, 但稍弱 (不能为了零回边把图拉成一条线)
-    const err = aspectErr + 1.5 * (worstBackPull(colWidths, colsPerRow, rankKeys, ranks, succ, gapX) / maxPull);
-    if (err < bestErr) {
-      bestErr = err;
-      maxRowW = rowW;
-    }
-  }
-  // 也考虑完全不折行 (宽高比可能本来就合适)
-  {
-    const m = measure(totalW);
-    const err = Math.abs(Math.log(m.w / m.h) - Math.log(ASPECT));
-    if (err < bestErr) maxRowW = totalW;
-  }
-
-  const xs = new Map<number, number>();
-  const rowOf = new Map<number, number>();
-  const rowTops: number[] = [];
-  {
+  // Wrap ranks into rows: pick the row width whose bounding box is closest to 2:1.
+  const colW = keys.map((k) => Math.max(...ranks.get(k)!.map((id) => nodes.get(id)!.w)));
+  const colH = keys.map((k) => ranks.get(k)!.reduce((s, id) => s + nodes.get(id)!.h + gapY, 0));
+  const totalW = colW.reduce((s, w) => s + w + gapX, 0);
+  const stair = Math.round((colW[0] ?? 176) * 1.5);
+  const place = (rowW: number) => {
+    const xs: number[] = [];
+    const rowOf: number[] = [];
+    const rowH: number[] = [0];
     let cursor = 0;
     let row = 0;
-    let rowH = 0;
-    for (let i = 0; i < rankKeys.length; i++) {
-      const k = rankKeys[i];
-      const w = colWidths[i];
-      if (cursor > 0 && cursor + w > maxRowW) {
-        /**
-         * 折行用**蛇形** (boustrophedon): 偶数行左→右, 奇数行右→左。
-         *
-         * 为什么: 直接归零会让跨行的边横穿整幅图  dsh 图有一条
-         * dx = -592 的边 (往左拉回两整列), 就是用户说的"从左边深入右边
-         * 又拉回去", 极难看。
-         *
-         * 蛇形下, 上一行的**行末**与下一行的**行首**在同一侧, 于是跨行的
-         * 那条边几乎垂直向下  短、整齐、方向清楚。阶梯式折行(每行右移
-         * 一点)能把回拉从 592 降到 328, 蛇形则基本消掉它。
-         */
-        rowTops.push(rowH);
+    keys.forEach((_, i) => {
+      if (cursor > 0 && cursor + colW[i]! > rowW) {
         row += 1;
-        cursor = row * stairStep;
-        rowH = 0;
+        rowH.push(0);
+        cursor = row * stair;
       }
-      xs.set(k, cursor);
-      rowOf.set(k, row);
-      cursor += w + gapX;
-      rowH = Math.max(rowH, ranks.get(k)!.reduce((acc, id) => acc + nodes.get(id)!.h + gapY, 0));
+      xs.push(cursor);
+      rowOf.push(row);
+      rowH[row] = Math.max(rowH[row]!, colH[i]!);
+      cursor += colW[i]! + gapX;
+    });
+    return { xs, rowOf, rowH };
+  };
+  const cost = (rowW: number) => {
+    const p = place(rowW);
+    const h = p.rowH.reduce((s, x) => s + x, 0) + gapY * 2.5 * (p.rowH.length - 1);
+    const w = Math.min(rowW, totalW);
+    let pull = 0; // worst leftward jump of a forward wire, wrapping should not send wires far back
+    for (const [a, bs] of succ) for (const b of bs) pull = Math.max(pull, p.xs[keys.indexOf(nodes.get(a)!.rank)]! - p.xs[keys.indexOf(nodes.get(b)!.rank)]!);
+    return Math.abs(Math.log(w / Math.max(1, h)) - Math.log(2)) + 1.5 * (pull / Math.max(1, totalW));
+  };
+  let rowW = totalW;
+  let best = cost(totalW);
+  for (let cols = 2; cols <= keys.length; cols++) {
+    const w = colW.slice(0, cols).reduce((s, x) => s + x + gapX, 0);
+    const c = cost(w);
+    if (c < best) {
+      best = c;
+      rowW = w;
     }
-    rowTops.push(rowH);
   }
-
-  // 每行的起始 y
+  const { xs, rowOf, rowH } = place(rowW);
   const rowBase: number[] = [];
-  {
-    let y = 0;
-    for (let i = 0; i < rowTops.length; i++) {
-      rowBase.push(y);
-      y += rowTops[i] + gapY * 2.5; // 行距比节点间距大, 让折行处一眼可辨
-    }
-  }
+  rowH.reduce((y, h, i) => ((rowBase[i] = y), y + h + gapY * 2.5), 0);
 
-  for (const k of rankKeys) {
+  // Stack each rank, centre it in its row, then pull nodes toward their neighbours.
+  keys.forEach((k, i) => {
     const layer = ranks.get(k)!;
-    const base = rowBase[rowOf.get(k)!] ?? 0;
-    let y = base;
+    let y = rowBase[rowOf[i]!]! + (rowH[rowOf[i]!]! - colH[i]!) / 2;
     for (const id of layer) {
       const n = nodes.get(id)!;
       n.y = y;
       y += n.h + gapY;
     }
-  }
-
-  /**
-   * 每层在本行内垂直居中。
-   * 不做的话短层会贴在行顶, 整行看起来是歪的。
-   */
-  for (let i = 0; i < rankKeys.length; i++) {
-    const k = rankKeys[i];
-    const layer = ranks.get(k)!;
-    const h = layer.reduce((acc, id) => acc + nodes.get(id)!.h + gapY, 0);
-    const shift = ((rowTops[rowOf.get(k)!] ?? h) - h) / 2;
-    for (const id of layer) nodes.get(id)!.y += shift;
-  }
-
-  // ── 4. 拉直: 把父节点吸到子节点重心 ────────────────────────────────
-  /**
-   * 相邻层之间做几轮重心吸附, 让"一个输出连多个输入"的连线接近直线。
-   * 只在**不产生重叠**的前提下移动  这一步改善观感, 但不能把布局搞坏。
-   */
+  });
   for (let it = 0; it < iterations; it++) {
-    for (let i = 0; i < rankKeys.length; i++) {
-      const k = rankKeys[i];
+    for (const k of keys) {
       const layer = ranks.get(k)!;
-      for (const id of layer) {
-        const nb = (succ.get(id) ?? []).concat(pred.get(id) ?? []);
-        if (nb.length === 0) continue;
-        const centers = nb
-          .map((o) => nodes.get(o))
-          .filter((n): n is LayoutNode => !!n)
-          .map((n) => n.y + n.h / 2);
-        if (centers.length === 0) continue;
-        const want = centers.reduce((a, b) => a + b, 0) / centers.length - nodes.get(id)!.h / 2;
-
-        // 夹到"不与同层邻居重叠"的范围内
-        const idx = layer.indexOf(id);
-        const prev = idx > 0 ? nodes.get(layer[idx - 1])! : null;
-        const next = idx < layer.length - 1 ? nodes.get(layer[idx + 1])! : null;
+      layer.forEach((id, idx) => {
+        const n = nodes.get(id)!;
+        const nb = [...(succ.get(id) ?? []), ...(pred.get(id) ?? [])].map((o) => nodes.get(o)!);
+        if (!nb.length) return;
+        const want = nb.reduce((s, o) => s + o.y + o.h / 2, 0) / nb.length - n.h / 2;
+        const prev = idx > 0 ? nodes.get(layer[idx - 1]!)! : undefined;
+        const next = idx < layer.length - 1 ? nodes.get(layer[idx + 1]!)! : undefined;
         const lo = prev ? prev.y + prev.h + gapY : -Infinity;
-        const hi = next ? next.y - nodes.get(id)!.h - gapY : Infinity;
-        if (lo <= hi) nodes.get(id)!.y = Math.min(hi, Math.max(lo, want));
-      }
+        const hi = next ? next.y - n.h - gapY : Infinity;
+        if (lo <= hi) n.y = Math.min(hi, Math.max(lo, want));
+      });
     }
   }
+  const xOf = (n: LNode) => xs[keys.indexOf(n.rank)] ?? 0;
+  resolveOverlaps([...nodes.values()], xOf, gapY);
 
-  resolveOverlaps(nodes, xs, gapY);
-
-  // ── 输出 ──────────────────────────────────────────────────────────
+  const preserve = new Set(opts.preserve ?? []);
   const out = new Map<string, { x: number; y: number }>();
-  for (const n of nodes.values()) {
-    if (preserve.has(n.id)) {
-      out.set(n.id, { x: n.node.x, y: n.node.y });
-      continue;
-    }
-    out.set(n.id, dir === "lr" ? { x: xs.get(n.rank) ?? 0, y: n.y } : { x: n.y, y: xs.get(n.rank) ?? 0 });
+  for (const n of graph.nodes) {
+    const l = nodes.get(n.id)!;
+    out.set(n.id, preserve.has(n.id) ? { x: n.x, y: n.y } : { x: xOf(l), y: l.y });
   }
-
-  /** 归一化到非负  负坐标会让"缩放到适应"算出奇怪的偏移。 */
-  let minX = Infinity;
-  let minY = Infinity;
-  for (const p of out.values()) {
-    minX = Math.min(minX, p.x);
-    minY = Math.min(minY, p.y);
-  }
-  if (minX !== Infinity && (minX < 0 || minY < 0)) {
-    for (const [k, p] of out) out.set(k, { x: p.x - Math.min(0, minX), y: p.y - Math.min(0, minY) });
-  }
-
+  const minY = Math.min(...[...out.values()].map((p) => p.y));
+  if (minY < 0) for (const [id, p] of out) if (!preserve.has(id)) out.set(id, { x: p.x, y: p.y - minY });
   return out;
 }
 
-/** 把布局结果应用到图上, 返回新图。 */
-export function applyLayout(
-  graph: BlueprintGraph,
-  layout: LayoutResult,
-  opts: { readonly preserve?: readonly string[] } = {}
-): BlueprintGraph {
-  const keep = new Set(opts.preserve ?? []);
+export function applyLayout(graph: BlueprintGraph, positions: Positions): BlueprintGraph {
   return {
     ...graph,
     nodes: graph.nodes.map((n) => {
-      if (keep.has(n.id)) return n;
-      const p = layout.get(n.id);
+      const p = positions.get(n.id);
       return p ? { ...n, x: Math.round(p.x), y: Math.round(p.y) } : n;
     }),
   };
 }
 
+/** Edges that close a cycle in DFS order. Treated as reversed for ranking. */
+export function findBackEdges(ids: readonly string[], edges: readonly BlueprintEdge[]): BlueprintEdge[] {
+  const out = new Map<string, BlueprintEdge[]>();
+  for (const e of edges) if (e.from.node !== e.to.node) out.set(e.from.node, [...(out.get(e.from.node) ?? []), e]);
+  const state = new Map<string, 1 | 2>();
+  const back: BlueprintEdge[] = [];
+  const visit = (u: string) => {
+    state.set(u, 1);
+    for (const e of out.get(u) ?? []) {
+      const s = state.get(e.to.node);
+      if (s === 1) back.push(e);
+      else if (s === undefined) visit(e.to.node);
+    }
+    state.set(u, 2);
+  };
+  for (const id of ids) if (!state.has(id)) visit(id);
+  return back;
+}
+
+/** Merge adjacent ranks with no wire between them until the rank count is near sqrt(n) * 1.6. */
+function compactRanks(nodes: Map<string, LNode>, ranks: Map<number, string[]>, succ: Map<string, string[]>): void {
+  if (nodes.size <= 2) return;
+  const target = Math.max(2, Math.round(Math.sqrt(nodes.size) * 1.6));
+  for (let guard = 0; ranks.size > target && guard < 200; guard++) {
+    const keys = [...ranks.keys()].sort((a, b) => a - b);
+    let bestI = -1;
+    let bestCost = Infinity;
+    for (let i = 0; i < keys.length - 1; i++) {
+      const a = ranks.get(keys[i]!)!;
+      const b = ranks.get(keys[i + 1]!)!;
+      if (a.some((u) => (succ.get(u) ?? []).some((v) => b.includes(v)))) continue;
+      if (a.length + b.length < bestCost) {
+        bestCost = a.length + b.length;
+        bestI = i;
+      }
+    }
+    if (bestI < 0) return;
+    const [to, from] = [keys[bestI]!, keys[bestI + 1]!];
+    for (const id of ranks.get(from)!) nodes.get(id)!.rank = to;
+    ranks.set(to, [...ranks.get(to)!, ...ranks.get(from)!]);
+    ranks.delete(from);
+  }
+}
+
+function resolveOverlaps(nodes: LNode[], xOf: (n: LNode) => number, gapY: number): void {
+  const placed: { x: number; y: number; w: number; h: number }[] = [];
+  for (const n of [...nodes].sort((a, b) => a.y - b.y || a.rank - b.rank || a.id.localeCompare(b.id))) {
+    const x = xOf(n);
+    for (let guard = 0; guard < 500; guard++) {
+      const hit = placed.find((p) => boxesOverlap(p, { x, y: n.y, w: n.w, h: n.h }));
+      if (!hit) break;
+      n.y = hit.y + hit.h + gapY;
+    }
+    placed.push({ x, y: n.y, w: n.w, h: n.h });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Layout quality metrics (used by the agent builder to self-check)
+
+export function countOverlaps(graph: BlueprintGraph, registry: Registry): number {
+  const boxes = graph.nodes.map((n) => nodeBox(n, registry, graph));
+  let n = 0;
+  for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) if (boxesOverlap(boxes[i]!, boxes[j]!)) n++;
+  return n;
+}
+
+/** Wire crossings between columns, approximated by node order within each x column. */
+export function countCrossings(graph: BlueprintGraph): number {
+  const byX = new Map<number, string[]>();
+  for (const n of graph.nodes) byX.set(Math.round(n.x), [...(byX.get(Math.round(n.x)) ?? []), n.id]);
+  const yOf = new Map(graph.nodes.map((n) => [n.id, n.y]));
+  const idx = new Map<string, number>();
+  for (const col of byX.values()) col.sort((a, b) => yOf.get(a)! - yOf.get(b)!).forEach((id, i) => idx.set(id, i));
+  const es = graph.edges.filter((e) => e.from.node !== e.to.node && idx.has(e.from.node) && idx.has(e.to.node));
+  let crossings = 0;
+  for (let i = 0; i < es.length; i++) {
+    for (let j = i + 1; j < es.length; j++) {
+      const a = es[i]!;
+      const b = es[j]!;
+      const o1 = Math.sign(idx.get(a.from.node)! - idx.get(b.from.node)!);
+      const o2 = Math.sign(idx.get(a.to.node)! - idx.get(b.to.node)!);
+      if (o1 && o2 && o1 !== o2) crossings++;
+    }
+  }
+  return crossings;
+}
+
+// ---------------------------------------------------------------------------
+// Align / distribute, size-aware (fixes B11)
+
+export type AlignMode = "left" | "right" | "top" | "bottom" | "center" | "middle";
+
+export function alignNodes(graph: BlueprintGraph, ids: readonly string[], mode: AlignMode, registry: Registry): BlueprintGraph {
+  const boxes = graph.nodes.filter((n) => ids.includes(n.id)).map((n) => ({ id: n.id, ...nodeBox(n, registry, graph) }));
+  if (boxes.length < 2) return graph;
+  const minX = Math.min(...boxes.map((b) => b.x));
+  const maxR = Math.max(...boxes.map((b) => b.x + b.w));
+  const minY = Math.min(...boxes.map((b) => b.y));
+  const maxB = Math.max(...boxes.map((b) => b.y + b.h));
+  const at = new Map(boxes.map((b) => {
+    switch (mode) {
+      case "left": return [b.id, { x: minX, y: b.y }];
+      case "right": return [b.id, { x: maxR - b.w, y: b.y }];
+      case "top": return [b.id, { x: b.x, y: minY }];
+      case "bottom": return [b.id, { x: b.x, y: maxB - b.h }];
+      case "center": return [b.id, { x: Math.round((minX + maxR) / 2 - b.w / 2), y: b.y }];
+      case "middle": return [b.id, { x: b.x, y: Math.round((minY + maxB) / 2 - b.h / 2) }];
+    }
+  }));
+  return applyLayout(graph, at);
+}
+
+/** Even gaps between the selected nodes along one axis, first and last stay put. */
+export function distributeNodes(graph: BlueprintGraph, ids: readonly string[], axis: "x" | "y", registry: Registry): BlueprintGraph {
+  const boxes = graph.nodes.filter((n) => ids.includes(n.id)).map((n) => ({ id: n.id, ...nodeBox(n, registry, graph) }));
+  if (boxes.length < 3) return graph;
+  const size = axis === "x" ? "w" : "h";
+  boxes.sort((a, b) => a[axis] - b[axis]);
+  const first = boxes[0]!;
+  const last = boxes[boxes.length - 1]!;
+  const span = last[axis] + last[size] - first[axis];
+  const gap = (span - boxes.reduce((s, b) => s + b[size], 0)) / (boxes.length - 1);
+  let cursor = first[axis];
+  const at = new Map<string, { x: number; y: number }>();
+  for (const b of boxes) {
+    at.set(b.id, axis === "x" ? { x: cursor, y: b.y } : { x: b.x, y: cursor });
+    cursor += b[size] + gap;
+  }
+  return applyLayout(graph, at);
+}
