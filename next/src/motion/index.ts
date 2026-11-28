@@ -5,3 +5,7 @@ export type { RevealProps, StaggerProps } from "./reveal";
 export { AnimatedNumber } from "./animated-number";
 export { TextReveal } from "./text-effect";
 export { MotionProvider } from "./provider";
+export { useUnfold } from "./use-unfold";
+export type { UnfoldEntry, UnfoldResult } from "./use-unfold";
+export { UNFOLD_DEFAULTS, resolveUnfold, planUnfold, mergeUnfoldKeys, sampleUnfold, unfoldDuration } from "./unfold";
+export type { UnfoldType, UnfoldOptions, UnfoldEasing, ResolvedUnfold, UnfoldItem, UnfoldPhase, UnfoldPlan, UnfoldTrack, UnfoldFrame, UnfoldView } from "./unfold";

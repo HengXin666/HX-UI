@@ -28,6 +28,7 @@ import {
   type ContextSnapshot,
 } from "./model/context";
 import type { AgentMessage } from "./model/types";
+import { useUnfold, type UnfoldEntry } from "@/motion/use-unfold";
 import { StatusDot } from "./orchestra/shared";
 import { useAgentSession, useSessionMessages } from "./orchestra/session-context";
 import { formatDuration, formatTokens } from "./parts/format";
@@ -56,6 +57,11 @@ const HATCH = "repeating-linear-gradient(135deg, var(--border) 0 1px, transparen
 
 /** 紧凑表格的行 / 表头 */
 const ROW = "grid min-w-0 items-center gap-x-2 px-2.5 h-[22px] text-[11px] tabular";
+/** 构成表展开一类时列出的最大项数, 其余并成一行 */
+const CATEGORY_TOP = 6;
+const TOTAL_KEY = "total";
+type CompLine = { kind: "cat"; c: ContextCategory } | { kind: "item"; c: ContextCategory; it: ContextItem } | { kind: "more"; c: ContextCategory; count: number; tokens: number } | { kind: "total" };
+const compKey = (l: CompLine) => (l.kind === "total" ? TOTAL_KEY : l.kind === "item" ? `item:${l.c}:${l.it.id}` : `${l.kind}:${l.c}`);
 const HEAD = cn(ROW, "h-6 border-b text-[10px] font-medium text-muted-foreground");
 
 export interface ContextBarProps {
@@ -203,6 +209,30 @@ export function AgentContextView({ messages: messagesProp, agents: agentsProp, a
   const cats = CONTEXT_CATEGORIES.filter((c) => b.byCategory[c] > 0);
   const hoverProps = (c: ContextCategory) => ({ onMouseEnter: () => setHover(c), onMouseLeave: () => setHover(null) });
   const dim = (c: ContextCategory) => hover && hover !== c && "opacity-40";
+  // 构成表的行 (类别行, 展开的明细, 合计) 排成一列交给 useUnfold, 展开 / 收起时平滑让位
+  const compLines = React.useMemo(() => {
+    const out: CompLine[] = [];
+    for (const c of cats) {
+      out.push({ kind: "cat", c });
+      if (open !== c) continue;
+      const list = b.items.filter((i) => i.category === c);
+      for (const it of list.slice(0, CATEGORY_TOP)) out.push({ kind: "item", c, it });
+      const rest = list.slice(CATEGORY_TOP);
+      if (rest.length) out.push({ kind: "more", c, count: rest.length, tokens: rest.reduce((a, i) => a + i.tokens, 0) });
+    }
+    out.push({ kind: "total" });
+    return out;
+    // cats 由 b 派生
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [b, open]);
+  const comp = useUnfold(compLines, compKey);
+  const byCat = new Map<ContextCategory, UnfoldEntry<CompLine>[]>();
+  for (const e of comp.entries) {
+    if (e.item.kind === "total") continue;
+    const list = byCat.get(e.item.c);
+    if (list) list.push(e);
+    else byCat.set(e.item.c, [e]);
+  }
 
   if (b.empty) {
     return (
@@ -261,9 +291,12 @@ export function AgentContextView({ messages: messagesProp, agents: agentsProp, a
               {cats.map((c) => {
                 const list = b.items.filter((i) => i.category === c);
                 const expanded = open === c;
+                const kids = (byCat.get(c) ?? []).filter((e) => e.item.kind !== "cat");
+                const head = byCat.get(c)?.find((e) => e.item.kind === "cat");
                 return (
                   <div key={c} role="rowgroup">
                     <button
+                      ref={head ? comp.ref(head.key) : undefined}
                       type="button"
                       role="row"
                       aria-expanded={expanded}
@@ -285,25 +318,30 @@ export function AgentContextView({ messages: messagesProp, agents: agentsProp, a
                       <span role="cell" className="text-right text-muted-foreground">{scale ? pctText(b.byCategory[c], scale) : "—"}</span>
                       <span role="cell" className={cn("text-right @max-md:hidden", sourceOf(list) === "报告" ? "text-muted-foreground" : "text-muted-foreground/70")}>{sourceOf(list)}</span>
                     </button>
-                    {expanded &&
-                      list.slice(0, 6).map((it) => (
-                        <div key={it.id} role="row" className={cn(ROW, "grid-cols-[minmax(0,1fr)_3.25rem_3rem] bg-muted/30 pl-[2.1rem] text-muted-foreground")}>
-                          <span role="cell" className="truncate" title={it.detail ? `${it.label} · ${it.detail}` : it.label}>
-                            <span className="text-foreground">{it.label}</span>
-                            {it.detail ? ` · ${it.detail}` : ""}
+                    {/* 展开的明细行由 useUnfold 驱动: 下方行平滑让位, 明细自上而下淡入; 收起中的行 inert + aria-hidden */}
+                    {kids.map(({ key, item, exiting }) =>
+                      item.kind === "item" ? (
+                        <div key={key} ref={comp.ref(key)} inert={exiting || undefined} aria-hidden={exiting || undefined} role="row" className={cn(ROW, "grid-cols-[minmax(0,1fr)_3.25rem_3rem] bg-muted/30 pl-[2.1rem] text-muted-foreground")}>
+                          <span role="cell" className="truncate" title={item.it.detail ? `${item.it.label} · ${item.it.detail}` : item.it.label}>
+                            <span className="text-foreground">{item.it.label}</span>
+                            {item.it.detail ? ` · ${item.it.detail}` : ""}
                           </span>
                           <span role="cell" className="text-right text-foreground">
-                            {it.estimated && "≈"}
-                            {formatTokens(it.tokens)}
+                            {item.it.estimated && "≈"}
+                            {formatTokens(item.it.tokens)}
                           </span>
-                          <span role="cell" className="text-right">{pctText(it.tokens, b.total)}</span>
+                          <span role="cell" className="text-right">{pctText(item.it.tokens, b.total)}</span>
                         </div>
-                      ))}
-                    {expanded && list.length > 6 && <div className={cn(ROW, "bg-muted/30 pl-[2.1rem] text-muted-foreground")}>其余 {list.length - 6} 项 · {formatTokens(list.slice(6).reduce((a, i) => a + i.tokens, 0))}</div>}
+                      ) : item.kind === "more" ? (
+                        <div key={key} ref={comp.ref(key)} inert={exiting || undefined} aria-hidden={exiting || undefined} role="row" className={cn(ROW, "bg-muted/30 pl-[2.1rem] text-muted-foreground")}>
+                          其余 {item.count} 项 · {formatTokens(item.tokens)}
+                        </div>
+                      ) : null,
+                    )}
                   </div>
                 );
               })}
-              <div role="row" className={cn(ROW, "grid-cols-[minmax(0,1fr)_2rem_3.25rem_3rem_3rem] border-t font-medium @md:grid-cols-[minmax(0,1fr)_2rem_3.25rem_3rem_3rem_2.25rem]")}>
+              <div ref={comp.ref(TOTAL_KEY)} role="row" className={cn(ROW, "grid-cols-[minmax(0,1fr)_2rem_3.25rem_3rem_3rem] border-t font-medium @md:grid-cols-[minmax(0,1fr)_2rem_3.25rem_3rem_3rem_2.25rem]")}>
                 <span role="cell" className="pl-[1.375rem]">合计</span>
                 <span role="cell" className="text-right">{b.items.length}</span>
                 <span role="cell" className="text-right">{formatTokens(b.total)}</span>

@@ -13,13 +13,17 @@
  * 多选另有 Shift+上下 / Shift+点击 连选, Ctrl/⌘+点击 切换, Ctrl/⌘+A 全选.
  * 外观与 HX-CF-Drive 的目录树 (FolderTree) 和 hxoa 面板的工作区树一致: 行高 32px, 行间留 2px, 圆角行,
  * 悬停 accent/60, 选中 accent 底 + 1px border 描边, 20px 的箭头热区 (悬停变前景色), 每级缩进 16px, 默认无连接线.
- * 动效: 只有箭头旋转 (transform); 展开的子行直接出现, 不做位移. 减弱动效时箭头直接到位.
+ * 动效 (animation, 默认 "slide"): 展开时下方的行平滑让位, 子行随让出的空间自上而下依次淡入; 收起反过来, 播完才移除.
+ * 由通用的 useUnfold (src/motion/use-unfold.ts) 驱动, 只动 transform / opacity; 收起中的行 inert + aria-hidden,
+ * 不可聚焦也不被读屏读到, 键盘与选中逻辑只看真实的可见行. 箭头旋转 150ms. 减弱动效时全部直接到位.
  */
 
 import * as React from "react"
 import { CheckIcon, ChevronRightIcon, LoaderCircleIcon, MinusIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useUnfold } from "@/motion/use-unfold"
+import type { UnfoldOptions, UnfoldType } from "@/motion/unfold"
 import {
   TREE_KEYS,
   checkState,
@@ -42,6 +46,9 @@ export type { TreeNode, TreeRow, CheckState } from "@/components/ui/tree-model"
 export { flattenVisible, branchIds, subtreeIds, checkState } from "@/components/ui/tree-model"
 
 export type TreeSelectionMode = "none" | "single" | "multiple"
+
+/** 展开 / 收起动画: 类型名, 或带时长 / 交错 / 封顶 / 缓动的对象 (见 UnfoldOptions) */
+export type TreeAnimation = UnfoldType | UnfoldOptions
 
 /** 自定义渲染时拿到的行状态 */
 export interface TreeItemState {
@@ -79,6 +86,12 @@ export interface TreeProps<T = unknown> {
   lines?: boolean
   /** 每级缩进 px, 默认 16 */
   indent?: number
+  /**
+   * 展开 / 收起动画, 默认 "slide" (下方让位 + 子行自上而下淡入并轻微下移); "fade" 原地淡入; "none" 关闭.
+   * 对象形式可调 duration (每行 ms, 默认 220), stagger (每多一行加的 ms, 默认 14), maxDuration (封顶 ms, 默认 380), easing.
+   * 减弱动效 (prefers-reduced-motion) 时总是直接显示.
+   */
+  animation?: TreeAnimation
   size?: "sm" | "default"
   /** 整棵树在加载: 显示骨架行 */
   loading?: boolean
@@ -108,6 +121,12 @@ const ITEM_GAP = 6
 const TYPEAHEAD_MS = 500
 const SKELETON_ROWS = [72, 56, 64, 44]
 const NO_IDS: readonly string[] = []
+/** 懒加载提示行的 key 后缀 (节点 id 里不会有的字符) */
+const LOADING_KEY = "\u0000loading"
+
+/** 要渲染的一条: 树行, 或懒加载时跟在枝后面的 "加载中" 提示 */
+type Line<T> = { kind: "row"; row: TreeRow<T> } | { kind: "loading"; row: TreeRow<T> }
+const lineKey = (line: Line<unknown>) => (line.kind === "row" ? line.row.node.id : line.row.node.id + LOADING_KEY)
 
 /** 受控 / 非受控的 string[] 状态 */
 function useIdList(value: readonly string[] | undefined, initial: readonly string[] | undefined) {
@@ -168,6 +187,7 @@ function Tree<T = unknown>({
   expandOnClick = true,
   lines = false,
   indent = DEFAULT_INDENT,
+  animation = "slide",
   size = "default",
   loading = false,
   empty = "暂无内容",
@@ -191,6 +211,14 @@ function Tree<T = unknown>({
   const index = React.useMemo(() => indexTree(nodes), [nodes])
   const multiple = selectionMode === "multiple"
   const cascade = multiple && checkboxes
+  const display = React.useMemo(
+    () =>
+      rows.flatMap((row): Line<T>[] =>
+        row.expanded && pending.has(row.node.id) && !row.node.children?.length ? [{ kind: "row", row }, { kind: "loading", row }] : [{ kind: "row", row }]
+      ),
+    [rows, pending]
+  )
+  const unfold = useUnfold<Line<T>>(display, lineKey, animation)
 
   // 当前 Tab 停靠的行: 记住的焦点; 它被折进去了就落到最近的可见祖先; 都没有就第一个选中, 再没有就第一行
   const visible = React.useMemo(() => new Set(rows.map((r) => r.node.id)), [rows])
@@ -366,20 +394,35 @@ function Tree<T = unknown>({
       style={style}
       {...aria}
     >
-      {rows.map((row) => {
+      {unfold.entries.map(({ key, item, exiting }) => {
+        const { row } = item
         const { node, depth, branch, expanded } = row
+        if (item.kind === "loading") {
+          return (
+            <div key={key} ref={unfold.ref(key)} aria-hidden className="py-1 text-xs text-muted-foreground" style={{ paddingLeft: PAD + (depth + 1) * indent + CHEVRON + ITEM_GAP }}>
+              加载中…
+            </div>
+          )
+        }
         const isSelected = selectionMode !== "none" && (cascade ? checkState(node, selectedSet) === true : selectedSet.has(node.id))
         const checked = cascade ? checkState(node, selectedSet) : isSelected
         const busy = pending.has(node.id)
         const state: TreeItemState = { depth, branch, expanded, selected: isSelected, checked, focused: node.id === tabId, loading: busy }
         const icon = expanded && node.iconExpanded ? node.iconExpanded : node.icon
-        const rowEl = (
+        const unfoldRef = unfold.ref(key)
+        return (
           <div
-            key={node.id}
+            key={key}
             ref={(el) => {
-              if (el) rowEls.current.set(node.id, el)
+              unfoldRef(el)
+              // 收起中的行不登记: 焦点只会落到真实的可见行上
+              if (el && !exiting) rowEls.current.set(node.id, el)
               else rowEls.current.delete(node.id)
             }}
+            // 收起动画中的行: 不可聚焦, 不可点, 不被读屏读到
+            inert={exiting || undefined}
+            aria-hidden={exiting || undefined}
+            data-exiting={exiting ? "" : undefined}
             role="treeitem"
             aria-level={depth + 1}
             aria-setsize={row.size}
@@ -390,7 +433,7 @@ function Tree<T = unknown>({
             aria-disabled={node.disabled || undefined}
             aria-busy={busy || undefined}
             aria-label={typeof node.label === "string" ? undefined : textOf(node)}
-            tabIndex={node.id === tabId ? 0 : -1}
+            tabIndex={!exiting && node.id === tabId ? 0 : -1}
             data-state={branch ? (expanded ? "open" : "closed") : undefined}
             data-selected={isSelected && !cascade ? "" : undefined}
             onClick={(e) => onRowClick(e, row)}
@@ -449,15 +492,6 @@ function Tree<T = unknown>({
             <span className="min-w-0 flex-1 truncate">{renderLabel ? renderLabel(node, state) : node.label}</span>
             {node.trailing != null && <span className="ml-auto shrink-0 pl-2 text-xs text-muted-foreground tabular">{node.trailing}</span>}
           </div>
-        )
-        if (!busy || !expanded || node.children?.length) return rowEl
-        return (
-          <React.Fragment key={node.id}>
-            {rowEl}
-            <div aria-hidden className="py-1 text-xs text-muted-foreground" style={{ paddingLeft: PAD + (depth + 1) * indent + CHEVRON + ITEM_GAP }}>
-              加载中…
-            </div>
-          </React.Fragment>
         )
       })}
     </div>
